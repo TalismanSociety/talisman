@@ -377,14 +377,14 @@ export class Balance {
   }
 
   get network() {
-    return (this.#db?.networks && this.networkId && this.#db?.networks[this.networkId]) || null
+    return this.#db?.networks?.[this.networkId] || null
   }
 
   get tokenId() {
     return this.#storage.tokenId
   }
   get token() {
-    return (this.#db?.tokens && this.#db?.tokens[this.tokenId]) || null
+    return this.#db?.tokens?.[this.tokenId] || null
   }
   get decimals() {
     return this.token?.decimals || null

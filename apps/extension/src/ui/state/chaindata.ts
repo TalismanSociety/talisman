@@ -19,7 +19,7 @@ import {
   Network,
 } from "extension-core"
 import { keyBy } from "lodash"
-import { combineLatest, map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -220,7 +220,12 @@ export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) =>
     const tokens$ = activeOnly ? activeTokens$ : allTokens$
     return tokens$.pipe(
       map((tokens) => tokens.filter(filterByPlatform(platform))),
-      map((tokens) => tokens.filter(filterIncludeTestnets(includeTestnets))),
+      switchMap((tokens) => {
+        if (includeTestnets) return of(tokens)
+        return getNetworksMapById$(opts).pipe(
+          map((networksById) => tokens.filter((t) => !networksById[t.networkId]?.isTestnet)),
+        )
+      }),
       debugObservable("getTokens$"),
     )
   })

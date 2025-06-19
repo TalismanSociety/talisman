@@ -551,7 +551,6 @@ export class EthTabsHandler extends TabsHandler {
           id: tokenId,
           type: "evm-erc20",
           platform: "ethereum",
-          isTestnet: false,
           symbol: symbol ?? tokenInfo.symbol,
           decimals: decimals ?? tokenInfo.decimals,
           name: tokenInfo.name,

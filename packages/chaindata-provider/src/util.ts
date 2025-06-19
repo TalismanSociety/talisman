@@ -38,37 +38,34 @@ export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): 
 // Utils for parsing chaindata tokens.json
 //
 
-export const parseTokensResponse = (tokens: Token[]): Token[] =>
-  tokens.filter(isTokenPartial).filter(isToken)
+// export const parseTokensResponse = (tokens: Token[]): Token[] =>
+//   tokens.filter(isTokenPartial).filter(isToken)
 
-export const isTokenPartial = (token: unknown): token is Partial<Token> =>
-  typeof token === "object" && token !== null
+// export const isTokenPartial = (token: unknown): token is Partial<Token> =>
+//   typeof token === "object" && token !== null
 
-export const isToken = (token: Partial<Token>): token is Token => {
-  const id = token.id
-  if (typeof id !== "string") return false
+// export const isToken = (token: Partial<Token>): token is Token => {
+//   const id = token.id
+//   if (typeof id !== "string") return false
 
-  const type = token.type
-  if (typeof type !== "string") return false
+//   const type = token.type
+//   if (typeof type !== "string") return false
 
-  const isTestnet = token.isTestnet
-  if (typeof isTestnet !== "boolean") return false
+//   const symbol = token.symbol
+//   if (typeof symbol !== "string") return false
 
-  const symbol = token.symbol
-  if (typeof symbol !== "string") return false
+//   const decimals = token.decimals
+//   if (typeof decimals !== "number") return false
 
-  const decimals = token.decimals
-  if (typeof decimals !== "number") return false
+//   const logo = token.logo
+//   if (typeof logo !== "string") return false
 
-  const logo = token.logo
-  if (typeof logo !== "string") return false
+//   // coingeckoId can be undefined
+//   // const coingeckoId = token.coingeckoId
+//   // if (typeof coingeckoId !== "string") return false
 
-  // coingeckoId can be undefined
-  // const coingeckoId = token.coingeckoId
-  // if (typeof coingeckoId !== "string") return false
-
-  return true
-}
+//   return true
+// }
 
 //
 // map from Item[] to another type

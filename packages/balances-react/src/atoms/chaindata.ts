@@ -80,13 +80,11 @@ export const chaindataAtom = atomWithObservable((get) => {
   )
   const tokens = get(chaindataProviderAtom).tokensObservable.pipe(
     distinctUntilIsEqual,
-    map(filterTestnets),
     map(filterEnabledTokens),
     distinctUntilIsEqual,
   )
   const tokensById = get(chaindataProviderAtom).tokensByIdObservable.pipe(
     distinctUntilIsEqual,
-    map(filterMapTestnets),
     map(filterMapEnabledTokens),
     distinctUntilIsEqual,
   )

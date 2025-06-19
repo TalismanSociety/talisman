@@ -2,7 +2,6 @@ import z from "zod/v4"
 
 export const TokenBaseSchema = z.strictObject({
   id: z.string(),
-  isTestnet: z.boolean().optional(),
   isDefault: z.boolean().optional(),
   decimals: z.int().min(0),
   symbol: z.string().nonempty(),

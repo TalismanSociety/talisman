@@ -12,6 +12,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
+import { useNetworkById } from "@ui/state"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -29,6 +30,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
+  const network = useNetworkById(token?.networkId)
 
   const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
@@ -42,7 +44,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
 
-  if (!token || !summary) return null
+  if (!token || !network || !summary) return null
 
   return (
     <div className="group relative h-[6.6rem] w-full">
@@ -61,7 +63,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             <div className="flex items-center gap-3">
               <div className="text-body flex items-center gap-4 text-base font-bold">
                 {token.symbol}
-                {!!token.isTestnet && (
+                {!!network.isTestnet && (
                   <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
                     {t("Testnet")}
                   </span>

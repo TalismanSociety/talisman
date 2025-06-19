@@ -490,13 +490,13 @@ export const SubNativeModule: NewBalanceModule<
 
       const initialBalancesByNetwork = groupBy(initialBalances ?? [], "networkId")
 
-      const { abort, signal } = new AbortController()
+      const controller = new AbortController()
 
       const safeCallback: SubscriptionCallback<Balances | SubscriptionResultWithStatus> = (
         error,
         result,
       ) => {
-        if (signal.aborted) return
+        if (controller.signal.aborted) return
         // typescript isnt happy with fowarding parameters as is
         return error
           ? callback(error, undefined)
@@ -508,14 +508,20 @@ export const SubNativeModule: NewBalanceModule<
           try {
             // this is what we want to be done separately for each network
             // this will update the DB so minimetadata will be available when it's used, veeeeery far down the tree of subscribeChainBalances
-            await getMiniMetadata(chaindataProvider, chainConnector, networkId, moduleType, signal)
+            await getMiniMetadata(
+              chaindataProvider,
+              chainConnector,
+              networkId,
+              moduleType,
+              controller.signal,
+            )
           } catch (err) {
-            if (!signal.aborted)
+            if (!controller.signal.aborted)
               log.warn("Failed to get native token miniMetadata for network", networkId, err)
             return () => {}
           }
 
-          if (signal.aborted) return () => {}
+          if (controller.signal.aborted) return () => {}
 
           return subscribeChainBalances(
             networkId,
@@ -529,7 +535,7 @@ export const SubNativeModule: NewBalanceModule<
       )
 
       return () => {
-        abort()
+        controller.abort()
         unsubsribeFns.then((fns) => fns.forEach((unsubscribe) => unsubscribe()))
       }
     },

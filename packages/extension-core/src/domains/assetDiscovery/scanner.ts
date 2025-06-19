@@ -320,7 +320,7 @@ class AssetDiscoveryScanner {
       .filter((token) => {
         const evmNetwork = evmNetworks[token.networkId ?? ""]
         if (!evmNetwork) return false
-        if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+        if (!evmNetwork.forceScan && evmNetwork.isTestnet) return false
         if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
         if (token.noDiscovery) return false
         // scan only if token has never been enabled or disabled
@@ -372,7 +372,7 @@ class AssetDiscoveryScanner {
         .filter((token) => {
           const evmNetwork = evmNetworks[token.networkId ?? ""]
           if (!evmNetwork) return false
-          if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+          if (!evmNetwork.forceScan && evmNetwork.isTestnet) return false
           if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
           if (token.noDiscovery) return false
           // scan only if token has never been enabled or disabled

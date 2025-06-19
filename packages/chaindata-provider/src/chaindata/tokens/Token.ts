@@ -66,7 +66,6 @@ export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {
     coingeckoId,
     logo,
     isDefault,
-    isTestnet,
     mirrorOf,
     noDiscovery,
   } = token
@@ -84,7 +83,6 @@ export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {
       coingeckoId,
       logo,
       isDefault,
-      isTestnet,
       mirrorOf,
       noDiscovery,
     },

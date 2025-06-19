@@ -70,17 +70,17 @@ const sortSymbolBalancesBy =
     //
     // this effectively groups the `$0.00` tokens above the `-` tokens
     const aHasCoingeckoId = !!aBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet,
+      (b) => typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet,
     )
     const bHasCoingeckoId = !!bBalances.each.find(
-      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet,
+      (b) => typeof b.token?.coingeckoId === "string" && !b.network?.isTestnet,
     )
     if (aHasCoingeckoId && !bHasCoingeckoId) return -1
     if (!aHasCoingeckoId && bHasCoingeckoId) return 1
 
     // sort testnets below other tokens
-    const aIsTestnet = !!aBalances.each.find((b) => b.token?.isTestnet)
-    const bIsTestnet = !!bBalances.each.find((b) => b.token?.isTestnet)
+    const aIsTestnet = !!aBalances.each.find((b) => b.network?.isTestnet)
+    const bIsTestnet = !!bBalances.each.find((b) => b.network?.isTestnet)
     if (aIsTestnet && !bIsTestnet) return 1
     if (!aIsTestnet && bIsTestnet) return -1
 
@@ -109,7 +109,7 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
         const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
           if (!b.token) return acc
 
-          const key = b.token.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
+          const key = b.network?.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
           if (!acc[key]) acc[key] = []
           acc[key].push(b)
 
@@ -176,7 +176,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
     const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
       if (!b.token) return acc
 
-      const key = b.token.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
+      const key = b.network?.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
       if (!acc[key]) acc[key] = []
       acc[key].push(b)
 

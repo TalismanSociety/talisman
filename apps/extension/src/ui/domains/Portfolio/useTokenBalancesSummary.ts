@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { isDotNetwork } from "@talismn/chaindata-provider"
+import { isDotNetwork, Token } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { Network } from "extension-core"
@@ -49,25 +49,27 @@ const useBestTokenForSymbol = (balances: Balances) => {
     const matches = tokens?.filter((t) => tokenIds.includes(t.id))
     const networksById = keyBy(networks, "id")
 
+    const isTestnet = (token: Token) => !!networksById[token.networkId]?.isTestnet
+
     return (
       // priority to token from a relay chain
       // mainnet relay native
-      matches?.find((t) => !t.isTestnet && isRelayDotNetwork(networksById[t.networkId])) ??
+      matches?.find((t) => !isTestnet(t) && isRelayDotNetwork(networksById[t.networkId])) ??
       // mainnet solo/para native
-      matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
+      matches?.find((t) => !isTestnet(t) && ["substrate-native", "evm-native"].includes(t.type)) ??
       // mainnet which has an image
-      matches?.find((t) => !t.isTestnet && t.logo) ??
+      matches?.find((t) => !isTestnet(t) && t.logo) ??
       // testnet relay
       matches?.find(
         (t) =>
-          t.isTestnet &&
+          isTestnet(t) &&
           ["substrate-native", "evm-native"].includes(t.type) &&
           isRelayDotNetwork(networksById[t.networkId]),
       ) ??
       // testnet solo/para native
-      matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
+      matches?.find((t) => isTestnet(t) && ["substrate-native", "evm-native"].includes(t.type)) ??
       // testnet which has an image
-      matches?.find((t) => t.isTestnet && t.logo) ??
+      matches?.find((t) => isTestnet(t) && t.logo) ??
       // fallback
       matches?.[0]
     )

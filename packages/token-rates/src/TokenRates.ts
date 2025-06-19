@@ -31,9 +31,6 @@ export async function fetchTokenRates(
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
-    // ignore testnet tokens
-    .filter(({ isTestnet }) => !isTestnet)
-
     .flatMap((token) => {
       // BEGIN: LP tokens have a rate which is calculated later on, using the rates of two other tokens.
       //

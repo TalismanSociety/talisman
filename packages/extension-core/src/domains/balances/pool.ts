@@ -63,7 +63,7 @@ const NEW_BALANCE_MODULES = ["substrate-native", "evm-native", "evm-erc20"]
  */
 
 // create and subscribe to observables for active chains/evmNetworks/tokens here
-const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<string, boolean>>(
+const getActiveStuff = <T, A extends Record<string, boolean>>(
   dataObservable: Observable<Array<T>>,
   activeStoreObservable: Observable<A>,
   isActiveFn: (item: T, activeMap: A) => boolean,
@@ -74,18 +74,6 @@ const getActiveStuff = <T extends { isTestnet?: boolean }, A extends Record<stri
     }),
   )
 }
-// export const activeChainsObservable = getActiveStuff(
-//   chaindataProvider.chainsObservable,
-//   activeChainsStore.observable,
-//   isChainActive,
-// )
-
-// TODO yeet (still used by nfts)
-// export const activeEvmNetworksObservable = getActiveStuff(
-//   chaindataProvider.evmNetworksObservable,
-//   activeEvmNetworksStore.observable,
-//   isEvmNetworkActive,
-// )
 
 export const activeNetworksObservable = getActiveStuff(
   chaindataProvider.networksObservable,
