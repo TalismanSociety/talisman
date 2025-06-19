@@ -18,7 +18,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   platform: z.literal("polkadot"),
   chainName: z.string(), // system_chain - used only to lookup typesBundle in p.js, for chains that do not have metadata v14
   specName: z.string(),
-  specVersion: z.uint32(),
+  specVersion: z.uint32().describe("Don't trust it, it might not be up to date"),
   account: z.enum(["secp256k1", "*25519"]),
   chainspecQrUrl: z.string().nonempty().optional(),
   latestMetadataQrUrl: z.string().nonempty().optional(),
