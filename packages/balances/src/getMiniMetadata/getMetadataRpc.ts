@@ -10,7 +10,8 @@ export const getMetadataRpc = async (chainConnector: ChainConnector, networkId: 
   if (CACHE.has(networkId)) return CACHE.get(networkId)!
 
   const pResult = fetchBestMetadata(
-    (...args) => chainConnector.send(networkId, ...args),
+    (method, params, isCacheable) =>
+      chainConnector.send(networkId, method, params, isCacheable, { expectErrors: true }),
     true, // allow fallback to 14 as modules dont use any v15 or v16 specifics yet
   )
 

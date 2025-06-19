@@ -209,7 +209,7 @@ if (DEBUG) {
 
 export const getLatestMetadataRpc = (chainId: ChainId) =>
   fetchBestMetadata((method, params, isCacheable) =>
-    chainConnector.send(chainId, method, params, isCacheable),
+    chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true }),
   )
 
 export const getLegacyMetadataRpc = (chainId: ChainId) =>
