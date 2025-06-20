@@ -44,9 +44,9 @@ const moduleType: ModuleType = "substrate-assets"
 
 export type SubAssetsChainMeta = ChainMeta<null>
 
-export const SubAssetsTokenConfigSchema = TokenConfigBaseSchema.extend({
+export const SubAssetsTokenConfigSchema = z.strictObject({
   assetId: SubAssetsTokenSchema.shape.assetId,
-  existentialDeposit: SubAssetsTokenSchema.shape.existentialDeposit.optional(),
+  ...TokenConfigBaseSchema.shape,
 })
 
 export type SubAssetsTokenConfig = z.infer<typeof SubAssetsTokenConfigSchema>

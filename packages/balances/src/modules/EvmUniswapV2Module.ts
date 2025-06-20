@@ -43,8 +43,9 @@ const moduleType: ModuleType = "evm-uniswapv2"
 
 export type EvmUniswapV2ChainMeta = DefaultChainMeta
 
-export const EvmUniswapV2TokenConfigSchema = TokenConfigBaseSchema.extend({
+export const EvmUniswapV2TokenConfigSchema = z.strictObject({
   contractAddress: EvmUniswapV2TokenSchema.shape.contractAddress,
+  ...TokenConfigBaseSchema.shape,
 
   // the ones below are unused and prone to error, feels better to always fetch these from chain
   symbol0: EvmUniswapV2TokenSchema.shape.symbol0.optional(),

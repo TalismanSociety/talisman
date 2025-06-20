@@ -43,8 +43,9 @@ import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from ".
 type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
 
-export const SubTokensTokenConfigSchema = TokenConfigBaseSchema.extend({
+export const SubTokensTokenConfigSchema = z.strictObject({
   onChainId: SubTokensTokenSchema.shape.onChainId,
+  ...TokenConfigBaseSchema.shape,
   existentialDeposit: SubTokensTokenSchema.shape.existentialDeposit.optional(),
 })
 

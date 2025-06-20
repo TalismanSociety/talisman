@@ -43,8 +43,9 @@ export type EvmErc20ModuleConfig = DefaultModuleConfig
 //   >
 // }
 
-export const EvmErc20TokenConfigSchema = TokenConfigBaseSchema.extend({
+export const EvmErc20TokenConfigSchema = z.strictObject({
   contractAddress: EvmErc20TokenSchema.shape.contractAddress,
+  ...TokenConfigBaseSchema.shape,
 })
 
 export type EvmErc20TokenConfig = z.infer<typeof EvmErc20TokenConfigSchema>

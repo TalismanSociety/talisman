@@ -48,9 +48,9 @@ export type SubForeignAssetsChainMeta = DefaultChainMeta
 
 const UNSUPPORTED_CHAIN_META: SubForeignAssetsChainMeta = { miniMetadata: null, extra: null }
 
-export const SubForeignAssetsTokenConfigSchema = TokenConfigBaseSchema.extend({
+export const SubForeignAssetsTokenConfigSchema = z.strictObject({
   onChainId: SubForeignAssetsTokenSchema.shape.onChainId,
-  existentialDeposit: SubForeignAssetsTokenSchema.shape.existentialDeposit.optional(),
+  ...TokenConfigBaseSchema.shape,
 })
 
 export type SubForeignAssetsTokenConfig = z.infer<typeof SubForeignAssetsTokenConfigSchema>

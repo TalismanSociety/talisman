@@ -30,9 +30,9 @@ import { makeContractCaller } from "./util"
 type ModuleType = "substrate-psp22"
 const moduleType: ModuleType = "substrate-psp22"
 
-export const SubPsp22TokenConfigSchema = TokenConfigBaseSchema.extend({
+export const SubPsp22TokenConfigSchema = z.strictObject({
   contractAddress: SubPsp22TokenSchema.shape.contractAddress,
-  existentialDeposit: SubPsp22TokenSchema.shape.existentialDeposit.optional(),
+  ...TokenConfigBaseSchema.shape,
 })
 
 export type SubPsp22TokenConfig = z.infer<typeof SubPsp22TokenConfigSchema>
@@ -105,7 +105,7 @@ export const SubPsp22Module: NewBalanceModule<
         try {
           let symbol = tokenConfig?.symbol ?? "Unit"
           let decimals = tokenConfig?.decimals ?? 0
-          const existentialDeposit = tokenConfig?.existentialDeposit ?? "0"
+          // const existentialDeposit = tokenConfig?.existentialDeposit ?? "0"
           const contractAddress = tokenConfig?.contractAddress ?? undefined
 
           if (contractAddress === undefined) continue
@@ -156,7 +156,7 @@ export const SubPsp22Module: NewBalanceModule<
             decimals,
             name: tokenConfig?.name || symbol,
             logo: tokenConfig?.logo,
-            existentialDeposit,
+            //  existentialDeposit: "0",
             contractAddress,
             networkId: chainId,
           }
