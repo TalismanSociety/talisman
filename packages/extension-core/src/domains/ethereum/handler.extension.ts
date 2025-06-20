@@ -15,14 +15,13 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getHostName } from "../app/helpers"
-import { isNetworkActive } from "../balances/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { parseTransactionRequest } from "./helpers"
-import { activeEvmNetworksStore } from "./store.activeEvmNetworks"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { ETH_NETWORK_ADD_PREFIX } from "./types"
 
@@ -513,12 +512,12 @@ export class EthHandler extends ExtensionHandler {
 
   private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
     const network = await chaindataProvider.evmNetworkById(request.id)
-    const isActive = network && isNetworkActive(network, await activeEvmNetworksStore.get())
+    const isActive = network && isNetworkActive(network, await activeNetworksStore.get())
 
     if (isActive) {
       // network may be active only because it's a custom network,
       // enforce the value or the network could be deactivated unintentionally
-      activeEvmNetworksStore.setActive(request.id, true)
+      activeNetworksStore.setActive(request.id, true)
     }
 
     await chaindataProvider.resetEvmNetwork(request.id)

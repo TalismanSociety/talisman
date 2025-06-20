@@ -25,7 +25,7 @@ import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
 import { TalismanNotOnboardedError } from "../app/utils"
-import { isNetworkActive } from "../balances/store.activeNetworks"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { signAndSendEth, signEth } from "../signing/requests"
@@ -59,7 +59,6 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { activeEvmNetworksStore } from "./store.activeEvmNetworks"
 import {
   AnyEthRequest,
   AnyEvmError,
@@ -317,7 +316,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const chainId = parseInt(network.chainId, 16)
     const existing = await chaindataProvider.evmNetworkById(chainId.toString())
-    const activeNetworks = await activeEvmNetworksStore.get()
+    const activeNetworks = await activeNetworksStore.get()
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
     if (existing && isNetworkActive(existing, activeNetworks))
@@ -381,7 +380,7 @@ export class EthTabsHandler extends TabsHandler {
     const ethChainId = parseInt(hexChainId, 16)
 
     const ethereumNetwork = await chaindataProvider.evmNetworkById(ethChainId.toString())
-    const activeNetworks = await activeEvmNetworksStore.get()
+    const activeNetworks = await activeNetworksStore.get()
     if (!ethereumNetwork || !isNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
         `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
