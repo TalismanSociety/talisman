@@ -1,6 +1,5 @@
 import { arrayChunk, assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
-import PromisePool from "@supercharge/promise-pool"
 import { ChainConnectionError } from "@talismn/chain-connector"
 import {
   CustomSubNativeToken,
@@ -21,6 +20,7 @@ import { Deferred, isAbortError } from "@talismn/util"
 import { groupBy, keys } from "lodash"
 import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
+import PQueue from "p-queue"
 import {
   BehaviorSubject,
   concatMap,
@@ -51,11 +51,11 @@ import {
   Balances,
   getBalanceId,
   SubscriptionCallback,
+  UnsubscribeFn,
 } from "../../types"
 import { detectTransferMethod, RpcStateQueryHelper } from "../util"
 import { getAddresssesByTokenByNetwork } from "../util/getAddresssesByTokenByNetwork"
 import { subscribeBase } from "./subscribeBase"
-import { subscribeCrowdloans } from "./subscribeCrowdloans"
 import { subscribeNompoolStaking } from "./subscribeNompoolStaking"
 import { subscribeSubtensorStaking } from "./subscribeSubtensorStaking"
 import {
@@ -113,7 +113,7 @@ export const SubNativeModule: NewBalanceModule<
   // subscribeBalances was split by network to prevent all subs to wait for all minimetadatas to be ready.
   // however the multichain logic in there is so deep in the function below that i had to keep it as-is, and call it by per-network chunks
   // TODO refactor this be actually network specific
-  const subscribeChainBalances = async (
+  const subscribeChainBalances = (
     chainId: string,
     opts: {
       addressesByToken: AddressesByToken<SubNativeToken>
@@ -121,7 +121,7 @@ export const SubNativeModule: NewBalanceModule<
     },
     callback: SubscriptionCallback<Balances | SubscriptionResultWithStatus>,
     signal: AbortSignal,
-  ): Promise<() => void> => {
+  ): UnsubscribeFn => {
     const { addressesByToken, initialBalances } = opts
     // full record of balances for this module
     const subNativeBalances = new BehaviorSubject<Record<string, SubNativeBalance>>(
@@ -260,13 +260,13 @@ export const SubNativeModule: NewBalanceModule<
                   handleUpdateForSource("nompools-staking"),
                   signal,
                 )
-                const unsubCrowdloans = subscribeCrowdloans(
-                  chaindataProvider,
-                  chainConnectors.substrate,
-                  newAddressesByToken,
-                  handleUpdateForSource("crowdloan"),
-                  signal,
-                )
+                // const unsubCrowdloans = subscribeCrowdloans(
+                //   chaindataProvider,
+                //   chainConnectors.substrate,
+                //   newAddressesByToken,
+                //   handleUpdateForSource("crowdloan"),
+                //   signal,
+                // )
                 const unsubBase = subscribeBase(
                   baseQueries,
                   chainConnectors.substrate,
@@ -274,7 +274,7 @@ export const SubNativeModule: NewBalanceModule<
                 )
                 subscriber.add(async () => (await unsubSubtensorStaking)())
                 subscriber.add(async () => (await unsubNompoolStaking)())
-                subscriber.add(async () => (await unsubCrowdloans)())
+                // subscriber.add(async () => (await unsubCrowdloans)())
                 subscriber.add(async () => (await unsubBase)())
               })
             }),
@@ -317,12 +317,12 @@ export const SubNativeModule: NewBalanceModule<
       .sort(sortChains)
 
     // break nonCurrentTokens into chunks of POLLING_WINDOW_SIZE
-    await PromisePool.withConcurrency(POLLING_WINDOW_SIZE)
-      .for(nonCurrentTokens)
-      .process(
-        async (nonCurrentTokenId) =>
-          await poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] }),
-      )
+    const pool = new PQueue({ concurrency: POLLING_WINDOW_SIZE })
+    nonCurrentTokens.forEach((nonCurrentTokenId) =>
+      pool.add(() => poll({ [nonCurrentTokenId]: addressesByToken[nonCurrentTokenId] }), {
+        signal,
+      }),
+    )
 
     // now poll every 30s on chains which are not subscriptionTokens
     // we chunk this observable into batches of positive token ids, to prevent eating all the websocket connections
@@ -341,7 +341,7 @@ export const SubNativeModule: NewBalanceModule<
               const pollingTokenAddresses = Object.fromEntries(
                 tokenChunk.map((tokenId) => [tokenId, addressesByToken[tokenId]]),
               )
-              await poll(pollingTokenAddresses)
+              await pool.add(() => poll(pollingTokenAddresses), { signal })
               return true
             }),
           ),
@@ -398,7 +398,7 @@ export const SubNativeModule: NewBalanceModule<
 
       const existentialDeposit = getConstantValue("Balances", "ExistentialDeposit")?.toString()
       const nominationPoolsPalletId = getConstantValue("NominationPools", "PalletId")?.asText()
-      const crowdloanPalletId = getConstantValue("Crowdloan", "PalletId")?.asText()
+      const crowdloanPalletId = getConstantValue("Crowdloan", "PalletId")?.asText() // TODO yeet
       const hasSubtensorPallet = getConstantValue("SubtensorModule", "KeySwapCost") !== undefined
 
       //
@@ -412,8 +412,8 @@ export const SubNativeModule: NewBalanceModule<
           { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
           { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
           { pallet: "Staking", items: ["Ledger"] },
-          { pallet: "Crowdloan", items: ["Funds"] },
-          { pallet: "Paras", items: ["Parachains"] },
+          { pallet: "Crowdloan", items: ["Funds"] }, // TODO yeet
+          { pallet: "Paras", items: ["Parachains"] }, // TODO yeet
           // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
           // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
           { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },

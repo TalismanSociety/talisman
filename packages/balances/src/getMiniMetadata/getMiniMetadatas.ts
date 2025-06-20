@@ -15,7 +15,7 @@ import { getMetadataRpc } from "./getMetadataRpc"
 const CACHE = new Map<string, Promise<MiniMetadata[]>>()
 
 // ensures we dont fetch miniMetadatas on more than 4 chains at once
-const POOL = new PQueue({ concurrency: 4, timeout: 30_000 })
+const POOL = new PQueue({ concurrency: 4 })
 
 export const getMiniMetadatas = async (
   chainConnector: ChainConnector,
@@ -57,7 +57,7 @@ const fetchMiniMetadatas = async (
   signal?: AbortSignal,
 ) => {
   const start = performance.now()
-  log.debug("[miniMetadata] fetching minimetadatas for %s", chainId)
+  log.info("[miniMetadata] fetching minimetadatas for %s", chainId)
 
   try {
     const metadataRpc = await getMetadataRpc(chainConnector, chainId)

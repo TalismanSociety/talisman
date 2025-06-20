@@ -250,7 +250,7 @@ abstract class BalancePool {
           // - popup loses focus and user reopens it right away
           // - user opens popup and opens dashboard from it, which closes the popup
           if (!this.#subscribers.observed) {
-            this.closeSubscriptions()
+            this.closeSubscriptions(true)
             // set all balances to cached
             this.updatePool(Object.values(this.balances).map((b) => ({ ...b, status: "cache" })))
             this.persist()
@@ -385,13 +385,15 @@ abstract class BalancePool {
   private async initializeChaindataSubscription() {
     // subscribe to all the inputs that make up the list of tokens to watch balances for
     // debounce to avoid restarting subscriptions multiple times when settings change rapidly (ex: multiple networks/tokens activated/deactivated rapidly)
-    return combineLatest([activeNetworksObservable, activeTokensObservable]).subscribe({
-      next: (args) => {
-        this.setChains(...args)
-        this.hasInitialised.resolve(true)
-      },
-      error: (error) => sentry.captureException(error),
-    })
+    return combineLatest([activeNetworksObservable, activeTokensObservable])
+      .pipe(firstThenDebounce(2_000))
+      .subscribe({
+        next: (args) => {
+          this.setChains(...args)
+          this.hasInitialised.resolve(true)
+        },
+        error: (error) => sentry.captureException(error),
+      })
   }
 
   /**
@@ -624,7 +626,7 @@ abstract class BalancePool {
   /**
    * Closes all balance subscriptions.
    */
-  private async closeSubscriptions() {
+  private async closeSubscriptions(withDelay: boolean) {
     if (this.#subscriptionsState === "Closing")
       await firstValueFrom(this.#subscriptionsStateUpdated)
 
@@ -637,9 +639,7 @@ abstract class BalancePool {
 
     this.#closeSubscriptionCallbacks
       .splice(0, this.#closeSubscriptionCallbacks.length)
-      // wait 10_000ms in case the user is opening and closing the popup quickly
-      // this way the rpcs will remain connected for an extra ten seconds
-      .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
+      .forEach((cb) => cb.then((close) => (withDelay ? setTimeout(close, 10_000) : close())))
 
     this.setSubscriptionsState("Closed")
     log.log("Closed balance subscriptions")
@@ -650,7 +650,7 @@ abstract class BalancePool {
    */
   private async restartSubscriptions() {
     if (this.#subscribers.observed) {
-      await this.closeSubscriptions()
+      await this.closeSubscriptions(false)
       await this.openSubscriptions()
     }
   }

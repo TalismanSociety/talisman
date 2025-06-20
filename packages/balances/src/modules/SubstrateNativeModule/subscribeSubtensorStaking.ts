@@ -49,6 +49,7 @@ export async function subscribeSubtensorStaking(
       chainConnector,
       networkId,
       "substrate-native",
+      signal,
     )
     miniMetadatas.set(networkId, miniMetadata)
   }
@@ -336,7 +337,9 @@ export async function subscribeSubtensorStaking(
     })
 
     // use the abortController to tear the subscription down when we don't need it anymore
-    abortController.signal.onabort = () => subscription.unsubscribe()
+    abortController.signal.addEventListener("abort", () => {
+      subscription.unsubscribe()
+    })
   }
   return () => abortController.abort()
 }

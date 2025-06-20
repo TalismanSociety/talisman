@@ -32,7 +32,9 @@ const accountsAtom = atomWithObservable(
       })()
 
       // close the extension accounts subscription when our subscriber disconnects
-      abort.signal.onabort = () => unsubscribePromise.then((unsubscribe) => unsubscribe?.())
+      abort.signal.addEventListener("abort", () => {
+        unsubscribePromise.then((unsubscribe) => unsubscribe?.())
+      })
 
       // trigger abort signal when our component is unmounted
       return () => abort.abort("Unsubscribed")
