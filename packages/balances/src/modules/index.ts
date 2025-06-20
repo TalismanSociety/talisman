@@ -18,6 +18,8 @@ export const defaultBalanceModules = [
   SubTokensModule,
 ]
 
+// type BalanceModule<TType extends (typeof defaultBalanceModules)[number][""]> =
+
 export * from "./EvmErc20Module"
 export * from "./EvmNativeModule"
 export * from "./EvmUniswapV2Module"

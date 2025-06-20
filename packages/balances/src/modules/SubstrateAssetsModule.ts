@@ -46,7 +46,7 @@ export type SubAssetsChainMeta = ChainMeta<null>
 
 export const SubAssetsTokenConfigSchema = TokenConfigBaseSchema.extend({
   assetId: SubAssetsTokenSchema.shape.assetId,
-  existentialDeposit: SubAssetsTokenSchema.shape.existentialDeposit,
+  existentialDeposit: SubAssetsTokenSchema.shape.existentialDeposit.optional(),
 })
 
 export type SubAssetsTokenConfig = z.infer<typeof SubAssetsTokenConfigSchema>

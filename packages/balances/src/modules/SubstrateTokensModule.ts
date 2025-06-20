@@ -45,7 +45,7 @@ const moduleType: ModuleType = "substrate-tokens"
 
 export const SubTokensTokenConfigSchema = TokenConfigBaseSchema.extend({
   onChainId: SubTokensTokenSchema.shape.onChainId,
-  existentialDeposit: SubTokensTokenSchema.shape.existentialDeposit,
+  existentialDeposit: SubTokensTokenSchema.shape.existentialDeposit.optional(),
 })
 
 export type SubTokensTokenConfig = z.infer<typeof SubTokensTokenConfigSchema>
