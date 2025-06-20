@@ -113,6 +113,7 @@ export const SubTokensModule: NewBalanceModule<
       const tokens: Record<string, SubTokensToken> = {}
       for (const tokenConfig of moduleConfig?.tokens ?? []) {
         try {
+          // TODO fetch metadata from chain
           const symbol = tokenConfig?.symbol ?? "Unit"
           const decimals = tokenConfig?.decimals ?? 0
           const existentialDeposit = tokenConfig?.ed ?? "0"
