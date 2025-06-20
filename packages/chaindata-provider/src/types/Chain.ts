@@ -41,10 +41,10 @@ export type Chain = {
   paraId: number | null // The paraId of this chain, if it is a parachain
   relay: Pick<Chain, "id"> | null // The parent relayChain of this parachain, if this chain is a parachain
 
-  balancesConfig: Array<BalancesConfig>
+  balancesConfig: Array<BalancesConfigLegacy>
   // TODO: Delete (has its own store now)
   /** @deprecated has its own store now */
-  balancesMetadata: Array<BalancesMetadata>
+  balancesMetadata: Array<BalancesMetadataLegacy>
 
   /** Indicates if the chain has the `CheckMetadataHash` extension, enabling signing with the ledger generic app */
   hasCheckMetadataHash?: boolean
@@ -87,5 +87,5 @@ export type SubstrateRpc = {
   url: string // The url of this RPC
 }
 
-export type BalancesConfig = { moduleType: string; moduleConfig: unknown }
-export type BalancesMetadata = { moduleType: string; metadata: unknown }
+export type BalancesConfigLegacy = { moduleType: string; moduleConfig: unknown }
+export type BalancesMetadataLegacy = { moduleType: string; metadata: unknown }

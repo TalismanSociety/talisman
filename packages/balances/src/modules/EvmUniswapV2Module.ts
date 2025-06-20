@@ -1,12 +1,12 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  BalancesConfigTokenParams,
   CustomEvmUniswapV2Token,
   EthNetworkList,
   EvmNetworkId,
   EvmUniswapV2Token,
   evmUniswapV2TokenId,
+  EvmUniswapV2TokenSchema,
   getGithubTokenLogoUrl,
   // githubTokenLogoUrl,
   TokenList,
@@ -15,8 +15,14 @@ import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import isEqual from "lodash/isEqual"
 import { PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, DefaultChainMeta, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import {
   AddressesByToken,
@@ -27,6 +33,7 @@ import {
   getBalanceId,
   NewBalanceType,
 } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { uniswapV2PairAbi } from "./abis/uniswapV2Pair"
 
 export { uniswapV2PairAbi }
@@ -36,22 +43,39 @@ const moduleType: ModuleType = "evm-uniswapv2"
 
 export type EvmUniswapV2ChainMeta = DefaultChainMeta
 
-export type EvmUniswapV2ModuleConfig = {
-  pools?: Array<
-    {
-      contractAddress?: `0x${string}`
-      decimals?: number
-      symbol0?: string
-      symbol1?: string
-      decimals0?: number
-      decimals1?: number
-      tokenAddress0?: `0x${string}`
-      tokenAddress1?: `0x${string}`
-      coingeckoId0?: string
-      coingeckoId1?: string
-    } & BalancesConfigTokenParams
-  >
-}
+export const EvmUniswapV2TokenConfigSchema = TokenConfigBaseSchema.extend({
+  contractAddress: EvmUniswapV2TokenSchema.shape.contractAddress,
+
+  // the ones below are unused and prone to error, feels better to always fetch these from chain
+  symbol0: EvmUniswapV2TokenSchema.shape.symbol0.optional(),
+  symbol1: EvmUniswapV2TokenSchema.shape.symbol1.optional(),
+  decimals0: EvmUniswapV2TokenSchema.shape.decimals0.optional(),
+  decimals1: EvmUniswapV2TokenSchema.shape.decimals1.optional(),
+  tokenAddress0: EvmUniswapV2TokenSchema.shape.tokenAddress0.optional(),
+  tokenAddress1: EvmUniswapV2TokenSchema.shape.tokenAddress1.optional(),
+  coingeckoId0: EvmUniswapV2TokenSchema.shape.coingeckoId0.optional(),
+  coingeckoId1: EvmUniswapV2TokenSchema.shape.coingeckoId1.optional(),
+})
+
+export type EvmUniswapV2TokenConfig = z.infer<typeof EvmUniswapV2TokenConfigSchema>
+
+export type EvmUniswapV2ModuleConfig = DefaultModuleConfig
+//  {
+//   pools?: Array<
+//     {
+//       contractAddress?: `0x${string}`
+//       decimals?: number
+//       symbol0?: string
+//       symbol1?: string
+//       decimals0?: number
+//       decimals1?: number
+//       tokenAddress0?: `0x${string}`
+//       tokenAddress1?: `0x${string}`
+//       coingeckoId0?: string
+//       coingeckoId1?: string
+//     } & BalancesConfigTokenParams
+//   >
+// }
 
 export type EvmUniswapV2Balance = NewBalanceType<"evm-uniswapv2", "complex">
 
@@ -65,7 +89,8 @@ export const EvmUniswapV2Module: NewBalanceModule<
   ModuleType,
   EvmUniswapV2Token | CustomEvmUniswapV2Token,
   EvmUniswapV2ChainMeta,
-  EvmUniswapV2ModuleConfig
+  EvmUniswapV2ModuleConfig,
+  EvmUniswapV2TokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
@@ -78,9 +103,9 @@ export const EvmUniswapV2Module: NewBalanceModule<
       return { miniMetadata: null, extra: null }
     },
 
-    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig) {
+    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig, pools) {
       const tokens: Record<string, EvmUniswapV2Token> = {}
-      for (const tokenConfig of moduleConfig?.pools ?? []) {
+      for (const tokenConfig of pools ?? []) {
         const {
           contractAddress,
           decimals,

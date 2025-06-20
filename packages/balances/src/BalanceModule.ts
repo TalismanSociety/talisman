@@ -15,6 +15,16 @@ export type ChainMeta<Extra extends Record<string, unknown> | null> = {
   extra: Extra
 }
 
+export type TokenConfig = object
+
+export type BalancesConfig<
+  ModConfig extends object | undefined,
+  TokenConfig extends object | undefined,
+> = {
+  config?: ModConfig
+  tokens?: TokenConfig[]
+}
+
 export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
 export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
 export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
@@ -24,7 +34,9 @@ export type SelectableTokenType = Token
 export type ExtendableChainMeta = ChainMeta<Record<string, unknown> | null> // Record<string, unknown> | undefined
 export type DefaultChainMeta = ChainMeta<null>
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
+export type ExtendableTokenConfig = Record<string, unknown> | undefined
 export type DefaultModuleConfig = undefined
+export type DefaultTokenConfig = undefined
 export type BaseTransferParams = {
   tokenId: string
   from: string
@@ -49,27 +61,44 @@ export type Hydrate = {
 export type NewBalanceModule<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
-  TChainMeta extends ExtendableChainMeta,
+  TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > = (
   hydrate: Hydrate,
-) => BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>
+) => BalanceModule<
+  TModuleType,
+  TTokenType,
+  TChainMeta,
+  TModuleConfig,
+  TTokenConfig,
+  TTransferParams
+>
 
 export interface BalanceModule<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleSubstrate<
       TModuleType,
       TTokenType,
       TChainMeta,
       TModuleConfig,
+      TTokenConfig,
       TTransferParams
     >,
-    BalanceModuleEvm<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> {}
+    BalanceModuleEvm<
+      TModuleType,
+      TTokenType,
+      TChainMeta,
+      TModuleConfig,
+      TTokenConfig,
+      TTransferParams
+    > {}
 
 // TODO: Document default balances module purpose/usage
 export const DefaultBalanceModule = <
@@ -77,10 +106,18 @@ export const DefaultBalanceModule = <
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
   type: TModuleType,
-): BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> => ({
+): BalanceModule<
+  TModuleType,
+  TTokenType,
+  TChainMeta,
+  TModuleConfig,
+  TTokenConfig,
+  TTransferParams
+> => ({
   get type() {
     return type
   },
@@ -121,9 +158,10 @@ export const DefaultBalanceModule = <
 interface BalanceModuleSubstrate<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
-  TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
+  TChainMeta extends ExtendableChainMeta,
+  TModuleConfig extends ExtendableModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig,
+  TTransferParams extends ExtendableTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
@@ -137,6 +175,7 @@ interface BalanceModuleSubstrate<
     chainId: ChainId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
+    tokens?: TTokenConfig[],
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -145,6 +184,7 @@ interface BalanceModuleEvm<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
@@ -155,6 +195,7 @@ interface BalanceModuleEvm<
     chainId: ChainId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
+    tokens?: TTokenConfig[],
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 

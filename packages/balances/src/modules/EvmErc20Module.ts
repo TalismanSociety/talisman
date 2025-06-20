@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  BalancesConfigTokenParams,
   CustomEvmErc20Token,
   EvmErc20Token,
   evmErc20TokenId,
@@ -11,10 +10,17 @@ import {
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
 import { Address, Hex, PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, DefaultChainMeta, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { erc20Abi } from "./abis/erc20"
 import { erc20BalancesAggregatorAbi } from "./abis/erc20BalancesAggregator"
 
@@ -25,16 +31,23 @@ const moduleType: ModuleType = "evm-erc20"
 
 export type EvmErc20ChainMeta = DefaultChainMeta
 
-export type EvmErc20ModuleConfig = {
-  tokens?: Array<
-    {
-      symbol?: string
-      decimals?: number
-      name?: string
-      contractAddress?: `0x${string}`
-    } & BalancesConfigTokenParams
-  >
-}
+export type EvmErc20ModuleConfig = DefaultModuleConfig
+// {
+//   tokens?: Array<
+//     {
+//       symbol?: string
+//       decimals?: number
+//       name?: string
+//       contractAddress?: `0x${string}`
+//     } & BalancesConfigTokenParams
+//   >
+// }
+
+export const EvmErc20TokenConfigSchema = TokenConfigBaseSchema.extend({
+  contractAddress: EvmErc20TokenSchema.shape.contractAddress,
+})
+
+export type EvmErc20TokenConfig = z.infer<typeof EvmErc20TokenConfigSchema>
 
 export type EvmErc20Balance = NewBalanceType<ModuleType, "simple">
 
@@ -55,7 +68,8 @@ export const EvmErc20Module: NewBalanceModule<
   ModuleType,
   EvmErc20Token | CustomEvmErc20Token,
   EvmErc20ChainMeta,
-  EvmErc20ModuleConfig
+  EvmErc20ModuleConfig,
+  EvmErc20TokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
@@ -115,11 +129,11 @@ export const EvmErc20Module: NewBalanceModule<
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig) {
+    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig, tokens) {
       //const { isTestnet } = chainMeta
 
       const chainTokens: Record<string, EvmErc20Token> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
+      for (const tokenConfig of tokens ?? []) {
         const {
           contractAddress,
           symbol: contractSymbol,

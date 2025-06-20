@@ -50,12 +50,7 @@
   },
   "preconstruct": {
     "entrypoints": [
-      "index.ts",
-      "init/chains.ts",
-      "init/evm-networks.ts",
-      "init/mini-metadatas.ts",
-      "init/tokens.ts",
-      "net.ts"
+      "index.ts"
     ]
   },
   "eslintConfig": {

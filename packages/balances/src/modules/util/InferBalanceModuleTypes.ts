@@ -1,9 +1,9 @@
 import { BalanceModule, NewBalanceModule } from "../../BalanceModule"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyBalanceModule = BalanceModule<any, any, any, any, any>
+export type AnyBalanceModule = BalanceModule<any, any, any, any, any, any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AnyNewBalanceModule = NewBalanceModule<any, any, any, any, any>
+export type AnyNewBalanceModule = NewBalanceModule<any, any, any, any, any, any>
 
 /**
  * The following `Infer*` collection of generic types can be used when you want to
@@ -23,6 +23,7 @@ type InferBalanceModuleTypes<T extends AnyNewBalanceModule> =
     infer TTokenType,
     infer TChainMeta,
     infer TModuleConfig,
+    infer TTokenConfig,
     infer TTransferParams
   >
     ? {
@@ -30,6 +31,7 @@ type InferBalanceModuleTypes<T extends AnyNewBalanceModule> =
         TTokenType: TTokenType
         TChainMeta: TChainMeta
         TModuleConfig: TModuleConfig
+        TTokenConfig: TTokenConfig
         TTransferParams: TTransferParams
       }
     : never
@@ -41,3 +43,5 @@ export type InferModuleConfig<T extends AnyNewBalanceModule> =
   InferBalanceModuleTypes<T>["TModuleConfig"]
 export type InferTransferParams<T extends AnyNewBalanceModule> =
   InferBalanceModuleTypes<T>["TTransferParams"]
+export type InferTTokenConfig<T extends AnyNewBalanceModule> =
+  InferBalanceModuleTypes<T>["TTokenConfig"]

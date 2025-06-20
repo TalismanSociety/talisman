@@ -1,18 +1,5 @@
 import { z } from "zod/v4"
 
-const BalanceModuleType = z.enum([
-  "evm-native",
-  "evm-erc20",
-  "evm-uniswapv2",
-  "substrate-native",
-  "substrate-assets",
-  "substrate-psp22",
-  "substrate-tokens",
-])
-
-export type BalanceModuleType = z.infer<typeof BalanceModuleType>
-export const BalanceModuleConfig = z.partialRecord(BalanceModuleType, z.any())
-
 export const NetworkBaseSchema = z.strictObject({
   id: z.string().nonempty(),
   isTestnet: z.boolean().optional(),

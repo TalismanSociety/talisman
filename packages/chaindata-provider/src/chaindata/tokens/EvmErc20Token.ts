@@ -16,6 +16,10 @@ export const EvmErc20TokenSchema = TokenBaseSchema.extend({
 })
 export type EvmErc20Token = z.infer<typeof EvmErc20TokenSchema>
 
+export const EvmErc20BalancesConfigSchema = z.undefined()
+
+export type EvmErc20BalancesConfig = z.infer<typeof EvmErc20BalancesConfigSchema>
+
 // TODO yeet => wallet only information
 export const CustomErc20TokenSchema = EvmErc20TokenSchema.extend({
   isCustom: z.literal(true),

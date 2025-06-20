@@ -4,11 +4,11 @@ import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
-  BalancesConfigTokenParams,
   ChaindataProvider,
   DotNetworkId,
   parseSubForeignAssetTokenId,
   SubForeignAssetsToken,
+  SubForeignAssetsTokenSchema,
   subForeignAssetTokenId,
 } from "@talismn/chaindata-provider"
 import {
@@ -26,16 +26,19 @@ import {
 import { isAbortError } from "@talismn/util"
 import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
+import z from "zod/v4"
 
 import {
   DefaultBalanceModule,
   DefaultChainMeta,
+  DefaultModuleConfig,
   NewBalanceModule,
   NewTransferParamsType,
 } from "../BalanceModule"
 import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-foreignassets"
@@ -45,13 +48,21 @@ export type SubForeignAssetsChainMeta = DefaultChainMeta
 
 const UNSUPPORTED_CHAIN_META: SubForeignAssetsChainMeta = { miniMetadata: null, extra: null }
 
-export type SubForeignAssetsModuleConfig = {
-  tokens?: Array<
-    {
-      onChainId: string
-    } & BalancesConfigTokenParams
-  >
-}
+export const SubForeignAssetsTokenConfigSchema = TokenConfigBaseSchema.extend({
+  onChainId: SubForeignAssetsTokenSchema.shape.onChainId,
+  existentialDeposit: SubForeignAssetsTokenSchema.shape.existentialDeposit,
+})
+
+export type SubForeignAssetsTokenConfig = z.infer<typeof SubForeignAssetsTokenConfigSchema>
+
+export type SubForeignAssetsModuleConfig = DefaultModuleConfig
+//  {
+//   tokens?: Array<
+//     {
+//       onChainId: string
+//     } & BalancesConfigTokenParams
+//   >
+// }
 
 export type SubForeignAssetsBalance = NewBalanceType<ModuleType, "complex">
 
@@ -77,6 +88,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
   SubForeignAssetsToken,
   SubForeignAssetsChainMeta,
   SubForeignAssetsModuleConfig,
+  SubForeignAssetsTokenConfig,
   SubForeignAssetsTransferParams
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
@@ -103,8 +115,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
       return { miniMetadata, extra: null }
     },
 
-    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      if ((moduleConfig?.tokens ?? []).length < 1) return {}
+    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig, tokens) {
+      if (!tokens?.length) return {}
 
       const { miniMetadata } = chainMeta
       if (!miniMetadata) return {}
@@ -116,8 +128,8 @@ export const SubForeignAssetsModule: NewBalanceModule<
       const assetCoder = scaleBuilder.buildStorage("ForeignAssets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("ForeignAssets", "Metadata")
 
-      const tokens: Record<string, SubForeignAssetsToken> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
+      const tokenList: Record<string, SubForeignAssetsToken> = {}
+      for (const tokenConfig of tokens ?? []) {
         try {
           const onChainId = (() => {
             try {
@@ -190,7 +202,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
-          tokens[token.id] = token
+          tokenList[token.id] = token
         } catch (error) {
           log.error(
             `Failed to build substrate-foreignassets token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
@@ -200,7 +212,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
         }
       }
 
-      return tokens
+      return tokenList
     },
 
     // TODO: Don't create empty subscriptions

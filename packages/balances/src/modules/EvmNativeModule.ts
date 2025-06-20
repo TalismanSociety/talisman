@@ -1,19 +1,24 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  BalancesConfigTokenParams,
   CustomEvmNativeToken,
   EvmNativeToken,
-  evmNativeTokenId,
   networkIdFromTokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { fromPairs, keys, toPairs } from "lodash"
 import { hexToBigInt, isHex, PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, DefaultChainMeta, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import { Address, AddressesByToken, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
@@ -21,9 +26,13 @@ const moduleType: ModuleType = "evm-native"
 
 export type EvmNativeChainMeta = DefaultChainMeta
 
-export type EvmNativeModuleConfig = BalancesConfigTokenParams
+export type EvmNativeModuleConfig = DefaultModuleConfig
 
 export type EvmNativeBalance = NewBalanceType<ModuleType, "simple">
+
+export const EvmNativeTokenConfigSchema = TokenConfigBaseSchema
+
+export type EvmNativeTokenConfig = z.infer<typeof EvmNativeTokenConfigSchema>
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -35,7 +44,8 @@ export const EvmNativeModule: NewBalanceModule<
   ModuleType,
   EvmNativeToken | CustomEvmNativeToken,
   EvmNativeChainMeta,
-  EvmNativeModuleConfig
+  EvmNativeModuleConfig,
+  EvmNativeTokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
 
@@ -67,30 +77,34 @@ export const EvmNativeModule: NewBalanceModule<
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainTokens(networkId, chainMeta, moduleConfig) {
-      const symbol = moduleConfig?.symbol ?? "ETH"
-      const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
-      const name = moduleConfig?.name ?? symbol
+    async fetchEvmChainTokens() {
+      //  networkId, chainMeta, moduleConfig, tokens
+      // TODO ? seems unneeded, this info is set on the EthNetworkConfig["nativeCurrency"] field
+      return {}
 
-      const id = evmNativeTokenId(networkId)
-      const nativeToken: EvmNativeToken = {
-        platform: "ethereum",
-        id,
-        type: "evm-native",
-        isDefault: true,
-        symbol,
-        decimals,
-        name,
-        logo: moduleConfig?.logo,
-        networkId,
-      }
+      // const symbol = moduleConfig?.symbol ?? "ETH"
+      // const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
+      // const name = moduleConfig?.name ?? symbol
 
-      if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
-      if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
-      if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
+      // const id = evmNativeTokenId(networkId)
+      // const nativeToken: EvmNativeToken = {
+      //   platform: "ethereum",
+      //   id,
+      //   type: "evm-native",
+      //   isDefault: true,
+      //   symbol,
+      //   decimals,
+      //   name,
+      //   logo: moduleConfig?.logo,
+      //   networkId,
+      // }
 
-      return { [nativeToken.id]: nativeToken }
+      // if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
+      // if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
+      // if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
+      // if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
+
+      // return { [nativeToken.id]: nativeToken }
     },
 
     async subscribeBalances({ addressesByToken, initialBalances }, callback) {

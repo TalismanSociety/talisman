@@ -15,6 +15,10 @@ export const SubPsp22TokenSchema = TokenBaseSchema.extend({
 })
 export type SubPsp22Token = z.infer<typeof SubPsp22TokenSchema>
 
+export const SubPsp22BalancesConfigSchema = z.undefined()
+
+export type SubPsp22BalancesConfig = z.infer<typeof SubPsp22BalancesConfigSchema>
+
 export type SubPsp22TokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId

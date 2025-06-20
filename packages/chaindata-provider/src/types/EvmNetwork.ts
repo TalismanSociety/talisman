@@ -1,5 +1,5 @@
 import { TokenId } from "../chaindata"
-import { BalancesConfig, BalancesMetadata, ChainId } from "./Chain"
+import { BalancesConfigLegacy, BalancesMetadataLegacy, ChainId } from "./Chain"
 
 /** @deprecated */
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork>
@@ -45,10 +45,10 @@ export type EvmNetwork = {
         l1GasPriceOracle: `0x${string}`
       }
 
-  balancesConfig: Array<BalancesConfig>
+  balancesConfig: Array<BalancesConfigLegacy>
   // TODO: Delete (has its own store now)
   /** @deprecated has its own store now */
-  balancesMetadata: Array<BalancesMetadata>
+  balancesMetadata: Array<BalancesMetadataLegacy>
   erc20aggregator?: `0x${string}`
 }
 

@@ -4,11 +4,11 @@ import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
-  BalancesConfigTokenParams,
   ChaindataProvider,
   DotNetworkId,
   parseSubAssetTokenId,
   SubAssetsToken,
+  SubAssetsTokenSchema,
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
 import {
@@ -24,16 +24,19 @@ import { isAbortError } from "@talismn/util"
 import { keys, toPairs } from "lodash"
 import camelCase from "lodash/camelCase"
 import { Binary } from "polkadot-api"
+import z from "zod/v4"
 
 import {
   ChainMeta,
   DefaultBalanceModule,
+  DefaultModuleConfig,
   NewBalanceModule,
   NewTransferParamsType,
 } from "../BalanceModule"
 import { getMiniMetadata } from "../getMiniMetadata"
 import log from "../log"
 import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-assets"
@@ -41,15 +44,23 @@ const moduleType: ModuleType = "substrate-assets"
 
 export type SubAssetsChainMeta = ChainMeta<null>
 
+export const SubAssetsTokenConfigSchema = TokenConfigBaseSchema.extend({
+  assetId: SubAssetsTokenSchema.shape.assetId,
+  existentialDeposit: SubAssetsTokenSchema.shape.existentialDeposit,
+})
+
+export type SubAssetsTokenConfig = z.infer<typeof SubAssetsTokenConfigSchema>
+
 const UNSUPPORTED_CHAIN_META: SubAssetsChainMeta = { miniMetadata: null, extra: null }
 
-export type SubAssetsModuleConfig = {
-  tokens?: Array<
-    {
-      assetId: number | string
-    } & BalancesConfigTokenParams
-  >
-}
+export type SubAssetsModuleConfig = DefaultModuleConfig
+//  {
+//   tokens?: Array<
+//     {
+//       assetId: number | string
+//     } & BalancesConfigTokenParams
+//   >
+// }
 
 export type SubAssetsBalance = NewBalanceType<ModuleType, "complex">
 
@@ -75,6 +86,7 @@ export const SubAssetsModule: NewBalanceModule<
   SubAssetsToken,
   SubAssetsChainMeta,
   SubAssetsModuleConfig,
+  SubAssetsTokenConfig,
   SubAssetsTransferParams
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
@@ -97,8 +109,8 @@ export const SubAssetsModule: NewBalanceModule<
       return { miniMetadata, extra: null }
     },
 
-    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      if ((moduleConfig?.tokens ?? []).length < 1) return {}
+    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig, tokens) {
+      if (!tokens?.length) return {}
 
       const { miniMetadata } = chainMeta
       if (!miniMetadata) return {}
@@ -108,8 +120,8 @@ export const SubAssetsModule: NewBalanceModule<
       const assetCoder = scaleBuilder.buildStorage("Assets", "Asset")
       const metadataCoder = scaleBuilder.buildStorage("Assets", "Metadata")
 
-      const tokens: Record<string, SubAssetsToken> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
+      const tokenList: Record<string, SubAssetsToken> = {}
+      for (const tokenConfig of tokens ?? []) {
         try {
           const assetId = String(tokenConfig.assetId)
 
@@ -182,7 +194,7 @@ export const SubAssetsModule: NewBalanceModule<
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
-          tokens[token.id] = token
+          tokenList[token.id] = token
         } catch (error) {
           log.error(
             `Failed to build substrate-assets token ${tokenConfig.assetId} (${tokenConfig.symbol}) on ${chainId}`,
@@ -192,7 +204,7 @@ export const SubAssetsModule: NewBalanceModule<
         }
       }
 
-      return tokens
+      return tokenList
     },
 
     // TODO: Don't create empty subscriptions

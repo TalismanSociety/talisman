@@ -14,6 +14,12 @@ export const SubNativeTokenSchema = TokenBaseSchema.extend({
 })
 export type SubNativeToken = z.infer<typeof SubNativeTokenSchema>
 
+export const SubNativeBalancesConfigSchema = z.object({
+  disable: z.boolean().optional(),
+})
+
+export type SubNativeBalancesConfig = z.infer<typeof SubNativeBalancesConfigSchema>
+
 // TODO yeet => wallet only information
 export const CustomSubNativeTokenSchema = SubNativeTokenSchema.extend({
   isCustom: z.literal(true),

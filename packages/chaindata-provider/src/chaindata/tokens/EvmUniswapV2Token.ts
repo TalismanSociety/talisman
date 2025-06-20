@@ -24,6 +24,10 @@ export const EvmUniswapV2TokenSchema = TokenBaseSchema.extend({
 })
 export type EvmUniswapV2Token = z.infer<typeof EvmUniswapV2TokenSchema>
 
+export const EvmUniswapV2BalancesConfigSchema = z.undefined()
+
+export type EvmUniswapV2BalancesConfig = z.infer<typeof EvmUniswapV2BalancesConfigSchema>
+
 // TODO yeet => wallet only information
 export const CustomEvmUniswapV2TokenSchema = EvmUniswapV2TokenSchema.extend({
   isCustom: z.literal(true),

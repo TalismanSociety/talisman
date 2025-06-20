@@ -36,6 +36,7 @@ import {
   takeUntil,
   withLatestFrom,
 } from "rxjs"
+import z from "zod/v4"
 
 import {
   BalancesAllTransferMethods,
@@ -53,6 +54,7 @@ import {
   SubscriptionCallback,
   UnsubscribeFn,
 } from "../../types"
+import { TokenConfigBaseSchema } from "../../types/tokens"
 import { detectTransferMethod, RpcStateQueryHelper } from "../util"
 import { getAddresssesByTokenByNetwork } from "../util/getAddresssesByTokenByNetwork"
 import { subscribeBase } from "./subscribeBase"
@@ -93,11 +95,16 @@ const UNSUPPORTED_CHAIN_META: SubNativeChainMeta = {
   extra: null,
 }
 
+export const SubNativeTokenConfigSchema = TokenConfigBaseSchema
+
+export type SubNativeTokenConfig = z.infer<typeof SubNativeTokenConfigSchema>
+
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
   SubNativeChainMeta,
   SubNativeModuleConfig,
+  SubNativeTokenConfig,
   SubNativeTransferParams
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
@@ -459,6 +466,11 @@ export const SubNativeModule: NewBalanceModule<
       )
 
       const { existentialDeposit } = chainMeta.extra ?? {}
+      if (existentialDeposit === undefined)
+        log.warn(
+          "Substrate native module: existentialDeposit is undefined for %s, using 0",
+          chainId,
+        )
 
       const id = subNativeTokenId(chainId)
 
@@ -466,18 +478,17 @@ export const SubNativeModule: NewBalanceModule<
         id,
         type: "substrate-native",
         platform: "polkadot",
-        isDefault: moduleConfig?.isDefault ?? true,
+        isDefault: true,
         symbol: symbol,
-        name: moduleConfig?.name ?? symbol,
+        name: symbol,
         decimals: decimals,
-        logo: moduleConfig?.logo,
         existentialDeposit: existentialDeposit ?? "0",
         networkId: chainId,
       }
 
-      if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
-      if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
+      // if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
+      // if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
+      // if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
 
       return { [nativeToken.id]: nativeToken }
     },

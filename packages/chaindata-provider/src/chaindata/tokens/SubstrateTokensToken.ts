@@ -15,6 +15,12 @@ export const SubTokensTokenSchema = TokenBaseSchema.extend({
 })
 export type SubTokensToken = z.infer<typeof SubTokensTokenSchema>
 
+export const SubTokensBalancesConfigSchema = z.object({
+  palletId: z.string().optional(),
+})
+
+export type SubTokensBalancesConfig = z.infer<typeof SubTokensBalancesConfigSchema>
+
 export type SubTokensTokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId

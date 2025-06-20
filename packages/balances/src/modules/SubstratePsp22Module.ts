@@ -5,40 +5,51 @@ import { assert, hexToNumber, hexToU8a, u8aToString } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
-  BalancesConfigTokenParams,
   SubPsp22Token,
   subPsp22TokenId,
+  SubPsp22TokenSchema,
   TokenList,
 } from "@talismn/chaindata-provider"
 import camelCase from "lodash/camelCase"
 import isEqual from "lodash/isEqual"
+import z from "zod/v4"
 
 import {
   DefaultBalanceModule,
   DefaultChainMeta,
+  DefaultModuleConfig,
   NewBalanceModule,
   NewTransferParamsType,
 } from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, BalanceJson, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import psp22Abi from "./abis/psp22.json"
 import { makeContractCaller } from "./util"
 
 type ModuleType = "substrate-psp22"
 const moduleType: ModuleType = "substrate-psp22"
 
+export const SubPsp22TokenConfigSchema = TokenConfigBaseSchema.extend({
+  contractAddress: SubPsp22TokenSchema.shape.contractAddress,
+  existentialDeposit: SubPsp22TokenSchema.shape.existentialDeposit.optional(),
+})
+
+export type SubPsp22TokenConfig = z.infer<typeof SubPsp22TokenConfigSchema>
+
 export type SubPsp22ChainMeta = DefaultChainMeta
 
-export type SubPsp22ModuleConfig = {
-  tokens?: Array<
-    {
-      symbol?: string
-      decimals?: number
-      ed?: string
-      contractAddress: string
-    } & BalancesConfigTokenParams
-  >
-}
+export type SubPsp22ModuleConfig = DefaultModuleConfig
+// {
+//   tokens?: Array<
+//     {
+//       symbol?: string
+//       decimals?: number
+//       ed?: string
+//       contractAddress: string
+//     } & BalancesConfigTokenParams
+//   >
+// }
 
 export type SubPsp22Balance = NewBalanceType<ModuleType, "simple">
 
@@ -64,6 +75,7 @@ export const SubPsp22Module: NewBalanceModule<
   SubPsp22Token,
   SubPsp22ChainMeta,
   SubPsp22ModuleConfig,
+  SubPsp22TokenConfig,
   SubPsp22TransferParams
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
@@ -78,7 +90,8 @@ export const SubPsp22Module: NewBalanceModule<
       return { miniMetadata: null, extra: null }
     },
 
-    async fetchSubstrateChainTokens(chainId, _chainMeta, moduleConfig) {
+    async fetchSubstrateChainTokens(chainId, _chainMeta, moduleConfig, tokens) {
+      if (!tokens?.length) return {}
       // const { isTestnet } = chainMeta
 
       const registry = new TypeRegistry()
@@ -87,12 +100,12 @@ export const SubPsp22Module: NewBalanceModule<
       // TODO: Use `decodeOutput` from `./util/decodeOutput`
       const contractCall = makeContractCaller({ chainConnector, chainId, registry })
 
-      const tokens: Record<string, SubPsp22Token> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
+      const tokenList: Record<string, SubPsp22Token> = {}
+      for (const tokenConfig of tokens ?? []) {
         try {
           let symbol = tokenConfig?.symbol ?? "Unit"
           let decimals = tokenConfig?.decimals ?? 0
-          const existentialDeposit = tokenConfig?.ed ?? "0"
+          const existentialDeposit = tokenConfig?.existentialDeposit ?? "0"
           const contractAddress = tokenConfig?.contractAddress ?? undefined
 
           if (contractAddress === undefined) continue
@@ -151,7 +164,7 @@ export const SubPsp22Module: NewBalanceModule<
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
-          tokens[token.id] = token
+          tokenList[token.id] = token
         } catch (error) {
           log.error(
             `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${chainId}`,
@@ -161,7 +174,7 @@ export const SubPsp22Module: NewBalanceModule<
         }
       }
 
-      return tokens
+      return tokenList
     },
 
     // TODO: Don't create empty subscriptions

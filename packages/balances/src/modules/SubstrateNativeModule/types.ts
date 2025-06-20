@@ -1,6 +1,6 @@
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { BalancesConfigTokenParams } from "@talismn/chaindata-provider"
+import { SubNativeBalancesConfig } from "@talismn/chaindata-provider"
 
 import { ChainMeta, NewTransferParamsType } from "../../BalanceModule"
 import { NewBalanceType } from "../../types"
@@ -19,9 +19,10 @@ export type SubNativeChainMeta = ChainMeta<{
   hasSubtensorPallet?: boolean
 } | null>
 
-export type SubNativeModuleConfig = {
-  disable?: boolean
-} & BalancesConfigTokenParams
+export type SubNativeModuleConfig = SubNativeBalancesConfig
+//  {
+//   disable?: boolean
+// } & BalancesConfigTokenParams
 
 export type SubNativeBalance = NewBalanceType<ModuleType, "complex">
 

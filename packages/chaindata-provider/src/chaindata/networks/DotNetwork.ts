@@ -1,7 +1,24 @@
 import z from "zod/v4"
 
 import { HexStringSchema } from "../shared"
+import {
+  SubAssetsBalancesConfigSchema,
+  SubForeignAssetsBalancesConfigSchema,
+  SubNativeBalancesConfigSchema,
+  SubPsp22BalancesConfigSchema,
+  SubTokensBalancesConfigSchema,
+} from "../tokens"
 import { NetworkBaseSchema } from "./NetworkBase"
+
+export const DotNetworkBalancesConfigSchema = z.strictObject({
+  "substrate-native": SubNativeBalancesConfigSchema.optional(),
+  "substrate-assets": SubAssetsBalancesConfigSchema.optional(),
+  "substrate-psp22": SubPsp22BalancesConfigSchema.optional(),
+  "substrate-tokens": SubTokensBalancesConfigSchema.optional(),
+  "substrate-foreignassets": SubForeignAssetsBalancesConfigSchema.optional(),
+})
+
+export type DotNetworkBalancesConfig = z.infer<typeof DotNetworkBalancesConfigSchema>
 
 export const DotNetworkTopologySchema = z.discriminatedUnion("type", [
   z.strictObject({ type: z.literal("standalone") }),
@@ -32,6 +49,7 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   hasExtrinsicSignatureTypePrefix: z.boolean().optional(),
   isUnknownFeeToken: z.boolean().optional(),
   topology: DotNetworkTopologySchema,
+  balancesConfig: DotNetworkBalancesConfigSchema.optional(),
 })
 
 export type DotNetwork = z.infer<typeof DotNetworkSchema>
