@@ -2,8 +2,10 @@ import { liveQuery } from "dexie"
 import { isEqual, isEqualWith, sortBy } from "lodash"
 import { combineLatest, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 
+import { AnyMiniMetadata, Network, Token } from "../chaindata"
 import log from "../log"
 import { chaindataDb } from "./db"
+import initChaindata from "./initChaindata.json"
 import { fetchChaindata } from "./net"
 import { Chaindata } from "./schema"
 
@@ -61,42 +63,77 @@ const shouldUpdateGhEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chainda
 }
 
 export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
-  const subUpdateFromGithub = ghChaindata$.subscribe(async (ghData) => {
-    const now = performance.now()
-    try {
+  const subUpdateFromGithub = ghChaindata$.subscribe({
+    error: async () => {
       const dbData = await firstValueFrom(dbChaindata$)
 
-      // TODO consider adding a hash in chaindata.json and compare just that ?
-      const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
-      const updateTokens = shouldUpdateGhEntity(ghData, dbData, "tokens")
-      const updateMiniMetadata = shouldUpdateGhEntity(ghData, dbData, "miniMetadatas")
+      if (dbData.networks.length || dbData.tokens.length || dbData.miniMetadatas.length)
+        return log.info(
+          "[defaultChaindata$] DB is not empty, skipping initial data provision",
+          dbData,
+        )
 
-      if (!updateNetworks && !updateTokens && !updateMiniMetadata)
-        return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
+      try {
+        // if fetching from github fails, and if DB is empty, provision it with initial data
+        log.info("[defaultChaindata$] Importing initial chaindata file", initChaindata)
 
-      // update local db if chaindata is found different from GH
-      await chaindataDb.transaction("rw", ["networks", "tokens", "miniMetadatas"], async (ctx) => {
-        if (updateNetworks) {
-          log.debug("[defaultChaindata$] Updating networks in DB")
-          await ctx.networks.clear()
-          await ctx.networks.bulkAdd(ghData.networks)
-        }
-        if (updateTokens) {
-          log.debug("[defaultChaindata$] Updating tokens in DB")
-          await ctx.tokens.clear()
-          await ctx.tokens.bulkAdd(ghData.tokens)
-        }
-        if (updateMiniMetadata) {
-          log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
-          await ctx.miniMetadatas.clear()
-          await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
-        }
-      })
+        await chaindataDb.transaction(
+          "rw",
+          ["networks", "tokens", "miniMetadatas"],
+          async (ctx) => {
+            await ctx.networks.bulkAdd(initChaindata.networks as Network[])
+            await ctx.tokens.bulkAdd(initChaindata.tokens as Token[])
+            await ctx.miniMetadatas.bulkAdd(initChaindata.miniMetadatas as AnyMiniMetadata[])
+          },
+        )
 
-      log.debug(`[defaultChaindata$] Db syncoronized with GitHub :${performance.now() - now}ms`)
-    } catch (cause) {
-      log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
-    }
+        log.info("[defaultChaindata$] Initial chaindata file imported successfully")
+      } catch (cause) {
+        log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })
+        return
+      }
+    },
+    next: async (ghData) => {
+      const now = performance.now()
+      try {
+        const dbData = await firstValueFrom(dbChaindata$)
+
+        // TODO consider adding a hash in chaindata.json and compare just that ?
+        const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
+        const updateTokens = shouldUpdateGhEntity(ghData, dbData, "tokens")
+        const updateMiniMetadata = shouldUpdateGhEntity(ghData, dbData, "miniMetadatas")
+
+        if (!updateNetworks && !updateTokens && !updateMiniMetadata)
+          return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
+
+        // update local db if chaindata is found different from GH
+        await chaindataDb.transaction(
+          "rw",
+          ["networks", "tokens", "miniMetadatas"],
+          async (ctx) => {
+            if (updateNetworks) {
+              log.debug("[defaultChaindata$] Updating networks in DB")
+              await ctx.networks.clear()
+              await ctx.networks.bulkAdd(ghData.networks)
+            }
+            if (updateTokens) {
+              log.debug("[defaultChaindata$] Updating tokens in DB")
+              await ctx.tokens.clear()
+              await ctx.tokens.bulkAdd(ghData.tokens)
+            }
+            if (updateMiniMetadata) {
+              log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
+              await ctx.miniMetadatas.clear()
+              await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
+            }
+          },
+        )
+
+        log.debug(`[defaultChaindata$] Db syncoronized with GitHub :${performance.now() - now}ms`)
+      } catch (cause) {
+        log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
+      }
+    },
   })
 
   const subOutput = dbChaindata$.subscribe(subscriber)

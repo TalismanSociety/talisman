@@ -16,16 +16,23 @@ const getFallbackUrl = (url: string) => {
   return null
 }
 
+type FetchJsonFromGitHubOptions<T> = {
+  schema?: z.ZodType<T>
+  signal?: AbortSignal
+}
+
 const fetchJsonFromGithubUrl = async <T>(
   url: string,
-  schema?: z.ZodType<T>,
-  signal?: AbortSignal,
+  { signal, schema }: FetchJsonFromGitHubOptions<T> = {},
 ): Promise<T> => {
   const req = await fetch(url, { signal })
 
+  // uncomment the line below to test initChaindata provisioning
+  // if (Date.now()) throw new Error("OMG HE GOT A KNIFE!")
+
   if (!req.ok) {
     const fallbackUrl = getFallbackUrl(url)
-    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, schema, signal)
+    if (fallbackUrl) return fetchJsonFromGithubUrl(fallbackUrl, { schema, signal })
     throw new Error(`Failed to fetch from ${url}: ${req.status} ${req.statusText}`)
   }
 
@@ -42,4 +49,4 @@ const fetchJsonFromGithubUrl = async <T>(
 
 // export because of generate-init-data script
 export const fetchChaindata = (signal?: AbortSignal) =>
-  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, ChaindataFileSchema, signal)
+  fetchJsonFromGithubUrl(CHAINDATA_CONSOLIDATED_URL, { schema: ChaindataFileSchema, signal })
