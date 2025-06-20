@@ -44,7 +44,7 @@ export type TokenIdSpecs<T extends TokenType> = T extends "evm-erc20"
       ? EvmUniswapV2TokenIdSpecs
       : T extends "substrate-assets"
         ? SubAssetTokenIdSpecs
-        : T extends "substrate-foreign-assets"
+        : T extends "substrate-foreignassets"
           ? ForeignAssetsTokenIdSpecs
           : T extends "substrate-native"
             ? SubNativeTokenIdSpecs
