@@ -1,10 +1,15 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
+import {
+  ChaindataProvider,
+  DotNetworkBalancesConfigSchema,
+  DotNetworkId,
+} from "@talismn/chaindata-provider"
 import { isAbortError } from "@talismn/util"
 import PQueue from "p-queue"
+import z from "zod/v4"
 
-import { ChainConnectors } from "../BalanceModule"
+import { ChainConnectors, DefaultModuleConfig } from "../BalanceModule"
 import { libVersion } from "../libVersion"
 import log from "../log"
 import { defaultBalanceModules } from "../modules"
@@ -49,6 +54,10 @@ export const getMiniMetadatas = async (
   }
 }
 
+const DotBalanceModuleTypeSchema = z.keyof(DotNetworkBalancesConfigSchema)
+
+type DotBalanceModuleType = z.infer<typeof DotBalanceModuleTypeSchema>
+
 const fetchMiniMetadatas = async (
   chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
@@ -70,13 +79,21 @@ const fetchMiniMetadatas = async (
 
     const modules = defaultBalanceModules
       .map((mod) => mod({ chainConnectors, chaindataProvider }))
-      .filter((mod) => mod.type.startsWith("substrate-"))
+      .filter((mod) => DotBalanceModuleTypeSchema.safeParse(mod.type).success)
 
     return Promise.all(
       modules.map(async (mod) => {
-        const source = mod.type
+        const source = mod.type as DotBalanceModuleType
 
-        const chainMeta = await mod.fetchSubstrateChainMeta(chainId, {}, metadataRpc)
+        const chain = await chaindataProvider.chainById(chainId)
+
+        const balancesConfig = chain?.balancesConfig?.[mod.type as DotBalanceModuleType]
+
+        const chainMeta = await mod.fetchSubstrateChainMeta(
+          chainId,
+          balancesConfig as DefaultModuleConfig, // TODO fix typings
+          metadataRpc,
+        )
 
         return {
           id: deriveMiniMetadataId({ source, chainId, specVersion, libVersion }),
