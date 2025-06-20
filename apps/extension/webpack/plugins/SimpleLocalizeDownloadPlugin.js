@@ -122,27 +122,6 @@ module.exports = class SimpleLocalizeDownloadPlugin {
   }
 }
 
-// const getAndSetSupportedLanguages = async ({ options }, callback) => {
-//   if (!options.skip) {
-//     console.log("Fetching languages from SimpleLocalize")
-//     const languages = await simpleLocalizeFetch("https://api.simplelocalize.io/api/v1/languages")
-//       .catch((error) => {
-//         console.error("Failed to fetch languages list:", error)
-//         return []
-//       })
-//       .then((result) => {
-//         if (result.status !== 200) throw new Error("Bad response from SimpleLocalize")
-//         return Object.fromEntries(result.data.map((lang) => [lang.key, lang.name]))
-//       })
-
-//     setSupportedLanguages(
-//       options,
-//       Object.keys(languages).length > 0 ? languages : fallbackLanguages
-//     )
-//   }
-//   callback()
-// }
-
 const setSupportedLanguages = (
   options,
   supportedLanguages = fallbackLanguages,
