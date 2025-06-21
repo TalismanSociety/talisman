@@ -13,7 +13,6 @@ import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port, RequestIdOnly } from "../../types/base"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
@@ -33,12 +32,9 @@ export default class TokensHandler extends ExtensionHandler {
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)": {
-        // TODO: Run this on a timer or something instead of when subscribing to tokens
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true }).then(() => {
-          // triggers a pending scan if any
-          // doing this here as this is the only place where we hydrate tokens from github
-          assetDiscoveryScanner.startPendingScan()
-        })
+        // triggers a pending scan if any
+        // TODO: find a better "place" to trigger this
+        assetDiscoveryScanner.startPendingScan()
 
         // this subscription will only close when port is closed
         return genericSubscription(

@@ -652,22 +652,7 @@ export class EthHandler extends ExtensionHandler {
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.subscribe)":
-        // // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        // updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-
-        return genericSubscription(
-          id,
-          port,
-          chaindataProvider.evmNetworksObservable,
-          // .pipe(
-          //   // the balancesConfig is not needed for the UI and can be HUGE
-          //   map((evmNetworks) =>
-          //     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          //     evmNetworks.map(({ balancesConfig, balancesMetadata, ...network }) => network),
-          //   ),
-          //   distinctUntilChanged<Array<SimpleEvmNetwork>>(isEqual),
-          // ),
-        )
+        return genericSubscription(id, port, chaindataProvider.evmNetworksObservable)
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])

@@ -9,7 +9,6 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { keyringStore } from "../keyring/store"
@@ -144,8 +143,6 @@ export class ChainsHandler extends ExtensionHandler {
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
-        // TODO: Run this on a timer or something instead of when subscribing to chains
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
         return genericSubscription(
           id,
           port,
