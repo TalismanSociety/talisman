@@ -1,7 +1,11 @@
 export * from "./chaindata"
-export * from "./types" // TODO remove this one
+export * from "./types" // TODO remove this one when possible, contains only legacy stuff
 export * from "./util"
 export * from "./ChaindataProvider"
 
-// used by chaindata repo
-export { ChaindataFileSchema, type Chaindata } from "./state"
+export {
+  ChaindataFileSchema,
+  CustomChaindataSchema,
+  type Chaindata,
+  type CustomChaindata,
+} from "./state"

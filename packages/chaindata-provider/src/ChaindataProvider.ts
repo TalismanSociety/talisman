@@ -11,8 +11,6 @@ import {
 } from "rxjs"
 
 import {
-  CustomChaindata,
-  CustomChaindataSchema,
   DotNetwork,
   EthNetwork,
   isDotNetwork,
@@ -22,7 +20,7 @@ import {
   TokenId,
 } from "./chaindata"
 import log from "./log"
-import { Chaindata, defaultChaindata$ } from "./state"
+import { Chaindata, CustomChaindata, CustomChaindataSchema, defaultChaindata$ } from "./state"
 import { ChainId, EvmNetworkId, IChaindataProvider } from "./types"
 import * as util from "./util"
 
@@ -336,155 +334,6 @@ export class ChaindataProvider implements IChaindataProvider {
       async (): Promise<Token | null> => (await this.tokensById())[tokenId] ?? null,
     )
   }
-
-  //
-  // mutations / methods with side-effects
-  //
-
-  // async addCustomChain(_customChain: CustomChain) {
-  //   throw new Error("Not implemented")
-  //   // try {
-  //   //   if (!("isCustom" in customChain && customChain.isCustom)) return
-  //   //   return await this.#db.chains.put(customChain)
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to add custom chain", { cause })
-  //   // }
-  // }
-
-  // async removeCustomChain(_chainId: ChainId) {
-  //   throw new Error("Not implemented")
-  //   // try {
-  //   //   return await this.#db.chains
-  //   //     // only affect custom chains
-  //   //     .filter((chain) => "isCustom" in chain && chain.isCustom)
-  //   //     // only affect the provided chainId
-  //   //     .filter((chain) => chain.id === chainId)
-  //   //     // delete the chain (if exists)
-  //   //     .delete()
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to remove custom chain", { cause })
-  //   // }
-  // }
-
-  // async setCustomChains(_chains: CustomChain[]) {
-  //   throw new Error("Not implemented")
-  //   // return await this.#db.transaction("rw", this.#db.chains, async () => {
-  //   //   const keys = await this.#db.chains
-  //   //     .filter((chain) => "isCustom" in chain && chain.isCustom)
-  //   //     .primaryKeys()
-
-  //   //   await this.#db.chains.bulkDelete(keys)
-  //   //   await this.#db.chains.bulkPut(chains.filter((chain) => chain.isCustom))
-  //   // })
-  // }
-
-  // async resetChain(_chainId: ChainId) {
-  //   throw new Error("Not implemented")
-  //   // const builtInChain = await fetchChain(chainId)
-  //   // if (!builtInChain) throw new Error("Cannot reset non-built-in chain")
-  //   // if (!builtInChain.nativeTokenId)
-  //   //   throw new Error("Failed to lookup native token (no token exists for chain)")
-  //   // const builtInNativeToken = await fetchSubstrateToken(builtInChain?.nativeTokenId)
-  //   // if (!util.isTokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
-  //   // if (!util.isToken(builtInNativeToken))
-  //   //   throw new Error("Failed to lookup native token (isToken test failed)")
-
-  //   // try {
-  //   //   return await this.#db.transaction("rw", this.#db.chains, this.#db.tokens, async () => {
-  //   //     // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
-  //   //     await this.#db.tokens
-  //   //       .filter((token) => token.type === "substrate-native" && token.networkId === chainId)
-  //   //       .delete()
-  //   //     await this.#db.chains.delete(chainId)
-
-  //   //     // reprovision them from subsquid data
-  //   //     await this.#db.chains.put(builtInChain)
-  //   //     await this.#db.tokens.put(builtInNativeToken)
-  //   //   })
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to reset chain", { cause })
-  //   // }
-  // }
-
-  // async addCustomEvmNetwork(_customEvmNetwork: CustomEvmNetwork) {
-  //   throw new Error("Not implemented")
-  //   // try {
-  //   //   if (!("isCustom" in customEvmNetwork && customEvmNetwork.isCustom)) return Promise.resolve()
-  //   //   return await this.#db.evmNetworks.put(customEvmNetwork)
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to add custom evm network", { cause })
-  //   // }
-  // }
-
-  // async removeCustomEvmNetwork(_evmNetworkId: EvmNetworkId) {
-  //   // if (await this.getIsBuiltInEvmNetwork(evmNetworkId))
-  //   //   throw new Error("Cannot remove built-in EVM network")
-  //   // try {
-  //   //   return this.#db.transaction("rw", [this.#db.evmNetworks, this.#db.tokens], async () => {
-  //   //     await this.#db.evmNetworks.delete(evmNetworkId)
-  //   //     await this.#db.tokens.filter((token) => token.networkId === evmNetworkId).delete()
-  //   //   })
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to remove custom evm network", { cause })
-  //   // }
-  // }
-
-  // async setCustomEvmNetworks(_networks: CustomEvmNetwork[]) {
-  //   // return await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
-  //   //   const keys = await this.#db.evmNetworks
-  //   //     .filter((network) => "isCustom" in network && network.isCustom)
-  //   //     .primaryKeys()
-  //   //   await this.#db.evmNetworks.bulkDelete(keys)
-  //   //   await this.#db.evmNetworks.bulkPut(networks.filter((network) => network.isCustom))
-  //   // })
-  // }
-
-  // async resetEvmNetwork(_evmNetworkId: EvmNetworkId) {
-  //   // const builtInEvmNetwork: EvmNetwork = await fetchEvmNetwork(evmNetworkId)
-  //   // if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
-  //   // const nativeModule = builtInEvmNetwork.balancesConfig.find(
-  //   //   (c: { moduleType: string }) => c.moduleType === "evm-native",
-  //   // )
-  //   // if (!nativeModule?.moduleConfig)
-  //   //   throw new Error("Failed to lookup native token (no token exists for network)")
-  //   // const { symbol, decimals, coingeckoId, logo, mirrorOf, name, noDiscovery } =
-  //   //   nativeModule.moduleConfig as Token
-  //   // if (!symbol) throw new Error("Missing native token symbol")
-  //   // if (!decimals) throw new Error("Missing native token decimals")
-  //   // const builtInNativeToken: Token = {
-  //   //   id: getNativeTokenId(evmNetworkId, "evm-native"),
-  //   //   type: "evm-native",
-  //   //   platform: "ethereum",
-  //   //   networkId: evmNetworkId,
-  //   //   isTestnet: builtInEvmNetwork.isTestnet ?? false,
-  //   //   isDefault: true,
-  //   //   symbol,
-  //   //   decimals,
-  //   //   name: name ?? symbol,
-  //   //   coingeckoId,
-  //   //   logo,
-  //   // }
-  //   // if (mirrorOf) builtInNativeToken.mirrorOf = mirrorOf
-  //   // if (noDiscovery) builtInNativeToken.noDiscovery = noDiscovery
-  //   // builtInEvmNetwork.nativeToken = { id: builtInNativeToken.id }
-  //   // try {
-  //   //   return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-  //   //     // delete chain and its native tokens (ensures cleanup of tokens with legacy ids)
-  //   //     await this.#db.tokens
-  //   //       .filter((token) => token.type === "evm-native" && token.networkId === evmNetworkId)
-  //   //       .delete()
-  //   //     const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
-  //   //     if (networkToDelete?.nativeTokenId)
-  //   //       await this.#db.tokens.delete(networkToDeletenativeTokenId)
-  //   //     await this.#db.evmNetworks.delete(evmNetworkId)
-  //   //     // reprovision them from chaindata
-  //   //     await this.#db.evmNetworks.put(builtInEvmNetwork)
-  //   //     await this.#db.tokens.put(builtInNativeToken as never)
-  //   //   })
-  //   // } catch (cause) {
-  //   //   throw new Error("Failed to reset evm network", { cause })
-  //   // }
-  // }
 }
 
 const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
@@ -492,11 +341,12 @@ const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
 const getCombinedChaindata = (
   default$: Observable<Chaindata>,
   custom$: Observable<CustomChaindata> | CustomChaindata | undefined,
-) => {
+): Observable<Chaindata> => {
   // ensure custom$ is an observable
   if (!custom$) custom$ = of(DEFAULT_CUSTOM_CHAINDATA)
   if (!isObservable(custom$)) custom$ = of(custom$)
 
+  // check custom one against schema
   const customChaindata$ = (custom$ ?? of(DEFAULT_CUSTOM_CHAINDATA)).pipe(
     distinctUntilChanged(isEqual),
     map((data) => {
@@ -506,33 +356,47 @@ const getCombinedChaindata = (
     }),
   )
 
+  // merge custom into default
   return combineLatest([default$, customChaindata$]).pipe(
-    map(([defaultData, customData]) => {
-      // no need to check networks, as they always come with at least the native token
-      // if(!customData.tokens.length)
-      //   return defaultData
+    map(([defaultData, customData]) => ({
+      ...defaultData,
+      networks: customData.networks?.length
+        ? values(
+            assign(
+              keyBy(defaultData.networks, (n) => n.id),
+              keyBy(
+                customData.networks?.map((n) => ({ ...n, isCustom: true })),
+                (n) => n.id,
+              ),
+            ),
+          )
+        : defaultData.networks,
+      tokens: customData.tokens.length
+        ? values(
+            assign(
+              keyBy(defaultData.tokens, (t) => t.id),
+              keyBy(
+                customData.tokens.map((n) => ({ ...n, isCustom: true })),
+                (t) => t.id,
+              ),
+            ),
+          )
+        : defaultData.tokens,
+    })),
+    // integrity checks
+    map((chaindata) => {
+      const tokensById = keyBy(chaindata.tokens, (t) => t.id)
 
-      return {
-        ...defaultData,
-        networks: values(
-          assign(
-            keyBy(defaultData.networks, "id"),
-            keyBy(
-              customData.networks?.map((n) => ({ ...n, isCustom: true })),
-              "id",
-            ),
-          ),
-        ),
-        tokens: values(
-          assign(
-            keyBy(defaultData.tokens, "id"),
-            keyBy(
-              customData.tokens.map((n) => ({ ...n, isCustom: true })),
-              "id",
-            ),
-          ),
-        ),
-      }
+      // because of customChaindata, it's theorically possible that some network end up without a native token
+      // in that case, it network should be filtered out
+      const networks = chaindata.networks.filter((n) => {
+        if (tokensById[n.nativeTokenId]) return true
+        log.warn(`Network ${n.id} (${n.name}) has no native token with id ${n.nativeTokenId}`)
+        return false
+      })
+
+      return { ...chaindata, networks }
     }),
+    shareReplay({ bufferSize: 1, refCount: true }),
   )
 }
