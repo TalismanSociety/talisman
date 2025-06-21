@@ -176,10 +176,9 @@ export const api: MessageTypes = {
       specVersion,
     }),
 
+  // chaindata message types
   networks: (cb) => messageService.subscribe("pri(chaindata.networks.subscribe)", null, cb),
-
-  // token message types
-  tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
+  tokens: (cb) => messageService.subscribe("pri(chaindata.tokens.subscribe)", null, cb),
 
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),

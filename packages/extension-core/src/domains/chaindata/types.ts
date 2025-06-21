@@ -1,4 +1,4 @@
-import { Network } from "@talismn/chaindata-provider"
+import { Network, Token } from "@talismn/chaindata-provider"
 
 export type {
   Network,
@@ -14,6 +14,5 @@ export type {
 
 export interface ChaindataMessages {
   "pri(chaindata.networks.subscribe)": [null, boolean, Array<Network>]
+  "pri(chaindata.tokens.subscribe)": [null, boolean, Array<Token>]
 }
-
-// export type ChaindataMessageTypes = keyof ChaindataMessages

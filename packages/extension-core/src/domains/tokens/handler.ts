@@ -1,19 +1,12 @@
-import { Token } from "@talismn/chaindata-provider"
-import { isEqual } from "lodash"
-import { distinctUntilChanged } from "rxjs"
-
-import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    _request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
@@ -21,18 +14,18 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(tokens.subscribe)": {
-        // triggers a pending scan if any
-        // TODO: find a better "place" to trigger this
-        assetDiscoveryScanner.startPendingScan()
+      // case "pri(tokens.subscribe)": {
+      //   // triggers a pending scan if any
+      //   // TODO: find a better "place" to trigger this
+      //   assetDiscoveryScanner.startPendingScan()
 
-        // this subscription will only close when port is closed
-        return genericSubscription(
-          id,
-          port,
-          chaindataProvider.tokensObservable.pipe(distinctUntilChanged<Token[]>(isEqual)),
-        )
-      }
+      //   // this subscription will only close when port is closed
+      //   return genericSubscription(
+      //     id,
+      //     port,
+      //     chaindataProvider.tokensObservable.pipe(distinctUntilChanged<Token[]>(isEqual)),
+      //   )
+      // }
 
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------
