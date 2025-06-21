@@ -1,4 +1,4 @@
-import { getSharedObservable, isValidSubstrateAddress } from "@talismn/util"
+import { getSharedObservable } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
 import {
@@ -7,7 +7,6 @@ import {
   portDisconnected,
 } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { balancePool, ExternalBalancePool } from "./pool"
@@ -95,21 +94,14 @@ const getExternalBalances$ = (
           disconnect = () => resolve()
         })
 
-        const updateSubstrateChains =
-          flatAddressesByChains.some(isValidSubstrateAddress) ||
-          addressesAndTokens.addresses.some(isValidSubstrateAddress)
+        externalBalancePool.setSubcriptionParameters({
+          addressesByChain,
+          addressesAndEvmNetworks,
+          addressesAndTokens,
+        })
 
-        // wait for chaindata to hydrate, then subscribe to the pool
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains }).then(() => {
-          externalBalancePool.setSubcriptionParameters({
-            addressesByChain,
-            addressesAndEvmNetworks,
-            addressesAndTokens,
-          })
-
-          externalBalancePool.subscribe(id, onDisconnected, (balances) => {
-            subscriber.next(balances)
-          })
+        externalBalancePool.subscribe(id, onDisconnected, (balances) => {
+          subscriber.next(balances)
         })
 
         return () => {

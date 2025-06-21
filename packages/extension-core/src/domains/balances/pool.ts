@@ -24,7 +24,7 @@ import { balanceModules } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { AddressesByChain } from "../../types/base"
 import { isBackgroundPage } from "../../util/isBackgroundPage"
-import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
+import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "../accounts/helpers"
 import { keyringStore } from "../keyring/store"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
@@ -776,23 +776,7 @@ const getSubscriptionParams = (
   // Convert the inputs of `addressesByChain` and `addressesAndEvmNetworks` into what we need
   // for each balance module: `addressesByToken`.
   //
-
-  // const chainsMap = new Map(activeChains.map((c) => [c.id, c]))
-  // const evmNetworksMap = new Map(activeEvmNetworks.map((e) => [e.id, e]))
-  const tokensMap = Object.fromEntries(activeTokens.map((t) => [t.id, t]))
-
-  // typeguard
-  // const isNetworkFilter = <T extends ChainIdAndRpcs | EvmNetworkIdAndRpcs>(
-  //   chainOrNetwork: T | undefined,
-  // ): chainOrNetwork is T => chainOrNetwork !== undefined
-
-  // const chains = Object.keys(addressesByChain)
-  //   .map((chainId) => activeChains[chainId])
-  //   .filter(isNetworkFilter)
-  // const evmNetworks = addressesAndEvmNetworks.evmNetworks
-  //   .map(({ id }) => activeEvmNetworks[id])
-  //   .filter(isNetworkFilter)
-
+  const tokensMap = keyBy(activeTokens, "id")
   const networkIds = Object.keys(addressesByChain).concat(
     addressesAndEvmNetworks.evmNetworks.map((n) => n.id),
   )
@@ -804,15 +788,6 @@ const getSubscriptionParams = (
         (addressesByChain[networkId] ?? []).concat(...(addressesAndEvmNetworks.addresses ?? [])),
       ] as const,
   )
-  // const networks = Object.keys(addressesByChain)
-  // //   .map((chainId) => activeChains[chainId])
-  // //   .filter(isNetworkFilter)
-
-  // const chainsAndAddresses = [
-  //   // includes chains and evmNetworks
-  //   ...chains.map((chain) => [chain, addressesByChain[chain.id]] as const),
-  //   ...evmNetworks.map((evmNetwork) => [evmNetwork, addressesAndEvmNetworks.addresses] as const),
-  // ]
 
   const addressesByToken: AddressesByToken<Token> = networkAndAddresses
     // filter out requested chains/evmNetworks which have no rpcs
@@ -837,6 +812,16 @@ const getSubscriptionParams = (
     )
   }
 
+  // const validAddressesByToken = toPairs(addressesByToken).reduce((acc, [tokenId, addresses]) => {
+  //   const networkId = parseTokenId(tokenId).networkId
+  //   const network = activeNetworks[networkId]
+  //   const compatibleAddresses = addresses.filter((address) =>
+  //     isAddressCompatibleWithNetwork(network, address),
+  //   )
+  //   if (compatibleAddresses.length > 0) acc[tokenId] = compatibleAddresses
+  //   return acc
+  // }, {} as AddressesByToken<Token>)
+
   //
   // Separate out the tokens in `addressesByToken` into groups based on `token.type`
   // Input:  {                 [token.id]: addresses,                    [token2.id]: addresses   }
@@ -846,11 +831,18 @@ const getSubscriptionParams = (
   //
   const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = [
     ...Object.entries(addressesByToken)
-      // convert tokenIds into tokens
-      .map(([tokenId, addresses]) => [tokensMap[tokenId], addresses] as const),
+      // convert tokenIds into tokens and remove incompatible addresses
+      .map(([tokenId, addresses]) => {
+        const token = tokensMap[tokenId]
+        const network = activeNetworks[token.networkId]
+        const safeAddresses = addresses.filter(
+          (addr) => network && isAddressCompatibleWithNetwork(network, addr),
+        )
+        return [token, safeAddresses] as const
+      }),
   ]
-    // filter out tokens which don't exist
-    .filter(([token]) => Boolean(token))
+    // filter useless entries
+    .filter(([, addresses]) => addresses.length)
 
     // group each `{ [token.id]: addresses }` by token.type
     .reduce(
