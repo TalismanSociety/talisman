@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { combineLatest } from "rxjs"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -17,9 +17,8 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { activeNetworksState$, balancesHydrate$ } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
-import { ChainsList } from "./ChainsList"
-import { EvmNetworksList } from "./EvmNetworksList"
-import { useNetworksType } from "./useNetworksType"
+import { NetworksList } from "./NetworksList"
+import { PlatformOption, usePlatformOptions } from "./usePlatformOptions"
 
 const NoticeTooltip: FC = () => {
   const { t } = useTranslation()
@@ -48,7 +47,10 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
-  const [networksType, setNetworksType] = useNetworksType()
+  const params = useParams()
+  const [platform, setPlatform, platformOptions] = usePlatformOptions(
+    params.platform as PlatformOption,
+  )
 
   const handleAddNetworkClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -80,13 +82,10 @@ const Content = () => {
       <Spacer small />
       <div className="flex justify-end gap-4">
         <OptionSwitch
-          options={[
-            ["ethereum", t("Ethereum")],
-            ["polkadot", t("Polkadot")],
-          ]}
+          options={platformOptions.map(({ value, label }) => [value, label] as const)}
           className="text-xs [&>div]:h-full"
-          defaultOption={networksType}
-          onChange={setNetworksType}
+          defaultOption={platform}
+          onChange={setPlatform}
         />
 
         <div className="flex-grow" />
@@ -103,11 +102,11 @@ const Content = () => {
         <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
       </div>
       <Spacer small />
-      {networksType === "polkadot" ? (
-        <ChainsList activeOnly={activeOnly} search={search} />
-      ) : (
-        <EvmNetworksList activeOnly={activeOnly} search={search} />
-      )}
+      <NetworksList
+        platform={platform !== "all" ? platform : undefined}
+        activeOnly={activeOnly}
+        search={search}
+      />
     </>
   )
 }

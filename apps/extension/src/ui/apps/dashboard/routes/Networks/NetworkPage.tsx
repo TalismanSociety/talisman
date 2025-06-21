@@ -11,7 +11,7 @@ import {
 } from "@ui/domains/Settings/ManageNetworks/NetworkForm"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
-import { useNetworksType } from "./useNetworksType"
+import { usePlatformFilter } from "./useNetworksType"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -25,7 +25,7 @@ const Content = () => {
   const navigate = useNavigate()
   const { id } = useParams<"id">()
 
-  const [networksType] = useNetworksType()
+  const [networksType] = usePlatformFilter()
 
   useAnalyticsPageView(ANALYTICS_PAGE, {
     id,

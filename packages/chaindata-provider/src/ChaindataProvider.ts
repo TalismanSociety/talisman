@@ -9,6 +9,7 @@ import {
   of,
   shareReplay,
 } from "rxjs"
+import z from "zod/v4"
 
 import {
   DotNetwork,
@@ -16,11 +17,19 @@ import {
   isDotNetwork,
   isEthNetwork,
   Network,
+  NetworkSchema,
   Token,
   TokenId,
+  TokenSchema,
 } from "./chaindata"
 import log from "./log"
-import { Chaindata, CustomChaindata, CustomChaindataSchema, defaultChaindata$ } from "./state"
+import {
+  Chaindata,
+  ChaindataFileSchema,
+  CustomChaindata,
+  CustomChaindataSchema,
+  defaultChaindata$,
+} from "./state"
 import { ChainId, EvmNetworkId, IChaindataProvider } from "./types"
 import * as util from "./util"
 
@@ -357,32 +366,9 @@ const getCombinedChaindata = (
   )
 
   // merge custom into default
-  return combineLatest([default$, customChaindata$]).pipe(
-    map(([defaultData, customData]) => ({
-      ...defaultData,
-      networks: customData.networks?.length
-        ? values(
-            assign(
-              keyBy(defaultData.networks, (n) => n.id),
-              keyBy(
-                customData.networks?.map((n) => ({ ...n, isCustom: true })),
-                (n) => n.id,
-              ),
-            ),
-          )
-        : defaultData.networks,
-      tokens: customData.tokens.length
-        ? values(
-            assign(
-              keyBy(defaultData.tokens, (t) => t.id),
-              keyBy(
-                customData.tokens.map((n) => ({ ...n, isCustom: true })),
-                (t) => t.id,
-              ),
-            ),
-          )
-        : defaultData.tokens,
-    })),
+  return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
+    // @ts-expect-error types are compatible, but Chaindata forbids additional properties
+    map((data) => ChaindataProviderDataSchema.parse(data) as Chaindata),
     // integrity checks
     map((chaindata) => {
       const tokensById = keyBy(chaindata.tokens, (t) => t.id)
@@ -399,4 +385,77 @@ const getCombinedChaindata = (
     }),
     shareReplay({ bufferSize: 1, refCount: true }),
   )
+}
+
+/**
+ * ⚠️ Hack ⚠️
+ * Because Token and Network schemas are unions, zod doesn't allow extending them
+ * ChaindataProvider needs to merge default and custom entities, and it turns out that doing it via a zod schema generates the correct output types.
+ * So let's take the opportunity and generate the helpper functions we need to leverage those properties
+ *
+ * Note: ChaindataProvider's consolidated output is the only context where we can safely derive isCustom and isTestnet properties.
+ * So these properties should not be declared on the main Token & Network schemas.
+ */
+const ChaindataProviderDataSchema = z
+  .strictObject({
+    defaultData: ChaindataFileSchema,
+    customData: CustomChaindataSchema,
+  })
+  .transform(({ defaultData, customData }) => {
+    const defaultNetworksById = keyBy(
+      defaultData.networks.map((n) => ({ ...n, _isCustom: false })),
+      (n) => n.id,
+    )
+    const customNetworksById = keyBy(
+      customData.networks?.map((n) => ({ ...n, _isCustom: true })),
+      (n) => n.id,
+    )
+    const networksById = assign({}, defaultNetworksById, customNetworksById)
+
+    const defaultTokensById = keyBy(
+      defaultData.tokens.map((n) => ({
+        ...n,
+        _isCustom: false,
+        _isTestnet: !!networksById[n.networkId]?.isTestnet,
+      })),
+      (n) => n.id,
+    )
+    const customTokensById = keyBy(
+      customData.tokens.map((n) => ({
+        ...n,
+        _isCustom: true,
+        _isTestnet: !!networksById[n.networkId]?.isTestnet,
+      })),
+      (n) => n.id,
+    )
+    const tokensById = assign({}, defaultTokensById, customTokensById)
+
+    return {
+      networks: values(networksById),
+      tokens: values(tokensById),
+      minimetadata: defaultData.miniMetadatas,
+    }
+  })
+
+// these types shouldnt be exported, we only leverage them to generate the helper functions
+type ChaindataProviderData = z.infer<typeof ChaindataProviderDataSchema>
+type ChaindataProviderNetwork = ChaindataProviderData["networks"][number]
+type ChaindataProviderToken = ChaindataProviderData["tokens"][number]
+
+export const isNetworkCustom = (network: Network): boolean => {
+  if (typeof network !== "object") return false
+  const { _isCustom, ...rest } = network as ChaindataProviderNetwork
+  return _isCustom && NetworkSchema.safeParse(rest).success
+}
+
+export const isTokenCustom = (token: Token): boolean => {
+  if (typeof token !== "object") return false
+  const { _isCustom, ...rest } = token as ChaindataProviderToken
+  return _isCustom && TokenSchema.safeParse(rest).success
+}
+
+export const isTokenTestnet = (token: Token): boolean => {
+  if (typeof token !== "object") return false
+  const { _isTestnet, ...rest } = token as ChaindataProviderToken
+  return _isTestnet && TokenSchema.safeParse(rest).success
 }
