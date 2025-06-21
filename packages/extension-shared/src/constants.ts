@@ -20,9 +20,6 @@ export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
  */
 export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = ["1-evm-native"]
 
-// talisman onfinality api key
-export const API_KEY_ONFINALITY = process.env.API_KEY_ONFINALITY
-
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"

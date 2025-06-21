@@ -8,25 +8,11 @@ import { Account, PublicClient, WalletClient } from "viem"
 import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
 import { getEvmNetworkWalletClient } from "./getEvmNetworkWalletClient"
 
-export type ChainConnectorEvmOptions = {
-  onfinalityApiKey?: string
-}
-
 export class ChainConnectorEvm {
   #chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider
-  #onfinalityApiKey?: string
 
-  constructor(
-    chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider,
-    options?: ChainConnectorEvmOptions,
-  ) {
+  constructor(chaindataProvider: IChaindataEvmNetworkProvider & IChaindataTokenProvider) {
     this.#chaindataProvider = chaindataProvider
-    this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
-  }
-
-  setOnfinalityApiKey(apiKey: string | undefined) {
-    this.#onfinalityApiKey = apiKey
-    this.clearRpcProvidersCache()
   }
 
   async getPublicClientForEvmNetwork(evmNetworkId: EvmNetworkId): Promise<PublicClient | null> {
@@ -35,9 +21,7 @@ export class ChainConnectorEvm {
 
     const nativeToken = await this.#chaindataProvider.tokenById(network.nativeTokenId)
 
-    return getEvmNetworkPublicClient(network, nativeToken, {
-      onFinalityApiKey: this.#onfinalityApiKey,
-    })
+    return getEvmNetworkPublicClient(network, nativeToken)
   }
 
   async getWalletClientForEvmNetwork(
@@ -51,7 +35,6 @@ export class ChainConnectorEvm {
     if (!nativeToken) return null
 
     return getEvmNetworkWalletClient(network, nativeToken, {
-      onFinalityApiKey: this.#onfinalityApiKey,
       account,
     })
   }

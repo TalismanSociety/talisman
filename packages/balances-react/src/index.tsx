@@ -8,7 +8,6 @@ import {
   enabledChainsAtom,
   enabledTokensAtom,
   enableTestnetsAtom,
-  onfinalityApiKeyAtom,
 } from "./atoms/config"
 
 export {
@@ -40,11 +39,6 @@ export type BalancesConfig = {
    * Optionally provide your own array of BalanceModules, when you don't want to use the defaults.
    */
   balanceModules?: Array<(hydrate: Hydrate) => AnyBalanceModule>
-
-  /**
-   * This key will be used in place of any public onfinality RPCs
-   */
-  onfinalityApiKey?: string
 
   coinsApiUrl?: string
 
@@ -105,8 +99,6 @@ export type BalancesConfig = {
 
 export const BalancesProvider = ({
   balanceModules,
-  onfinalityApiKey,
-
   coinsApiUrl,
 
   withTestnets,
@@ -119,11 +111,6 @@ export const BalancesProvider = ({
   useEffect(() => {
     if (balanceModules !== undefined) setBalanceModules(balanceModules)
   }, [balanceModules, setBalanceModules])
-
-  const setOnfinalityApiKey = useSetAtom(onfinalityApiKeyAtom)
-  useEffect(() => {
-    setOnfinalityApiKey(onfinalityApiKey)
-  }, [onfinalityApiKey, setOnfinalityApiKey])
 
   const setCoinsApiConfig = useSetAtom(coinsApiConfigAtom)
   useEffect(() => {

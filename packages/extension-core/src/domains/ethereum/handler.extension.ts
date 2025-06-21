@@ -15,8 +15,6 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getHostName } from "../app/helpers"
-import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
-import { activeTokensStore } from "../balances/store.activeTokens"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
@@ -497,39 +495,41 @@ export class EthHandler extends ExtensionHandler {
     // }
   }
 
-  private ethNetworkRemove: MessageHandler<"pri(eth.networks.remove)"> = async (request) => {
-    await chaindataProvider.removeCustomEvmNetwork(request.id)
+  private ethNetworkRemove: MessageHandler<"pri(eth.networks.remove)"> = async () => {
+    throw new Error("Not implemented")
+    // await chaindataProvider.removeCustomEvmNetwork(request.id)
 
-    talismanAnalytics.capture("remove custom network", {
-      networkType: "evm",
-      network: request.id,
-    })
+    // talismanAnalytics.capture("remove custom network", {
+    //   networkType: "evm",
+    //   network: request.id,
+    // })
 
-    chainConnectorEvm.clearRpcProvidersCache(request.id)
+    // chainConnectorEvm.clearRpcProvidersCache(request.id)
 
-    return true
+    // return true
   }
 
-  private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
-    const network = await chaindataProvider.evmNetworkById(request.id)
-    const isActive = network && isNetworkActive(network, await activeNetworksStore.get())
+  private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async () => {
+    throw new Error("Not implemented")
+    // const network = await chaindataProvider.evmNetworkById(request.id)
+    // const isActive = network && isNetworkActive(network, await activeNetworksStore.get())
 
-    if (isActive) {
-      // network may be active only because it's a custom network,
-      // enforce the value or the network could be deactivated unintentionally
-      activeNetworksStore.setActive(request.id, true)
-    }
+    // if (isActive) {
+    //   // network may be active only because it's a custom network,
+    //   // enforce the value or the network could be deactivated unintentionally
+    //   activeNetworksStore.setActive(request.id, true)
+    // }
 
-    await chaindataProvider.resetEvmNetwork(request.id)
+    // await chaindataProvider.resetEvmNetwork(request.id)
 
-    talismanAnalytics.capture("reset custom network", {
-      networkType: "evm",
-      network: request.id,
-    })
+    // talismanAnalytics.capture("reset custom network", {
+    //   networkType: "evm",
+    //   network: request.id,
+    // })
 
-    chainConnectorEvm.clearRpcProvidersCache(request.id)
+    // chainConnectorEvm.clearRpcProvidersCache(request.id)
 
-    return true
+    // return true
   }
 
   private ethWatchAssetRequestCancel: MessageHandler<"pri(eth.watchasset.requests.cancel)"> = ({
@@ -547,35 +547,37 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethWatchAssetRequestApprove: MessageHandler<"pri(eth.watchasset.requests.approve)"> =
-    async ({ id }) => {
-      const queued = requestStore.getRequest(id)
+    async () => {
+      //{ id }
+      throw new Error("Not implemented")
+      // const queued = requestStore.getRequest(id)
 
-      assert(queued, "Unable to find request")
-      const { resolve, token } = queued
+      // assert(queued, "Unable to find request")
+      // const { resolve, token } = queued
 
-      const knownToken = await chaindataProvider.tokenById(token.id)
-      if (knownToken) {
-        await activeTokensStore.setActive(knownToken.id, true)
-      } else {
-        // some dapps set decimals as a string, which breaks balances
-        const safeToken = {
-          ...token,
-          decimals: Number(token.decimals),
-        }
-        const newTokenId = await chaindataProvider.addCustomToken(safeToken)
-        if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
-      }
+      // const knownToken = await chaindataProvider.tokenById(token.id)
+      // if (knownToken) {
+      //   await activeTokensStore.setActive(knownToken.id, true)
+      // } else {
+      //   // some dapps set decimals as a string, which breaks balances
+      //   const safeToken = {
+      //     ...token,
+      //     decimals: Number(token.decimals),
+      //   }
+      //   const newTokenId = await chaindataProvider.addCustomToken(safeToken)
+      //   if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
+      // }
 
-      talismanAnalytics.captureDelayed("add asset evm", {
-        contractAddress: token.contractAddress,
-        symbol: token.symbol,
-        network: token.networkId,
-        isCustom: !knownToken,
-      })
+      // talismanAnalytics.captureDelayed("add asset evm", {
+      //   contractAddress: token.contractAddress,
+      //   symbol: token.symbol,
+      //   network: token.networkId,
+      //   isCustom: !knownToken,
+      // })
 
-      resolve(true)
+      // resolve(true)
 
-      return true
+      // return true
     }
 
   private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {

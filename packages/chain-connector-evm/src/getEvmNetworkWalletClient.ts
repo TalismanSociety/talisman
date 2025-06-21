@@ -6,7 +6,6 @@ import { getTransportForEvmNetwork } from "./getTransportForEvmNetwork"
 
 type WalletClientOptions = {
   account?: `0x${string}` | Account
-  onFinalityApiKey?: string
 }
 
 export const getEvmNetworkWalletClient = (
@@ -14,11 +13,9 @@ export const getEvmNetworkWalletClient = (
   nativeToken: Token,
   options: WalletClientOptions = {},
 ): WalletClient => {
-  const chain = getChainFromEvmNetwork(network, nativeToken, {
-    onFinalityApiKey: options.onFinalityApiKey,
-  })
+  const chain = getChainFromEvmNetwork(network, nativeToken)
 
-  const transport = getTransportForEvmNetwork(network, options)
+  const transport = getTransportForEvmNetwork(network)
 
   return createWalletClient({ chain, transport, account: options.account })
 }

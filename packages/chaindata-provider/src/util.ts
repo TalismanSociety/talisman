@@ -4,70 +4,6 @@ import { DotNetwork, EthNetwork, Token } from "./chaindata"
 import { githubChaindataBaseUrl, githubChaindataTokensAssetsDir } from "./constants"
 import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork } from "./types"
 
-/**
- * Util to add our onfinality api key to any public onfinality RPC urls in an array of chains.
- */
-export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): Chain[] =>
-  chains.map((chain) => {
-    // copy chain instead of mutating
-    const chainWithCustomRpcs = { ...chain }
-
-    if (typeof onfinalityApiKey !== "string" || !onfinalityApiKey) return chainWithCustomRpcs
-
-    // add rpcs
-    chainWithCustomRpcs.rpcs = (chainWithCustomRpcs.rpcs || [])
-      // convert public onfinality rpc endpoints to private onfinality rpc endpoints
-      .map((rpc) => {
-        rpc.url = rpc.url.replace(
-          /^wss:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-          `wss://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`,
-        )
-        return rpc
-      })
-      // prioritise onfinality rpcs
-      .sort((a, b) => {
-        if (a.url.includes("api.onfinality.io")) return -1
-        if (b.url.includes("api.onfinality.io")) return 1
-        return 0
-      })
-
-    // return copy
-    return chainWithCustomRpcs
-  })
-
-//
-// Utils for parsing chaindata tokens.json
-//
-
-// export const parseTokensResponse = (tokens: Token[]): Token[] =>
-//   tokens.filter(isTokenPartial).filter(isToken)
-
-// export const isTokenPartial = (token: unknown): token is Partial<Token> =>
-//   typeof token === "object" && token !== null
-
-// export const isToken = (token: Partial<Token>): token is Token => {
-//   const id = token.id
-//   if (typeof id !== "string") return false
-
-//   const type = token.type
-//   if (typeof type !== "string") return false
-
-//   const symbol = token.symbol
-//   if (typeof symbol !== "string") return false
-
-//   const decimals = token.decimals
-//   if (typeof decimals !== "number") return false
-
-//   const logo = token.logo
-//   if (typeof logo !== "string") return false
-
-//   // coingeckoId can be undefined
-//   // const coingeckoId = token.coingeckoId
-//   // if (typeof coingeckoId !== "string") return false
-
-//   return true
-// }
-
 //
 // map from Item[] to another type
 //
@@ -123,6 +59,21 @@ export const withErrorReason = async <T>(
   }
 }
 
+type KNOWN_TOKEN_ID = "uniswap"
+
+export const getGithubTokenLogoUrl = (tokenId: KNOWN_TOKEN_ID): string => {
+  return `${githubChaindataBaseUrl}/${githubChaindataTokensAssetsDir}/${tokenId}.svg`
+}
+
+/**
+ * Use only if you are sure this token is supported by Talisman or the url might 404
+ * @param coingeckoId
+ * @returns
+ */
+export const getGithubTokenLogoUrlByCoingeckoId = (coingeckoId: string): string => {
+  return `${githubChaindataBaseUrl}/assets/tokens/coingecko/${coingeckoId}.webp`
+}
+
 //
 // Utils which aren't used by this package, but are helpful for other packages
 //
@@ -137,19 +88,4 @@ export const isCustomEvmNetwork = (
   evmNetwork: EvmNetwork | CustomEvmNetwork | SimpleEvmNetwork | EthNetwork,
 ): evmNetwork is CustomEvmNetwork => {
   return "isCustom" in evmNetwork && evmNetwork.isCustom === true
-}
-
-type KNOWN_TOKEN_ID = "uniswap"
-
-export const getGithubTokenLogoUrl = (tokenId: KNOWN_TOKEN_ID): string => {
-  return `${githubChaindataBaseUrl}/${githubChaindataTokensAssetsDir}/${tokenId}.svg`
-}
-
-/**
- * Use only if you are sure this token is supported by Talisman or the url might 404
- * @param coingeckoId
- * @returns
- */
-export const getGithubTokenLogoUrlByCoingeckoId = (coingeckoId: string): string => {
-  return `${githubChaindataBaseUrl}/assets/tokens/coingecko/${coingeckoId}.webp`
 }

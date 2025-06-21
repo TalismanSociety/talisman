@@ -2,8 +2,6 @@ import { EthNetwork } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
 
-import { addOnfinalityApiKey } from "./util"
-
 // viem chains benefit from multicall config & other viem goodies
 const VIEM_CHAINS = Object.keys(chains).reduce(
   (acc, curr) => {
@@ -21,20 +19,14 @@ export const clearChainsCache = (evmNetworkId?: string) => {
   else chainsCache.clear()
 }
 
-export type ChainOptions = {
-  onFinalityApiKey?: string
-}
-
 export const getChainFromEvmNetwork = (
   evmNetwork: EthNetwork,
   nativeToken: { symbol: string; decimals: number } | null,
-  options: ChainOptions = {},
 ): Chain => {
   const { symbol, decimals } = nativeToken ?? { symbol: "ETH", decimals: 18 }
 
   if (!chainsCache.has(evmNetwork.id)) {
-    const chainRpcs =
-      evmNetwork.rpcs.map((url) => addOnfinalityApiKey(url, options.onFinalityApiKey)) ?? []
+    const chainRpcs = evmNetwork.rpcs ?? []
 
     const viemChain = VIEM_CHAINS[Number(evmNetwork.id)] ?? {}
 

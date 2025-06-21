@@ -5,14 +5,12 @@ import { connectionMetaDb } from "@talismn/connection-meta"
 import { atom } from "jotai"
 
 import { chaindataProviderAtom } from "./chaindataProvider"
-import { onfinalityApiKeyAtom } from "./config"
 
 export const chainConnectorsAtom = atom<ChainConnectors>((get) => {
-  const onfinalityApiKey = get(onfinalityApiKeyAtom)
   const chaindataProvider = get(chaindataProviderAtom)
 
   const substrate = new ChainConnector(chaindataProvider, connectionMetaDb)
-  const evm = new ChainConnectorEvm(chaindataProvider, { onfinalityApiKey })
+  const evm = new ChainConnectorEvm(chaindataProvider)
 
   return { substrate, evm }
 })

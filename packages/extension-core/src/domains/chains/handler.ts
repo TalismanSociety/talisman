@@ -1,13 +1,10 @@
 import { assert, u8aToHex } from "@polkadot/util"
-import { connectionMetaDb } from "@talismn/connection-meta"
 import { isEqual } from "lodash"
 import { distinctUntilChanged } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
-import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
@@ -112,24 +109,26 @@ export class ChainsHandler extends ExtensionHandler {
     // return true
   }
 
-  private chainRemove: MessageHandler<"pri(chains.remove)"> = async (request) => {
-    await chaindataProvider.removeCustomChain(request.id)
+  private chainRemove: MessageHandler<"pri(chains.remove)"> = async () => {
+    throw new Error("Not implemented")
+    // await chaindataProvider.removeCustomChain(request.id)
 
-    talismanAnalytics.capture("remove custom chain", { chain: request.id })
+    // talismanAnalytics.capture("remove custom chain", { chain: request.id })
 
-    return true
+    // return true
   }
 
-  private chainReset: MessageHandler<"pri(chains.reset)"> = async (request) => {
-    await chaindataProvider.resetChain(request.id)
+  private chainReset: MessageHandler<"pri(chains.reset)"> = async () => {
+    throw new Error("Not implemented")
+    // await chaindataProvider.resetChain(request.id)
 
-    await connectionMetaDb.chainPriorityRpcs.delete(request.id)
-    await connectionMetaDb.chainBackoffInterval.delete(request.id)
-    chainConnector.reset(request.id)
+    // await connectionMetaDb.chainPriorityRpcs.delete(request.id)
+    // await connectionMetaDb.chainBackoffInterval.delete(request.id)
+    // chainConnector.reset(request.id)
 
-    talismanAnalytics.capture("reset chain", { chain: request.id })
+    // talismanAnalytics.capture("reset chain", { chain: request.id })
 
-    return true
+    // return true
   }
 
   public async handle<TMessageType extends MessageTypes>(

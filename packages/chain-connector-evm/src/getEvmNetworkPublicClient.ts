@@ -21,14 +21,9 @@ export const clearPublicClientCache = (evmNetworkId?: string) => {
   else publicClientCache.clear()
 }
 
-type PublicClientOptions = {
-  onFinalityApiKey?: string
-}
-
 export const getEvmNetworkPublicClient = (
   network: EthNetwork,
   nativeToken: Token | null,
-  options: PublicClientOptions = {},
 ): PublicClient => {
   const chain = getChainFromEvmNetwork(network, nativeToken)
 
@@ -40,7 +35,6 @@ export const getEvmNetworkPublicClient = (
       : undefined
 
     const transportOptions: TransportOptions = {
-      ...options,
       batch: {
         batchSize: chain.contracts?.multicall3
           ? HTTP_BATCH_SIZE_WITH_MULTICALL

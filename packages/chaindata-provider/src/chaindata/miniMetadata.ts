@@ -7,7 +7,7 @@ export const AnyMiniMetadataSchema = z.strictObject({
   /** The DB id for this metadata */
   id: z.string().nonempty(),
   /** The balance module which created this miniMetadata */
-  source: z.string().nonempty(), // TODO make it an enum of balance module types
+  source: z.string().nonempty(), // TODO make it an enum of balance module types ?
   /** The chain this miniMetadata came from */
   chainId: DotNetworkSchema.shape.id,
   /** The chain specVersion which this miniMetadata is valid for */

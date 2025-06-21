@@ -6,8 +6,6 @@ import { atom } from "jotai"
 export const balanceModuleCreatorsAtom =
   atom<Array<(hydrate: Hydrate) => AnyBalanceModule>>(defaultBalanceModules)
 
-export const onfinalityApiKeyAtom = atom<string | undefined>(undefined)
-
 const innerCoinsApiConfigAtom = atom<CoinsApiConfig>(DEFAULT_COINSAPI_CONFIG)
 export const coinsApiConfigAtom = atom<CoinsApiConfig, [Partial<CoinsApiConfig>], void>(
   (get) => get(innerCoinsApiConfigAtom),

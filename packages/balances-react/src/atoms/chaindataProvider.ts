@@ -3,14 +3,13 @@ import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 
 import log from "../log"
-import { onfinalityApiKeyAtom } from "./config"
 import { cryptoWaitReadyAtom } from "./cryptoWaitReady"
 
 export const chaindataProviderAtom = atom<ChaindataProvider>((get) => {
   // runs a timer to keep chaindata hydrated
   get(chaindataHydrateAtomEffect)
 
-  return new ChaindataProvider({ onfinalityApiKey: get(onfinalityApiKeyAtom) })
+  return new ChaindataProvider({})
 })
 
 /** This atomEffect keeps chaindata hydrated (i.e. up to date with the GitHub repo) */
