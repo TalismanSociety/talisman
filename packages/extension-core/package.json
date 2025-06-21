@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "lint": "eslint src --max-warnings 0",
-    "test": "PORT_PREFIX=talisman jest --maxWorkers=50% --collectCoverage",
+    "test": "PORT_PREFIX=talisman jest --maxWorkers=50%",
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "clean": "rm -rf dist background/dist .turbo node_modules"
   },

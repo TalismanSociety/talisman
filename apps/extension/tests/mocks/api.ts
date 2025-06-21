@@ -102,6 +102,9 @@ const mockedApiMethods = {
       data: [],
     })
   }),
+  networks: jest.fn().mockImplementation((cb: (chains: Chain[]) => void) => {
+    cb(polkadotChains)
+  }),
   chains: jest.fn().mockImplementation((cb: (chains: Chain[]) => void) => {
     cb(polkadotChains)
   }),

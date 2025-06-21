@@ -209,7 +209,7 @@
     "build:extension:canary:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
     "build:extension:prod:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.prod.js --env build=production",
-    "test": "PORT_PREFIX=talisman jest --maxWorkers=50% --collectCoverage",
+    "test": "PORT_PREFIX=talisman jest --maxWorkers=50%",
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
