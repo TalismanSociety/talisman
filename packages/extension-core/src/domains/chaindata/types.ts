@@ -12,6 +12,8 @@ export type {
   EthNetworkList,
 } from "@talismn/chaindata-provider"
 
-export interface NetworksMessages {
-  "pri(networks.subscribe)": [null, boolean, Array<Network>]
+export interface ChaindataMessages {
+  "pri(chaindata.networks.subscribe)": [null, boolean, Array<Network>]
 }
+
+// export type ChaindataMessageTypes = keyof ChaindataMessages

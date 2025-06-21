@@ -4,7 +4,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 
-export default class NetworksHandler extends ExtensionHandler {
+export class ChaindataHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -12,7 +12,7 @@ export default class NetworksHandler extends ExtensionHandler {
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(networks.subscribe)": {
+      case "pri(chaindata.networks.subscribe)": {
         return genericSubscription(id, port, chaindataProvider.networksObservable)
       }
 

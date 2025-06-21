@@ -18,7 +18,7 @@ import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
 import { TokenMessages } from "../domains/tokens/types"
 import { AssetTransferMessages } from "../domains/transfers/types"
-import { NetworksMessages } from "./domains"
+import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
@@ -90,7 +90,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AssetDiscoveryMessages &
   NftsMessages &
   PingMessages &
-  NetworksMessages &
+  ChaindataMessages &
   UnsubscribeMessages
 
 interface PingMessages {
