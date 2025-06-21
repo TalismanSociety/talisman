@@ -1,18 +1,18 @@
 import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
 import type { Port } from "../../../types/base"
 import { TabStore } from "../../../handlers/stores"
-import { ObservableSubscriptions } from "../../../handlers/subscriptions"
+import { genericSubscription, unsubscribe } from "../../../handlers/subscriptions"
 import { TabsHandler } from "../../../libs/Handler"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import TalismanRpcHandler from "./rpc"
 
 export default class TalismanHandler extends TabsHandler {
   readonly #subHandlers: readonly TabsHandler[]
-  readonly #customTokensSubscriptions = new ObservableSubscriptions()
-  readonly #customSubstrateChainsSubscriptions = new ObservableSubscriptions()
 
   constructor(stores: TabStore) {
     super(stores)
+
+    // TODO check if this is actually used and needed
     this.#subHandlers = [new TalismanRpcHandler(stores)]
   }
 
@@ -24,44 +24,32 @@ export default class TalismanHandler extends TabsHandler {
     url: string,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pub(talisman.customSubstrateChains.subscribe)":
-        return this.#customSubstrateChainsSubscriptions.subscribe(
-          "pub(talisman.customSubstrateChains.subscribe)",
-          id,
-          port,
-          chaindataProvider.customChainsObservable,
-        )
+      case "pub(talisman.customSubstrateChains.subscribe)": {
+        return genericSubscription(id, port, chaindataProvider.customChainsObservable)
+      }
 
-      case "pub(talisman.customSubstrateChains.unsubscribe)":
-        return this.#customSubstrateChainsSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"],
-        )
+      case "pub(talisman.customSubstrateChains.unsubscribe)": {
+        const subId = request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"]
+        return unsubscribe(subId)
+      }
 
-      case "pub(talisman.customEvmNetworks.subscribe)":
-        return this.#customSubstrateChainsSubscriptions.subscribe(
-          "pub(talisman.customEvmNetworks.subscribe)",
-          id,
-          port,
-          chaindataProvider.customEvmNetworksObservable,
-        )
+      case "pub(talisman.customEvmNetworks.subscribe)": {
+        return genericSubscription(id, port, chaindataProvider.customEvmNetworksObservable)
+      }
 
-      case "pub(talisman.customEvmNetworks.unsubscribe)":
-        return this.#customSubstrateChainsSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"],
-        )
+      case "pub(talisman.customEvmNetworks.unsubscribe)": {
+        const subId = request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"]
+        return unsubscribe(subId)
+      }
 
-      case "pub(talisman.customTokens.subscribe)":
-        return this.#customTokensSubscriptions.subscribe(
-          "pub(talisman.customTokens.subscribe)",
-          id,
-          port,
-          chaindataProvider.customTokensObservable,
-        )
+      case "pub(talisman.customTokens.subscribe)": {
+        return genericSubscription(id, port, chaindataProvider.customTokensObservable)
+      }
 
-      case "pub(talisman.customTokens.unsubscribe)":
-        return this.#customTokensSubscriptions.unsubscribe(
-          request as RequestTypes["pub(talisman.customTokens.unsubscribe)"],
-        )
+      case "pub(talisman.customTokens.unsubscribe)": {
+        const subId = request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
+        return unsubscribe(subId)
+      }
 
       default:
         for (const handler of this.#subHandlers) {

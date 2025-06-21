@@ -11,6 +11,7 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
+import { getSharedObservable } from "@talismn/util/src/getSharedObservable"
 import {
   activeNetworksStore,
   activeTokensStore,
@@ -24,7 +25,6 @@ import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs
 import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
-import { getSharedObservable } from "./util/getSharedObservable"
 
 /** @deprecated */
 export type AnyChain = Chain | CustomChain

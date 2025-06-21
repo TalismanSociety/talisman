@@ -15,6 +15,6 @@
       "@tests/*": ["./tests/*"]
     }
   },
-  "include": ["src", "**/*.ts", "**/*.tsx"],
+  "include": ["src", "**/*.ts", "**/*.tsx", "../../packages/util/src/getSharedObservable.ts"],
   "exclude": ["node_modules", ".next", ".turbo", ".dist"]
 }

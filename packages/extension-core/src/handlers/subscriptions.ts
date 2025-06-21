@@ -4,12 +4,16 @@
 // Adapted from polkadot.js
 
 import { DEBUG } from "extension-shared"
-import { Observable, Subscription } from "rxjs"
+import { Observable } from "rxjs"
 
-import type { KnownSubscriptionDataTypes, MessageTypesWithSubscriptions } from "../types"
+import type {
+  KnownSubscriptionDataTypes,
+  MessageTypesWithSubscriptions,
+  UnsubscribeFn,
+} from "../types"
 import type { Port } from "../types/base"
 
-type Subscriptions = Record<string, Port>
+type Subscriptions = Record<string, { port: Port; unsubscribe?: UnsubscribeFn }>
 
 const subscriptions: Subscriptions = {} // return a subscription callback, that will send the data to the caller via the port
 
@@ -20,10 +24,11 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => KnownSubscriptionDataTypes<TMessageType> = (value) => value,
+  transformFn: (value: any) => Awaited<KnownSubscriptionDataTypes<TMessageType>> = (value) => value,
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => cb(transformFn(data)))
+  subscriptions[id].unsubscribe = () => subscription.unsubscribe()
 
   port.onDisconnect.addListener((): void => {
     unsubscribe(id)
@@ -45,6 +50,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))
+  subscriptions[id].unsubscribe = () => subscription.unsubscribe()
 
   port.onDisconnect.addListener((): void => {
     unsubscribe(id)
@@ -54,12 +60,20 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   return true
 }
 
-// return a subscription callback, that will send the data to the caller via the port
+/**
+ * Creates a frontend subscription that will be closed when the port disconnects
+ * ⚠️ Do not use this if you need a way to unsubscribe. use genericSubscription or genericAsyncSubscription instead.
+ *
+ * TODO: do not export this function.
+ *
+ * @param id id of the frontend request that initialized the subscription
+ * @param port port of the frontend request that initialized the subscription
+ */
 export function createSubscription<TMessageType extends MessageTypesWithSubscriptions>(
   id: string,
   port: Port,
 ): (data: KnownSubscriptionDataTypes<TMessageType>) => void {
-  subscriptions[id] = port
+  subscriptions[id] = { port }
   return (data): void => {
     if (subscriptions[id]) {
       try {
@@ -82,54 +96,12 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
 // clear a previous subscriber
 export function unsubscribe(id: string): void {
   // In the case that the subscription has already been closed, subscriptions[id] may not exist
-  if (subscriptions[id]) delete subscriptions[id]
-}
+  if (subscriptions[id]) {
+    // delay just a little to prevent StrictMode from retriggering same subscriptions
+    const unsubscribeFn = subscriptions[id]?.unsubscribe
+    if (unsubscribeFn) setTimeout(unsubscribeFn, 200)
 
-export class ObservableSubscriptions {
-  readonly #subscriptions = new Map<string, Subscription>()
-
-  public readonly subscriptions = this.#subscriptions as ReadonlyMap<
-    string,
-    Omit<Subscription, "unsubscribe">
-  >
-
-  public readonly subscribe = <
-    TMessageType extends MessageTypesWithSubscriptions,
-    TObservableValue,
-    TReturn extends KnownSubscriptionDataTypes<TMessageType>,
-  >(
-    _message: TMessageType,
-    id: string,
-    port: Port,
-    observable: Observable<TObservableValue>,
-    ...rest: TObservableValue extends TReturn
-      ? []
-      : [transform: (value: TObservableValue) => TReturn]
-  ) => {
-    const [transform] = rest
-
-    this.unsubscribe(id)
-
-    const cb = createSubscription<TMessageType>(id, port)
-
-    const subscription = observable.subscribe((data) =>
-      cb(transform?.(data) ?? (data as any as TReturn)),
-    )
-
-    const teardown = () => this.unsubscribe(id)
-
-    subscription.add(teardown)
-    port.onDisconnect.addListener(teardown)
-
-    this.#subscriptions.set(id, subscription)
-
-    return id
-  }
-
-  public readonly unsubscribe = (id: string) => {
-    unsubscribe(id)
-    this.#subscriptions.get(id)?.unsubscribe()
-    this.#subscriptions.delete(id)
+    delete subscriptions[id]
   }
 }
 
