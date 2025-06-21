@@ -4,6 +4,7 @@ import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
 import { sessionStore } from "./domains/app/store.session"
+import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { MigrationRunner, migrations } from "./libs/migrations"
@@ -59,6 +60,9 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
     await migrationRunner.isComplete
     // only do this once
     migrationSub.unsubscribe()
+
+    // start the asset discovery scanner after migrations are complete
+    assetDiscoveryScanner.startPendingScan()
   }
 })
 

@@ -3,7 +3,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
+import { customChaindataStore } from "./store"
 
 export class ChaindataHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -18,11 +18,27 @@ export class ChaindataHandler extends ExtensionHandler {
       }
 
       case "pri(chaindata.tokens.subscribe)": {
-        // triggers a pending scan if any
-        // TODO: find a better "place" to trigger this
-        assetDiscoveryScanner.startPendingScan()
-
         return genericSubscription(id, port, chaindataProvider.tokensObservable)
+      }
+
+      case "pri(chaindata.networks.add)": {
+        const network = request as RequestTypes["pri(chaindata.networks.add)"]
+        return customChaindataStore.upsertNetwork(network)
+      }
+
+      case "pri(chaindata.networks.remove)": {
+        const { id } = request as RequestTypes["pri(chaindata.networks.remove)"]
+        return customChaindataStore.removeToken(id)
+      }
+
+      case "pri(chaindata.tokens.add)": {
+        const token = request as RequestTypes["pri(chaindata.tokens.add)"]
+        return customChaindataStore.upsertToken(token)
+      }
+
+      case "pri(chaindata.tokens.remove)": {
+        const { id } = request as RequestTypes["pri(chaindata.tokens.remove)"]
+        return customChaindataStore.removeToken(id)
       }
 
       default:
