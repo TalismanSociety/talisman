@@ -812,16 +812,6 @@ const getSubscriptionParams = (
     )
   }
 
-  // const validAddressesByToken = toPairs(addressesByToken).reduce((acc, [tokenId, addresses]) => {
-  //   const networkId = parseTokenId(tokenId).networkId
-  //   const network = activeNetworks[networkId]
-  //   const compatibleAddresses = addresses.filter((address) =>
-  //     isAddressCompatibleWithNetwork(network, address),
-  //   )
-  //   if (compatibleAddresses.length > 0) acc[tokenId] = compatibleAddresses
-  //   return acc
-  // }, {} as AddressesByToken<Token>)
-
   //
   // Separate out the tokens in `addressesByToken` into groups based on `token.type`
   // Input:  {                 [token.id]: addresses,                    [token2.id]: addresses   }
