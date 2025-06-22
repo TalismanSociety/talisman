@@ -1,4 +1,4 @@
-import { Network, NetworkPlatform } from "./networks"
+import { DotNetwork, Network, NetworkPlatform } from "./networks"
 import {
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
@@ -15,26 +15,6 @@ import {
 } from "./tokens"
 
 export type NetworkOfPlatform<P extends NetworkPlatform> = Extract<Network, { platform: P }>
-
-export type TokenOfType<T extends TokenType> = Extract<Token, { type: T }>
-export type TokenOfPlatform<P extends NetworkPlatform> = Extract<Token, { platform: P }>
-export type DotToken = TokenOfPlatform<"polkadot">
-export type EthToken = TokenOfPlatform<"ethereum">
-
-export const isTokenOfPlatform = <P extends NetworkPlatform>(
-  token: Token | null | undefined,
-  platform: P,
-): token is TokenOfPlatform<P> => {
-  return !!token && token.platform === platform
-}
-
-export const isTokenEth = (token: Token | null | undefined) => {
-  return isTokenOfPlatform(token, "ethereum")
-}
-
-export const isTokenDot = (token: Token | null | undefined) => {
-  return isTokenOfPlatform(token, "polkadot")
-}
 
 export const isNetworkOfPlatform = <P extends NetworkPlatform>(
   network: Network | null | undefined,
@@ -56,6 +36,35 @@ export const isNetworkDot = (network: Network | null | undefined) => {
 
 export const isNetworkEth = (network: Network | null | undefined) => {
   return isNetworkOfPlatform(network, "ethereum")
+}
+
+export const getNetworkGenesisHash = <
+  Net extends Network,
+  Res = Net extends DotNetwork ? DotNetwork["genesisHash"] : undefined,
+>(
+  network: Net | null | undefined,
+): Res => {
+  return (isNetworkDot(network) ? network.genesisHash : undefined) as Res
+}
+
+export type TokenOfType<T extends TokenType> = Extract<Token, { type: T }>
+export type TokenOfPlatform<P extends NetworkPlatform> = Extract<Token, { platform: P }>
+export type DotToken = TokenOfPlatform<"polkadot">
+export type EthToken = TokenOfPlatform<"ethereum">
+
+export const isTokenOfPlatform = <P extends NetworkPlatform>(
+  token: Token | null | undefined,
+  platform: P,
+): token is TokenOfPlatform<P> => {
+  return !!token && token.platform === platform
+}
+
+export const isTokenEth = (token: Token | null | undefined) => {
+  return isTokenOfPlatform(token, "ethereum")
+}
+
+export const isTokenDot = (token: Token | null | undefined) => {
+  return isTokenOfPlatform(token, "polkadot")
 }
 
 export const isTokenOfType = <T extends TokenType>(
@@ -102,12 +111,6 @@ export const isTokenEvmErc20 = (token: Token | null | undefined) => {
 
 export const isTokenEvmUniswapV2 = (token: Token | null | undefined) => {
   return isTokenOfType(token, "evm-uniswapv2")
-}
-
-export const getNetworkGenesisHash = (
-  network: Network | null | undefined,
-): `0x${string}` | undefined => {
-  return isNetworkDot(network) ? network.genesisHash : undefined
 }
 
 export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpecs<T> => {
