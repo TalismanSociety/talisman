@@ -1,4 +1,4 @@
-import { Network } from "./networks"
+import { Network, NetworkPlatform } from "./networks"
 import {
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
@@ -14,13 +14,17 @@ import {
   TokenType,
 } from "./tokens"
 
-export type DotToken = Extract<Token, { platform: "polkadot" }>
-export type EthToken = Extract<Token, { platform: "ethereum" }>
+export type NetworkOfPlatform<P extends NetworkPlatform> = Extract<Network, { platform: P }>
 
-export const isTokenOfPlatform = <P extends Network["platform"]>(
+export type TokenOfType<T extends TokenType> = Extract<Token, { type: T }>
+export type TokenOfPlatform<P extends NetworkPlatform> = Extract<Token, { platform: P }>
+export type DotToken = TokenOfPlatform<"polkadot">
+export type EthToken = TokenOfPlatform<"ethereum">
+
+export const isTokenOfPlatform = <P extends NetworkPlatform>(
   token: Token | null | undefined,
   platform: P,
-): token is Extract<Token, { platform: P }> => {
+): token is TokenOfPlatform<P> => {
   return !!token && token.platform === platform
 }
 
@@ -32,11 +36,18 @@ export const isTokenDot = (token: Token | null | undefined) => {
   return isTokenOfPlatform(token, "polkadot")
 }
 
-export const isNetworkOfPlatform = <P extends Network["platform"]>(
+export const isNetworkOfPlatform = <P extends NetworkPlatform>(
   network: Network | null | undefined,
   platform: P,
 ): network is Extract<Network, { platform: P }> => {
   return !!network && network.platform === platform
+}
+
+export const isNetworkInPlatforms = <P extends NetworkPlatform[]>(
+  network: Network | null | undefined,
+  platforms: P,
+): network is NetworkOfPlatform<P[number]> => {
+  return platforms.some((platform) => isNetworkOfPlatform(network, platform))
 }
 
 export const isNetworkDot = (network: Network | null | undefined) => {
@@ -50,8 +61,15 @@ export const isNetworkEth = (network: Network | null | undefined) => {
 export const isTokenOfType = <T extends TokenType>(
   token: Token | null | undefined,
   type: T,
-): token is Extract<Token, { type: T }> => {
+): token is TokenOfType<T> => {
   return !!token && token.type === type
+}
+
+export const isTokenInTypes = <T extends TokenType[]>(
+  token: Token | null | undefined,
+  types: T,
+): token is TokenOfType<T[number]> => {
+  return types.some((type) => isTokenOfType(token, type))
 }
 
 export const isTokenSubNative = (token: Token | null | undefined) => {
