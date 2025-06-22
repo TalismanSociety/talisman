@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser"
-import { EvmErc20Token, EvmUniswapV2Token } from "@talismn/chaindata-provider"
+import { EvmErc20Token, EvmUniswapV2Token, isTokenCustom } from "@talismn/chaindata-provider"
 import { RotateCcwIcon } from "@talismn/icons"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -28,8 +28,6 @@ import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import { useEvmNetwork, useToken } from "@ui/state"
-import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
-import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
@@ -55,8 +53,7 @@ const ConfirmRemove = ({
   const handleRemove = useCallback(async () => {
     setConfirming(true)
     try {
-      if (!isCustomErc20Token(token) && !isCustomUniswapV2Token(token))
-        throw new Error(t("Cannot remove built-in tokens"))
+      if (!isTokenCustom(token)) throw new Error(t("Cannot remove built-in tokens"))
       await api.removeCustomEvmToken(token.id)
       navigate("/tokens")
     } catch (err) {
@@ -218,7 +215,7 @@ const Content = () => {
           <Button
             className="h-24 w-[24rem] text-base"
             type="button"
-            disabled={!isCustomErc20Token(token) && !isCustomUniswapV2Token(token)}
+            disabled={!token || !isTokenCustom(token)}
             onClick={open}
           >
             {t("Remove Token")}

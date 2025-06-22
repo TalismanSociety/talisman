@@ -56,13 +56,6 @@ export const SubForeignAssetsTokenConfigSchema = z.strictObject({
 export type SubForeignAssetsTokenConfig = z.infer<typeof SubForeignAssetsTokenConfigSchema>
 
 export type SubForeignAssetsModuleConfig = DefaultModuleConfig
-//  {
-//   tokens?: Array<
-//     {
-//       onChainId: string
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export type SubForeignAssetsBalance = NewBalanceType<ModuleType, "complex">
 
@@ -187,7 +180,6 @@ export const SubForeignAssetsModule: NewBalanceModule<
             id,
             type: "substrate-foreignassets",
             platform: "polkadot",
-            // isTestnet,
             isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             decimals,

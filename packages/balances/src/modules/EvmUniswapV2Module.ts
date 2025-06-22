@@ -8,7 +8,6 @@ import {
   evmUniswapV2TokenId,
   EvmUniswapV2TokenSchema,
   getGithubTokenLogoUrl,
-  // githubTokenLogoUrl,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
@@ -61,22 +60,6 @@ export const EvmUniswapV2TokenConfigSchema = z.strictObject({
 export type EvmUniswapV2TokenConfig = z.infer<typeof EvmUniswapV2TokenConfigSchema>
 
 export type EvmUniswapV2ModuleConfig = DefaultModuleConfig
-//  {
-//   pools?: Array<
-//     {
-//       contractAddress?: `0x${string}`
-//       decimals?: number
-//       symbol0?: string
-//       symbol1?: string
-//       decimals0?: number
-//       decimals1?: number
-//       tokenAddress0?: `0x${string}`
-//       tokenAddress1?: `0x${string}`
-//       coingeckoId0?: string
-//       coingeckoId1?: string
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export type EvmUniswapV2Balance = NewBalanceType<"evm-uniswapv2", "complex">
 

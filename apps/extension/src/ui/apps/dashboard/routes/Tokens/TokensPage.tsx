@@ -1,4 +1,11 @@
-import { EthNetwork, EthNetworkId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import {
+  EthNetwork,
+  EthNetworkId,
+  isTokenCustom,
+  Network,
+  NetworkId,
+  Token,
+} from "@talismn/chaindata-provider"
 import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
@@ -37,13 +44,11 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
   useActiveTokensState,
   useBalancesHydrate,
-  useEvmNetwork,
-  useEvmNetworks,
-  useEvmNetworksMap,
+  useNetwork,
+  useNetworks,
+  useNetworksMapById,
   useTokens,
 } from "@ui/state"
-import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
-import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
 import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
@@ -70,17 +75,17 @@ const CustomPill = () => {
 }
 
 const useBlockExplorerUrl = (token: Token) => {
-  const evmNetwork = useEvmNetwork(token.networkId)
+  const network = useNetwork(token.networkId)
 
   return useMemo(() => {
-    const url = evmNetwork?.blockExplorerUrls[0]
+    const url = network?.blockExplorerUrls[0]
     if (!url) return null
 
     if (isErc20Token(token)) return urlJoin(url, "token", token.contractAddress)
     if (isUniswapV2Token(token)) return urlJoin(url, "token", token.contractAddress)
 
     return null
-  }, [evmNetwork?.blockExplorerUrls, token])
+  }, [network?.blockExplorerUrls, token])
 }
 
 const useCoingeckoUrl = (token: Token) => {
@@ -96,7 +101,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   const navigate = useNavigate()
 
   const activeTokens = useActiveTokensState()
-  const network = useEvmNetwork(token.networkId)
+  const network = useNetwork(token.networkId)
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
 
@@ -107,8 +112,8 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
           <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
           <div className="truncate">{token.symbol}</div>
           <TokenTypePill type={token.type} />
-          {isCustomErc20Token(token) && <CustomPill />}
-          {isCustomUniswapV2Token(token) && <CustomPill />}
+          {isTokenCustom(token) && <CustomPill />}
+          {isTokenCustom(token) && <CustomPill />}
         </div>
         <div className="text-body flex items-center gap-4 overflow-hidden">
           <NetworkLogo ethChainId={network?.id} className="shrink-0 text-lg" />
@@ -206,7 +211,7 @@ const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
   )
 }
 
-const renderNetwork = (network: EthNetwork) => {
+const renderNetwork = (network: Network) => {
   return (
     <div className="flex items-center gap-5">
       <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
@@ -220,11 +225,11 @@ const NetworkSelect = ({
   selectedId,
   onChange,
 }: {
-  networks: EthNetwork[]
-  selectedId: EthNetworkId | null
-  onChange: (evmNetworkId: EvmNetworkId) => void
+  networks: Network[]
+  selectedId: NetworkId | null
+  onChange: (networkId: NetworkId) => void
 }) => {
-  const [selected, setSelected] = useState<EthNetwork | undefined>(
+  const [selected, setSelected] = useState<Network | undefined>(
     networks.find((n) => n.id === selectedId),
   )
 
@@ -238,7 +243,7 @@ const NetworkSelect = ({
   }, [selectedId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EthNetwork | null) => {
+    (item: Network | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)
@@ -272,8 +277,8 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: true })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
+  const networks = useNetworks({ activeOnly: true, includeTestnets: true })
+  const networksMap = useNetworksMapById({ activeOnly: true, includeTestnets: true })
   const tokens = useTokens()
   const activeTokens = useActiveTokensState()
   const [isActiveOnly, setIsActiveOnly] = useState(true)
@@ -287,10 +292,10 @@ const Content = () => {
   const networkOptions = useMemo(() => {
     return [
       { id: "ALL", name: t("All active networks") } as EthNetwork,
-      ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
+      ...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
-  }, [evmNetworks, t])
-  const [evmNetworkId, setEvmNetworkId] = useState<EthNetworkId>("ALL")
+  }, [networks, t])
+  const [networkId, setNetworkId] = useState<EthNetworkId>("ALL")
 
   // search value is debounced by SearchInput component
   // keep search value in location state to preserve it when user clicks a token then goes back
@@ -301,27 +306,25 @@ const Content = () => {
 
   const filteredTokens = useMemo(() => {
     const result = tokens
-      .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
-      .filter((t) => !!t.networkId && evmNetworksMap[t.networkId])
+      // .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
+      .filter((t) => !!t.networkId && networksMap[t.networkId])
       .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
-      .filter(
-        (t) => !!search || !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t),
-      )
+      .filter((t) => !!search || !isCustomOnly || isTokenCustom(t))
       .filter((t) => !!search || !isHidePools || !isUniswapV2Token(t))
-      .filter((t) => evmNetworkId === "ALL" || t.networkId === evmNetworkId)
+      .filter((t) => networkId === "ALL" || t.networkId === networkId)
 
     return sortBy(
       result,
-      (t) => evmNetworksMap[t.networkId]?.name,
+      (t) => networksMap[t.networkId]?.name,
       (t) => t.symbol,
     )
   }, [
     activeTokens,
-    evmNetworkId,
-    evmNetworksMap,
+    networkId,
     isActiveOnly,
     isCustomOnly,
     isHidePools,
+    networksMap,
     search,
     tokens,
   ])
@@ -370,18 +373,14 @@ const Content = () => {
         </Button>
       </div>
       <Spacer large />
-      <NetworkSelect
-        networks={networkOptions}
-        onChange={setEvmNetworkId}
-        selectedId={evmNetworkId}
-      />
+      <NetworkSelect networks={networkOptions} onChange={setNetworkId} selectedId={networkId} />
       <div className="h-4"></div>
       <div className="flex gap-4">
         <SearchInput
           initialValue={search}
           onChange={setSearch}
           placeholder={
-            evmNetworkId === "ALL" ? t("Search to display more tokens") : t("Search tokens")
+            networkId === "ALL" ? t("Search to display more tokens") : t("Search tokens")
           }
           containerClassName="rounded-sm"
         />

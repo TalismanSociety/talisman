@@ -54,13 +54,6 @@ export type SubAssetsTokenConfig = z.infer<typeof SubAssetsTokenConfigSchema>
 const UNSUPPORTED_CHAIN_META: SubAssetsChainMeta = { miniMetadata: null, extra: null }
 
 export type SubAssetsModuleConfig = DefaultModuleConfig
-//  {
-//   tokens?: Array<
-//     {
-//       assetId: number | string
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export type SubAssetsBalance = NewBalanceType<ModuleType, "complex">
 

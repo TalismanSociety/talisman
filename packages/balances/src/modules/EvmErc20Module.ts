@@ -32,16 +32,6 @@ const moduleType: ModuleType = "evm-erc20"
 export type EvmErc20ChainMeta = DefaultChainMeta
 
 export type EvmErc20ModuleConfig = DefaultModuleConfig
-// {
-//   tokens?: Array<
-//     {
-//       symbol?: string
-//       decimals?: number
-//       name?: string
-//       contractAddress?: `0x${string}`
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export const EvmErc20TokenConfigSchema = z.strictObject({
   contractAddress: EvmErc20TokenSchema.shape.contractAddress,

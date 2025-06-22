@@ -78,33 +78,9 @@ export const EvmNativeModule: NewBalanceModule<
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
     async fetchEvmChainTokens() {
-      //  networkId, chainMeta, moduleConfig, tokens
-      // TODO ? seems unneeded, this info is set on the EthNetworkConfig["nativeCurrency"] field
+      // token is currently generated in chaindata from the EthNetworkConfig["nativeCurrency"] field
+      // TODO normalise this
       return {}
-
-      // const symbol = moduleConfig?.symbol ?? "ETH"
-      // const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
-      // const name = moduleConfig?.name ?? symbol
-
-      // const id = evmNativeTokenId(networkId)
-      // const nativeToken: EvmNativeToken = {
-      //   platform: "ethereum",
-      //   id,
-      //   type: "evm-native",
-      //   isDefault: true,
-      //   symbol,
-      //   decimals,
-      //   name,
-      //   logo: moduleConfig?.logo,
-      //   networkId,
-      // }
-
-      // if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
-      // if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      // if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
-      // if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
-
-      // return { [nativeToken.id]: nativeToken }
     },
 
     async subscribeBalances({ addressesByToken, initialBalances }, callback) {

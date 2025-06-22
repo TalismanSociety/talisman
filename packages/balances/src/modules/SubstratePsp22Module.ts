@@ -40,16 +40,6 @@ export type SubPsp22TokenConfig = z.infer<typeof SubPsp22TokenConfigSchema>
 export type SubPsp22ChainMeta = DefaultChainMeta
 
 export type SubPsp22ModuleConfig = DefaultModuleConfig
-// {
-//   tokens?: Array<
-//     {
-//       symbol?: string
-//       decimals?: number
-//       ed?: string
-//       contractAddress: string
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export type SubPsp22Balance = NewBalanceType<ModuleType, "simple">
 
@@ -92,7 +82,6 @@ export const SubPsp22Module: NewBalanceModule<
 
     async fetchSubstrateChainTokens(chainId, _chainMeta, moduleConfig, tokens) {
       if (!tokens?.length) return {}
-      // const { isTestnet } = chainMeta
 
       const registry = new TypeRegistry()
       const Psp22Abi = new Abi(psp22Abi)
@@ -105,7 +94,6 @@ export const SubPsp22Module: NewBalanceModule<
         try {
           let symbol = tokenConfig?.symbol ?? "Unit"
           let decimals = tokenConfig?.decimals ?? 0
-          // const existentialDeposit = tokenConfig?.existentialDeposit ?? "0"
           const contractAddress = tokenConfig?.contractAddress ?? undefined
 
           if (contractAddress === undefined) continue
@@ -150,13 +138,11 @@ export const SubPsp22Module: NewBalanceModule<
             id,
             type: "substrate-psp22",
             platform: "polkadot",
-            // isTestnet,
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
             name: tokenConfig?.name || symbol,
             logo: tokenConfig?.logo,
-            //  existentialDeposit: "0",
             contractAddress,
             networkId: chainId,
           }

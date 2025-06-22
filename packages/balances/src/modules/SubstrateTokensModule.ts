@@ -54,7 +54,7 @@ export type SubTokensTokenConfig = z.infer<typeof SubTokensTokenConfigSchema>
 const defaultPalletId = "Tokens"
 
 export type SubTokensChainMeta = ChainMeta<{
-  palletId?: string // TODO unlikely it will ever be used - remove this ?
+  palletId?: string
 }>
 
 const UNSUPPORTED_CHAIN_META: SubTokensChainMeta = {
@@ -63,17 +63,6 @@ const UNSUPPORTED_CHAIN_META: SubTokensChainMeta = {
 }
 
 export type SubTokensModuleConfig = SubTokensBalancesConfig
-//  {
-//   palletId?: string // TODO unlikely it will ever be used - remove this ?
-//   tokens?: Array<
-//     {
-//       symbol?: string
-//       decimals?: number
-//       ed?: string
-//       onChainId?: string | number
-//     } & BalancesConfigTokenParams
-//   >
-// }
 
 export type SubTokensBalance = NewBalanceType<ModuleType, "complex">
 

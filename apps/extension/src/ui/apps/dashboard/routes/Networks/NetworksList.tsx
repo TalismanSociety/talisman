@@ -218,7 +218,7 @@ const NetworkRow: FC<{
         <ChainLogo className="rounded-full text-xl" id={network.id} />
         <div className="text-body flex flex-col justify-center gap-1 overflow-hidden">
           <div className="truncate">{network.name}</div>
-          <div className="text-body-secondary truncate text-xs">{type}</div>
+          <div className="text-body-inactive truncate text-xs">{type}</div>
         </div>
         {network.isTestnet && <TestnetPill />}
         {isNetworkCustom(network) && <CustomPill />}

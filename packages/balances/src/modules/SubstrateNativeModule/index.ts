@@ -486,10 +486,6 @@ export const SubNativeModule: NewBalanceModule<
         networkId: chainId,
       }
 
-      // if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
-      // if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      // if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
-
       return { [nativeToken.id]: nativeToken }
     },
 
