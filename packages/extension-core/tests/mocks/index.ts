@@ -1,7 +1,7 @@
 jest.setTimeout(20_000)
 
-// mock the `pnpm preconstruct dev` version of the package
-jest.mock("@talismn/chaindata-provider/src/net")
+// prevent chaindata-provider from trying to connect to the network
+jest.mock("@talismn/chaindata-provider/src/state/net")
 
 // mock the `pnpm build:packages` version of the package
 //
