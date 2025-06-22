@@ -367,7 +367,6 @@ const getCombinedChaindata = (
 
   // merge custom into default
   return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
-    // @ts-expect-error types are compatible, but Chaindata forbids additional properties
     map((data) => ChaindataProviderDataSchema.parse(data) as Chaindata),
     // integrity checks
     map((chaindata) => {
@@ -433,7 +432,7 @@ const ChaindataProviderDataSchema = z
     return {
       networks: values(networksById),
       tokens: values(tokensById),
-      minimetadata: defaultData.miniMetadatas,
+      miniMetadatas: defaultData.miniMetadatas,
     }
   })
 
