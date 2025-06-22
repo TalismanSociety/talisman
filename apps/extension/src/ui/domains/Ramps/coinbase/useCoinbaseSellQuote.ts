@@ -1,3 +1,4 @@
+import { isTokenDot, isTokenEth } from "@talismn/chaindata-provider"
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
@@ -7,8 +8,6 @@ import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
 
 import { useToken } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 
 import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
@@ -129,7 +128,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
     const item = coinbaseBuyOptions?.sell_currencies
       .flatMap((c) => c.networks.map((n) => ({ id: c.id, symbol: c.symbol, ...n })))
       .find((n) => {
-        if (isEvmToken(token) && n.chain_id === token.networkId) {
+        if (isTokenEth(token) && n.chain_id === token.networkId) {
           if (
             token.type === "evm-erc20" &&
             token.contractAddress.toLowerCase() === n.contract_address.toLowerCase()
@@ -138,7 +137,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
           if (token.type === "evm-native" && !n.contract_address) return true
         }
 
-        if (isSubToken(token) && n.name === token.networkId && n.symbol === token.symbol)
+        if (isTokenDot(token) && n.name === token.networkId && n.symbol === token.symbol)
           return true
 
         return false

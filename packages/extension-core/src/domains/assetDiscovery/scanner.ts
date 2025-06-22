@@ -4,6 +4,7 @@ import {
   EvmErc20Token,
   EvmNetworkId,
   isNetworkEth,
+  isTokenEth,
   Token,
   TokenId,
   TokenList,
@@ -29,7 +30,6 @@ import { PublicClient } from "viem"
 import { db } from "../../db"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
 import { passwordStore } from "../app/store.password"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
@@ -315,7 +315,7 @@ class AssetDiscoveryScanner {
     const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
 
     const tokensToScan = allTokens
-      .filter(isEvmToken)
+      .filter(isTokenEth)
       .filter((t) => networkIdsToScan.includes(t.networkId ?? ""))
       .filter((token) => {
         const evmNetwork = evmNetworks[token.networkId ?? ""]
@@ -367,7 +367,7 @@ class AssetDiscoveryScanner {
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
 
       const tokensToScan = allTokens
-        .filter(isEvmToken)
+        .filter(isTokenEth)
         .filter((t) => scope.networkIds.includes(t.networkId ?? ""))
         .filter((token) => {
           const evmNetwork = evmNetworks[token.networkId ?? ""]
@@ -587,7 +587,7 @@ class AssetDiscoveryScanner {
       const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
       const tokens = (
         await Promise.all(tokenIds.map((tokenId) => chaindataProvider.tokenById(tokenId)))
-      ).filter(isEvmToken)
+      ).filter(isTokenEth)
 
       const evmNetworkIds = uniq(
         tokens.map((token) => token.networkId).filter((id): id is EvmNetworkId => !!id),

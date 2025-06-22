@@ -1,5 +1,10 @@
 import * as Sentry from "@sentry/browser"
-import { EvmErc20Token, EvmUniswapV2Token, isTokenCustom } from "@talismn/chaindata-provider"
+import {
+  EvmErc20Token,
+  EvmUniswapV2Token,
+  isTokenCustom,
+  isTokenInTypes,
+} from "@talismn/chaindata-provider"
 import { RotateCcwIcon } from "@talismn/icons"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -28,8 +33,6 @@ import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
 import { useEvmNetwork, useToken } from "@ui/state"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 const ConfirmRemove = ({
   open,
@@ -106,7 +109,7 @@ const Content = () => {
 
   const token = useToken(id)
   const erc20Token = useMemo(
-    () => (isErc20Token(token) ? token : isUniswapV2Token(token) ? token : undefined),
+    () => (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) ? token : undefined),
     [token],
   )
   const network = useEvmNetwork(erc20Token?.networkId)

@@ -1,3 +1,4 @@
+import { isTokenDot } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
 import { FC } from "react"
@@ -5,7 +6,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { useToken } from "@ui/state"
-import { isSubToken } from "@ui/util/isSubToken"
 
 import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
@@ -18,7 +18,7 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
 
-  if (!isSubToken(token)) return null
+  if (!isTokenDot(token)) return null
 
   return (
     <Trans t={t}>

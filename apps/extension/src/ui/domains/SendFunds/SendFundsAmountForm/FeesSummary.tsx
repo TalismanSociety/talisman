@@ -1,8 +1,7 @@
+import { isTokenEth } from "@talismn/chaindata-provider"
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
-
-import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../../Asset/ChainLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
@@ -31,7 +30,7 @@ const EvmFeeSettingsRow = () => {
   const { t } = useTranslation()
   const { token, network, evmTransaction } = useSendFunds()
 
-  if (!token || !evmTransaction || network?.platform !== "ethereum" || !isEvmToken(token))
+  if (!token || !evmTransaction || network?.platform !== "ethereum" || !isTokenEth(token))
     return null
 
   const {

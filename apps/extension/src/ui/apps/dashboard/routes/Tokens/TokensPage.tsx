@@ -2,10 +2,13 @@ import {
   EthNetwork,
   EthNetworkId,
   isTokenCustom,
+  isTokenEvmUniswapV2,
+  isTokenInTypes,
   Network,
   NetworkId,
   Token,
 } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
@@ -50,8 +53,6 @@ import {
   useNetworksMapById,
   useTokens,
 } from "@ui/state"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 const NoticeTooltip: FC = () => {
   const { t } = useTranslation()
@@ -82,8 +83,8 @@ const useBlockExplorerUrl = (token: Token) => {
     const url = network?.blockExplorerUrls[0]
     if (!url) return null
 
-    if (isErc20Token(token)) return urlJoin(url, "token", token.contractAddress)
-    if (isUniswapV2Token(token)) return urlJoin(url, "token", token.contractAddress)
+    if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]))
+      return urlJoin(url, "token", token.contractAddress)
 
     return null
   }, [network?.blockExplorerUrls, token])
@@ -324,7 +325,7 @@ const Content = () => {
       .filter((t) => !!t.networkId && networksMap[t.networkId])
       .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
       .filter((t) => !!search || !isCustomOnly || isTokenCustom(t))
-      .filter((t) => !!search || !isHidePools || !isUniswapV2Token(t))
+      .filter((t) => !!search || !isHidePools || !isTokenEvmUniswapV2(t))
       .filter((t) => networkId === "ALL" || t.networkId === networkId)
 
     return sortBy(
@@ -352,8 +353,8 @@ const Content = () => {
         (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
         (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
         t.symbol.toLowerCase().includes(lowerSearch) ||
-        (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
-        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)),
+        (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
+          isAddressEqual(t.contractAddress, lowerSearch)),
     )
   }, [filteredTokens, search])
 

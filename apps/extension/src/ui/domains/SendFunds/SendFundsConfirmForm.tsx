@@ -1,3 +1,4 @@
+import { isTokenEth } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -9,7 +10,6 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useAccounts, useSelectedCurrency } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
@@ -287,7 +287,7 @@ const SubFeeSummary = () => {
 const FeeSummary = () => {
   const { token } = useSendFunds()
 
-  if (isEvmToken(token)) return <EvmFeeSummary />
+  if (isTokenEth(token)) return <EvmFeeSummary />
   return <SubFeeSummary />
 }
 

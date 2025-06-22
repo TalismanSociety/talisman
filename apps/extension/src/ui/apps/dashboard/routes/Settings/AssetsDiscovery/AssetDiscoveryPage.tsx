@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, Network, Token, TokenId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, isTokenInTypes, Network, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -68,8 +68,6 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
 
 import {
   useAssetDiscoveryFetchTokenRates,
@@ -161,7 +159,7 @@ const useBlockExplorerUrl = (token: Token | null) => {
   const network = useEvmNetwork(token?.networkId)
 
   return useMemo(() => {
-    if ((isErc20Token(token) || isUniswapV2Token(token)) && network?.blockExplorerUrls[0])
+    if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && network?.blockExplorerUrls[0])
       return urlJoin(network.blockExplorerUrls[0], "token", token.contractAddress)
 
     return null
@@ -299,13 +297,13 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       </div>
       <div className="flex justify-end gap-8 pl-4 text-right">
         <Toggle checked={isActive} onChange={handleToggleChange} />
-        {isErc20Token(token) || isUniswapV2Token(token) || coingeckoUrl ? (
+        {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
             <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
-              {(isErc20Token(token) || isUniswapV2Token(token)) && (
+              {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && (
                 <ContextMenuItem
                   onClick={() => navigate(`/settings/networks-tokens/tokens/${token.id}`)}
                 >

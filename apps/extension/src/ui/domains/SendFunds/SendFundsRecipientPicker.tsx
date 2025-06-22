@@ -1,5 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { DotNetwork, getNetworkGenesisHash, Network } from "@talismn/chaindata-provider"
+import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
@@ -21,7 +21,6 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useNetworkById, useToken } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -121,7 +120,7 @@ export const SendFundsRecipientPicker = () => {
       isValidAddress(search) && allAccounts.find((acc) => isAddressEqual(acc.address, search))
     if (account) {
       if (chain?.platform === "polkadot") return isAccountCompatibleWithNetwork(chain, account)
-      if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+      if (isTokenEth(token)) return isAccountPlatformEthereum(account)
     }
 
     return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
@@ -240,7 +239,7 @@ export const SendFundsRecipientPicker = () => {
       allAccounts
         .filter((account) => normalize(account.address) !== normalizedFrom)
         .filter((account) => {
-          if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+          if (isTokenEth(token)) return isAccountPlatformEthereum(account)
           if (chain) return isAccountCompatibleWithNetwork(chain, account)
           return false
         })

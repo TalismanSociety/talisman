@@ -1,6 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
-import { isNetworkDot, Token, TokenId } from "@talismn/chaindata-provider"
+import { isNetworkDot, isTokenDot, isTokenEth, Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -35,8 +35,6 @@ import {
   useTokenRatesMap,
   useTokensMap,
 } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
@@ -118,7 +116,7 @@ const useEvmTransaction = (
   useEffect(() => {
     setEvmInvalidTxError(undefined)
     if (
-      !isEvmToken(token) ||
+      !isTokenEth(token) ||
       !token.networkId ||
       !token ||
       !planck ||
@@ -184,7 +182,7 @@ const useSubTransaction = (
   )
 
   return useMemo(() => {
-    if (!isSubToken(token)) return undefined
+    if (!isTokenDot(token)) return undefined
 
     const { partialFee, unsigned: unsignedOriginal } = qSubstrateEstimateFee.data ?? {}
     const {
@@ -388,7 +386,7 @@ const useSendFundsProvider = () => {
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
-        if (remaining === 0n || !isSubToken(token) || sendMax) return null
+        if (remaining === 0n || !isTokenDot(token) || sendMax) return null
 
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
@@ -470,7 +468,7 @@ const useSendFundsProvider = () => {
       // if paying fee makes the feeToken balance go below the existential deposit, then the transaction is invalid
       // https://github.com/paritytech/polkadot/issues/2485#issuecomment-782794995
       if (
-        isSubToken(feeToken) &&
+        isTokenDot(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
           BigInt(feeToken.existentialDeposit) &&
@@ -488,7 +486,7 @@ const useSendFundsProvider = () => {
             error: t("Insufficient {{symbol}}", { symbol: cost.token.symbol }),
           }
 
-      if (!isSendingEnough && isSubToken(token)) {
+      if (!isSendingEnough && isTokenDot(token)) {
         const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
         return {
           isValid: false,
@@ -548,21 +546,21 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !maxAmount) return
 
-    if (isSubToken(token)) set("sendMax", true)
+    if (isTokenDot(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
   }, [maxAmount, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
     if (isAccountOfType(fromAccount, "polkadot-vault")) {
-      if (isSubToken(token)) return "qrSubstrate"
-      else if (isEvmToken(token))
+      if (isTokenDot(token)) return "qrSubstrate"
+      else if (isTokenEth(token))
         return "unknown" // Parity signer / parity vault don't support ethereum accounts
       else throw new Error("Unknown token type")
     }
     if (isAccountInTypes(fromAccount, ["ledger-ethereum", "ledger-polkadot"])) {
-      if (isSubToken(token)) return "hardwareSubstrate"
-      else if (isEvmToken(token)) return "hardwareEthereum"
+      if (isTokenDot(token)) return "hardwareSubstrate"
+      else if (isTokenEth(token)) return "hardwareEthereum"
       else throw new Error("Unknown token type")
     }
     return "normal"

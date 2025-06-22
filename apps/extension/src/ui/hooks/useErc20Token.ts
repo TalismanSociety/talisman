@@ -1,9 +1,8 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, isTokenEvmErc20 } from "@talismn/chaindata-provider"
 import { EvmAddress } from "extension-core"
 import { useMemo } from "react"
 
 import { useTokens } from "@ui/state"
-import { isErc20Token } from "@ui/util/isErc20Token"
 
 // TODO leverage a selectorFamily (waiting for jotai migration)
 export const useErc20Token = (
@@ -17,7 +16,7 @@ export const useErc20Token = (
       (evmNetworkId &&
         contractAddress &&
         tokens
-          ?.filter(isErc20Token)
+          ?.filter(isTokenEvmErc20)
           .find(
             (t) =>
               t.networkId === evmNetworkId &&
