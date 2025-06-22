@@ -173,8 +173,8 @@ export const EvmUniswapV2Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      const evmNetworks = await chaindataProvider.networksById("ethereum")
+      const tokens = await chaindataProvider.getTokensMapById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -241,8 +241,8 @@ export const EvmUniswapV2Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      const evmNetworks = await chaindataProvider.networksById("ethereum")
+      const tokens = await chaindataProvider.getTokensMapById()
 
       return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
     },

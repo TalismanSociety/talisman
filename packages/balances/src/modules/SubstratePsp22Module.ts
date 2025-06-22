@@ -170,7 +170,7 @@ export const SubPsp22Module: NewBalanceModule<
       const initDelay = 3_000 // 3000ms == 3 seconds
       const cache = new Map<string, BalanceJson>()
 
-      const tokens = await chaindataProvider.tokensById()
+      const tokens = await chaindataProvider.getTokensMapById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -208,7 +208,7 @@ export const SubPsp22Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const tokens = await chaindataProvider.tokensById()
+      const tokens = await chaindataProvider.getTokensMapById()
 
       return fetchBalances(chainConnectors.substrate, tokens, addressesByToken)
     },
@@ -229,14 +229,14 @@ export const SubPsp22Module: NewBalanceModule<
       tip,
       userExtensions,
     }) {
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId, "substrate-psp22")
       assert(token, `Token ${tokenId} not found in store`)
 
       if (token.type !== "substrate-psp22")
         throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
       const chainId = token.networkId
-      const chain = await chaindataProvider.chainById(chainId)
+      const chain = await chaindataProvider.networkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain

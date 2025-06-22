@@ -36,8 +36,8 @@ export async function subscribeSubtensorStaking(
   callback: SubscriptionCallback<SubNativeBalance[]>,
   signal?: AbortSignal,
 ) {
-  const allChains = await chaindataProvider.chainsById()
-  const tokens = await chaindataProvider.tokensById()
+  const allChains = await chaindataProvider.networksById("polkadot")
+  const tokens = await chaindataProvider.getTokensMapById()
 
   // there should be only one network here when subscribing to balances, we've split it up by network at the top level
   const networkIds = keys(addressesByToken).map((tokenId) => parseTokenId(tokenId).networkId)

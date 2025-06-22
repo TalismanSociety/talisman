@@ -1,6 +1,19 @@
 import { firstValueFrom, Observable } from "rxjs"
 
-import { DotNetwork, EthNetwork, Token } from "./chaindata"
+import {
+  DotNetwork,
+  EthNetwork,
+  isNetworkOfPlatform,
+  isTokenOfPlatform,
+  isTokenOfType,
+  Network,
+  NetworkOfPlatform,
+  NetworkPlatform,
+  Token,
+  TokenOfPlatform,
+  TokenOfType,
+  TokenType,
+} from "./chaindata"
 import { githubChaindataBaseUrl, githubChaindataTokensAssetsDir } from "./constants"
 import { Chain, CustomChain, CustomEvmNetwork, EvmNetwork, SimpleEvmNetwork } from "./types"
 
@@ -19,6 +32,36 @@ export const itemsToMapByGenesisHash = <T extends { genesisHash: string | null }
 ): Record<string, T> =>
   Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
 
+export const filterTokensByPlatform =
+  <
+    P extends NetworkPlatform | undefined,
+    Res extends P extends NetworkPlatform ? TokenOfPlatform<P>[] : Token[],
+  >(
+    platform: P,
+  ) =>
+  (tokens: Token[]): Res =>
+    tokens.filter((token) => !platform || isTokenOfPlatform(token, platform)) as Res
+
+export const filterTokensByType =
+  <T extends TokenType | undefined, Res extends T extends TokenType ? TokenOfType<T>[] : Token[]>(
+    type: T,
+  ) =>
+  (tokens: Token[]): Res =>
+    tokens.filter((token) => !type || isTokenOfType(token, type)) as Res
+
+export const filterNetworksByPlatform =
+  <
+    P extends NetworkPlatform | undefined,
+    Res extends P extends NetworkPlatform ? NetworkOfPlatform<P>[] : Network[],
+  >(
+    platform: P,
+  ) =>
+  (networks: Network[]): Res =>
+    networks.filter((network) => !platform || isNetworkOfPlatform(network, platform)) as Res
+
+// const tt = null as unknown as Network
+// const arr = [tt, tt] as Network[]
+// const t2 = networkPlatformFilter("polkadot")(arr)
 //
 // filters for Item[] where Item.isCustom == true
 //

@@ -106,8 +106,8 @@ export const migrateEnabledTestnets: Migration = {
     // if user doesn't have testnets enabled, reset active status for all testnets
     if (!useTestnets) {
       const [chains, evmNetworks] = await Promise.all([
-        chaindataProvider.chains(),
-        chaindataProvider.evmNetworks(),
+        chaindataProvider.networks("polkadot"),
+        chaindataProvider.networks("ethereum"),
       ])
 
       const chainTestnetIds = chains.filter((n) => n.isTestnet).map((n) => n.id)

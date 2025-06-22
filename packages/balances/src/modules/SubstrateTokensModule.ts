@@ -215,14 +215,11 @@ export const SubTokensModule: NewBalanceModule<
     },
 
     async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId, "substrate-tokens")
       assert(token, `Token ${tokenId} not found in store`)
 
-      if (token.type !== "substrate-tokens")
-        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
-
       const chainId = token.networkId
-      const chain = await chaindataProvider.chainById(chainId)
+      const chain = await chaindataProvider.networkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const miniMetadata = await getMiniMetadata<typeof SubTokensModule>(
@@ -353,8 +350,8 @@ async function buildNetworkQueries(
     signal,
   )
 
-  const chain = await chaindataProvider.chainById(networkId)
-  const tokens = await chaindataProvider.tokensById()
+  const chain = await chaindataProvider.networkById(networkId, "polkadot")
+  const tokens = await chaindataProvider.getTokensMapById()
 
   if (!chain) return []
 

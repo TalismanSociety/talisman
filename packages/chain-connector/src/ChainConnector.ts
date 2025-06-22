@@ -1,5 +1,5 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
+import { ChainId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
 
@@ -78,7 +78,7 @@ type SocketUserId = number
  * handle the websocket connections.
  */
 export class ChainConnector {
-  #chaindataChainProvider: IChaindataChainProvider
+  #chaindataChainProvider: IChaindataNetworkProvider
   #connectionMetaDb?: TalismanConnectionMetaDatabase
 
   #socketConnections: Record<ChainId, Websocket> = {}
@@ -86,14 +86,14 @@ export class ChainConnector {
   #socketUsers: Record<ChainId, SocketUserId[]> = {}
 
   constructor(
-    chaindataChainProvider: IChaindataChainProvider,
+    chaindataChainProvider: IChaindataNetworkProvider,
     connectionMetaDb?: TalismanConnectionMetaDatabase,
   ) {
     this.#chaindataChainProvider = chaindataChainProvider
     this.#connectionMetaDb = connectionMetaDb
 
     if (this.#connectionMetaDb) {
-      this.#chaindataChainProvider.chainIds().then((chainIds) => {
+      this.#chaindataChainProvider.networkIds("polkadot").then((chainIds) => {
         // tidy up connectionMeta for chains which no longer exist
         this.#connectionMetaDb?.chainPriorityRpcs.where("id").noneOf(chainIds).delete()
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
@@ -172,7 +172,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.chainById(chainId)
+        const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -258,7 +258,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.chainById(chainId)
+        const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -621,7 +621,7 @@ export class ChainConnector {
   }
 
   private async getEndpoints(chainId: ChainId): Promise<string[]> {
-    const chain = await this.#chaindataChainProvider.chainById(chainId)
+    const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
     let rpcs = chain.rpcs.concat() // clone to avoid mutating the original array

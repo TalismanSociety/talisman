@@ -60,7 +60,7 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
  */
 
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
-  const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
+  const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
 
   const systemProperties = await chainConnector.send(chain.id, "system_properties", [])

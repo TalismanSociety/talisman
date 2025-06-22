@@ -199,7 +199,7 @@ async function getGeneralReport({
     /* eslint-disable-next-line no-var */
     var [networks, tokens, tokenRates] = await Promise.all([
       chaindataProvider.networksById(),
-      chaindataProvider.tokensById(),
+      chaindataProvider.getTokensMapById(),
       db.tokenRates
         .toArray()
         .then((dbTokenRates) =>

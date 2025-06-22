@@ -72,7 +72,7 @@ const getTokenIdFromAsset = (asset: DiscoveredAsset): TokenId | null => {
 }
 
 const getDiscoveredTokenIds = async (assets: DiscoveredAsset[]) => {
-  const tokensById = await chaindataProvider.tokensById()
+  const tokensById = await chaindataProvider.getTokensMapById()
 
   return assets
     .map(getTokenIdFromAsset)

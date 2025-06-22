@@ -65,7 +65,7 @@ export default class AssetTransfersRpc {
 
     assert(signature, "transaction is not signed")
 
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
 
     const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
@@ -91,7 +91,7 @@ export default class AssetTransfersRpc {
     transferInfo: WalletTransactionTransferInfo,
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const { registry } = await getTypeRegistry(
@@ -181,14 +181,16 @@ export default class AssetTransfersRpc {
     chain: DotNetwork
     signature?: HexString
   }> {
-    const chain = await chaindataProvider.chainById(chainId)
+    const chain = await chaindataProvider.networkById(chainId, "polkadot")
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
-    const nativeToken = (await chaindataProvider.tokenById(chain.nativeTokenId)) as SubNativeToken
+    const nativeToken = (await chaindataProvider.getTokenById(
+      chain.nativeTokenId,
+    )) as SubNativeToken
 
     // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
     // using a finalized block as reference for mortality is necessary for txs to get through

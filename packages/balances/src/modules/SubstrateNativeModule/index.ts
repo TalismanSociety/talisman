@@ -114,7 +114,7 @@ export const SubNativeModule: NewBalanceModule<
   const queryCache = new QueryCache(chaindataProvider, chainConnector)
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, SubNativeToken>
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<string, SubNativeToken>
   }
 
   // subscribeBalances was split by network to prevent all subs to wait for all minimetadatas to be ready.
@@ -567,14 +567,11 @@ export const SubNativeModule: NewBalanceModule<
       transferMethod,
       userExtensions,
     }) {
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId, "substrate-native")
       assert(token, `Token ${tokenId} not found in store`)
 
-      if (token.type !== "substrate-native")
-        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
-
       const chainId = token.networkId
-      const chain = await chaindataProvider.chainById(chainId)
+      const chain = await chaindataProvider.networkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain

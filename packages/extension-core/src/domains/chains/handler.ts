@@ -145,7 +145,7 @@ export class ChainsHandler extends ExtensionHandler {
         return genericSubscription(
           id,
           port,
-          chaindataProvider.chainsObservable.pipe(distinctUntilChanged(isEqual)),
+          chaindataProvider.networksObservable("polkadot").pipe(distinctUntilChanged(isEqual)),
         )
 
       case "pri(chains.upsert)":

@@ -93,11 +93,11 @@ export const EvmErc20Module: NewBalanceModule<
   }
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, EvmErc20Token>
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<string, EvmErc20Token>
   }
 
   const getErc20Aggregators = async () => {
-    const evmNetworks = await chaindataProvider.evmNetworks()
+    const evmNetworks = await chaindataProvider.networks("ethereum")
     return Object.fromEntries(
       evmNetworks
         .filter((n) => n.contracts?.Erc20Aggregator)
@@ -199,7 +199,7 @@ export const EvmErc20Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
+      const evmNetworks = await chaindataProvider.networksById("ethereum")
       const ethAddressesByToken = Object.fromEntries(
         Object.entries(addressesByToken)
           .map(([tokenId, addresses]) => {

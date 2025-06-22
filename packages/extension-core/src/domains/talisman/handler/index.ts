@@ -1,3 +1,6 @@
+import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
+import { map } from "rxjs"
+
 import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
 import type { Port } from "../../../types/base"
 import { TabStore } from "../../../handlers/stores"
@@ -25,7 +28,13 @@ export default class TalismanHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.customSubstrateChains.subscribe)": {
-        return genericSubscription(id, port, chaindataProvider.customChainsObservable)
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider
+            .networksObservable("polkadot")
+            .pipe(map((networks) => networks.filter(isNetworkCustom))),
+        )
       }
 
       case "pub(talisman.customSubstrateChains.unsubscribe)": {
@@ -34,7 +43,13 @@ export default class TalismanHandler extends TabsHandler {
       }
 
       case "pub(talisman.customEvmNetworks.subscribe)": {
-        return genericSubscription(id, port, chaindataProvider.customEvmNetworksObservable)
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider
+            .networksObservable("ethereum")
+            .pipe(map((networks) => networks.filter(isNetworkCustom))),
+        )
       }
 
       case "pub(talisman.customEvmNetworks.unsubscribe)": {
@@ -43,7 +58,11 @@ export default class TalismanHandler extends TabsHandler {
       }
 
       case "pub(talisman.customTokens.subscribe)": {
-        return genericSubscription(id, port, chaindataProvider.customTokensObservable)
+        return genericSubscription(
+          id,
+          port,
+          chaindataProvider.tokens$.pipe(map((tokens) => tokens.filter(isTokenCustom))),
+        )
       }
 
       case "pub(talisman.customTokens.unsubscribe)": {

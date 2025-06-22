@@ -2,7 +2,6 @@ import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
-import { Chain } from "@talismn/chaindata-provider"
 import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
 
 import { chaindataProvider } from "../rpcs/chaindata"
@@ -27,9 +26,9 @@ export const getTypeRegistry = async (
   const registry = new TypeRegistry()
 
   // TODO remove type override once chaindata-provider is fixed
-  const chain = (await (isHex(chainIdOrHash)
-    ? chaindataProvider.chainByGenesisHash(chainIdOrHash)
-    : chaindataProvider.chainById(chainIdOrHash))) as Chain | null
+  const chain = await (isHex(chainIdOrHash)
+    ? chaindataProvider.networkByGenesisHash(chainIdOrHash)
+    : chaindataProvider.networkById(chainIdOrHash, "polkadot"))
 
   // register typesBundle in registry for legacy (pre metadata v14) chains
   if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {
@@ -49,12 +48,7 @@ export const getTypeRegistry = async (
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
       if (chain.chainName) {
         registry.register(
-          getSpecTypes(
-            registry,
-            chain.chainName,
-            chain.specName,
-            parseInt(chain.specVersion ?? "0", 10) ?? 0,
-          ),
+          getSpecTypes(registry, chain.chainName, chain.specName, chain.specVersion),
         )
         registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
       }

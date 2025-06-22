@@ -76,13 +76,13 @@ const getActiveStuff = <T, A extends Record<string, boolean>>(
 }
 
 export const activeNetworksObservable = getActiveStuff(
-  chaindataProvider.networksObservable,
+  chaindataProvider.networksObservable(),
   activeNetworksStore.observable,
   isNetworkActive,
 )
 
 export const activeTokensObservable = getActiveStuff(
-  chaindataProvider.tokensObservable,
+  chaindataProvider.tokens$,
   activeTokensStore.observable,
   isTokenActive,
 )
@@ -356,7 +356,7 @@ abstract class BalancePool {
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
       sentry.captureException(error)

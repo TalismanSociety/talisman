@@ -133,9 +133,9 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
   const hash = isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
 
   const chain = chainId
-    ? await chaindataProvider.chainById(chainId)
+    ? await chaindataProvider.networkById(chainId, "polkadot")
     : hash
-      ? await chaindataProvider.chainByGenesisHash(hash)
+      ? await chaindataProvider.networkByGenesisHash(hash)
       : null
 
   const genesisHash = hash ?? chain?.genesisHash

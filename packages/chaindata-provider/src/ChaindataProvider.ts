@@ -13,14 +13,17 @@ import z from "zod/v4"
 
 import {
   DotNetwork,
-  EthNetwork,
-  isNetworkDot,
-  isNetworkEth,
+  isNetworkOfPlatform,
   Network,
+  NetworkId,
+  NetworkOfPlatform,
+  NetworkPlatform,
   NetworkSchema,
   Token,
   TokenId,
+  TokenOfType,
   TokenSchema,
+  TokenType,
 } from "./chaindata"
 import log from "./log"
 import {
@@ -30,7 +33,7 @@ import {
   CustomChaindataSchema,
   defaultChaindata$,
 } from "./state"
-import { ChainId, EvmNetworkId, IChaindataProvider } from "./types"
+import { IChaindataProvider } from "./types"
 import * as util from "./util"
 
 export type ChaindataProviderOptions = {
@@ -43,6 +46,10 @@ export class ChaindataProvider implements IChaindataProvider {
   constructor(options?: ChaindataProviderOptions) {
     this.#chaindata$ = getCombinedChaindata(defaultChaindata$, options?.customChaindata$)
   }
+
+  /**
+   * Mini metadatas
+   */
 
   get miniMetadatasObservable() {
     return this.#chaindata$.pipe(
@@ -76,218 +83,134 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  //
-  // base items
-  //
+  /**
+   * Tokens
+   */
 
-  get chainsObservable() {
-    return this.#chaindata$.pipe(
-      map(({ networks }) => networks.filter(isNetworkDot)),
-      shareReplay({ bufferSize: 1, refCount: true }),
-    )
-  }
-  async chains() {
-    return await util.wrapObservableWithGetter("Failed to get chains", this.chainsObservable)
-  }
-
-  get evmNetworksObservable() {
-    return this.#chaindata$.pipe(
-      map(({ networks }) => networks.filter(isNetworkEth)),
-      shareReplay({ bufferSize: 1, refCount: true }),
-    )
-  }
-  async evmNetworks() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get evmNetworks",
-      this.evmNetworksObservable,
-    )
-  }
-
-  get networksObservable() {
-    return this.#chaindata$.pipe(
-      distinctUntilKeyChanged("networks", isEqual),
-      map(({ networks }) => networks),
-      shareReplay({ bufferSize: 1, refCount: true }),
-    )
-  }
-  async networks() {
-    return await util.wrapObservableWithGetter("Failed to get networks", this.networksObservable)
-  }
-
-  get tokensObservable() {
+  get tokens$() {
     return this.#chaindata$.pipe(
       distinctUntilKeyChanged("tokens", isEqual),
       map(({ tokens }) => tokens),
       shareReplay({ bufferSize: 1, refCount: true }),
     )
   }
-  async tokens(): Promise<Token[]> {
-    return await util.wrapObservableWithGetter("Failed to get tokens", this.tokensObservable)
+
+  getTokens$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(type?: T): Observable<R[]> {
+    return this.tokens$.pipe(map(util.filterTokensByType(type))) as Observable<R[]>
   }
 
-  //
-  // custom item observables
-  //
-
-  get customChainsObservable() {
-    // TODO
-    return of([] as DotNetwork[])
-    // return this.chainsObservable.pipe(map(util.customChainsFilter))
+  async getTokens<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(type?: T): Promise<R[]> {
+    return (await util.wrapObservableWithGetter(
+      "Failed to get tokens",
+      this.getTokens$(type),
+    )) as R[]
   }
-  async customChains() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get custom chains",
-      this.customChainsObservable,
+
+  getTokenIds$(type?: TokenType) {
+    return this.getTokens$(type).pipe(map(util.itemsToIds))
+  }
+  async getTokenIds(type?: TokenType) {
+    return await util.wrapObservableWithGetter("Failed to get tokenIds", this.getTokenIds$(type))
+  }
+
+  getTokensMapById$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(type?: T): Observable<Record<TokenId, R>> {
+    return this.getTokens$(type).pipe(map(util.itemsToMapById)) as Observable<Record<TokenId, R>>
+  }
+  async getTokensMapById<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(type?: T): Promise<Record<TokenId, R>> {
+    return (await util.wrapObservableWithGetter(
+      "Failed to get tokens map by id",
+      this.getTokensMapById$(type),
+    )) as Record<TokenId, R>
+  }
+
+  getTokenById$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(id: TokenId, type?: T): Observable<R | null> {
+    return this.getTokensMapById$(type).pipe(
+      map((tokens) => tokens[id] ?? null),
+    ) as Observable<R | null>
+  }
+  async getTokenById<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(id: TokenId, type?: T): Promise<R | null> {
+    return (await util.withErrorReason(
+      "Failed to get token by id",
+      async () => await this.getTokenById(id, type),
+    )) as R | null
+  }
+
+  /**
+   * Networks
+   */
+
+  get networks$() {
+    return this.#chaindata$.pipe(
+      distinctUntilKeyChanged("networks", isEqual),
+      map(({ networks }) => networks),
+      shareReplay({ bufferSize: 1, refCount: true }),
     )
   }
 
-  get customEvmNetworksObservable() {
-    // TODO
-    return of([] as EthNetwork[])
-    // return this.evmNetworksObservable.pipe(map(util.customEvmNetworksFilter))
+  networksObservable<
+    P extends NetworkPlatform | undefined,
+    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Observable<N[]> {
+    return this.networks$.pipe(map(util.filterNetworksByPlatform(platform))) as Observable<N[]>
   }
-  async customEvmNetworks() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get custom evmNetworks",
-      this.customEvmNetworksObservable,
-    )
-  }
-
-  get customNetworksObservable() {
-    // TODO
-    return of([] as Network[])
-    // return this.evmNetworksObservable.pipe(map(util.customEvmNetworksFilter))
-  }
-  async customNetworks() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get custom networks",
-      this.customNetworksObservable,
-    )
+  async networks<
+    P extends NetworkPlatform | undefined,
+    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Promise<N[]> {
+    return (await util.wrapObservableWithGetter(
+      "Failed to get networks",
+      this.networksObservable(platform),
+    )) as N[]
   }
 
-  get customTokensObservable() {
-    // TODO
-    return of([] as Token[])
-    // return this.tokensObservable.pipe(map(util.customTokensFilter))
+  networkIdsObservable(platform?: NetworkPlatform) {
+    return this.networksObservable(platform).pipe(map(util.itemsToIds))
   }
-  async customTokens() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get custom tokens",
-      this.customTokensObservable,
-    )
-  }
-
-  //
-  // item ids
-  //
-
-  get chainIdsObservable() {
-    return this.chainsObservable.pipe(map(util.itemsToIds))
-  }
-  async chainIds() {
-    return await util.wrapObservableWithGetter("Failed to get chainIds", this.chainIdsObservable)
-  }
-
-  get evmNetworkIdsObservable() {
-    return this.evmNetworksObservable.pipe(map(util.itemsToIds))
-  }
-  async evmNetworkIds() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get evmNetworkIds",
-      this.evmNetworkIdsObservable,
-    )
-  }
-
-  get networkIdsObservable() {
-    return this.networksObservable.pipe(map(util.itemsToIds))
-  }
-  async networkIds() {
+  async networkIds(platform?: NetworkPlatform) {
     return await util.wrapObservableWithGetter(
       "Failed to get networkIds",
-      this.networkIdsObservable,
+      this.networkIdsObservable(platform),
     )
   }
 
-  get tokenIdsObservable() {
-    return this.tokensObservable.pipe(map(util.itemsToIds))
+  networksByIdObservable<
+    P extends NetworkPlatform | undefined,
+    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P) {
+    return this.networksObservable(platform).pipe(map(util.itemsToMapById)) as Observable<
+      Record<NetworkId, N>
+    >
   }
-  async tokenIds() {
-    return await util.wrapObservableWithGetter("Failed to get tokenIds", this.tokenIdsObservable)
-  }
-
-  //
-  // items by id
-  //
-
-  get chainsByIdObservable() {
-    return this.chainsObservable.pipe(map(util.itemsToMapById))
-  }
-  async chainsById() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get chains by id",
-      this.chainsByIdObservable,
-    )
-  }
-
-  get evmNetworksByIdObservable() {
-    return this.evmNetworksObservable.pipe(map(util.itemsToMapById))
-  }
-  async evmNetworksById() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get evmNetworks by id",
-      this.evmNetworksByIdObservable,
-    )
-  }
-
-  get networksByIdObservable() {
-    return this.networksObservable.pipe(map(util.itemsToMapById))
-  }
-  async networksById() {
-    return await util.wrapObservableWithGetter(
+  async networksById<
+    P extends NetworkPlatform | undefined,
+    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Promise<Record<NetworkId, N>> {
+    return (await util.wrapObservableWithGetter(
       "Failed to get networks by id",
-      this.networksByIdObservable,
-    )
-  }
-
-  get tokensByIdObservable() {
-    return this.tokensObservable.pipe(map(util.itemsToMapById))
-  }
-  async tokensById() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get tokens by id",
-      this.tokensByIdObservable,
-    )
-  }
-
-  async tokensByIdForType<TokenType extends Token["type"]>(type: TokenType) {
-    const tokensByIdForTypeObservable = this.tokensObservable
-      .pipe(map((tokens) => tokens.filter((token) => token.type === type)))
-      .pipe(map(util.itemsToMapById))
-    return await util.wrapObservableWithGetter(
-      "Failed to get tokenIds",
-      tokensByIdForTypeObservable,
-    )
-  }
-
-  //
-  // items by genesisHash
-  //
-
-  get chainsByGenesisHashObservable() {
-    return this.chainsObservable.pipe(map(util.itemsToMapByGenesisHash))
-  }
-  async chainsByGenesisHash() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get chains by genesisHash",
-      this.chainsByGenesisHashObservable,
-    )
+      this.networksByIdObservable(platform),
+    )) as Record<NetworkId, N>
   }
 
   get networksByGenesisHashObservable() {
-    return this.networksObservable.pipe(
-      map((n) => n.filter(isNetworkDot)),
-      map(util.itemsToMapByGenesisHash),
-    )
+    return this.networksObservable("polkadot").pipe(map(util.itemsToMapByGenesisHash))
   }
   async networksByGenesisHash() {
     return await util.wrapObservableWithGetter(
@@ -296,37 +219,15 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  //
-  // filters for a single item
-  //
-
-  async chainById(chainId: ChainId) {
-    return await util.withErrorReason(
-      "Failed to get chain by id",
-      async (): Promise<DotNetwork | null> => (await this.chainsById())[chainId] ?? null,
-    )
-  }
-
-  async chainByGenesisHash(genesisHash: `0x${string}`) {
-    return await util.withErrorReason(
-      "Failed to get chain by genesisHash",
-      async (): Promise<DotNetwork | null> =>
-        (await this.chainsByGenesisHash())[genesisHash] ?? null,
-    )
-  }
-
-  async evmNetworkById(evmNetworkId: EvmNetworkId) {
-    return await util.withErrorReason(
-      "Failed to get evmNetwork by id",
-      async (): Promise<EthNetwork | null> => (await this.evmNetworksById())[evmNetworkId] ?? null,
-    )
-  }
-
-  async networkById(evmNetworkId: EvmNetworkId) {
-    return await util.withErrorReason(
-      "Failed to get evmNetwork by id",
-      async (): Promise<EthNetwork | null> => (await this.evmNetworksById())[evmNetworkId] ?? null,
-    )
+  async networkById<
+    P extends NetworkPlatform | undefined,
+    Res = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(networkId: NetworkId, platform?: P): Promise<Res | null> {
+    return await util.withErrorReason("Failed to get evmNetwork by id", async () => {
+      const networksList = await this.networksById()
+      const network = networksList[networkId]
+      return !platform || isNetworkOfPlatform(network, platform) ? (network as Res) : null
+    })
   }
 
   async networkByGenesisHash(genesisHash: `0x${string}`) {
@@ -334,13 +235,6 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get network by genesisHash",
       async (): Promise<DotNetwork | null> =>
         (await this.networksByGenesisHash())[genesisHash] ?? null,
-    )
-  }
-
-  async tokenById(tokenId: TokenId) {
-    return await util.withErrorReason(
-      "Failed to get token by id",
-      async (): Promise<Token | null> => (await this.tokensById())[tokenId] ?? null,
     )
   }
 }

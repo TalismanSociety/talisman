@@ -1,83 +1,106 @@
 import { Observable } from "rxjs"
 
-import { DotNetwork, EthNetwork, Network, NetworkId, Token, TokenId } from "../chaindata"
-import { ChainId } from "./Chain"
-import { EvmNetworkId } from "./EvmNetwork"
-
-export interface IChaindataChainProvider {
-  chainsObservable: Observable<DotNetwork[]>
-  chains(): Promise<DotNetwork[]>
-
-  customChainsObservable: Observable<DotNetwork[]>
-  customChains(): Promise<DotNetwork[]>
-
-  chainIdsObservable: Observable<ChainId[]>
-  chainIds(): Promise<ChainId[]>
-
-  chainsByIdObservable: Observable<Record<ChainId, DotNetwork>>
-  chainsById(): Promise<Record<ChainId, DotNetwork>>
-
-  chainsByGenesisHashObservable: Observable<Record<ChainId, DotNetwork>>
-  chainsByGenesisHash(): Promise<Record<ChainId, DotNetwork>>
-
-  chainById(chainId: ChainId): Promise<DotNetwork | null>
-  chainByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
-}
-
-export interface IChaindataEvmNetworkProvider {
-  evmNetworksObservable: Observable<EthNetwork[]>
-  evmNetworks(): Promise<EthNetwork[]>
-
-  customEvmNetworksObservable: Observable<EthNetwork[]>
-  customEvmNetworks(): Promise<EthNetwork[]>
-
-  evmNetworkIdsObservable: Observable<EvmNetworkId[]>
-  evmNetworkIds(): Promise<EvmNetworkId[]>
-
-  evmNetworksByIdObservable: Observable<Record<EvmNetworkId, EthNetwork>>
-  evmNetworksById(): Promise<Record<EvmNetworkId, EthNetwork>>
-
-  evmNetworkById(evmNetworkId: EvmNetworkId): Promise<EthNetwork | null>
-}
+import {
+  DotNetwork,
+  Network,
+  NetworkId,
+  NetworkOfPlatform,
+  NetworkPlatform,
+  Token,
+  TokenId,
+  TokenOfType,
+  TokenType,
+} from "../chaindata"
 
 export interface IChaindataNetworkProvider {
-  networksObservable: Observable<Network[]>
-  networks(): Promise<Network[]>
+  networksObservable<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    platform?: P,
+  ): Observable<R[]>
+  networks<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    platform?: P,
+  ): Promise<R[]>
 
-  customNetworksObservable: Observable<Network[]>
-  customNetworks(): Promise<Network[]>
+  networkIdsObservable(platform?: NetworkPlatform): Observable<NetworkId[]>
+  networkIds(platform?: NetworkPlatform): Promise<NetworkId[]>
 
-  networkIdsObservable: Observable<NetworkId[]>
-  networkIds(): Promise<NetworkId[]>
-
-  networksByIdObservable: Observable<Record<NetworkId, Network>>
-  networksById(): Promise<Record<NetworkId, Network>>
+  networksByIdObservable<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    platform?: P,
+  ): Observable<Record<NetworkId, R>>
+  networksById<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    platform?: P,
+  ): Promise<Record<NetworkId, R>>
 
   networksByGenesisHashObservable: Observable<Record<`0x${string}`, DotNetwork>>
   networksByGenesisHash(): Promise<Record<`0x${string}`, DotNetwork>>
 
-  networkById(networkId: NetworkId): Promise<Network | null>
+  networkById<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    networkId: NetworkId,
+    platform?: P,
+  ): Promise<R | null>
   networkByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
 }
 
 export interface IChaindataTokenProvider {
-  tokensObservable: Observable<Token[]>
-  tokens(): Promise<Token[]>
+  tokens$: Observable<Token[]>
 
-  customTokensObservable: Observable<Token[]>
-  customTokens(): Promise<Token[]>
+  getTokens$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    type?: T,
+  ): Observable<R[]>
+  getTokens<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    type?: T,
+  ): Promise<R[]>
 
-  tokenIdsObservable: Observable<TokenId[]>
-  tokenIds(): Promise<TokenId[]>
+  getTokenIds$(type?: TokenType): Observable<TokenId[]>
+  getTokenIds(type?: TokenType): Promise<TokenId[]>
 
-  tokensByIdObservable: Observable<Record<TokenId, Token>>
-  tokensById(): Promise<Record<TokenId, Token>>
+  getTokensMapById$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    type?: T,
+  ): Observable<Record<TokenId, R>>
+  getTokensMapById<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    type?: T,
+  ): Promise<Record<TokenId, R>>
 
-  tokenById(tokenId: TokenId): Promise<Token | null>
+  getTokenById$<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    tokenId: TokenId,
+    type?: T,
+  ): Observable<R | null>
+  getTokenById<
+    T extends TokenType | undefined,
+    R extends T extends TokenType ? TokenOfType<T> : Token,
+  >(
+    tokenId: TokenId,
+    type?: T,
+  ): Promise<R | null>
 }
 
-export interface IChaindataProvider
-  extends IChaindataChainProvider,
-    IChaindataEvmNetworkProvider,
-    IChaindataNetworkProvider,
-    IChaindataTokenProvider {}
+export interface IChaindataProvider extends IChaindataNetworkProvider, IChaindataTokenProvider {}

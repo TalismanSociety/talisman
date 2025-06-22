@@ -50,7 +50,7 @@ export const EvmNativeModule: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<
       string,
       EvmNativeToken | CustomEvmNativeToken
     >
@@ -60,7 +60,7 @@ export const EvmNativeModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     get tokens() {
-      return chaindataProvider.tokensByIdForType(moduleType) as Promise<
+      return chaindataProvider.getTokensMapById(moduleType) as Promise<
         Record<string, EvmNativeToken | CustomEvmNativeToken>
       >
     },

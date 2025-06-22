@@ -108,7 +108,10 @@ export class EthTabsHandler extends TabsHandler {
   private async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(site.ethChainId.toString())
+    const ethereumNetwork = await chaindataProvider.networkById(
+      site.ethChainId.toString(),
+      "ethereum",
+    )
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -315,7 +318,7 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await chaindataProvider.evmNetworkById(chainId.toString())
+    const existing = await chaindataProvider.networkById(chainId.toString(), "ethereum")
     const activeNetworks = await activeNetworksStore.get()
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
@@ -358,7 +361,7 @@ export class EthTabsHandler extends TabsHandler {
     await requestAddNetwork(url, network, port)
 
     // switch automatically to new chain
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(chainId.toString())
+    const ethereumNetwork = await chaindataProvider.networkById(chainId.toString(), "ethereum")
     if (ethereumNetwork) {
       const { err, val } = urlToDomain(url)
       if (err) throw new Error(val)
@@ -379,7 +382,7 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const ethChainId = parseInt(hexChainId, 16)
 
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(ethChainId.toString())
+    const ethereumNetwork = await chaindataProvider.networkById(ethChainId.toString(), "ethereum")
     const activeNetworks = await activeNetworksStore.get()
     if (!ethereumNetwork || !isNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
@@ -496,7 +499,7 @@ export class EthTabsHandler extends TabsHandler {
           throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
         const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
-        const existing = await chaindataProvider.tokenById(tokenId)
+        const existing = await chaindataProvider.getTokenById(tokenId)
         if (existing && isTokenActive(existing, await activeTokensStore.get()))
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
@@ -514,7 +517,7 @@ export class EthTabsHandler extends TabsHandler {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
 
-        const allTokens = await chaindataProvider.tokens()
+        const allTokens = await chaindataProvider.getTokens()
         const symbolFound = allTokens.some(
           (token) =>
             token.type === "evm-erc20" &&

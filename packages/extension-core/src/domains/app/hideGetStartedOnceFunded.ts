@@ -25,8 +25,8 @@ export const hideGetStartedOnceFunded = async () => {
   const sub = combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,
-    chaindataProvider.tokensByIdObservable,
-    chaindataProvider.chainsByIdObservable,
+    chaindataProvider.getTokensMapById(),
+    chaindataProvider.networksByIdObservable("polkadot"),
     balancePool.observable,
     liveQuery(() => db.tokenRates.toArray()),
   ])

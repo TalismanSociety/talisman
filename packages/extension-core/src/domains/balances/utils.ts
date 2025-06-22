@@ -23,8 +23,8 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,
-    chaindataProvider.tokensByIdObservable,
-    chaindataProvider.chainsByIdObservable,
+    chaindataProvider.getTokensMapById(),
+    chaindataProvider.networksByIdObservable("polkadot"),
     balancePool.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])

@@ -32,8 +32,8 @@ export class QueryCache {
   }
 
   async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
-    const chains = await this.chaindataProvider.chainsById()
-    const tokens = await this.chaindataProvider.tokensById()
+    const chains = await this.chaindataProvider.networksById("polkadot")
+    const tokens = await this.chaindataProvider.getTokensMapById()
 
     const queryResults = Object.entries(addressesByToken).reduce<QueryCacheResults>(
       (result, [tokenId, addresses]) => {
