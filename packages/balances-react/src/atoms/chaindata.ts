@@ -49,11 +49,9 @@ export const chaindataAtom = atomWithObservable((get) => {
   const chainsById = get(chaindataProviderAtom)
     .getNetworksMapById$("polkadot")
     .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const chainsByGenesisHash = get(chaindataProviderAtom).getNetworksMapByGenesisHash$.pipe(
-    distinctUntilIsEqual,
-    map(filterMapTestnets),
-    distinctUntilIsEqual,
-  )
+  const chainsByGenesisHash = get(chaindataProviderAtom)
+    .getNetworksMapByGenesisHash$()
+    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
   const evmNetworks = get(chaindataProviderAtom)
     .getNetworks$("ethereum")
     .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)

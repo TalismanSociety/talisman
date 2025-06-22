@@ -50,7 +50,7 @@ export class ChaindataProvider implements IChaindataProvider {
    * Mini metadatas
    */
 
-  get miniMetadatasObservable() {
+  get miniMetadatas$() {
     return this.#chaindata$.pipe(
       distinctUntilKeyChanged("miniMetadatas", isEqual),
       map(({ miniMetadatas }) => miniMetadatas),
@@ -58,27 +58,31 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  async miniMetadatas() {
+  async getMiniMetadatas() {
+    return await util.wrapObservableWithGetter("Failed to get miniMetadatas", this.miniMetadatas$)
+  }
+
+  get getMiniMetadatasMapById$() {
+    return this.miniMetadatas$.pipe(map(util.itemsToMapById))
+  }
+  async getMiniMetadatasMapById() {
     return await util.wrapObservableWithGetter(
-      "Failed to get miniMetadatas",
-      this.miniMetadatasObservable,
+      "Failed to get mini metadatas by id",
+      this.getMiniMetadatasMapById$,
     )
   }
 
-  get miniMetadatasByIdObservable() {
-    return this.miniMetadatasObservable.pipe(map(util.itemsToMapById))
-  }
-  async miniMetadatasById() {
-    return await util.wrapObservableWithGetter(
-      "Failed to get mini metadatas by id",
-      this.miniMetadatasByIdObservable,
+  getMiniMetadataById$(id: string) {
+    return this.getMiniMetadatasMapById$.pipe(
+      map((miniMetadatas) => miniMetadatas[id] ?? null),
+      distinctUntilChanged(isEqual),
     )
   }
 
   async miniMetadataById(id: string) {
-    return await util.withErrorReason(
+    return await util.wrapObservableWithGetter(
       "Failed to get mini metadata by id",
-      async () => (await this.miniMetadatasById())[id] ?? null,
+      this.getMiniMetadataById$(id),
     )
   }
 
@@ -146,9 +150,9 @@ export class ChaindataProvider implements IChaindataProvider {
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(id: TokenId, type?: T): Promise<R | null> {
-    return (await util.withErrorReason(
+    return (await util.wrapObservableWithGetter(
       "Failed to get token by id",
-      async () => await this.getTokenById(id, type),
+      this.getTokenById$(id, type),
     )) as R | null
   }
 
@@ -208,13 +212,13 @@ export class ChaindataProvider implements IChaindataProvider {
     )) as Record<NetworkId, R>
   }
 
-  get getNetworksMapByGenesisHash$() {
+  getNetworksMapByGenesisHash$(): Observable<Record<`0x${string}`, DotNetwork>> {
     return this.getNetworks$("polkadot").pipe(map(util.itemsToMapByGenesisHash))
   }
   async getNetworksMapByGenesisHash() {
     return await util.wrapObservableWithGetter(
       "Failed to get networks by genesisHash",
-      this.getNetworksMapByGenesisHash$,
+      this.getNetworksMapByGenesisHash$(),
     )
   }
 
@@ -232,16 +236,22 @@ export class ChaindataProvider implements IChaindataProvider {
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(networkId: NetworkId, platform?: P): Promise<R | null> {
-    return (await util.withErrorReason("Failed to get network by id", async () =>
+    return (await util.wrapObservableWithGetter(
+      "Failed to get network by id",
       this.getNetworkById$(networkId, platform),
     )) as R | null
   }
 
+  getNetworkByGenesisHash$(genesisHash: `0x${string}`) {
+    return this.getNetworksMapByGenesisHash$().pipe(
+      map((networksByGenesisHash) => networksByGenesisHash[genesisHash] ?? null),
+      distinctUntilChanged(isEqual),
+    )
+  }
   async getNetworkByGenesisHash(genesisHash: `0x${string}`) {
-    return await util.withErrorReason(
+    return await util.wrapObservableWithGetter(
       "Failed to get network by genesisHash",
-      async (): Promise<DotNetwork | null> =>
-        (await this.getNetworksMapByGenesisHash())[genesisHash] ?? null,
+      this.getNetworkByGenesisHash$(genesisHash),
     )
   }
 }

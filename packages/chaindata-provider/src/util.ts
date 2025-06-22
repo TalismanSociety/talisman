@@ -27,9 +27,9 @@ export const itemsToIds = <T extends { id: string }>(items: T[]): string[] =>
 export const itemsToMapById = <T extends { id: string }>(items: T[]): Record<string, T> =>
   Object.fromEntries(items.map((item) => [item.id, item]))
 
-export const itemsToMapByGenesisHash = <T extends { genesisHash: string | null }>(
+export const itemsToMapByGenesisHash = <T extends { genesisHash: `0x${string}` | null }>(
   items: T[],
-): Record<string, T> =>
+): Record<`0x${string}`, T> =>
   Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
 
 export const filterTokensByPlatform =

@@ -44,9 +44,16 @@ export interface IChaindataNetworkProvider {
     platform?: P,
   ): Promise<Record<NetworkId, R>>
 
-  getNetworksMapByGenesisHash$: Observable<Record<`0x${string}`, DotNetwork>>
+  getNetworksMapByGenesisHash$(): Observable<Record<`0x${string}`, DotNetwork>>
   getNetworksMapByGenesisHash(): Promise<Record<`0x${string}`, DotNetwork>>
 
+  getNetworkById$<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    networkId: NetworkId,
+    platform?: P,
+  ): Observable<R | null>
   getNetworkById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
@@ -54,6 +61,8 @@ export interface IChaindataNetworkProvider {
     networkId: NetworkId,
     platform?: P,
   ): Promise<R | null>
+
+  getNetworkByGenesisHash$(genesisHash: `0x${string}`): Observable<DotNetwork | null>
   getNetworkByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
 }
 
