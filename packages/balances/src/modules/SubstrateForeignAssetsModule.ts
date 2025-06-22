@@ -172,6 +172,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
 
           const existentialDeposit = assetsAsset?.min_balance?.toString?.() ?? "0"
           const symbol = assetsMetadata?.symbol?.asText?.() ?? "Unit"
+          const name = assetsMetadata?.name?.asText?.() ?? symbol
           const decimals = assetsMetadata?.decimals ?? 0
           const isFrozen = assetsMetadata?.is_frozen ?? false
 
@@ -183,7 +184,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
             isDefault: tokenConfig?.isDefault ?? true,
             symbol,
             decimals,
-            name: tokenConfig?.name || symbol,
+            name: tokenConfig?.name ?? name,
             logo: tokenConfig?.logo,
             existentialDeposit,
             onChainId: tokenConfig.onChainId,

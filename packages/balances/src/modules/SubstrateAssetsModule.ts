@@ -161,6 +161,7 @@ export const SubAssetsModule: NewBalanceModule<
 
           const existentialDeposit = assetsAsset?.min_balance?.toString?.() ?? "0"
           const symbol = assetsMetadata?.symbol?.asText?.() ?? "Unit"
+          const name = assetsMetadata?.name?.asText?.() ?? symbol
           const decimals = assetsMetadata?.decimals ?? 0
           const isFrozen = assetsMetadata?.is_frozen ?? false
 
@@ -170,8 +171,8 @@ export const SubAssetsModule: NewBalanceModule<
             type: "substrate-assets",
             platform: "polkadot",
             isDefault: tokenConfig?.isDefault ?? true,
-            symbol,
-            name: tokenConfig?.name || symbol,
+            symbol: tokenConfig?.symbol ?? symbol,
+            name: tokenConfig?.name ?? name,
             decimals,
             logo: tokenConfig?.logo,
             existentialDeposit,

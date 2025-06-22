@@ -123,7 +123,6 @@ export const EvmUniswapV2Module: NewBalanceModule<
           id,
           type: "evm-uniswapv2",
           platform: "ethereum",
-          //    isTestnet,
           isDefault: tokenConfig.isDefault ?? false,
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           name: name ?? `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
