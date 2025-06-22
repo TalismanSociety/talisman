@@ -1,6 +1,6 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
-import { isDotNetwork, Network, Token } from "@talismn/chaindata-provider"
+import { isNetworkDot, Network, Token } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
@@ -48,7 +48,7 @@ const getSubstratePayloadMetadata = async ({
   network: Network | null | undefined
   token: Token | null | undefined
 }) => {
-  if (!payload || !token || !isDotNetwork(network)) return null
+  if (!payload || !token || !isNetworkDot(network)) return null
 
   try {
     const specVersion = hexToNumber(payload.specVersion)

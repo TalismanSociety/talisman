@@ -5,7 +5,7 @@ import {
   EthNetworkId,
   EvmNetworkId,
   isCustomEvmNetwork,
-  isEthNetwork,
+  isNetworkEth,
 } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, RotateCcwIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -364,7 +364,7 @@ const useEditMode = (evmNetworkId?: EthNetworkId) => {
   }, [evmNetwork, nativeToken])
 
   const isCustom = useMemo(
-    () => !!evmNetwork && isEthNetwork(evmNetwork) && isCustomEvmNetwork(evmNetwork),
+    () => !!evmNetwork && isNetworkEth(evmNetwork) && isCustomEvmNetwork(evmNetwork),
     [evmNetwork],
   )
 

@@ -11,15 +11,22 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
 
   const label = useMemo(() => {
     switch (type) {
-      case "evm-uniswapv2":
-        return t("UNIV2")
-      case "evm-erc20":
-        return t("ERC20")
+      case "substrate-native":
       case "evm-native":
         return t("Native")
-      default:
-        // unsupported for now
-        return null
+      case "evm-erc20":
+        return t("ERC20")
+      case "evm-uniswapv2":
+        return t("UNIV2")
+
+      case "substrate-assets":
+        return t("Polkadot")
+      case "substrate-foreignassets":
+        return t("XCM")
+      case "substrate-psp22":
+        return t("PSP22")
+      case "substrate-tokens":
+        return t("ORML")
     }
   }, [t, type])
 

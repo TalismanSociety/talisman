@@ -1,4 +1,4 @@
-import { isDotToken } from "@talismn/chaindata-provider"
+import { isTokenDot } from "@talismn/chaindata-provider"
 
 // TODO yeet
-export const isSubToken = isDotToken
+export const isSubToken = isTokenDot

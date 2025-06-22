@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { isDotNetwork, Token } from "@talismn/chaindata-provider"
+import { isNetworkDot, Token } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
 import { Network } from "extension-core"
@@ -27,7 +27,7 @@ const DEFAULT_SUMMARY: BalanceSummary = {
 }
 
 const isRelayDotNetwork = (network: Network) =>
-  isDotNetwork(network) && network.topology.type === "relay"
+  isNetworkDot(network) && network.topology.type === "relay"
 
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
 const useBestTokenForSymbol = (balances: Balances) => {

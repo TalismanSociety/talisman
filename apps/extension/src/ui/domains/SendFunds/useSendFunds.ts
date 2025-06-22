@@ -1,6 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
-import { isDotNetwork, Token, TokenId } from "@talismn/chaindata-provider"
+import { isNetworkDot, Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -585,7 +585,7 @@ const useSendFundsProvider = () => {
         options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
       })
 
-      if (token.networkId && isDotNetwork(network)) {
+      if (token.networkId && isNetworkDot(network)) {
         const { hash } = await api.assetTransfer(
           token.networkId,
           token.id,
@@ -637,7 +637,7 @@ const useSendFundsProvider = () => {
     async (signature: HexString, payload?: SignerPayloadJSON) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned && token?.id && isDotNetwork(network)) {
+        if (subTransaction?.unsigned && token?.id && isNetworkDot(network)) {
           // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
           // otherwise, signature is for the initial payload
           const { hash } = await api.assetTransferApproveSign(

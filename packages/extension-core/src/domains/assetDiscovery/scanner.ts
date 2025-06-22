@@ -3,7 +3,7 @@ import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/bal
 import {
   EvmErc20Token,
   EvmNetworkId,
-  isEthNetwork,
+  isNetworkEth,
   Token,
   TokenId,
   TokenList,
@@ -594,7 +594,7 @@ class AssetDiscoveryScanner {
       )
       const evmNetworks = (
         await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
-      ).filter(isEthNetwork)
+      ).filter(isNetworkEth)
 
       // activate tokens that have not been explicitely enabled or disabled
       const tokenIdsToActivate = tokens.filter((t) => activeTokens[t.id] === undefined)

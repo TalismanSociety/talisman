@@ -41,6 +41,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useActiveTokensState,
   useBalancesHydrate,
@@ -104,21 +105,34 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   const network = useNetwork(token.networkId)
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
+  const { type } = useNetworkInfo(token.networkId)
 
   return (
     <div className="relative h-28 w-full">
       <div className="bg-grey-850 text-body-secondary grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm px-8 pr-6 font-normal">
         <div className="text-body flex items-center gap-4 overflow-hidden">
-          <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
-          <div className="truncate">{token.symbol}</div>
-          <TokenTypePill type={token.type} />
-          {isTokenCustom(token) && <CustomPill />}
-          {isTokenCustom(token) && <CustomPill />}
+          <TokenLogo tokenId={token.id} className="shrink-0 text-xl" />
+          <div className="flex flex-col justify-center gap-2 overflow-hidden">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="truncate text-base">{token.symbol}</div>
+              <TokenTypePill type={token.type} />
+              {isTokenCustom(token) && <CustomPill />}
+            </div>
+            <div className="text-body-inactive truncate text-xs">{token.name}</div>
+          </div>
         </div>
-        <div className="text-body flex items-center gap-4 overflow-hidden">
-          <NetworkLogo ethChainId={network?.id} className="shrink-0 text-lg" />
-          <div className="truncate">{network?.name}</div>
+
+        <div className="flex flex-col justify-center gap-2 overflow-hidden">
+          <div className="text-body flex items-center gap-3 overflow-hidden">
+            <NetworkLogo
+              ethChainId={network?.id}
+              className="text-body shrink-0 truncate text-base"
+            />
+            <div>{network?.name}</div>
+          </div>
+          <div className="text-body-inactive truncate text-xs">{type}</div>
         </div>
+
         <div className="flex w-full items-center justify-end gap-4 text-right">
           <Toggle
             checked={isTokenActive(token, activeTokens)}
@@ -360,11 +374,11 @@ const Content = () => {
     <>
       <div className="flex w-full gap-8">
         <HeaderBlock
-          title={t("Ethereum Tokens")}
+          title={t("Tokens")}
           className="grow"
           text={
             <>
-              {t("Enable, add or delete custom ERC20 tokens.")} <NoticeTooltip />
+              {t("Enable, add or delete custom tokens.")} <NoticeTooltip />
             </>
           }
         />
@@ -439,7 +453,7 @@ const ResetStatesModalContent: FC<{
   return (
     <ModalDialog title={t("Reset tokens")} onClose={onClose}>
       <div className="text-body-secondary mb-8 text-sm">
-        {t("This will reset active state of all Ethereum tokens to their Talisman defaults.")}
+        {t("This will reset active state of all tokens to their Talisman defaults.")}
       </div>
 
       <div className="mt-4 flex justify-end gap-8">

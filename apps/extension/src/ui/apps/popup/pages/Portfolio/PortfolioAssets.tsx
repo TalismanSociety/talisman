@@ -1,4 +1,4 @@
-import { isDotNetwork, isEthNetwork } from "@talismn/chaindata-provider"
+import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
 import { FC, Suspense, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -57,8 +57,8 @@ const MainContent: FC = () => {
   const matchNfts = useMatch("/portfolio/nfts")
 
   const [chains, evmNetworks] = useMemo(() => {
-    const chains = networks.filter(isDotNetwork)
-    const evmNetworks = networks.filter(isEthNetwork)
+    const chains = networks.filter(isNetworkDot)
+    const evmNetworks = networks.filter(isNetworkEth)
     return [chains, evmNetworks]
   }, [networks])
 

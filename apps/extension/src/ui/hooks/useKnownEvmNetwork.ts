@@ -1,4 +1,4 @@
-import { isCustomEvmNetwork, isEthNetwork } from "@talismn/chaindata-provider"
+import { isCustomEvmNetwork, isNetworkEth } from "@talismn/chaindata-provider"
 import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
@@ -13,7 +13,7 @@ export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
     [activeEvmNetworks, evmNetwork],
   )
   const isKnown = useMemo(
-    () => !!evmNetwork && isEthNetwork(evmNetwork) && !isCustomEvmNetwork(evmNetwork),
+    () => !!evmNetwork && isNetworkEth(evmNetwork) && !isCustomEvmNetwork(evmNetwork),
     [evmNetwork],
   )
 

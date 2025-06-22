@@ -5,7 +5,7 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react"
-import { isDotNetwork } from "@talismn/chaindata-provider"
+import { isNetworkDot } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { isNetworkActive } from "extension-core"
@@ -45,7 +45,7 @@ export function AccountTypeNetworkSearch({
           })
           const symbol = tokensMap[network.nativeTokenId]?.symbol
           const isActive = isNetworkActive(network, activeNetworkStates)
-          const account = isDotNetwork(network) ? network.account : undefined
+          const account = isNetworkDot(network) ? network.account : undefined
           return { id: network.id, label, type, symbol, account, isActive }
         })
         .sort((a, b) => {

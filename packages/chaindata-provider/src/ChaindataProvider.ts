@@ -14,8 +14,8 @@ import z from "zod/v4"
 import {
   DotNetwork,
   EthNetwork,
-  isDotNetwork,
-  isEthNetwork,
+  isNetworkDot,
+  isNetworkEth,
   Network,
   NetworkSchema,
   Token,
@@ -82,7 +82,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get chainsObservable() {
     return this.#chaindata$.pipe(
-      map(({ networks }) => networks.filter(isDotNetwork)),
+      map(({ networks }) => networks.filter(isNetworkDot)),
       shareReplay({ bufferSize: 1, refCount: true }),
     )
   }
@@ -92,7 +92,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get evmNetworksObservable() {
     return this.#chaindata$.pipe(
-      map(({ networks }) => networks.filter(isEthNetwork)),
+      map(({ networks }) => networks.filter(isNetworkEth)),
       shareReplay({ bufferSize: 1, refCount: true }),
     )
   }
@@ -285,7 +285,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
   get networksByGenesisHashObservable() {
     return this.networksObservable.pipe(
-      map((n) => n.filter(isDotNetwork)),
+      map((n) => n.filter(isNetworkDot)),
       map(util.itemsToMapByGenesisHash),
     )
   }
