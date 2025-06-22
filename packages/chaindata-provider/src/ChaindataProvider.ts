@@ -13,7 +13,6 @@ import z from "zod/v4"
 
 import {
   DotNetwork,
-  isNetworkOfPlatform,
   Network,
   NetworkId,
   NetworkOfPlatform,
@@ -165,76 +164,84 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
 
-  networksObservable<
+  getNetworks$<
     P extends NetworkPlatform | undefined,
-    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(platform?: P): Observable<N[]> {
-    return this.networks$.pipe(map(util.filterNetworksByPlatform(platform))) as Observable<N[]>
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Observable<R[]> {
+    return this.networks$.pipe(map(util.filterNetworksByPlatform(platform))) as Observable<R[]>
   }
-  async networks<
+  async getNetworks<
     P extends NetworkPlatform | undefined,
-    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(platform?: P): Promise<N[]> {
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Promise<R[]> {
     return (await util.wrapObservableWithGetter(
       "Failed to get networks",
-      this.networksObservable(platform),
-    )) as N[]
+      this.getNetworks$(platform),
+    )) as R[]
   }
 
-  networkIdsObservable(platform?: NetworkPlatform) {
-    return this.networksObservable(platform).pipe(map(util.itemsToIds))
+  getNetworkIds$(platform?: NetworkPlatform) {
+    return this.getNetworks$(platform).pipe(map(util.itemsToIds))
   }
-  async networkIds(platform?: NetworkPlatform) {
+  async getNetworkIds(platform?: NetworkPlatform) {
     return await util.wrapObservableWithGetter(
       "Failed to get networkIds",
-      this.networkIdsObservable(platform),
+      this.getNetworkIds$(platform),
     )
   }
 
-  networksByIdObservable<
+  getNetworksMapById$<
     P extends NetworkPlatform | undefined,
-    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(platform?: P) {
-    return this.networksObservable(platform).pipe(map(util.itemsToMapById)) as Observable<
-      Record<NetworkId, N>
+    return this.getNetworks$(platform).pipe(map(util.itemsToMapById)) as Observable<
+      Record<NetworkId, R>
     >
   }
-  async networksById<
+  async getNetworksMapById<
     P extends NetworkPlatform | undefined,
-    N = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(platform?: P): Promise<Record<NetworkId, N>> {
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(platform?: P): Promise<Record<NetworkId, R>> {
     return (await util.wrapObservableWithGetter(
       "Failed to get networks by id",
-      this.networksByIdObservable(platform),
-    )) as Record<NetworkId, N>
+      this.getNetworksMapById$(platform),
+    )) as Record<NetworkId, R>
   }
 
-  get networksByGenesisHashObservable() {
-    return this.networksObservable("polkadot").pipe(map(util.itemsToMapByGenesisHash))
+  get getNetworksMapByGenesisHash$() {
+    return this.getNetworks$("polkadot").pipe(map(util.itemsToMapByGenesisHash))
   }
-  async networksByGenesisHash() {
+  async getNetworksMapByGenesisHash() {
     return await util.wrapObservableWithGetter(
       "Failed to get networks by genesisHash",
-      this.networksByGenesisHashObservable,
+      this.getNetworksMapByGenesisHash$,
     )
   }
 
-  async networkById<
+  getNetworkById$<
     P extends NetworkPlatform | undefined,
-    Res = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(networkId: NetworkId, platform?: P): Promise<Res | null> {
-    return await util.withErrorReason("Failed to get evmNetwork by id", async () => {
-      const networksList = await this.networksById()
-      const network = networksList[networkId]
-      return !platform || isNetworkOfPlatform(network, platform) ? (network as Res) : null
-    })
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(networkId: NetworkId, platform?: P): Observable<R | null> {
+    return this.getNetworksMapById$(platform).pipe(
+      map((networksById) => networksById[networkId] ?? null),
+      distinctUntilChanged(isEqual),
+    ) as Observable<R | null>
   }
 
-  async networkByGenesisHash(genesisHash: `0x${string}`) {
+  async getNetworkById<
+    P extends NetworkPlatform | undefined,
+    R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(networkId: NetworkId, platform?: P): Promise<R | null> {
+    return (await util.withErrorReason("Failed to get network by id", async () =>
+      this.getNetworkById$(networkId, platform),
+    )) as R | null
+  }
+
+  async getNetworkByGenesisHash(genesisHash: `0x${string}`) {
     return await util.withErrorReason(
       "Failed to get network by genesisHash",
       async (): Promise<DotNetwork | null> =>
-        (await this.networksByGenesisHash())[genesisHash] ?? null,
+        (await this.getNetworksMapByGenesisHash())[genesisHash] ?? null,
     )
   }
 }

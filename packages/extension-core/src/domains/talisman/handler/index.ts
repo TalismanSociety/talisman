@@ -32,7 +32,7 @@ export default class TalismanHandler extends TabsHandler {
           id,
           port,
           chaindataProvider
-            .networksObservable("polkadot")
+            .getNetworks$("polkadot")
             .pipe(map((networks) => networks.filter(isNetworkCustom))),
         )
       }
@@ -47,7 +47,7 @@ export default class TalismanHandler extends TabsHandler {
           id,
           port,
           chaindataProvider
-            .networksObservable("ethereum")
+            .getNetworks$("ethereum")
             .pipe(map((networks) => networks.filter(isNetworkCustom))),
         )
       }

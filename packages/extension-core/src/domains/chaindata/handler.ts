@@ -14,7 +14,7 @@ export class ChaindataHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(chaindata.networks.subscribe)": {
-        return genericSubscription(id, port, chaindataProvider.networksObservable())
+        return genericSubscription(id, port, chaindataProvider.getNetworks$())
       }
 
       case "pri(chaindata.tokens.subscribe)": {

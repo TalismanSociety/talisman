@@ -27,8 +27,8 @@ export const getTypeRegistry = async (
 
   // TODO remove type override once chaindata-provider is fixed
   const chain = await (isHex(chainIdOrHash)
-    ? chaindataProvider.networkByGenesisHash(chainIdOrHash)
-    : chaindataProvider.networkById(chainIdOrHash, "polkadot"))
+    ? chaindataProvider.getNetworkByGenesisHash(chainIdOrHash)
+    : chaindataProvider.getNetworkById(chainIdOrHash, "polkadot"))
 
   // register typesBundle in registry for legacy (pre metadata v14) chains
   if (typesBundle.spec && chain?.specName && typesBundle.spec[chain.specName]) {

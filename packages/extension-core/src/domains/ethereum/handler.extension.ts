@@ -654,7 +654,7 @@ export class EthHandler extends ExtensionHandler {
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.subscribe)":
-        return genericSubscription(id, port, chaindataProvider.networksObservable("ethereum"))
+        return genericSubscription(id, port, chaindataProvider.getNetworks$("ethereum"))
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])

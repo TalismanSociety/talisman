@@ -122,7 +122,7 @@ class AssetDiscoveryScanner {
 
     // identify newly enabled networks and scan those
     combineLatest([
-      chaindataProvider.networksByIdObservable("ethereum"),
+      chaindataProvider.getNetworksMapById$("ethereum"),
       activeNetworksStore.observable,
     ])
       .pipe(
@@ -195,7 +195,7 @@ class AssetDiscoveryScanner {
   }
 
   public async startScan(scope: AssetDiscoveryScanScope, dequeue?: boolean): Promise<boolean> {
-    const evmNetworksMap = await chaindataProvider.networksById("ethereum")
+    const evmNetworksMap = await chaindataProvider.getNetworksMapById("ethereum")
 
     // for now we only support ethereum addresses and networks
     const addresses = scope.addresses.filter((address) => isEthereumAddress(address))
@@ -284,7 +284,7 @@ class AssetDiscoveryScanner {
 
     const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
       chaindataProvider.getTokens(),
-      chaindataProvider.networksById("ethereum"),
+      chaindataProvider.getNetworksMapById("ethereum"),
       activeTokensStore.get(),
       activeNetworksStore.get(),
     ])
@@ -362,7 +362,7 @@ class AssetDiscoveryScanner {
 
       const [allTokens, evmNetworks, activeTokens] = await Promise.all([
         chaindataProvider.getTokens(),
-        chaindataProvider.networksById("ethereum"),
+        chaindataProvider.getNetworksMapById("ethereum"),
         activeTokensStore.get(),
         activeNetworksStore.get(),
       ])
@@ -563,7 +563,7 @@ class AssetDiscoveryScanner {
 
     // all active evm networks
     const [evmNetworks, activeNetworks] = await Promise.all([
-      chaindataProvider.networks("ethereum"),
+      chaindataProvider.getNetworks("ethereum"),
       activeNetworksStore.get(),
     ])
 
@@ -596,7 +596,9 @@ class AssetDiscoveryScanner {
         tokens.map((token) => token.networkId).filter((id): id is EvmNetworkId => !!id),
       )
       const evmNetworks = (
-        await Promise.all(evmNetworkIds.map((id) => chaindataProvider.networkById(id, "ethereum")))
+        await Promise.all(
+          evmNetworkIds.map((id) => chaindataProvider.getNetworkById(id, "ethereum")),
+        )
       ).filter(isNetworkEth)
 
       // activate tokens that have not been explicitely enabled or disabled
@@ -628,7 +630,7 @@ class AssetDiscoveryScanner {
 
 const getActiveNetworkIdsToScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.networks("ethereum"),
+    chaindataProvider.getNetworks("ethereum"),
     activeNetworksStore.get(),
     // we dont scan substrate tokens for now
     // chaindataProvider.chains(),
@@ -642,7 +644,7 @@ const getActiveNetworkIdsToScan = async () => {
 
 const getNetworkIdsToForceScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.networks("ethereum"),
+    chaindataProvider.getNetworks("ethereum"),
     activeNetworksStore.get(),
   ])
 

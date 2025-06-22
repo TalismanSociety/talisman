@@ -24,7 +24,7 @@ export const watchEthereumTransaction = async (
     const { siteUrl, notifications, transferInfo = {}, txInfo } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
-    const ethereumNetwork = await chaindataProvider.networkById(evmNetworkId, "ethereum")
+    const ethereumNetwork = await chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${evmNetworkId}`)
 
     const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)

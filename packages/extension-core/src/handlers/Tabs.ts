@@ -200,7 +200,7 @@ export default class Tabs extends TabsHandler {
     // we dont want this metadata as it's not the full one, so it's an UX overhead we want to avoid
     // => return the spec version of all chains for which we know how to connect, plus the ones for which we have the metadata in db
     const [chains, metadata] = await Promise.all([
-      chaindataProvider.networks("polkadot"),
+      chaindataProvider.getNetworks("polkadot"),
       db.metadata.toArray(),
     ])
 

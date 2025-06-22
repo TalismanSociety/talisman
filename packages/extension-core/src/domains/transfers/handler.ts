@@ -270,7 +270,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     transferInfo,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const hash = await AssetTransfersRpc.transferSigned(unsigned, signature, transferInfo)

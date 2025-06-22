@@ -17,7 +17,7 @@ export class SubHandler extends ExtensionHandler {
     signature,
     txInfo,
   }) => {
-    const chain = await chaindataProvider.networkByGenesisHash(payload.genesisHash)
+    const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
     if (!chain) throw new Error(`Chain not found for genesis hash ${payload.genesisHash}`)
 
     const { registry } = await getTypeRegistry(

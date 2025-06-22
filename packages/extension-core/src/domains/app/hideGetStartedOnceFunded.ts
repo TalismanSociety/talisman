@@ -26,7 +26,7 @@ export const hideGetStartedOnceFunded = async () => {
     settingsStore.observable,
     keyringStore.accounts$,
     chaindataProvider.getTokensMapById(),
-    chaindataProvider.networksByIdObservable("polkadot"),
+    chaindataProvider.getNetworksMapById$("polkadot"),
     balancePool.observable,
     liveQuery(() => db.tokenRates.toArray()),
   ])

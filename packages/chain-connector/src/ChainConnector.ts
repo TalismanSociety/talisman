@@ -93,7 +93,7 @@ export class ChainConnector {
     this.#connectionMetaDb = connectionMetaDb
 
     if (this.#connectionMetaDb) {
-      this.#chaindataChainProvider.networkIds("polkadot").then((chainIds) => {
+      this.#chaindataChainProvider.getNetworkIds("polkadot").then((chainIds) => {
         // tidy up connectionMeta for chains which no longer exist
         this.#connectionMetaDb?.chainPriorityRpcs.where("id").noneOf(chainIds).delete()
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
@@ -172,7 +172,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
+        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -258,7 +258,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
+        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -621,7 +621,7 @@ export class ChainConnector {
   }
 
   private async getEndpoints(chainId: ChainId): Promise<string[]> {
-    const chain = await this.#chaindataChainProvider.networkById(chainId, "polkadot")
+    const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
     let rpcs = chain.rpcs.concat() // clone to avoid mutating the original array

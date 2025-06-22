@@ -44,27 +44,27 @@ export const chaindataAtom = atomWithObservable((get) => {
   const distinctUntilIsEqual = distinctUntilChanged(<T>(a: T, b: T) => isEqual(a, b))
 
   const chains = get(chaindataProviderAtom)
-    .networksObservable("polkadot")
+    .getNetworks$("polkadot")
     .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
   const chainsById = get(chaindataProviderAtom)
-    .networksByIdObservable("polkadot")
+    .getNetworksMapById$("polkadot")
     .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const chainsByGenesisHash = get(chaindataProviderAtom).networksByGenesisHashObservable.pipe(
+  const chainsByGenesisHash = get(chaindataProviderAtom).getNetworksMapByGenesisHash$.pipe(
     distinctUntilIsEqual,
     map(filterMapTestnets),
     distinctUntilIsEqual,
   )
   const evmNetworks = get(chaindataProviderAtom)
-    .networksObservable("ethereum")
+    .getNetworks$("ethereum")
     .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
   const networks = get(chaindataProviderAtom)
-    .networksObservable()
+    .getNetworks$()
     .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
   const evmNetworksById = get(chaindataProviderAtom)
-    .networksByIdObservable("ethereum")
+    .getNetworksMapById$("ethereum")
     .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
   const networksById = get(chaindataProviderAtom)
-    .networksByIdObservable()
+    .getNetworksMapById$()
     .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
   const tokens = get(chaindataProviderAtom).tokens$.pipe(
     distinctUntilIsEqual,

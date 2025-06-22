@@ -24,7 +24,7 @@ export const trackBalanceTotals = async () => {
     settingsStore.observable,
     keyringStore.accounts$,
     chaindataProvider.getTokensMapById(),
-    chaindataProvider.networksByIdObservable("polkadot"),
+    chaindataProvider.getNetworksMapById$("polkadot"),
     balancePool.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])

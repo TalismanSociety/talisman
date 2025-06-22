@@ -91,7 +91,7 @@ export default class AssetTransfersRpc {
     transferInfo: WalletTransactionTransferInfo,
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const { registry } = await getTypeRegistry(
@@ -181,7 +181,7 @@ export default class AssetTransfersRpc {
     chain: DotNetwork
     signature?: HexString
   }> {
-    const chain = await chaindataProvider.networkById(chainId, "polkadot")
+    const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 

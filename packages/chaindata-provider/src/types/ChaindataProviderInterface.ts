@@ -13,46 +13,48 @@ import {
 } from "../chaindata"
 
 export interface IChaindataNetworkProvider {
-  networksObservable<
+  networks$: Observable<Network[]>
+
+  getNetworks$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(
     platform?: P,
   ): Observable<R[]>
-  networks<
+  getNetworks<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(
     platform?: P,
   ): Promise<R[]>
 
-  networkIdsObservable(platform?: NetworkPlatform): Observable<NetworkId[]>
-  networkIds(platform?: NetworkPlatform): Promise<NetworkId[]>
+  getNetworkIds$(platform?: NetworkPlatform): Observable<NetworkId[]>
+  getNetworkIds(platform?: NetworkPlatform): Promise<NetworkId[]>
 
-  networksByIdObservable<
+  getNetworksMapById$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(
     platform?: P,
   ): Observable<Record<NetworkId, R>>
-  networksById<
+  getNetworksMapById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(
     platform?: P,
   ): Promise<Record<NetworkId, R>>
 
-  networksByGenesisHashObservable: Observable<Record<`0x${string}`, DotNetwork>>
-  networksByGenesisHash(): Promise<Record<`0x${string}`, DotNetwork>>
+  getNetworksMapByGenesisHash$: Observable<Record<`0x${string}`, DotNetwork>>
+  getNetworksMapByGenesisHash(): Promise<Record<`0x${string}`, DotNetwork>>
 
-  networkById<
+  getNetworkById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(
     networkId: NetworkId,
     platform?: P,
   ): Promise<R | null>
-  networkByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
+  getNetworkByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
 }
 
 export interface IChaindataTokenProvider {

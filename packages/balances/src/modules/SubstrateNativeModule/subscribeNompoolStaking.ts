@@ -22,7 +22,7 @@ export async function subscribeNompoolStaking(
   callback: SubscriptionCallback<SubNativeBalance[]>,
   signal?: AbortSignal,
 ) {
-  const allChains = await chaindataProvider.networksById("polkadot")
+  const allChains = await chaindataProvider.getNetworksMapById("polkadot")
   const tokens = await chaindataProvider.getTokensMapById()
 
   // there should be only one network here when subscribing to balances, we've split it up by network at the top level

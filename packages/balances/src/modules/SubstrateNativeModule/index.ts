@@ -571,7 +571,7 @@ export const SubNativeModule: NewBalanceModule<
       assert(token, `Token ${tokenId} not found in store`)
 
       const chainId = token.networkId
-      const chain = await chaindataProvider.networkById(chainId, "polkadot")
+      const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const { genesisHash } = chain

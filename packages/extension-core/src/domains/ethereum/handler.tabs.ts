@@ -108,7 +108,7 @@ export class EthTabsHandler extends TabsHandler {
   private async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
-    const ethereumNetwork = await chaindataProvider.networkById(
+    const ethereumNetwork = await chaindataProvider.getNetworkById(
       site.ethChainId.toString(),
       "ethereum",
     )
@@ -318,7 +318,7 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await chaindataProvider.networkById(chainId.toString(), "ethereum")
+    const existing = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
     const activeNetworks = await activeNetworksStore.get()
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
@@ -361,7 +361,7 @@ export class EthTabsHandler extends TabsHandler {
     await requestAddNetwork(url, network, port)
 
     // switch automatically to new chain
-    const ethereumNetwork = await chaindataProvider.networkById(chainId.toString(), "ethereum")
+    const ethereumNetwork = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
     if (ethereumNetwork) {
       const { err, val } = urlToDomain(url)
       if (err) throw new Error(val)
@@ -382,7 +382,10 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const ethChainId = parseInt(hexChainId, 16)
 
-    const ethereumNetwork = await chaindataProvider.networkById(ethChainId.toString(), "ethereum")
+    const ethereumNetwork = await chaindataProvider.getNetworkById(
+      ethChainId.toString(),
+      "ethereum",
+    )
     const activeNetworks = await activeNetworksStore.get()
     if (!ethereumNetwork || !isNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(

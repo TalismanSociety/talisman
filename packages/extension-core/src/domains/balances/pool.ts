@@ -76,7 +76,7 @@ const getActiveStuff = <T, A extends Record<string, boolean>>(
 }
 
 export const activeNetworksObservable = getActiveStuff(
-  chaindataProvider.networksObservable(),
+  chaindataProvider.getNetworks$(),
   activeNetworksStore.observable,
   isNetworkActive,
 )

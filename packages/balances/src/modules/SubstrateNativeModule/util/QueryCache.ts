@@ -32,7 +32,7 @@ export class QueryCache {
   }
 
   async getQueries(addressesByToken: AddressesByToken<SubNativeToken>) {
-    const chains = await this.chaindataProvider.networksById("polkadot")
+    const chains = await this.chaindataProvider.getNetworksMapById("polkadot")
     const tokens = await this.chaindataProvider.getTokensMapById()
 
     const queryResults = Object.entries(addressesByToken).reduce<QueryCacheResults>(

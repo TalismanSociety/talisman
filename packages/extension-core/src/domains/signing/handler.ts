@@ -62,7 +62,7 @@ export default class SigningHandler extends ExtensionHandler {
 
         registry = fullRegistry
 
-        const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
+        const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
         analyticsProperties.chain = chain?.id ?? genesisHash
       }
 
@@ -71,7 +71,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
-        const chain = await chaindataProvider.networkByGenesisHash(payload.genesisHash)
+        const chain = await chaindataProvider.getNetworkByGenesisHash(payload.genesisHash)
 
         // create signable extrinsic payload
         const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
@@ -172,7 +172,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
-      const chain = await chaindataProvider.networkByGenesisHash(genesisHash)
+      const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
       analyticsProperties.chain = chain?.id ?? payload.genesisHash
 
       if (chain) {

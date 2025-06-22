@@ -271,7 +271,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
       assert(token, `Token ${tokenId} not found in store`)
 
       const chainId = token.networkId
-      const chain = await chaindataProvider.networkById(chainId, "polkadot")
+      const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
       const onChainId = (() => {
@@ -319,7 +319,7 @@ async function buildNetworkQueries(
     moduleType,
     signal,
   )
-  const chain = await chaindataProvider.networkById(networkId, "polkadot")
+  const chain = await chaindataProvider.getNetworkById(networkId, "polkadot")
   const tokensById = await chaindataProvider.getTokensMapById()
 
   signal?.throwIfAborted()

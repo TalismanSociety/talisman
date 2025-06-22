@@ -85,7 +85,7 @@ const fetchMiniMetadatas = async (
       modules.map(async (mod) => {
         const source = mod.type as DotBalanceModuleType
 
-        const chain = await chaindataProvider.networkById(chainId, "polkadot")
+        const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
 
         const balancesConfig = chain?.balancesConfig?.[mod.type as DotBalanceModuleType]
 

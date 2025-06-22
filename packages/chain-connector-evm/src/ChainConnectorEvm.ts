@@ -17,7 +17,7 @@ export class ChainConnectorEvm {
   }
 
   async getPublicClientForEvmNetwork(evmNetworkId: EvmNetworkId): Promise<PublicClient | null> {
-    const network = await this.#chaindataProvider.networkById(evmNetworkId, "ethereum")
+    const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!network?.nativeTokenId) return null
 
     const nativeToken = await this.#chaindataProvider.getTokenById(
@@ -32,7 +32,7 @@ export class ChainConnectorEvm {
     evmNetworkId: EthNetworkId,
     account?: `0x${string}` | Account,
   ): Promise<WalletClient | null> {
-    const network = await this.#chaindataProvider.networkById(evmNetworkId, "ethereum")
+    const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!network?.nativeTokenId) return null
 
     const nativeToken = await this.#chaindataProvider.getTokenById(
