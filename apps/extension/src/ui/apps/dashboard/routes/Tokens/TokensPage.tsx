@@ -15,7 +15,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useBalancesHydrate, useNetworks } from "@ui/state"
+import { useBalancesHydrate, useNetwork, useNetworks } from "@ui/state"
 
 import { PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
@@ -48,6 +48,13 @@ const NetworkSelect = ({
     if (!selected) {
       const defaultNetwork = networks.find((n) => n.id === selectedId)
       if (defaultNetwork) setSelected(defaultNetwork)
+    } else if (selectedId !== selected.id) {
+      const newSelected = networks.find((n) => n.id === selectedId)
+      if (newSelected) {
+        setSelected(newSelected)
+      } else {
+        setSelected(undefined)
+      }
     }
   }, [selectedId, networks, selected])
 
@@ -86,16 +93,17 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
-  const networks = useNetworks({ activeOnly: true, includeTestnets: true })
-
-  const [isActiveOnly, setIsActiveOnly] = useState(true)
-  const [isCustomOnly, setIsCustomOnly] = useState(false)
-  const [isHidePools, setIsHidePools] = useState(false)
 
   const params = useParams()
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
     params.platform as PlatformOption,
   )
+
+  const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
+
+  const [isActiveOnly, setIsActiveOnly] = useState(true)
+  const [isCustomOnly, setIsCustomOnly] = useState(false)
+  const [isHidePools, setIsHidePools] = useState(false)
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
@@ -108,6 +116,7 @@ const Content = () => {
     ]
   }, [networks, t])
   const [networkId, setNetworkId] = useState<EthNetworkId>("ALL")
+  const network = useNetwork(networkId)
 
   // search value is debounced by SearchInput component
   // keep search value in location state to preserve it when user clicks a token then goes back
@@ -126,6 +135,11 @@ const Content = () => {
   }, [navigate])
 
   const ocResetAllModal = useOpenClose()
+
+  useEffect(() => {
+    // reset selected network if platform changes to an incompatible one
+    if (platform !== "all" && networkId && network?.platform !== platform) setNetworkId("ALL")
+  }, [platform, networkId, network])
 
   return (
     <>
@@ -187,7 +201,7 @@ const Content = () => {
       </div>
       <Spacer />
       <TokensList
-        platform={platform !== "all" ? platform : undefined}
+        platform={platform}
         isActiveOnly={isActiveOnly}
         isCustomOnly={isCustomOnly}
         isHidePools={isHidePools}

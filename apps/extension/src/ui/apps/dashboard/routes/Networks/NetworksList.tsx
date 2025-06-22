@@ -1,4 +1,4 @@
-import { isNetworkCustom, Network, NetworkPlatform } from "@talismn/chaindata-provider"
+import { isNetworkCustom, Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -22,11 +22,12 @@ import {
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
+import { PlatformOption } from "./usePlatformOptions"
 
 export const NetworksList: FC<{
   activeOnly: boolean
   search?: string
-  platform?: NetworkPlatform
+  platform: PlatformOption
 }> = ({ platform, activeOnly, search }) => {
   const { t } = useTranslation()
   const { recommendedNetworks } = useRemoteConfig()
@@ -235,7 +236,7 @@ const NetworkRow: FC<{
 }
 
 const ResetAllNetworksModalContent: FC<{
-  platform?: NetworkPlatform
+  platform: PlatformOption
   onClose: () => void
 }> = ({ platform, onClose }) => {
   const { t } = useTranslation()
@@ -281,7 +282,7 @@ const ResetAllNetworksModalContent: FC<{
 type DeactivateMode = "all" | "unused"
 
 const DeactivateNetworksModalContent: FC<{
-  platform?: NetworkPlatform
+  platform: PlatformOption
   onClose: () => void
 }> = ({ platform, onClose }) => {
   const { t } = useTranslation()

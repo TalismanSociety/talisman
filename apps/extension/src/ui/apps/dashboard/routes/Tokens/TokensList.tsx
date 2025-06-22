@@ -3,7 +3,6 @@ import {
   isTokenEvmUniswapV2,
   isTokenInTypes,
   NetworkId,
-  NetworkPlatform,
   Token,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
@@ -29,8 +28,10 @@ import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useActiveTokensState, useNetwork, useNetworksMapById, useTokens } from "@ui/state"
 
+import { PlatformOption } from "../Networks/usePlatformOptions"
+
 export const TokensList: FC<{
-  platform?: NetworkPlatform
+  platform: PlatformOption
   networkId?: NetworkId
   search?: string
   isActiveOnly?: boolean
@@ -41,9 +42,6 @@ export const TokensList: FC<{
   const networksMap = useNetworksMapById({ platform, activeOnly: true, includeTestnets: true })
   const tokens = useTokens()
   const activeTokens = useActiveTokensState()
-
-  // TODO filter using useTokens
-  // const platformTokens = useMemo(() => tokens.filter((t) => !platform || isTokenOfPlatform(t, platform) ), [tokens, platform])
 
   const filteredTokens = useMemo(() => {
     const result = tokens

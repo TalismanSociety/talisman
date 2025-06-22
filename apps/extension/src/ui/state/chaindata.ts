@@ -7,9 +7,11 @@ import {
   EthNetwork,
   EthNetworkId,
   NetworkId,
+  NetworkOfPlatform,
   NetworkPlatform,
   Token,
   TokenId,
+  TokenOfPlatform,
 } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util/src/getSharedObservable"
 import {
@@ -31,11 +33,11 @@ export type AnyChain = Chain | CustomChain
 
 type PlatformFilter = NetworkPlatform | "all"
 
-type NetworkOfPlatform<P extends PlatformFilter> = P extends "ethereum"
-  ? EthNetwork
-  : P extends "polkadot"
-    ? DotNetwork
-    : Network
+type NetworkOf<P extends PlatformFilter> = P extends NetworkPlatform
+  ? NetworkOfPlatform<P>
+  : Network
+
+type TokenOf<P extends PlatformFilter> = P extends NetworkPlatform ? TokenOfPlatform<P> : Token
 
 export type ChaindataQueryOptions<P extends PlatformFilter = "all"> = Partial<{
   platform: P
@@ -63,8 +65,8 @@ const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
   .pipe(shareReplay(1))
 
 const filterByPlatform =
-  <P extends PlatformFilter>(platform: P) =>
-  (item: { platform: NetworkPlatform }): item is NetworkOfPlatform<P> =>
+  <P extends PlatformFilter, T extends { platform: NetworkPlatform }>(platform: P) =>
+  (item: T): boolean =>
     !platform || platform === "all" || item.platform === platform
 const filterIncludeTestnets = (includeTestnets: boolean) => (item: { isTestnet?: boolean }) =>
   includeTestnets || !item.isTestnet
@@ -81,10 +83,8 @@ export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions
     )
   })
 }) as [
-  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => NetworkOfPlatform<P>[],
-  <P extends PlatformFilter>(
-    options?: ChaindataQueryOptions<P>,
-  ) => StateObservable<NetworkOfPlatform<P>[]>,
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => NetworkOf<P>[],
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => StateObservable<NetworkOf<P>[]>,
 ]
 
 export const [useNetworksMapById, getNetworksMapById$] = bind((options: ChaindataQueryOptions) => {
@@ -92,23 +92,21 @@ export const [useNetworksMapById, getNetworksMapById$] = bind((options: Chaindat
     return getNetworks$(opts).pipe(map((networks) => keyBy(networks, "id")))
   })
 }) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<NetworkId, NetworkOf<P>>,
   <P extends PlatformFilter>(
     options?: ChaindataQueryOptions<P>,
-  ) => Record<NetworkId, NetworkOfPlatform<P>>,
-  <P extends PlatformFilter>(
-    options?: ChaindataQueryOptions<P>,
-  ) => StateObservable<Record<NetworkId, NetworkOfPlatform<P>>>,
+  ) => StateObservable<Record<NetworkId, NetworkOf<P>>>,
 ]
 
 export const [useNetworkById, getNetworkById$] = bind((id: NetworkId | null | undefined) =>
   getNetworksMapById$().pipe(map((networksById): Network | null => networksById[id ?? ""] || null)),
 ) as [
+  // allows forcing platform output type when calling the hook like useNetwork<"ethereum">(id)
+  // TODO change this to a PlatformFilter optional arg, and actually check it
+  <P extends PlatformFilter = "all">(id: NetworkId | null | undefined) => NetworkOf<P> | null,
   <P extends PlatformFilter = "all">(
     id: NetworkId | null | undefined,
-  ) => NetworkOfPlatform<P> | null,
-  <P extends PlatformFilter = "all">(
-    id: NetworkId | null | undefined,
-  ) => StateObservable<NetworkOfPlatform<P> | null>,
+  ) => StateObservable<NetworkOf<P> | null>,
 ]
 
 export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
@@ -229,16 +227,31 @@ export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) =>
       debugObservable("getTokens$"),
     )
   })
-})
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => TokenOf<P>[],
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => StateObservable<TokenOf<P>[]>,
+]
 
 export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptions) => {
   return getSharedObservable("getTokensMap$", options, (opts) =>
     getTokens$(opts).pipe(map((tokens) => keyBy(tokens, "id"))),
   )
-})
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<TokenId, TokenOf<P>>,
+  <P extends PlatformFilter>(
+    options?: ChaindataQueryOptions<P>,
+  ) => StateObservable<Record<TokenId, TokenOf<P>>>,
+]
 
 export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
   return getTokensMap$().pipe(
     map((tokensMap): Token | null => (tokenId && tokensMap[tokenId ?? "#"]) || null),
   )
-})
+}) as [
+  // allows forcing platform output type when calling the hook like useToken<"evm-erc20">(id)
+  // TODO change this to a PlatformFilter optional arg, and actually check it
+  <P extends PlatformFilter = "all">(id: TokenId | null | undefined) => TokenOf<P> | null,
+  <P extends PlatformFilter = "all">(
+    id: TokenId | null | undefined,
+  ) => StateObservable<TokenOf<P> | null>,
+]

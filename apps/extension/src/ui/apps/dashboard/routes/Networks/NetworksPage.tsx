@@ -102,11 +102,7 @@ const Content = () => {
         <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
       </div>
       <Spacer small />
-      <NetworksList
-        platform={platform !== "all" ? platform : undefined}
-        activeOnly={activeOnly}
-        search={search}
-      />
+      <NetworksList platform={platform} activeOnly={activeOnly} search={search} />
     </>
   )
 }
