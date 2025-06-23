@@ -70,7 +70,7 @@ import {
 } from "./types"
 import { mergeBalances } from "./util/mergeBalances"
 import { QueryCache } from "./util/QueryCache"
-import { sortChains } from "./util/sortChains"
+import { sortChainsNativeTokensByPriority } from "./util/sortChains"
 import { SubNativeBalanceError } from "./util/SubNativeBalanceError"
 import { getChainProperties } from "./util/systemProperties"
 
@@ -144,7 +144,9 @@ export const SubNativeModule: NewBalanceModule<
 
     // tokens that will be subscribed to, simply a slice of the positive balance tokens of size MAX_SUBSCRIPTION_SIZE
     const subscriptionTokens = positiveBalanceTokens.pipe(
-      map((tokens) => tokens.sort(sortChains).slice(0, MAX_SUBSCRIPTION_SIZE)),
+      map((tokens) =>
+        tokens.sort(sortChainsNativeTokensByPriority).slice(0, MAX_SUBSCRIPTION_SIZE),
+      ),
     )
 
     // an initialised balance is one where we have received a response for any type of 'subsource',
@@ -321,7 +323,7 @@ export const SubNativeModule: NewBalanceModule<
 
     const nonCurrentTokens = Object.keys(addressesByToken)
       .filter((tokenId) => !currentTokens.has(tokenId))
-      .sort(sortChains)
+      .sort(sortChainsNativeTokensByPriority)
 
     // break nonCurrentTokens into chunks of POLLING_WINDOW_SIZE
     const pool = new PQueue({ concurrency: POLLING_WINDOW_SIZE })

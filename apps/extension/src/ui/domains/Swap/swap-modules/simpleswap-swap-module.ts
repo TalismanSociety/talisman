@@ -1,6 +1,12 @@
 import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
-import { chainConnectorsAtom } from "@talismn/balances-react"
+import {
+  chainConnectorsAtom,
+  evmErc20TokenId,
+  evmNativeTokenId,
+  subAssetTokenId,
+  subNativeTokenId,
+} from "@talismn/balances-react"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
@@ -98,21 +104,21 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
  */
 const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   dot: {
-    id: "polkadot-substrate-native",
+    id: subNativeTokenId("polkadot"),
     name: "Polkadot",
     symbol: "DOT",
     chainId: "polkadot",
     networkType: "substrate",
   },
   ksm: {
-    id: "kusama-substrate-native",
+    id: subNativeTokenId("kusama"),
     name: "Kusama",
     symbol: "KSM",
     chainId: "kusama",
     networkType: "substrate",
   },
   usdtdot: {
-    id: "polkadot-asset-hub-substrate-assets-1984-usdt",
+    id: subAssetTokenId("polkadot-asset-hub", "1984"),
     name: "USDT (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDT",
@@ -120,7 +126,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1984",
   },
   usdcdot: {
-    id: "polkadot-asset-hub-substrate-assets-1337-usdc",
+    id: subAssetTokenId("polkadot-asset-hub", "1337"),
     name: "USDC (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDC",
@@ -128,42 +134,42 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1337",
   },
   eth: {
-    id: "1-evm-native",
+    id: evmNativeTokenId("1"),
     name: "Ethereum",
     chainId: 1,
     symbol: "ETH",
     networkType: "evm",
   },
   etharb: {
-    id: "42161-evm-native",
+    id: evmNativeTokenId("42161"),
     name: "Ethereum",
     chainId: 42161,
     symbol: "ETH",
     networkType: "evm",
   },
   ethop: {
-    id: "10-evm-native",
+    id: evmNativeTokenId("10"),
     name: "Ethereum",
     chainId: 10,
     symbol: "ETH",
     networkType: "evm",
   },
   s: {
-    id: "146-evm-native",
+    id: evmNativeTokenId("146"),
     name: "Sonic",
     chainId: 146,
     symbol: "S",
     networkType: "evm",
   },
   ethmanta: {
-    id: "169-evm-native",
+    id: evmNativeTokenId("169"),
     name: "Ethereum (Manta Pacific)",
     chainId: 169,
     symbol: "ETH",
     networkType: "evm",
   },
   manta: {
-    id: "169-evm-erc20-0x95cef13441be50d20ca4558cc0a27b601ac544e5",
+    id: evmErc20TokenId("169", "0x95cef13441be50d20ca4558cc0a27b601ac544e5"),
     name: "Manta Network",
     chainId: 169,
     symbol: "MANTA",
@@ -171,14 +177,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     contractAddress: "0x95cef13441be50d20ca4558cc0a27b601ac544e5",
   },
   tao: {
-    id: "bittensor-substrate-native",
+    id: subNativeTokenId("bittensor"),
     name: "Bittensor",
     chainId: "bittensor",
     symbol: "TAO",
     networkType: "substrate",
   },
   anlog: {
-    id: "analog-timechain-substrate-native",
+    id: subNativeTokenId("analog-timechain"),
     name: "Analog",
     chainId: "analog-timechain",
     symbol: "ANLOG",
@@ -193,14 +199,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects substrate address when swapping ASTR */
   astr: {
-    id: "astar-substrate-native",
+    id: subNativeTokenId("astar"),
     name: "Astar",
     symbol: "ASTR",
     chainId: "astar",
     networkType: "substrate",
   },
   azero: {
-    id: "aleph-zero-substrate-native",
+    id: subNativeTokenId("aleph-zero"),
     name: "Aleph Zero",
     symbol: "AZERO",
     chainId: "aleph-zero",
@@ -208,7 +214,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects substrate address when swapping ACA */
   aca: {
-    id: "acala-substrate-native",
+    id: subNativeTokenId("acala"),
     name: "ACALA",
     symbol: "ACA",
     chainId: "acala",
@@ -216,7 +222,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects EVM address when swapping GLMR */
   glmr: {
-    id: "1284-evm-native",
+    id: evmNativeTokenId("1284"),
     name: "Moonbeam",
     symbol: "GLMR",
     chainId: "moonbeam",
@@ -224,14 +230,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects EVM address when swapping MOVR */
   movr: {
-    id: "1285-evm-native",
+    id: evmNativeTokenId("1285"),
     name: "Moonriver",
     symbol: "MOVR",
     chainId: "moonriver",
     networkType: "evm",
   },
   avail: {
-    id: "avail-substrate-native",
+    id: subNativeTokenId("avail"),
     name: "Avail",
     symbol: "AVAIL",
     chainId: "avail",
@@ -839,7 +845,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
-    tokenId: substrateChain?.nativeTokenId ?? "polkadot-substrate-native",
+    tokenId: substrateChain?.nativeTokenId ?? subNativeTokenId("polkadot"),
     amount: BigNumber(paymentInfo.partialFee.toBigInt().toString()).times(10 ** -decimals),
   }
 }

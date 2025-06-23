@@ -3,10 +3,10 @@ import { Transaction } from "dexie"
 import { Token, TokenId } from "../chaindata"
 import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "../types"
 
-const subNativeTokenId = (chainId: ChainId) =>
+const legacySubNativeTokenId = (chainId: ChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
-const evmNativeTokenId = (chainId: EvmNetworkId) =>
+const legacyEvmNativeTokenId = (chainId: EvmNetworkId) =>
   `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
 
 // for DB version 2, Wallet version 1.21.0
@@ -32,9 +32,9 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
 
     const id =
       nativeToken.type === "substrate-native"
-        ? subNativeTokenId(networkId)
+        ? legacySubNativeTokenId(networkId)
         : nativeToken.type === "evm-native"
-          ? evmNativeTokenId(networkId)
+          ? legacyEvmNativeTokenId(networkId)
           : undefined
     if (!id) continue
 

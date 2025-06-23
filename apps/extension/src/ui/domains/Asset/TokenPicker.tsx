@@ -1,6 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -350,10 +350,10 @@ const TokensList: FC<TokensListProps> = ({
         if (!aHasBalance && bHasBalance) return 1
 
         // polkadot and kusama should appear first
-        if (a.token.id === "polkadot-substrate-native") return -1
-        if (b.token.id === "polkadot-substrate-native") return 1
-        if (a.token.id === "kusama-substrate-native") return -1
-        if (b.token.id === "kusama-substrate-native") return 1
+        if (a.token.id === subNativeTokenId("polkadot")) return -1
+        if (b.token.id === subNativeTokenId("polkadot")) return 1
+        if (a.token.id === subNativeTokenId("kusama")) return -1
+        if (b.token.id === subNativeTokenId("kusama")) return 1
 
         // keep alphabetical sort
         return 0

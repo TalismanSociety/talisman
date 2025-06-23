@@ -34,7 +34,7 @@ const TransferAssets: DecodedCallSummaryComponent<TransferAssetArgs> = ({
   const props = useMemo<SummaryCrossChainTransferProps>(() => {
     if (!chain) throw new Error("chain not found")
 
-    const { tokenId, value } = getMultiAssetTokenId(args.assets, chain, tokensMap)
+    const { tokenId, value } = getMultiAssetTokenId(args.assets, chain)
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 

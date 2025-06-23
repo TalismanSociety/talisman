@@ -1,6 +1,11 @@
 import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
-import { chainConnectorsAtom } from "@talismn/balances-react"
+import {
+  chainConnectorsAtom,
+  evmNativeTokenId,
+  subAssetTokenId,
+  subNativeTokenId,
+} from "@talismn/balances-react"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
@@ -128,21 +133,21 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
  */
 const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   "mainnet::dot": {
-    id: "polkadot-substrate-native",
+    id: subNativeTokenId("polkadot"),
     name: "Polkadot",
     symbol: "DOT",
     chainId: "polkadot",
     networkType: "substrate",
   },
   "polkadot::ksm": {
-    id: "kusama-substrate-native",
+    id: subNativeTokenId("kusama"),
     name: "Kusama",
     symbol: "KSM",
     chainId: "kusama",
     networkType: "substrate",
   },
   "polkadot::usdt": {
-    id: "polkadot-asset-hub-substrate-assets-1984-usdt",
+    id: subAssetTokenId("polkadot-asset-hub", "1984"),
     name: "USDT (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDT",
@@ -150,7 +155,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1984",
   },
   "polkadot::usdc": {
-    id: "polkadot-asset-hub-substrate-assets-1337-usdc",
+    id: subAssetTokenId("polkadot-asset-hub", "1337"),
     name: "USDC (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDC",
@@ -158,63 +163,63 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1337",
   },
   "mainnet::eth": {
-    id: "1-evm-native",
+    id: evmNativeTokenId("1"),
     name: "Ethereum",
     chainId: 1,
     symbol: "ETH",
     networkType: "evm",
   },
   "arbitrum::eth": {
-    id: "42161-evm-native",
+    id: evmNativeTokenId("42161"),
     name: "Ethereum",
     chainId: 42161,
     symbol: "ETH",
     networkType: "evm",
   },
   "arbnova::eth": {
-    id: "42170-evm-native",
+    id: evmNativeTokenId("42170"),
     name: "Ethereum",
     chainId: 42170,
     symbol: "ETH",
     networkType: "evm",
   },
   "base::eth": {
-    id: "8453-evm-native",
+    id: evmNativeTokenId("8453"),
     name: "Ethereum",
     chainId: 8453,
     symbol: "ETH",
     networkType: "evm",
   },
   "bsc::eth": {
-    id: "56-evm-native",
+    id: evmNativeTokenId("56"),
     name: "Ethereum",
     chainId: 56,
     symbol: "ETH",
     networkType: "evm",
   },
   "optimism::eth": {
-    id: "10-evm-native",
+    id: evmNativeTokenId("10"),
     name: "Ethereum",
     chainId: 10,
     symbol: "ETH",
     networkType: "evm",
   },
   "manta::eth": {
-    id: "169-evm-native",
+    id: evmNativeTokenId("169"),
     name: "Ethereum (Manta Pacific)",
     chainId: 169,
     symbol: "ETH",
     networkType: "evm",
   },
   "zksync::eth": {
-    id: "324-evm-native",
+    id: evmNativeTokenId("324"),
     name: "Ethereum",
     chainId: 324,
     symbol: "ETH",
     networkType: "evm",
   },
   "mainnet::tao": {
-    id: "bittensor-substrate-native",
+    id: subNativeTokenId("bittensor"),
     name: "Bittensor",
     chainId: "bittensor",
     symbol: "TAO",
@@ -228,21 +233,21 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     networkType: "btc",
   },
   "mainnet::astr": {
-    id: "astar-substrate-native",
+    id: subNativeTokenId("astar"),
     name: "Astar",
     symbol: "ASTR",
     chainId: "astar",
     networkType: "substrate",
   },
   "mainnet::azero": {
-    id: "aleph-zero-substrate-native",
+    id: subNativeTokenId("aleph-zero"),
     name: "Aleph Zero",
     symbol: "AZERO",
     chainId: "aleph-zero",
     networkType: "substrate",
   },
   "mainnet::aca": {
-    id: "acala-substrate-native",
+    id: subNativeTokenId("acala"),
     name: "ACALA",
     symbol: "ACA",
     chainId: "acala",
@@ -831,7 +836,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
-    tokenId: substrateChain?.nativeTokenId ?? "polkadot-substrate-native",
+    tokenId: substrateChain?.nativeTokenId ?? subNativeTokenId("polkadot"),
     amount: BigNumber(paymentInfo.partialFee.toBigInt().toString()).times(10 ** -decimals),
   }
 }

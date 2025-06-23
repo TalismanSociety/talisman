@@ -2,6 +2,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
   ChainId,
   DotNetwork,
+  evmNativeTokenId,
   Network,
   NetworkId,
   NetworkList,
@@ -125,7 +126,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     route: getNextRoute(inputs),
   }))
 
-  const ethereum = useToken("1-evm-native")
+  const ethereum = useToken(evmNativeTokenId("1"))
 
   const network = useNetworkById(state.networkId)
   // const chain = useChain(state.networkId)

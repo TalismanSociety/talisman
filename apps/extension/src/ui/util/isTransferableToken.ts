@@ -1,4 +1,9 @@
-import { Token } from "@talismn/chaindata-provider"
+import {
+  evmErc20TokenId,
+  subNativeTokenId,
+  subTokensTokenId,
+  Token,
+} from "@talismn/chaindata-provider"
 
 // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
 // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
@@ -6,14 +11,14 @@ import { Token } from "@talismn/chaindata-provider"
 // ACA, BNC and KAR use native (orml won't work)
 // INTR, KINT and MGX use orml (native won't work)
 export const UNTRANSFERABLE_TOKENS = [
-  "bifrost-kusama-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiAEIByAwiAL6tA", // BNC
-  "bifrost-polkadot-substrate-tokens-N4IgLgngDgpiBcIAqB7A1jAdiANCAbgIYA2ArnPKJLAiAEIByAwiAL6tA", // BNC
-  "interlay-substrate-native",
-  "kintsugi-substrate-native",
-  "mangata-substrate-native",
+  subTokensTokenId("bifrost-kusama", '{"type":"Token","value":{"type":"BNC"}}'),
+  subTokensTokenId("bifrost-polkadot", '{"type":"Token","value":{"type":"BNC"}}'),
+  subNativeTokenId("interlay"),
+  subNativeTokenId("kintsugi"),
+  subNativeTokenId("mangata"),
 
   // specific cases
-  "137-evm-erc20-0x0000000000000000000000000000000000001010",
+  evmErc20TokenId("137", "0x0000000000000000000000000000000000001010"), // WMATIC on Polygon
 ]
 
 export const isTransferableToken = (t: Token) => {
