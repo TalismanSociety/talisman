@@ -10,7 +10,7 @@ import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import { sortBy } from "lodash"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -39,49 +39,64 @@ export const TokensList: FC<{
   isHidePools?: boolean
 }> = ({ networkId, platform, search, isActiveOnly, isCustomOnly, isHidePools }) => {
   const { t } = useTranslation()
-  const networksMap = useNetworksMapById({ platform, activeOnly: true, includeTestnets: true })
+  const networksMap = useNetworksMapById({
+    platform,
+    activeOnly: isActiveOnly,
+    includeTestnets: true,
+  })
   const tokens = useTokens()
   const activeTokens = useActiveTokensState()
 
-  const filteredTokens = useMemo(() => {
-    const result = tokens
+  const defaultTokens = useMemo(() => {
+    const results = tokens
       .filter((t) => !!networksMap[t.networkId])
-      .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
-      .filter((t) => !!search || !isCustomOnly || isTokenCustom(t))
-      .filter((t) => !!search || !isHidePools || !isTokenEvmUniswapV2(t))
       .filter((t) => networkId === "ALL" || t.networkId === networkId)
 
     return sortBy(
-      result,
+      results,
       (t) => networksMap[t.networkId]?.name,
       (t) => t.symbol,
     )
-  }, [
-    activeTokens,
-    networkId,
-    isActiveOnly,
-    isCustomOnly,
-    isHidePools,
-    networksMap,
-    search,
-    tokens,
-  ])
+  }, [tokens, networksMap, networkId])
 
-  const displayTokens = useMemo(() => {
+  // keep displayed networks list as state so if activeOnly is on, disabling a network doesnt make it disappear
+  // also helps performance
+  const [displayedTokens, setDisplayedTokens] = useState<Token[]>(() => defaultTokens)
+
+  useEffect(() => {
     const lowerSearch = search?.trim().toLowerCase()
 
-    return filteredTokens.filter(
-      (t) =>
-        !lowerSearch ||
-        (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
-        (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
-        t.symbol.toLowerCase().includes(lowerSearch) ||
-        (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
-          isAddressEqual(t.contractAddress, lowerSearch)),
-    )
-  }, [filteredTokens, search])
+    const results = defaultTokens
+      .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
+      .filter((t) => !!search || !isCustomOnly || isTokenCustom(t))
+      .filter((t) => !!search || !isHidePools || !isTokenEvmUniswapV2(t))
+      .filter(
+        (t) =>
+          !lowerSearch ||
+          (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
+          (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
+          t.symbol.toLowerCase().includes(lowerSearch) ||
+          (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
+            isAddressEqual(t.contractAddress, lowerSearch)),
+      )
 
-  if (!displayTokens.length)
+    // exact matches first
+    if (lowerSearch)
+      results.sort((a, b) => {
+        const aMatch = a.symbol.toLowerCase() === lowerSearch
+        const bMatch = b.symbol.toLowerCase() === lowerSearch
+        if (aMatch && !bMatch) return -1
+        if (!aMatch && bMatch) return 1
+        return 0
+      })
+
+    setDisplayedTokens(results)
+
+    // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultTokens, isActiveOnly, isCustomOnly, isHidePools, search])
+
+  if (!displayedTokens.length)
     return (
       <div className="bg-grey-850 text-body-secondary my-12 rounded py-24 text-center">
         <div>{t("No token found")}</div>
@@ -96,7 +111,7 @@ export const TokensList: FC<{
         <div>{t("Network")}</div>
         <div className="pr-20 text-right">{t("Active")}</div>
       </div>
-      <VirtualizedRows tokens={displayTokens} />
+      <VirtualizedRows tokens={displayedTokens} />
     </div>
   )
 }

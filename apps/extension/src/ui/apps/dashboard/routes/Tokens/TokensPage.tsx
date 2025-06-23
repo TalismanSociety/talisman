@@ -167,9 +167,7 @@ const Content = () => {
         <SearchInput
           initialValue={search}
           onChange={setSearch}
-          placeholder={
-            networkId === "ALL" ? t("Search to display more tokens") : t("Search tokens")
-          }
+          placeholder={t("Search tokens")}
           containerClassName="rounded-sm"
         />
       </div>
