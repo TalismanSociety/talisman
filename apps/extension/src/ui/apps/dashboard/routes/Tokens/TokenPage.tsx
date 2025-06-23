@@ -240,7 +240,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   name={field.name}
                   type="number"
                   value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.valueAsNumber)} // TODO or just value ?
+                  onChange={(e) => field.handleChange(e.target.valueAsNumber)}
                   placeholder="0"
                   autoComplete="off"
                   readOnly={isTokenKnown(token)}
