@@ -21,24 +21,32 @@ export class ChaindataHandler extends ExtensionHandler {
         return genericSubscription(id, port, chaindataProvider.tokens$)
       }
 
-      case "pri(chaindata.networks.add)": {
-        const network = request as RequestTypes["pri(chaindata.networks.add)"]
-        return customChaindataStore.upsertNetwork(network)
+      case "pri(chaindata.networks.upsert)": {
+        const network = request as RequestTypes["pri(chaindata.networks.upsert)"]
+        await customChaindataStore.upsertNetwork(network)
+        return true
       }
 
       case "pri(chaindata.networks.remove)": {
         const { id } = request as RequestTypes["pri(chaindata.networks.remove)"]
-        return customChaindataStore.removeToken(id)
+        await customChaindataStore.removeToken(id)
+        return true
       }
 
-      case "pri(chaindata.tokens.add)": {
-        const token = request as RequestTypes["pri(chaindata.tokens.add)"]
-        return customChaindataStore.upsertToken(token)
+      case "pri(chaindata.tokens.upsert)": {
+        const token = request as RequestTypes["pri(chaindata.tokens.upsert)"]
+        try {
+          await customChaindataStore.upsertToken(token)
+        } catch (err) {
+          throw new Error(`Failed to upsert token: ${err}`)
+        }
+        return true
       }
 
       case "pri(chaindata.tokens.remove)": {
         const { id } = request as RequestTypes["pri(chaindata.tokens.remove)"]
-        return customChaindataStore.removeToken(id)
+        await customChaindataStore.removeToken(id)
+        return true
       }
 
       default:

@@ -41,7 +41,7 @@ export const TokensList: FC<{
   const { t } = useTranslation()
   const networksMap = useNetworksMapById({
     platform,
-    activeOnly: isActiveOnly,
+    activeOnly: true,
     includeTestnets: true,
   })
   const tokens = useTokens()

@@ -12,6 +12,8 @@ import {
   Token,
   TokenId,
   TokenOfPlatform,
+  TokenOfType,
+  TokenType,
 } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util/src/getSharedObservable"
 import {
@@ -89,7 +91,7 @@ export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions
 
 export const [useNetworksMapById, getNetworksMapById$] = bind((options: ChaindataQueryOptions) => {
   return getSharedObservable("getNetworksMapById$", options, (opts) => {
-    return getNetworks$(opts).pipe(map((networks) => keyBy(networks, "id")))
+    return getNetworks$(opts).pipe(map((networks) => keyBy(networks, (n) => n.id)))
   })
 }) as [
   <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<NetworkId, NetworkOf<P>>,
@@ -98,15 +100,31 @@ export const [useNetworksMapById, getNetworksMapById$] = bind((options: Chaindat
   ) => StateObservable<Record<NetworkId, NetworkOf<P>>>,
 ]
 
-export const [useNetworkById, getNetworkById$] = bind((id: NetworkId | null | undefined) =>
-  getNetworksMapById$().pipe(map((networksById): Network | null => networksById[id ?? ""] || null)),
+export const [useNetworkById, getNetworkById$] = bind(
+  (id: NetworkId | null | undefined, platform?: NetworkPlatform) =>
+    getNetworksMapById$().pipe(
+      map((networksById): Network | null => {
+        const network = networksById[id ?? ""] || null
+        return network && (!platform || network.platform === platform) ? network : null
+      }),
+    ),
 ) as [
   // allows forcing platform output type when calling the hook like useNetwork<"ethereum">(id)
   // TODO change this to a PlatformFilter optional arg, and actually check it
-  <P extends PlatformFilter = "all">(id: NetworkId | null | undefined) => NetworkOf<P> | null,
-  <P extends PlatformFilter = "all">(
+  <
+    P extends NetworkPlatform | undefined,
+    R extends P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
     id: NetworkId | null | undefined,
-  ) => StateObservable<NetworkOf<P> | null>,
+    platform?: P,
+  ) => R | null,
+  <
+    P extends NetworkPlatform | undefined,
+    R extends P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    id: NetworkId | null | undefined,
+    platform?: P,
+  ) => StateObservable<R | null>,
 ]
 
 export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
@@ -234,7 +252,7 @@ export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) =>
 
 export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptions) => {
   return getSharedObservable("getTokensMap$", options, (opts) =>
-    getTokens$(opts).pipe(map((tokens) => keyBy(tokens, "id"))),
+    getTokens$(opts).pipe(map((tokens) => keyBy(tokens, (t) => t.id))),
   )
 }) as [
   <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<TokenId, TokenOf<P>>,
@@ -243,15 +261,22 @@ export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptio
   ) => StateObservable<Record<TokenId, TokenOf<P>>>,
 ]
 
-export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
-  return getTokensMap$().pipe(
-    map((tokensMap): Token | null => (tokenId && tokensMap[tokenId ?? "#"]) || null),
-  )
-}) as [
-  // allows forcing platform output type when calling the hook like useToken<"evm-erc20">(id)
-  // TODO change this to a PlatformFilter optional arg, and actually check it
-  <P extends PlatformFilter = "all">(id: TokenId | null | undefined) => TokenOf<P> | null,
-  <P extends PlatformFilter = "all">(
+export const [useToken, getToken$] = bind(
+  (tokenId: TokenId | null | undefined, type?: TokenType) => {
+    return getTokensMap$().pipe(
+      map((tokensMap): Token | null => {
+        const token = (tokenId && tokensMap[tokenId ?? "#"]) || null
+        return token && (!type || token.type === type) ? token : null
+      }),
+    )
+  },
+) as [
+  <T extends TokenType | undefined, R extends T extends TokenType ? TokenOfType<T> : Token>(
     id: TokenId | null | undefined,
-  ) => StateObservable<TokenOf<P> | null>,
+    type?: T,
+  ) => R | null,
+  <T extends TokenType | undefined, R extends T extends TokenType ? TokenOfType<T> : Token>(
+    id: TokenId | null | undefined,
+    type?: T,
+  ) => StateObservable<R | null>,
 ]

@@ -54,7 +54,7 @@ export const getExtensionPublicClient = (
 }
 
 export const usePublicClient = (evmNetworkId?: EthNetworkId): PublicClient | undefined => {
-  const evmNetwork = useNetworkById<"ethereum">(evmNetworkId)
+  const evmNetwork = useNetworkById(evmNetworkId, "ethereum")
   const nativeToken = useToken(evmNetwork?.nativeTokenId)
 
   const publicClient = useMemo(() => {

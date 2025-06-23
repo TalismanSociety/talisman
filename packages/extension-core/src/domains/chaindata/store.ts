@@ -16,7 +16,7 @@ class CustomChaindataStore extends StorageProvider<CustomChaindata> {}
 
 const store = new CustomChaindataStore("customChaindata", DEFAULT_DATA)
 
-const upsert = (networks: Network[], tokens: Token[]) => {
+const upsert = async (networks: Network[], tokens: Token[]) =>
   store.mutate((prev) => {
     const next = {
       networks: networks.length
@@ -28,9 +28,8 @@ const upsert = (networks: Network[], tokens: Token[]) => {
     }
     return CustomChaindataSchema.parse(next)
   })
-}
 
-const remove = (networkIds: NetworkId[], tokenIds: TokenId[]) => {
+const remove = (networkIds: NetworkId[], tokenIds: TokenId[]) =>
   store.mutate((prev) => {
     const next = {
       networks: networkIds.length
@@ -42,29 +41,15 @@ const remove = (networkIds: NetworkId[], tokenIds: TokenId[]) => {
     }
     return CustomChaindataSchema.parse(next)
   })
-}
 
 export const customChaindataStore = {
   /** data source for wallet's chaindataProvider */
   observable$: store.observable.asObservable(),
 
   upsert,
-
   remove,
-
-  upsertToken: (token: Token) => {
-    upsert([], [token])
-  },
-
-  upsertNetwork: (network: Network) => {
-    upsert([network], [])
-  },
-
-  removeToken(tokenId: TokenId) {
-    remove([], [tokenId])
-  },
-
-  removeNetwork(networkId: NetworkId) {
-    remove([networkId], [])
-  },
+  upsertToken: (token: Token) => upsert([], [token]),
+  upsertNetwork: (network: Network) => upsert([network], []),
+  removeToken: (tokenId: TokenId) => remove([], [tokenId]),
+  removeNetwork: (networkId: NetworkId) => remove([networkId], []),
 }

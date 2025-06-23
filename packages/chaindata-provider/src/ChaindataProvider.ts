@@ -309,7 +309,7 @@ const ChaindataProviderDataSchema = z
       (n) => n.id,
     )
     const customNetworksById = keyBy(
-      customData.networks?.map((n) => ({ ...n, _isCustom: true })),
+      customData.networks?.map((t) => ({ ...t, _isCustom: true })),
       (n) => n.id,
     )
     const networksById = assign({}, defaultNetworksById, customNetworksById)
@@ -318,15 +318,16 @@ const ChaindataProviderDataSchema = z
       defaultData.tokens.map((n) => ({
         ...n,
         _isCustom: false,
+        _isKnown: true,
         _isTestnet: !!networksById[n.networkId]?.isTestnet,
       })),
       (n) => n.id,
     )
     const customTokensById = keyBy(
-      customData.tokens.map((n) => ({
-        ...n,
-        _isCustom: true,
-        _isTestnet: !!networksById[n.networkId]?.isTestnet,
+      customData.tokens.map((t) => ({
+        ...t,
+        _isCustom: !!defaultTokensById[t.id],
+        _isTestnet: !!networksById[t.networkId]?.isTestnet,
       })),
       (n) => n.id,
     )
@@ -352,12 +353,28 @@ export const isNetworkCustom = (network: Network): boolean => {
 
 export const isTokenCustom = (token: Token): boolean => {
   if (typeof token !== "object") return false
-  const { _isCustom, ...rest } = token as ChaindataProviderToken
+  const { _isCustom, _isKnown, _isTestnet, ...rest } = token as ChaindataProviderToken
+  return _isCustom && TokenSchema.safeParse(rest).success
+}
+
+export const isTokenKnown = (token: Token): boolean => {
+  if (typeof token !== "object") return false
+  const { _isCustom, _isKnown, _isTestnet, ...rest } = token as ChaindataProviderToken
   return _isCustom && TokenSchema.safeParse(rest).success
 }
 
 export const isTokenTestnet = (token: Token): boolean => {
   if (typeof token !== "object") return false
-  const { _isTestnet, ...rest } = token as ChaindataProviderToken
+  const { _isCustom, _isKnown, _isTestnet, ...rest } = token as ChaindataProviderToken
   return _isTestnet && TokenSchema.safeParse(rest).success
+}
+
+export const getCleanNetwork = (network: Network): Network => {
+  const { _isCustom, ...rest } = network as ChaindataProviderNetwork
+  return rest as Network
+}
+
+export const getCleanToken = (token: Token): Token => {
+  const { _isCustom, _isKnown, _isTestnet, ...rest } = token as ChaindataProviderToken
+  return rest as Token
 }

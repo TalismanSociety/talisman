@@ -20,7 +20,6 @@ import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
-import TokensHandler from "../domains/tokens/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
@@ -53,7 +52,6 @@ export default class Extension extends ExtensionHandler {
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
-      tokens: new TokensHandler(stores),
       substrate: new SubHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),

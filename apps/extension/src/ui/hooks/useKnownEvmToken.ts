@@ -1,33 +1,26 @@
-import { isTokenInTypes } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { Token } from "@talismn/chaindata-provider"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
-import { useActiveTokensState, useTokens } from "@ui/state"
+import { useActiveTokensState } from "@ui/state"
 
-/**
- * NOTE: Works for both `evm-erc20` as well as `evm-uniswapv2` tokens.
- */
-export const useKnownEvmToken = (
-  evmNetworkId: string | undefined | null,
-  contractAddress: string | undefined | null,
-) => {
-  const allTokens = useTokens()
-  const allErc20Tokens = useMemo(
-    () => allTokens.filter((t) => isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"])),
-    [allTokens],
-  )
+export const useActivableToken = (token: Token | undefined) => {
+  // const allTokens = useTokens()
+  // const allErc20Tokens = useMemo(
+  //   () => allTokens.filter((t) => isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"])),
+  //   [allTokens],
+  // )
 
   const activeTokens = useActiveTokensState()
 
-  const token = useMemo(() => {
-    return allErc20Tokens.find(
-      (t) =>
-        contractAddress &&
-        t.networkId === evmNetworkId &&
-        isAddressEqual(t.contractAddress, contractAddress),
-    )
-  }, [allErc20Tokens, contractAddress, evmNetworkId])
+  // const token = useMemo(() => {
+  //   return allErc20Tokens.find(
+  //     (t) =>
+  //       contractAddress &&
+  //       t.networkId === evmNetworkId &&
+  //       isAddressEqual(t.contractAddress, contractAddress),
+  //   )
+  // }, [allErc20Tokens, contractAddress, evmNetworkId])
 
   const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])
 
@@ -45,6 +38,7 @@ export const useKnownEvmToken = (
   }, [isActive, setActive, token])
 
   const isActiveSetByUser = useMemo(() => token && token.id in activeTokens, [token, activeTokens])
+
   const resetToTalismanDefault = useCallback(() => {
     if (!token) throw new Error("Token not found")
     activeTokensStore.resetActive(token.id)
@@ -52,7 +46,7 @@ export const useKnownEvmToken = (
 
   return {
     token,
-    isActive: isActive,
+    isActive,
     setActive,
     toggleActive,
 

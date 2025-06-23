@@ -1,18 +1,25 @@
+/* eslint-disable react/no-children-prop */
 import * as Sentry from "@sentry/browser"
 import {
-  EvmErc20Token,
-  EvmUniswapV2Token,
+  getCleanToken,
   isTokenCustom,
   isTokenInTypes,
+  isTokenKnown,
+  Token,
+  TokenBaseSchema,
 } from "@talismn/chaindata-provider"
-import { RotateCcwIcon } from "@talismn/icons"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { sleep } from "@talismn/util"
+import { useForm } from "@tanstack/react-form"
+import { log } from "extension-shared"
+import { FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import {
   Button,
   FormFieldContainer,
   FormFieldInputText,
+  IconButton,
   Modal,
   ModalDialog,
   Toggle,
@@ -28,69 +35,11 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useKnownEvmToken } from "@ui/hooks/useKnownEvmToken"
-import { useEvmNetwork, useToken } from "@ui/state"
-
-const ConfirmRemove = ({
-  open,
-  token,
-  onClose,
-}: {
-  open?: boolean
-  token: EvmErc20Token | EvmUniswapV2Token
-  onClose: () => void
-}) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-
-  // keep last one to prevent symbol to disappear when deleting it
-  const [saved, setSaved] = useState<EvmErc20Token | EvmUniswapV2Token>()
-  useEffect(() => {
-    if (token) setSaved(token)
-  }, [token])
-
-  const [confirming, setConfirming] = useState(false)
-  const handleRemove = useCallback(async () => {
-    setConfirming(true)
-    try {
-      if (!isTokenCustom(token)) throw new Error(t("Cannot remove built-in tokens"))
-      await api.removeCustomEvmToken(token.id)
-      navigate("/tokens")
-    } catch (err) {
-      Sentry.captureException(err)
-      notify({
-        type: "error",
-        title: t("Error"),
-        subtitle: (err as Error).message ?? t("Failed to remove"),
-      })
-      setConfirming(false)
-    }
-  }, [navigate, token, t])
-
-  return (
-    <Modal isOpen={Boolean(open && saved)} onDismiss={onClose}>
-      <ModalDialog title={t("Remove Token")} onClose={onClose}>
-        <div className="text-body-secondary mt-4 space-y-16">
-          <div className="text-base">
-            <Trans t={t}>
-              Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
-              from your token list ?
-            </Trans>
-          </div>
-          <div className="grid grid-cols-2 gap-8">
-            <Button onClick={onClose}>{t("Cancel")}</Button>
-            <Button primary onClick={handleRemove} processing={confirming}>
-              {t("Remove")}
-            </Button>
-          </div>
-        </div>
-      </ModalDialog>
-    </Modal>
-  )
-}
+import { useActivableToken } from "@ui/hooks/useKnownEvmToken"
+import { useNetwork, useToken } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -99,97 +48,262 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Token Details",
 }
 
-const Content = () => {
+export const TokenPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
-  const { isOpen, open, close } = useOpenClose()
-  const navigate = useNavigate()
-
-  useAnalyticsPageView(ANALYTICS_PAGE, { id })
-
   const token = useToken(id)
-  const erc20Token = useMemo(
-    () => (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) ? token : undefined),
-    [token],
-  )
-  const network = useEvmNetwork(erc20Token?.networkId)
-
-  const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } = useKnownEvmToken(
-    erc20Token?.networkId,
-    erc20Token?.contractAddress,
-  )
+  const network = useNetwork(token?.networkId)
+  const navigate = useNavigate()
 
   useEffect(() => {
     // if token doesn't exist, redirect to tokens page
     if (token === null) navigate("/tokens")
   }, [token, navigate])
 
-  // prevent flickering while loading
-  if (!erc20Token || !network) return null
+  useAnalyticsPageView(ANALYTICS_PAGE, { id })
+
+  if (!token || !network) return null // TODO message ?
 
   return (
-    <>
+    <DashboardLayout sidebar="settings">
       <HeaderBlock
         title={
           <div className="flex items-center justify-between gap-5">
             {t("{{tokenSymbol}} on {{networkName}}", {
-              tokenSymbol: erc20Token.symbol,
+              tokenSymbol: token.symbol,
               networkName: network.name,
             })}
-            <TokenTypePill type={erc20Token.type} />
+            <TokenTypePill type={token.type} />
           </div>
         }
         text={t(
           "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
         )}
       />
-      <form className="my-20 space-y-4">
-        <FormFieldContainer label="Network">
-          <NetworkSelect
-            withTestnets
-            defaultChainId={network.id}
-            // disabling network edit because it would create a new token
-            disabled={Boolean(id)}
-            className="w-full"
-          />
-        </FormFieldContainer>
-        <FormFieldContainer label={t("Contract Address")}>
-          <FormFieldInputText
-            type="text"
-            value={erc20Token.contractAddress}
-            spellCheck={false}
-            data-lpignore
-            autoComplete="off"
-            // a token cannot change address
-            disabled
-            small
-          />
-        </FormFieldContainer>
-        <div className="grid grid-cols-2 gap-12">
-          <FormFieldContainer label={t("Symbol")}>
+      <TokenForm token={token} />
+    </DashboardLayout>
+  )
+}
+
+const TokenForm: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const ocConfirmRemove = useOpenClose()
+  const network = useNetwork(token.networkId)
+
+  const form = useForm({
+    defaultValues: getCleanToken(token),
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        await api.tokenUpsert(value)
+
+        await sleep(200) // wait for frontend observables to update, to prevent changed values from flickering
+
+        formApi.reset()
+      } catch (err) {
+        log.error("Failed to submit", { value, err })
+        notify({
+          type: "error",
+          title: t("Error"),
+          subtitle: (err as Error)?.message,
+        })
+      }
+    },
+  })
+
+  const { isActive, setActive, isActiveSetByUser, resetToTalismanDefault } =
+    useActivableToken(token)
+
+  return (
+    <>
+      <form
+        className="my-20"
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <div>
+          <FormFieldContainer label="Network">
             <FormFieldInputText
               type="text"
-              value={erc20Token.symbol}
+              value={network?.name}
+              spellCheck={false}
+              data-lpignore
               autoComplete="off"
               disabled
               small
-              before={
-                token && (
-                  <AssetLogoBase className="ml-[-0.8rem] mr-2 text-[3rem]" url={token?.logo} />
-                )
-              }
+              before={<ChainLogo id={token.networkId} className="size-12" />}
             />
           </FormFieldContainer>
-          <FormFieldContainer label={t("Decimals")}>
-            <FormFieldInputText
-              type="number"
-              value={erc20Token.decimals}
-              placeholder="0"
-              autoComplete="off"
-              disabled
-              small
-            />
-          </FormFieldContainer>
+          {isTokenInTypes(token, ["substrate-assets"]) && (
+            <FormFieldContainer label={t("Asset ID")}>
+              <FormFieldInputText
+                type="number"
+                value={token.assetId}
+                spellCheck={false}
+                data-lpignore
+                autoComplete="off"
+                disabled
+                small
+                after={
+                  <div className="flex items-center gap-4">
+                    <IconButton>
+                      <ExternalLinkIcon />
+                    </IconButton>
+                    <IconButton>
+                      <CopyIcon />
+                    </IconButton>
+                  </div>
+                }
+              />
+            </FormFieldContainer>
+          )}
+          {isTokenInTypes(token, ["substrate-tokens", "substrate-foreignassets"]) && (
+            <FormFieldContainer label={t("Token ID")}>
+              <FormFieldInputText
+                type="text"
+                value={token.onChainId}
+                spellCheck={false}
+                data-lpignore
+                autoComplete="off"
+                disabled
+                small
+                after={
+                  <div className="flex items-center gap-4">
+                    <IconButton>
+                      <ExternalLinkIcon />
+                    </IconButton>
+                    <IconButton>
+                      <CopyIcon />
+                    </IconButton>
+                  </div>
+                }
+              />
+            </FormFieldContainer>
+          )}
+          {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2", "substrate-psp22"]) && (
+            <FormFieldContainer label={t("Contract Address")}>
+              <FormFieldInputText
+                type="text"
+                value={token.contractAddress}
+                spellCheck={false}
+                data-lpignore
+                autoComplete="off"
+                disabled
+                small
+                after={
+                  <div className="flex items-center gap-4">
+                    <IconButton>
+                      <ExternalLinkIcon />
+                    </IconButton>
+                    <IconButton>
+                      <CopyIcon />
+                    </IconButton>
+                  </div>
+                }
+              />
+            </FormFieldContainer>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-12">
+          <form.Field
+            name="symbol"
+            validators={{
+              onChange: ({ value }) => {
+                const parsed = TokenBaseSchema.shape.symbol.safeParse(value)
+                return parsed.success
+                  ? undefined
+                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+              },
+            }}
+            children={(field) => (
+              <FormFieldContainer label={t("Symbol")} error={field.state.meta.errors[0]}>
+                <FormFieldInputText
+                  name={field.name}
+                  type="text"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  autoComplete="off"
+                  small
+                />
+              </FormFieldContainer>
+            )}
+          />
+
+          <form.Field
+            name="decimals"
+            validators={{
+              onChange: ({ value }) => {
+                const parsed = TokenBaseSchema.shape.decimals.safeParse(value)
+                return parsed.success
+                  ? undefined
+                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+              },
+            }}
+            children={(field) => (
+              <FormFieldContainer label={t("Decimals")} error={field.state.meta.errors[0]}>
+                <FormFieldInputText
+                  name={field.name}
+                  type="number"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.valueAsNumber)} // TODO or just value ?
+                  placeholder="0"
+                  autoComplete="off"
+                  small
+                />
+              </FormFieldContainer>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-12">
+          <form.Field
+            name="coingeckoId"
+            validators={{
+              onChange: ({ value }) => {
+                const parsed = TokenBaseSchema.shape.coingeckoId.safeParse(value)
+                return parsed.success
+                  ? undefined
+                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+              },
+            }}
+            children={(field) => (
+              <FormFieldContainer label={t("Coingecko ID")} error={field.state.meta.errors[0]}>
+                <FormFieldInputText
+                  name={field.name}
+                  type="text"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  autoComplete="off"
+                  small
+                  before={token && <AssetLogoBase className="mr-2 text-[3rem]" url={token?.logo} />} // TODO
+                />
+              </FormFieldContainer>
+            )}
+          />
+
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) => {
+                const parsed = TokenBaseSchema.shape.name.safeParse(value)
+                return parsed.success
+                  ? undefined
+                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+              },
+            }}
+            children={(field) => (
+              <FormFieldContainer label={t("Name")} error={field.state.meta.errors[0]}>
+                <FormFieldInputText
+                  name={field.name}
+                  type="text"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  autoComplete="off"
+                  small
+                />
+              </FormFieldContainer>
+            )}
+          />
         </div>
         <div>
           <FormFieldContainer label={t("Display balances")}>
@@ -214,24 +328,107 @@ const Content = () => {
             </div>
           </FormFieldContainer>
         </div>
-        <div className="flex justify-end py-8">
-          <Button
-            className="h-24 w-[24rem] text-base"
-            type="button"
-            disabled={!token || !isTokenCustom(token)}
-            onClick={open}
-          >
-            {t("Remove Token")}
-          </Button>
+        <div className="flex justify-end gap-8 py-8">
+          {/* <Button className="h-24 w-[24rem] text-base" type="button">
+            {t("Reset to default")}
+          </Button> */}
+          {isTokenCustom(token) && (
+            <Button
+              className="h-24 w-[24rem] text-base"
+              type="button"
+              disabled={!isTokenCustom(token)}
+              onClick={ocConfirmRemove.open}
+            >
+              {isTokenKnown(token) ? t("Reset") : t("Remove")}
+            </Button>
+          )}
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting, state.isDirty]}
+            children={([canSubmit, isSubmitting, isDirty]) => (
+              <Button
+                primary
+                icon={SaveIcon}
+                className="h-24 w-[24rem] text-base"
+                type="submit"
+                processing={isSubmitting}
+                disabled={!canSubmit || !isDirty}
+              >
+                {t("Save")}
+              </Button>
+            )}
+          />
         </div>
       </form>
-      <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
+      <ConfirmRemove open={ocConfirmRemove.isOpen} onClose={ocConfirmRemove.close} token={token} />
     </>
   )
 }
 
-export const TokenPage = () => (
-  <DashboardLayout sidebar="settings">
-    <Content />
-  </DashboardLayout>
-)
+const ConfirmRemove = ({
+  open,
+  token,
+  onClose,
+}: {
+  open?: boolean
+  token: Token
+  onClose: () => void
+}) => {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  // keep last one to prevent symbol to disappear when deleting it
+  const [saved, setSaved] = useState<Token>(() => token)
+  useEffect(() => {
+    if (token) setSaved(token)
+  }, [token])
+
+  const [confirming, setConfirming] = useState(false)
+  const handleRemove = useCallback(async () => {
+    setConfirming(true)
+    try {
+      if (!isTokenCustom(token)) throw new Error(t("Cannot remove built-in tokens"))
+
+      await api.tokenRemove(token.id)
+      isTokenKnown(saved) ? onClose() : navigate("/tokens")
+    } catch (err) {
+      Sentry.captureException(err)
+      notify({
+        type: "error",
+        title: t("Error"),
+        subtitle: (err as Error).message ?? t("Failed to remove"),
+      })
+      setConfirming(false)
+    }
+  }, [token, t, saved, onClose, navigate])
+
+  return (
+    <Modal isOpen={Boolean(open && saved)} onDismiss={onClose}>
+      <ModalDialog
+        title={isTokenKnown(saved) ? t("Reset Token") : t("Remove Token")}
+        onClose={onClose}
+      >
+        <div className="text-body-secondary mt-4 space-y-16">
+          <div className="text-base">
+            {isTokenKnown(saved) ? (
+              <Trans t={t}>
+                This will reset <span className="text-body">{saved?.symbol}</span> to its Talisman
+                default state. Are you sure you want to continue ?
+              </Trans>
+            ) : (
+              <Trans t={t}>
+                Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
+                from your token list ?
+              </Trans>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-8">
+            <Button onClick={onClose}>{t("Cancel")}</Button>
+            <Button primary onClick={handleRemove} processing={confirming}>
+              {t("Remove")}
+            </Button>
+          </div>
+        </div>
+      </ModalDialog>
+    </Modal>
+  )
+}

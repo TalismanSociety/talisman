@@ -4,8 +4,9 @@ import { useCallback, useMemo } from "react"
 
 import { useActiveNetworksState, useNetworkById } from "@ui/state"
 
+// TODO combine with useKnownChain
 export const useKnownEvmNetwork = (evmNetworkId: string | null | undefined) => {
-  const evmNetwork = useNetworkById<"ethereum">(evmNetworkId)
+  const evmNetwork = useNetworkById(evmNetworkId, "ethereum")
   const activeEvmNetworks = useActiveNetworksState()
 
   const isActive = useMemo(

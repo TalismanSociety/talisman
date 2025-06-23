@@ -178,14 +178,15 @@ export const api: MessageTypes = {
 
   // chaindata message types
   networks: (cb) => messageService.subscribe("pri(chaindata.networks.subscribe)", null, cb),
+  networkUpsert: (network) => messageService.sendMessage("pri(chaindata.networks.upsert)", network),
+  networkRemove: (id) => messageService.sendMessage("pri(chaindata.networks.remove)", { id }),
+
   tokens: (cb) => messageService.subscribe("pri(chaindata.tokens.subscribe)", null, cb),
+  tokenUpsert: (token) => messageService.sendMessage("pri(chaindata.tokens.upsert)", token),
+  tokenRemove: (id) => messageService.sendMessage("pri(chaindata.tokens.remove)", { id }),
 
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),
-
-  // custom erc20 token management
-  addCustomEvmToken: (token) => messageService.sendMessage("pri(tokens.evm.custom.add)", token),
-  removeCustomEvmToken: (id) => messageService.sendMessage("pri(tokens.evm.custom.remove)", { id }),
 
   // asset transfer messages
   assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>

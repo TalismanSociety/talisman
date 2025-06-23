@@ -20,7 +20,7 @@ export const useScaleApi = (
   specVersion?: number,
   blockHash?: HexString,
 ) => {
-  const chainById = useNetworkById<"polkadot">(chainIdOrHash)
+  const chainById = useNetworkById(chainIdOrHash, "polkadot")
   const chainByGenesisHash = useNetworkByGenesisHash(isHex(chainIdOrHash) ? chainIdOrHash : null)
   const chain = useMemo(() => chainById || chainByGenesisHash, [chainById, chainByGenesisHash])
   const token = useToken(chain?.nativeTokenId)

@@ -24,7 +24,6 @@ import {
   AuthRequestId,
   BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
-  CustomEvmTokenCreate,
   DecryptRequestId,
   EncryptRequestId,
   EthGasSettings,
@@ -202,16 +201,16 @@ export default interface MessageTypes {
 
   // networks message types
   networks: (cb: (chains: Array<Network>) => void) => UnsubscribeFn
+  networkUpsert: (network: Network) => Promise<boolean>
+  networkRemove: (id: NetworkId) => Promise<boolean>
 
   // token message types
   tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
+  tokenUpsert: (token: Token) => Promise<boolean>
+  tokenRemove: (id: TokenId) => Promise<boolean>
 
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
-
-  // custom erc20 token management
-  addCustomEvmToken: (token: CustomEvmTokenCreate) => Promise<boolean>
-  removeCustomEvmToken: (id: string) => Promise<boolean>
 
   // asset transfer messages
   assetTransfer: (

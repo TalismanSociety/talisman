@@ -1,18 +1,18 @@
-import { isCustomChain, Network } from "@talismn/chaindata-provider"
+import { isNetworkCustom, Network } from "@talismn/chaindata-provider"
 import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { useCallback, useMemo } from "react"
 
 import { useActiveNetworksState, useNetworkById } from "@ui/state"
 
 export const useKnownChain = (chainId: string | null | undefined) => {
-  const chain = useNetworkById<"polkadot">(chainId ?? undefined)
+  const chain = useNetworkById(chainId ?? undefined, "polkadot")
   const activeChains = useActiveNetworksState()
 
   const isActive = useMemo(
     () => !!chain && isNetworkActive(chain as unknown as Network, activeChains),
     [activeChains, chain],
   )
-  const isKnown = useMemo(() => !!chain && !isCustomChain(chain), [chain])
+  const isKnown = useMemo(() => !!chain && !isNetworkCustom(chain), [chain])
 
   const setActive = useCallback(
     (enable: boolean) => {
