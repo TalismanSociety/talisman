@@ -248,6 +248,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   onChange={(e) => field.handleChange(e.target.valueAsNumber)} // TODO or just value ?
                   placeholder="0"
                   autoComplete="off"
+                  disabled={isTokenKnown(token)}
                   small
                 />
               </FormFieldContainer>
@@ -325,6 +326,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="off"
+                    disabled={isTokenKnown(token)}
                     small
                   />
                 </FormFieldContainer>
