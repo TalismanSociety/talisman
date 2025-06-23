@@ -1,6 +1,8 @@
 import {
   CustomChaindata,
   CustomChaindataSchema,
+  getCleanNetwork,
+  getCleanToken,
   Network,
   NetworkId,
   Token,
@@ -20,10 +22,10 @@ const upsert = async (networks: Network[], tokens: Token[]) =>
   store.mutate((prev) => {
     const next = {
       networks: networks.length
-        ? values(assign(keyBy(prev.networks, "id"), keyBy(networks, "id")))
+        ? values(assign(keyBy(prev.networks, "id"), keyBy(networks.map(getCleanNetwork), "id")))
         : prev.networks,
       tokens: tokens.length
-        ? values(assign(keyBy(prev.tokens, "id"), keyBy(tokens, "id")))
+        ? values(assign(keyBy(prev.tokens, "id"), keyBy(tokens.map(getCleanToken), "id")))
         : prev.tokens,
     }
     return CustomChaindataSchema.parse(next)

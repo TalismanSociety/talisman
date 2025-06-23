@@ -58,16 +58,18 @@ const LpAssetLogo = ({ className, id }: { className?: string; id?: TokenId }) =>
       : null
   const token0 = useToken(tokenId0)
   const token1 = useToken(tokenId1)
+  const rounded0 = useMemo(() => !isTalismanLogo(token0?.logo), [token0?.logo])
+  const rounded1 = useMemo(() => !isTalismanLogo(token1?.logo), [token1?.logo])
 
   return (
     <div className={classNames("relative block aspect-square w-[1em] shrink-0", className)}>
       <AssetLogoBase
-        className="absolute h-full w-full"
+        className={classNames("absolute h-full w-full", rounded0 && "rounded-full")}
         url={token0?.logo}
         style={{ clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }}
       />
       <AssetLogoBase
-        className="absolute h-full w-full"
+        className={classNames("absolute h-full w-full", rounded1 && "rounded-full")}
         url={token1?.logo}
         style={{ clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }}
       />

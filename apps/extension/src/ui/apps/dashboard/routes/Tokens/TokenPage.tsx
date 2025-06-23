@@ -1,7 +1,6 @@
 /* eslint-disable react/no-children-prop */
 import * as Sentry from "@sentry/browser"
 import {
-  getCleanToken,
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
   isTokenDot,
@@ -94,7 +93,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const navigate = useNavigate()
 
   const form = useForm({
-    defaultValues: getCleanToken(token),
+    defaultValues: token,
     onSubmit: async ({ value }) => {
       try {
         await api.tokenUpsert(value)
