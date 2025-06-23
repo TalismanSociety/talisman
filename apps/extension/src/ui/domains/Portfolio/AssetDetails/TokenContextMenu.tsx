@@ -13,6 +13,7 @@ import {
 import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { api } from "@ui/api"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
@@ -47,6 +48,19 @@ const ViewOnCoingeckoMenuItem: FC<{ coingeckoId: string }> = ({ coingeckoId }) =
   if (!coingeckoId) return null
 
   return <ContextMenuItem onClick={handleClick}>{t("View on Coingecko")}</ContextMenuItem>
+}
+
+const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+
+  const handleClick = useCallback(() => {
+    // window.open(`/tokens/${tokenId}`, "_blank")
+    api.dashboardOpen(`/settings/networks-tokens/tokens/${tokenId}`)
+    genericEvent("open view token details", { from: "token menu" })
+  }, [genericEvent, tokenId])
+
+  return <ContextMenuItem onClick={handleClick}>{t("View token details")}</ContextMenuItem>
 }
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
@@ -123,6 +137,9 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Stake" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
+      </ContextMenuContent>
+      <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+        <ViewTokenDetailsMenuItem tokenId={tokenId} />
       </ContextMenuContent>
     </ContextMenu>
   )
