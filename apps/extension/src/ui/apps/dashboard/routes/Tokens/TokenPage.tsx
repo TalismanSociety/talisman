@@ -6,12 +6,14 @@ import {
   isTokenDot,
   isTokenInTypes,
   isTokenKnown,
+  isTokenSubTokens,
   Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { useForm } from "@tanstack/react-form"
 import { log } from "extension-shared"
+import { dump as convertToYaml } from "js-yaml"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
@@ -19,6 +21,7 @@ import {
   Button,
   FormFieldContainer,
   FormFieldInputText,
+  FormFieldTextarea,
   IconButton,
   Modal,
   ModalDialog,
@@ -159,17 +162,29 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             </FormFieldContainer>
           )}
           {isTokenInTypes(token, ["substrate-tokens", "substrate-foreignassets"]) && (
-            <FormFieldContainer label={t("Token ID")}>
-              <FormFieldInputText
-                type="text"
-                value={token.onChainId}
-                spellCheck={false}
-                data-lpignore
-                autoComplete="off"
-                readOnly
-                small
-                // TODO after NFTs PR is merged, we could leverage the subscan pooler to fetch the UUID of those and provide a link to the explorer
-              />
+            <FormFieldContainer
+              label={isTokenSubTokens(token) ? t("Token Key") : t("XCM Location")}
+            >
+              <OnChainIdDisplay onChainId={token.onChainId} />
+              {/* {typeof token.onChainId === "string" && token.onChainId.startsWith("{") ? (
+                <FormFieldTextarea
+                  value={jsonToYaml(token.onChainId)}
+                  spellCheck={false}
+                  data-lpignore
+                  readOnly
+                  rows={10}
+                  // TODO after NFTs PR is merged, we could leverage the subscan pooler to fetch the UUID of those and provide a link to the explorer
+                />
+              ) : (
+                <FormFieldInputText
+                  type="text"
+                  value={token.onChainId}
+                  spellCheck={false}
+                  data-lpignore
+                  readOnly
+                  small
+                />
+              )} */}
             </FormFieldContainer>
           )}
           {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2", "substrate-psp22"]) && (
@@ -394,6 +409,38 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
         <ConfirmRemove onClose={ocConfirmRemove.close} token={token} />
       </Modal>
     </>
+  )
+}
+
+const OnChainIdDisplay = ({ onChainId }: { onChainId: string | number }) => {
+  const [isJson, yaml, rowsCount] = useMemo(() => {
+    try {
+      const isJson = typeof onChainId === "string" && onChainId.startsWith("{")
+      if (!isJson) return [false, onChainId, 1] // not JSON, return as is
+
+      const parsed = JSON.parse(onChainId)
+      const yaml = convertToYaml(parsed)
+      const rowsCount = yaml.split("\n").length
+      return [true, yaml, rowsCount]
+    } catch (e) {
+      return [false, onChainId, 1]
+    }
+  }, [onChainId])
+
+  if (!isJson)
+    return (
+      <FormFieldInputText
+        type="text"
+        value={onChainId}
+        spellCheck={false}
+        data-lpignore
+        readOnly
+        small
+      />
+    )
+
+  return (
+    <FormFieldTextarea value={yaml} spellCheck={false} data-lpignore readOnly rows={rowsCount} />
   )
 }
 
