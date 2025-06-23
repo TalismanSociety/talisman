@@ -168,16 +168,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 autoComplete="off"
                 readOnly
                 small
-                after={
-                  <div className="flex items-center gap-4">
-                    <IconButton>
-                      <ExternalLinkIcon />
-                    </IconButton>
-                    <IconButton>
-                      <CopyIcon />
-                    </IconButton>
-                  </div>
-                }
+                // TODO after NFTs PR is merged, we could leverage the subscan pooler to fetch the UUID of those and provide a link to the explorer
               />
             </FormFieldContainer>
           )}
