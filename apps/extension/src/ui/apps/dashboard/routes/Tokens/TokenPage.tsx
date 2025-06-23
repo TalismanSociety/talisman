@@ -129,7 +129,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               spellCheck={false}
               data-lpignore
               autoComplete="off"
-              disabled
+              readOnly
               small
               before={<ChainLogo id={token.networkId} className="size-12" />}
             />
@@ -142,7 +142,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 spellCheck={false}
                 data-lpignore
                 autoComplete="off"
-                disabled
+                readOnly
                 small
                 after={
                   <div className="flex items-center gap-4">
@@ -165,7 +165,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 spellCheck={false}
                 data-lpignore
                 autoComplete="off"
-                disabled
+                readOnly
                 small
                 after={
                   <div className="flex items-center gap-4">
@@ -188,7 +188,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 spellCheck={false}
                 data-lpignore
                 autoComplete="off"
-                disabled
+                readOnly
                 small
                 after={
                   <div className="flex items-center gap-4">
@@ -248,7 +248,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   onChange={(e) => field.handleChange(e.target.valueAsNumber)} // TODO or just value ?
                   placeholder="0"
                   autoComplete="off"
-                  disabled={isTokenKnown(token)}
+                  readOnly={isTokenKnown(token)}
                   small
                 />
               </FormFieldContainer>
@@ -326,7 +326,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     autoComplete="off"
-                    disabled={isTokenKnown(token)}
+                    readOnly={isTokenKnown(token)}
                     small
                   />
                 </FormFieldContainer>
