@@ -63,6 +63,10 @@ export const TokenPage = () => {
 
   useAnalyticsPageView(ANALYTICS_PAGE, { id })
 
+  useEffect(() => {
+    log.debug("TokenPage mounted", { token, network })
+  }, [token, network])
+
   if (!token || !network) return null // TODO message ?
 
   return (
@@ -146,14 +150,10 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 readOnly
                 small
                 after={
-                  <div className="flex items-center gap-4">
-                    <IconButton className="text-md">
-                      <ExternalLinkIcon />
-                    </IconButton>
-                    <IconButton className="text-md">
-                      <CopyIcon />
-                    </IconButton>
-                  </div>
+                  <LinkToExplorerIconButton
+                    networkId={token.networkId}
+                    target={{ type: "substrate-assets", assetId: token.assetId }}
+                  />
                 }
               />
             </FormFieldContainer>
@@ -195,7 +195,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   <div className="flex items-center gap-4">
                     <LinkToExplorerIconButton
                       networkId={token.networkId}
-                      address={token.contractAddress}
+                      target={{ type: token.type, address: token.contractAddress }}
                       className="text-[2rem]]"
                     />
                     <CopyAddressIconButton
@@ -421,28 +421,57 @@ const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
   )
 }
 
-const LinkToExplorerIconButton: FC<{ networkId: string; address: string; className?: string }> = ({
-  networkId,
-  address,
-  className,
-}) => {
+type ExplorerLinkTarget =
+  | { type: "substrate-assets"; assetId: string }
+  | { type: "evm-uniswapv2"; address: string }
+  | { type: "evm-erc20"; address: string }
+  | { type: "substrate-psp22"; address: string }
+
+const getExplorerLinkTargetUrl = (
+  explorerUrl: string,
+  target: ExplorerLinkTarget,
+): string | null => {
+  const url = new URL(explorerUrl)
+  switch (target.type) {
+    case "substrate-assets":
+      if (!explorerUrl.includes("subscan.io")) return null
+      url.pathname = `/assets/${target.assetId}`
+      break
+    case "evm-uniswapv2":
+    case "evm-erc20":
+      url.pathname = `/token/${target.address}`
+      break
+    case "substrate-psp22":
+      if (!explorerUrl.includes("subscan.io")) return null
+      url.pathname = `/wasm_contract/${target.address}`
+      break
+    default:
+      return null
+  }
+  return url.toString()
+}
+
+const LinkToExplorerIconButton: FC<{
+  networkId: string
+  target: ExplorerLinkTarget
+  className?: string
+}> = ({ networkId, target, className }) => {
   const network = useNetwork(networkId)
 
-  const explorerUrl = useMemo(() => network?.blockExplorerUrls?.[0] ?? null, [network])
+  const url = useMemo(() => {
+    const explorerUrl = network?.blockExplorerUrls?.[0]
+    return explorerUrl ? getExplorerLinkTargetUrl(explorerUrl, target) : null
+  }, [network?.blockExplorerUrls, target])
 
   const handleClick = useCallback(() => {
-    if (!explorerUrl) return
-
-    const url = new URL(explorerUrl)
-    url.pathname = "/address/" + address
-
+    if (!url) return
     window.open(url.toString(), "_blank", "noopener,noreferrer") // Open in a new tab
-  }, [address, explorerUrl])
+  }, [url])
 
-  if (!explorerUrl) return null
+  if (!url) return null
 
   return (
-    <IconButton className={className} onClick={handleClick} disabled={!address}>
+    <IconButton className={className} onClick={handleClick}>
       <ExternalLinkIcon />
     </IconButton>
   )

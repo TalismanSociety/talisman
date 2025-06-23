@@ -10,7 +10,7 @@ const TOKEN_TYPE = "substrate-psp22"
 export const SubPsp22TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
-  existentialDeposit: z.string().default("0").optional(), // for compatibility with other substrate tokens
+  existentialDeposit: z.string().default("0"), // TODO discuss ? feels like this is not a thing here
   contractAddress: z.string(),
 })
 export type SubPsp22Token = z.infer<typeof SubPsp22TokenSchema>
