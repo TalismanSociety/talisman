@@ -9,7 +9,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
   ramps: {
     coinbaseProjectId: "63080e24-dc8e-45d0-9618-467b8c222f9e",
-    pinnedTokens: ["polkadot-substrate-native", "1-evm-native", "bittensor-substrate-native"],
+    pinnedTokens: ["polkadot:substrate-native", "1:evm-native", "bittensor:substrate-native"],
     rampApiKey: "5ga4dyv63auqe9t2ytrcz8jaaudmq4m2js8egzsh",
     rampNetworks: {
       POLKADOT: "polkadot",

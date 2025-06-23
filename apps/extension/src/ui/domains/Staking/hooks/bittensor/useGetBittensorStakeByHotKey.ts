@@ -2,6 +2,8 @@ import { useMemo } from "react"
 
 import { useBalance } from "@ui/state"
 
+import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
+
 type GetBittensorStakeByHotKey = {
   address: string | null | undefined
   hotkey: string | number | undefined | null
@@ -15,7 +17,7 @@ export const useGetBittensorStakeByHotKey = ({
   hotkey,
   isEnabled,
 }: GetBittensorStakeByHotKey) => {
-  const balance = useBalance(isEnabled ? address : null, "bittensor-substrate-native")
+  const balance = useBalance(isEnabled ? address : null, BITTENSOR_TOKEN_ID)
 
   return useMemo(() => {
     if (!balance || !hotkey) return undefined

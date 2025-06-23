@@ -9,6 +9,7 @@ import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollC
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 import { BittensorBondOption, BittensorBondOptionSkeleton } from "../BittensorBondOption"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
@@ -138,7 +139,7 @@ export const BittensorBondDelegateSelect = () => {
                   option={option}
                   selectedPoolId={selectedPoolId}
                   handleSelectPoolId={handleSelectPoolId}
-                  tokenId={"bittensor-substrate-native"}
+                  tokenId={BITTENSOR_TOKEN_ID}
                 />
               ))}
           {isSupportedValidatorsError && (
