@@ -95,16 +95,18 @@ const Content = () => {
   const location = useLocation()
 
   // filters to persist in location state
-  const [isActiveOnly, setIsActiveOnly] = useState((location.state.isActiveOnly as boolean) ?? true)
+  const [isActiveOnly, setIsActiveOnly] = useState(
+    (location.state?.isActiveOnly as boolean) ?? true,
+  )
   const [isCustomOnly, setIsCustomOnly] = useState(
-    (location.state.isCustomOnly as boolean) ?? false,
+    (location.state?.isCustomOnly as boolean) ?? false,
   )
-  const [isHidePools, setIsHidePools] = useState((location.state.isHidePools as boolean) ?? false)
-  const [search, setSearch] = useState((location.state.search as string) ?? "")
+  const [isHidePools, setIsHidePools] = useState((location.state?.isHidePools as boolean) ?? false)
+  const [search, setSearch] = useState((location.state?.search as string) ?? "")
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
-    (location.state.platform as PlatformOption) ?? ("all" as PlatformOption),
+    (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption),
   )
-  const [networkId, setNetworkId] = useState<EthNetworkId>(location.state.networkId ?? "ALL")
+  const [networkId, setNetworkId] = useState<EthNetworkId>(location.state?.networkId ?? "ALL")
 
   const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
 

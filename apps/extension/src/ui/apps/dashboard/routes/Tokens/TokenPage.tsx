@@ -2,6 +2,7 @@
 import * as Sentry from "@sentry/browser"
 import {
   getCleanToken,
+  getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
   isTokenDot,
   isTokenInTypes,
@@ -12,7 +13,7 @@ import {
 import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { useForm } from "@tanstack/react-form"
 import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -40,6 +41,7 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useActivableToken } from "@ui/hooks/useKnownEvmToken"
 import { useNetwork, useToken } from "@ui/state"
+import { copyAddress } from "@ui/util/copyAddress"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -146,10 +148,10 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 small
                 after={
                   <div className="flex items-center gap-4">
-                    <IconButton>
+                    <IconButton className="text-md">
                       <ExternalLinkIcon />
                     </IconButton>
-                    <IconButton>
+                    <IconButton className="text-md">
                       <CopyIcon />
                     </IconButton>
                   </div>
@@ -192,12 +194,15 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 small
                 after={
                   <div className="flex items-center gap-4">
-                    <IconButton>
-                      <ExternalLinkIcon />
-                    </IconButton>
-                    <IconButton>
-                      <CopyIcon />
-                    </IconButton>
+                    <LinkToExplorerIconButton
+                      networkId={token.networkId}
+                      address={token.contractAddress}
+                      className="text-[2rem]]"
+                    />
+                    <CopyAddressIconButton
+                      address={token.contractAddress}
+                      className="text-[2rem]"
+                    />
                   </div>
                 }
               />
@@ -265,6 +270,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   : (parsed.error.issues[0].message ?? t("Invalid value"))
               },
             }}
+            asyncDebounceMs={200}
             children={(field) => (
               <FormFieldContainer label={t("Coingecko ID")} error={field.state.meta.errors[0]}>
                 <FormFieldInputText
@@ -274,7 +280,16 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   onChange={(e) => field.handleChange(e.target.value)}
                   autoComplete="off"
                   small
-                  before={token && <AssetLogoBase className="mr-2 text-[3rem]" url={token?.logo} />} // TODO
+                  before={
+                    <AssetLogoBase
+                      className="mr-2 rounded-full text-[3rem]"
+                      url={
+                        field.state.value
+                          ? getGithubTokenLogoUrlByCoingeckoId(field.state.value)
+                          : null
+                      }
+                    />
+                  }
                 />
               </FormFieldContainer>
             )}
@@ -389,6 +404,48 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
         <ConfirmRemove onClose={ocConfirmRemove.close} token={token} />
       </Modal>
     </>
+  )
+}
+
+const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
+  address,
+  className,
+}) => {
+  const handleClick = useCallback(() => {
+    return copyAddress(address)
+  }, [address])
+
+  return (
+    <IconButton className={className} onClick={handleClick} disabled={!address}>
+      <CopyIcon />
+    </IconButton>
+  )
+}
+
+const LinkToExplorerIconButton: FC<{ networkId: string; address: string; className?: string }> = ({
+  networkId,
+  address,
+  className,
+}) => {
+  const network = useNetwork(networkId)
+
+  const explorerUrl = useMemo(() => network?.blockExplorerUrls?.[0] ?? null, [network])
+
+  const handleClick = useCallback(() => {
+    if (!explorerUrl) return
+
+    const url = new URL(explorerUrl)
+    url.pathname = "/address/" + address
+
+    window.open(url.toString(), "_blank", "noopener,noreferrer") // Open in a new tab
+  }, [address, explorerUrl])
+
+  if (!explorerUrl) return null
+
+  return (
+    <IconButton className={className} onClick={handleClick} disabled={!address}>
+      <ExternalLinkIcon />
+    </IconButton>
   )
 }
 
