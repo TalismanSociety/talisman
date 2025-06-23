@@ -15,18 +15,18 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
       case "evm-native":
         return t("Native")
       case "evm-erc20":
-        return t("ERC20")
+        return "ERC20"
       case "evm-uniswapv2":
-        return t("UNIV2")
+        return "UNI V2"
 
       case "substrate-assets":
-        return t("Polkadot")
+        return "Polkadot"
       case "substrate-foreignassets":
-        return t("XCM")
+        return "Foreign"
       case "substrate-psp22":
-        return t("PSP22")
+        return "PSP22"
       case "substrate-tokens":
-        return t("ORML")
+        return "ORML"
     }
   }, [t, type])
 

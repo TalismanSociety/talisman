@@ -3,13 +3,13 @@ import * as Sentry from "@sentry/browser"
 import {
   getCleanToken,
   isTokenCustom,
+  isTokenDot,
   isTokenInTypes,
   isTokenKnown,
   Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
-import { sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useState } from "react"
@@ -89,16 +89,15 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
   const network = useNetwork(token.networkId)
+  const navigate = useNavigate()
 
   const form = useForm({
     defaultValues: getCleanToken(token),
-    onSubmit: async ({ value, formApi }) => {
+    onSubmit: async ({ value }) => {
       try {
         await api.tokenUpsert(value)
 
-        await sleep(200) // wait for frontend observables to update, to prevent changed values from flickering
-
-        formApi.reset()
+        navigate(-1)
       } catch (err) {
         log.error("Failed to submit", { value, err })
         notify({
@@ -205,7 +204,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             </FormFieldContainer>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-12">
+        <div className="grid grid-cols-2 gap-x-12">
           <form.Field
             name="symbol"
             validators={{
@@ -213,7 +212,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 const parsed = TokenBaseSchema.shape.symbol.safeParse(value)
                 return parsed.success
                   ? undefined
-                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+                  : (parsed.error.issues[0].message ?? t("Invalid value"))
               },
             }}
             children={(field) => (
@@ -237,7 +236,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 const parsed = TokenBaseSchema.shape.decimals.safeParse(value)
                 return parsed.success
                   ? undefined
-                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+                  : (parsed.error.issues[0].message ?? t("Invalid value"))
               },
             }}
             children={(field) => (
@@ -254,8 +253,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               </FormFieldContainer>
             )}
           />
-        </div>
-        <div className="grid grid-cols-2 gap-12">
+
           <form.Field
             name="coingeckoId"
             validators={{
@@ -263,7 +261,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 const parsed = TokenBaseSchema.shape.coingeckoId.safeParse(value)
                 return parsed.success
                   ? undefined
-                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+                  : (parsed.error.issues[0].message ?? t("Invalid value"))
               },
             }}
             children={(field) => (
@@ -288,7 +286,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 const parsed = TokenBaseSchema.shape.name.safeParse(value)
                 return parsed.success
                   ? undefined
-                  : (parsed.error.issues[0].message ?? t("Invalid symbol"))
+                  : (parsed.error.issues[0].message ?? t("Invalid value"))
               },
             }}
             children={(field) => (
@@ -304,6 +302,35 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               </FormFieldContainer>
             )}
           />
+
+          {isTokenDot(token) && (
+            <form.Field
+              name="existentialDeposit"
+              validators={{
+                onChange: ({ value }) => {
+                  const parsed = TokenBaseSchema.shape.name.safeParse(value)
+                  return parsed.success
+                    ? undefined
+                    : (parsed.error.issues[0].message ?? t("Invalid value"))
+                },
+              }}
+              children={(field) => (
+                <FormFieldContainer
+                  label={t("Existential Deposit")}
+                  error={field.state.meta.errors[0]}
+                >
+                  <FormFieldInputText
+                    name={field.name}
+                    type="text"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    autoComplete="off"
+                    small
+                  />
+                </FormFieldContainer>
+              )}
+            />
+          )}
         </div>
         <div>
           <FormFieldContainer label={t("Display balances")}>
@@ -329,9 +356,6 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
           </FormFieldContainer>
         </div>
         <div className="flex justify-end gap-8 py-8">
-          {/* <Button className="h-24 w-[24rem] text-base" type="button">
-            {t("Reset to default")}
-          </Button> */}
           {isTokenCustom(token) && (
             <Button
               className="h-24 w-[24rem] text-base"
@@ -351,7 +375,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                 className="h-24 w-[24rem] text-base"
                 type="submit"
                 processing={isSubmitting}
-                disabled={!canSubmit || !isDirty}
+                disabled={!isSubmitting && (!canSubmit || !isDirty)}
               >
                 {t("Save")}
               </Button>
@@ -359,28 +383,22 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
           />
         </div>
       </form>
-      <ConfirmRemove open={ocConfirmRemove.isOpen} onClose={ocConfirmRemove.close} token={token} />
+      <Modal isOpen={ocConfirmRemove.isOpen} onDismiss={ocConfirmRemove.close}>
+        <ConfirmRemove onClose={ocConfirmRemove.close} token={token} />
+      </Modal>
     </>
   )
 }
 
-const ConfirmRemove = ({
-  open,
-  token,
-  onClose,
-}: {
-  open?: boolean
+const ConfirmRemove: FC<{
   token: Token
   onClose: () => void
-}) => {
+}> = ({ token, onClose }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  // keep last one to prevent symbol to disappear when deleting it
-  const [saved, setSaved] = useState<Token>(() => token)
-  useEffect(() => {
-    if (token) setSaved(token)
-  }, [token])
+  // keep initial one to prevent symbol to disappear when deleting it
+  const [saved] = useState<Token>(() => token)
 
   const [confirming, setConfirming] = useState(false)
   const handleRemove = useCallback(async () => {
@@ -389,7 +407,7 @@ const ConfirmRemove = ({
       if (!isTokenCustom(token)) throw new Error(t("Cannot remove built-in tokens"))
 
       await api.tokenRemove(token.id)
-      isTokenKnown(saved) ? onClose() : navigate("/tokens")
+      isTokenKnown(saved) ? onClose() : navigate(-1)
     } catch (err) {
       Sentry.captureException(err)
       notify({
@@ -402,33 +420,31 @@ const ConfirmRemove = ({
   }, [token, t, saved, onClose, navigate])
 
   return (
-    <Modal isOpen={Boolean(open && saved)} onDismiss={onClose}>
-      <ModalDialog
-        title={isTokenKnown(saved) ? t("Reset Token") : t("Remove Token")}
-        onClose={onClose}
-      >
-        <div className="text-body-secondary mt-4 space-y-16">
-          <div className="text-base">
-            {isTokenKnown(saved) ? (
-              <Trans t={t}>
-                This will reset <span className="text-body">{saved?.symbol}</span> to its Talisman
-                default state. Are you sure you want to continue ?
-              </Trans>
-            ) : (
-              <Trans t={t}>
-                Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
-                from your token list ?
-              </Trans>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-8">
-            <Button onClick={onClose}>{t("Cancel")}</Button>
-            <Button primary onClick={handleRemove} processing={confirming}>
-              {t("Remove")}
-            </Button>
-          </div>
+    <ModalDialog
+      title={isTokenKnown(saved) ? t("Reset Token") : t("Remove Token")}
+      onClose={onClose}
+    >
+      <div className="text-body-secondary mt-4 space-y-16">
+        <div className="text-base">
+          {isTokenKnown(saved) ? (
+            <Trans t={t}>
+              This will reset <span className="text-body">{saved?.symbol}</span> to its Talisman
+              default state. Are you sure you want to continue ?
+            </Trans>
+          ) : (
+            <Trans t={t}>
+              Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
+              from your token list ?
+            </Trans>
+          )}
         </div>
-      </ModalDialog>
-    </Modal>
+        <div className="grid grid-cols-2 gap-8">
+          <Button onClick={onClose}>{t("Cancel")}</Button>
+          <Button primary onClick={handleRemove} processing={confirming}>
+            {t("Remove")}
+          </Button>
+        </div>
+      </div>
+    </ModalDialog>
   )
 }

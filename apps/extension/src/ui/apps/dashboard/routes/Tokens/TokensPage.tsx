@@ -3,7 +3,7 @@ import { PlusIcon } from "@talismn/icons"
 import { activeTokensStore } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { Button, Dropdown, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -94,16 +94,19 @@ const Content = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const params = useParams()
-  const [platform, setPlatform, platformOptions] = usePlatformOptions(
-    params.platform as PlatformOption,
+  // filters to persist in location state
+  const [isActiveOnly, setIsActiveOnly] = useState((location.state.isActiveOnly as boolean) ?? true)
+  const [isCustomOnly, setIsCustomOnly] = useState(
+    (location.state.isCustomOnly as boolean) ?? false,
   )
+  const [isHidePools, setIsHidePools] = useState((location.state.isHidePools as boolean) ?? false)
+  const [search, setSearch] = useState((location.state.search as string) ?? "")
+  const [platform, setPlatform, platformOptions] = usePlatformOptions(
+    (location.state.platform as PlatformOption) ?? ("all" as PlatformOption),
+  )
+  const [networkId, setNetworkId] = useState<EthNetworkId>(location.state.networkId ?? "ALL")
 
   const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
-
-  const [isActiveOnly, setIsActiveOnly] = useState(true)
-  const [isCustomOnly, setIsCustomOnly] = useState(false)
-  const [isHidePools, setIsHidePools] = useState(false)
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
@@ -115,15 +118,25 @@ const Content = () => {
       ...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
   }, [networks, t])
-  const [networkId, setNetworkId] = useState<EthNetworkId>("ALL")
+
   const network = useNetwork(networkId)
 
-  // search value is debounced by SearchInput component
-  // keep search value in location state to preserve it when user clicks a token then goes back
-  const [search, setSearch] = useState(location.state?.search ?? "")
+  // persist all filters in location state so token page can navigate back here without losing filters
   useEffect(() => {
-    navigate(location.pathname, { replace: true, state: { search } })
-  }, [location.pathname, navigate, search])
+    navigate(location.pathname, {
+      replace: true,
+      state: { search, platform, isActiveOnly, isCustomOnly, isHidePools, networkId },
+    })
+  }, [
+    isActiveOnly,
+    isCustomOnly,
+    isHidePools,
+    location.pathname,
+    navigate,
+    platform,
+    search,
+    networkId,
+  ])
 
   const handleAddToken = useCallback(() => {
     sendAnalyticsEvent({
