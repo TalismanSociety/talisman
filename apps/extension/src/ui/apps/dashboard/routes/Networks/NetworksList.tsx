@@ -62,7 +62,7 @@ export const NetworksList: FC<{
     const lowerSearch = search?.toLowerCase().trim() ?? ""
 
     const filter = (network: Network) => {
-      if (platform && network.platform !== platform) return false
+      if (platform !== "all" && network.platform !== platform) return false
       if (activeOnly && !isNetworkActive(network, networksActiveState)) return false
 
       if (!search) return true
@@ -228,7 +228,7 @@ const NetworkRow: FC<{
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
-        checked={isActive}
+        checked={!!isActive}
         onChange={handleEnableChanged}
       />
     </div>
