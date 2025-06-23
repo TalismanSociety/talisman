@@ -10,7 +10,7 @@ export const ChaindataFileSchema = z
     miniMetadatas: z.array(AnyMiniMetadataSchema),
   })
   .check((ctx) => {
-    const tokensById = keyBy(ctx.value.tokens, "id")
+    const tokensById = keyBy(ctx.value.tokens, (t) => t.id)
     for (const network of ctx.value.networks ?? []) {
       const nativeToken = tokensById[network.nativeTokenId]
       if (!nativeToken)

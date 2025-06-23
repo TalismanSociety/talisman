@@ -278,20 +278,12 @@ const getCombinedChaindata = (
 
   // merge custom into default
   return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
-    map((data) => ChaindataProviderDataSchema.parse(data) as Chaindata),
-    // integrity checks
-    map((chaindata) => {
-      const tokensById = keyBy(chaindata.tokens, (t) => t.id)
-
-      // because of customChaindata, it's theorically possible that some network end up without a native token
-      // in that case, it network should be filtered out
-      const networks = chaindata.networks.filter((n) => {
-        if (tokensById[n.nativeTokenId]) return true
-        log.warn(`Network ${n.id} (${n.name}) has no native token with id ${n.nativeTokenId}`)
-        return false
-      })
-
-      return { ...chaindata, networks }
+    map((data) => {
+      const parsed = ChaindataProviderDataSchema.safeParse(data) // as Chaindata
+      if (!parsed.success) {
+        throw new Error("Failed to parse chaindata provider data")
+      }
+      return parsed.data as Chaindata
     }),
     shareReplay({ bufferSize: 1, refCount: true }),
   )
