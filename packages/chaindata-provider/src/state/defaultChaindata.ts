@@ -111,20 +111,20 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
           "rw",
           ["networks", "tokens", "miniMetadatas"],
           async (ctx) => {
-            if (updateNetworks) {
-              log.debug("[defaultChaindata$] Updating networks in DB")
-              await ctx.networks.clear()
-              await ctx.networks.bulkAdd(ghData.networks)
+            if (updateMiniMetadata) {
+              log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
+              await ctx.miniMetadatas.clear()
+              await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
             }
             if (updateTokens) {
               log.debug("[defaultChaindata$] Updating tokens in DB")
               await ctx.tokens.clear()
               await ctx.tokens.bulkAdd(ghData.tokens)
             }
-            if (updateMiniMetadata) {
-              log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
-              await ctx.miniMetadatas.clear()
-              await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
+            if (updateNetworks) {
+              log.debug("[defaultChaindata$] Updating networks in DB")
+              await ctx.networks.clear()
+              await ctx.networks.bulkAdd(ghData.networks)
             }
           },
         )
