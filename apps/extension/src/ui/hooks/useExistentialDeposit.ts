@@ -13,7 +13,6 @@ export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {
       case "substrate-assets":
       case "substrate-foreignassets":
       case "substrate-native":
-      case "substrate-psp22":
       case "substrate-tokens":
         return BigInt(token.existentialDeposit ?? "0")
 

@@ -1,6 +1,7 @@
-import { isTokenDot } from "@talismn/chaindata-provider"
+import { isTokenNeedExistentialDeposit } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
+import { log } from "extension-shared"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
@@ -18,7 +19,12 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
 
-  if (!isTokenDot(token)) return null
+  if (!token) return null
+
+  if (!isTokenNeedExistentialDeposit(token)) {
+    log.warn("ForfeitDetails: Token does not need existential deposit", tokenId)
+    return null
+  }
 
   return (
     <Trans t={t}>

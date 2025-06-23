@@ -145,7 +145,6 @@ export const SubPsp22Module: NewBalanceModule<
             logo: tokenConfig?.logo,
             contractAddress,
             networkId: chainId,
-            existentialDeposit: "0", // TODO: Discuss if this is needed for PSP22 tokens
           }
 
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId

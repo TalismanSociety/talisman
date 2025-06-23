@@ -67,6 +67,8 @@ export const isTokenDot = (token: Token | null | undefined) => {
   return isTokenOfPlatform(token, "polkadot")
 }
 
+export const isTokenNeedExistentialDeposit = (token: Token) => "existentialDeposit" in token
+
 export const isTokenOfType = <T extends TokenType>(
   token: Token | null | undefined,
   type: T,

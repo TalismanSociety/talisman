@@ -1,6 +1,13 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
-import { isNetworkDot, isTokenDot, isTokenEth, Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  isNetworkDot,
+  isTokenDot,
+  isTokenEth,
+  isTokenNeedExistentialDeposit,
+  Token,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -76,11 +83,11 @@ const useIsSendingEnough = (
         case "evm-uniswapv2":
         case "evm-erc20":
         case "evm-native":
+        case "substrate-psp22":
           return true
         case "substrate-assets":
         case "substrate-foreignassets":
         case "substrate-native":
-        case "substrate-psp22":
         case "substrate-tokens": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
@@ -386,7 +393,7 @@ const useSendFundsProvider = () => {
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
-        if (remaining === 0n || !isTokenDot(token) || sendMax) return null
+        if (remaining === 0n || !isTokenNeedExistentialDeposit(token) || sendMax) return null
 
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
@@ -468,7 +475,7 @@ const useSendFundsProvider = () => {
       // if paying fee makes the feeToken balance go below the existential deposit, then the transaction is invalid
       // https://github.com/paritytech/polkadot/issues/2485#issuecomment-782794995
       if (
-        isTokenDot(feeToken) &&
+        isTokenNeedExistentialDeposit(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
           BigInt(feeToken.existentialDeposit) &&
@@ -486,7 +493,7 @@ const useSendFundsProvider = () => {
             error: t("Insufficient {{symbol}}", { symbol: cost.token.symbol }),
           }
 
-      if (!isSendingEnough && isTokenDot(token)) {
+      if (!isSendingEnough && token && isTokenNeedExistentialDeposit(token)) {
         const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
         return {
           isValid: false,
