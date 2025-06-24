@@ -1,10 +1,10 @@
-import { EthNetwork, EthNetworkId, Network, NetworkId } from "@talismn/chaindata-provider"
+import { Network, NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
 import { activeTokensStore } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
-import { Button, Dropdown, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
+import { Button, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
@@ -13,71 +13,12 @@ import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useBalancesHydrate, useNetwork, useNetworks } from "@ui/state"
 
 import { PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
-
-const renderNetwork = (network: Network) => {
-  return (
-    <div className="flex items-center gap-5">
-      <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
-      <span>{network.name}</span>
-    </div>
-  )
-}
-
-const NetworkSelect = ({
-  networks,
-  selectedId,
-  onChange,
-}: {
-  networks: Network[]
-  selectedId: NetworkId | null
-  onChange: (networkId: NetworkId) => void
-}) => {
-  const [selected, setSelected] = useState<Network | undefined>(
-    networks.find((n) => n.id === selectedId),
-  )
-
-  useEffect(() => {
-    // networks may not be loaded on first render
-    // handle default selection here
-    if (!selected) {
-      const defaultNetwork = networks.find((n) => n.id === selectedId)
-      if (defaultNetwork) setSelected(defaultNetwork)
-    } else if (selectedId !== selected.id) {
-      const newSelected = networks.find((n) => n.id === selectedId)
-      if (newSelected) {
-        setSelected(newSelected)
-      } else {
-        setSelected(undefined)
-      }
-    }
-  }, [selectedId, networks, selected])
-
-  const handleChange = useCallback(
-    (item: Network | null) => {
-      if (!item) return
-      setSelected(item)
-      if (onChange) onChange(item.id)
-    },
-    [onChange],
-  )
-
-  return (
-    <Dropdown
-      items={networks}
-      propertyKey="id"
-      renderItem={renderNetwork}
-      value={selected}
-      onChange={handleChange}
-      className="[&>div>button]:h-[4.6rem]"
-    />
-  )
-}
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -106,8 +47,7 @@ const Content = () => {
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
     (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption),
   )
-  const [networkId, setNetworkId] = useState<EthNetworkId>(location.state?.networkId ?? "ALL")
-
+  const [networkId, setNetworkId] = useState<NetworkId>(location.state?.networkId ?? "ALL")
   const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
@@ -116,7 +56,7 @@ const Content = () => {
 
   const networkOptions = useMemo(() => {
     return [
-      { id: "ALL", name: t("All active networks") } as EthNetwork,
+      { id: "ALL", name: t("All active networks") } as Network,
       ...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
   }, [networks, t])

@@ -3,9 +3,9 @@ import * as Sentry from "@sentry/browser"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
-  isTokenDot,
   isTokenInTypes,
   isTokenKnown,
+  isTokenNeedExistentialDeposit,
   isTokenSubTokens,
   Token,
   TokenBaseSchema,
@@ -40,8 +40,8 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useActivableToken } from "@ui/hooks/useKnownEvmToken"
 import { useNetwork, useToken } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
@@ -166,25 +166,6 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               label={isTokenSubTokens(token) ? t("Token Key") : t("XCM Location")}
             >
               <OnChainIdDisplay onChainId={token.onChainId} />
-              {/* {typeof token.onChainId === "string" && token.onChainId.startsWith("{") ? (
-                <FormFieldTextarea
-                  value={jsonToYaml(token.onChainId)}
-                  spellCheck={false}
-                  data-lpignore
-                  readOnly
-                  rows={10}
-                  // TODO after NFTs PR is merged, we could leverage the subscan pooler to fetch the UUID of those and provide a link to the explorer
-                />
-              ) : (
-                <FormFieldInputText
-                  type="text"
-                  value={token.onChainId}
-                  spellCheck={false}
-                  data-lpignore
-                  readOnly
-                  small
-                />
-              )} */}
             </FormFieldContainer>
           )}
           {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2", "substrate-psp22"]) && (
@@ -324,7 +305,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             )}
           />
 
-          {isTokenDot(token) && (
+          {isTokenNeedExistentialDeposit(token) && (
             <form.Field
               name="existentialDeposit"
               validators={{

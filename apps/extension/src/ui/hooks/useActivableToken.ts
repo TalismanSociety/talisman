@@ -5,22 +5,7 @@ import { useCallback, useMemo } from "react"
 import { useActiveTokensState } from "@ui/state"
 
 export const useActivableToken = (token: Token | undefined) => {
-  // const allTokens = useTokens()
-  // const allErc20Tokens = useMemo(
-  //   () => allTokens.filter((t) => isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"])),
-  //   [allTokens],
-  // )
-
   const activeTokens = useActiveTokensState()
-
-  // const token = useMemo(() => {
-  //   return allErc20Tokens.find(
-  //     (t) =>
-  //       contractAddress &&
-  //       t.networkId === evmNetworkId &&
-  //       isAddressEqual(t.contractAddress, contractAddress),
-  //   )
-  // }, [allErc20Tokens, contractAddress, evmNetworkId])
 
   const isActive = useMemo(() => token && isTokenActive(token, activeTokens), [activeTokens, token])
 

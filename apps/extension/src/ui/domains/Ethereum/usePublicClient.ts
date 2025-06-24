@@ -1,10 +1,10 @@
-import { EthNetwork, EthNetworkId, EvmNativeToken } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
 import { api } from "@ui/api"
-import { useNetworkById, useToken } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
@@ -19,10 +19,7 @@ const viemRequest =
     }
   }
 
-export const getExtensionPublicClient = (
-  evmNetwork: EthNetwork,
-  nativeToken: EvmNativeToken,
-): PublicClient => {
+export const getExtensionPublicClient = (evmNetwork: EthNetwork): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
 
   return createPublicClient({
@@ -30,11 +27,7 @@ export const getExtensionPublicClient = (
       id: Number(evmNetwork.id),
       name: name,
       network: name,
-      nativeCurrency: {
-        symbol: nativeToken.symbol,
-        decimals: nativeToken.decimals,
-        name: nativeToken.symbol,
-      },
+      nativeCurrency: evmNetwork.nativeCurrency,
       rpcUrls: {
         // rpcs are a typescript requirement, but won't be used by the custom transport
         public: { http: [] },
@@ -55,12 +48,11 @@ export const getExtensionPublicClient = (
 
 export const usePublicClient = (evmNetworkId?: EthNetworkId): PublicClient | undefined => {
   const evmNetwork = useNetworkById(evmNetworkId, "ethereum")
-  const nativeToken = useToken(evmNetwork?.nativeTokenId)
 
   const publicClient = useMemo(() => {
-    if (!evmNetwork || nativeToken?.type !== "evm-native") return undefined
-    return getExtensionPublicClient(evmNetwork, nativeToken)
-  }, [evmNetwork, nativeToken])
+    if (!evmNetwork) return undefined
+    return getExtensionPublicClient(evmNetwork)
+  }, [evmNetwork])
 
   return publicClient
 }

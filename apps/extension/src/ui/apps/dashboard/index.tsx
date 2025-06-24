@@ -42,7 +42,7 @@ import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
 import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { TestPage } from "./routes/TestPage"
-// import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
+import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
@@ -92,7 +92,7 @@ const DashboardInner = () => {
             <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
             <Route path="tokens">
               <Route path="" element={<TokensPage />} />
-              {/* <Route path="add" element={<AddCustomTokenPage />} /> */}
+              <Route path="add" element={<AddCustomTokenPage />} />
               <Route path=":id" element={<TokenPage />} />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>

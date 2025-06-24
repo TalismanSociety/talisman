@@ -17,6 +17,6 @@ export const publicClientAtomFamily: AtomFamily<
     if (!evmNetwork || nativeToken?.type !== "evm-native" || evmNetwork.platform !== "ethereum")
       return
 
-    return getExtensionPublicClient(evmNetwork, nativeToken)
+    return getExtensionPublicClient(evmNetwork)
   }),
 )
