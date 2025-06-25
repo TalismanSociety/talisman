@@ -46,17 +46,6 @@ export type ValidatorsData = {
   data: ValidatorData[]
 }
 
-export type Validator = {
-  name: string
-  url: string
-  description: string
-  signature: string
-}
-
-export type ValidatorsResponse = {
-  [key: string]: Validator // The key is the unique validator hotkey.
-}
-
 export type BondOption = {
   poolId: string
   name: string
