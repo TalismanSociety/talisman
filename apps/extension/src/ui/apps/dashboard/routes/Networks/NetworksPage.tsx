@@ -1,8 +1,8 @@
 import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { combineLatest } from "rxjs"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -19,6 +19,45 @@ import { activeNetworksState$, balancesHydrate$ } from "@ui/state"
 import { ANALYTICS_PAGE } from "./analytics"
 import { NetworksList } from "./NetworksList"
 import { PlatformOption, usePlatformOptions } from "./usePlatformOptions"
+
+export const NetworksPage = () => {
+  const { t } = useTranslation()
+  usePreload()
+
+  const navigate = useNavigate()
+
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
+  const handleAddNetworkClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add network button",
+    })
+    navigate("./add")
+  }, [navigate])
+
+  return (
+    <DashboardLayout sidebar="settings">
+      <div className="flex w-full justify-between">
+        <HeaderBlock
+          title={t("Manage Networks")}
+          text={
+            <>
+              {t("Add, enable and disable networks")} <NoticeTooltip />
+            </>
+          }
+        />
+        <div className="flex w-full justify-between">
+          <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
+            {t("Add network")}
+          </Button>
+        </div>
+      </div>
+      <Content />
+    </DashboardLayout>
+  )
+}
 
 const NoticeTooltip: FC = () => {
   const { t } = useTranslation()
@@ -43,42 +82,26 @@ const [usePreload] = bind(combineLatest([balancesHydrate$, activeNetworksState$]
 
 const Content = () => {
   const { t } = useTranslation()
-  usePreload()
-  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const params = useParams()
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
-    params.platform as PlatformOption,
+    location.state?.platform as PlatformOption,
+  )
+  const [search, setSearch] = useState(() => (location.state?.search as string) ?? "")
+  const [activeOnly, setActiveOnly] = useState(
+    () => (location.state?.activeOnly as boolean) ?? false,
   )
 
-  const handleAddNetworkClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add network button",
+  useEffect(() => {
+    navigate(location.pathname, {
+      replace: true,
+      state: { platform, search, activeOnly },
     })
-    navigate("./add")
-  }, [navigate])
-
-  const [search, setSearch] = useState("")
-  const [activeOnly, setActiveOnly] = useState(false)
+  }, [activeOnly, location.pathname, navigate, platform, search])
 
   return (
     <>
-      <div className="flex w-full justify-between">
-        <HeaderBlock
-          title={t("Manage Networks")}
-          text={
-            <>
-              {t("Add, enable and disable networks")} <NoticeTooltip />
-            </>
-          }
-        />
-        <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
-          {t("Add network")}
-        </Button>
-      </div>
       <Spacer small />
       <div className="flex justify-end gap-4">
         <OptionSwitch
@@ -92,23 +115,21 @@ const Content = () => {
 
         <TogglePill
           label={t("Active only")}
-          checked={activeOnly}
+          checked={!search && activeOnly}
           onChange={() => setActiveOnly((prev) => !prev)}
           disabled={!!search}
         />
       </div>
       <Spacer small />
       <div className="flex gap-4">
-        <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
+        <SearchInput
+          initialValue={search}
+          onChange={setSearch}
+          placeholder={t("Search networks")}
+        />
       </div>
       <Spacer small />
       <NetworksList platform={platform} activeOnly={activeOnly} search={search} />
     </>
   )
 }
-
-export const NetworksPage = () => (
-  <DashboardLayout sidebar="settings">
-    <Content />
-  </DashboardLayout>
-)

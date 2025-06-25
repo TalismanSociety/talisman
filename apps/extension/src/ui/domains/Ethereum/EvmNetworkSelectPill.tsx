@@ -44,7 +44,7 @@ export const EvmNetworkSelectPill = () => {
             <Suspense>
               <NetworkLogo
                 className={classNames("text-[2.8rem] transition-opacity")} // flickering hack
-                ethChainId={evmNetworkId}
+                networkId={evmNetworkId}
               />
               <ChevronDownIcon className="shrink-0 text-base" />
             </Suspense>

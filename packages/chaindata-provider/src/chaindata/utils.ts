@@ -1,5 +1,6 @@
 import { DotNetwork, Network, NetworkPlatform } from "./networks"
 import {
+  EvmNativeTokenSchema,
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
   parseEvmUniswapV2TokenId,
@@ -8,6 +9,7 @@ import {
   parseSubNativeTokenId,
   parseSubPsp22TokenId,
   parseSubTokensTokenId,
+  SubNativeTokenSchema,
   Token,
   TokenId,
   TokenIdSpecs,
@@ -143,3 +145,31 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
 
 export const networkIdFromTokenId = (tokenId: TokenId): Network["id"] =>
   parseTokenId(tokenId).networkId
+
+const PLATFORM_NATIVE_TOKENS = {
+  polkadot: SubNativeTokenSchema.shape.type.value,
+  ethereum: EvmNativeTokenSchema.shape.type.value,
+}
+
+export type NativeTokenType<P extends NetworkPlatform = NetworkPlatform> =
+  (typeof PLATFORM_NATIVE_TOKENS)[P]
+
+export type NativeToken<P extends NetworkPlatform = NetworkPlatform> = Extract<
+  Token,
+  { type: NativeTokenType<P> }
+>
+
+export const isNativeTokenType = <P extends NetworkPlatform = NetworkPlatform>(
+  type: TokenType,
+  platform?: P,
+): type is NativeTokenType<P> => {
+  if (platform) return type === PLATFORM_NATIVE_TOKENS[platform]
+  return Object.values(PLATFORM_NATIVE_TOKENS).includes(type as NativeTokenType)
+}
+
+export const isNativeToken = <P extends NetworkPlatform = NetworkPlatform>(
+  token: Token,
+  platform?: P,
+): token is NativeToken<P> => {
+  return (isNativeTokenType(token.type, platform) && !platform) || token.platform === platform
+}

@@ -34,6 +34,7 @@ import {
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
@@ -43,7 +44,6 @@ import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetwork, useToken } from "@ui/state"
-import { copyAddress } from "@ui/util/copyAddress"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -126,6 +126,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
         className="my-20"
         onSubmit={(e) => {
           e.preventDefault()
+          e.stopPropagation()
           form.handleSubmit()
         }}
       >
@@ -363,7 +364,6 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
             <Button
               className="h-24 w-[24rem] text-base"
               type="button"
-              disabled={!isTokenCustom(token)}
               onClick={ocConfirmRemove.open}
             >
               {isTokenKnown(token) ? t("Reset") : t("Remove")}
@@ -429,9 +429,23 @@ const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
   address,
   className,
 }) => {
-  const handleClick = useCallback(() => {
-    return copyAddress(address)
-  }, [address])
+  const { t } = useTranslation()
+  const handleClick = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(address)
+      notify({
+        type: "success",
+        title: t(`Address copied`),
+        subtitle: shortenAddress(address, 6, 6),
+      })
+    } catch (err) {
+      notify({
+        type: "error",
+        title: t("Error"),
+        subtitle: (err as Error).message ?? "Failed to copy address",
+      })
+    }
+  }, [address, t])
 
   return (
     <IconButton className={className} onClick={handleClick} disabled={!address}>
@@ -547,7 +561,7 @@ const ConfirmRemove: FC<{
         <div className="grid grid-cols-2 gap-8">
           <Button onClick={onClose}>{t("Cancel")}</Button>
           <Button primary onClick={handleRemove} processing={confirming}>
-            {t("Remove")}
+            {isTokenKnown(saved) ? t("Reset") : t("Remove")}
           </Button>
         </div>
       </div>

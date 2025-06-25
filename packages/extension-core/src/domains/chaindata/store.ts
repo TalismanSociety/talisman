@@ -53,5 +53,10 @@ export const customChaindataStore = {
   upsertToken: (token: Token) => upsert([], [token]),
   upsertNetwork: (network: Network) => upsert([network], []),
   removeToken: (tokenId: TokenId) => remove([], [tokenId]),
-  removeNetwork: (networkId: NetworkId) => remove([networkId], []),
+  removeNetwork: async (networkId: NetworkId) => {
+    const { networks } = await store.get()
+    const network = networks?.find(({ id }) => id === networkId)
+    const tokenIds = network?.nativeTokenId ? [network.nativeTokenId] : []
+    remove([networkId], tokenIds)
+  },
 }

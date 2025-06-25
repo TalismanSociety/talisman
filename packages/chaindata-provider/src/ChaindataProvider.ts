@@ -305,11 +305,15 @@ const ChaindataProviderDataSchema = z
   })
   .transform(({ defaultData, customData }) => {
     const defaultNetworksById = keyBy(
-      defaultData.networks.map((n) => ({ ...n, __isCustom: false })),
+      defaultData.networks.map((n) => ({ ...n, __isKnown: true, __isCustom: false })),
       (n) => n.id,
     )
     const customNetworksById = keyBy(
-      customData.networks?.map((t) => ({ ...t, __isCustom: true })),
+      customData.networks?.map((t) => ({
+        ...t,
+        __isKnown: !!defaultNetworksById[t.id],
+        __isCustom: true,
+      })),
       (n) => n.id,
     )
     const networksById = assign({}, defaultNetworksById, customNetworksById)
@@ -348,8 +352,14 @@ type ChaindataProviderToken = ChaindataProviderData["tokens"][number]
 
 export const isNetworkCustom = (network: Network): boolean => {
   if (typeof network !== "object") return false
-  const { __isCustom, ...rest } = network as ChaindataProviderNetwork
+  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
   return __isCustom && NetworkSchema.safeParse(rest).success
+}
+
+export const isNetworkKnown = (network: Network): boolean => {
+  if (typeof network !== "object") return false
+  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
+  return __isKnown && NetworkSchema.safeParse(rest).success
 }
 
 export const isTokenCustom = (token: Token): boolean => {
@@ -371,7 +381,7 @@ export const isTokenTestnet = (token: Token): boolean => {
 }
 
 export const getCleanNetwork = (network: Network): Network => {
-  const { __isCustom, ...rest } = network as ChaindataProviderNetwork
+  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
   return rest as Network
 }
 

@@ -1,3 +1,5 @@
+import { isNativeToken, isNetworkOfPlatform } from "@talismn/chaindata-provider"
+
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -22,14 +24,27 @@ export class ChaindataHandler extends ExtensionHandler {
       }
 
       case "pri(chaindata.networks.upsert)": {
-        const network = request as RequestTypes["pri(chaindata.networks.upsert)"]
-        await customChaindataStore.upsertNetwork(network)
+        const { platform, network, nativeToken } =
+          request as RequestTypes["pri(chaindata.networks.upsert)"]
+
+        // better safe than sorry
+        if (!isNativeToken(nativeToken, platform))
+          throw new Error("Provided native token is not a valid native token for the platform")
+        if (!isNetworkOfPlatform(network, platform))
+          throw new Error("Provided network is not a valid network for the platform")
+        if (network.nativeTokenId !== nativeToken.id)
+          throw new Error("Network native token ID does not match the provided native token ID")
+
+        await customChaindataStore.upsert([network], [nativeToken])
+
         return true
       }
 
       case "pri(chaindata.networks.remove)": {
         const { id } = request as RequestTypes["pri(chaindata.networks.remove)"]
-        await customChaindataStore.removeToken(id)
+
+        await customChaindataStore.removeNetwork(id)
+
         return true
       }
 

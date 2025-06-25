@@ -14,7 +14,7 @@ const renderNetwork = (network: Network) => {
   )
 }
 
-export const NetworkSelect: FC<{
+export const PlatformSelect: FC<{
   networks: Network[]
   selectedId: NetworkId | null
   placeholder?: string

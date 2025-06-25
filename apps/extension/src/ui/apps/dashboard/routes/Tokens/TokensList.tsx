@@ -178,7 +178,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
         <div className="flex flex-col justify-center gap-2 overflow-hidden">
           <div className="text-body flex items-center gap-3 overflow-hidden">
             <NetworkLogo
-              ethChainId={network?.id}
+              networkId={network?.id}
               className="text-body shrink-0 truncate text-base"
             />
             <div>{network?.name}</div>

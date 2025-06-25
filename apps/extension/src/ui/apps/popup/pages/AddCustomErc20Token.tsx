@@ -87,7 +87,7 @@ export const AddCustomErc20Token = () => {
               </FakePill>
               <span>{t("on")}</span>
               <FakePill>
-                <NetworkLogo ethChainId={network.id} />
+                <NetworkLogo networkId={network.id} />
                 <span>{network.name}</span>
               </FakePill>
             </div>

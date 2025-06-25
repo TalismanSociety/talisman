@@ -1,11 +1,9 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
+import { FC } from "react"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
-type NetworkLogoProps = {
-  ethChainId?: EvmNetworkId
+export const NetworkLogo: FC<{
+  networkId?: NetworkId
   className?: string
-}
-export const NetworkLogo = ({ className, ethChainId }: NetworkLogoProps) => (
-  <ChainLogo className={className} id={ethChainId} />
-)
+}> = ({ className, networkId: networkId }) => <ChainLogo className={className} id={networkId} />

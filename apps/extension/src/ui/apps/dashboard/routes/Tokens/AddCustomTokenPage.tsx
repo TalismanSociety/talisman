@@ -333,7 +333,7 @@ const getEthereumTokenInfo = async (
   address: `0x${string}`,
   signal?: AbortSignal,
 ): Promise<Token | undefined> => {
-  if (!network || !address) return undefined
+  if (!network || !address) throw new Error("Network and address are required")
 
   if (!isEthereumAddress(address)) throw new Error("Invalid address")
 

@@ -178,7 +178,12 @@ export const api: MessageTypes = {
 
   // chaindata message types
   networks: (cb) => messageService.subscribe("pri(chaindata.networks.subscribe)", null, cb),
-  networkUpsert: (network) => messageService.sendMessage("pri(chaindata.networks.upsert)", network),
+  networkUpsert: ({ platform, network, nativeToken }) =>
+    messageService.sendMessage("pri(chaindata.networks.upsert)", {
+      platform,
+      network,
+      nativeToken,
+    }),
   networkRemove: (id) => messageService.sendMessage("pri(chaindata.networks.remove)", { id }),
 
   tokens: (cb) => messageService.subscribe("pri(chaindata.tokens.subscribe)", null, cb),

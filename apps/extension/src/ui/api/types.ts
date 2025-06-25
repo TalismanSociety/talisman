@@ -42,6 +42,7 @@ import {
   RequestAddressLookup,
   RequestBalance,
   RequestMetadataId,
+  RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
@@ -201,7 +202,7 @@ export default interface MessageTypes {
 
   // networks message types
   networks: (cb: (chains: Array<Network>) => void) => UnsubscribeFn
-  networkUpsert: (network: Network) => Promise<boolean>
+  networkUpsert: (req: RequestNetworkUpsert) => Promise<boolean>
   networkRemove: (id: NetworkId) => Promise<boolean>
 
   // token message types
