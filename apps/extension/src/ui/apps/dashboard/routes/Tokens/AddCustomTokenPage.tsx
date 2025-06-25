@@ -5,10 +5,11 @@ import {
   Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
+import { EthereumAddressSchema } from "@talismn/chaindata-provider/src/chaindata/shared"
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
-import { useForm } from "@tanstack/react-form"
+import { useField, useForm } from "@tanstack/react-form"
 import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
 import { log } from "extension-shared"
 import { range } from "lodash"
@@ -17,6 +18,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { z } from "zod/v4"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -28,8 +30,6 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
-
-// import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -55,42 +55,55 @@ export const AddCustomTokenPage = () => {
   )
 }
 
+const FormSchema = z.object({
+  networkId: TokenBaseSchema.shape.networkId,
+  contractAddress: EthereumAddressSchema,
+  symbol: TokenBaseSchema.shape.symbol,
+  decimals: TokenBaseSchema.shape.decimals,
+  coingeckoId: TokenBaseSchema.shape.coingeckoId.optional(),
+  name: TokenBaseSchema.shape.name.optional(),
+
+  // token created based of specs
+  token: z.unknown(),
+})
+
+type FormData = z.infer<typeof FormSchema>
+
 const AddCustomTokenForm = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
   const networks = useNetworks({ platform: "ethereum", activeOnly: true, includeTestnets: true })
-  // const networksMap = useNetworksMapById()
-
   const networkOptions = useMemo(() => {
     return [...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0)]
   }, [networks])
 
   const form = useForm({
-    defaultValues: {} as Partial<Token>,
+    defaultValues: {} as FormData,
     onSubmit: async ({ value }) => {
       try {
-        if (!value.networkId) throw new Error(t("Network is required"))
-        if (!("contractAddress" in value)) throw new Error(t("Missing contract address"))
+        if (!value.token) throw new Error("Token not found")
 
-        const network = await firstValueFrom(getNetworkById$(value.networkId, "ethereum"))
-        if (!network) throw new Error(t("Network not found"))
+        const { symbol, decimals, coingeckoId, name } = value
+        const newToken = Object.assign({}, value.token as Token, {
+          symbol,
+          decimals,
+          coingeckoId,
+          name,
+        })
 
-        const token = await getEthereumTokenInfo(network, value.contractAddress as `0x${string}`)
-        if (!token) throw new Error(t("Failed to validate token"))
-
-        await api.tokenUpsert(token)
-        await activeTokensStore.setActive(token.id, true)
+        await api.tokenUpsert(newToken)
+        await activeTokensStore.setActive(newToken.id, true)
 
         // wait for frontend's observables to pick up the new token
         for (const _attempt of range(1, 5)) {
-          if (await firstValueFrom(getToken$(token.id)))
-            return navigate(`/settings/networks-tokens/tokens/${token.id}`, { replace: true })
+          if (await firstValueFrom(getToken$(newToken.id)))
+            return navigate(`/settings/networks-tokens/tokens/${newToken.id}`, { replace: true })
 
           await sleep(300)
         }
 
-        log.warn("Token not found after upsert, navigating back", { token })
+        log.warn("Token not found after upsert, navigating back", { newToken })
 
         navigate(-1)
       } catch (err) {
@@ -102,7 +115,14 @@ const AddCustomTokenForm = () => {
         })
       }
     },
+    validators: {
+      onMount: ({ value }) => (FormSchema.safeParse(value).success ? null : "invalid"),
+      onChange: ({ value }) => (FormSchema.safeParse(value).success ? null : "invalid"),
+    },
   })
+
+  const fldNetworkId = useField({ form, name: "networkId" })
+  const fldContractAddress = useField({ form, name: "contractAddress" })
 
   return (
     <>
@@ -126,6 +146,14 @@ const AddCustomTokenForm = () => {
               />
             </FormFieldContainer>
           )}
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return t("Network is required")
+              const network = networks.find((n) => n.id === value)
+              if (!network) return t("Network not found")
+              return undefined
+            },
+          }}
         />
         <form.Field
           name="contractAddress"
@@ -134,11 +162,11 @@ const AddCustomTokenForm = () => {
               <FormFieldInputText
                 type="text"
                 value={field.state.value ?? ""}
-                onChange={(e) => field.handleChange(e.target.value)}
+                onChange={(e) => field.handleChange(e.target.value as `0x${string}`)}
                 spellCheck={false}
                 data-lpignore
                 autoComplete="off"
-                disabled={!field.form.getFieldValue("networkId")}
+                disabled={!fldNetworkId.state.value}
                 placeholder="0xdeadbeef...deadbeef"
                 small
                 after={
@@ -154,25 +182,30 @@ const AddCustomTokenForm = () => {
           asyncDebounceMs={150}
           validators={{
             onChangeAsync: async ({ value, signal, fieldApi }) => {
-              const networkId = fieldApi.form.getFieldValue("networkId")
+              const networkId = fldNetworkId.state.value
               if (!networkId) return
-              const network = await firstValueFrom(getNetworkById$(networkId, "ethereum"))
-              if (!network) return "Network not found"
 
               try {
+                const network = await firstValueFrom(getNetworkById$(networkId, "ethereum"))
+                if (!network) throw new Error("Network not found")
+                if (!value) throw new Error("Contract address is required")
+                if (!isEthereumAddress(value)) throw new Error("Invalid address")
+
                 const token = await getEthereumTokenInfo(network, value as `0x${string}`, signal)
 
                 if (token) {
                   if (await firstValueFrom(getToken$(token.id))) return "Token already exists"
 
+                  fieldApi.form.setFieldValue("token", token)
                   fieldApi.form.setFieldValue("symbol", token.symbol)
                   fieldApi.form.setFieldValue("decimals", token.decimals)
                   fieldApi.form.setFieldValue("coingeckoId", token.coingeckoId ?? "")
-                  fieldApi.form.setFieldValue("name", token.name ?? "")
+                  fieldApi.form.setFieldValue("name", token.name ?? token.symbol)
+                  fieldApi.form.validate("change")
                 }
               } catch (err) {
                 log.error("Failed to fetch token info", { value, err })
-                fieldApi.form.reset({ networkId, contractAddress: value })
+                fieldApi.form.setFieldValue("token", undefined)
                 return (err as Error)?.message ?? t("Invalid contract address")
               }
 
@@ -196,12 +229,12 @@ const AddCustomTokenForm = () => {
                 <FormFieldInputText
                   name={field.name}
                   type="text"
-                  value={field.state.value}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   autoComplete="off"
                   placeholder="TKN"
                   small
-                  disabled={!field.form.getFieldValue("networkId")}
+                  disabled={!fldContractAddress.state.meta.isValid}
                 />
               </FormFieldContainer>
             )}
@@ -222,13 +255,13 @@ const AddCustomTokenForm = () => {
                 <FormFieldInputText
                   name={field.name}
                   type="number"
-                  value={field.state.value}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.valueAsNumber)}
                   placeholder="18"
                   autoComplete="off"
                   small
                   readOnly
-                  disabled={!field.form.getFieldValue("networkId")}
+                  disabled={!fldContractAddress.state.meta.isValid}
                 />
               </FormFieldContainer>
             )}
@@ -250,12 +283,12 @@ const AddCustomTokenForm = () => {
                 <FormFieldInputText
                   name={field.name}
                   type="text"
-                  value={field.state.value}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   autoComplete="off"
                   placeholder="(optional)"
                   small
-                  disabled={!field.form.getFieldValue("networkId")}
+                  disabled={!fldContractAddress.state.meta.isValid}
                   before={
                     <AssetLogoBase
                       className="mr-2 rounded-full text-[3rem]"
@@ -287,10 +320,10 @@ const AddCustomTokenForm = () => {
                   name={field.name}
                   type="text"
                   placeholder="My Custom Token"
-                  value={field.state.value}
+                  value={field.state.value ?? ""}
                   onChange={(e) => field.handleChange(e.target.value)}
                   autoComplete="off"
-                  disabled={!field.form.getFieldValue("networkId")}
+                  disabled={!fldContractAddress.state.meta.isValid}
                   small
                 />
               </FormFieldContainer>
@@ -308,15 +341,16 @@ const AddCustomTokenForm = () => {
               state.isSubmitting,
               state.isValidating,
               state.isValid,
+              state.isTouched,
             ]}
-            children={([canSubmit, isSubmitting, isValidating, isValid]) => (
+            children={([canSubmit, isSubmitting, isValidating]) => (
               <Button
                 primary
                 icon={SaveIcon}
                 className="h-24 w-[24rem] text-base"
                 type="submit"
                 processing={isSubmitting || isValidating}
-                disabled={!isSubmitting && (!canSubmit || !isValid)}
+                disabled={!canSubmit && !isSubmitting && !isValidating}
               >
                 {t("Save")}
               </Button>
