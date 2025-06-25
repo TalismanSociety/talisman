@@ -39,7 +39,7 @@ export const BittensorBondDelegateSelect = () => {
   const {
     combinedValidatorsData,
     isLoading: combinedValidatorsDataLoading,
-    isSupportedValidatorsError,
+    isError,
   } = useCombinedBittensorValidatorsData(netuid)
 
   const isLoading = useMemo(
@@ -141,7 +141,7 @@ export const BittensorBondDelegateSelect = () => {
                   tokenId={"bittensor-substrate-native"}
                 />
               ))}
-          {isSupportedValidatorsError && (
+          {isError && (
             <div className="text-alert-error flex h-full items-center justify-center">
               {t("Unable to fetch validators")}
             </div>

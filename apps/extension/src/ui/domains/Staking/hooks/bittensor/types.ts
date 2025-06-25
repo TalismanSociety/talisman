@@ -16,7 +16,7 @@ type Key = {
 }
 
 // Validator Data Type
-type ValidatorData = {
+export type ValidatorData = {
   hotkey: Key
   coldkey: Key
   name: string
