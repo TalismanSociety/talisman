@@ -50,7 +50,7 @@ const getNetworkOptions = ({
     )
     .map((n) => ({
       id: String(n.id),
-      name: name ?? t("Unknown chain"),
+      name: n.name ?? t("Unknown chain"),
       symbols: tokens.filter((t) => t.networkId === n.id).map((t) => t.symbol),
     }))
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
