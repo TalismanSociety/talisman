@@ -36,7 +36,7 @@ const Content = () => {
           iconRight={ChevronRightIcon}
           title={t("Manage networks")}
           subtitle={t("Add, enable and disable networks")}
-          to={`/settings/networks-tokens/networks/ethereum`}
+          to={`/settings/networks-tokens/networks`}
         />
         <CtaButton
           iconLeft={ListIcon}
