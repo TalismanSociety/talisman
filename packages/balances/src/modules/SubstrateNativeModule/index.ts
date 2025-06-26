@@ -269,13 +269,7 @@ export const SubNativeModule: NewBalanceModule<
                   handleUpdateForSource("nompools-staking"),
                   signal,
                 )
-                // const unsubCrowdloans = subscribeCrowdloans(
-                //   chaindataProvider,
-                //   chainConnectors.substrate,
-                //   newAddressesByToken,
-                //   handleUpdateForSource("crowdloan"),
-                //   signal,
-                // )
+
                 const unsubBase = subscribeBase(
                   baseQueries,
                   chainConnectors.substrate,
@@ -283,7 +277,6 @@ export const SubNativeModule: NewBalanceModule<
                 )
                 subscriber.add(async () => (await unsubSubtensorStaking)())
                 subscriber.add(async () => (await unsubNompoolStaking)())
-                // subscriber.add(async () => (await unsubCrowdloans)())
                 subscriber.add(async () => (await unsubBase)())
               })
             }),
