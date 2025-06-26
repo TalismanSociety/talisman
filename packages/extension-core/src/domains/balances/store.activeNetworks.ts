@@ -18,7 +18,7 @@ class ActiveNetworksStore extends StorageProvider<ActiveNetworks> {
   async setActive(networkId: NetworkId, active: boolean) {
     const activeNetworks = await this.get()
     if (activeNetworks[networkId] === active) return
-    await this.set({ ...activeNetworks, [networkId]: active })
+    await this.set({ ...activeNetworks, [networkId]: Boolean(active) })
   }
 
   async resetActive(networkId: NetworkId) {
@@ -29,5 +29,5 @@ class ActiveNetworksStore extends StorageProvider<ActiveNetworks> {
 export const activeNetworksStore = new ActiveNetworksStore()
 
 export const isNetworkActive = (network: Network, activeNetworks: ActiveNetworks) => {
-  return activeNetworks[network.id] ?? (network.isDefault && !network.isTestnet)
+  return Boolean(activeNetworks[network.id] ?? (network.isDefault && !network.isTestnet))
 }

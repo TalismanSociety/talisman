@@ -15,10 +15,10 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
     super("activeTokens", initialData)
   }
 
-  async setActive(tokenId: TokenId, enabled: boolean) {
+  async setActive(tokenId: TokenId, active: boolean) {
     const activeTokens = await this.get()
-    if (activeTokens[tokenId] === enabled) return
-    await this.set({ ...activeTokens, [tokenId]: enabled })
+    if (activeTokens[tokenId] === active) return
+    await this.set({ ...activeTokens, [tokenId]: Boolean(active) })
   }
 
   async resetActive(tokenId: TokenId) {
@@ -29,7 +29,7 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
 export const activeTokensStore = new ActiveTokensStore()
 
 export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
-  return activeTokens[token.id] ?? token.isDefault ?? false
+  return Boolean(activeTokens[token.id] ?? token.isDefault ?? false)
 }
 
 export const filterActiveTokens = (tokens: TokenList, activeTokens: ActiveTokens) => {
