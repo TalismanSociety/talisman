@@ -1,4 +1,4 @@
-import { isAccountAddressEthereum, isAccountNotContact, isAccountOfType } from "@talismn/keyring"
+import { isAccountNotContact } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -23,13 +23,13 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,
-    chaindataProvider.getTokensMapById(),
-    chaindataProvider.getNetworksMapById$("polkadot"),
+    chaindataProvider.getTokensMapById$(),
+    chaindataProvider.getNetworksMapById$(),
     balancePool.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
-    .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {
+    .subscribe(async ([settings, accounts, tokens, networks, balances, allTokenRates]) => {
       try {
         const mapAccounts = Object.fromEntries(
           accounts.filter(isAccountNotContact).map((account) => [account.address, account]),
@@ -45,13 +45,15 @@ export const trackBalanceTotals = async () => {
             const account = mapAccounts[address]
             if (!account) return acc
 
+            // ignore if token rate isnt available yet
+            if (!tokenRates[balance.tokenId]) return acc
+
             if (!acc[address]) acc[address] = []
-            if (isAccountAddressEthereum(account)) acc[address].push(balance)
-            else {
-              const chain = chainsById[networkId]
-              if (!chain || isAccountOfType(account, "contact")) return acc
-              if (isAccountCompatibleWithNetwork(chain, account)) acc[address].push(balance)
-            }
+
+            const network = networks[networkId]
+            if (network && isAccountCompatibleWithNetwork(network, account))
+              acc[address].push(balance)
+
             return acc
           },
           {} as Record<string, BalanceJson[]>,
@@ -62,6 +64,7 @@ export const trackBalanceTotals = async () => {
             const balances = new Balances(balancesByAddress[address] ?? [], {
               tokens,
               tokenRates,
+              networks,
             })
             return settings.selectableCurrencies.map((currency) => {
               const total = balances.sum.fiat(currency).total
