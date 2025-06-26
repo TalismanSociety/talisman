@@ -18,15 +18,13 @@
       "platform": "ethereum",
       "rpcs": [
         "https://mempool.merkle.io/rpc/eth/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
-        "https://rpc.ankr.com/eth",
         "https://ethereum-rpc.publicnode.com",
         "https://eth.merkle.io",
         "https://ethereum.rpc.subquery.network/public",
         "https://eth.llamarpc.com",
+        "https://rpc.ankr.com/eth",
         "https://cloudflare-eth.com",
         "https://mainnet.gateway.tenderly.co",
-        "https://rpc.flashbots.net",
-        "https://rpc.flashbots.net/fast",
         "https://rpc.mevblocker.io",
         "https://rpc.mevblocker.io/fast",
         "https://rpc.mevblocker.io/noreverts",
@@ -92,10 +90,10 @@
       "platform": "ethereum",
       "rpcs": [
         "https://mempool.merkle.io/rpc/bsc/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
-        "https://rpc.ankr.com/bsc",
         "https://bsc-dataseed2.binance.org",
         "https://bsc-dataseed3.binance.org",
         "https://bsc-dataseed4.binance.org",
+        "https://rpc.ankr.com/bsc",
         "https://bsc-dataseed1.bnbchain.org",
         "https://bsc-dataseed2.bnbchain.org",
         "https://bsc-dataseed3.bnbchain.org",
@@ -135,17 +133,16 @@
       "rpcs": [
         "https://mempool.merkle.io/rpc/polygon/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
         "https://polygon-rpc.com/",
-        "https://rpc.ankr.com/polygon",
         "https://polygon-mainnet.public.blastapi.io",
         "https://polygon.rpc.subquery.network/public",
+        "https://rpc.ankr.com/polygon",
         "https://rpc-mainnet.matic.quiknode.pro",
         "https://polygon-bor-rpc.publicnode.com",
         "https://polygon.gateway.tenderly.co",
         "https://polygon.drpc.org",
+        "https://polygon-rpc.com",
         "https://matic-mainnet.chainstacklabs.com",
-        "https://rpc-mainnet.maticvigil.com",
-        "https://matic-mainnet-full-rpc.bwarelabs.com",
-        "https://polygon-rpc.com"
+        "https://rpc-mainnet.maticvigil.com"
       ],
       "contracts": {
         "Erc20Aggregator": "0xb1EFd1407104Cf00F7b9983C1Fa474A2702B5874",
@@ -171,9 +168,9 @@
       "substrateChainId": "moonbeam",
       "rpcs": [
         "https://rpc.api.moonbeam.network",
-        "https://moonbeam-rpc.dwellir.com",
         "https://moonbeam-rpc.publicnode.com",
         "https://moonbeam.api.onfinality.io/public",
+        "https://moonbeam-rpc.dwellir.com",
         "https://moonbeam.public.blastapi.io",
         "https://moonbeam.unitedbloc.com",
         "https://moonbeam.drpc.org"
@@ -237,8 +234,8 @@
       "rpcs": [
         "https://mempool.merkle.io/rpc/arbitrum/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
         "https://arb1.arbitrum.io/rpc",
-        "https://rpc.ankr.com/arbitrum",
         "https://arbitrum.rpc.subquery.network/public",
+        "https://rpc.ankr.com/arbitrum",
         "https://arbitrum-one-rpc.publicnode.com"
       ],
       "contracts": {
@@ -270,12 +267,7 @@
       "chainspecQrUrl": "https://metadata.novasama.io/qr/node-subtensor_specs.png",
       "latestMetadataQrUrl": "https://metadata.novasama.io/qr/node-subtensor_metadata_latest.apng",
       "prefix": 42,
-      "rpcs": [
-        "wss://entrypoint-finney.opentensor.ai:443",
-        "wss://lite.sub.latent.to:443",
-        "wss://entrypoint-finney.opentensor.ai:443",
-        "wss://lite.sub.latent.to:443"
-      ],
+      "rpcs": ["wss://entrypoint-finney.opentensor.ai:443", "wss://lite.sub.latent.to:443"],
       "hasCheckMetadataHash": true,
       "topology": {
         "type": "standalone"
@@ -307,10 +299,6 @@
       "prefix": 0,
       "oldPrefix": 63,
       "rpcs": [
-        "wss://hydration.ibp.network",
-        "wss://hydration.dotters.network",
-        "wss://rpc.hydradx.cloud",
-        "wss://rpc.helikon.io/hydradx",
         "wss://hydration-rpc.n.dwellir.com",
         "wss://hydration.ibp.network",
         "wss://hydration.dotters.network",
@@ -359,15 +347,6 @@
         "wss://rpc-kusama.luckyfriday.io",
         "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
         "wss://ksm-rpc.stakeworld.io",
-        "wss://rpc.ibp.network/kusama",
-        "wss://kusama-rpc.dwellir.com",
-        "wss://kusama-rpc-tn.dwellir.com",
-        "wss://kusama-rpc.publicnode.com",
-        "wss://rpc-kusama.helixstreet.io",
-        "wss://kusama.dotters.network",
-        "wss://rpc-kusama.luckyfriday.io",
-        "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
-        "wss://ksm-rpc.stakeworld.io",
         "wss://kusama.public.curie.radiumblock.co/ws"
       ],
       "hasCheckMetadataHash": true,
@@ -400,14 +379,6 @@
       "latestMetadataQrUrl": "https://metadata.parity.io/qr/kusama-statemine_metadata_latest.apng",
       "prefix": 2,
       "rpcs": [
-        "wss://sys.ibp.network/asset-hub-kusama",
-        "wss://asset-hub-kusama-rpc.dwellir.com",
-        "wss://statemine-rpc-tn.dwellir.com",
-        "wss://asset-hub-kusama.dotters.network",
-        "wss://rpc-asset-hub-kusama.luckyfriday.io",
-        "wss://kusama-asset-hub-rpc.polkadot.io",
-        "wss://statemine.public.curie.radiumblock.co/ws",
-        "wss://ksm-rpc.stakeworld.io/assethub",
         "wss://sys.ibp.network/asset-hub-kusama",
         "wss://asset-hub-kusama-rpc.dwellir.com",
         "wss://statemine-rpc-tn.dwellir.com",
@@ -450,7 +421,6 @@
       "prefix": 0,
       "rpcs": [
         "wss://rpc.ibp.network/polkadot",
-        "wss://polkadot-rpc.dwellir.com",
         "wss://polkadot-rpc-tn.dwellir.com",
         "wss://polkadot-rpc.publicnode.com",
         "wss://polkadot-public-rpc.blockops.network/ws",
@@ -462,19 +432,7 @@
         "wss://dot-rpc.stakeworld.io",
         "wss://polkadot.public.curie.radiumblock.co/ws",
         "wss://polkadot.rpc.subquery.network/public/ws",
-        "wss://rpc.ibp.network/polkadot",
-        "wss://polkadot-rpc.dwellir.com",
-        "wss://polkadot-rpc-tn.dwellir.com",
-        "wss://polkadot-rpc.publicnode.com",
-        "wss://polkadot-public-rpc.blockops.network/ws",
-        "wss://rpc-polkadot.helixstreet.io",
-        "wss://polkadot.dotters.network",
-        "wss://rpc-polkadot.luckyfriday.io",
-        "wss://polkadot.rpc.permanence.io",
-        "wss://rockx-dot.w3node.com/polka-public-dot/ws",
-        "wss://dot-rpc.stakeworld.io",
-        "wss://polkadot.public.curie.radiumblock.co/ws",
-        "wss://polkadot.rpc.subquery.network/public/ws"
+        "wss://polkadot-rpc.dwellir.com"
       ],
       "hasCheckMetadataHash": true,
       "topology": {
@@ -509,15 +467,6 @@
         "wss://sys.ibp.network/statemint",
         "wss://sys.dotters.network/statemint",
         "wss://sys.ibp.network/asset-hub-polkadot",
-        "wss://statemint-rpc-tn.dwellir.com",
-        "wss://polkadot-assethub-rpc.blockops.network/ws",
-        "wss://asset-hub-polkadot.dotters.network",
-        "wss://rpc-asset-hub-polkadot.luckyfriday.io",
-        "wss://polkadot-asset-hub-rpc.polkadot.io",
-        "wss://dot-rpc.stakeworld.io/assethub",
-        "wss://sys.ibp.network/statemint",
-        "wss://sys.dotters.network/statemint",
-        "wss://sys.ibp.network/asset-hub-polkadot",
         "wss://asset-hub-polkadot-rpc.dwellir.com",
         "wss://statemint-rpc-tn.dwellir.com",
         "wss://polkadot-assethub-rpc.blockops.network/ws",
@@ -536,6 +485,90 @@
     }
   ],
   "tokens": [
+    {
+      "id": "1:evm-native",
+      "platform": "ethereum",
+      "networkId": "1",
+      "type": "evm-native",
+      "symbol": "ETH",
+      "decimals": 18,
+      "name": "Ether",
+      "coingeckoId": "ethereum",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/eth.svg",
+      "isDefault": true
+    },
+    {
+      "id": "10:evm-native",
+      "platform": "ethereum",
+      "networkId": "10",
+      "type": "evm-native",
+      "symbol": "ETH",
+      "decimals": 18,
+      "name": "Ether",
+      "coingeckoId": "ethereum",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/eth.svg",
+      "isDefault": true
+    },
+    {
+      "id": "1284:evm-native",
+      "platform": "ethereum",
+      "networkId": "1284",
+      "type": "evm-native",
+      "symbol": "GLMR",
+      "decimals": 18,
+      "name": "Glimmer",
+      "coingeckoId": "moonbeam",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/coingecko/moonbeam.webp",
+      "isDefault": true
+    },
+    {
+      "id": "137:evm-native",
+      "platform": "ethereum",
+      "networkId": "137",
+      "type": "evm-native",
+      "symbol": "POL",
+      "decimals": 18,
+      "name": "POL",
+      "coingeckoId": "matic-network",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/coingecko/matic-network.webp",
+      "isDefault": true
+    },
+    {
+      "id": "42161:evm-native",
+      "platform": "ethereum",
+      "networkId": "42161",
+      "type": "evm-native",
+      "symbol": "ETH",
+      "decimals": 18,
+      "name": "Ether",
+      "coingeckoId": "ethereum",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/eth.svg",
+      "isDefault": true
+    },
+    {
+      "id": "56:evm-native",
+      "platform": "ethereum",
+      "networkId": "56",
+      "type": "evm-native",
+      "symbol": "BNB",
+      "decimals": 18,
+      "name": "BNB Chain Native Token",
+      "coingeckoId": "binancecoin",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/coingecko/binancecoin.webp",
+      "isDefault": true
+    },
+    {
+      "id": "8453:evm-native",
+      "platform": "ethereum",
+      "networkId": "8453",
+      "type": "evm-native",
+      "symbol": "ETH",
+      "decimals": 18,
+      "name": "Ether",
+      "coingeckoId": "ethereum",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/chaindata-v4/assets/tokens/eth.svg",
+      "isDefault": true
+    },
     {
       "id": "bittensor:substrate-native",
       "platform": "polkadot",

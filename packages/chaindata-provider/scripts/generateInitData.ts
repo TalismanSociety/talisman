@@ -3,6 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 import { fetchChaindata } from "../src/state/net"
+import { ChaindataFileSchema } from "../src/state/schema"
 
 const NETWORK_IDS = [
   "polkadot",
@@ -28,6 +29,13 @@ async function generateInitData() {
     networks: chaindata.networks.filter((n) => NETWORK_IDS.includes(n.id)),
     tokens: chaindata.tokens.filter((t) => NETWORK_IDS.includes(t.networkId) && t.isDefault),
     miniMetadatas: chaindata.miniMetadatas.filter((m) => NETWORK_IDS.includes(m.chainId)),
+  }
+
+  const parsed = ChaindataFileSchema.safeParse(initData)
+  if (!parsed.success) {
+    // eslint-disable-next-line no-console
+    console.error("Invalid chaindata:", parsed.error.issues)
+    throw new Error("Invalid chaindata")
   }
 
   fs.writeFileSync(

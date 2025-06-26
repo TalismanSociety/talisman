@@ -281,6 +281,7 @@ const getCombinedChaindata = (
     map((data) => {
       const parsed = ChaindataProviderDataSchema.safeParse(data) // as Chaindata
       if (!parsed.success) {
+        log.error("Failed to parse chaindata provider data", { parsed, data })
         throw new Error("Failed to parse chaindata provider data")
       }
       return parsed.data as Chaindata

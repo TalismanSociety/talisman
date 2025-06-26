@@ -40,6 +40,8 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
 
       result.next(data)
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return
+
       log.error("Failed to fetch chaindata", error)
       if (!subscriber.closed) result.error(error)
     } finally {
@@ -81,9 +83,9 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
           "rw",
           ["networks", "tokens", "miniMetadatas"],
           async (ctx) => {
-            await ctx.networks.bulkAdd(initChaindata.networks as Network[])
             await ctx.tokens.bulkAdd(initChaindata.tokens as Token[])
             await ctx.miniMetadatas.bulkAdd(initChaindata.miniMetadatas as AnyMiniMetadata[])
+            await ctx.networks.bulkAdd(initChaindata.networks as Network[])
           },
         )
 
