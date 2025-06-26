@@ -5,6 +5,7 @@ import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
@@ -27,11 +28,12 @@ const sortMethods: SortMethod[] = [
 ]
 
 export const BittensorBondDelegateSelect = () => {
+  const [search, setSearch] = useState<string>("")
+
   const { poolId, stakeType, netuid, setStep, setPoolId } = useBittensorBondWizard()
+
   const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
-
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
-
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
 
   const { t } = useTranslation()
@@ -83,9 +85,39 @@ export const BittensorBondDelegateSelect = () => {
   ])
 
   const handleSortMethodChange = (method: SortMethod) => {
+    setSearch("")
     setSelectedSortMethod(method)
-    setSortedDelegators((prev) => sortBondOptions(prev, method.value))
+    setSortedDelegators(sortBondOptions(combinedValidatorsData, method.value))
   }
+
+  const handleSearchClear = useCallback(() => {
+    setSearch("")
+    // restore selected sort method
+    const filteredValidators: BondOptionType[] = sortBondOptions(
+      combinedValidatorsData,
+      selectedSortMethod.value,
+    )
+    setSortedDelegators(filteredValidators)
+  }, [combinedValidatorsData, selectedSortMethod.value, sortBondOptions])
+
+  const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      const input = e.target.value
+      setSearch(input)
+      if (!input) {
+        handleSearchClear()
+      } else {
+        const lowerSearch = input.toLowerCase()
+        const filtered = combinedValidatorsData.filter(
+          (delegate) =>
+            delegate.name.toLowerCase().includes(lowerSearch) ||
+            delegate.poolId.toLowerCase().includes(lowerSearch),
+        )
+        setSortedDelegators(filtered)
+      }
+    },
+    [combinedValidatorsData, handleSearchClear],
+  )
 
   const handleSelectPoolId = useCallback(
     (poolId: number | string) => {
@@ -103,6 +135,18 @@ export const BittensorBondDelegateSelect = () => {
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
+      <SearchInputControlled
+        containerClassName={classNames(
+          "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
+          "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+          "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+        )}
+        placeholder={t("Search for delegator name or hotkey")}
+        value={search}
+        onChange={handleSearchChange}
+        onClear={handleSearchClear}
+        isDisabled={isLoading || combinedValidatorsData.length === 0}
+      />
       <ScrollContainerDraggableHorizontal className="flex gap-6">
         {sortMethods.map((method) => (
           <button
@@ -110,7 +154,7 @@ export const BittensorBondDelegateSelect = () => {
             onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
             className={classNames(
               "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
-              method.value === selectedSortMethod.value
+              method.value === selectedSortMethod.value && !search
                 ? "bg-primary-500 text-black"
                 : "bg-black-tertiary text-grey-400",
               (isLoading || method.isDisabled) && "cursor-not-allowed",
