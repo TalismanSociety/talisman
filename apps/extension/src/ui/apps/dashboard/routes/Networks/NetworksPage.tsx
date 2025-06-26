@@ -48,11 +48,9 @@ export const NetworksPage = () => {
             </>
           }
         />
-        <div className="flex w-full justify-between">
-          <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
-            {t("Add network")}
-          </Button>
-        </div>
+        <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
+          {t("Add network")}
+        </Button>
       </div>
       <Content />
     </DashboardLayout>

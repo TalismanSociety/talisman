@@ -126,7 +126,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Manage Networks button",
     })
-    api.dashboardOpen("/settings/networks-tokens/networks/ethereum")
+    api.dashboardOpen("/settings/networks-tokens/networks")
     window.close()
   }, [])
 
