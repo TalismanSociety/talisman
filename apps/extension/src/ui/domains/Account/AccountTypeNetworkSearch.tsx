@@ -41,7 +41,7 @@ export function AccountTypeNetworkSearch({
         .map((network) => {
           const { label, type } = getNetworkInfo(t, {
             networkId: network.id,
-            networks: allNetworksAggregated,
+            networks: allNetworksMap,
           })
           const symbol = tokensMap[network.nativeTokenId]?.symbol
           const isActive = isNetworkActive(network, activeNetworkStates)
@@ -57,7 +57,7 @@ export function AccountTypeNetworkSearch({
           return a.label?.localeCompare(b.label ?? "") ?? 0
         }),
 
-    [allNetworksAggregated, t, tokensMap, activeNetworkStates],
+    [allNetworksAggregated, t, allNetworksMap, tokensMap, activeNetworkStates],
   )
   type Network = (typeof filteredNetworkItems)[number]
 

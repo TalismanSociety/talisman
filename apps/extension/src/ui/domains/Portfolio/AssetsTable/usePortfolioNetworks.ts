@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useNetworks } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 
 export type PortfolioNetwork = {
   id: NetworkId
@@ -11,31 +11,17 @@ export type PortfolioNetwork = {
   type: string
 }
 
-// const getPortfolioNetwork = (
-//   t: TFunction,
-//   id: NetworkId,
-//   chains?: Chain[],
-//   evmNetworks?: SimpleEvmNetwork[],
-// ): PortfolioNetwork => {
-//   const chain = chains?.find((c) => c.id === id)
-//   const evmNetwork = evmNetworks?.find((n) => n.id === id)
-//   const relay = chains?.find((c) => c.id === chain?.relay?.id)
-//   const { label, type } = getNetworkInfo(t, id, networks { chain, evmNetwork, relay })
-
-//   return { id, label, type }
-// }
-
 export const usePortfolioNetworks = (ids: NetworkId[] | undefined) => {
-  const allNetworks = useNetworks()
+  const networksMap = useNetworksMapById()
   const { t } = useTranslation()
 
   const networks = useMemo(
     () =>
       ids?.map((id) => {
-        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworks })
+        const { label, type } = getNetworkInfo(t, { networkId: id, networks: networksMap })
         return { id, label, type }
       }) ?? [],
-    [allNetworks, ids, t],
+    [networksMap, ids, t],
   )
 
   const sorted = useMemo(

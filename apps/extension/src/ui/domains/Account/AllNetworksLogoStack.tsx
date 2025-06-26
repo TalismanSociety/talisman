@@ -7,7 +7,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChainsMap, useEvmNetworksMap, useNetworks } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }
 
@@ -34,21 +34,17 @@ const prioNetworks = [
 
 export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
   const { t } = useTranslation()
-  const allNetworks = useNetworks()
-  const chainsMap = useChainsMap()
-  const evmNetworksMap = useEvmNetworksMap()
+  const allNetworksMap = useNetworksMapById()
   const networks = useMemo(
     () =>
       ids?.flatMap((id) => {
-        const chain = chainsMap[id]
-        const evmNetwork = evmNetworksMap[id]
-        if (!chain && !evmNetwork) return []
-        if (chain?.isTestnet || evmNetwork?.isTestnet) return []
-        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworks })
+        const network = allNetworksMap[id]
+        if (!network || network.isTestnet) return []
+        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworksMap })
 
-        return { id, label, type, logo: chain?.logo ?? evmNetwork?.logo }
+        return { id, label, type, logo: network?.logo }
       }),
-    [allNetworks, chainsMap, evmNetworksMap, ids, t],
+    [allNetworksMap, ids, t],
   )
   const sorted = useMemo(
     () =>

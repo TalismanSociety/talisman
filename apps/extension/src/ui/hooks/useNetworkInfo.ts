@@ -1,14 +1,13 @@
-import { DotNetwork, Network, NetworkId, NetworkList } from "extension-core"
+import { DotNetwork, NetworkId, NetworkList } from "extension-core"
 import { TFunction } from "i18next"
-import { isArray, keyBy } from "lodash"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useNetworks } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 
 export type NetworkInfoProps = {
   networkId: NetworkId | null | undefined
-  networks: Network[] | NetworkList
+  networks: NetworkList
 }
 
 const getDotNetworkType = (t: TFunction, network: DotNetwork, networks: NetworkList) => {
@@ -27,8 +26,7 @@ const getDotNetworkType = (t: TFunction, network: DotNetwork, networks: NetworkL
 }
 
 export const getNetworkInfo = (t: TFunction, { networkId, networks }: NetworkInfoProps) => {
-  const networksMap = isArray(networks) ? keyBy(networks, "id") : networks
-  const network = networksMap[networkId ?? ""]
+  const network = networks[networkId ?? ""]
 
   // TODO adjust so we can return undefined instead
   if (!network) return { label: "", type: "", fullName: "" }
@@ -41,7 +39,7 @@ export const getNetworkInfo = (t: TFunction, { networkId, networks }: NetworkInf
         fullName: network.substrateChainId ? `${network.name} (${t("Ethereum")})` : network.name,
       }
     case "polkadot": {
-      const type = getDotNetworkType(t, network, networksMap)
+      const type = getDotNetworkType(t, network, networks)
       return {
         label: network.name,
         type: type,
@@ -53,7 +51,7 @@ export const getNetworkInfo = (t: TFunction, { networkId, networks }: NetworkInf
 }
 
 export const useNetworkInfo = (networkId: NetworkId | null | undefined) => {
-  const networks = useNetworks()
+  const networks = useNetworksMapById()
   const { t } = useTranslation()
 
   return useMemo(() => getNetworkInfo(t, { networkId, networks }), [networkId, networks, t])
