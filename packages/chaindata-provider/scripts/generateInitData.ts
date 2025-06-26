@@ -12,6 +12,8 @@ const NETWORK_IDS = [
   "kusama-asset-hub",
   "bittensor",
   "hydradx",
+  "aleph-zero",
+  "bifrost-polkadot",
 
   "1",
   "8453", // base
