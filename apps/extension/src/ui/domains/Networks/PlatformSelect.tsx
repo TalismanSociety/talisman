@@ -1,62 +1,42 @@
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import { NetworkPlatform } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import { Dropdown } from "talisman-ui"
 
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
-
-const renderNetwork = (network: Network) => {
-  return (
-    <div className="flex items-center gap-5">
-      <NetworkLogo networkId={network.id} className="text-[1.25em]" />
-      <span>{network.name}</span>
-    </div>
-  )
+type NetworkPlatformOption = {
+  value: NetworkPlatform
+  label: string
 }
 
+const OPTIONS: NetworkPlatformOption[] = [
+  { value: "polkadot", label: "Polkadot" },
+  { value: "ethereum", label: "Ethereum" },
+]
+
 export const PlatformSelect: FC<{
-  networks: Network[]
-  selectedId: NetworkId | null
+  value: NetworkPlatform | null
   placeholder?: string
   className?: string
-  onChange: (networkId: NetworkId) => void
-}> = ({ networks, selectedId, placeholder, className, onChange }) => {
-  const [selected, setSelected] = useState<Network | undefined>(
-    networks.find((n) => n.id === selectedId),
-  )
-
-  useEffect(() => {
-    // networks may not be loaded on first render
-    // handle default selection here
-    if (!selected) {
-      const defaultNetwork = networks.find((n) => n.id === selectedId)
-      if (defaultNetwork) setSelected(defaultNetwork)
-    } else if (selectedId !== selected.id) {
-      const newSelected = networks.find((n) => n.id === selectedId)
-      if (newSelected) {
-        setSelected(newSelected)
-      } else {
-        setSelected(undefined)
-      }
-    }
-  }, [selectedId, networks, selected])
+  onChange: (platform: NetworkPlatform) => void
+}> = ({ value, placeholder, className, onChange }) => {
+  const [selected, setSelected] = useState<NetworkPlatform | null>(value)
 
   const handleChange = useCallback(
-    (item: Network | null) => {
+    (item: NetworkPlatformOption | null) => {
       if (!item) return
-      setSelected(item)
-      if (onChange) onChange(item.id)
+      setSelected(item.value)
+      if (onChange) onChange(item.value)
     },
     [onChange],
   )
 
   return (
     <Dropdown
-      items={networks}
-      propertyKey="id"
+      items={OPTIONS}
+      propertyKey="value"
       placeholder={placeholder}
-      renderItem={renderNetwork}
-      value={selected}
+      renderItem={(p) => p.label}
+      value={OPTIONS.find((opt) => opt.value === selected) || null}
       onChange={handleChange}
       className={classNames("[&>div>button]:h-[4.6rem]", className)}
     />

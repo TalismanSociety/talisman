@@ -1,3 +1,3 @@
-export type SubNetworkFormBaseProps = {
-  onSubmitted?: () => void
-}
+// export type SubNetworkFormBaseProps = {
+//   onSubmitted?: () => void
+// }

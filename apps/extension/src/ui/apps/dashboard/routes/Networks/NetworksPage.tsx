@@ -25,6 +25,7 @@ export const NetworksPage = () => {
   usePreload()
 
   const navigate = useNavigate()
+  const location = useLocation()
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -34,8 +35,8 @@ export const NetworksPage = () => {
       name: "Goto",
       action: "Add network button",
     })
-    navigate("./add")
-  }, [navigate])
+    navigate("./add", { state: { platform: location.state?.platform } })
+  }, [location.state?.platform, navigate])
 
   return (
     <DashboardLayout sidebar="settings">

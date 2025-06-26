@@ -12,13 +12,13 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import { DotNetworkSchema, isNetworkDot } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
+import { TFunction } from "i18next"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"
 
-import { getSubstrateRpcInfo } from "@ui/domains/Settings/ManageNetworks/NetworkForm/Substrate/helpers"
+import { fetchEthChainId, getDotGenesisHashFromRpc } from "@ui/domains/Networks/helpers"
 
 import { RpcFormData, useNetworkForm } from "./context"
 
@@ -62,7 +62,7 @@ export const NetworkRpcsField = ({
                     rpc={rpc}
                     canDelete={fieldRpcs.state.value.length > 1}
                     canDrag={arr.length > 1}
-                    onDelete={() => fieldRpcs.removeValue(index)} // TODO
+                    onDelete={() => fieldRpcs.removeValue(index)}
                     placeholder={isNetworkDot(network) ? "wss://" : "https://"}
                   />
                 ))}
@@ -103,6 +103,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
   onDelete,
   placeholder,
 }) => {
+  const { t } = useTranslation()
   const { form, network } = useNetworkForm()
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
 
@@ -157,18 +158,18 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
         asyncDebounceMs={150}
         validators={{
           onChangeAsync: async ({ value, signal }) => {
-            if (!value) return "Url is required"
+            if (!value) return t("Url is required")
             try {
               switch (network.platform) {
                 case "polkadot": {
-                  const genesisHash = await fetchDotGenesisHash(value)
+                  const genesisHash = await fetchDotGenesisHash(t, value)
                   if (genesisHash !== network.genesisHash)
-                    return "RPC doesn't match chain's genesis hash"
+                    return t("RPC doesn't match chain's genesis hash")
                   return undefined
                 }
                 case "ethereum": {
                   const chainId = await fetchEthChainId(value, signal)
-                  if (chainId !== network.id) return "RPC doesn't match chain's chain ID"
+                  if (chainId !== network.id) return t("RPC doesn't match chain's chain ID")
                   return undefined
                 }
               }
@@ -182,31 +183,17 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
   )
 }
 
-const fetchDotGenesisHash = async (rpcUrl: string) => {
+const fetchDotGenesisHash = async (t: TFunction, rpcUrl: string) => {
   const parsedRpcUrl = z.url({ protocol: /^wss?$/ }).safeParse(rpcUrl) // validate URL
   if (!parsedRpcUrl.success) throw new Error(parsedRpcUrl.error.issues[0].message)
 
-  const info = await getSubstrateRpcInfo(parsedRpcUrl.data)
-  if (!info) throw new Error("Failed to info from RPC")
+  const genesisHash = await getDotGenesisHashFromRpc(parsedRpcUrl.data)
+  if (!genesisHash) throw new Error(t("Failed to query RPC"))
 
-  const parsedGenesisHash = DotNetworkSchema.shape.genesisHash.safeParse(info.genesisHash)
+  const parsedGenesisHash = DotNetworkSchema.shape.genesisHash.safeParse(genesisHash)
   if (!parsedGenesisHash.success) throw new Error(parsedGenesisHash.error.issues[0].message)
 
   return parsedGenesisHash.data
-}
-
-const fetchEthChainId = async (rpcUrl: string, signal?: AbortSignal) => {
-  const parsedRpcUrl = z.url({ protocol: /^https?$/ }).safeParse(rpcUrl) // validate URL
-  if (!parsedRpcUrl.success) throw new Error(parsedRpcUrl.error.issues[0].message)
-
-  const provider = http(parsedRpcUrl.data)({})
-  const hexChainId = await provider.request({
-    method: "eth_chainId",
-    params: [],
-    signal,
-  })
-
-  return String(hexToNumber(hexChainId as `0x${string}`)) // validate chain ID
 }
 
 // const fetchNetworkIdentifier = async (

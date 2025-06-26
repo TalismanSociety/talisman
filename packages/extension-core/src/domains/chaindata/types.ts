@@ -8,11 +8,11 @@ import {
 
 import { RequestIdOnly } from "../../types/base"
 
-export type RequestNetworkUpsert<P extends NetworkPlatform = NetworkPlatform> = {
-  platform: P
-  network: NetworkOfPlatform<P>
-  nativeToken: NativeToken<P>
-}
+export type RequestNetworkUpsert<
+  P extends NetworkPlatform = NetworkPlatform,
+  N = NetworkOfPlatform<P>,
+  T = NativeToken<P>,
+> = { platform: P; network: N; nativeToken: T }
 
 export type {
   Network,

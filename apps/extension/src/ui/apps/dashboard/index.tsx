@@ -22,6 +22,7 @@ import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAd
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
+import { AddNetworkPage } from "./routes/Networks/AddNetworkPage"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -98,7 +99,7 @@ const DashboardInner = () => {
             </Route>
             <Route path="networks">
               <Route path="" element={<NetworksPage />} />
-              <Route path="add" element={<NetworkPage />} />
+              <Route path="add" element={<AddNetworkPage />} />
               <Route path=":id" element={<NetworkPage />} />
               <Route
                 path="ethereum"
