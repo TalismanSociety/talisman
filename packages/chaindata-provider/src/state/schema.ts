@@ -10,6 +10,7 @@ export const ChaindataFileSchema = z
     miniMetadatas: z.array(AnyMiniMetadataSchema),
   })
   .check((ctx) => {
+    //ensure each network has a native token
     const tokensById = keyBy(ctx.value.tokens, (t) => t.id)
     for (const network of ctx.value.networks ?? []) {
       const nativeToken = tokensById[network.nativeTokenId]
@@ -25,9 +26,24 @@ export const ChaindataFileSchema = z
 
 export type Chaindata = z.infer<typeof ChaindataFileSchema>
 
-export const CustomChaindataSchema = z.strictObject({
-  networks: z.array(NetworkSchema).optional(),
-  tokens: z.array(TokenSchema),
-})
+export const CustomChaindataSchema = z
+  .strictObject({
+    networks: z.array(NetworkSchema).optional(),
+    tokens: z.array(TokenSchema),
+  })
+  .check((ctx) => {
+    //ensure each network has a native token
+    const tokensById = keyBy(ctx.value.tokens, (t) => t.id)
+    for (const network of ctx.value.networks ?? []) {
+      const nativeToken = tokensById[network.nativeTokenId]
+      if (!nativeToken)
+        ctx.issues.push({
+          code: "custom",
+          message: `Network ${network.id} has no native token`,
+          input: ctx.value,
+          path: ["networks", ctx.value.networks!.indexOf(network), "nativeTokenId"],
+        })
+    }
+  })
 
 export type CustomChaindata = z.infer<typeof CustomChaindataSchema>

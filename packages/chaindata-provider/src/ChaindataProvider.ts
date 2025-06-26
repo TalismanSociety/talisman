@@ -279,7 +279,12 @@ const getCombinedChaindata = (
   // merge custom into default
   return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
     map((data) => {
-      const parsed = ChaindataProviderDataSchema.safeParse(data) // as Chaindata
+      const start = performance.now()
+      const parsed = ChaindataProviderDataSchema.safeParse(data)
+      log.debug(
+        "[ChaindataProvider] Combined chaindata schema validation: %sms",
+        (performance.now() - start).toFixed(2),
+      )
       if (!parsed.success) {
         log.error("Failed to parse chaindata provider data", { parsed, data })
         throw new Error("Failed to parse chaindata provider data")

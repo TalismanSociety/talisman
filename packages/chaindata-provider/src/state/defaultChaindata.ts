@@ -1,13 +1,13 @@
 import { liveQuery } from "dexie"
 import { isEqual, isEqualWith, sortBy } from "lodash"
-import { combineLatest, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { AnyMiniMetadata, Network, Token } from "../chaindata"
 import log from "../log"
 import { chaindataDb } from "./db"
 import initChaindata from "./initChaindata.json"
 import { fetchChaindata } from "./net"
-import { Chaindata } from "./schema"
+import { Chaindata, ChaindataFileSchema } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 
@@ -19,7 +19,22 @@ const dbChaindata$ = combineLatest({
   networks: liveQuery(() => chaindataDb.networks.toArray()),
   tokens: liveQuery(() => chaindataDb.tokens.toArray()),
   miniMetadatas: liveQuery(() => chaindataDb.miniMetadatas.toArray()),
-}).pipe(shareReplay(1))
+}).pipe(
+  // tables are not coming all at once, even if provisionned by the same transaction
+  // tokens are coming after networks, because they are larger
+  // the schema will verify that there is a native token for each network
+  // chaindata has the same check so we're sure this won't make the app hang
+  filter((data) => {
+    const start = performance.now()
+    const isValid = ChaindataFileSchema.safeParse(data).success
+    log.debug(
+      "[defaultChaindata$] Chaindata schema validation: %sms",
+      (performance.now() - start).toFixed(2),
+    )
+    return isValid
+  }),
+  shareReplay(1),
+)
 
 const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
   const controller = new AbortController()
