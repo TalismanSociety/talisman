@@ -73,10 +73,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   getMiniMetadataById$(id: string) {
-    return this.getMiniMetadatasMapById$.pipe(
-      map((miniMetadatas) => miniMetadatas[id] ?? null),
-      distinctUntilChanged(isEqual),
-    )
+    return this.getMiniMetadatasMapById$.pipe(map((miniMetadatas) => miniMetadatas[id] ?? null))
   }
 
   async miniMetadataById(id: string) {
@@ -228,7 +225,6 @@ export class ChaindataProvider implements IChaindataProvider {
   >(networkId: NetworkId, platform?: P): Observable<R | null> {
     return this.getNetworksMapById$(platform).pipe(
       map((networksById) => networksById[networkId] ?? null),
-      distinctUntilChanged(isEqual),
     ) as Observable<R | null>
   }
 
@@ -245,7 +241,6 @@ export class ChaindataProvider implements IChaindataProvider {
   getNetworkByGenesisHash$(genesisHash: `0x${string}`) {
     return this.getNetworksMapByGenesisHash$().pipe(
       map((networksByGenesisHash) => networksByGenesisHash[genesisHash] ?? null),
-      distinctUntilChanged(isEqual),
     )
   }
   async getNetworkByGenesisHash(genesisHash: `0x${string}`) {
