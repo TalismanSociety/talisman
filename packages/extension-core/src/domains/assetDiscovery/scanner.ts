@@ -52,7 +52,10 @@ const IGNORED_COINGECKO_IDS = [
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
-const BALANCES_FETCH_CHUNK_SIZE = 50 // breaks on monad with 256
+const BALANCES_FETCH_CHUNK_SIZE = 1000
+const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
+  "10143": 50, // works with 50, 100 breaks
+}
 
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
@@ -455,7 +458,10 @@ class AssetDiscoveryScanner {
             const remainingChecks = allChecks.slice(startIndex)
 
             //Split into chunks of 50 token+id
-            const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
+            const chunkedChecks = chunk(
+              remainingChecks,
+              NETWORK_BALANCES_FETCH_CHUNK_SIZE[networkId] ?? BALANCES_FETCH_CHUNK_SIZE,
+            )
 
             for (const checks of chunkedChecks) {
               // stop if scan was cancelled
