@@ -109,7 +109,7 @@ const executeMigration = async () => {
         name: MIGRATION_LABEL,
         progress: 1,
         acknowledgeRequest:
-          "Talisman upgrades the token balances loading mechanism, they will now be reloaded.",
+          "We’ve upgraded how balances load. You may notice a short delay while balances are reloaded.",
       },
     })
 
