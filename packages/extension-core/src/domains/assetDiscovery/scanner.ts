@@ -94,6 +94,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allAddresses) => {
         try {
+          if (await getHasPendingMigrations()) return
+
           if (prevAllAddresses && !this.#preventAutoStart) {
             const addresses = allAddresses.filter(
               (k) => !(prevAllAddresses as string[]).includes(k),
@@ -136,6 +138,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
+          if (await getHasPendingMigrations()) return
+
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
               (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
@@ -172,6 +176,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async () => {
         try {
+          if (await getHasPendingMigrations()) return
+
           const accounts = await keyringStore.getAccounts()
           const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
           const networkIds = await getNetworkIdsToForceScan()
@@ -348,6 +354,8 @@ class AssetDiscoveryScanner {
   private async executeNextScan(): Promise<void> {
     if (this.#isBusy) return
     this.#isBusy = true
+
+    if (await getHasPendingMigrations()) return
 
     const abortController = new AbortController()
 
