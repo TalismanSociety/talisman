@@ -52,7 +52,7 @@ const IGNORED_COINGECKO_IDS = [
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
-const BALANCES_FETCH_CHUNK_SIZE = 1000
+const BALANCES_FETCH_CHUNK_SIZE = 50 // breaks on monad with 256
 
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
@@ -461,14 +461,17 @@ class AssetDiscoveryScanner {
               // stop if scan was cancelled
               if (abortController.signal.aborted) return
 
-              const res = await getEvmTokenBalances(
-                client,
-                checks.map((c) => ({
-                  token: tokensMap[c.tokenId],
-                  address: c.address as EvmAddress,
-                })),
-                erc20aggregators[networkId],
-              )
+              const res = await Promise.race([
+                getEvmTokenBalances(
+                  client,
+                  checks.map((c) => ({
+                    token: tokensMap[c.tokenId],
+                    address: c.address as EvmAddress,
+                  })),
+                  erc20aggregators[networkId],
+                ),
+                throwAfter(15_000, "Timeout"),
+              ])
 
               // stop if scan was cancelled
               if (abortController.signal.aborted) return
