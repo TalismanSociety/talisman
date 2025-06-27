@@ -31,6 +31,7 @@ import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
+import { vanaMainnet } from "../swaps-port/vana"
 import {
   BaseQuote,
   fromAddressAtom,
@@ -85,6 +86,7 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
   movr: moonriver,
   glmr: moonbeam,
   s: sonic,
+  vana: vanaMainnet,
 }
 
 /**
@@ -153,6 +155,13 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     name: "Sonic",
     chainId: 146,
     symbol: "S",
+    networkType: "evm",
+  },
+  vana: {
+    id: "1480-evm-native",
+    name: "Vana",
+    chainId: 1480,
+    symbol: "VANA",
     networkType: "evm",
   },
   ethmanta: {
