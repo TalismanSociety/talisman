@@ -3,7 +3,6 @@ import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/bal
 import {
   EvmErc20Token,
   EvmNetworkId,
-  isNetworkEth,
   isTokenEth,
   Token,
   TokenId,
@@ -11,7 +10,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
-import { DEBUG, log } from "extension-shared"
+import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
@@ -52,9 +51,9 @@ const IGNORED_COINGECKO_IDS = [
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
-const BALANCES_FETCH_CHUNK_SIZE = 1000
+const BALANCES_FETCH_CHUNK_SIZE = 50
 const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
-  "10143": 50, // works with 50, 100 breaks
+  "1": 200,
 }
 
 // native tokens should be processed and displayed first
@@ -308,13 +307,12 @@ class AssetDiscoveryScanner {
       .filter((token) => {
         if (!token || token.noDiscovery) return false
 
+        if (activeNetworks[token.networkId ?? ""] === false) return false
+
         switch (token.type) {
           case "evm-erc20":
-            return activeTokens[token.id] === undefined
           case "evm-native":
-            return (
-              activeNetworks[token.networkId] === undefined || activeTokens[token.id] === undefined
-            )
+            return activeTokens[token.id] === undefined
           default:
             return false
         }
@@ -427,7 +425,7 @@ class AssetDiscoveryScanner {
 
       // process multiple networks at a time
       await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
-        .for(Object.keys(tokensByNetwork))
+        .for(Object.keys(tokensByNetwork).sort((a, b) => Number(a) - Number(b)))
         .process(async (networkId) => {
           // stop if scan was cancelled
           if (abortController.signal.aborted) return
@@ -476,7 +474,7 @@ class AssetDiscoveryScanner {
                   })),
                   erc20aggregators[networkId],
                 ),
-                throwAfter(15_000, "Timeout"),
+                throwAfter(10_000, "Timeout"),
               ])
 
               // stop if scan was cancelled
@@ -534,7 +532,7 @@ class AssetDiscoveryScanner {
               }
             }
           } catch (err) {
-            log.error(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
+            log.warn(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
           }
         })
 
@@ -601,41 +599,18 @@ class AssetDiscoveryScanner {
     this.#preventAutoStart = true
 
     try {
-      const [discoveredBalances, activeNetworks, activeTokens] = await Promise.all([
-        db.assetDiscovery.toArray(),
-        activeNetworksStore.get(),
-        activeTokensStore.get(),
-      ])
+      const [discoveredBalances] = await Promise.all([db.assetDiscovery.toArray()])
 
       const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
       const tokens = (
         await Promise.all(tokenIds.map((tokenId) => chaindataProvider.getTokenById(tokenId)))
       ).filter(isTokenEth)
+      await activeTokensStore.set(Object.fromEntries(tokens.map((t) => [t.id, true])))
 
-      const evmNetworkIds = uniq(
-        tokens.map((token) => token.networkId).filter((id): id is EvmNetworkId => !!id),
+      const evmNetworkIds = uniq(tokens.map((token) => token.networkId))
+      await activeTokensStore.set(
+        Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true])),
       )
-      const evmNetworks = (
-        await Promise.all(
-          evmNetworkIds.map((id) => chaindataProvider.getNetworkById(id, "ethereum")),
-        )
-      ).filter(isNetworkEth)
-
-      // activate tokens that have not been explicitely enabled or disabled
-      const tokenIdsToActivate = tokens.filter((t) => activeTokens[t.id] === undefined)
-      if (tokenIdsToActivate.length) {
-        log.debug("[AssetDiscovery] Automatically enabling discovered assets", tokenIdsToActivate)
-        await activeTokensStore.set(Object.fromEntries(tokenIdsToActivate.map((t) => [t.id, true])))
-      }
-
-      // activate networks that have not been explicitely enabled or disabled
-      const networkIdsToActivate = evmNetworks.filter((n) => activeNetworks[n.id] === undefined)
-      if (networkIdsToActivate.length) {
-        log.debug("[AssetDiscovery] Automatically enabling networks", networkIdsToActivate)
-        await activeNetworksStore.set(
-          Object.fromEntries(networkIdsToActivate.map((t) => [t.id, true])),
-        )
-      }
 
       await sleep(100) // pause to ensure local storage observables fires before we exit, to prevent unnecessary scans to be triggered (see watchEnabledNetworks up top)
     } catch (err) {
@@ -652,9 +627,6 @@ const getActiveNetworkIdsToScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
     chaindataProvider.getNetworks("ethereum"),
     activeNetworksStore.get(),
-    // we dont scan substrate tokens for now
-    // chaindataProvider.chains(),
-    // activeChainsStore.get()
   ])
 
   return evmNetworks
@@ -733,7 +705,7 @@ const getEvmTokenBalancesWithoutAggregator = async (
 
         throw new Error(`Failed to scan ${token.id} (Timeout)`)
       } catch (err) {
-        log.error(`Failed to scan ${token.id} for ${address}: `, { err })
+        log.warn(`[AssetDiscovery] Failed to get balance of ${token.id} for ${address}: `, { err })
         return "0"
       }
     }),
@@ -791,17 +763,3 @@ const getEvmTokenBalances = (
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
-
-// dev utility to reset active states of all chains and tokens
-if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).resetActiveStates = async () => {
-    await chrome.storage.local.remove("assetDiscovery")
-    await chrome.storage.local.set({
-      activeEvmNetworks: "{}",
-      activeTokens: "{}",
-      activeChains: "{}",
-    })
-    chrome.runtime.reload()
-  }
-}
