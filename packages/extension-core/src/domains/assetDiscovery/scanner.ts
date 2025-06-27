@@ -28,6 +28,7 @@ import {
 import { PublicClient } from "viem"
 
 import { db } from "../../db"
+import { getHasPendingMigrations } from "../../libs/migrations"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { appStore } from "../app/store.app"
@@ -551,6 +552,8 @@ class AssetDiscoveryScanner {
 
   /** Used bym migrations */
   public async startPendingScan(): Promise<void> {
+    if (await getHasPendingMigrations()) return
+
     const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
     if (!isAssetDiscoveryScanPending) return
 

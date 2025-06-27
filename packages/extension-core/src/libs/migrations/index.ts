@@ -45,6 +45,14 @@ export const migrations: Migrations = [
   migrateToChaindataV4,
 ]
 
+// TODO Turn the migration runner in a singleton so we can provide an observable instead of a promise
+// The problem is that it's designed to run migrations as soon as it's instanciated
+export const getHasPendingMigrations = async () => {
+  const storage = await chrome.storage.local.get("migrations")
+  const migrationsData = storage.migrations || {}
+  return Object.keys(migrationsData).length < migrations.length
+}
+
 // @dev snippet to use in dev console of background worker to remove a migration:
 // const state = await chrome.storage.local.get("migrations")
 // delete state.migrations["14"] // CHANGE THIS TO YOUR MIGRATION'S INDEX

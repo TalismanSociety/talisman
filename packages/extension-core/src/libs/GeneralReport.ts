@@ -16,6 +16,7 @@ import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
+import { getHasPendingMigrations } from "./migrations"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -106,11 +107,12 @@ async function getGeneralReport({
    */
   refreshBalances?: boolean
 } = {}) {
-  const [allowTracking, onboarded] = await Promise.all([
+  const [allowTracking, onboarded, hasPendingMigrations] = await Promise.all([
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
+    getHasPendingMigrations(),
   ])
-  if (!allowTracking || !onboarded || IS_FIREFOX) return
+  if (!allowTracking || !onboarded || hasPendingMigrations || IS_FIREFOX) return
 
   //
   // accounts

@@ -42,7 +42,7 @@ const executeMigration = async () => {
     const oldActiveChains = await activeChainsStore.get()
     const oldActiveTokens = await activeTokensStore.get()
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 10 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.1 } })
 
     const {
       chains: oldChains,
@@ -51,7 +51,11 @@ const executeMigration = async () => {
       db: oldChaindataDb,
     } = await getChaindataV3Entities()
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 40 } })
+    if (!oldChains.length && !oldEvmNetworks.length && !oldTokens.length)
+      // this can happen if user closed the extension before acknowledging the migration popup
+      throw new Error("Migration to chaindata v4 has already been applied, nothing to do")
+
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.4 } })
 
     const oldTokensMap = keyBy(oldTokens, (t) => t.id)
     const oldToNewTokenId = fromPairs(
@@ -61,7 +65,7 @@ const executeMigration = async () => {
     // migrate active networks and tokens
     await activeNetworksStore.set(assign({}, oldActiveEvmNetworks, oldActiveChains))
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 50 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.5 } })
 
     await activeTokensStore.set(
       fromPairs(
@@ -73,21 +77,21 @@ const executeMigration = async () => {
       ),
     )
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 60 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.6 } })
 
     // migrate custom networks and tokens
     await migrateCustomChains(oldChains, oldTokensMap)
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 70 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.7 } })
 
     await migrateCustomEvmNetworks(oldEvmNetworks, oldTokensMap)
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 80 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.8 } })
 
     // migrate tx history
     await migrateTransactions(oldToNewTokenId)
 
-    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 90 } })
+    await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.9 } })
 
     // clear balances db
     await balancesDb.balancesBlob.clear()
@@ -103,15 +107,15 @@ const executeMigration = async () => {
     await appStore.set({
       currentMigration: {
         name: MIGRATION_LABEL,
-        progress: 100,
-        request:
-          "Talisman improved its token balances loading mechanism. Your balances will now be reloaded.",
+        progress: 1,
+        acknowledgeRequest:
+          "Talisman upgrades the token balances loading mechanism, they will now be reloaded.",
       },
     })
 
     // wait for user to aknowledge that balances will be reloaded
     await firstValueFrom(
-      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.aknowledged)),
+      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.acknowledged)),
     )
   } catch (error) {
     // actually none of the migrations should throw, unless there are storage (quota?) issues
