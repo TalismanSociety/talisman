@@ -139,9 +139,13 @@ const AddCustomTokenForm = () => {
             <FormFieldContainer label={t("Network")} error={field.state.meta.errors[0]}>
               <NetworkSelect
                 networks={networkOptions}
-                selectedId={field.state.value ?? null}
+                selectedId={field.state.value ?? ""}
                 placeholder={t("Select a network")}
-                onChange={(networkId) => field.handleChange(networkId)}
+                onChange={(networkId) => {
+                  if (form.getFieldValue("contractAddress"))
+                    form.setFieldValue("contractAddress", "" as `0x${string}`)
+                  field.handleChange(networkId)
+                }}
                 className="w-full"
               />
             </FormFieldContainer>
@@ -151,7 +155,7 @@ const AddCustomTokenForm = () => {
               if (!value) return t("Network is required")
               const network = networks.find((n) => n.id === value)
               if (!network) return t("Network not found")
-              return undefined
+              return null
             },
           }}
         />
@@ -182,8 +186,8 @@ const AddCustomTokenForm = () => {
           asyncDebounceMs={150}
           validators={{
             onChangeAsync: async ({ value, signal, fieldApi }) => {
-              const networkId = fldNetworkId.state.value
-              if (!networkId) return
+              const networkId = fieldApi.form.getFieldValue("networkId") as string
+              if (!networkId) return null
 
               try {
                 const network = await firstValueFrom(getNetworkById$(networkId, "ethereum"))
@@ -209,7 +213,7 @@ const AddCustomTokenForm = () => {
                 return (err as Error)?.message ?? t("Invalid contract address")
               }
 
-              return undefined
+              return null
             },
           }}
         />
