@@ -169,7 +169,7 @@ export const BittensorBondDelegateSelect = () => {
           <div>{t("Name")}</div>
           <div>{t("Est. Rewards")}</div>
         </div>
-        <ScrollContainer className="h-[34.5rem]" innerClassName="space-y-[0.8rem]">
+        <ScrollContainer className="h-[29.5rem]" innerClassName="space-y-[0.8rem]">
           {isLoading && sortedDelegators.length === 0
             ? Array(6)
                 .fill(null)
