@@ -192,7 +192,7 @@ const useNetworkCreateFormProvider = () => {
         // wait for frontend's observables to pick up the new network
         for (const _attempt of range(1, 5)) {
           if (await firstValueFrom(getNetworkById$(req.network.id)))
-            return navigate(`/settings/networks-tokens/networks/${req.network.id}`, {
+            return navigate(`/settings/networks-tokens/network/${req.network.id}`, {
               replace: true,
             })
 

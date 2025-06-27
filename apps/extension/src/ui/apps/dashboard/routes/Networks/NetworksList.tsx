@@ -201,7 +201,7 @@ const NetworkRow: FC<{
         chainId: network.id,
       },
     })
-    navigate(`./${network.id}`)
+    navigate(`/settings/networks-tokens/network/${network.id}`)
   }, [navigate, network.id])
 
   const handleEnableChanged: ChangeEventHandler<HTMLInputElement> = useCallback(

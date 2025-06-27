@@ -100,7 +100,6 @@ const DashboardInner = () => {
             <Route path="networks">
               <Route path="" element={<NetworksPage />} />
               <Route path="add" element={<AddNetworkPage />} />
-              <Route path=":id" element={<NetworkPage />} />
               <Route
                 path="ethereum"
                 element={
@@ -123,6 +122,7 @@ const DashboardInner = () => {
               />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>
+            <Route path="network/:id" element={<NetworkPage />} />
             <Route path="qr-metadata" element={<QrMetadataPage />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
