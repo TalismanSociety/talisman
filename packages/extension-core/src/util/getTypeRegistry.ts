@@ -74,13 +74,14 @@ export const getTypeRegistry = async (
       registry.setMetadata(metadata)
     }
 
-    registry.setSignedExtensions(signedExtensions, {
-      ...metadataDef.userExtensions,
-      ...chain?.signedExtensions,
-    })
+    if (signedExtensions || metadataDef.userExtensions || chain?.signedExtensions)
+      registry.setSignedExtensions(signedExtensions, {
+        ...metadataDef.userExtensions,
+        ...chain?.signedExtensions,
+      })
 
     if (!metadataDef.metadataRpc && metadataDef.types) registry.register(metadataDef.types)
-  } else {
+  } else if (signedExtensions || chain?.signedExtensions) {
     registry.setSignedExtensions(signedExtensions, chain?.signedExtensions)
   }
 
