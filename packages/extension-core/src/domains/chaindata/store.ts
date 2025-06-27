@@ -3,6 +3,7 @@ import {
   CustomChaindataSchema,
   getCleanNetwork,
   getCleanToken,
+  NativeToken,
   Network,
   NetworkId,
   Token,
@@ -51,7 +52,7 @@ export const customChaindataStore = {
   upsert,
   remove,
   upsertToken: (token: Token) => upsert([], [token]),
-  upsertNetwork: (network: Network) => upsert([network], []),
+  upsertNetwork: (network: Network, nativeToken: NativeToken) => upsert([network], [nativeToken]),
   removeToken: (tokenId: TokenId) => remove([], [tokenId]),
   removeNetwork: async (networkId: NetworkId) => {
     const { networks } = await store.get()

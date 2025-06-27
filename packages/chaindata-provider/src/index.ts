@@ -9,3 +9,5 @@ export {
   type Chaindata,
   type CustomChaindata,
 } from "./state"
+
+export * from "./TalismanChaindataDatabase"

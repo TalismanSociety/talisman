@@ -5,7 +5,7 @@ import { Chain, ChainId, CustomChain, CustomEvmNetwork, EvmNetwork, EvmNetworkId
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 import { upgradeAddIsDefaultToExistingChains } from "./upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
 
-export class TalismanChaindataDatabase extends Dexie {
+class TalismanChaindataDatabase extends Dexie {
   chains!: Dexie.Table<Chain | CustomChain, ChainId>
   evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
   tokens!: Dexie.Table<Token, TokenId>
@@ -31,4 +31,5 @@ export class TalismanChaindataDatabase extends Dexie {
   }
 }
 
-export const db = new TalismanChaindataDatabase()
+/** @deprecated */
+export const getChaindataDbV3 = () => new TalismanChaindataDatabase()
