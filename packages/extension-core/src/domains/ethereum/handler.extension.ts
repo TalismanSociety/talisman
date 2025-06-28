@@ -6,12 +6,10 @@ import { DEBUG } from "extension-shared"
 import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
-import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
-import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getHostName } from "../app/helpers"
@@ -418,120 +416,6 @@ export class EthHandler extends ExtensionHandler {
       // return true
     }
 
-  private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (_network) => {
-    // TODO
-    throw new Error("Not implemented")
-    // const existingNetwork = (await chaindataProvider.evmNetworkById(network.id)) as
-    //   | EvmNetwork
-    //   | undefined
-
-    // try {
-    //   await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
-    //     const existingToken = existingNetwork?.nativeTokenId
-    //       ? await chaindataProvider.tokenById(existingNetwork.nativeTokenId)
-    //       : null
-
-    //     const newToken: CustomEvmNativeToken = {
-    //       id: evmNativeTokenId(network.id),
-    //       type: "evm-native",
-    //       platform: "ethereum",
-    //       isTestnet: network.isTestnet,
-    //       symbol: network.tokenSymbol,
-    //       name: network.tokenSymbol, // TODO
-    //       decimals: network.tokenDecimals,
-    //       logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
-    //       coingeckoId: network.tokenCoingeckoId ?? "",
-    //       networkId: network.id,
-    //       isCustom: true,
-    //     }
-
-    //     const newNetwork: CustomEvmNetwork = {
-    //       ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
-    //       // EvmNetwork
-    //       id: network.id,
-    //       isTestnet: network.isTestnet,
-    //       preserveGasEstimate: network.preserveGasEstimate,
-    //       isDefault: existingNetwork?.isDefault ?? false,
-    //       forceScan: existingNetwork?.forceScan ?? false,
-    //       sortIndex: null,
-    //       name: network.name,
-    //       themeColor: "#505050",
-    //       logo: existingNetwork?.logo ?? null,
-    //       nativeToken: { id: newToken.id },
-    //       tokens: existingNetwork?.tokens ?? [],
-    //       explorerUrl: network.blockExplorerUrl ?? null,
-    //       rpcs: network.rpcs.map(({ url }) => ({ url })),
-    //       substrateChain: existingNetwork?.substrateChain ?? null,
-    //       balancesConfig: existingNetwork?.balancesConfig ?? [],
-    //       balancesMetadata: [],
-    //       // CustomEvmNetwork
-    //       isCustom: true,
-    //       explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
-    //       iconUrls: [],
-    //     }
-
-    //     await chaindataProvider.addCustomToken(newToken)
-    //     await chaindataProvider.addCustomEvmNetwork(newNetwork)
-    //     await Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
-
-    //     // if symbol changed, id is different and previous native token must be deleted
-    //     // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
-    //     if (existingToken && existingToken.id !== newToken.id)
-    //       await chaindataProvider.removeToken(existingToken.id)
-
-    //     // RPCs may have changed, clear cache
-    //     chainConnectorEvm.clearRpcProvidersCache(network.id)
-    //   })
-
-    //   talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
-    //     networkType: "evm",
-    //     network: network.id.toString(),
-    //   })
-
-    //   return true
-    // } catch (err) {
-    //   log.error("ethNetworkUpsert", { err })
-    //   throw new Error("Error saving network", { cause: err })
-    // }
-  }
-
-  private ethNetworkRemove: MessageHandler<"pri(eth.networks.remove)"> = async () => {
-    throw new Error("Not implemented")
-    // await chaindataProvider.removeCustomEvmNetwork(request.id)
-
-    // talismanAnalytics.capture("remove custom network", {
-    //   networkType: "evm",
-    //   network: request.id,
-    // })
-
-    // chainConnectorEvm.clearRpcProvidersCache(request.id)
-
-    // return true
-  }
-
-  private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async () => {
-    throw new Error("Not implemented")
-    // const network = await chaindataProvider.evmNetworkById(request.id)
-    // const isActive = network && isNetworkActive(network, await activeNetworksStore.get())
-
-    // if (isActive) {
-    //   // network may be active only because it's a custom network,
-    //   // enforce the value or the network could be deactivated unintentionally
-    //   activeNetworksStore.setActive(request.id, true)
-    // }
-
-    // await chaindataProvider.resetEvmNetwork(request.id)
-
-    // talismanAnalytics.capture("reset custom network", {
-    //   networkType: "evm",
-    //   network: request.id,
-    // })
-
-    // chainConnectorEvm.clearRpcProvidersCache(request.id)
-
-    // return true
-  }
-
   private ethWatchAssetRequestCancel: MessageHandler<"pri(eth.watchasset.requests.cancel)"> = ({
     id,
   }) => {
@@ -652,18 +536,6 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.add.requests)":
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
-
-      case "pri(eth.networks.subscribe)":
-        return genericSubscription(id, port, chaindataProvider.getNetworks$("ethereum"))
-
-      case "pri(eth.networks.upsert)":
-        return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
-
-      case "pri(eth.networks.remove)":
-        return this.ethNetworkRemove(request as RequestTypes["pri(eth.networks.remove)"])
-
-      case "pri(eth.networks.reset)":
-        return this.ethNetworkReset(request as RequestTypes["pri(eth.networks.reset)"])
 
       // --------------------------------------------------------------------
       // ethereum other handlers ------------------------------------------

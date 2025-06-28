@@ -1,8 +1,4 @@
-import type {
-  CustomEvmErc20Token,
-  EvmNetworkId,
-  SimpleEvmNetwork,
-} from "@talismn/chaindata-provider"
+import type { CustomEvmErc20Token, EvmNetworkId } from "@talismn/chaindata-provider"
 import type {
   AddEthereumChainParameter,
   EIP1193Parameters,
@@ -14,7 +10,7 @@ import { HexString } from "@polkadot/util/types"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
-import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
+import { BaseRequest, BaseRequestId } from "../../types/base"
 import { WalletTransactionInfo, WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
@@ -34,12 +30,12 @@ export type AnyEvmError = {
 }
 
 export type {
-  EvmNetwork,
   CustomEvmNetwork,
-  SimpleEvmNetwork,
+  EthereumRpc,
+  EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
-  EthereumRpc,
+  SimpleEvmNetwork,
 } from "@talismn/chaindata-provider"
 
 // define here the rpc methods that do not exist in viem or that need to be overriden
@@ -162,19 +158,6 @@ export interface Web3WalletPermission {
 // from https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
 export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
 
-export type RequestUpsertCustomEvmNetwork = {
-  id: EvmNetworkId
-  name: string
-  isTestnet: boolean
-  rpcs: { url: string }[]
-  blockExplorerUrl?: string
-  tokenSymbol: string
-  tokenDecimals: number
-  tokenCoingeckoId: string | null
-  tokenLogoUrl: string | null
-  preserveGasEstimate: boolean
-}
-
 export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, unknown]
@@ -198,12 +181,6 @@ export interface EthMessages {
   // eth watchassets requests  management
   "pri(eth.watchasset.requests.approve)": [WatchAssetRequestIdOnly, boolean]
   "pri(eth.watchasset.requests.cancel)": [WatchAssetRequestIdOnly, boolean]
-
-  // ethereum networks message signatures
-  "pri(eth.networks.subscribe)": [null, boolean, Array<SimpleEvmNetwork>]
-  "pri(eth.networks.remove)": [RequestIdOnly, boolean]
-  "pri(eth.networks.reset)": [RequestIdOnly, boolean]
-  "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
 export type EthGasSettingsLegacy<TQuantity = bigint> = {

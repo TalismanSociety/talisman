@@ -284,12 +284,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.networks.add.approve)", { id, enableDefault }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
 
-  // ethereum network message types
-  // ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
-  // ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
-  // ethNetworkRemove: (id) => messageService.sendMessage("pri(eth.networks.remove)", { id }),
-  // ethNetworkReset: (id) => messageService.sendMessage("pri(eth.networks.reset)", { id }),
-
   // ethereum watch assets
   ethWatchAssetRequestApprove: (id) =>
     messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
