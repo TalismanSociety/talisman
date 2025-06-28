@@ -14,6 +14,7 @@ const renderNetwork = (network: Network) => {
   )
 }
 
+// TODO rewrite as combobox, it's painful to use if list is long
 export const NetworkSelect: FC<{
   networks: Network[]
   selectedId: NetworkId | null

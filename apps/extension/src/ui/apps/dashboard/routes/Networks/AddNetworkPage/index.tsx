@@ -102,7 +102,6 @@ const NetworkCreateForm: FC = () => {
                 placeholder={
                   platform === "polkadot" ? "wss://" : platform === "ethereum" ? "https://" : ""
                 }
-                // onChange={(e) => field.handleChange(e.target.value)}
                 small
                 after={
                   field.state.meta.isValidating && (
@@ -111,9 +110,6 @@ const NetworkCreateForm: FC = () => {
                     </div>
                   )
                 }
-                // containerProps={{ className: "pr-8" }}
-                //   before={<ChainLogo id={network.id} className="size-12" />}
-                //   after={<CopyChainIdButton chainId={network.id} className="text-[2rem]" />}
               />
             </FormFieldContainer>
           )}
@@ -202,11 +198,7 @@ const NetworkCreateForm: FC = () => {
                           data-lpignore
                           autoComplete="off"
                           disabled={!field.state.value}
-                          // onChange={(e) => field.handleChange(e.target.value)}
                           small
-                          // containerProps={{ className: "pr-8" }}
-                          //   before={<ChainLogo id={network.id} className="size-12" />}
-                          //   after={<CopyChainIdButton chainId={network.id} className="text-[2rem]" />}
                         />
                       </FormFieldContainer>
                     )}

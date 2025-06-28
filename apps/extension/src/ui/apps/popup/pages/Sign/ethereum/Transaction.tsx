@@ -1,4 +1,4 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { EthPriorityOptionName, EvmAddress } from "extension-core"
@@ -29,7 +29,7 @@ import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
-const useEvmBalance = (address: EvmAddress, evmNetworkId: EvmNetworkId | undefined) => {
+const useEvmBalance = (address: EvmAddress, evmNetworkId: EthNetworkId | undefined) => {
   const publicClient = usePublicClient(evmNetworkId)
   return useEthBalance(publicClient, address)
 }

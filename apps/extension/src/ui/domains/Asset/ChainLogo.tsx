@@ -4,7 +4,7 @@ import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
 import { FC, Suspense, useId, useMemo } from "react"
 
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
-import { useChain, useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
@@ -39,14 +39,9 @@ type ChainLogoProps = {
 }
 
 const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {
-  const chain = useChain(id)
-  const evmNetwork = useEvmNetwork(id)
-  const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChainId)
+  const network = useNetworkById(id)
 
-  const props: ChainLogoBaseProps = useMemo(
-    () => chain ?? evmNetworkSubstrateChain ?? evmNetwork ?? {},
-    [chain, evmNetwork, evmNetworkSubstrateChain],
-  )
+  const props: ChainLogoBaseProps = useMemo(() => network ?? {}, [network])
 
   return <ChainLogoBase {...props} className={className} />
 }

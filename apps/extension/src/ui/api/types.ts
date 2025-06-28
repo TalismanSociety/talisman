@@ -189,10 +189,6 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
 
   // chain message types
-  // chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
-  // chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
-  // chainRemove: (id: string) => Promise<boolean>
-  // chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,

@@ -197,7 +197,7 @@ const TokenButtonRow: FC<{
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden truncate text-xs">
-            <ChainLogo id={token.networkId ?? token.networkId} className="inline-block shrink-0" />
+            <ChainLogo id={token.networkId} className="inline-block shrink-0" />
             <div className="text-body-secondary grow truncate">{token.network.name}</div>
           </div>
         </div>

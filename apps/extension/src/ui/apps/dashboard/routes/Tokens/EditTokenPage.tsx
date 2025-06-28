@@ -66,11 +66,7 @@ export const EditTokenPage = () => {
 
   useAnalyticsPageView(ANALYTICS_PAGE, { id })
 
-  useEffect(() => {
-    log.debug("TokenPage mounted", { token, network })
-  }, [token, network])
-
-  if (!token || !network) return null // TODO message ?
+  if (!token || !network) return null
 
   return (
     <DashboardLayout sidebar="settings">

@@ -1,3 +1,4 @@
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
@@ -8,7 +9,6 @@ import {
   EthPriorityOptionNameEip1559,
   EthPriorityOptionNameLegacy,
   EthTransactionDetails,
-  EvmNetworkId,
   GasSettingsByPriority,
   getGasLimit,
   getGasSettingsEip1559,
@@ -23,7 +23,7 @@ import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
 
 import { api } from "@ui/api"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
@@ -36,7 +36,7 @@ const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
 const useNonce = (
   address: `0x${string}` | undefined,
-  evmNetworkId: EvmNetworkId | undefined,
+  evmNetworkId: EthNetworkId | undefined,
   forcedValue?: number,
 ) => {
   const { data, ...rest } = useQuery({
@@ -52,7 +52,7 @@ const useNonce = (
 
 // TODO : could be skipped for networks that we know already support it, but need to keep checking for legacy network in case they upgrade
 const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
-  const evmNetwork = useEvmNetwork(publicClient?.chain?.id?.toString())
+  const evmNetwork = useNetworkById(publicClient?.chain?.id?.toString(), "ethereum")
 
   const { data, ...rest } = useQuery({
     queryKey: ["useHasEip1559Support", publicClient?.chain?.id, evmNetwork?.id],
@@ -308,7 +308,7 @@ const useGasSettings = ({
   isReplacement,
   isContractCall,
 }: {
-  evmNetworkId: EvmNetworkId | undefined
+  evmNetworkId: EthNetworkId | undefined
   hasEip1559Support: boolean | undefined
   baseFeePerGas: bigint | null | undefined
   estimatedGas: bigint | null | undefined
@@ -320,7 +320,7 @@ const useGasSettings = ({
   isReplacement: boolean | undefined
   isContractCall: boolean | undefined
 }) => {
-  const evmNetwork = useEvmNetwork(evmNetworkId)
+  const evmNetwork = useNetworkById(evmNetworkId, "ethereum")
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
 
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
@@ -461,7 +461,7 @@ const useGasSettings = ({
 
 export const useEthTransaction = (
   request: TransactionRequest | undefined,
-  evmNetworkId: EvmNetworkId | undefined,
+  evmNetworkId: EthNetworkId | undefined,
   lockTransaction = false,
   isReplacement = false,
 ) => {

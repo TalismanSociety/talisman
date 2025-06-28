@@ -13,16 +13,16 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
     switch (type) {
       case "substrate-native":
       case "evm-native":
-        return t("Native")
+        return t("NATIVE")
       case "evm-erc20":
         return "ERC20"
       case "evm-uniswapv2":
         return "UNI V2"
 
       case "substrate-assets":
-        return "Polkadot"
+        return "HUB"
       case "substrate-foreignassets":
-        return "Foreign"
+        return "FOREIGN"
       case "substrate-psp22":
         return "PSP22"
       case "substrate-tokens":

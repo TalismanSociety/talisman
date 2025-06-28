@@ -4,7 +4,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TooltipContent } from "talisman-ui"
 
-import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
+import { useNetworksMapById, useTokensMap } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -15,8 +15,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
 }) => {
   const { t } = useTranslation()
   const tokens = useTokensMap()
-  const evmNetworks = useEvmNetworksMap()
-  const chains = useChainsMap()
+  const networksMap = useNetworksMapById()
 
   const tokenBalances = useMemo(() => {
     const positiveBalances = (balances ?? new Balances([])).each.filter((b) => b.total.planck > 0)
@@ -27,7 +26,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
       .map((tokenId) => {
         const token = tokens[tokenId]
         if (!token) return null
-        const network = evmNetworks[token.networkId] ?? chains[token.networkId]
+        const network = networksMap[token.networkId]
         if (!network) return null
         if (token.mirrorOf && tokenIds.includes(token.mirrorOf)) return null
 
@@ -49,7 +48,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
         if (b1.symbol !== b2.symbol) return b1.symbol.localeCompare(b2.symbol)
         return b2.total - b1.total > 0 ? 1 : -1
       })
-  }, [balances, chains, evmNetworks, tokens])
+  }, [balances, networksMap, tokens])
 
   if (!tokenBalances.length) return null
 

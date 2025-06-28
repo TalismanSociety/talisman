@@ -3,6 +3,7 @@ import { FC } from "react"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 
+// TODO yeet
 export const NetworkLogo: FC<{
   networkId?: NetworkId
   className?: string

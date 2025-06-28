@@ -8,7 +8,7 @@ import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "ta
 import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useChainByGenesisHash, useEvmNetwork, useNetwork, useTransaction } from "@ui/state"
+import { useNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -21,7 +21,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
-  const evmNetwork = useEvmNetwork(tx.networkType === "evm" ? tx.evmNetworkId : null)
+  const evmNetwork = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
@@ -204,7 +204,7 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   onClose,
   className,
 }) => {
-  const chain = useChainByGenesisHash(tx.genesisHash)
+  const chain = useNetworkByGenesisHash(tx.genesisHash as `0x${string}`)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
@@ -229,7 +229,7 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   className,
   onClose,
 }) => {
-  const network = useEvmNetwork(tx.evmNetworkId)
+  const network = useNetworkById(tx.evmNetworkId, "ethereum")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
   return (

@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EvmNetworkId, isTokenInTypes, Network, Token, TokenId } from "@talismn/chaindata-provider"
+import { EthNetworkId, isTokenInTypes, Network, Token, TokenId } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -60,10 +60,9 @@ import {
   useAssetDiscoveryScan,
   useAssetDiscoveryScanProgress,
   useBalancesHydrate,
-  useChainsMap,
-  useEvmNetwork,
-  useEvmNetworks,
-  useEvmNetworksMap,
+  useNetworkById,
+  useNetworks,
+  useNetworksMapById,
   useToken,
   useTokens,
   useTokensMap,
@@ -156,7 +155,7 @@ const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
 }
 
 const useBlockExplorerUrl = (token: Token | null) => {
-  const network = useEvmNetwork(token?.networkId)
+  const network = useNetworkById(token?.networkId)
 
   return useMemo(() => {
     if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && network?.blockExplorerUrls[0])
@@ -181,7 +180,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
   const token = useToken(tokenId)
-  const evmNetwork = useEvmNetwork(token?.networkId)
+  const evmNetwork = useNetworkById(token?.networkId)
   const tokenRates = useAssetDiscoveryTokenRates(token?.id)
   const activeEvmNetworks = useActiveNetworksState()
   const activeTokens = useActiveTokensState()
@@ -376,7 +375,11 @@ const Header: FC = () => {
   const { balances, accountsCount, networksCount, tokensCount, percent, isInProgress } =
     useAssetDiscoveryScanProgress()
 
-  const allNetworks = useEvmNetworks({ activeOnly: false, includeTestnets: true })
+  const allNetworks = useNetworks({
+    platform: "ethereum",
+    activeOnly: false,
+    includeTestnets: true,
+  })
 
   const activeNetworks = useActiveNetworksState()
   const recommendedNetworks = useMemo(() => {
@@ -539,27 +542,26 @@ const ScanInfo: FC = () => {
   const activeEvmNetworks = useActiveNetworksState()
   const activeTokens = useActiveTokensState()
   const tokensMap = useTokensMap()
-  const evmNetworksMap = useEvmNetworksMap()
-  const chainsMap = useChainsMap()
+  const networksMap = useNetworksMapById()
 
   const canEnable = useMemo(() => {
     const tokenIds = Object.keys(balancesByTokenId)
     return tokenIds.some((tokenId) => {
       const token = tokensMap[tokenId]
-      const evmNetwork = evmNetworksMap[token?.networkId ?? ""]
+      const evmNetwork = networksMap[token?.networkId ?? ""]
       return (
         token &&
         evmNetwork &&
         (!isNetworkActive(evmNetwork, activeEvmNetworks) || !isTokenActive(token, activeTokens))
       )
     })
-  }, [balancesByTokenId, activeEvmNetworks, activeTokens, evmNetworksMap, tokensMap])
+  }, [balancesByTokenId, activeEvmNetworks, activeTokens, networksMap, tokensMap])
 
   const enableAll = useCallback(async () => {
     const tokenIds = Object.keys(balancesByTokenId)
     const evmNetworkIds = [
       ...new Set(tokenIds.map((tokenId) => tokensMap[tokenId]?.networkId).filter(isTruthy)),
-    ] as EvmNetworkId[]
+    ] as EthNetworkId[]
     await activeNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(
       Object.fromEntries(
@@ -579,8 +581,8 @@ const ScanInfo: FC = () => {
     [accounts, lastScanAccounts],
   )
   const lastNetworks = useMemo<Network[]>(
-    () => lastScanNetworks.map((id) => evmNetworksMap[id] ?? chainsMap[id]).filter(isNotNil),
-    [chainsMap, evmNetworksMap, lastScanNetworks],
+    () => lastScanNetworks.map((id) => networksMap[id]).filter(isNotNil),
+    [lastScanNetworks, networksMap],
   )
 
   if (isInitializing) return null

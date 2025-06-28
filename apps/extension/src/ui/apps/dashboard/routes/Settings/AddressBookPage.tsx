@@ -43,7 +43,7 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useChainByGenesisHash, useContacts } from "@ui/state"
+import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -83,7 +83,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     undefined,
     contact.address,
   )
-  const contactChain = useChainByGenesisHash(contact.genesisHash)
+  const contactChain = useNetworkByGenesisHash(contact.genesisHash)
   const { open: viewOnExplorer, canOpen: canViewOnExplorer } = useViewOnExplorer(
     contact.address,
     contact.genesisHash,
@@ -171,7 +171,6 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
                     <div>{t("Send to this contact")}</div>
                   </TooltipTrigger>
                   {/* TODO fix tooltip which appears behind context menu */}
-                  {/* {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>} */}
                 </Tooltip>
               </ContextMenuItem>
               <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>

@@ -31,8 +31,8 @@ export const evmErc20TokenId = (networkId: string, contractAddress: `0x${string}
 
 export const parseEvmErc20TokenId = (tokenId: TokenId): EvmErc20TokenIdSpecs => {
   const [networkId, type, contractAddress] = tokenId.split(":")
-  if (!networkId || !contractAddress) throw new Error(`Invalid CustomEvmErc20Token ID: ${tokenId}`)
-  if (type !== TOKEN_TYPE) throw new Error(`Invalid CustomEvmErc20Token type: ${type}`)
+  if (!networkId || !contractAddress) throw new Error(`Invalid EvmErc20Token ID: ${tokenId}`)
+  if (type !== TOKEN_TYPE) throw new Error(`Invalid EvmErc20Token type: ${type}`)
 
   return {
     type,

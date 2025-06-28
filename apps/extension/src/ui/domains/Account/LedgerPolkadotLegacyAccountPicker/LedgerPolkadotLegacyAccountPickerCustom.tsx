@@ -13,7 +13,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChain } from "@ui/state"
+import { useAccounts, useNetworkById } from "@ui/state"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"
@@ -26,7 +26,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
   LedgerPolkadotLegacyAccountPickerProps
 > = ({ onChange, chainId }) => {
   const { t } = useTranslation()
-  const chain = useChain(chainId)
+  const chain = useNetworkById(chainId, "polkadot")
   if (!chain) throw new Error("Chain not found")
 
   const curve: LedgerPolkadotCurve = useMemo(

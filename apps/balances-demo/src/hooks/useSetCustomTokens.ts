@@ -1,5 +1,5 @@
 import { useChaindataProvider, useEvmNetworks } from "@talismn/balances-react"
-import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
 import { useEffect, useMemo } from "react"
 
 import { UNKNOWN_TOKEN_URL } from "../constants"
@@ -42,11 +42,10 @@ export const useSetCustomTokens = (customTokensConfig: CustomTokensConfig) => {
 
   useEffect(() => {
     const customTokens = customTokensConfigMemoised.map(
-      ({ evmChainId, symbol, decimals, contractAddress, coingeckoId }): CustomEvmErc20Token => ({
+      ({ evmChainId, symbol, decimals, contractAddress, coingeckoId }): EvmErc20Token => ({
         id: evmErc20TokenId(evmChainId, contractAddress),
         type: "evm-erc20",
         platform: "ethereum",
-        // isTestnet: evmNetworks[evmChainId]?.isTestnet || false,
         symbol,
         name: symbol,
         decimals,

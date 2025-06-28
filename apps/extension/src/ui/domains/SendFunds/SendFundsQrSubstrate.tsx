@@ -9,7 +9,7 @@ import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useAccountByAddress, useChain, useToken } from "@ui/state"
+import { useAccountByAddress, useNetworkById, useToken } from "@ui/state"
 
 import { useSendFunds } from "./useSendFunds"
 
@@ -20,7 +20,7 @@ const SendFundsQrSubstrate = () => {
   const [error, setError] = useState<Error>()
 
   const token = useToken(tokenId)
-  const chain = useChain(token?.networkId)
+  const chain = useNetworkById(token?.networkId, "polkadot")
   const account = useAccountByAddress(from) ?? undefined
   const knownAddress = useIsKnownAddress(to)
 
