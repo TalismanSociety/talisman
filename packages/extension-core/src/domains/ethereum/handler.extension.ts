@@ -22,7 +22,6 @@ import { getHumanReadableErrorMessage } from "./errors"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { parseTransactionRequest } from "./helpers"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { ETH_NETWORK_ADD_PREFIX } from "./types"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -326,98 +325,93 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async () =>
-    //    {
-    // id,
-    // enableDefault,
-    //}
-    {
-      // TODO
-      throw new Error("Not implemented")
+  private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async () => {
+    // TODO
+    throw new Error("Not implemented")
 
-      // const queued = requestStore.getRequest(id)
-      // assert(queued, "Unable to find request")
+    // const queued = requestStore.getRequest(id)
+    // assert(queued, "Unable to find request")
 
-      // const { network, resolve } = queued
-      // const networkId = parseInt(network.chainId, 16).toString()
-      // const known = await chaindataProvider.evmNetworkById(networkId)
+    // const { network, resolve } = queued
+    // const networkId = parseInt(network.chainId, 16).toString()
+    // const known = await chaindataProvider.evmNetworkById(networkId)
 
-      // if (enableDefault) {
-      //   assert(known?.nativeTokenId, "Network not found")
+    // if (enableDefault) {
+    //   assert(known?.nativeTokenId, "Network not found")
 
-      //   await activeEvmNetworksStore.setActive(known.id, true)
+    //   await activeEvmNetworksStore.setActive(known.id, true)
 
-      //   talismanAnalytics.captureDelayed("add network evm", {
-      //     network: network.chainName,
-      //     isCustom: false,
-      //   })
-      // } else {
-      //   // const knownNativeTokenConfig = known?.balancesConfig?.find(
-      //   //   (mod) => mod.moduleType === "evm-native",
-      //   // )?.moduleConfig as { coingeckoId?: string; logo?: string }
+    //   talismanAnalytics.captureDelayed("add network evm", {
+    //     network: network.chainName,
+    //     isCustom: false,
+    //   })
+    // } else {
+    //   // const knownNativeTokenConfig = known?.balancesConfig?.find(
+    //   //   (mod) => mod.moduleType === "evm-native",
+    //   // )?.moduleConfig as { coingeckoId?: string; logo?: string }
 
-      //   const isTestnet =
-      //     known?.isTestnet || queued.network.chainName.toLowerCase().includes("testnet")
+    //   const isTestnet =
+    //     known?.isTestnet || queued.network.chainName.toLowerCase().includes("testnet")
 
-      //   const newToken: CustomEvmNativeToken | null = network.nativeCurrency
-      //     ? {
-      //         id: `${networkId}-evm-native`.toLowerCase(),
-      //         type: "evm-native",
-      //         platform: "ethereum",
-      //         isTestnet: isTestnet,
-      //         symbol: network.nativeCurrency.symbol,
-      //         name: network.nativeCurrency.symbol, // TODO
-      //         decimals: network.nativeCurrency.decimals,
-      //         logo:
-      //           network.iconUrls?.[0] || known?.nativeCurrency.logo,
-      //         networkId,
-      //         isCustom: true,
-      //         coingeckoId: known?.nativeCurrency.coingeckoId,
-      //         mirrorOf: known?.nativeCurrency.mirrorOf
-      //         // TODO fix typings and include this
-      //         // mirrorOf: "mirrorOf" in knownNativeTokenConfig ? knownNativeTokenConfig.mirrorOf : undefined
-      //       }
-      //     : null
+    //   const newToken: CustomEvmNativeToken | null = network.nativeCurrency
+    //     ? {
+    //         id: `${networkId}-evm-native`.toLowerCase(),
+    //         type: "evm-native",
+    //         platform: "ethereum",
+    //         isTestnet: isTestnet,
+    //         symbol: network.nativeCurrency.symbol,
+    //         name: network.nativeCurrency.symbol, // TODO
+    //         decimals: network.nativeCurrency.decimals,
+    //         logo:
+    //           network.iconUrls?.[0] || known?.nativeCurrency.logo,
+    //         networkId,
+    //         isCustom: true,
+    //         coingeckoId: known?.nativeCurrency.coingeckoId,
+    //         mirrorOf: known?.nativeCurrency.mirrorOf
+    //         // TODO fix typings and include this
+    //         // mirrorOf: "mirrorOf" in knownNativeTokenConfig ? knownNativeTokenConfig.mirrorOf : undefined
+    //       }
+    //     : null
 
-      //   const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
+    //   const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
 
-      //   const newNetwork: CustomEvmNetwork = {
-      //     ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
-      //     id: networkId,
-      //     isTestnet: isTestnet,
-      //     isDefault: existingNetwork?.isDefault ?? false,
-      //     forceScan: existingNetwork?.forceScan ?? false,
-      //     sortIndex: null,
-      //     name: network.chainName,
-      //     themeColor: "#505050",
-      //     logo: (network.iconUrls || [known?.logo])[0] ?? null,
-      //     nativeToken: newToken ? { id: newToken.id } : null,
-      //     tokens: [],
-      //     explorerUrl: (network.blockExplorerUrls || [])[0],
-      //     rpcs: (network.rpcUrls || []).map((url) => ({ url })),
-      //     substrateChain: null,
-      //     isCustom: true,
-      //     explorerUrls: network.blockExplorerUrls || known?.blockExplorerUrls || [],
-      //     iconUrls: network.iconUrls || [],
-      //     // balancesConfig: existingNetwork?.balancesConfig ?? [],
-      //     // balancesMetadata: [],
-      //   }
+    //   const newNetwork: CustomEvmNetwork = {
+    //     ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
+    //     id: networkId,
+    //     isTestnet: isTestnet,
+    //     isDefault: existingNetwork?.isDefault ?? false,
+    //     forceScan: existingNetwork?.forceScan ?? false,
+    //     sortIndex: null,
+    //     name: network.chainName,
+    //     themeColor: "#505050",
+    //     logo: (network.iconUrls || [known?.logo])[0] ?? null,
+    //     nativeToken: newToken ? { id: newToken.id } : null,
+    //     tokens: [],
+    //     explorerUrl: (network.blockExplorerUrls || [])[0],
+    //     rpcs: (network.rpcUrls || []).map((url) => ({ url })),
+    //     substrateChain: null,
+    //     isCustom: true,
+    //     explorerUrls: network.blockExplorerUrls || known?.blockExplorerUrls || [],
+    //     iconUrls: network.iconUrls || [],
+    //     // balancesConfig: existingNetwork?.balancesConfig ?? [],
+    //     // balancesMetadata: [],
+    //   }
 
-      //   await chaindataProvider.addCustomEvmNetwork(newNetwork)
-      //   if (newToken) await chaindataProvider.addCustomToken(newToken)
+    //   await chaindataProvider.addCustomEvmNetwork(newNetwork)
+    //   if (newToken) await chaindataProvider.addCustomToken(newToken)
 
-      //   await activeEvmNetworksStore.setActive(newNetwork.id, true)
+    //   await activeEvmNetworksStore.setActive(newNetwork.id, true)
 
-      //   talismanAnalytics.captureDelayed("add network evm", {
-      //     network: network.chainName,
-      //     isCustom: true,
-      //   })
-      // }
+    //   talismanAnalytics.captureDelayed("add network evm", {
+    //     network: network.chainName,
+    //     isCustom: true,
+    //   })
+    // }
 
-      // resolve(null)
+    // resolve(null)
 
-      // return true
-    }
+    // return true
+  }
 
   private ethWatchAssetRequestCancel: MessageHandler<"pri(eth.watchasset.requests.cancel)"> = ({
     id,
@@ -526,9 +520,6 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.add.approve)":
         return this.ethNetworkAddApprove(request as RequestTypes["pri(eth.networks.add.approve)"])
-
-      case "pri(eth.networks.add.requests)":
-        return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       // --------------------------------------------------------------------
       // ethereum other handlers ------------------------------------------

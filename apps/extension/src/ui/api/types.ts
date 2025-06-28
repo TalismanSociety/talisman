@@ -8,7 +8,6 @@ import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import {
   Account,
-  AddEthereumChainRequest,
   AddEthereumChainRequestId,
   AddressesAndEvmNetwork,
   AddressesAndTokens,
@@ -285,7 +284,7 @@ export default interface MessageTypes {
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
   ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: NetworkId) => Promise<number>
-  ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
+  // ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId, enableDefault: boolean) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
 

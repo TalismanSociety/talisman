@@ -175,7 +175,6 @@ export interface EthMessages {
   "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSignAndSendApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
-  "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
   "pri(eth.networks.add.approve)": [AddEthereumChainRequestApprove, boolean]
   "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
   // eth watchassets requests  management
