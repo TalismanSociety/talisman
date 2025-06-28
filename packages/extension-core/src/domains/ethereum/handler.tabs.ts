@@ -1,6 +1,6 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -548,18 +548,17 @@ export class EthTabsHandler extends TabsHandler {
             i18next.t(`Another {{symbol}} token already exists on this network`, { symbol }),
           )
 
-        const token: CustomEvmErc20Token = {
+        const token: EvmErc20Token = {
           id: tokenId,
           type: "evm-erc20",
           platform: "ethereum",
           symbol: symbol ?? tokenInfo.symbol,
           decimals: decimals ?? tokenInfo.decimals,
-          name: tokenInfo.name,
+          name: tokenInfo.name ?? symbol ?? tokenInfo.symbol,
           logo: image ?? tokenInfo.logo,
           coingeckoId: tokenInfo.coingeckoId,
           contractAddress: address as `0x${string}`,
           networkId: tokenInfo.networkId,
-          isCustom: true,
         }
 
         await requestWatchAsset(url, request.params, token, warnings, port)

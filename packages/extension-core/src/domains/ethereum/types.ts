@@ -1,4 +1,4 @@
-import type { CustomEvmErc20Token, EvmNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId, EvmErc20Token } from "@talismn/chaindata-provider"
 import type {
   AddEthereumChainParameter,
   EIP1193Parameters,
@@ -105,13 +105,13 @@ export interface EthProviderMessage {
 }
 
 export type EthTxSignAndSend = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
   transferInfo?: WalletTransactionTransferInfo
   txInfo?: WalletTransactionInfo
 }
 export type EthTxSendSigned = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
   signed: `0x${string}`
   transferInfo?: WalletTransactionTransferInfo
@@ -132,12 +132,12 @@ export type EthRequestSignAndSendApproveSignature = KnownSigningRequestIdOnly<ET
 }
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
-  chainId: EvmNetworkId
+  chainId: EthNetworkId
 }
 
 export type EthNonceRequest = {
   address: `0x${string}`
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
 }
 
 // ethereum networks
@@ -233,7 +233,7 @@ export type WatchAssetRequestIdOnly = { id: WatchAssetRequestId }
 export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
   url: string
   request: WatchAssetBase
-  token: CustomEvmErc20Token
+  token: EvmErc20Token
   warnings: string[]
 }
 

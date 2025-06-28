@@ -10,9 +10,12 @@ import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
+import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { getHostName } from "../app/helpers"
+import { activeTokensStore } from "../balances/store.activeTokens"
+import { customChaindataStore } from "../chaindata/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
@@ -431,37 +434,27 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private ethWatchAssetRequestApprove: MessageHandler<"pri(eth.watchasset.requests.approve)"> =
-    async () => {
-      //{ id }
-      throw new Error("Not implemented")
-      // const queued = requestStore.getRequest(id)
+    async ({ id }) => {
+      const queued = requestStore.getRequest(id)
+      assert(queued, "Unable to find request")
 
-      // assert(queued, "Unable to find request")
-      // const { resolve, token } = queued
+      const { resolve, token } = queued
 
-      // const knownToken = await chaindataProvider.tokenById(token.id)
-      // if (knownToken) {
-      //   await activeTokensStore.setActive(knownToken.id, true)
-      // } else {
-      //   // some dapps set decimals as a string, which breaks balances
-      //   const safeToken = {
-      //     ...token,
-      //     decimals: Number(token.decimals),
-      //   }
-      //   const newTokenId = await chaindataProvider.addCustomToken(safeToken)
-      //   if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
-      // }
+      const knownToken = await chaindataProvider.getTokenById(token.id)
+      if (!knownToken) await customChaindataStore.upsertToken(token)
 
-      // talismanAnalytics.captureDelayed("add asset evm", {
-      //   contractAddress: token.contractAddress,
-      //   symbol: token.symbol,
-      //   network: token.networkId,
-      //   isCustom: !knownToken,
-      // })
+      await activeTokensStore.setActive(token.id, true)
 
-      // resolve(true)
+      talismanAnalytics.captureDelayed("add asset evm", {
+        contractAddress: token.contractAddress,
+        symbol: token.symbol,
+        network: token.networkId,
+        isCustom: !knownToken,
+      })
 
-      // return true
+      resolve(true)
+
+      return true
     }
 
   private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {

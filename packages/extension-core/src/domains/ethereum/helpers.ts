@@ -423,7 +423,7 @@ const schemaWatchAssetRequest = yup.object().shape({
     .object()
     .shape({
       address: yup.string().required().test("ethAddress", isEthereumAddress),
-      symbol: yup.string().min(2).max(11).test("noScriptTag", testNoScriptTag),
+      symbol: yup.string().min(1).max(11).test("noScriptTag", testNoScriptTag),
       decimals: yup.number(),
       // ignore image if it doesn't pass security checks
       image: yup.string().transform((value) => (isSafeImageUrl(value) ? value : undefined)),

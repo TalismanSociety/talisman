@@ -1,4 +1,4 @@
-import { CustomEvmErc20Token, EthNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, EvmErc20Token } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
 
@@ -8,7 +8,7 @@ import { ViewDetailsAddress } from "../Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
 type CustomErc20TokenViewDetailsProps = {
-  token: CustomEvmErc20Token
+  token: EvmErc20Token
   network: EthNetwork
 }
 

@@ -1,4 +1,4 @@
-import type { CustomEvmErc20Token } from "@talismn/chaindata-provider"
+import { EvmErc20Token } from "@talismn/chaindata-provider"
 import { AddEthereumChainParameter } from "viem"
 
 import type { Port } from "../../types/base"
@@ -47,7 +47,7 @@ export const ignoreRequest = ({ id }: WatchAssetRequestIdOnly) => {
 export const requestWatchAsset = async (
   url: string,
   request: WatchAssetBase,
-  token: CustomEvmErc20Token,
+  token: EvmErc20Token,
   warnings: string[],
   port: Port,
 ) => {

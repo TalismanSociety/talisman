@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  CustomEvmErc20Token,
   EvmErc20Token,
   evmErc20TokenId,
   EvmErc20TokenSchema,
@@ -57,7 +56,7 @@ type EvmErc20NetworkParams = Record<
 
 export const EvmErc20Module: NewBalanceModule<
   ModuleType,
-  EvmErc20Token | CustomEvmErc20Token,
+  EvmErc20Token,
   EvmErc20ChainMeta,
   EvmErc20ModuleConfig,
   EvmErc20TokenConfig
