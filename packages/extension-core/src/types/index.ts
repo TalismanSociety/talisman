@@ -16,7 +16,6 @@ import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { TokenMessages } from "../domains/tokens/types"
 import { AssetTransferMessages } from "../domains/transfers/types"
 import { ChaindataMessages } from "./domains"
 
@@ -84,7 +83,6 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   MnemonicMessages &
   SigningMessages &
   TalismanMessages &
-  TokenMessages &
   TokenRatesMessages &
   SubstrateMessages &
   AssetDiscoveryMessages &

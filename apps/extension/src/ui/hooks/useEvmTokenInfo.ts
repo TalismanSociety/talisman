@@ -1,55 +1,36 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { isAbortError } from "@talismn/util"
-import {
-  CustomEvmTokenCreate,
-  EvmAddress,
-  getErc20TokenInfo,
-  getUniswapV2TokenInfo,
-} from "extension-core"
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { EvmAddress, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
 import { ContractFunctionExecutionError } from "viem"
 
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 
-export const useEvmTokenInfo = (evmNetworkId?: EvmNetworkId, contractAddress?: EvmAddress) => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<unknown>()
-  const [token, setToken] = useState<CustomEvmTokenCreate>()
-
+export const useEvmTokenInfo = (evmNetworkId?: EthNetworkId, contractAddress?: EvmAddress) => {
   const publicClient = usePublicClient(evmNetworkId)
 
-  useEffect(() => {
-    setError(undefined)
-    setToken(undefined)
-    if (!evmNetworkId || !publicClient || !contractAddress) return
-    setIsLoading(true)
+  const {
+    isLoading,
+    error,
+    data: token,
+  } = useQuery({
+    queryKey: ["evmTokenInfo", evmNetworkId, contractAddress],
+    queryFn: async () => {
+      if (!evmNetworkId || !publicClient || !contractAddress) return undefined
 
-    const aborted = new AbortController()
-    ;(async () => {
       try {
-        try {
-          // try uniswapv2 contract
-          const token = await getUniswapV2TokenInfo(publicClient, evmNetworkId, contractAddress)
-          if (aborted.signal.aborted) return
-          setToken(token)
-        } catch (cause) {
-          if (!(cause instanceof ContractFunctionExecutionError)) throw cause
-          if (isAbortError(cause)) return
-
-          // try erc20 contract
-          const token = await getErc20TokenInfo(publicClient, evmNetworkId, contractAddress)
-          if (aborted.signal.aborted) return
-          setToken(token)
-        }
+        // try uniswapv2 contract
+        return await getUniswapV2TokenInfo(publicClient, evmNetworkId, contractAddress)
       } catch (cause) {
-        setError(cause)
-      } finally {
-        setIsLoading(false)
-      }
-    })()
+        if (!(cause instanceof ContractFunctionExecutionError)) throw cause
+        if (isAbortError(cause)) return undefined
 
-    return () => aborted.abort()
-  }, [contractAddress, evmNetworkId, publicClient])
+        // try erc20 contract
+        return await getErc20TokenInfo(publicClient, evmNetworkId, contractAddress)
+      }
+    },
+    enabled: !!evmNetworkId && !!publicClient && !!contractAddress,
+  })
 
   return { isLoading, error, token }
 }
