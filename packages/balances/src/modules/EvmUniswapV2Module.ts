@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  CustomEvmUniswapV2Token,
   EthNetworkList,
   EvmNetworkId,
   EvmUniswapV2Token,
@@ -71,7 +70,7 @@ declare module "@talismn/balances/plugins" {
 
 export const EvmUniswapV2Module: NewBalanceModule<
   ModuleType,
-  EvmUniswapV2Token | CustomEvmUniswapV2Token,
+  EvmUniswapV2Token,
   EvmUniswapV2ChainMeta,
   EvmUniswapV2ModuleConfig,
   EvmUniswapV2TokenConfig
@@ -286,14 +285,11 @@ const fetchBalances = async (
                 return tokensAndAddresses
               }
 
-              const tokenAndAddresses: [EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]] = [
-                token,
-                addresses,
-              ]
+              const tokenAndAddresses: [EvmUniswapV2Token, string[]] = [token, addresses]
 
               return [...tokensAndAddresses, tokenAndAddresses]
             },
-            [] as Array<[EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]]>,
+            [] as Array<[EvmUniswapV2Token, string[]]>,
           )
           // fetch all balances
           const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
