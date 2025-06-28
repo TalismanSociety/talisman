@@ -284,15 +284,8 @@ export default interface MessageTypes {
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
   ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: NetworkId) => Promise<number>
-  // ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
-  ethNetworkAddApprove: (id: AddEthereumChainRequestId, enableDefault: boolean) => Promise<boolean>
+  ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
-
-  // ethereum networks message types
-  // ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
-  // ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
-  // ethNetworkRemove: (id: string) => Promise<boolean>
-  // ethNetworkReset: (id: string) => Promise<boolean>
 
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>

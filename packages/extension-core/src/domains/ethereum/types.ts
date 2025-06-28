@@ -1,6 +1,10 @@
-import type { EthNetworkId, EvmErc20Token } from "@talismn/chaindata-provider"
 import type {
-  AddEthereumChainParameter,
+  EthNetwork,
+  EthNetworkId,
+  EvmErc20Token,
+  EvmNativeToken,
+} from "@talismn/chaindata-provider"
+import type {
   EIP1193Parameters,
   Address as EvmAddress,
   Chain as EvmChain,
@@ -174,8 +178,7 @@ export interface EthMessages {
   "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSignAndSendApproveSignature, boolean]
   // eth add networks requests management
-  // TODO change naming for network add requests, and maybe delete the first one
-  "pri(eth.networks.add.approve)": [AddEthereumChainRequestApprove, boolean]
+  "pri(eth.networks.add.approve)": [AddEthereumChainRequestIdOnly, boolean]
   "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
   // eth watchassets requests  management
   "pri(eth.watchasset.requests.approve)": [WatchAssetRequestIdOnly, boolean]
@@ -204,15 +207,12 @@ export type ETH_NETWORK_ADD_PREFIX = "eth-network-add"
 export const ETH_NETWORK_ADD_PREFIX: ETH_NETWORK_ADD_PREFIX = "eth-network-add"
 export type AddEthereumChainRequestId = BaseRequestId<ETH_NETWORK_ADD_PREFIX>
 export type AddEthereumChainRequestIdOnly = { id: AddEthereumChainRequestId }
-export type AddEthereumChainRequestApprove = {
-  id: AddEthereumChainRequestId
-  enableDefault: boolean
-}
 
 export type AddEthereumChainRequest = BaseRequest<ETH_NETWORK_ADD_PREFIX> & {
   idStr: string
   url: string
-  network: AddEthereumChainParameter
+  network: EthNetwork
+  nativeToken: EvmNativeToken
 }
 
 export type WatchAssetBase = {

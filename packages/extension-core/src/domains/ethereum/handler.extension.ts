@@ -13,7 +13,9 @@ import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
+import { urlToDomain } from "../../util/urlToDomain"
 import { getHostName } from "../app/helpers"
+import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store"
 import { withSecretKey } from "../keyring/withSecretKey"
@@ -325,92 +327,34 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async () => {
-    // TODO
-    throw new Error("Not implemented")
+  private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async ({
+    id,
+  }) => {
+    const queued = requestStore.getRequest(id)
+    assert(queued, "Unable to find request")
+    const { url, network, nativeToken, resolve } = queued
 
-    // const queued = requestStore.getRequest(id)
-    // assert(queued, "Unable to find request")
-
-    // const { network, resolve } = queued
     // const networkId = parseInt(network.chainId, 16).toString()
-    // const known = await chaindataProvider.evmNetworkById(networkId)
+    const known = await chaindataProvider.getNetworkById(network.id, "ethereum")
+    if (!known) {
+      await customChaindataStore.upsertNetwork(network, nativeToken)
 
-    // if (enableDefault) {
-    //   assert(known?.nativeTokenId, "Network not found")
+      talismanAnalytics.captureDelayed("add network evm", {
+        network: network.name,
+        isCustom: true,
+      })
+    }
 
-    //   await activeEvmNetworksStore.setActive(known.id, true)
+    await activeTokensStore.setActive(network.nativeTokenId, true)
+    await activeNetworksStore.setActive(network.id, true)
 
-    //   talismanAnalytics.captureDelayed("add network evm", {
-    //     network: network.chainName,
-    //     isCustom: false,
-    //   })
-    // } else {
-    //   // const knownNativeTokenConfig = known?.balancesConfig?.find(
-    //   //   (mod) => mod.moduleType === "evm-native",
-    //   // )?.moduleConfig as { coingeckoId?: string; logo?: string }
+    // associate the network with the dapp that requested it
+    const { err, val } = urlToDomain(url)
+    if (err) throw new Error(val)
+    await this.stores.sites.updateSite(val, { ethChainId: Number(network.id) })
 
-    //   const isTestnet =
-    //     known?.isTestnet || queued.network.chainName.toLowerCase().includes("testnet")
-
-    //   const newToken: CustomEvmNativeToken | null = network.nativeCurrency
-    //     ? {
-    //         id: `${networkId}-evm-native`.toLowerCase(),
-    //         type: "evm-native",
-    //         platform: "ethereum",
-    //         isTestnet: isTestnet,
-    //         symbol: network.nativeCurrency.symbol,
-    //         name: network.nativeCurrency.symbol, // TODO
-    //         decimals: network.nativeCurrency.decimals,
-    //         logo:
-    //           network.iconUrls?.[0] || known?.nativeCurrency.logo,
-    //         networkId,
-    //         isCustom: true,
-    //         coingeckoId: known?.nativeCurrency.coingeckoId,
-    //         mirrorOf: known?.nativeCurrency.mirrorOf
-    //         // TODO fix typings and include this
-    //         // mirrorOf: "mirrorOf" in knownNativeTokenConfig ? knownNativeTokenConfig.mirrorOf : undefined
-    //       }
-    //     : null
-
-    //   const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
-
-    //   const newNetwork: CustomEvmNetwork = {
-    //     ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
-    //     id: networkId,
-    //     isTestnet: isTestnet,
-    //     isDefault: existingNetwork?.isDefault ?? false,
-    //     forceScan: existingNetwork?.forceScan ?? false,
-    //     sortIndex: null,
-    //     name: network.chainName,
-    //     themeColor: "#505050",
-    //     logo: (network.iconUrls || [known?.logo])[0] ?? null,
-    //     nativeToken: newToken ? { id: newToken.id } : null,
-    //     tokens: [],
-    //     explorerUrl: (network.blockExplorerUrls || [])[0],
-    //     rpcs: (network.rpcUrls || []).map((url) => ({ url })),
-    //     substrateChain: null,
-    //     isCustom: true,
-    //     explorerUrls: network.blockExplorerUrls || known?.blockExplorerUrls || [],
-    //     iconUrls: network.iconUrls || [],
-    //     // balancesConfig: existingNetwork?.balancesConfig ?? [],
-    //     // balancesMetadata: [],
-    //   }
-
-    //   await chaindataProvider.addCustomEvmNetwork(newNetwork)
-    //   if (newToken) await chaindataProvider.addCustomToken(newToken)
-
-    //   await activeEvmNetworksStore.setActive(newNetwork.id, true)
-
-    //   talismanAnalytics.captureDelayed("add network evm", {
-    //     network: network.chainName,
-    //     isCustom: true,
-    //   })
-    // }
-
-    // resolve(null)
-
-    // return true
+    resolve(null)
+    return true
   }
 
   private ethWatchAssetRequestCancel: MessageHandler<"pri(eth.watchasset.requests.cancel)"> = ({

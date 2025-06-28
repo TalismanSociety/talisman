@@ -278,8 +278,7 @@ export const api: MessageTypes = {
   ethRequest: (request) => messageService.sendMessage("pri(eth.request)", request),
   ethGetTransactionsCount: (address, evmNetworkId) =>
     messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
-  ethNetworkAddApprove: (id, enableDefault) =>
-    messageService.sendMessage("pri(eth.networks.add.approve)", { id, enableDefault }),
+  ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
 
   // ethereum watch assets

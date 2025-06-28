@@ -1,6 +1,12 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import {
+  EthNetwork,
+  EvmErc20Token,
+  evmErc20TokenId,
+  EvmNativeToken,
+  evmNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -314,33 +320,49 @@ export class EthTabsHandler extends TabsHandler {
     port: Port,
   ): Promise<EthRequestResult<"wallet_addEthereumChain">> => {
     const {
-      params: [network],
+      params: [ethChain],
     } = request
 
-    const chainId = parseInt(network.chainId, 16)
-    const existing = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
-    const activeNetworks = await activeNetworksStore.get()
+    const chainId = parseInt(ethChain.chainId, 16)
+    if (isNaN(chainId))
+      throw new EthProviderRpcError("Invalid chain id", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    const networkId = String(chainId)
+    const knownNetwork = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
+
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
-    if (existing && isNetworkActive(existing, activeNetworks))
+    const activeNetworks = await activeNetworksStore.get()
+    if (knownNetwork && isNetworkActive(knownNetwork, activeNetworks))
       return this.switchEthereumChain(url, {
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: network.chainId }],
+        params: [{ chainId: ethChain.chainId }],
       })
 
+    if (knownNetwork) {
+      const nativeToken = await chaindataProvider.getTokenById(
+        knownNetwork.nativeTokenId,
+        "evm-native",
+      )
+      if (nativeToken) {
+        await requestAddNetwork(url, knownNetwork, nativeToken, port)
+        return null
+      }
+    }
+
     // on some dapps (ex: https://app.pangolin.exchange/), iconUrls is a string instead of an array
-    if (typeof network.iconUrls === "string") network.iconUrls = [network.iconUrls]
+    if (typeof ethChain.iconUrls === "string") ethChain.iconUrls = [ethChain.iconUrls]
 
     // type check payload
-    if (!isValidAddEthereumRequestParam(network))
+    if (!isValidAddEthereumRequestParam(ethChain))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     // check that the RPC exists and has the correct chain id
-    if (!network.rpcUrls.length)
+    if (!ethChain.rpcUrls.length)
       throw new EthProviderRpcError("Missing rpcUrls", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     await Promise.all(
-      network.rpcUrls.map(async (rpcUrl) => {
+      ethChain.rpcUrls.map(async (rpcUrl) => {
         try {
           const client = createClient({ transport: http(rpcUrl, { retryCount: 1 }) })
           const rpcChainIdHex = await Promise.race([
@@ -358,15 +380,34 @@ export class EthTabsHandler extends TabsHandler {
       }),
     )
 
-    await requestAddNetwork(url, network, port)
+    const nativeToken: EvmNativeToken = {
+      id: evmNativeTokenId(networkId),
+      type: "evm-native",
+      networkId,
+      platform: "ethereum",
+      symbol: ethChain.nativeCurrency.symbol,
+      name: ethChain.nativeCurrency.name || ethChain.nativeCurrency.symbol,
+      decimals: ethChain.nativeCurrency.decimals || 18,
 
-    // switch automatically to new chain
-    const ethereumNetwork = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
-    if (ethereumNetwork) {
-      const { err, val } = urlToDomain(url)
-      if (err) throw new Error(val)
-      this.stores.sites.updateSite(val, { ethChainId: chainId })
+      isDefault: true,
     }
+
+    const network: EthNetwork = {
+      id: networkId,
+      platform: "ethereum",
+      name: ethChain.chainName || "Unknown Network",
+      rpcs: ethChain.rpcUrls,
+      nativeTokenId: nativeToken.id,
+      nativeCurrency: {
+        decimals: nativeToken.decimals,
+        name: nativeToken.name ?? nativeToken.symbol,
+        symbol: nativeToken.symbol,
+      },
+      blockExplorerUrls: ethChain.blockExplorerUrls ?? [],
+      logo: ethChain.iconUrls?.[0],
+    }
+
+    await requestAddNetwork(url, network, nativeToken, port)
 
     return null
   }

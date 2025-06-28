@@ -1,5 +1,4 @@
-import { EvmErc20Token } from "@talismn/chaindata-provider"
-import { AddEthereumChainParameter } from "viem"
+import { EvmErc20Token, EvmNativeToken, Network } from "@talismn/chaindata-provider"
 
 import type { Port } from "../../types/base"
 import { requestStore } from "../../libs/requests/store"
@@ -15,7 +14,8 @@ class AddNetworkError extends Error {}
 
 export const requestAddNetwork = async (
   url: string,
-  network: AddEthereumChainParameter,
+  network: Network,
+  nativeToken: EvmNativeToken,
   port: Port,
 ) => {
   const { err, val: urlVal } = urlToDomain(url)
@@ -32,7 +32,7 @@ export const requestAddNetwork = async (
     )
   }
   await requestStore.createRequest(
-    { url, network, idStr: urlVal, type: ETH_NETWORK_ADD_PREFIX },
+    { url, network, nativeToken, idStr: urlVal, type: ETH_NETWORK_ADD_PREFIX },
     port,
   )
 }
