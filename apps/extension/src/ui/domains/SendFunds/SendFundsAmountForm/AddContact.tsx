@@ -5,8 +5,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"
 
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useAccountByAddress } from "@ui/state"
+import { useAccountByAddress, useContacts } from "@ui/state"
 
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
@@ -15,7 +14,7 @@ export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: HexString 
   const { t } = useTranslation()
   const { to } = useSendFunds()
   const account = useAccountByAddress(to)
-  const { contacts } = useAddressBook()
+  const contacts = useContacts()
   const addressBookContactDrawer = useOpenClose()
 
   const canAdd = useMemo(() => {

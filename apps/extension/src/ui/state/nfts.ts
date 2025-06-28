@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { isTruthy } from "@talismn/util"
 import { EthNetwork, NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -68,6 +69,7 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
         .map<NetworkOption>((evmNetwork) => {
           return {
             id: evmNetwork.substrateChainId ?? evmNetwork.id,
+            networkIds: [evmNetwork.id, evmNetwork.substrateChainId].filter(isTruthy),
             name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
             evmNetworkId: evmNetwork.id,
           }

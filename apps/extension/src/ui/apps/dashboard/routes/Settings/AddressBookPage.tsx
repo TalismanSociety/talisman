@@ -40,11 +40,10 @@ import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDele
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useChainByGenesisHash } from "@ui/state"
+import { useBalances, useChainByGenesisHash, useContacts } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -204,7 +203,7 @@ const Content = () => {
   // preload balances because of the send button
   useBalances("owned")
 
-  const { contacts } = useAddressBook()
+  const contacts = useContacts()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
     [contacts],

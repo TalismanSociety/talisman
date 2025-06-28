@@ -1,39 +1,40 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { encodeAddressSs58 } from "@talismn/crypto"
+import { CopyIcon } from "@talismn/icons"
+import { isAccountAddressSs58, isAddressCompatibleWithNetwork } from "extension-core"
 import { HexString } from "extension-shared"
-import { useCallback, useMemo } from "react"
+import { keyBy } from "lodash"
+import { FC, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
   Button,
-  Checkbox,
   FormFieldContainer,
   FormFieldInputText,
+  IconButton,
   Modal,
   ModalDialog,
 } from "talisman-ui"
 import * as yup from "yup"
 
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { Address } from "@ui/domains/Account/Address"
-import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useNetworksMapByGenesisHash } from "@ui/state"
+import { useNetworks } from "@ui/state"
 
-import { useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
-import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
-import { ContactModalProps } from "./types"
+import { ContactNetworkPickerButton } from "./ContactNetworkModal"
+import { ExistingContactModalProps } from "./types"
 
 type FormValues = {
   name: string
   genesisHash?: HexString
-  limitToNetwork?: boolean
 }
 
 const schema = yup.object({
   name: yup.string().required(" "),
   genesisHash: yup.mixed<HexString>(),
-  limitToNetwork: yup.bool(),
 })
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -43,9 +44,8 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact edit",
 }
 
-export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) => {
+export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
   const { t } = useTranslation()
-  const { edit } = useAddressBook()
 
   const {
     register,
@@ -59,37 +59,35 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
     mode: "all",
     reValidateMode: "onChange",
     defaultValues: {
-      name: contact ? contact.name : "",
-      genesisHash: contact ? contact.genesisHash : undefined,
-      limitToNetwork: Boolean(contact ? contact.genesisHash : undefined),
+      name: contact.name,
+      genesisHash: contact.genesisHash,
     },
   })
 
-  const { genesisHash, limitToNetwork } = watch()
-  const chains = useChainsFilteredByAddressPrefix(contact?.address)
-  const chainsByGenesisHash = useNetworksMapByGenesisHash()
-  const setGenesisHash = useCallback(
-    (genesisHash?: HexString) =>
-      setValue("genesisHash", genesisHash, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      }),
-    [setValue],
-  )
-  useGenesisHashEffects(chains, genesisHash, setGenesisHash)
-  const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
+  const { genesisHash } = watch()
+
+  const isAddressSs58 = useMemo(() => isAccountAddressSs58(contact), [contact])
+  const dotNetworks = useNetworks({ platform: "polkadot" })
+
+  const [compatibleNetworks, compatibleNetworksById, compatibleNetworksByGenesisHash] =
+    useMemo(() => {
+      const arrResult = dotNetworks.filter((n) =>
+        isAddressCompatibleWithNetwork(n, contact.address),
+      )
+      return [arrResult, keyBy(arrResult, (n) => n.id), keyBy(arrResult, (n) => n.genesisHash)]
+    }, [dotNetworks, contact.address])
+
+  const selectedNetworkId = useMemo(() => {
+    if (!genesisHash) return null
+    return compatibleNetworksByGenesisHash[genesisHash]?.id ?? null
+  }, [compatibleNetworksByGenesisHash, genesisHash])
 
   const submit = useCallback(
     async (formData: FormValues) => {
       if (!contact) return
       try {
-        const { name, genesisHash, limitToNetwork } = formData
-        await edit({
-          ...contact,
-          name,
-          genesisHash: limitToNetwork ? genesisHash : undefined,
-        })
+        const { name, genesisHash } = formData
+        await api.accountUpdateContact({ ...contact, name, genesisHash })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Interact",
@@ -100,67 +98,106 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
         setError("name", error as Error)
       }
     },
-    [close, contact, edit, setError],
+    [close, contact, setError],
   )
+
+  const handleNetworkChange = useCallback(
+    (networkId: string | null) => {
+      const genesisHash = networkId
+        ? compatibleNetworksById[networkId ?? ""]?.genesisHash
+        : undefined
+      setValue("genesisHash", genesisHash, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      })
+    },
+    [compatibleNetworksById, setValue],
+  )
+
+  const address = useMemo(() => {
+    if (isAddressSs58 && genesisHash) {
+      const network = compatibleNetworksByGenesisHash[genesisHash]
+      if (network) return encodeAddressSs58(contact.address, network.prefix)
+    }
+    return contact.address
+  }, [contact.address, isAddressSs58, genesisHash, compatibleNetworksByGenesisHash])
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Edit contact")}>
-        <form onSubmit={handleSubmit(submit)} className="grid gap-8">
-          <FormFieldContainer error={errors.name?.message} label={t("Name")}>
-            <FormFieldInputText
-              type="text"
-              {...register("name")}
-              placeholder={t("Contact name")}
-              autoComplete="off"
-              spellCheck="false"
-            />
-          </FormFieldContainer>
-          <div>
-            <div className="text-body-secondary block text-xs">{t("Address")}</div>
-            <Address
-              className="mt-3 block bg-none text-xs text-white"
-              address={contact?.address ?? ""}
-              noShorten
-            />
-          </div>
-          {showLimitToNetworkControl && (
-            <>
-              <Checkbox
-                childProps={{ className: "flex items-center gap-2" }}
-                {...register("limitToNetwork")}
-              >
-                {t("Limit to Network")}
-                <LimitToNetworkTooltip />
-              </Checkbox>
-              {limitToNetwork && (
-                <NetworkDropdown
-                  placeholder={t("Select network")}
-                  networks={chains}
-                  value={chainsByGenesisHash[genesisHash!]}
-                  onChange={(c) =>
-                    setValue("genesisHash", c?.genesisHash ?? undefined, {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                      shouldValidate: true,
-                    })
-                  }
+      <div id="edit-contact-modal" className="h-[60rem] w-[40rem] overflow-hidden">
+        <ModalDialog title={t("Edit contact")} className="size-full overflow-hidden">
+          <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
+            <div className="grow">
+              <FormFieldContainer error={errors.name?.message} label={t("Name")}>
+                <FormFieldInputText
+                  type="text"
+                  {...register("name")}
+                  placeholder={t("Contact name")}
+                  autoComplete="off"
+                  spellCheck="false"
                 />
+              </FormFieldContainer>
+              <FormFieldContainer label={t("Address")}>
+                <FormFieldInputText
+                  type="text"
+                  value={address}
+                  readOnly
+                  after={<CopyAddressIconButton address={address} className="text-[2rem]" />}
+                />
+              </FormFieldContainer>
+              {isAddressSs58 && (
+                <FormFieldContainer label={t("Limit to network")}>
+                  <ContactNetworkPickerButton
+                    networks={compatibleNetworks}
+                    selected={selectedNetworkId}
+                    onChange={handleNetworkChange}
+                  />
+                </FormFieldContainer>
               )}
-            </>
-          )}
-          <div className="flex items-stretch gap-4 pt-4">
-            <Button fullWidth onClick={close}>
-              {t("Cancel")}
-            </Button>
-            <Button type="submit" fullWidth primary disabled={!isValid}>
-              {t("Save")}
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+            </div>
+            <div className="flex items-stretch gap-4 pt-4">
+              <Button fullWidth onClick={close}>
+                {t("Cancel")}
+              </Button>
+              <Button type="submit" fullWidth primary disabled={!isValid}>
+                {t("Save")}
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
+      </div>
     </Modal>
+  )
+}
+
+const CopyAddressIconButton: FC<{ address: string; className?: string }> = ({
+  address,
+  className,
+}) => {
+  const { t } = useTranslation()
+  const handleClick = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(address)
+      notify({
+        type: "success",
+        title: t(`Address copied`),
+        subtitle: shortenAddress(address, 6, 6),
+      })
+    } catch (err) {
+      notify({
+        type: "error",
+        title: t("Error"),
+        subtitle: (err as Error).message ?? "Failed to copy address",
+      })
+    }
+  }, [address, t])
+
+  return (
+    <IconButton className={className} onClick={handleClick} disabled={!address}>
+      <CopyIcon />
+    </IconButton>
   )
 }

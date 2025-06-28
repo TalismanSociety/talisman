@@ -8,13 +8,13 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 
@@ -41,7 +41,6 @@ const AddToAddressBookDrawerForm: FC<{
   onClose?: () => void
 }> = ({ address, tokenGenesisHash, onClose }) => {
   const { t } = useTranslation()
-  const { add } = useAddressBook()
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === convertAddress(address, null),
@@ -63,16 +62,19 @@ const AddToAddressBookDrawerForm: FC<{
   })
 
   const { limitToNetwork } = watch()
-  const chain = useChainByGenesisHash(tokenGenesisHash)
+  const chain = useNetworkByGenesisHash(tokenGenesisHash)
 
   const submit = useCallback(
     async ({ name, limitToNetwork }: FormValues) => {
       try {
-        await add({
-          name,
-          address,
-          genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
-        })
+        await api.accountAddExternal([
+          {
+            type: "contact",
+            name,
+            address,
+            genesisHash: limitToNetwork ? tokenGenesisHash : undefined,
+          },
+        ])
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Interact",
@@ -86,7 +88,7 @@ const AddToAddressBookDrawerForm: FC<{
         setError("name", err as Error)
       }
     },
-    [add, address, addressType, tokenGenesisHash, onClose, setError],
+    [address, addressType, tokenGenesisHash, onClose, setError],
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)

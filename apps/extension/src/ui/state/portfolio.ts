@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { HydrateDb } from "@talismn/balances"
-import { Network, NetworkId, Token } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/util"
+import { isNetworkEth, Network, NetworkId, Token } from "@talismn/chaindata-provider"
+import { isAddressEqual, isTruthy } from "@talismn/util"
 import { Account, Balances } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import { t } from "i18next"
@@ -13,6 +13,7 @@ import { getNetworks$, getTokens$ } from "./chaindata"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
+  networkIds: string[]
   name: string
   symbols?: string[] // use when searching network by token symbol
 }
@@ -41,18 +42,33 @@ const getNetworkOptions = ({
   const networkById = keyBy(networks, "id")
   const networkIdsWithBalances = new Set<NetworkId>(balances?.each.map((b) => b.networkId))
 
-  const result: NetworkOption[] = networks
+  const compatibleNetworkOptions = networks
     .filter((n) => networkIdsWithBalances.has(n.id) && networkById[n.id])
     .filter(
       (n) =>
         !selectedAccounts ||
         selectedAccounts.some((a) => isAccountCompatibleWithNetwork(networkById[n.id], a)),
     )
-    .map((n) => ({
-      id: String(n.id),
-      name: n.name ?? t("Unknown chain"),
-      symbols: tokens.filter((t) => t.networkId === n.id).map((t) => t.symbol),
-    }))
+
+  // we want only one entry for moonbeam and other networks that have substrateChainId
+  const networkIdsToExclude = new Set<string>(
+    compatibleNetworkOptions.filter(isNetworkEth).map((n) => n.substrateChainId ?? ""),
+  )
+
+  const result: NetworkOption[] = compatibleNetworkOptions
+    .filter((n) => !networkIdsToExclude.has(n.id))
+    .map((n) => {
+      const networkIds = [n.id, n.platform === "ethereum" ? n.substrateChainId : null].filter(
+        isTruthy,
+      )
+
+      return {
+        id: networkIds.join(":"),
+        networkIds,
+        name: n.name ?? t("Unknown chain"),
+        symbols: tokens.filter((t) => t.networkId === n.id).map((t) => t.symbol),
+      }
+    })
     .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
 
   return result.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
@@ -72,7 +88,7 @@ const getFilteredBalances = ({
   if (!networkFilter && !search) return allBalances
   const lowerSearch = search?.toLowerCase()
   const filtered = allBalances.each
-    .filter((b) => b.networkId === networkFilter?.id)
+    .filter((b) => !networkFilter || networkFilter.networkIds.includes(b.networkId))
     .filter((b) => {
       if (!lowerSearch) return true
       return (

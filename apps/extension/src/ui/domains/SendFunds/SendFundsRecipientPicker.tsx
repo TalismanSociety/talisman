@@ -18,9 +18,8 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
+import { useAccounts, useContacts, useNetworkById, useToken } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -110,7 +109,7 @@ export const SendFundsRecipientPicker = () => {
   const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 
   const allAccounts = useAccounts()
-  const { contacts: allContacts } = useAddressBook()
+  const allContacts = useContacts()
 
   const isValidAddressInput = useMemo(() => {
     if (!from) return isValidAddress(search)
