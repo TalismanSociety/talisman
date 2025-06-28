@@ -36,33 +36,13 @@ const NetworkOptionRow: FC<{
 const NetworkOptionsList: FC<{
   options: NetworkOption[]
   selected: NetworkOption | null
-  onChange: (value: NetworkOption | null) => void
+  onChange: (value: NetworkOption) => void
 }> = ({ options, selected, onChange }) => {
-  const { t } = useTranslation()
-  const handleChange = useCallback(
-    (option: NetworkOption) => () => {
-      onChange(option.id === "ALL_NETWORKS" ? null : option)
-    },
-    [onChange],
-  )
-
-  const allOptions = useMemo(
-    () => [
-      {
-        id: "ALL_NETWORKS",
-        name: t("All Networks"),
-        networkIds: [],
-      },
-      ...options,
-    ],
-    [options, t],
-  )
-
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
-    count: allOptions.length,
+    count: options.length,
     estimateSize: () => 48,
     overscan: 5,
     getScrollElement: () => refContainer.current,
@@ -79,7 +59,7 @@ const NetworkOptionsList: FC<{
         }}
       >
         {virtualizer.getVirtualItems().map((item) => {
-          const option = allOptions[item.index]
+          const option = options[item.index]
           if (!option) return null
 
           return (
@@ -95,7 +75,7 @@ const NetworkOptionsList: FC<{
                 key={item.key}
                 option={option}
                 isSelected={option.id === selected?.id}
-                onClick={handleChange(option)}
+                onClick={() => onChange(option)}
               />
             </div>
           )
@@ -113,17 +93,34 @@ const NetworkOptionsModalContent: FC<{
 }> = ({ options, selected, onChange, onClose }) => {
   const { t } = useTranslation()
 
+  // freeze order on first render so it doesnt change when selecting an option
+  const [allOptions] = useState<NetworkOption[]>(() => [
+    {
+      id: "ALL_NETWORKS",
+      name: t("All Networks"),
+      networkIds: [],
+    },
+    ...options,
+  ])
+
+  const handleChange = useCallback(
+    (option: NetworkOption) => {
+      onChange(option.id === "ALL_NETWORKS" ? null : option)
+    },
+    [onChange],
+  )
+
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
   const filteredNetworks = useMemo(() => {
     const lowerSearch = search.toLowerCase()
-    return options.filter(
+    return allOptions.filter(
       (network) =>
         network.name.toLowerCase().includes(lowerSearch) ||
         network.symbols?.find((symbol) => symbol.toLowerCase().includes(lowerSearch)),
     )
-  }, [options, search])
+  }, [allOptions, search])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -147,7 +144,11 @@ const NetworkOptionsModalContent: FC<{
         <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        <NetworkOptionsList options={filteredNetworks} selected={selected} onChange={onChange} />
+        <NetworkOptionsList
+          options={filteredNetworks}
+          selected={selected}
+          onChange={handleChange}
+        />
       </ScrollContainer>
     </div>
   )
