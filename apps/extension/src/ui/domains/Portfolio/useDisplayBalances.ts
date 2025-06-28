@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
+import { getNetworkGenesisHash, Network, NetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/util"
 import {
   Account,
@@ -9,8 +9,6 @@ import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountCompatibleWithNetwork,
-  Network,
-  NetworkId,
 } from "extension-core"
 import {
   DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,

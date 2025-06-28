@@ -1,5 +1,5 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
-import { ChainId } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +13,7 @@ import { ChainLogo } from "../Asset/ChainLogo"
 // should only be used here and in CopyAddressChainForm
 export type ChainFormat = {
   key: string
-  chainId: ChainId | null
+  chainId: DotNetworkId | null
   prefix: number | null
   oldPrefix?: number
   name: string
@@ -23,7 +23,7 @@ export type ChainFormat = {
 
 export type MigratedChainFormat = {
   key: string
-  chainId: ChainId
+  chainId: DotNetworkId
   prefix: number
   oldPrefix: number
   name: string
@@ -128,7 +128,7 @@ const LearnMore = () => {
 }
 
 const FormatRow: FC<{
-  chainId: ChainId
+  chainId: DotNetworkId
   chainName: string
   address: string
   label: string

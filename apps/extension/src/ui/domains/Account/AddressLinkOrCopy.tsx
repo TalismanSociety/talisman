@@ -1,6 +1,6 @@
+import { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
@@ -11,7 +11,7 @@ import { Address } from "./Address"
 
 type NetworkAddressProps = {
   address: string
-  networkId: ChainId | EvmNetworkId
+  networkId: NetworkId
   className?: string
   mode?: "copy" | "link"
   noShorten?: boolean

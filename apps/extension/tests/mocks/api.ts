@@ -3,12 +3,12 @@ import type {
   AuthorizedSite,
   AuthorizedSites,
   BalanceSubscriptionResponse,
-  Network,
   ProviderType,
 } from "extension-core"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
+  Network,
   subAssetTokenId,
   subNativeTokenId,
   Token,

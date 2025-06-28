@@ -6,6 +6,7 @@ import {
   DotNetworkId,
   EthNetwork,
   EthNetworkId,
+  Network,
   NetworkId,
   NetworkOfPlatform,
   NetworkPlatform,
@@ -21,7 +22,6 @@ import {
   activeTokensStore,
   isNetworkActive,
   isTokenActive,
-  Network,
 } from "extension-core"
 import { keyBy } from "lodash"
 import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"

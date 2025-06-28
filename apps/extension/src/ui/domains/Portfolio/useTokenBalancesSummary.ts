@@ -1,8 +1,10 @@
 import { Balances } from "@talismn/balances"
-import { isNetworkDot, Token } from "@talismn/chaindata-provider"
+import { isNetworkDot, Network, Token } from "@talismn/chaindata-provider"
 import { TokenRatesList } from "@talismn/token-rates"
 import BigNumber from "bignumber.js"
-import { Network } from "extension-core"
+
+import "extension-core"
+
 import { keyBy } from "lodash"
 import { useMemo } from "react"
 

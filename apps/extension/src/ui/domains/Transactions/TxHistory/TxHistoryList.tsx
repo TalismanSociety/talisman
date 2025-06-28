@@ -1,3 +1,4 @@
+import { NetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowRightIcon,
   LoaderIcon,
@@ -10,9 +11,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   BalanceFormatter,
-  ChainId,
   db,
-  EvmNetworkId,
   EvmWalletTransaction,
   SubWalletTransaction,
   TransactionStatus,
@@ -201,7 +200,7 @@ const TxIconContainer = ({
 }: {
   className?: string
   tooltip?: string | null
-  networkId?: EvmNetworkId | ChainId
+  networkId?: NetworkId
   children?: ReactNode
 }) => (
   <Tooltip>

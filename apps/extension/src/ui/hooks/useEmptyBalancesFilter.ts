@@ -1,4 +1,5 @@
-import { AccountJson, Balance, Balances, Network } from "extension-core"
+import { Network } from "@talismn/chaindata-provider"
+import { AccountJson, Balance, Balances } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 
 export default function useEmptyBalancesFilter(

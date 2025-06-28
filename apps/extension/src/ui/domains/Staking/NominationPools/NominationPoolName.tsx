@@ -1,10 +1,10 @@
-import { ChainId } from "extension-core"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
 type NominationPoolNameProps = {
   poolId: string | number | undefined | null
-  chainId: ChainId | undefined
+  chainId: DotNetworkId | undefined
 }
 
 export const NominationPoolName = ({ chainId, poolId }: NominationPoolNameProps) => {

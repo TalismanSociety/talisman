@@ -3,7 +3,7 @@ import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { DotNetwork } from "extension-core"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
 
 import { api } from "@ui/api"

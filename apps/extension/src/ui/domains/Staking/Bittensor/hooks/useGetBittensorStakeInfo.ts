@@ -1,5 +1,5 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { ScaleApi } from "@talismn/sapi"
-import { ChainId } from "extension-core"
 import { useMemo } from "react"
 
 import { type BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
@@ -18,7 +18,7 @@ type GetStakeInfo = {
   poolId: string | number | null | undefined
   netuid: number | null
   plancks: bigint | null
-  chainId: ChainId | undefined
+  chainId: DotNetworkId | undefined
   stakeType: StakeType
   userMaxSlippage: number
   selectedStake: BalanceDetailRow | undefined

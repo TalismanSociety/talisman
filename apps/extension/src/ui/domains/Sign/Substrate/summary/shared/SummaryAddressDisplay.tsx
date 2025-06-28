@@ -1,5 +1,6 @@
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames, encodeAnyAddress } from "@talismn/util"
-import { ChainId, EvmNetworkId, getAccountGenesisHash } from "extension-core"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,7 +13,7 @@ import { SummaryDisplayMode } from "../../types"
 
 export const SummaryAddressDisplay: FC<{
   address: string
-  networkId: ChainId | EvmNetworkId
+  networkId: NetworkId
   mode: SummaryDisplayMode
 }> = ({ address, networkId, mode }) => {
   const account = useAccountByAddress(address)

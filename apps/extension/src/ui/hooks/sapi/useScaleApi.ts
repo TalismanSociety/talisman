@@ -1,8 +1,8 @@
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { getScaleApi, ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { ChainId } from "extension-core"
 import { getMetadataRpcFromDef } from "extension-shared"
 import { useMemo } from "react"
 import { isHex } from "viem"
@@ -16,7 +16,7 @@ import { useNetworkByGenesisHash, useNetworkById, useToken } from "@ui/state"
  * It is recommended to use this hook only when necessary and not in a loop where it may be called many times for many chains.
  */
 export const useScaleApi = (
-  chainIdOrHash: ChainId | HexString | null | undefined,
+  chainIdOrHash: DotNetworkId | HexString | null | undefined,
   specVersion?: number,
   blockHash?: HexString,
 ) => {

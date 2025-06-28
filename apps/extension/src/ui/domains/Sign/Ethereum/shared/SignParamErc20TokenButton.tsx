@@ -1,4 +1,5 @@
-import { EthNetwork, EvmAddress } from "extension-core"
+import { EthNetwork } from "@talismn/chaindata-provider"
+import { EvmAddress } from "extension-core"
 import { FC } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"

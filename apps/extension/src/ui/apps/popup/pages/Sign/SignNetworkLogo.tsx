@@ -1,4 +1,4 @@
-import { Network } from "extension-core"
+import { Network } from "@talismn/chaindata-provider"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

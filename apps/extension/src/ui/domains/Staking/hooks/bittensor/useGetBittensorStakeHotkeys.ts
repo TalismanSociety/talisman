@@ -1,4 +1,4 @@
-import { ChainId } from "extension-core"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useBalance } from "@ui/state"
@@ -6,7 +6,7 @@ import { useBalance } from "@ui/state"
 import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
 
 type GetBittensorStakeHotkeys = {
-  chainId: ChainId | null | undefined
+  chainId: DotNetworkId | null | undefined
   address: string | null | undefined
 }
 

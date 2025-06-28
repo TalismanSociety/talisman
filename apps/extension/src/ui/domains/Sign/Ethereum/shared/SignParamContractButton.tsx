@@ -1,5 +1,6 @@
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import { EthNetwork, EvmAddress } from "extension-core"
+import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

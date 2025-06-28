@@ -14,18 +14,6 @@ export type RequestNetworkUpsert<
   T = NativeToken<P>,
 > = { platform: P; network: N; nativeToken: T }
 
-export type {
-  Network,
-  NetworkId,
-  NetworkList,
-  DotNetwork,
-  EthNetwork,
-  DotNetworkId,
-  DotNetworkList,
-  EthNetworkId,
-  EthNetworkList,
-} from "@talismn/chaindata-provider"
-
 export interface ChaindataMessages {
   "pri(chaindata.networks.subscribe)": [null, boolean, Array<Network>]
   "pri(chaindata.networks.upsert)": [RequestNetworkUpsert, boolean]

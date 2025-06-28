@@ -1,3 +1,4 @@
+import { Network } from "@talismn/chaindata-provider"
 import {
   CheckCircleIcon,
   ChevronLeftIcon,
@@ -6,7 +7,6 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Network } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"

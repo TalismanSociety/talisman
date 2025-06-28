@@ -1,4 +1,4 @@
-import { DotNetwork } from "extension-core"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 

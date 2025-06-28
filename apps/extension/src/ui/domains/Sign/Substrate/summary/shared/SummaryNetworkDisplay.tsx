@@ -1,10 +1,10 @@
-import { ChainId, EvmNetworkId } from "extension-core"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { FC, useMemo } from "react"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useChain, useEvmNetwork } from "@ui/state"
 
-export const SummaryNetworkDisplay: FC<{ networkId: ChainId | EvmNetworkId }> = ({ networkId }) => {
+export const SummaryNetworkDisplay: FC<{ networkId: NetworkId }> = ({ networkId }) => {
   const chain = useChain(networkId)
   const evmNetwork = useEvmNetwork(networkId)
 

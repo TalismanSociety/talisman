@@ -1,4 +1,4 @@
-import { NetworkId } from "extension-core"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

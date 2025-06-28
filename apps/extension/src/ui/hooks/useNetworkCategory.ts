@@ -1,4 +1,4 @@
-import { NetworkId } from "extension-core"
+import { NetworkId } from "@talismn/chaindata-provider"
 
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 

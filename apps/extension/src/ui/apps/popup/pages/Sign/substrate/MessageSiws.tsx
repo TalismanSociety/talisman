@@ -1,6 +1,7 @@
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
-import { Account, DotNetwork } from "extension-core"
+import { Account } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"

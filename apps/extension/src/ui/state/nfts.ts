@@ -1,6 +1,7 @@
 import { bind } from "@react-rxjs/core"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { isTruthy } from "@talismn/util"
-import { EthNetwork, NftData } from "extension-core"
+import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"

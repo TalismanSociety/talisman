@@ -1,5 +1,5 @@
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { supportedApps } from "@zondax/ledger-substrate"
-import { DotNetwork } from "extension-core"
 import { useMemo } from "react"
 
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"

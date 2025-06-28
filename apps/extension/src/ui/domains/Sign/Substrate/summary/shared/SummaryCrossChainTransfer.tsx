@@ -1,6 +1,6 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
-import { Address, ChainId, EvmNetworkId } from "extension-core"
+import { Address } from "extension-core"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -12,8 +12,8 @@ import { SummaryNetworkDisplay } from "./SummaryNetworkDisplay"
 import { SummaryTokensAndFiat } from "./SummaryTokensAndFiat"
 
 export type SummaryCrossChainTransferProps = {
-  fromNetwork: ChainId | EvmNetworkId
-  toNetwork: ChainId | EvmNetworkId
+  fromNetwork: NetworkId
+  toNetwork: NetworkId
   fromAddress: Address
   toAddress: Address
   tokenId: TokenId

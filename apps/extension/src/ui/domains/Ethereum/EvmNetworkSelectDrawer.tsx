@@ -1,6 +1,7 @@
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { InfoIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeNetworksStore, EthNetwork, isNetworkActive } from "extension-core"
+import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"

@@ -1,4 +1,4 @@
-import { DotNetwork, NetworkId, NetworkList } from "extension-core"
+import { DotNetwork, NetworkId, NetworkList } from "@talismn/chaindata-provider"
 import { TFunction } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

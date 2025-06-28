@@ -1,5 +1,5 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { formatDistance } from "date-fns"
-import { ChainId } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,7 +8,7 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useStakingBondingDuration } from "../hooks/nomPools/useStakingBondingDuration"
 
 type NomPoolUnbondingPeriodProps = {
-  chainId: ChainId | null | undefined
+  chainId: DotNetworkId | null | undefined
 }
 
 export const NomPoolUnbondingPeriod = ({ chainId }: NomPoolUnbondingPeriodProps) => {
