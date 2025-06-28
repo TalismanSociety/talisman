@@ -301,7 +301,7 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
   overscan,
 }) => {
   const [noCountUp, setNoCountUp] = useState(false)
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

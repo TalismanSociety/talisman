@@ -119,7 +119,7 @@ const TokensList: FC<{
   onSelect: (tokenId: string) => void
 }> = ({ tokens, selected, onSelect }) => {
   const { t } = useTranslation()
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
     count: tokens.length,

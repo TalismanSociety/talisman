@@ -114,7 +114,7 @@ const TransactionRows: FC<{
   onContextMenuOpen: (hash: string) => void
   onContextMenuClose: (hash: string) => void
 }> = ({ transactions, activeTxHash, onContextMenuOpen, onContextMenuClose }) => {
-  const refContainer = useScrollContainer() // used/defined in popup only
+  const { ref: refContainer } = useScrollContainer() // used/defined in popup only
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({

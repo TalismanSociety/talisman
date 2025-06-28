@@ -79,7 +79,7 @@ const TokenRows: FC<{
   allowUntransferable?: boolean
   onTokenClick: (tokenId: TokenId) => void
 }> = ({ tokens, selectedTokenId, allowUntransferable, onTokenClick }) => {
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({

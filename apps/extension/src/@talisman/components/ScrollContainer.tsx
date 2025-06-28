@@ -13,7 +13,7 @@ type ScrollContainerProps = {
 export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
   ({ className, children, innerClassName = "scrollable-children" }, forwardedRef) => {
     const localRef = useRef<HTMLDivElement>(null)
-    const refDiv = useMemo(
+    const ref = useMemo(
       () => (forwardedRef || localRef) as RefObject<HTMLDivElement>,
       [forwardedRef, localRef],
     )
@@ -23,7 +23,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
     })
 
     useEffect(() => {
-      const scrollable = refDiv.current
+      const scrollable = ref.current
       if (!scrollable) return
 
       const handleDetectScroll = () => {
@@ -48,7 +48,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
         scrollable.removeEventListener("resize", handleDetectScroll)
         window.removeEventListener("resize", handleDetectScroll)
       }
-    }, [refDiv])
+    }, [ref])
 
     if (typeof forwardedRef === "function")
       throw new Error("forwardRef as function is not supported")
@@ -63,13 +63,13 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
         )}
       >
         <div
-          ref={refDiv}
+          ref={ref}
           className={classNames(
             "no-scrollbar h-full w-full overflow-y-auto overflow-x-hidden",
             innerClassName,
           )}
         >
-          <ScrollContainerProvider refContainer={refDiv}>{children}</ScrollContainerProvider>
+          <ScrollContainerProvider container={{ ref }}>{children}</ScrollContainerProvider>
         </div>
         <div
           className={classNames(
@@ -89,12 +89,15 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
 )
 ScrollContainer.displayName = "ScrollContainer"
 
-const useScrollContainerProvider = ({
-  refContainer,
-}: {
-  refContainer: RefObject<HTMLDivElement>
-}) => {
-  return refContainer
+type ScrollContainerProviderProps = {
+  // wrap ref in an object so its triggers a re-render when the object changes
+  container: {
+    ref: RefObject<HTMLDivElement>
+  }
+}
+
+const useScrollContainerProvider = ({ container }: ScrollContainerProviderProps) => {
+  return container
 }
 
 const [ScrollContainerProvider, useScrollContainer] = provideContext(useScrollContainerProvider)

@@ -101,7 +101,7 @@ const CurrenciesList: FC<{
   onSelect: (currencyCode: string) => void
 }> = ({ currencies, selected, onSelect }) => {
   const { t } = useTranslation()
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
     count: currencies.length,

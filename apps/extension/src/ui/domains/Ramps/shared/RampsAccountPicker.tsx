@@ -132,7 +132,7 @@ const AccountsList: FC<{
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
     count: accounts?.length ?? 0,
