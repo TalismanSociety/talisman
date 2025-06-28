@@ -39,7 +39,6 @@ export const DotNetworkSchema = NetworkBaseSchema.extend({
   account: z.enum(["secp256k1", "*25519"]),
   chainspecQrUrl: z.string().nonempty().optional(),
   latestMetadataQrUrl: z.string().nonempty().optional(),
-  overrideNativeTokenId: z.string().nonempty().optional(), // TODO: explain why we need this
   prefix: z.number(),
   oldPrefix: z.number().optional(),
   rpcs: z.array(z.url({ protocol: /^wss?$/ })),
