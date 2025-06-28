@@ -51,7 +51,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Network",
 }
 
-export const NetworkPage = () => {
+export const EditNetworkPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
   const network = useNetwork(id)

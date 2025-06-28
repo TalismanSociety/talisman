@@ -38,7 +38,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Add Token",
 }
 
-export const AddCustomTokenPage = () => {
+export const AddTokenPage = () => {
   const { t } = useTranslation()
   useAnalyticsPageView(ANALYTICS_PAGE)
 

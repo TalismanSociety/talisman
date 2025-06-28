@@ -23,7 +23,7 @@ import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWiz
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
 import { AddNetworkPage } from "./routes/Networks/AddNetworkPage"
-import { NetworkPage } from "./routes/Networks/NetworkPage"
+import { EditNetworkPage } from "./routes/Networks/EditNetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { PortfolioRoutes } from "./routes/Portfolio"
@@ -43,8 +43,8 @@ import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
 import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
 import { TestPage } from "./routes/TestPage"
-import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
-import { TokenPage } from "./routes/Tokens/TokenPage"
+import { AddTokenPage } from "./routes/Tokens/AddTokenPage"
+import { EditTokenPage } from "./routes/Tokens/EditTokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
 
@@ -93,8 +93,8 @@ const DashboardInner = () => {
             <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
             <Route path="tokens">
               <Route path="" element={<TokensPage />} />
-              <Route path="add" element={<AddCustomTokenPage />} />
-              <Route path=":id" element={<TokenPage />} />
+              <Route path="add" element={<AddTokenPage />} />
+              <Route path=":id" element={<EditTokenPage />} />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>
             <Route path="networks">
@@ -122,7 +122,7 @@ const DashboardInner = () => {
               />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>
-            <Route path="network/:id" element={<NetworkPage />} />
+            <Route path="network/:id" element={<EditNetworkPage />} />
             <Route path="qr-metadata" element={<QrMetadataPage />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>

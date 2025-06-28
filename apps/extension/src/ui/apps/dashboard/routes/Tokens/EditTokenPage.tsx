@@ -52,7 +52,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Token Details",
 }
 
-export const TokenPage = () => {
+export const EditTokenPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
   const token = useToken(id)
