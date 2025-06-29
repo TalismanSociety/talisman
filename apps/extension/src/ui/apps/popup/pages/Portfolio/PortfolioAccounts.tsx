@@ -81,7 +81,7 @@ type AccountAccountOption = {
   name: string
   address: string
   total?: number
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   accountType?: AccountType
   isPortfolio?: boolean
   signetUrl?: string

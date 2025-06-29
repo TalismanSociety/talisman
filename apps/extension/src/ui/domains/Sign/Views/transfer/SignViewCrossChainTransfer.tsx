@@ -14,7 +14,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useChain, useEvmNetwork, useSelectedCurrency } from "@ui/state"
+import { useNetworkById, useSelectedCurrency } from "@ui/state"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
   const isKnown = useIsKnownAddress(address)
@@ -76,19 +76,8 @@ export const SignViewXTokensTransfer: FC<{
   toAddress,
 }) => {
   const { t } = useTranslation()
-  const fromChain = useChain(fromNetwork)
-  const fromEvmNetwork = useEvmNetwork(fromNetwork)
-  const toChain = useChain(toNetwork)
-  const toEvmNetwork = useEvmNetwork(toAddress)
-
-  const fromNetworkName = useMemo(
-    () => fromChain?.name ?? fromEvmNetwork?.name ?? t("Unknown"),
-    [fromChain, fromEvmNetwork, t],
-  )
-  const toNetworkName = useMemo(
-    () => toChain?.name ?? toEvmNetwork?.name ?? t("Unknown"),
-    [toChain, toEvmNetwork, t],
-  )
+  const sourceNetwork = useNetworkById(fromNetwork)
+  const targetNetworkNetwork = useNetworkById(toNetwork)
 
   const amount = useMemo(
     () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
@@ -122,7 +111,7 @@ export const SignViewXTokensTransfer: FC<{
       <div className="flex w-full items-center justify-center gap-8">
         <NetworkAndAccount
           networkId={fromNetwork}
-          networkName={fromNetworkName}
+          networkName={sourceNetwork?.name ?? t("Unknown")}
           address={fromAddress}
         />
         <div className="shrink-0">
@@ -130,7 +119,7 @@ export const SignViewXTokensTransfer: FC<{
         </div>
         <NetworkAndAccount
           networkId={toNetwork as string}
-          networkName={toNetworkName}
+          networkName={targetNetworkNetwork?.name ?? t("Unknown")}
           address={toAddress as string}
         />
       </div>

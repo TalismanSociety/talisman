@@ -5,7 +5,7 @@ import { IS_FIREFOX } from "extension-shared"
 
 import { api } from "@ui/api"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"
 import { qrCodeLogoForSource, QrCodeSource } from "./QrCodeSourceSelector"
@@ -13,7 +13,7 @@ import { qrCodeLogoForSource, QrCodeSource } from "./QrCodeSourceSelector"
 type Props = { genesisHash: SignerPayloadGenesisHash; qrCodeSource: QrCodeSource }
 
 export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const chainspecQrUrl = chain?.chainspecQrUrl
 
   const { data, isLoading, error } = useQuery({

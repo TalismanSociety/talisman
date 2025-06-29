@@ -4,11 +4,11 @@ import { FC, useMemo } from "react"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 type AddressProps = {
   address?: string
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   startCharCount?: number
   endCharCount?: number
   as?: "span" | "div"
@@ -32,7 +32,7 @@ export const Address: FC<AddressProps> = ({
   // if we're not in a popup, no need to wrap
   const noWrap = useMemo(() => !document.getElementById("main"), [])
 
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   // if address has an onChainId, show that instead of the shortenedAddress
   const [onChainId] = useOnChainId(address)

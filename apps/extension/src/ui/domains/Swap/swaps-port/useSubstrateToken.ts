@@ -1,8 +1,8 @@
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
-import { useChainsMap } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 
@@ -17,8 +17,7 @@ export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
     name: string
     decimals: number
   } | null>()
-  const chains = useChainsMap()
-  const chain = useMemo(() => (props ? chains[props.chainId] : undefined), [chains, props])
+  const chain = useNetworkById(props?.chainId, "polkadot")
 
   // default to polkadot
   const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id ?? "polkadot")))

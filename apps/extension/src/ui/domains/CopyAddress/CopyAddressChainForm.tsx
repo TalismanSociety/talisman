@@ -14,8 +14,8 @@ import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPe
 import {
   useAccountByAddress,
   useBalancesByAddress,
-  useChains,
   useFeatureFlag,
+  useNetworks,
   useRemoteConfig,
 } from "@ui/state"
 
@@ -146,7 +146,7 @@ const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
 export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  const chains = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useNetworks({ platform: "polkadot", activeOnly: false, includeTestnets: true })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)

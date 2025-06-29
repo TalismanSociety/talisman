@@ -13,13 +13,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChains } from "@ui/state"
+import { useAccounts, useNetworks } from "@ui/state"
 
 export type JsonImportAccount = {
   id: string
   address: string
   name: string
-  genesisHash: string
+  genesisHash?: `0x${string}`
   origin: LegacyAccountOrigin
   selected: boolean
   isLocked: boolean
@@ -162,7 +162,7 @@ const useJsonAccountImportProvider = () => {
     [existingAccounts, file],
   )
 
-  const chains = useChains()
+  const chains = useNetworks({ platform: "polkadot" })
   const accountBalances = useAccountsBalances(pairs)
 
   const accounts = useMemo<JsonImportAccount[] | undefined>(() => {
@@ -185,7 +185,7 @@ const useJsonAccountImportProvider = () => {
         id: pair.address,
         address: encodeAnyAddress(pair.address, chain?.prefix ?? undefined),
         name: pair.meta.name as string,
-        genesisHash: pair.meta.genesisHash as string,
+        genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
         origin: pair.meta.origin as LegacyAccountOrigin,
         isExisting,
         selected: !isExisting && selectedAccounts.includes(pair.address),

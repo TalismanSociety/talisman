@@ -6,7 +6,7 @@ import { getAddress } from "viem"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { useChainsMap } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { CopyAddressWizardInputs } from "./types"
@@ -21,7 +21,7 @@ const [useCopyAddressInputs] = bind(copyAddressInputs$)
 
 export const useCopyAddressModal = () => {
   const { open: innerOpen, close, isOpen } = useGlobalOpenClose("copyAddressModal")
-  const chainsMap = useChainsMap()
+  const chainsMap = useNetworksMapById({ platform: "polkadot" })
   const inputs = useCopyAddressInputs()
 
   const open = useCallback(

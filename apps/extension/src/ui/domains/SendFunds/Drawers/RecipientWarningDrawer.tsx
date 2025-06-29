@@ -4,7 +4,7 @@ import { Button, Drawer } from "talisman-ui"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
@@ -22,7 +22,7 @@ export const RecipientWarningDrawer = ({
   const { tokenId } = useSendFundsWizard()
   const { recipientWarning } = useSendFunds()
   const genesisHash = useGenesisHashFromTokenId(tokenId)
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">

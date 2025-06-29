@@ -13,7 +13,7 @@ import { TransactionRequest } from "viem"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { fromAssetAtom } from "../swap-modules/common.swap-module"
 import { useFastBalance } from "../swaps-port/useFastBalance"
@@ -44,7 +44,7 @@ export const FeeEstimateEvm = ({
   const { t } = useTranslation()
 
   const fromAsset = useAtomValue(fromAssetAtom)
-  const fromEvmNetwork = useEvmNetwork(fromAsset?.chainId?.toString())
+  const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
 
   if (loadableState === "hasError") return null
   return (

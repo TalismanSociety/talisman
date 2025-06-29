@@ -12,7 +12,7 @@ import urlJoin from "url-join"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress, useAnyNetwork, useChain } from "@ui/state"
+import { useAccountByAddress, useAnyNetwork, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -81,7 +81,7 @@ type AddressDisplayProps = {
 }
 
 export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, className }) => {
-  const chain = useChain(networkId as string)
+  const chain = useNetworkById(networkId as string, "polkadot")
   const account = useAccountByAddress(address)
   const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
 

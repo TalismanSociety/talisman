@@ -8,7 +8,7 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useAccounts, useChain } from "@ui/state"
+import { useAccounts, useNetworkById } from "@ui/state"
 
 import { BondAccountsList } from "./BondAccountsList"
 import { useBondModal } from "./hooks/useBondModal"
@@ -32,7 +32,7 @@ export const BondAccountPicker = ({
   const { close } = useBondModal()
   const [search, setSearch] = useState("")
 
-  const chain = useChain(token?.networkId)
+  const chain = useNetworkById(token?.networkId, "polkadot")
 
   const allAccounts = useAccounts("owned")
 

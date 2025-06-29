@@ -7,7 +7,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
@@ -23,7 +23,7 @@ const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ account, request, siwe, onClose }) => {
   const { t } = useTranslation()
-  const evmNetwork = useEvmNetwork(String(siwe.chainId))
+  const evmNetwork = useNetworkById(String(siwe.chainId), "ethereum")
 
   const message = useMemo(() => hexToString(request.request), [request.request])
 

@@ -8,13 +8,13 @@ import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
-import { useEvmNetwork, useRequest } from "@ui/state"
+import { useNetworkById, useRequest } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
   const request = useRequest(id)
-  const network = useEvmNetwork(request?.ethChainId)
+  const network = useNetworkById(request?.ethChainId, "ethereum")
   const { genericEvent } = useAnalytics()
 
   // wraps status and errors management

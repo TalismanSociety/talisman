@@ -4,7 +4,7 @@ import { papiStringify } from "@talismn/scale"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useChain, useTokens } from "@ui/state"
+import { useNetworkById, useTokens } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
@@ -24,7 +24,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["ForeignAssets
   mode,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokens = useTokens()
 
   const token = useMemo(() => {
@@ -100,7 +100,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["ForeignAssets"]["transfer_keep_alive"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokens = useTokens()
 
   const token = useMemo(() => {

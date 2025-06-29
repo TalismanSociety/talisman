@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useChain, useRemoteConfig } from "@ui/state"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -65,7 +65,7 @@ const DrawerContent: FC<{
   onSelect: (legacyFormat: boolean) => void
 }> = ({ format, onSelect }) => {
   const { t } = useTranslation()
-  const chain = useChain(format.chainId)
+  const chain = useNetworkById(format.chainId, "polkadot")
 
   const handleSelect = useCallback(
     (legacyFormat: boolean) => () => {

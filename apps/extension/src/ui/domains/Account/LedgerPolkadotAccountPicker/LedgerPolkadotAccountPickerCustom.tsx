@@ -11,7 +11,7 @@ import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChain } from "@ui/state"
+import { useAccounts, useNetworkById } from "@ui/state"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"
@@ -26,7 +26,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
   chainId,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(chainId)
+  const chain = useNetworkById(chainId, "polkadot")
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
     [chain],

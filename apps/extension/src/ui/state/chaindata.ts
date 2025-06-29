@@ -2,7 +2,6 @@ import { bind, StateObservable } from "@react-rxjs/core"
 import {
   DotNetwork,
   DotNetworkId,
-  EthNetwork,
   Network,
   NetworkId,
   NetworkOfPlatform,
@@ -156,39 +155,6 @@ export const useDotNetwork = (id: DotNetworkId | `0x${string}` | null | undefine
   const network1 = useNetworkById(id, "polkadot")
   const network2 = useNetworkByGenesisHash(id as `0x${string}`)
   return network1 ?? network2 ?? null
-}
-
-/** @deprecated */
-export const useChains = (options?: Omit<ChaindataQueryOptions, "platform">) =>
-  useNetworks({ platform: "polkadot", ...options })
-
-/** @deprecated */
-export const useChainsMap = (options?: Omit<ChaindataQueryOptions, "platform">) =>
-  useNetworksMapById({ platform: "polkadot", ...options })
-
-/** @deprecated */
-export const useEvmNetworks = (options?: Omit<ChaindataQueryOptions, "platform">) =>
-  useNetworks({ platform: "ethereum", ...options })
-
-/** @deprecated */
-export const useEvmNetworksMap = (options?: Omit<ChaindataQueryOptions, "platform">) =>
-  useNetworksMapById({ platform: "ethereum", ...options })
-
-/** @deprecated */
-export const useChain = (id: NetworkId | null | undefined) => {
-  const network = useNetworkById(id)
-  return network?.platform === "polkadot" ? (network as DotNetwork) : null
-}
-
-/** @deprecated */
-export const useChainByGenesisHash = (genesisHash: NetworkId | null | undefined) => {
-  return useNetworkByGenesisHash(genesisHash as `0x${string}`)
-}
-
-/** @deprecated */
-export const useEvmNetwork = (id: NetworkId | null | undefined) => {
-  const network = useNetworkById(id)
-  return network?.platform === "ethereum" ? (network as EthNetwork) : null
 }
 
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)

@@ -34,7 +34,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useEvmNetwork, useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -125,7 +125,7 @@ const TabContentCollection: FC<{
   nft: Nft
 }> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  const network = useEvmNetwork(nft.evmNetworkId)
+  const network = useNetworkById(nft.evmNetworkId, "ethereum")
 
   const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 

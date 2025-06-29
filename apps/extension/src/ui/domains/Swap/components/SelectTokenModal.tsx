@@ -2,13 +2,13 @@ import { AlertTriangleIcon, ChevronLeftIcon } from "@talismn/icons"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
-import { useChainsMap, useEvmNetworksMap } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { uniswapExtendedTokensList, uniswapSafeTokensList } from "../swaps.api"
@@ -173,13 +173,8 @@ const OpenSelectorButton = ({
   onClick: () => void
 }) => {
   const { t } = useTranslation()
-  const chains = useChainsMap()
-  const networks = useEvmNetworksMap()
-  const selectedAssetChain = useMemo(
-    () =>
-      selectedAsset ? (chains[selectedAsset.chainId] ?? networks[selectedAsset.chainId]) : null,
-    [chains, networks, selectedAsset],
-  )
+
+  const selectedAssetChain = useNetworkById(selectedAsset?.chainId.toString())
 
   return (
     <button

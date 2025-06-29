@@ -10,7 +10,7 @@ import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { useBalancesHydrate, useEvmNetwork, useRequest } from "@ui/state"
+import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -33,7 +33,7 @@ export const AddCustomErc20Token = () => {
     if (!request) window.close()
   }, [request])
 
-  const network = useEvmNetwork(request?.token?.networkId)
+  const network = useNetworkById(request?.token?.networkId, "ethereum")
 
   const approve = useCallback(async () => {
     setError(undefined)

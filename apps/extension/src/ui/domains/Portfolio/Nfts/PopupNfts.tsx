@@ -7,7 +7,13 @@ import { useIntersection } from "react-use"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useEvmNetworksMap, useFeatureFlag, useIsFavoriteNft, useNfts, useSetting } from "@ui/state"
+import {
+  useFeatureFlag,
+  useIsFavoriteNft,
+  useNetworksMapById,
+  useNfts,
+  useSetting,
+} from "@ui/state"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -86,7 +92,11 @@ const NftCollectionRowInner: FC<{
     else navigate(`/portfolio/nfts/${collection.id}`)
   }, [collection.id, navigate, nfts, onNftClick])
 
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
+  const evmNetworksMap = useNetworksMapById({
+    platform: "ethereum",
+    activeOnly: true,
+    includeTestnets: true,
+  })
   const networkName = useMemo(() => {
     if (networkIds.length !== 1) return null
     const network = evmNetworksMap[networkIds[0]]

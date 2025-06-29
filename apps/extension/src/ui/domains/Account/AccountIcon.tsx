@@ -4,7 +4,7 @@ import { Address, IdenticonType } from "extension-core"
 import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useChainByGenesisHash, useSetting } from "@ui/state"
+import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
@@ -15,12 +15,12 @@ const IDENTICON_STYLE: CSSProperties = { cursor: "inherit" }
 export type AccountIconProps = {
   address: Address
   className?: string
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   type?: IdenticonType
 }
 
-const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
-  const chain = useChainByGenesisHash(genesisHash)
+const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   return chain ? (
     <ChainLogo

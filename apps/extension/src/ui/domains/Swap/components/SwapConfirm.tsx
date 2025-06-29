@@ -5,7 +5,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useChainsMap, useEvmNetworksMap, useSelectedCurrency } from "@ui/state"
+import { useNetworksMapById, useSelectedCurrency } from "@ui/state"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import { fromAmountAtom, fromAssetAtom, toAssetAtom } from "../swap-modules/common.swap-module"
@@ -23,8 +23,7 @@ export const SwapConfirm = ({
 
   const quote = useAtomValue(loadable(selectedQuoteAtom))
 
-  const chains = useChainsMap()
-  const networks = useEvmNetworksMap()
+  const networks = useNetworksMapById()
 
   const fromAsset = useAtomValue(fromAssetAtom)
   const toAsset = useAtomValue(toAssetAtom)
@@ -36,10 +35,8 @@ export const SwapConfirm = ({
     amount: toAmount.state === "hasData" && toAmount.data ? toAmount.data : undefined,
     asset: toAsset,
   })
-  const fromNetwork = fromAsset
-    ? (chains[fromAsset.chainId] ?? networks[fromAsset.chainId])
-    : undefined
-  const toNetwork = toAsset ? (chains[toAsset.chainId] ?? networks[toAsset.chainId]) : undefined
+  const fromNetwork = fromAsset ? networks[fromAsset.chainId] : undefined
+  const toNetwork = toAsset ? networks[toAsset.chainId] : undefined
 
   return (
     <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">

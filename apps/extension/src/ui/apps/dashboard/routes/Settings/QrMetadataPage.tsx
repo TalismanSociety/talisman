@@ -20,7 +20,7 @@ import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/Accou
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
-import { useAppState, useBalancesHydrate, useChains, useMnemonic } from "@ui/state"
+import { useAppState, useBalancesHydrate, useMnemonic, useNetworks } from "@ui/state"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation()
@@ -133,7 +133,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
 
 const MetadataPortalContent = () => {
   const { t } = useTranslation()
-  const chains = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useNetworks({ platform: "polkadot", activeOnly: false, includeTestnets: true })
   const [chain, setChain] = useState<DotNetwork | null>(null)
   const [tab, setTab] = useState<"specs" | "metadata">("specs")
 

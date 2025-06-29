@@ -10,7 +10,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Message } from "@ui/domains/Sign/Message"
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
@@ -103,7 +103,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
     useEthSignMessage(request)
 
-  const evmNetwork = useEvmNetwork(ethChainId)
+  const evmNetwork = useNetworkById(ethChainId, "ethereum")
 
   if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
 

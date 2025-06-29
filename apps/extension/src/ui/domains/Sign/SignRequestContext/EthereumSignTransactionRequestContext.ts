@@ -13,7 +13,7 @@ import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
-import { useBalancesHydrate, useEvmNetwork, useRequest } from "@ui/state"
+import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -21,7 +21,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   useBalancesHydrate() // preload
   const { genericEvent } = useAnalytics()
   const signingRequest = useRequest(id)
-  const network = useEvmNetwork(signingRequest?.ethChainId)
+  const network = useNetworkById(signingRequest?.ethChainId, "ethereum")
 
   const txBase = useMemo(
     () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),

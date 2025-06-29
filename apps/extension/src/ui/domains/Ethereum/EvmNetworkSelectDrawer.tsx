@@ -13,12 +13,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import {
-  useActiveNetworksState,
-  useAuthorisedSites,
-  useEvmNetwork,
-  useEvmNetworks,
-} from "@ui/state"
+import { useActiveNetworksState, useAuthorisedSites, useNetworkById, useNetworks } from "@ui/state"
 
 import { NetworkLogo } from "./NetworkLogo"
 
@@ -32,9 +27,9 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
-  const currentNetwork = useEvmNetwork(initialNetworkId)
+  const currentNetwork = useNetworkById(initialNetworkId, "ethereum")
 
-  const evmNetworks = useEvmNetworks()
+  const evmNetworks = useNetworks({ platform: "ethereum" })
   const activeEvmNetworksState = useActiveNetworksState()
 
   const [allActiveEvmNetworks, allInactiveEvmNetworks] = useMemo(() => {

@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import { useChain, useChains, useToken, useTokens } from "@ui/state"
+import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -67,7 +67,7 @@ const decodeMultilocation = (multilocation?: {
 export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation()
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
-  const substrateChain = useChain(network?.substrateChainId)
+  const substrateChain = useNetworkById(network?.substrateChainId, "polkadot")
   const tokens = useTokens()
 
   const [destination, amount, currencyAddress] = useMemo(
@@ -113,7 +113,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
-  const chains = useChains()
+  const chains = useNetworks({ platform: "polkadot" })
   const targetChain = useMemo(() => {
     if (!target || !substrateChain) return undefined
 

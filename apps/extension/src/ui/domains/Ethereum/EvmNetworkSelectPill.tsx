@@ -5,13 +5,13 @@ import { Suspense, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { useAuthorisedSites, useEvmNetwork } from "@ui/state"
+import { useAuthorisedSites, useNetworkById } from "@ui/state"
 
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
 import { NetworkLogo } from "./NetworkLogo"
 
 const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EthNetworkId }) => {
-  const network = useEvmNetwork(evmNetworkId)
+  const network = useNetworkById(evmNetworkId, "ethereum")
 
   if (!network) return null
 

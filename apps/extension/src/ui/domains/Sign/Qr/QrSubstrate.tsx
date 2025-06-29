@@ -15,7 +15,7 @@ import { Button, Checkbox, Drawer, Tooltip, TooltipContent, TooltipTrigger } fro
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useChainByGenesisHash, useSetting } from "@ui/state"
+import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
@@ -82,7 +82,7 @@ export const QrSubstrate = ({
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" },
   )
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
   const { qrCodeSource } = qrCodeSourceSelectorState
 

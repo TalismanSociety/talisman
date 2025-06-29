@@ -25,7 +25,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAccountByAddress, useBalance, useEvmNetwork } from "@ui/state"
+import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -117,7 +117,7 @@ const EvmDrawerContent: FC<{
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
   const [isLocked, setIsLocked] = useState(false)
   const {
     transaction,

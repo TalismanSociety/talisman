@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
-import { useChain, useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 
@@ -37,7 +37,7 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
 
 export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | undefined) => {
   // calculate the list of available sources
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const verifierCertificateMnemonic = useHasVerifierCertificateMnemonic()
   const chainspecQrUrl = chain?.chainspecQrUrl
   const latestMetadataQrUrl = chain?.latestMetadataQrUrl
@@ -59,9 +59,9 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
   }, [chainspecQrUrl, latestMetadataQrUrl, verifierCertificateMnemonic])
 
   // use the parity metadata portal source by default for these chains
-  const polkadot = useChain("polkadot")
-  const kusama = useChain("kusama")
-  const westend = useChain("westend")
+  const polkadot = useNetworkById("polkadot", "polkadot")
+  const kusama = useNetworkById("kusama", "polkadot")
+  const westend = useNetworkById("westend", "polkadot")
   const parityDefaultChains = [
     polkadot?.genesisHash,
     kusama?.genesisHash,

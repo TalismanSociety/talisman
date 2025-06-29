@@ -5,7 +5,7 @@ import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { useCopyAddressModal } from "../CopyAddress"
 import { AccountIcon, AccountIconProps } from "./AccountIcon"
@@ -14,7 +14,7 @@ export const AccountIconCopyAddressButton: FC<
   AccountIconProps & { tooltipPlacement?: Placement }
 > = ({ address, genesisHash, className, type, tooltipPlacement = "bottom-start" }) => {
   const { t } = useTranslation()
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const { open } = useCopyAddressModal()
 
   const handleAvatarClick = useCallback(() => {

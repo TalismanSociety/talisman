@@ -9,7 +9,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useAccounts, useChainByGenesisHash } from "@ui/state"
+import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -49,7 +49,7 @@ const AccountRowContainer: FC<
 const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const { t } = useTranslation()
   const { setAddress, copySpecific, network } = useCopyAddressWizard()
-  const accountChain = useChainByGenesisHash(getAccountGenesisHash(account))
+  const accountChain = useNetworkByGenesisHash(getAccountGenesisHash(account))
 
   const formatted = useMemo(
     () => convertAddress(account.address, accountChain?.prefix ?? null),
