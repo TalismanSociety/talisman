@@ -146,7 +146,7 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
           },
         )
 
-        log.debug(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
+        log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
       } catch (cause) {
         log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
       }

@@ -182,7 +182,7 @@ const getChaindataV4TokenId = (
     return oldTokenId.replace("-evm-erc20-", ":evm-erc20:")
 
   if (oldTokenId.includes("-substrate-native"))
-    return oldTokenId.replace("-substrate-native", ":substrate-native:")
+    return oldTokenId.replace("-substrate-native", ":substrate-native")
 
   if (oldTokenId.includes("-substrate-tokens-"))
     return oldTokenId.replace("-substrate-tokens-", ":substrate-tokens:")
