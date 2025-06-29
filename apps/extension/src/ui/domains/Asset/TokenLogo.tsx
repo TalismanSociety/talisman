@@ -18,6 +18,10 @@ export const TokenLogo: FC<{
   )
 }
 
+// constants to prevent re-renders
+const STYLE_LP_TOKEN0 = { clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }
+const STYLE_LP_TOKEN1 = { clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }
+
 const LpTokenLogo: FC<{ token: EvmUniswapV2Token; className?: string }> = ({
   className,
   token,
@@ -31,13 +35,13 @@ const LpTokenLogo: FC<{ token: EvmUniswapV2Token; className?: string }> = ({
         tokenId={token0?.id}
         url={token0?.logo}
         className="absolute h-full w-full"
-        style={{ clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }}
+        style={STYLE_LP_TOKEN0}
       />
       <AssetLogo
         tokenId={token1?.id}
         url={token1?.logo}
         className="absolute h-full w-full"
-        style={{ clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }}
+        style={STYLE_LP_TOKEN1}
       />
     </div>
   )
