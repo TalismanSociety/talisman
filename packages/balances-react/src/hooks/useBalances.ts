@@ -55,7 +55,7 @@ export const useBalancesStatus = (balances: Balances) =>
 
 export const getStaleChains = (balances: Balances): string[] => [
   ...new Set(
-    balances.sorted
+    balances.each
       .filter((b) => b.status === "stale")
       .map((b) => b.network?.name ?? b.networkId ?? "Unknown"),
   ),

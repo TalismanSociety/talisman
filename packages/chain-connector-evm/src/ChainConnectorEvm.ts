@@ -1,6 +1,5 @@
 import {
   EthNetworkId,
-  EvmNetworkId,
   IChaindataNetworkProvider,
   IChaindataTokenProvider,
 } from "@talismn/chaindata-provider"
@@ -16,16 +15,11 @@ export class ChainConnectorEvm {
     this.#chaindataProvider = chaindataProvider
   }
 
-  async getPublicClientForEvmNetwork(evmNetworkId: EvmNetworkId): Promise<PublicClient | null> {
+  async getPublicClientForEvmNetwork(evmNetworkId: EthNetworkId): Promise<PublicClient | null> {
     const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
-    if (!network?.nativeTokenId) return null
+    if (!network) return null
 
-    const nativeToken = await this.#chaindataProvider.getTokenById(
-      network.nativeTokenId,
-      "evm-native",
-    )
-
-    return getEvmNetworkPublicClient(network, nativeToken)
+    return getEvmNetworkPublicClient(network)
   }
 
   async getWalletClientForEvmNetwork(
@@ -33,20 +27,12 @@ export class ChainConnectorEvm {
     account?: `0x${string}` | Account,
   ): Promise<WalletClient | null> {
     const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
-    if (!network?.nativeTokenId) return null
+    if (!network) return null
 
-    const nativeToken = await this.#chaindataProvider.getTokenById(
-      network.nativeTokenId,
-      "evm-native",
-    )
-    if (!nativeToken) return null
-
-    return getEvmNetworkWalletClient(network, nativeToken, {
-      account,
-    })
+    return getEvmNetworkWalletClient(network, { account })
   }
 
-  public clearRpcProvidersCache(evmNetworkId?: EvmNetworkId) {
+  public clearRpcProvidersCache(evmNetworkId?: EthNetworkId) {
     clearPublicClientCache(evmNetworkId)
   }
 }

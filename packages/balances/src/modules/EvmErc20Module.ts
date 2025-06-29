@@ -120,8 +120,6 @@ export const EvmErc20Module: NewBalanceModule<
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
     async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig, tokens) {
-      //const { isTestnet } = chainMeta
-
       const chainTokens: Record<string, EvmErc20Token> = {}
       for (const tokenConfig of tokens ?? []) {
         const {
@@ -136,7 +134,6 @@ export const EvmErc20Module: NewBalanceModule<
           continue
         }
 
-        // TODO zodify this
         const symbol = tokenConfig?.symbol ?? contractSymbol ?? "ETH"
         const decimals =
           typeof tokenConfig?.decimals === "number"
@@ -177,8 +174,6 @@ export const EvmErc20Module: NewBalanceModule<
             validation.error.issues,
           )
         }
-
-        chainTokens[token.id] = token
       }
 
       return chainTokens

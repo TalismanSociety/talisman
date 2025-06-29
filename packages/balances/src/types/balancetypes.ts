@@ -62,17 +62,6 @@ type IBalanceBase = {
   networkId: NetworkId
 }
 
-// type IBalanceBaseEvm = {
-//   /** WIP, use `chainId` or `evmNetworkId` for now */
-//   multiChainId: EvmChainId
-
-// }
-
-// type IBalanceBaseSubstrate = {
-//   multiChainId: SubChainId
-
-// }
-
 type IBalanceSimpleValues = {
   /** For balance types with a simple value, this is the value of the balance (eg, evm native token balance) */
   value: Amount
@@ -87,7 +76,6 @@ type IBalanceComplexValues = {
 
 /** `IBalance` is a common interface which all balance types must implement. */
 export type IBalance = IBalanceBase & (IBalanceSimpleValues | IBalanceComplexValues)
-// & (IBalanceBaseEvm | IBalanceBaseSubstrate)
 
 export type EvmBalance = IBalanceBase &
   // IBalanceBaseEvm &
@@ -167,9 +155,7 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
 export type NewBalanceType<
   TModuleType extends string,
   TBalanceValueType extends "simple" | "complex",
-  // TNetworkType extends "ethereum" | "substrate",
 > = IBalanceBase &
   (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) & {
-    // &   (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate)
     source: TModuleType
   }

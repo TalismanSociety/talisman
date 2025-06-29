@@ -14,6 +14,7 @@ export type StorageCoders<TCoders extends { [key: string]: [string, string] }> =
   }
 >
 
+// TODO remove this one in favor of the network specific one below
 export const buildStorageCoders = <
   TBalanceModule extends AnyNewBalanceModule,
   TCoders extends {

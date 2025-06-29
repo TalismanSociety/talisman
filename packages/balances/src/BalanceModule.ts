@@ -31,7 +31,7 @@ export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferM
 export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
 
 export type SelectableTokenType = Token
-export type ExtendableChainMeta = ChainMeta<Record<string, unknown> | null> // Record<string, unknown> | undefined
+export type ExtendableChainMeta = ChainMeta<Record<string, unknown> | null>
 export type DefaultChainMeta = ChainMeta<null>
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
 export type ExtendableTokenConfig = Record<string, unknown> | undefined

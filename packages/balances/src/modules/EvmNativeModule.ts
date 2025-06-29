@@ -79,7 +79,6 @@ export const EvmNativeModule: NewBalanceModule<
      */
     async fetchEvmChainTokens() {
       // token is currently generated in chaindata from the EthNetworkConfig["nativeCurrency"] field
-      // TODO normalise this
       return {}
     },
 

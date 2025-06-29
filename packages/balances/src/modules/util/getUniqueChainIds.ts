@@ -1,11 +1,11 @@
-import { ChainId, TokenList } from "@talismn/chaindata-provider"
+import { NetworkId, TokenList } from "@talismn/chaindata-provider"
 
 import { AddressesByToken } from "../../types"
 
 export const getUniqueChainIds = (
   addressesByToken: AddressesByToken<{ id: string }>,
   tokens: TokenList,
-): ChainId[] => [
+): NetworkId[] => [
   ...new Set(
     Object.keys(addressesByToken)
       .map((tokenId) => tokens[tokenId]?.networkId)

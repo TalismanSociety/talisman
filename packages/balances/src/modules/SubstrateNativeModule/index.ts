@@ -120,6 +120,7 @@ export const SubNativeModule: NewBalanceModule<
   // subscribeBalances was split by network to prevent all subs to wait for all minimetadatas to be ready.
   // however the multichain logic in there is so deep in the function below that i had to keep it as-is, and call it by per-network chunks
   // TODO refactor this be actually network specific
+  // Note: had to extract this function from the result object or this.subscribeBalances wouldn't be typed correctly
   const subscribeChainBalances = (
     chainId: string,
     opts: {

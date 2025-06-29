@@ -19,9 +19,6 @@ export type SubNativeChainMeta = ChainMeta<{
 } | null>
 
 export type SubNativeModuleConfig = SubNativeBalancesConfig
-//  {
-//   disable?: boolean
-// } & BalancesConfigTokenParams
 
 export type SubNativeBalance = NewBalanceType<ModuleType, "complex">
 

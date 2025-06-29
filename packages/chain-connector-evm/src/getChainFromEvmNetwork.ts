@@ -1,4 +1,4 @@
-import { EthNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
 
@@ -14,26 +14,23 @@ const VIEM_CHAINS = Object.keys(chains).reduce(
 
 const chainsCache = new Map<string, Chain>()
 
-export const clearChainsCache = (evmNetworkId?: string) => {
-  if (evmNetworkId) chainsCache.delete(evmNetworkId)
+export const clearChainsCache = (networkId?: EthNetworkId) => {
+  if (networkId) chainsCache.delete(networkId)
   else chainsCache.clear()
 }
 
-export const getChainFromEvmNetwork = (
-  evmNetwork: EthNetwork,
-  nativeToken: { symbol: string; decimals: number } | null,
-): Chain => {
-  const { symbol, decimals } = nativeToken ?? { symbol: "ETH", decimals: 18 }
+export const getChainFromEvmNetwork = (network: EthNetwork): Chain => {
+  const { symbol, decimals } = network.nativeCurrency
 
-  if (!chainsCache.has(evmNetwork.id)) {
-    const chainRpcs = evmNetwork.rpcs ?? []
+  if (!chainsCache.has(network.id)) {
+    const chainRpcs = network.rpcs ?? []
 
-    const viemChain = VIEM_CHAINS[Number(evmNetwork.id)] ?? {}
+    const viemChain = VIEM_CHAINS[Number(network.id)] ?? {}
 
     const chain: Chain = {
       ...viemChain,
-      id: Number(evmNetwork.id),
-      name: evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`,
+      id: Number(network.id),
+      name: network.name ?? `EVM Chain ${network.id}`,
       rpcUrls: {
         public: { http: chainRpcs },
         default: { http: chainRpcs },
@@ -45,8 +42,8 @@ export const getChainFromEvmNetwork = (
       },
     }
 
-    chainsCache.set(evmNetwork.id, chain)
+    chainsCache.set(network.id, chain)
   }
 
-  return chainsCache.get(evmNetwork.id) as Chain
+  return chainsCache.get(network.id) as Chain
 }

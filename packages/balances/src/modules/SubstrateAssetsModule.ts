@@ -231,7 +231,6 @@ export const SubAssetsModule: NewBalanceModule<
             const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
 
             return await stateHelper.subscribe((error, result) => {
-              //  console.log("SubstrateAssetsModule.callback", { error, result })
               if (error) return callback(error)
               const balances = result?.filter((b): b is SubAssetsBalance => b !== null) ?? []
               if (balances.length > 0) callback(null, new Balances(balances))
@@ -363,8 +362,8 @@ async function buildNetworkQueries(
     return addresses.flatMap((address): RpcStateQuery<SubAssetsBalance | null> | [] => {
       const scaleCoder = networkStorageCoders?.storage
       const stateKey =
-        tryEncode(scaleCoder, BigInt(token.assetId), address) ??
-        tryEncode(scaleCoder, Number(token.assetId), address)
+        tryEncode(scaleCoder, Number(token.assetId), address) ??
+        tryEncode(scaleCoder, BigInt(token.assetId), address)
       if (!stateKey) {
         log.warn(
           `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,

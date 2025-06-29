@@ -400,7 +400,6 @@ export class Balance {
     if (
       this.isSource("evm-uniswapv2") &&
       this.token?.type === "evm-uniswapv2" // &&
-      //this.evmNetworkId
     ) {
       const tokenId0 = evmErc20TokenId(this.networkId, this.token.tokenAddress0)
       const tokenId1 = evmErc20TokenId(this.networkId, this.token.tokenAddress1)

@@ -1,4 +1,4 @@
-import { EthNetwork, Token } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { createPublicClient, PublicClient } from "viem"
 
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
@@ -21,11 +21,8 @@ export const clearPublicClientCache = (evmNetworkId?: string) => {
   else publicClientCache.clear()
 }
 
-export const getEvmNetworkPublicClient = (
-  network: EthNetwork,
-  nativeToken: Token | null,
-): PublicClient => {
-  const chain = getChainFromEvmNetwork(network, nativeToken)
+export const getEvmNetworkPublicClient = (network: EthNetwork): PublicClient => {
+  const chain = getChainFromEvmNetwork(network)
 
   if (!publicClientCache.has(network.id)) {
     if (!network.rpcs.length) throw new Error("No RPCs found for EVM network")

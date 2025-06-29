@@ -45,7 +45,7 @@ export const EvmUniswapV2TokenConfigSchema = z.strictObject({
   contractAddress: EvmUniswapV2TokenSchema.shape.contractAddress,
   ...TokenConfigBaseSchema.shape,
 
-  // the ones below are unused and prone to error, feels better to always fetch these from chain
+  // on chaindata side these are fetched by a dedicated task
   symbol0: EvmUniswapV2TokenSchema.shape.symbol0.optional(),
   symbol1: EvmUniswapV2TokenSchema.shape.symbol1.optional(),
   decimals0: EvmUniswapV2TokenSchema.shape.decimals0.optional(),
