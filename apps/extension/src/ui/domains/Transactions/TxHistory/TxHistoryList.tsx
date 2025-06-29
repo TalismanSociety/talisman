@@ -46,7 +46,6 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
@@ -178,7 +177,7 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
   }, [])
 
   if (!iconUrl) return null
-  if (isError) return <NetworkLogo className={className} />
+  if (isError) return <ChainLogo className={className} />
 
   return (
     <img

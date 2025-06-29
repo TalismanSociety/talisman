@@ -22,9 +22,9 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
 
@@ -177,10 +177,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
 
         <div className="flex flex-col justify-center gap-2 overflow-hidden">
           <div className="text-body flex items-center gap-3 overflow-hidden">
-            <NetworkLogo
-              networkId={network?.id}
-              className="text-body shrink-0 truncate text-base"
-            />
+            <ChainLogo id={network?.id} className="text-body shrink-0 truncate text-base" />
             <div>{network?.name}</div>
           </div>
           <div className="text-body-inactive truncate text-xs">{type}</div>
