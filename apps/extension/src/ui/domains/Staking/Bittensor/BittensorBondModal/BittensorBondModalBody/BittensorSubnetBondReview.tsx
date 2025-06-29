@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useAppState } from "@ui/state"
@@ -91,7 +92,7 @@ export const BittensorSubnetBondReview = () => {
             <div className="flex items-center gap-4 overflow-hidden">
               {isSubnetUnbond ? (
                 <>
-                  <TokenLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
+                  <AssetLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
                   <Tokens
                     amount={amountToStakeAlpha?.tokens}
                     symbol={selectedSubnetLabel}

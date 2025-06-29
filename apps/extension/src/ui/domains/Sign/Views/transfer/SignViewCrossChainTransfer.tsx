@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -90,7 +90,7 @@ export const SignViewXTokensTransfer: FC<{
     <div className="flex w-full flex-col items-center gap-16">
       <div className="flex items-center gap-4">
         <div>
-          <AssetLogoBase url={tokenLogo} className="h-24 w-24 text-[48px]" />
+          <AssetLogo url={tokenLogo} className="h-24 w-24 text-[48px]" />
         </div>
         <div className="text-body flex-col items-start gap-4">
           <div className="text-md text-left font-bold">

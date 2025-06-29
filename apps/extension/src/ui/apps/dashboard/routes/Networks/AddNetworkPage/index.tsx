@@ -13,7 +13,7 @@ import { z } from "zod/v4"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -294,7 +294,7 @@ const NetworkCreateForm: FC = () => {
                       small
                       disabled={!networkId}
                       before={
-                        <AssetLogoBase
+                        <AssetLogo
                           className="mr-2 rounded-full text-[3rem]"
                           url={
                             field.state.value

@@ -5,6 +5,7 @@ import { ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
@@ -70,7 +71,7 @@ export const TokenBalancesList = ({
       >
         <div className="flex">
           <div className="shrink-0 p-8 text-xl">
-            <TokenLogo tokenId={tokenId} url={tokenLogoUrl} />
+            {tokenLogoUrl ? <AssetLogo url={tokenLogoUrl} /> : <TokenLogo tokenId={tokenId} />}
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">

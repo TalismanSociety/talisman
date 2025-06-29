@@ -35,7 +35,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -222,7 +222,7 @@ const NetworkForm: FC = () => {
                   autoComplete="off"
                   small
                   before={
-                    <AssetLogoBase
+                    <AssetLogo
                       className="mr-2 rounded-full text-[3rem]"
                       url={
                         field.state.value

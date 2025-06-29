@@ -5,7 +5,7 @@ import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Address } from "@ui/domains/Account/Address"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useToken } from "@ui/state"
 
@@ -32,7 +32,7 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
     <SignParamButton
       explorerUrl={isInvalidAddress ? undefined : network.blockExplorerUrls[0]}
       address={address}
-      iconPrefix={<AssetLogo id={erc20Token?.id ?? nativeToken?.id} />}
+      iconPrefix={<TokenLogo tokenId={erc20Token?.id ?? nativeToken?.id} />}
       withIcon
       className={className}
       contentClassName={isInvalidAddress ? "text-alert-warn" : undefined}

@@ -2,7 +2,7 @@ import { EthNetwork } from "@talismn/chaindata-provider"
 import { EvmAddress } from "extension-core"
 import { FC } from "react"
 
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 
 import { SignParamButton } from "./SignParamButton"
@@ -30,7 +30,7 @@ export const SignParamErc20TokenButton: FC<SignParamErc20TokenButtonProps> = ({
       address={address}
       withIcon={withIcon}
       className={className}
-      iconPrefix={<AssetLogo id={token?.id} />}
+      iconPrefix={<TokenLogo tokenId={token?.id} />}
     >
       <span>{asset.symbol}</span>
     </SignParamButton>

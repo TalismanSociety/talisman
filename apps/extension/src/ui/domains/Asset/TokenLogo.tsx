@@ -1,11 +1,44 @@
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { evmErc20TokenId, EvmUniswapV2Token } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { FC } from "react"
 
-export type TokenLogoProps = {
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { useToken } from "@ui/state"
+
+export const TokenLogo: FC<{
   tokenId?: string
   className?: string
-  url?: string | null
+}> = ({ className, tokenId }) => {
+  const token = useToken(tokenId)
+
+  return token?.type === "evm-uniswapv2" ? (
+    <LpTokenLogo token={token} className={className} />
+  ) : (
+    <AssetLogo tokenId={tokenId} url={token?.logo} className={className} />
+  )
 }
 
-export const TokenLogo = ({ className, tokenId, url }: TokenLogoProps) => (
-  <AssetLogo className={className} id={url ? undefined : tokenId} url={url} />
-)
+const LpTokenLogo: FC<{ token: EvmUniswapV2Token; className?: string }> = ({
+  className,
+  token,
+}) => {
+  const token0 = useToken(evmErc20TokenId(token.networkId, token.tokenAddress0))
+  const token1 = useToken(evmErc20TokenId(token.networkId, token.tokenAddress1))
+
+  return (
+    <div className={classNames("relative block aspect-square w-[1em] shrink-0", className)}>
+      <AssetLogo
+        tokenId={token0?.id}
+        url={token0?.logo}
+        className="absolute h-full w-full"
+        style={{ clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }}
+      />
+      <AssetLogo
+        tokenId={token1?.id}
+        url={token1?.logo}
+        className="absolute h-full w-full"
+        style={{ clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }}
+      />
+    </div>
+  )
+}

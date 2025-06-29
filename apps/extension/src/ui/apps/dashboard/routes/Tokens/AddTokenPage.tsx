@@ -25,7 +25,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -294,7 +294,7 @@ const AddCustomTokenForm = () => {
                   small
                   disabled={!fldContractAddress.state.meta.isValid}
                   before={
-                    <AssetLogoBase
+                    <AssetLogo
                       className="mr-2 rounded-full text-[3rem]"
                       url={
                         field.state.value
