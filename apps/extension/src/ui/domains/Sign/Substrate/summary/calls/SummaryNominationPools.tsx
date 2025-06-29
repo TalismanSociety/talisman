@@ -6,7 +6,7 @@ import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
-import { useChain } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"
@@ -20,7 +20,7 @@ const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]
   mode,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   if (!chain?.nativeTokenId) throw new Error("Missing data")
 
@@ -71,7 +71,7 @@ const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["b
   mode,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   if (!chain?.nativeTokenId) throw new Error("Missing data")
 
@@ -205,7 +205,7 @@ const WithdrawUnbonded: DecodedCallSummaryComponent<
   PolkadotCalls["NominationPools"]["withdraw_unbonded"]
 > = ({ sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   if (!chain?.nativeTokenId) throw new Error("Missing data")
 

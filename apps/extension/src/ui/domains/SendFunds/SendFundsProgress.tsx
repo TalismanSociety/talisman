@@ -8,7 +8,7 @@ import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "ta
 import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
+import { useAnyNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -257,7 +257,7 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
   className,
 }) => {
   const tx = useTransaction(hash)
-  const network = useNetwork(networkIdOrHash)
+  const network = useAnyNetwork(networkIdOrHash)
 
   // tx is null if not found in db
   if (tx === null) {

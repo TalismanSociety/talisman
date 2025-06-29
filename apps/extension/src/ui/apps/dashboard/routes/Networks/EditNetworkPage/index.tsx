@@ -39,7 +39,7 @@ import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useNetwork } from "@ui/state"
+import { useAnyNetwork } from "@ui/state"
 
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
@@ -54,7 +54,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const EditNetworkPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
-  const network = useNetwork(id)
+  const network = useAnyNetwork(id)
 
   useAnalyticsPageView(ANALYTICS_PAGE, {
     id,

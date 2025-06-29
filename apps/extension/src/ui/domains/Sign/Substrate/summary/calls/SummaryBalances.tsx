@@ -5,7 +5,7 @@ import { Address } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useChain, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
@@ -25,7 +25,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
   | HydrationCalls["Balances"]["transfer_keep_alive"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.dest)
@@ -46,7 +46,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
           LineBreak: <SummaryLineBreak mode={mode} />,
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeTokenId}
+              tokenId={chain.nativeTokenId}
               planck={decodedCall.args.value}
               mode={mode}
             />
@@ -65,7 +65,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
             Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeTokenId}
+                tokenId={chain.nativeTokenId}
                 planck={decodedCall.args.value}
                 mode={mode}
               />
@@ -95,7 +95,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
   | HydrationCalls["Balances"]["transfer_allow_death"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.dest)
@@ -114,7 +114,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
         components={{
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeTokenId}
+              tokenId={chain.nativeTokenId}
               planck={decodedCall.args.value}
               mode={mode}
             />
@@ -135,7 +135,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
             Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeTokenId}
+                tokenId={chain.nativeTokenId}
                 planck={decodedCall.args.value}
                 mode={mode}
               />
@@ -164,7 +164,7 @@ const TransferAll: DecodedCallSummaryComponent<
   PolkadotCalls["Balances"]["transfer_all"] | HydrationCalls["Balances"]["transfer_all"]
 > = ({ decodedCall, sapi, payload, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const nativeToken = useToken(chain?.nativeTokenId)
 
   const target = useMemo(() => {

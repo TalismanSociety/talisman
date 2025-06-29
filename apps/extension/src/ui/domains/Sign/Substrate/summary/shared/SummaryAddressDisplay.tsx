@@ -1,12 +1,13 @@
 import { NetworkId } from "@talismn/chaindata-provider"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { encodeAddressSs58 } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { useAccountByAddress, useChain } from "@ui/state"
+import { useAccountByAddress, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { SummaryDisplayMode } from "../../types"
@@ -17,10 +18,10 @@ export const SummaryAddressDisplay: FC<{
   mode: SummaryDisplayMode
 }> = ({ address, networkId, mode }) => {
   const account = useAccountByAddress(address)
-  const chain = useChain(networkId)
+  const chain = useNetworkById(networkId, "polkadot")
 
   const formattedAddress = useMemo(() => {
-    return chain ? encodeAnyAddress(address, chain.prefix ?? undefined) : address
+    return chain ? encodeAddressSs58(address, chain.prefix) : address
   }, [address, chain])
 
   const handleClick = useCallback(() => {

@@ -23,7 +23,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
-import { useAccounts, useChain, useToken } from "@ui/state"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 
 import {
   fromAssetAtom,
@@ -66,7 +66,7 @@ export const SeparatedAccountSelector = ({
 
   const allAccounts = useAccounts(allowInput ? "all" : "owned")
 
-  const chain = useChain(String(asset?.chainId))
+  const chain = useNetworkById(String(asset?.chainId), "polkadot")
 
   const defaultSubstrateAccounts = allAccounts.filter(
     (a) => chain && isAccountCompatibleWithNetwork(chain, a),
@@ -282,10 +282,10 @@ const AccountPicker = ({
   const toAsset = useAtomValue(toAssetAtom)
 
   const fromToken = useToken(fromAsset?.id)
-  const fromChain = useChain(fromToken?.networkId)
+  const fromChain = useNetworkById(fromToken?.networkId, "polkadot")
 
   const toToken = useToken(toAsset?.id)
-  const toChain = useChain(toToken?.networkId)
+  const toChain = useNetworkById(toToken?.networkId, "polkadot")
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">

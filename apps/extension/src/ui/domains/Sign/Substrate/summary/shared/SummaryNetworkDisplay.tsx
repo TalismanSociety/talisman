@@ -1,22 +1,18 @@
 import { NetworkId } from "@talismn/chaindata-provider"
-import { FC, useMemo } from "react"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChain, useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 export const SummaryNetworkDisplay: FC<{ networkId: NetworkId }> = ({ networkId }) => {
-  const chain = useChain(networkId)
-  const evmNetwork = useEvmNetwork(networkId)
-
-  const name = useMemo(
-    () => chain?.name ?? evmNetwork?.name ?? "Unknown network",
-    [chain, evmNetwork],
-  )
+  const { t } = useTranslation()
+  const network = useNetworkById(networkId)
 
   return (
     <span className="text-body truncate whitespace-nowrap">
       <ChainLogo id={networkId} className="inline-block size-[1.2em] align-sub" />
-      <span className="ml-[0.3em] truncate">{name}</span>
+      <span className="ml-[0.3em] truncate">{network?.name ?? t("Unknown network")}</span>
     </span>
   )
 }

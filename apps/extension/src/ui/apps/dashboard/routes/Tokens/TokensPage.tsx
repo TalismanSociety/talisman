@@ -15,7 +15,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useBalancesHydrate, useNetwork, useNetworks } from "@ui/state"
+import { useAnyNetwork, useBalancesHydrate, useNetworks } from "@ui/state"
 
 import { PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
@@ -61,7 +61,7 @@ const Content = () => {
     ]
   }, [networks, t])
 
-  const network = useNetwork(networkId)
+  const network = useAnyNetwork(networkId)
 
   // persist all filters in location state so token page can navigate back here without losing filters
   useEffect(() => {

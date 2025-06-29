@@ -3,9 +3,7 @@ import {
   Chain,
   CustomChain,
   DotNetwork,
-  DotNetworkId,
   EthNetwork,
-  EthNetworkId,
   Network,
   NetworkId,
   NetworkOfPlatform,
@@ -152,22 +150,10 @@ export const [useNetworkByGenesisHash, getNetworkByGenesisHash$] = bind(
  * @param idOrGenesisHash
  * @returns
  */
-export const useNetwork = (idOrGenesisHash: NetworkId | `0x${string}` | null | undefined) => {
+export const useAnyNetwork = (idOrGenesisHash: NetworkId | `0x${string}` | null | undefined) => {
   const networkById = useNetworkById(idOrGenesisHash)
   const networkByGenesisHash = useNetworkByGenesisHash(idOrGenesisHash as `0x${string}`)
   return networkById ?? networkByGenesisHash ?? null
-}
-
-export const useDotNetwork = (id: DotNetworkId | `0x${string}` | null | undefined) => {
-  const network1 = useNetworkById(id)
-  const network2 = useNetworkByGenesisHash(id as `0x${string}`)
-  const network = network1 ?? network2
-  return network?.platform === "polkadot" ? network : null
-}
-
-export const useEthNetwork = (id: EthNetworkId | null | undefined) => {
-  const network = useNetworkById(id)
-  return network?.platform === "ethereum" ? network : null
 }
 
 /** @deprecated */

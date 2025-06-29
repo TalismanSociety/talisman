@@ -43,7 +43,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useNetwork, useToken } from "@ui/state"
+import { useAnyNetwork, useToken } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -56,7 +56,7 @@ export const EditTokenPage = () => {
   const { t } = useTranslation()
   const { id } = useParams<"id">()
   const token = useToken(id)
-  const network = useNetwork(token?.networkId)
+  const network = useAnyNetwork(token?.networkId)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export const EditTokenPage = () => {
 const TokenForm: FC<{ token: Token }> = ({ token }) => {
   const { t } = useTranslation()
   const ocConfirmRemove = useOpenClose()
-  const network = useNetwork(token.networkId)
+  const network = useAnyNetwork(token.networkId)
   const navigate = useNavigate()
 
   const form = useForm({
@@ -485,7 +485,7 @@ const LinkToExplorerIconButton: FC<{
   target: ExplorerLinkTarget
   className?: string
 }> = ({ networkId, target, className }) => {
-  const network = useNetwork(networkId)
+  const network = useAnyNetwork(networkId)
 
   const url = useMemo(() => {
     const explorerUrl = network?.blockExplorerUrls?.[0]

@@ -12,7 +12,7 @@ import urlJoin from "url-join"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress, useChain, useNetwork } from "@ui/state"
+import { useAccountByAddress, useAnyNetwork, useChain } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -23,7 +23,7 @@ const useBlockExplorerUrl = (
   networkId: NetworkId | null | undefined,
   shouldFormatAddress = true,
 ) => {
-  const network = useNetwork(networkId)
+  const network = useAnyNetwork(networkId)
   const resolvedAddress = useMemo(() => {
     if (!network || !shouldFormatAddress || !address) return address
 

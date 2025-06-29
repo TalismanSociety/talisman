@@ -4,7 +4,7 @@ import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useNetwork } from "@ui/state"
+import { useAnyNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"
@@ -26,7 +26,7 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
   noShorten,
   noOnChainId,
 }) => {
-  const network = useNetwork(networkId)
+  const network = useAnyNetwork(networkId)
 
   const blockExplorerUrl = useMemo(() => {
     const baseUrl = network?.blockExplorerUrls?.[0] || null

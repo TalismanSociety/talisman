@@ -50,8 +50,6 @@ export const getChainFromXcmLocation = (
   chains: DotNetwork[],
 ): DotNetwork => {
   try {
-    //    const relayId = chain.relay ? chain.relay.id : chain.id
-
     if (multiLocation.value.parents === 2) throw new Error("Unknown consensus")
 
     const interior = multiLocation.value.interior
@@ -70,7 +68,6 @@ export const getChainFromXcmLocation = (
       return chain // assume location targets something on current chain
     }
 
-    // TODO need to fine tune this, could be the parachain on another consensus
     const parachain = interior.value.find((i) => i.type === "Parachain")
     if (parachain?.type === "Parachain") return getParachain(chain, parachain.value, chains)
 

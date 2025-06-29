@@ -26,7 +26,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useActiveTokensState, useNetwork, useNetworksMapById, useTokens } from "@ui/state"
+import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
 
 import { PlatformOption } from "../Networks/usePlatformOptions"
 
@@ -155,7 +155,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   const navigate = useNavigate()
 
   const activeTokens = useActiveTokensState()
-  const network = useNetwork(token.networkId)
+  const network = useAnyNetwork(token.networkId)
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
   const { type } = useNetworkInfo(token.networkId)
@@ -232,7 +232,7 @@ const CustomPill = () => {
 }
 
 const useBlockExplorerUrl = (token: Token) => {
-  const network = useNetwork(token.networkId)
+  const network = useAnyNetwork(token.networkId)
 
   return useMemo(() => {
     const url = network?.blockExplorerUrls[0]

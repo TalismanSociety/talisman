@@ -51,8 +51,8 @@ import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
-  useChainByGenesisHash,
-  useEvmNetwork,
+  useNetworkByGenesisHash,
+  useNetworkById,
   useSelectedCurrency,
   useToken,
   useTokenRates,
@@ -294,7 +294,7 @@ const EvmTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
   const swapHref = useMemo(() => {
     if (!txInfo) return
@@ -572,7 +572,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
   const txInfo = tx.txInfo
   const { isTransfer, value, tokenId } = useMemo(() => {
@@ -763,7 +763,7 @@ const SubTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const chain = useChainByGenesisHash(tx.genesisHash)
+  const chain = useNetworkByGenesisHash(tx.genesisHash)
 
   const swapHref = useMemo(() => {
     if (!txInfo) return
@@ -862,7 +862,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   onContextMenuClose,
 }) => {
   const { genesisHash } = tx.unsigned
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const token = useToken(tx.tokenId)
   const tokenRates = useTokenRates(tx.tokenId)
   const currency = useSelectedCurrency()
