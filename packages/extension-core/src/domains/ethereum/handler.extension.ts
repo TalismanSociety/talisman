@@ -334,7 +334,6 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     const { url, network, nativeToken, resolve } = queued
 
-    // const networkId = parseInt(network.chainId, 16).toString()
     const known = await chaindataProvider.getNetworkById(network.id, "ethereum")
     if (!known) {
       await customChaindataStore.upsertNetwork(network, nativeToken)

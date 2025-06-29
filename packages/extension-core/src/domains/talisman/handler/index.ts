@@ -9,13 +9,15 @@ import { TabsHandler } from "../../../libs/Handler"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import TalismanRpcHandler from "./rpc"
 
+/**
+ * Disabled all these messages for now by throwing an error, verified it doesn't break portal
+ */
 export default class TalismanHandler extends TabsHandler {
   readonly #subHandlers: readonly TabsHandler[]
 
   constructor(stores: TabStore) {
     super(stores)
 
-    // TODO check if this is actually used and needed
     this.#subHandlers = [new TalismanRpcHandler(stores)]
   }
 
@@ -28,6 +30,7 @@ export default class TalismanHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.customSubstrateChains.subscribe)": {
+        throw new Error("Not implemented")
         return genericSubscription(
           id,
           port,
@@ -38,11 +41,13 @@ export default class TalismanHandler extends TabsHandler {
       }
 
       case "pub(talisman.customSubstrateChains.unsubscribe)": {
+        throw new Error("Not implemented")
         const subId = request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"]
         return unsubscribe(subId)
       }
 
       case "pub(talisman.customEvmNetworks.subscribe)": {
+        throw new Error("Not implemented")
         return genericSubscription(
           id,
           port,
@@ -53,11 +58,13 @@ export default class TalismanHandler extends TabsHandler {
       }
 
       case "pub(talisman.customEvmNetworks.unsubscribe)": {
+        throw new Error("Not implemented")
         const subId = request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"]
         return unsubscribe(subId)
       }
 
       case "pub(talisman.customTokens.subscribe)": {
+        throw new Error("Not implemented")
         return genericSubscription(
           id,
           port,
@@ -66,6 +73,7 @@ export default class TalismanHandler extends TabsHandler {
       }
 
       case "pub(talisman.customTokens.unsubscribe)": {
+        throw new Error("Not implemented")
         const subId = request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
         return unsubscribe(subId)
       }

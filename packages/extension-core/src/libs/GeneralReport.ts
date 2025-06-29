@@ -1,3 +1,4 @@
+import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { Account, isAccountOwned } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
@@ -227,9 +228,8 @@ async function getGeneralReport({
     balances.each.filter(
       (balance) =>
         balance &&
-        (balance.network === null ||
-          !("isCustom" in balance.network && balance.network.isCustom)) &&
-        (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom)),
+        (!balance.token || !isTokenCustom(balance.token)) &&
+        (!balance.network || !isNetworkCustom(balance.network)),
     ),
     (balance) => `${balance.networkId}-${balance.tokenId}`,
   )

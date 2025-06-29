@@ -39,17 +39,6 @@ import {
   RequestBalancesByParamsSubscribe,
 } from "./types"
 
-// type AccountInfo = {
-//   address: string
-//   genesisHash?: `0x${string}` | null
-//   type: AccountType
-// }
-
-// type ChainIdAndRpcs = Pick<DotNetwork, "id" | "genesisHash" | "account" | "rpcs">
-// type EvmNetworkIdAndRpcs = Pick<EthNetwork, "id" | "nativeTokenId" | "substrateChainId" | "rpcs">
-// type NetworkIdAndRpcs = Pick<Network, "id" | "platform" | "nativeTokenId" | "substrateChainId" | "rpcs">
-// type TokenIdAndType = Pick<Token, "id" | "type" | "networkId" | "platform">
-
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
 // debounce time before restarting subscriptions if one of the inputs change
@@ -151,12 +140,7 @@ abstract class BalancePool {
         distinctUntilChanged<Record<string, BalanceJson>>(isEqual),
         map((balances) => Object.values(balances)),
       ),
-    ]).pipe(
-      map(([status, data]) => ({ status, data })),
-      // tap(({ status, data }) => {
-      //   log.debug("#balances", { status, data })
-      // }),
-    )
+    ]).pipe(map(([status, data]) => ({ status, data })))
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]
@@ -469,7 +453,6 @@ abstract class BalancePool {
   protected async setAccounts(accounts: Account[]) {
     this.accounts.next(accounts)
 
-    // TODO ensure that all balance addresses are normalized
     const addresses = new Set(accounts.map((account) => account.address))
 
     // delete cached balances for accounts which don't exist anymore
@@ -528,10 +511,6 @@ abstract class BalancePool {
         )
       })
 
-    // console.log("initialising keys", initializingKeys)
-    // console.log("BALANCE SUB PARAMETERS", initializingKeys)
-    // set initialising balances to initialising
-
     this.#initialising.next([...new Set(existingBalancesKeys.concat(initializingKeys))])
     this.#isRestartPending.next(false)
 
@@ -552,12 +531,6 @@ abstract class BalancePool {
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) => {
       const initialModuleBalances = currentBalances.filter((b) => b.source === balanceModule.type)
 
-      // console.log("MODULE INIT", {
-      //   balanceModule: balanceModule.type,
-      //   addressesByToken: subscriptionParameters[balanceModule.type] ?? {},
-      //   initialBalances: initialModuleBalances,
-      // })
-
       return balanceModule.subscribeBalances(
         {
           addressesByToken: subscriptionParameters[balanceModule.type] ?? {},
@@ -576,19 +549,12 @@ abstract class BalancePool {
             // set status to stale for balances matching the error
             const currentBalances = Object.values(this.balances)
             const staleBalances = Object.values(currentBalances)
-              .filter(({ tokenId, address, source, networkId }) => {
-                //  const locationId = "chainId" in rest ? rest.chainId : rest.evmNetworkId
-                // const chainComparison =
-                // ? error.chainId === locationId
-                // : error.evmNetworkId
-                //   ? error.evmNetworkId === locationId
-                //   : true
-                return (
+              .filter(
+                ({ tokenId, address, source, networkId }) =>
                   error.networkId === networkId &&
                   addressesByModuleToken[tokenId]?.includes(address) &&
-                  source === balanceModule.type
-                )
-              })
+                  source === balanceModule.type,
+              )
               .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson)
 
             if (staleBalances.length) this.updatePool(staleBalances)
@@ -713,22 +679,6 @@ class KeyringBalancePool extends BalancePool {
       },
       {} as Record<string, AddressesByToken<Token>>,
     )
-
-    // const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
-    // this.tokens
-    //   // filter out tokens on chains/evmNetworks which have no rpcs
-    //   .filter(
-    //     (token) => this.networks[token.networkId].rpcs.length,
-    //   )
-    //   .forEach((token) => {
-    //     if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-    //     const network = this.networks[token.networkId]
-
-    //     addressesByTokenByModule[token.type][token.id] = accounts
-    //       .filter((acc) => isAccountCompatibleWithNetwork(network, acc))
-    //       .map((acc) => acc.address)
-    //   })
-    // return addressesByTokenByModule
   }
 }
 

@@ -138,7 +138,7 @@ export const isCurveCompatibleWithChain = (
   return curve === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
 }
 
-const isAccountCompatibleWithChain = (chain: DotNetwork, account: Account) => {
+const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) => {
   if (account.type === "ledger-ethereum") return false
 
   const genesisHash = getAccountGenesisHash(account)
@@ -175,7 +175,7 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
     case "ethereum":
       return isAccountPlatformEthereum(account)
     case "polkadot":
-      return isAccountCompatibleWithChain(network, account)
+      return isAccountCompatibleWithDotNetwork(network, account)
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")

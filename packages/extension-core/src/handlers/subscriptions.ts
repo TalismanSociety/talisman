@@ -64,7 +64,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
  * Creates a frontend subscription that will be closed when the port disconnects
  * ⚠️ Do not use this if you need a way to unsubscribe. use genericSubscription or genericAsyncSubscription instead.
  *
- * TODO: do not export this function.
+ * TODO: yeet!
  *
  * @param id id of the frontend request that initialized the subscription
  * @param port port of the frontend request that initialized the subscription

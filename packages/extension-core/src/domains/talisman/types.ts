@@ -35,7 +35,7 @@ export interface TalismanMessages {
   ]
   "pub(talisman.rpc.byGenesisHash.unsubscribe)": [RequestRpcByGenesisHashUnsubscribe, boolean]
 
-  // TODO yeet everything below - why would we need these ? FE already has the full networks & tokens lists
+  // TODO yeet everything below
   "pub(talisman.customSubstrateChains.subscribe)": [null, string, DotNetwork[]]
   "pub(talisman.customSubstrateChains.unsubscribe)": [string, boolean]
   "pub(talisman.customEvmNetworks.subscribe)": [null, string, EthNetwork[]]

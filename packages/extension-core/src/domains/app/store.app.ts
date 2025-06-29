@@ -17,8 +17,8 @@ type CurrentMigration = {
   name: string
   progress?: number // ratio between 0 and 1
   errors?: string[]
-  acknowledgeRequest?: string // request to user, e.g. "Please wait while we migrate your data"
-  acknowledged?: boolean // whether the user has acknowledged the migration request
+  acknowledgeRequest?: string // message that will be shown to the user along with a "continue" button
+  acknowledged?: boolean // whether the user has clicked "continue"
 }
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN

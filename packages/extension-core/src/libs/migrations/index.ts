@@ -46,7 +46,7 @@ export const migrations: Migrations = [
 ]
 
 // TODO Turn the migration runner in a singleton so we can provide an observable instead of a promise
-// The problem is that it's designed to run migrations as soon as it's instanciated
+// The problem is that the runner is designed to run migrations as soon as it's instanciated
 export const getHasPendingMigrations = async () => {
   const storage = await chrome.storage.local.get("migrations")
   const migrationsData = storage.migrations || {}

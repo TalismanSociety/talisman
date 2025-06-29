@@ -8,7 +8,6 @@ type ActiveChains = Record<string, boolean>
  * Default active state is stored in the chaindata-provider, in the isDefault property.
  * We only store overrides here to reduce storage consumption.
  */
-
 class ActiveChainsStore extends StorageProvider<ActiveChains> {
   constructor(initialData = {}) {
     super("activeChains", initialData)

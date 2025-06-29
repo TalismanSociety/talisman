@@ -40,10 +40,7 @@ export const compactMetadata = (
   const palletsKeepTypes = palletsAndItems.flatMap(
     ({ pallet: palletName, constants: constantNames, items: itemNames }) => {
       const pallet = metadata.pallets.find((pallet) => pallet.name === palletName)
-      if (!pallet) {
-        // log.debug("Failed to find pallet", palletName)
-        return []
-      }
+      if (!pallet) return []
 
       // remove pallet fields we don't care about
       pallet.calls = undefined
