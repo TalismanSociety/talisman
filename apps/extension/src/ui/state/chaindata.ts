@@ -1,8 +1,7 @@
 import { bind, StateObservable } from "@react-rxjs/core"
 import {
-  Chain,
-  CustomChain,
   DotNetwork,
+  DotNetworkId,
   EthNetwork,
   Network,
   NetworkId,
@@ -27,9 +26,6 @@ import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs
 import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
-
-/** @deprecated */
-export type AnyChain = Chain | CustomChain
 
 type PlatformFilter = NetworkPlatform | "all"
 
@@ -154,6 +150,12 @@ export const useAnyNetwork = (idOrGenesisHash: NetworkId | `0x${string}` | null 
   const networkById = useNetworkById(idOrGenesisHash)
   const networkByGenesisHash = useNetworkByGenesisHash(idOrGenesisHash as `0x${string}`)
   return networkById ?? networkByGenesisHash ?? null
+}
+
+export const useDotNetwork = (id: DotNetworkId | `0x${string}` | null | undefined) => {
+  const network1 = useNetworkById(id, "polkadot")
+  const network2 = useNetworkByGenesisHash(id as `0x${string}`)
+  return network1 ?? network2 ?? null
 }
 
 /** @deprecated */

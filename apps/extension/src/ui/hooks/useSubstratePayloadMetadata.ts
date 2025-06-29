@@ -1,6 +1,6 @@
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
-import { isNetworkDot, Network, Token } from "@talismn/chaindata-provider"
+import { DotNetwork, isNetworkDot, Token } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
@@ -45,7 +45,7 @@ const getSubstratePayloadMetadata = async ({
   token,
 }: {
   payload: SignerPayloadJSON | null
-  network: Network | null | undefined
+  network: DotNetwork | null | undefined
   token: Token | null | undefined
 }) => {
   if (!payload || !token || !isNetworkDot(network)) return null

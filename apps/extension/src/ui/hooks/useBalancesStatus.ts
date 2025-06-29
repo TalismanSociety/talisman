@@ -1,4 +1,5 @@
 import { Balances } from "@talismn/balances"
+import { uniq } from "lodash"
 import { useMemo } from "react"
 
 export type BalancesStatus =
@@ -27,10 +28,5 @@ export const useBalancesStatus = (balances: Balances) =>
     return { status: "live" }
   }, [balances])
 
-export const getStaleChains = (balances: Balances): string[] => [
-  ...new Set(
-    balances.sorted
-      .filter((b) => b.status === "stale")
-      .map((b) => b.network?.name ?? b.networkId ?? "Unknown"),
-  ),
-]
+export const getStaleChains = (balances: Balances): string[] =>
+  uniq(balances.each.filter((b) => b.status === "stale").map((b) => b.networkId))

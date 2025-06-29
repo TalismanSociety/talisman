@@ -29,7 +29,7 @@ import { keyringStore } from "../keyring/store"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 import {
-  AddressesAndEvmNetwork,
+  AddressesAndEvmNetworks,
   AddressesAndTokens,
   Balance,
   BalanceJson,
@@ -767,7 +767,7 @@ export class ExternalBalancePool extends BalancePool {
 
 const getSubscriptionParams = (
   addressesByChain: AddressesByChain,
-  addressesAndEvmNetworks: AddressesAndEvmNetwork,
+  addressesAndEvmNetworks: AddressesAndEvmNetworks,
   addressesAndTokens: AddressesAndTokens,
   activeNetworks: NetworkList,
   activeTokens: Token[],

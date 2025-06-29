@@ -4,11 +4,9 @@ import { DotNetworkId } from "@talismn/chaindata-provider"
 import { getScaleApi, ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { getMetadataRpcFromDef } from "extension-shared"
-import { useMemo } from "react"
-import { isHex } from "viem"
 
 import { api } from "@ui/api"
-import { useNetworkByGenesisHash, useNetworkById, useToken } from "@ui/state"
+import { useDotNetwork, useToken } from "@ui/state"
 
 /**
  * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.
@@ -20,9 +18,7 @@ export const useScaleApi = (
   specVersion?: number,
   blockHash?: HexString,
 ) => {
-  const chainById = useNetworkById(chainIdOrHash, "polkadot")
-  const chainByGenesisHash = useNetworkByGenesisHash(isHex(chainIdOrHash) ? chainIdOrHash : null)
-  const chain = useMemo(() => chainById || chainByGenesisHash, [chainById, chainByGenesisHash])
+  const chain = useDotNetwork(chainIdOrHash)
   const token = useToken(chain?.nativeTokenId)
 
   return useQuery({

@@ -4,7 +4,7 @@ import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { DotNetwork } from "@talismn/chaindata-provider"
-import { getMetadataFromDef, getMetadataRpcFromDef, log } from "extension-shared"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "extension-shared"
 
 import { api } from "@ui/api"
 
@@ -34,7 +34,6 @@ export const getFrontendTypeRegistry = async (
     const legacyTypesBundle = { ...chainBundle, ...specBundle }
 
     if (legacyTypesBundle) {
-      log.debug(`Setting known types for chain ${network.id}`)
       registry.clearCache()
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
       if (network.chainName) {

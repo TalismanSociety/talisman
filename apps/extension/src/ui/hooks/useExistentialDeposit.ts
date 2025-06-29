@@ -1,4 +1,4 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { isTokenNeedExistentialDeposit, Token, TokenId } from "@talismn/chaindata-provider"
 import { BalanceFormatter } from "extension-core"
 import { useMemo } from "react"
 
@@ -9,16 +9,7 @@ export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {
 
   const plancks = useMemo(() => {
     if (!token) return null
-    switch (token.type) {
-      case "substrate-assets":
-      case "substrate-foreignassets":
-      case "substrate-native":
-      case "substrate-tokens":
-        return BigInt(token.existentialDeposit ?? "0")
-
-      default:
-        return 0n
-    }
+    return isTokenNeedExistentialDeposit(token) ? BigInt(token.existentialDeposit) : 0n
   }, [token])
 
   return useMemo(() => {

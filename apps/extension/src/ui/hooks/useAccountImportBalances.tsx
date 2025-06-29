@@ -1,5 +1,5 @@
 import { Address } from "@talismn/balances"
-import { ChainId, isNetworkDot, isNetworkEth, Network } from "@talismn/chaindata-provider"
+import { DotNetworkId, isNetworkDot, isNetworkEth, Network } from "@talismn/chaindata-provider"
 import { Account, isAccountPlatformEthereum } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import { useMemo } from "react"
@@ -9,8 +9,6 @@ import { useNetworks } from "@ui/state"
 
 export const useAccountImportBalances = (accounts: Account[]) => {
   const networks = useNetworks({ includeTestnets: false, activeOnly: true })
-  // const chains = useChains({ includeTestnets: false, activeOnly: true })
-  // const evmNetworks = useEvmNetworks({ includeTestnets: false, activeOnly: true })
 
   const balanceParams = useMemo((): BalanceByParamsProps => {
     const addressesByChain: BalanceByParamsProps["addressesByChain"] = networks
@@ -23,7 +21,7 @@ export const useAccountImportBalances = (accounts: Account[]) => {
           if (addresses.length) prev[network.id] = addresses
           return prev
         },
-        {} as Record<ChainId, Address[]>,
+        {} as Record<DotNetworkId, Address[]>,
       )
 
     const evmNetworks = networks.filter(isNetworkEth)

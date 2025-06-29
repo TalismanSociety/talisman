@@ -13,13 +13,6 @@ import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/stat
 
 import { ChainLogo } from "../Asset/ChainLogo"
 
-// type NetworkWithExplorer = {
-//   id: string
-//   type: NetworkPlatform // "evm" | "substrate"
-//   name: string
-//   explorerUrl: string
-// }
-
 const useExplorerNetworks = (address: string, search: string): Network[] => {
   const account = useAccountByAddress(address)
   const networks = useNetworks({ activeOnly: true, includeTestnets: true })
@@ -41,24 +34,6 @@ const useExplorerNetworks = (address: string, search: string): Network[] => {
 
     [account, address, networks],
   )
-
-  // // TODO check if this can be removed in favor of the above, if we remove the isDotNetwork check
-  // const compatibleEvmNetworks = useMemo<NetworkWithExplorer[]>(
-  //   () =>
-  //     isEthereumAddress(address)
-  //       ? networks.filter(isEthNetwork)
-  //           .filter((network) => !!network.name && !!network.explorerUrl)
-  //           .map(
-  //             (chain): NetworkWithExplorer => ({
-  //               id: chain.id,
-  //               type: "evm",
-  //               name: chain.name!,
-  //               explorerUrl: chain.explorerUrl!,
-  //             }),
-  //           )
-  //       : [],
-  //   [address, evmNetworks],
-  //)
 
   const sortedNetworks = useMemo(
     () =>

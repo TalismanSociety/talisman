@@ -1,5 +1,4 @@
 import { bind } from "@react-rxjs/core"
-import { EthNetwork } from "@talismn/chaindata-provider"
 import { isTruthy } from "@talismn/util"
 import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
@@ -54,7 +53,7 @@ const evmNetworks$ = getNetworks$({
   platform: "ethereum",
   activeOnly: true,
   includeTestnets: true,
-}) as Observable<EthNetwork[]>
+})
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([evmNetworks$, nftData$]).pipe(

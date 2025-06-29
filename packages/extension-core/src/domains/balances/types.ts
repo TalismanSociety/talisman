@@ -19,7 +19,7 @@ export type BalanceSubscriptionResponse = {
   status: BalanceLoadingStatus
 }
 
-export type AddressesAndEvmNetwork = {
+export type AddressesAndEvmNetworks = {
   addresses: string[]
   evmNetworks: Array<Pick<EthNetwork, "id" | "nativeTokenId">>
 }
@@ -29,7 +29,7 @@ export type AddressesAndTokens = {
 }
 export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
-  addressesAndEvmNetworks: AddressesAndEvmNetwork
+  addressesAndEvmNetworks: AddressesAndEvmNetworks
   addressesAndTokens: AddressesAndTokens
 }
 

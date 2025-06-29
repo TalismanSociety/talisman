@@ -1,4 +1,5 @@
 import { Balances } from "@talismn/balances"
+import { fromPairs, uniq } from "lodash"
 import { useMemo } from "react"
 
 import { useSelectedCurrency } from "@ui/state"
@@ -6,29 +7,14 @@ import { useSelectedCurrency } from "@ui/state"
 export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
   const currency = useSelectedCurrency()
 
-  return useMemo<Record<string, number>>(() => {
-    const networkIds = new Set(balances.each.map((b) => b.networkId))
-    // const chainIds = new Set<string>()
-    // const evmNetworkIds = new Set<string>()
-
-    // for (const b of balances.each) {
-    //   if (b.chainId) chainIds.add(b.chainId)
-    //   if (b.evmNetworkId) evmNetworkIds.add(b.evmNetworkId)
-    // }
-
-    return Object.fromEntries(
-      Array.from(networkIds).map((networkId) => [
-        networkId,
-        balances.find({ networkId }).sum.fiat(currency).total,
-      ]),
-      // [...chainIds]
-      //   .map((id) => [id, balances.find({ chainId: id }).sum.fiat(currency).total])
-      //   .concat(
-      //     [...evmNetworkIds].map((id) => [
-      //       id,
-      //       balances.find({ evmNetworkId: id }).sum.fiat(currency).total,
-      //     ]),
-      //   ),
-    )
-  }, [balances, currency])
+  return useMemo<Record<string, number>>(
+    () =>
+      fromPairs(
+        uniq(balances.each.map((b) => b.networkId)).map((networkId) => [
+          networkId,
+          balances.find({ networkId }).sum.fiat(currency).total,
+        ]),
+      ),
+    [balances, currency],
+  )
 }
