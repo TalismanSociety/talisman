@@ -1,13 +1,13 @@
 export * from "./chaindata"
-export * from "./types" // TODO remove this one when possible, contains only legacy stuff
+export * from "./provider"
 export * from "./util"
-export * from "./ChaindataProvider"
+export * from "./legacy"
 
 export {
+  // make sure not to export the strict minimum
+  // db should definitely not be exported
   ChaindataFileSchema,
   CustomChaindataSchema,
   type Chaindata,
   type CustomChaindata,
 } from "./state"
-
-export * from "./TalismanChaindataDatabase"

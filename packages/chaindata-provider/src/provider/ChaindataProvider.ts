@@ -12,6 +12,7 @@ import {
 } from "rxjs"
 import z from "zod/v4"
 
+import { IChaindataProvider } from "."
 import {
   DotNetwork,
   isNetworkOfPlatform,
@@ -26,16 +27,15 @@ import {
   TokenOfType,
   TokenSchema,
   TokenType,
-} from "./chaindata"
-import log from "./log"
+} from "../chaindata"
+import log from "../log"
 import {
   Chaindata,
   ChaindataFileSchema,
   CustomChaindata,
   CustomChaindataSchema,
   defaultChaindata$,
-} from "./state"
-import { IChaindataProvider } from "./types"
+} from "../state"
 
 export type ChaindataProviderOptions = {
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata

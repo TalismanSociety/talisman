@@ -1,16 +1,10 @@
 import { Dexie } from "dexie"
 
-import { Token, TokenId } from "./chaindata"
-import {
-  LegacyChain,
-  LegacyChainId,
-  LegacyCustomChain,
-  LegacyCustomEvmNetwork,
-  LegacyEvmNetwork,
-  LegacyEvmNetworkId,
-} from "./types"
-import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
-import { upgradeAddIsDefaultToExistingChains } from "./upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
+import { Token, TokenId } from "../chaindata"
+import { upgradeRemoveSymbolFromNativeTokenId } from "../upgrades"
+import { upgradeAddIsDefaultToExistingChains } from "../upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
+import { LegacyChain, LegacyChainId, LegacyCustomChain } from "./Chain"
+import { LegacyCustomEvmNetwork, LegacyEvmNetwork, LegacyEvmNetworkId } from "./EvmNetwork"
 
 class TalismanChaindataDatabase extends Dexie {
   chains!: Dexie.Table<LegacyChain | LegacyCustomChain, LegacyChainId>

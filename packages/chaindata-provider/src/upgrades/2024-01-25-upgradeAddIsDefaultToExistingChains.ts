@@ -1,7 +1,7 @@
 import { Transaction } from "dexie"
 
 import { Token, TokenId } from "../chaindata"
-import { LegacyChain, LegacyChainId, LegacyEvmNetwork, LegacyEvmNetworkId } from "../types"
+import { LegacyChain, LegacyChainId, LegacyEvmNetwork, LegacyEvmNetworkId } from "../legacy"
 
 // for DB version 2, Wallet version 1.21.0
 export const upgradeAddIsDefaultToExistingChains = async (tx: Transaction) => {
