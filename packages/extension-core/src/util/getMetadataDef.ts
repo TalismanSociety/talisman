@@ -1,6 +1,6 @@
 import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { ChainId, DotNetwork, NetworkId } from "@talismn/chaindata-provider"
+import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
@@ -207,10 +207,10 @@ if (DEBUG) {
   }
 }
 
-export const getLatestMetadataRpc = (chainId: ChainId) =>
+export const getLatestMetadataRpc = (chainId: DotNetworkId) =>
   fetchBestMetadata((method, params, isCacheable) =>
     chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true }),
   )
 
-export const getLegacyMetadataRpc = (chainId: ChainId) =>
+export const getLegacyMetadataRpc = (chainId: DotNetworkId) =>
   chainConnector.send<HexString>(chainId, "state_getMetadata", [], true)

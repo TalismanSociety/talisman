@@ -1,10 +1,10 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
+  EthNetworkId,
   EvmErc20Token,
   evmErc20TokenId,
   EvmErc20TokenSchema,
-  EvmNetworkId,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
@@ -47,7 +47,7 @@ declare module "@talismn/balances/plugins" {
   }
 }
 type EvmErc20NetworkParams = Record<
-  EvmNetworkId,
+  EthNetworkId,
   Array<{
     token: EvmErc20Token
     address: string
@@ -354,7 +354,7 @@ type EvmErc20TokenBalanceResponse = {
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
   tokenAddressesByNetwork: EvmErc20NetworkParams,
-  erc20Aggregators: Record<EvmNetworkId, Hex> = {},
+  erc20Aggregators: Record<EthNetworkId, Hex> = {},
 ): Promise<EvmErc20TokenBalanceResponse> => {
   const result = {
     results: [] as EvmErc20Balance[],
@@ -486,7 +486,7 @@ const getErc20BalanceId = ({
 }: {
   token: EvmErc20Token
   address: string
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
 }) => `${evmNetworkId}-${address}-${token.contractAddress}`
 
 function groupAddressesByTokenByEvmNetwork(

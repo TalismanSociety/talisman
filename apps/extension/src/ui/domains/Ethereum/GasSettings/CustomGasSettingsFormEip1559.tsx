@@ -1,11 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { TokenId } from "@talismn/chaindata-provider"
+import { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import {
   EthGasSettingsEip1559,
   EthTransactionDetails,
-  EvmNetworkId,
   GasSettingsByPriorityEip1559,
   getHumanReadableErrorMessage,
   getMaxFeePerGas,
@@ -79,7 +78,7 @@ const schema = yup
   .required()
 
 const useIsValidGasSettings = (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   tx: TransactionRequest,
   maxBaseFeeGwei: string,
   maxPriorityFeeGwei: string,

@@ -1,4 +1,4 @@
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { useAtomValue } from "jotai"
 
 import {
@@ -20,7 +20,7 @@ export const useEvmNetworks = () => useAtomValue(evmNetworksByIdAtom)
 export const useTokens = () => useAtomValue(tokensByIdAtom)
 export const useMiniMetadatas = () => useAtomValue(miniMetadatasAtom)
 
-export const useChain = (chainId?: ChainId) => useChains()[chainId ?? ""] ?? undefined
-export const useEvmNetwork = (evmNetworkId?: EvmNetworkId) =>
+export const useChain = (chainId?: DotNetworkId) => useChains()[chainId ?? ""] ?? undefined
+export const useEvmNetwork = (evmNetworkId?: EthNetworkId) =>
   useEvmNetworks()[evmNetworkId ?? ""] ?? undefined
 export const useToken = (tokenId?: TokenId) => useTokens()[tokenId ?? ""] ?? undefined

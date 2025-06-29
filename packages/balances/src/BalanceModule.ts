@@ -1,6 +1,6 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
+import { ChaindataProvider, DotNetworkId, EthNetworkId, Token } from "@talismn/chaindata-provider"
 
 import {
   AddressesByToken,
@@ -165,14 +165,14 @@ interface BalanceModuleSubstrate<
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     moduleConfig?: TModuleConfig,
     metadataRpc?: `0x${string}`,
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */
   fetchSubstrateChainTokens(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
     tokens?: TTokenConfig[],
@@ -188,11 +188,11 @@ interface BalanceModuleEvm<
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
-  fetchEvmChainMeta(chainId: ChainId, moduleConfig?: TModuleConfig): Promise<TChainMeta | null>
+  fetchEvmChainMeta(chainId: EthNetworkId, moduleConfig?: TModuleConfig): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given evm chain */
   fetchEvmChainTokens(
-    chainId: ChainId,
+    chainId: EthNetworkId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
     tokens?: TTokenConfig[],

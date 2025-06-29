@@ -1,5 +1,5 @@
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
@@ -60,9 +60,9 @@ export const SignViewXTokensTransfer: FC<{
   tokenDecimals: number
   coingeckoId?: string
   tokenRates?: TokenRates | null
-  fromNetwork: EvmNetworkId | ChainId
+  fromNetwork: NetworkId
   fromAddress: Address
-  toNetwork: EvmNetworkId | ChainId
+  toNetwork: NetworkId
   toAddress: Address
 }> = ({
   value,

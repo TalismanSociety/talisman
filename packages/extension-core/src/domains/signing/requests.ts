@@ -1,15 +1,15 @@
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { Account } from "@talismn/keyring"
 import { RpcTransactionRequest } from "viem"
 
 import type { Port } from "../../types/base"
 import type { EthSignRequest, SubstrateSigningRequest } from "./types"
 import { requestStore } from "../../libs/requests/store"
-import { EvmNetworkId } from "../ethereum/types"
 
 export const signAndSendEth = (
   url: string,
   request: RpcTransactionRequest,
-  ethChainId: EvmNetworkId,
+  ethChainId: EthNetworkId,
   account: Account,
   port: Port,
 ) => {
@@ -35,7 +35,7 @@ export const signEth = (
     | "eth_signTypedData_v3"
     | "eth_signTypedData_v4",
   request: EthSignRequest["request"],
-  ethChainId: EvmNetworkId,
+  ethChainId: EthNetworkId,
   account: Account,
   port: Port,
 ) => {

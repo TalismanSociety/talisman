@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { Account, AccountOfType, EthSignMessageMethod } from "extension-core"
 import { FC, Suspense } from "react"
 
@@ -8,7 +8,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { SignLedgerEthereum } from "./SignLedgerEthereum"
 
 export type SignHardwareEthereumProps = {
-  evmNetworkId?: EvmNetworkId
+  evmNetworkId?: EthNetworkId
   account: AccountOfType<"ledger-ethereum">
   method: EthSignMessageMethod | "eth_sendTransaction"
   payload: unknown // string message, typed object for eip712, TransactionRequest for tx

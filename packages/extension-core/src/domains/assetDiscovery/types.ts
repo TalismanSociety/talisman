@@ -1,5 +1,5 @@
 import { Address } from "@talismn/balances"
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 export type DiscoveredBalance = {
   id: string
@@ -9,7 +9,7 @@ export type DiscoveredBalance = {
 }
 
 export type AssetDiscoveryScanScope = {
-  networkIds: (EvmNetworkId | ChainId)[]
+  networkIds: NetworkId[]
   addresses: Address[]
   /** indicates whether aad api should be called at the begining of the scan */
   withApi: boolean

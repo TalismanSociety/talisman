@@ -1,5 +1,5 @@
 import { Address } from "@talismn/balances"
-import { ChainId, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 import { AssetDiscoveryScanScope } from "./types"
@@ -15,7 +15,7 @@ export type AssetDiscoveryScanState = {
    * for each chain keep track in local storage of the latest token/account that was scanned, and process them alphabetically when scanning
    */
   currentScanCursors: Record<
-    EvmNetworkId | ChainId, // account for the future when we will support other chains
+    NetworkId, // account for the future when we will support other chains
     { tokenId: TokenId; address: Address; scanned: number }
   >
   lastScanTimestamp: number

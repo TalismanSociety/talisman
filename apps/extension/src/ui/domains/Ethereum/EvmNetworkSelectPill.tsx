@@ -1,4 +1,4 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useMemo } from "react"
@@ -10,7 +10,7 @@ import { useAuthorisedSites, useEvmNetwork } from "@ui/state"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
 import { NetworkLogo } from "./NetworkLogo"
 
-const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EvmNetworkId }) => {
+const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EthNetworkId }) => {
   const network = useEvmNetwork(evmNetworkId)
 
   if (!network) return null

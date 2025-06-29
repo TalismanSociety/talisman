@@ -1,8 +1,8 @@
 import PromisePool from "@supercharge/promise-pool"
 import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
+  EthNetworkId,
   EvmErc20Token,
-  EvmNetworkId,
   isTokenEth,
   Token,
   TokenId,
@@ -392,7 +392,7 @@ class AssetDiscoveryScanner {
           return activeTokens[token.id] === undefined
         })
 
-      const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
+      const tokensByNetwork: Record<EthNetworkId, Token[]> = groupBy(
         tokensToScan,
         (t) => t.networkId,
       )

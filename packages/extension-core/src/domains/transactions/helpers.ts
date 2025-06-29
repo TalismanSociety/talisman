@@ -2,7 +2,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import merge from "lodash/merge"
 import { Hex, TransactionRequest } from "viem"
@@ -25,7 +25,7 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 }
 
 export const addEvmTransaction = async (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   hash: Hex,
   unsigned: TransactionRequest<string>,
   options: AddTransactionOptions = {},

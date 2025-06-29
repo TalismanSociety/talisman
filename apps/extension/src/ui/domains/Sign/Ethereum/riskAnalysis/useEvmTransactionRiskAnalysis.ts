@@ -1,5 +1,5 @@
 import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
@@ -9,7 +9,7 @@ import { getBlowfishClient } from "./blowfish"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 
 type UseEvmTransactionRiskAnalysisProps = {
-  evmNetworkId: EvmNetworkId | undefined
+  evmNetworkId: EthNetworkId | undefined
   tx: TransactionRequest | undefined
   origin?: string
   disableAutoRiskScan?: boolean

@@ -1,4 +1,4 @@
-import { ChainId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
@@ -10,7 +10,7 @@ export type RemoteConfigStoreData = {
     coinbaseProjectId: string
     pinnedTokens: TokenId[]
     rampApiKey: string
-    rampNetworks: Record<string, string> // maps a Ramp network ID to an EvmNetworkId or ChainId
+    rampNetworks: Record<string, string> // maps a Ramp network ID to an NetworkId
   }
   swaps: {
     questApi?: string
@@ -25,8 +25,8 @@ export type RemoteConfigStoreData = {
   coinsApi?: {
     apiUrl: string
   }
-  nominationPools: Record<ChainId, number[]>
-  stakingPools: Record<ChainId, (number | string)[]>
+  nominationPools: Record<DotNetworkId, number[]>
+  stakingPools: Record<DotNetworkId, (number | string)[]>
   postHogUrl: string
   documentation: {
     unifiedAddressDocsUrl: string

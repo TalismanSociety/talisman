@@ -1,5 +1,5 @@
 import { Address as TAddress } from "@talismn/balances"
-import { ChainId } from "@talismn/chaindata-provider"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useMemo } from "react"
@@ -51,7 +51,7 @@ const AddressTooltip: FC<{
 
 type AddressDisplayProps = {
   address: TAddress | null | undefined
-  chainId: ChainId | null | undefined
+  chainId: DotNetworkId | null | undefined
   className?: string
 }
 

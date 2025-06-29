@@ -1,4 +1,4 @@
-export * from "./Chain"
+// export * from "./Chain"
 export * from "./EvmNetwork"
 export * from "./ChaindataProviderInterface"
 

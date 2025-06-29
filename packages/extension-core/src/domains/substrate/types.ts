@@ -1,5 +1,5 @@
 import type { HexString } from "@polkadot/util/types"
-import type { ChainId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import type { TalismanMetadataDef } from "extension-shared"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 
@@ -8,7 +8,7 @@ import { WalletTransactionInfo } from "../transactions"
 export type { TalismanMetadataDef } from "extension-shared"
 
 type SubstrateRequestSend = {
-  chainId: ChainId
+  chainId: DotNetworkId
   method: string
   params: unknown[]
   isCacheable?: boolean

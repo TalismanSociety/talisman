@@ -1,4 +1,4 @@
-import { EvmNetworkId } from "extension-core"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { Atom, atom } from "jotai"
 import { atomFamily, atomWithObservable } from "jotai/utils"
 import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
@@ -8,7 +8,7 @@ import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getToken$ } from "@ui/state"
 
 export const publicClientAtomFamily: AtomFamily<
-  EvmNetworkId | undefined,
+  EthNetworkId | undefined,
   Atom<Promise<PublicClient | undefined>>
 > = atomFamily((evmNetworkId) =>
   atom(async (get) => {

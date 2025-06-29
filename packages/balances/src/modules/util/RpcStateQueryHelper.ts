@@ -1,5 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChainId } from "@talismn/chaindata-provider"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import groupBy from "lodash/groupBy"
 
@@ -72,7 +72,7 @@ export class RpcStateQueryHelper<T> {
     return resultsByChain.flatMap((result) => result)
   }
 
-  #distributeChangesToQueryDecoders(chainId: ChainId, result: unknown): T[] {
+  #distributeChangesToQueryDecoders(chainId: DotNetworkId, result: unknown): T[] {
     if (typeof result !== "object" || result === null) return []
     if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object") return []
     if (!Array.isArray(result.changes)) return []

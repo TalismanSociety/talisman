@@ -33,15 +33,6 @@ export type AnyEvmError = {
   data?: unknown
 }
 
-export type {
-  CustomEvmNetwork,
-  EthereumRpc,
-  EvmNetwork,
-  EvmNetworkId,
-  EvmNetworkList,
-  SimpleEvmNetwork,
-} from "@talismn/chaindata-provider"
-
 // define here the rpc methods that do not exist in viem or that need to be overriden
 type TalismanRpcSchema = [
   {

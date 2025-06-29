@@ -1,4 +1,4 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
 import { FC, Suspense, useId, useMemo } from "react"
@@ -7,7 +7,7 @@ import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useNetworkById } from "@ui/state"
 
 type ChainLogoBaseProps = {
-  id?: ChainId | EvmNetworkId
+  id?: NetworkId
   name?: string
   logo?: string | null
   iconUrls?: string[]
@@ -35,7 +35,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
 
 type ChainLogoProps = {
   className?: string
-  id?: ChainId | EvmNetworkId
+  id?: NetworkId
 }
 
 const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {

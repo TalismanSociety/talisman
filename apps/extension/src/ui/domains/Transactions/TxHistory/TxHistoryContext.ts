@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
-import { Network } from "@talismn/chaindata-provider"
+import { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/util"
-import { EvmNetworkId, WalletTransaction } from "extension-core"
+import { WalletTransaction } from "extension-core"
 import { log } from "extension-shared"
 import uniq from "lodash/uniq"
 import { useCallback, useMemo, useState } from "react"
@@ -17,7 +17,7 @@ const useTxHistoryProvider = () => {
 
   const [{ addresses, networkId }, setState] = useState<{
     addresses: string[] | null
-    networkId: HexString | EvmNetworkId | null
+    networkId: HexString | EthNetworkId | null
   }>({
     addresses: null,
     networkId: null,
@@ -74,7 +74,7 @@ const useTxHistoryProvider = () => {
   )
 
   const setNetworkId = useCallback(
-    (networkId: HexString | EvmNetworkId | null) => setState((state) => ({ ...state, networkId })),
+    (networkId: HexString | EthNetworkId | null) => setState((state) => ({ ...state, networkId })),
     [],
   )
 
@@ -97,7 +97,7 @@ export const [TxHistoryProvider, useTxHistory] = provideContext(useTxHistoryProv
 
 const getTransactions = (
   addresses: string[] | null,
-  networkId: HexString | EvmNetworkId | null,
+  networkId: HexString | EthNetworkId | null,
   allTransactions: WalletTransaction[] | undefined,
 ) => {
   const encodedAddresses = addresses?.map(normalizeAddress) ?? []

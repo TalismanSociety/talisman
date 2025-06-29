@@ -1,8 +1,8 @@
 import { Address } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 
 export type CopyAddressWizardInputs = {
-  networkId?: ChainId | EvmNetworkId | null
+  networkId?: NetworkId | null
   address?: Address
   qr?: boolean
   legacyFormat?: boolean

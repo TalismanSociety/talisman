@@ -1,13 +1,13 @@
 import { db as balancesDb } from "@talismn/balances"
 import {
-  Chain,
-  CustomChain,
-  CustomEvmNetwork,
   DotNetwork,
   EthNetwork,
   EvmNativeToken,
-  EvmNetwork,
   getChaindataDbV3,
+  LegacyChain,
+  LegacyCustomChain,
+  LegacyCustomEvmNetwork,
+  LegacyEvmNetwork,
   subForeignAssetTokenId,
   SubNativeToken,
   subNativeTokenId,
@@ -213,13 +213,13 @@ const getChaindataV4TokenId = (
 }
 
 const migrateCustomChains = async (
-  oldChains: (Chain | CustomChain)[],
+  oldChains: (LegacyChain | LegacyCustomChain)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   oldTokensMap: Record<string, any>,
 ) => {
   // custom networks and tokens
   for (const customChain of oldChains.filter(
-    (chain): chain is CustomChain => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom,
   )) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oldNativeToken: any = oldTokensMap[customChain.nativeToken?.id ?? ""]
@@ -276,12 +276,12 @@ const migrateCustomChains = async (
 }
 
 const migrateCustomEvmNetworks = async (
-  oldEvmNetworks: (EvmNetwork | CustomEvmNetwork)[],
+  oldEvmNetworks: (LegacyEvmNetwork | LegacyCustomEvmNetwork)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   oldTokensMap: Record<string, any>,
 ) => {
   for (const customEvmNetwork of oldEvmNetworks.filter(
-    (chain): chain is CustomEvmNetwork => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom,
   )) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oldNativeToken: any = oldTokensMap[customEvmNetwork.nativeToken?.id ?? ""]

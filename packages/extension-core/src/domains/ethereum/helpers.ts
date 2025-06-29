@@ -1,6 +1,6 @@
 import { assert } from "@polkadot/util"
 import { erc20Abi } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   encodeFunctionData,
@@ -23,7 +23,6 @@ import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EvmAddress,
-  EvmNetworkId,
   LedgerEthDerivationPathType,
 } from "./types"
 
@@ -45,7 +44,7 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
 }
 
 export const getEthTransferTransactionBase = async (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   from: EvmAddress,
   to: EvmAddress,
   token: Token,

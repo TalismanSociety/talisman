@@ -1,5 +1,5 @@
 import { BalanceJson } from "@talismn/balances"
-import { ChainId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
 import { Address, AddressesByChain } from "../../types/base"
@@ -41,7 +41,7 @@ export type NomPoolStakedBalance = {
 }
 
 export type RequestNomPoolStake = {
-  chainId?: ChainId
+  chainId?: DotNetworkId
   addresses: Address[]
 }
 

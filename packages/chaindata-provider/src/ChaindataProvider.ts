@@ -3,6 +3,7 @@ import {
   combineLatest,
   distinctUntilChanged,
   distinctUntilKeyChanged,
+  firstValueFrom,
   isObservable,
   map,
   Observable,
@@ -13,6 +14,8 @@ import z from "zod/v4"
 
 import {
   DotNetwork,
+  isNetworkOfPlatform,
+  isTokenOfType,
   Network,
   NetworkId,
   NetworkOfPlatform,
@@ -33,7 +36,6 @@ import {
   defaultChaindata$,
 } from "./state"
 import { IChaindataProvider } from "./types"
-import * as util from "./util"
 
 export type ChaindataProviderOptions = {
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
@@ -59,14 +61,14 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   async getMiniMetadatas() {
-    return await util.wrapObservableWithGetter("Failed to get miniMetadatas", this.miniMetadatas$)
+    return await wrapObservableWithGetter("Failed to get miniMetadatas", this.miniMetadatas$)
   }
 
   get getMiniMetadatasMapById$() {
-    return this.miniMetadatas$.pipe(map(util.itemsToMapById))
+    return this.miniMetadatas$.pipe(map(itemsToMapById))
   }
   async getMiniMetadatasMapById() {
-    return await util.wrapObservableWithGetter(
+    return await wrapObservableWithGetter(
       "Failed to get mini metadatas by id",
       this.getMiniMetadatasMapById$,
     )
@@ -77,7 +79,7 @@ export class ChaindataProvider implements IChaindataProvider {
   }
 
   async miniMetadataById(id: string) {
-    return await util.wrapObservableWithGetter(
+    return await wrapObservableWithGetter(
       "Failed to get mini metadata by id",
       this.getMiniMetadataById$(id),
     )
@@ -99,37 +101,34 @@ export class ChaindataProvider implements IChaindataProvider {
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(type?: T): Observable<R[]> {
-    return this.tokens$.pipe(map(util.filterTokensByType(type))) as Observable<R[]>
+    return this.tokens$.pipe(map(filterTokensByType(type))) as Observable<R[]>
   }
 
   async getTokens<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(type?: T): Promise<R[]> {
-    return (await util.wrapObservableWithGetter(
-      "Failed to get tokens",
-      this.getTokens$(type),
-    )) as R[]
+    return (await wrapObservableWithGetter("Failed to get tokens", this.getTokens$(type))) as R[]
   }
 
   getTokenIds$(type?: TokenType) {
-    return this.getTokens$(type).pipe(map(util.itemsToIds))
+    return this.getTokens$(type).pipe(map(itemsToIds))
   }
   async getTokenIds(type?: TokenType) {
-    return await util.wrapObservableWithGetter("Failed to get tokenIds", this.getTokenIds$(type))
+    return await wrapObservableWithGetter("Failed to get tokenIds", this.getTokenIds$(type))
   }
 
   getTokensMapById$<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(type?: T): Observable<Record<TokenId, R>> {
-    return this.getTokens$(type).pipe(map(util.itemsToMapById)) as Observable<Record<TokenId, R>>
+    return this.getTokens$(type).pipe(map(itemsToMapById)) as Observable<Record<TokenId, R>>
   }
   async getTokensMapById<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(type?: T): Promise<Record<TokenId, R>> {
-    return (await util.wrapObservableWithGetter(
+    return (await wrapObservableWithGetter(
       "Failed to get tokens map by id",
       this.getTokensMapById$(type),
     )) as Record<TokenId, R>
@@ -147,7 +146,7 @@ export class ChaindataProvider implements IChaindataProvider {
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
   >(id: TokenId, type?: T): Promise<R | null> {
-    return (await util.wrapObservableWithGetter(
+    return (await wrapObservableWithGetter(
       "Failed to get token by id",
       this.getTokenById$(id, type),
     )) as R | null
@@ -169,51 +168,46 @@ export class ChaindataProvider implements IChaindataProvider {
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(platform?: P): Observable<R[]> {
-    return this.networks$.pipe(map(util.filterNetworksByPlatform(platform))) as Observable<R[]>
+    return this.networks$.pipe(map(filterNetworksByPlatform(platform))) as Observable<R[]>
   }
   async getNetworks<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(platform?: P): Promise<R[]> {
-    return (await util.wrapObservableWithGetter(
+    return (await wrapObservableWithGetter(
       "Failed to get networks",
       this.getNetworks$(platform),
     )) as R[]
   }
 
   getNetworkIds$(platform?: NetworkPlatform) {
-    return this.getNetworks$(platform).pipe(map(util.itemsToIds))
+    return this.getNetworks$(platform).pipe(map(itemsToIds))
   }
   async getNetworkIds(platform?: NetworkPlatform) {
-    return await util.wrapObservableWithGetter(
-      "Failed to get networkIds",
-      this.getNetworkIds$(platform),
-    )
+    return await wrapObservableWithGetter("Failed to get networkIds", this.getNetworkIds$(platform))
   }
 
   getNetworksMapById$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(platform?: P) {
-    return this.getNetworks$(platform).pipe(map(util.itemsToMapById)) as Observable<
-      Record<NetworkId, R>
-    >
+    return this.getNetworks$(platform).pipe(map(itemsToMapById)) as Observable<Record<NetworkId, R>>
   }
   async getNetworksMapById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(platform?: P): Promise<Record<NetworkId, R>> {
-    return (await util.wrapObservableWithGetter(
+    return (await wrapObservableWithGetter(
       "Failed to get networks by id",
       this.getNetworksMapById$(platform),
     )) as Record<NetworkId, R>
   }
 
   getNetworksMapByGenesisHash$(): Observable<Record<`0x${string}`, DotNetwork>> {
-    return this.getNetworks$("polkadot").pipe(map(util.itemsToMapByGenesisHash))
+    return this.getNetworks$("polkadot").pipe(map(itemsToMapByGenesisHash))
   }
   async getNetworksMapByGenesisHash() {
-    return await util.wrapObservableWithGetter(
+    return await wrapObservableWithGetter(
       "Failed to get networks by genesisHash",
       this.getNetworksMapByGenesisHash$(),
     )
@@ -232,7 +226,7 @@ export class ChaindataProvider implements IChaindataProvider {
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
   >(networkId: NetworkId, platform?: P): Promise<R | null> {
-    return (await util.wrapObservableWithGetter(
+    return (await wrapObservableWithGetter(
       "Failed to get network by id",
       this.getNetworkById$(networkId, platform),
     )) as R | null
@@ -244,7 +238,7 @@ export class ChaindataProvider implements IChaindataProvider {
     )
   }
   async getNetworkByGenesisHash(genesisHash: `0x${string}`) {
-    return await util.wrapObservableWithGetter(
+    return await wrapObservableWithGetter(
       "Failed to get network by genesisHash",
       this.getNetworkByGenesisHash$(genesisHash),
     )
@@ -389,4 +383,57 @@ export const getCleanNetwork = (network: Network): Network => {
 export const getCleanToken = (token: Token): Token => {
   const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
   return rest as Token
+}
+
+//
+// map from Item[] to another type
+//
+
+const itemsToIds = <T extends { id: string }>(items: T[]): string[] => items.map(({ id }) => id)
+
+const itemsToMapById = <T extends { id: string }>(items: T[]): Record<string, T> =>
+  Object.fromEntries(items.map((item) => [item.id, item]))
+
+const itemsToMapByGenesisHash = <T extends { genesisHash: `0x${string}` | null }>(
+  items: T[],
+): Record<`0x${string}`, T> =>
+  Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
+
+const filterTokensByType =
+  <T extends TokenType | undefined, Res extends T extends TokenType ? TokenOfType<T>[] : Token[]>(
+    type: T,
+  ) =>
+  (tokens: Token[]): Res =>
+    tokens.filter((token) => !type || isTokenOfType(token, type)) as Res
+
+const filterNetworksByPlatform =
+  <
+    P extends NetworkPlatform | undefined,
+    Res extends P extends NetworkPlatform ? NetworkOfPlatform<P>[] : Network[],
+  >(
+    platform: P,
+  ) =>
+  (networks: Network[]): Res =>
+    networks.filter((network) => !platform || isNetworkOfPlatform(network, platform)) as Res
+
+//
+// Utils to wrap Observable methods with one-shot Promise methods
+//
+
+type ObservableReturnType<O> = O extends Observable<infer T> ? T : O
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const wrapObservableWithGetter = async <O extends Observable<any>>(
+  errorReason: string,
+  observable: O,
+): Promise<ObservableReturnType<O>> => {
+  return await withErrorReason(errorReason, () => firstValueFrom(observable))
+}
+
+const withErrorReason = async <T>(reason: string, task: () => Promise<T> | T): Promise<T> => {
+  try {
+    return await task()
+  } catch (cause) {
+    throw new Error(reason, { cause })
+  }
 }

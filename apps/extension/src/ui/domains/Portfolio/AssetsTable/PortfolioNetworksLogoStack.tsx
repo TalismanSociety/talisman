@@ -1,4 +1,4 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useMemo } from "react"
 
@@ -50,7 +50,7 @@ export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: Portfol
   )
 }
 
-type Props = { networkIds?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
+type Props = { networkIds?: NetworkId[]; className?: string; max?: number }
 
 export const PortfolioNetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
   const { networks } = usePortfolioNetworks(networkIds)

@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
-  ChainId,
   DotNetwork,
+  DotNetworkId,
   evmNativeTokenId,
   Network,
   NetworkId,
@@ -157,7 +157,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const networksMap = useNetworksMapById({ activeOnly: true, includeTestnets: true })
 
   const setChainId = useCallback(
-    (chainId: ChainId | null, legacyFormat?: boolean) => {
+    (chainId: DotNetworkId | null, legacyFormat?: boolean) => {
       // if account & chain are not compatible, clear address
       const address = isAccountCompatibleWithChain(accounts, networksMap, state.address, chainId)
         ? state.address

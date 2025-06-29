@@ -1,12 +1,12 @@
 import { Transaction } from "dexie"
 
 import { Token, TokenId } from "../chaindata"
-import { Chain, ChainId, EvmNetwork, EvmNetworkId } from "../types"
+import { LegacyChain, LegacyChainId, LegacyEvmNetwork, LegacyEvmNetworkId } from "../types"
 
 // for DB version 2, Wallet version 1.21.0
 export const upgradeAddIsDefaultToExistingChains = async (tx: Transaction) => {
-  const chainsTable = tx.table<Chain, ChainId>("chains")
-  const evmNetworksTable = tx.table<EvmNetwork, EvmNetworkId>("evmNetworks")
+  const chainsTable = tx.table<LegacyChain, LegacyChainId>("chains")
+  const evmNetworksTable = tx.table<LegacyEvmNetwork, LegacyEvmNetworkId>("evmNetworks")
   const tokensTable = tx.table<Token, TokenId>("tokens")
 
   await chainsTable.toCollection().modify((chain) => {

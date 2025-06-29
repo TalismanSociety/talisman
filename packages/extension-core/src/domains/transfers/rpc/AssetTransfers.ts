@@ -5,8 +5,8 @@ import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import {
-  ChainId,
   DotNetwork,
+  DotNetworkId,
   NetworkId,
   SubNativeToken,
   TokenId,
@@ -44,7 +44,7 @@ export default class AssetTransfersRpc {
    * @returns A promise which resolves once the tx is submitted (but before it is included in a block or finalized!)
    */
   static async transfer(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
@@ -128,7 +128,7 @@ export default class AssetTransfersRpc {
    * @returns An object containing the calculated `partialFee` as returned from the `payment_queryInfo` rpc endpoint.
    */
   static async checkFee(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,

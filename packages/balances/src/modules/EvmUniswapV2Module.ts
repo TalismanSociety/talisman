@@ -1,8 +1,8 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
+  EthNetworkId,
   EthNetworkList,
-  EvmNetworkId,
   EvmUniswapV2Token,
   evmUniswapV2TokenId,
   EvmUniswapV2TokenSchema,
@@ -156,14 +156,14 @@ export const EvmUniswapV2Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
 
       const initialBalancesByNetwork = (initialBalances as EvmUniswapV2Balance[])?.reduce<
-        Record<EvmNetworkId, BalanceJsonList>
+        Record<EthNetworkId, BalanceJsonList>
       >((result, b) => {
         if (!b.networkId) return result
         if (!result[b.networkId]) result[b.networkId] = {}
         result[b.networkId][getBalanceId(b)] = b
         return result
       }, {})
-      const cache = new Map<EvmNetworkId, BalanceJsonList>(
+      const cache = new Map<EthNetworkId, BalanceJsonList>(
         Object.entries(initialBalancesByNetwork ?? {}),
       )
 
