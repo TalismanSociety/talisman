@@ -507,7 +507,6 @@ export class Balance {
       this.free.planck +
         this.reserved.planck +
         nomPoolStakedPlancks +
-        this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra),
     )
@@ -543,10 +542,6 @@ export class Balance {
 
   get locks() {
     return this.getValue("locked")
-  }
-
-  get crowdloans() {
-    return this.getValue("crowdloan")
   }
 
   get nompools() {
@@ -638,9 +633,7 @@ export class Balance {
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
 
     const otherUnavailable =
-      nomPoolStakedPlancks +
-      this.crowdloans.reduce((total, each) => total + each.amount.planck, 0n) +
-      this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
+      nomPoolStakedPlancks + this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
     return this.#format(baseUnavailable + otherUnavailable)
   }
 

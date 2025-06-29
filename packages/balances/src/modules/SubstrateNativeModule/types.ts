@@ -15,7 +15,6 @@ export type SubNativeChainMeta = ChainMeta<{
   useLegacyTransferableCalculation?: boolean
   existentialDeposit?: string
   nominationPoolsPalletId?: string
-  crowdloanPalletId?: string // TODO yeet
   hasSubtensorPallet?: boolean
 } | null>
 

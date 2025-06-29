@@ -400,7 +400,6 @@ export const SubNativeModule: NewBalanceModule<
 
       const existentialDeposit = getConstantValue("Balances", "ExistentialDeposit")?.toString()
       const nominationPoolsPalletId = getConstantValue("NominationPools", "PalletId")?.asText()
-      const crowdloanPalletId = getConstantValue("Crowdloan", "PalletId")?.asText() // TODO yeet
       const hasSubtensorPallet = getConstantValue("SubtensorModule", "KeySwapCost") !== undefined
 
       //
@@ -414,8 +413,6 @@ export const SubNativeModule: NewBalanceModule<
           { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
           { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
           { pallet: "Staking", items: ["Ledger"] },
-          { pallet: "Crowdloan", items: ["Funds"] }, // TODO yeet
-          { pallet: "Paras", items: ["Parachains"] }, // TODO yeet
           // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
           // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
           { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },
@@ -441,7 +438,6 @@ export const SubNativeModule: NewBalanceModule<
           useLegacyTransferableCalculation,
           existentialDeposit,
           nominationPoolsPalletId,
-          crowdloanPalletId,
           hasSubtensorPallet,
         },
       }
@@ -509,7 +505,7 @@ export const SubNativeModule: NewBalanceModule<
         keys(addressesByTokenByNetwork).map(async (networkId) => {
           try {
             // this is what we want to be done separately for each network
-            // this will update the DB so minimetadata will be available when it's used, veeeeery far down the tree of subscribeChainBalances
+            // this will update the DB so minimetadata will be available when it's used, everywhere else down the tree of subscribeChainBalances
             await getMiniMetadata(
               chaindataProvider,
               chainConnector,

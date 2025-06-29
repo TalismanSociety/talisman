@@ -21,7 +21,6 @@ export class QueryCache {
 
   private miniMetadatas = new Map<DotNetworkId, MiniMetadata<typeof SubNativeModule>>()
   private balanceQueryCache = new Map<QueryKey, RpcStateQuery<SubNativeBalance>[]>()
-  // private metadataSub: Subscription | null = null
 
   constructor(
     private chaindataProvider: ChaindataProvider,

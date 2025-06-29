@@ -91,7 +91,7 @@ const fetchMiniMetadatas = async (
 
         const chainMeta = await mod.fetchSubstrateChainMeta(
           chainId,
-          balancesConfig as DefaultModuleConfig, // TODO fix typings
+          balancesConfig as DefaultModuleConfig, // TODO better typing
           metadataRpc,
         )
 
@@ -110,7 +110,7 @@ const fetchMiniMetadatas = async (
     log.debug(
       "[miniMetadata] updated miniMetadatas for %s in %sms",
       chainId,
-      performance.now() - start,
+      (performance.now() - start).toFixed(2),
     )
   }
 }

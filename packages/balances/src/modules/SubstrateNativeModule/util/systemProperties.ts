@@ -11,7 +11,7 @@ const DotNetworkPropertiesArray = z.object({
   tokenSymbol: z.array(z.string()).nonempty(),
 })
 
-export const DotNetworkProperties = z
+const DotNetworkPropertiesSchema = z
   .union([DotNetworkPropertiesSimple, DotNetworkPropertiesArray])
   .transform((val) => ({
     tokenDecimals: Array.isArray(val.tokenDecimals) ? val.tokenDecimals[0] : val.tokenDecimals,
@@ -20,5 +20,5 @@ export const DotNetworkProperties = z
 
 export const getChainProperties = async (chainConnector: ChainConnector, networkId: string) => {
   const properties = await chainConnector.send(networkId, "system_properties", [], true)
-  return DotNetworkProperties.parse(properties)
+  return DotNetworkPropertiesSchema.parse(properties)
 }

@@ -99,14 +99,7 @@ export type SubstrateBalance = IBalanceBase &
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes =
-  | "free"
-  | "reserved"
-  | "locked"
-  | "extra"
-  | "crowdloan"
-  | "nompool"
-  | "subtensor"
+export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "nompool" | "subtensor"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {
@@ -114,12 +107,12 @@ type BaseAmountWithLabel<TLabel extends string> = {
   /**
    * For modules which fetch balances via module sources, the source is equivalent to previous 'subSource' field
    * on the parent balance object
-   * e.g. `staking` or `crowdloans`
+   * e.g. `staking`
    **/
   source?: string
   label: TLabel
   amount: Amount
-  meta?: unknown
+  meta?: unknown // TODO type this with an object that has a discriminator property
 }
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
@@ -128,7 +121,6 @@ export const getValueId = (amount: AmountWithLabel<string>) => {
       | { poolId?: number; paraId?: number; hotkey?: string; netuid?: number }
       | undefined
     if (!meta) return ""
-    if (amount.type === "crowdloan") return meta.paraId?.toString() ?? ""
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
     if (amount.type === "subtensor") {
       const { hotkey, netuid } = meta

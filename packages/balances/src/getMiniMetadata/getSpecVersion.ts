@@ -15,7 +15,7 @@ const fetchSpecVersion = async (chainConnector: ChainConnector, networkId: DotNe
 }
 
 /**
- * fetches the spec version of a network. current request is cached in case of multiple calls (all balance subs kick in at once)
+ * fetches the spec version of a network. current request is cached in case of multiple calls (all balance modules will kick in at once)
  */
 export const getSpecVersion = async (chainConnector: ChainConnector, networkId: DotNetworkId) => {
   if (CACHE_GET_SPEC_VERSION.has(networkId)) return CACHE_GET_SPEC_VERSION.get(networkId)!
