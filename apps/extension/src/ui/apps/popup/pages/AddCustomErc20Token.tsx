@@ -7,8 +7,8 @@ import { Button } from "talisman-ui"
 
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
@@ -87,7 +87,7 @@ export const AddCustomErc20Token = () => {
               </FakePill>
               <span>{t("on")}</span>
               <FakePill>
-                <ChainLogo id={network.id} />
+                <NetworkLogo networkId={network.id} />
                 <span>{network.name}</span>
               </FakePill>
             </div>

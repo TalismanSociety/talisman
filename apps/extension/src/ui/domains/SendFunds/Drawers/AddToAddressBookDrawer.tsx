@@ -11,7 +11,7 @@ import * as yup from "yup"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworkByGenesisHash } from "@ui/state"
@@ -142,7 +142,7 @@ const AddToAddressBookDrawerForm: FC<{
               defaults="Limit to <Chain><ChainLogo />{{chainName}}</Chain>"
               components={{
                 Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-                ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+                ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
               }}
               values={{ chainName: chain?.name }}
             />

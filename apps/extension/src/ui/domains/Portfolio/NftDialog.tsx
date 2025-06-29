@@ -40,8 +40,8 @@ import { IS_POPUP } from "@ui/util/constants"
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"
-import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NftImage } from "./NftImage"
 import { getNftCollectionFloorUsd } from "./Nfts/helpers"
 
@@ -142,7 +142,7 @@ const TabContentCollection: FC<{
         <div className="text-right">{collection.distinctOwners}</div>
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
-          <ChainLogo id={nft.evmNetworkId} className="text-md" />
+          <NetworkLogo networkId={nft.evmNetworkId} className="text-md" />
           <div className="truncate">{network?.name}</div>
         </div>
         <div className="text-body-secondary">{t("Contract")}</div>

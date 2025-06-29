@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useAuthorisedSites, useNetworkById } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
 
 const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EthNetworkId }) => {
@@ -42,9 +42,9 @@ export const EvmNetworkSelectPill = () => {
             onClick={open}
           >
             <Suspense>
-              <ChainLogo
+              <NetworkLogo
                 className={classNames("text-[2.8rem] transition-opacity")} // flickering hack
-                id={evmNetworkId}
+                networkId={evmNetworkId}
               />
               <ChevronDownIcon className="shrink-0 text-base" />
             </Suspense>

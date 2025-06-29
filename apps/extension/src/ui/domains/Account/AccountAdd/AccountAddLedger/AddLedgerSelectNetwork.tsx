@@ -14,7 +14,7 @@ import * as yup from "yup"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import {
   ChainWithLedgerApp,
   useLedgerSubstrateChain,
@@ -64,7 +64,7 @@ const AppVersionButton: FC<{
 
 const renderSubstratNetworkOption = (chain: DotNetwork) => (
   <div className="flex max-w-full items-center gap-5 overflow-hidden">
-    <ChainLogo id={chain?.id} className="text-[1.25em]" />
+    <NetworkLogo networkId={chain?.id} className="text-[1.25em]" />
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
   </div>
 )

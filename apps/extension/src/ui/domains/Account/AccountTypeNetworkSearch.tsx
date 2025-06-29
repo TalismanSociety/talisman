@@ -13,7 +13,7 @@ import startCase from "lodash/startCase"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
 
@@ -122,7 +122,7 @@ export function AccountTypeNetworkSearch({
           <SearchIcon className="shrink-0 text-base" />
           {selected && selected.id !== DEFAULT_COMBO_BOX_HEADER_ID && (
             <div className="flex items-center gap-4">
-              <ChainLogo id={selected.id} className="text-md" />
+              <NetworkLogo networkId={selected.id} className="text-md" />
               <span className="text-base text-white">{selected.label}</span>
             </div>
           )}
@@ -160,7 +160,7 @@ export function AccountTypeNetworkSearch({
                   className="hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800 flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base"
                   value={network}
                 >
-                  <ChainLogo id={network.id} className="text-md" />
+                  <NetworkLogo networkId={network.id} className="text-md" />
                   <span className="text-white">{network.label}</span>
                   <span className="text-body-secondary/50 text-base">{network.type}</span>
                   <div className="flex-grow" />

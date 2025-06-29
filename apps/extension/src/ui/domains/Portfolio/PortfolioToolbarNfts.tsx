@@ -35,7 +35,7 @@ import {
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
@@ -83,7 +83,7 @@ const NetworkFilterButton = () => {
             className={classNames(networkFilter && "text-primary")}
           >
             {networkFilter ? (
-              <ChainLogo className="text-lg" id={networkFilter.networkIds[0]} />
+              <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
             ) : (
               <GlobeIcon />
             )}

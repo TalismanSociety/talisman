@@ -10,9 +10,9 @@ import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworksMapById, useRemoteConfig, useSelectedCurrency } from "@ui/state"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
@@ -197,7 +197,7 @@ const TokenButtonRow: FC<{
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden truncate text-xs">
-            <ChainLogo id={token.networkId} className="inline-block shrink-0" />
+            <NetworkLogo networkId={token.networkId} className="inline-block shrink-0" />
             <div className="text-body-secondary grow truncate">{token.network.name}</div>
           </div>
         </div>

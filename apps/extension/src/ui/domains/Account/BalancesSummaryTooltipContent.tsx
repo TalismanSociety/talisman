@@ -6,9 +6,9 @@ import { TooltipContent } from "talisman-ui"
 
 import { useNetworksMapById, useTokensMap } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | undefined }> = ({
   balances,
@@ -62,7 +62,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
               <TokensAndFiat tokenId={b.tokenId} planck={b.total} noTooltip noCountUp isBalance />
             </span>
             <span className="mx-2">{t("on")}</span>
-            <ChainLogo id={b.networkId} className="h-8 w-8" />
+            <NetworkLogo networkId={b.networkId} className="h-8 w-8" />
             <span className="ml-2 truncate">{b.networkName}</span>
           </div>
         ))}

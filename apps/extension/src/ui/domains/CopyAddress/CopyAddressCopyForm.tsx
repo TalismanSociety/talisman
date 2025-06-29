@@ -17,7 +17,7 @@ import { useAccountByAddress, useAccounts, useNetworkById } from "@ui/state"
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { TextQrCode } from "./TextQrCode"
@@ -103,7 +103,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
     <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
       <div className="text-body flex flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
-          <ChainLogo className="!text-lg" id={chain.id} />
+          <NetworkLogo className="!text-lg" networkId={chain.id} />
         </div>
         <div>{chain.name}</div>
       </div>
@@ -263,7 +263,7 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <ChainLogo className="text-lg" id={network?.id} />
+                <NetworkLogo className="text-lg" networkId={network?.id} />
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
@@ -333,7 +333,7 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <ChainLogo className="text-lg" id="1" />
+                <NetworkLogo className="text-lg" networkId="1" />
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>

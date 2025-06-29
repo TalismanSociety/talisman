@@ -36,7 +36,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork } from "@ui/state"
@@ -114,7 +114,7 @@ const NetworkForm: FC = () => {
                     data-lpignore
                     autoComplete="off"
                     small
-                    before={<ChainLogo id={network.id} className="size-12" />}
+                    before={<NetworkLogo networkId={network.id} className="size-12" />}
                   />
                 </FormFieldContainer>
               )}

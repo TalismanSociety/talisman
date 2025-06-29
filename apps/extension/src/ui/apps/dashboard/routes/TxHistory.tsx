@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
@@ -33,7 +33,7 @@ const NetworkFilterButton = () => {
       >
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {network ? (
-            <ChainLogo id={network.id} className="text-md shrink-0" />
+            <NetworkLogo networkId={network.id} className="text-md shrink-0" />
           ) : (
             <GlobeIcon className="text-md shrink-0" />
           )}

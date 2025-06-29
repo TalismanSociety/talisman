@@ -10,7 +10,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { NetworkOption } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const NetworkOptionRow: FC<{
   option: NetworkOption
@@ -27,7 +27,7 @@ const NetworkOptionRow: FC<{
         isSelected && "!bg-grey-700",
       )}
     >
-      <ChainLogo id={option.networkIds[0]} className="shrink-0 text-xl" />
+      <NetworkLogo networkId={option.networkIds[0]} className="shrink-0 text-xl" />
       <div className="text-body flex grow flex-col gap-2 truncate text-left">{option.name}</div>
     </button>
   )

@@ -4,8 +4,8 @@ import { Balances } from "extension-core"
 import { ReactNode, Suspense } from "react"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 
@@ -56,7 +56,7 @@ export const TokenBalancesList = ({
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex grow justify-between font-bold text-white">
             <div className="flex items-center">
-              <ChainLogo className="mr-2" id={chainOrNetworkId} />
+              <NetworkLogo className="mr-2" networkId={chainOrNetworkId} />
               <span className="mr-2 truncate">{chainOrNetworkName}</span>
               {shouldDisplayActionBtns && (
                 <>

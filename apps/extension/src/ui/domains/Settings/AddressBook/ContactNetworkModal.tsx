@@ -5,7 +5,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
 import { NetworkOption } from "@ui/state"
 
@@ -55,7 +55,7 @@ export const ContactNetworkPickerButton: FC<{
         onClick={open}
       >
         <div>
-          <ChainLogo id={option?.id} className="text-[2.4rem]" />
+          <NetworkLogo networkId={option?.id} className="text-[2.4rem]" />
         </div>
         <div className="text-body grow truncate text-left">{option?.name ?? t("All Networks")}</div>
         <ChevronRightIcon className="size-12" />

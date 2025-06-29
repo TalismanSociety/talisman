@@ -10,9 +10,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useNetworkById, useSelectedCurrency } from "@ui/state"
 
@@ -42,7 +42,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
 }) => (
   <div className="flex w-[150px] flex-col items-center gap-5 overflow-hidden">
     <div className="flex w-full items-center justify-center gap-2">
-      <ChainLogo id={networkId} className="!h-9 !w-9 shrink-0" />
+      <NetworkLogo networkId={networkId} className="!h-9 !w-9 shrink-0" />
       <div className="text-md text-body overflow-hidden text-ellipsis whitespace-nowrap font-bold">
         {networkName}
       </div>

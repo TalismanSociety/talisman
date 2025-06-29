@@ -7,7 +7,7 @@ import { useOpenClose } from "talisman-ui"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 
 import { TxHistoryAccountPicker } from "./TxHistoryAccountPicker"
 import { useTxHistory } from "./TxHistoryContext"
@@ -91,7 +91,7 @@ const NetworkFilterButton = () => {
       >
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {network ? (
-            <ChainLogo id={network.id} className="text-md shrink-0" />
+            <NetworkLogo networkId={network.id} className="text-md shrink-0" />
           ) : (
             <GlobeIcon className="text-md shrink-0" />
           )}

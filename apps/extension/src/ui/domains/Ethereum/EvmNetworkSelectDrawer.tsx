@@ -15,7 +15,7 @@ import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useActiveNetworksState, useAuthorisedSites, useNetworkById, useNetworks } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
@@ -168,7 +168,7 @@ const NetworkButton: FC<{
           onClick={onClick}
           className="bg-field hover:bg-grey-750 flex h-28 w-full shrink-0 items-center gap-6 rounded-sm px-6"
         >
-          <ChainLogo className="shrink-0 text-xl" id={network.id} />
+          <NetworkLogo className="shrink-0 text-xl" networkId={network.id} />
           <div className="grow truncate text-left">{network?.name}</div>
           {!!network.isTestnet && (
             <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">

@@ -20,7 +20,7 @@ import {
 } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import {
   ChainFormat,
@@ -84,7 +84,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   return (
     <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
       {format.chainId ? (
-        <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
+        <NetworkLogo className="shrink-0 text-xl" networkId={format.chainId} />
       ) : (
         <AccountIcon
           className="shrink-0 text-xl"

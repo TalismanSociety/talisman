@@ -6,7 +6,7 @@ import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 
@@ -23,8 +23,8 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   const chain = useNetworkByGenesisHash(genesisHash)
 
   return chain ? (
-    <ChainLogo
-      id={chain.id}
+    <NetworkLogo
+      networkId={chain.id}
       className="bg-grey-800 !absolute right-[-0.2em] top-[-0.2em] z-10 rounded-full text-[0.5em]"
     />
   ) : null

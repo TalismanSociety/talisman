@@ -3,9 +3,9 @@ import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "../../Asset/ChainLogo"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../../Ethereum/GasSettings/EthFeeSelect"
+import { NetworkLogo } from "../../Networks/NetworkLogo"
 import { SendFundsFeeTooltip } from "../SendFundsFeeTooltip"
 import { useSendFunds } from "../useSendFunds"
 import { Container } from "./Container"
@@ -19,7 +19,7 @@ const NetworkRow = () => {
     <div className="flex w-full items-center justify-between">
       <div>{t("Network")}</div>
       <div className="flex items-center gap-2">
-        <ChainLogo id={network?.id} className="inline-block text-base" />
+        <NetworkLogo networkId={network?.id} className="inline-block text-base" />
         <div>{network?.name}</div>
       </div>
     </div>

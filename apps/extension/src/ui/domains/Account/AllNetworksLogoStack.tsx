@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useNetworksMapById } from "@ui/state"
@@ -82,7 +82,7 @@ function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
   const tooltip = useMemo(
     () => (
       <div className="flex items-center gap-2">
-        <ChainLogo id={network?.id} />
+        <NetworkLogo networkId={network?.id} />
         <div>
           {network?.label} ({network?.type})
         </div>
@@ -96,7 +96,7 @@ function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
-        <ChainLogo key={network.id} id={network.id} />
+        <NetworkLogo key={network.id} networkId={network.id} />
       </WithTooltip>
     </div>
   )

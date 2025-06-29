@@ -21,7 +21,7 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useContacts, useNetworkById, useToken } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
 import { ToWarning, useSendFunds } from "./useSendFunds"
 
@@ -37,7 +37,7 @@ const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
           defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
           components={{
             Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-            ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+            ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
           }}
           values={{ chainName: chain?.name ?? t("Unknown") }}
         />
@@ -81,7 +81,7 @@ const UnknownAddressDrawer = ({
           <div className="mt-4 flex items-center justify-between gap-8 text-xs">
             <div className="text-body-secondary">{t("Selected Network")}</div>
             <div className="text-body flex items-center gap-4">
-              <ChainLogo id={chain?.id} className="text-md" />
+              <NetworkLogo networkId={chain?.id} className="text-md" />
               {chain?.name}
             </div>
           </div>

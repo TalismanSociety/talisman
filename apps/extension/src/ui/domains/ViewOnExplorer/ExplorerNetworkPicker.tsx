@@ -11,7 +11,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const useExplorerNetworks = (address: string, search: string): Network[] => {
   const account = useAccountByAddress(address)
@@ -58,7 +58,7 @@ const NetworkRow: FC<{ network: Network; onClick: () => void }> = ({ network, on
       onClick={onClick}
       className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12"
     >
-      <ChainLogo className="shrink-0 text-xl" id={network.id} />
+      <NetworkLogo className="shrink-0 text-xl" networkId={network.id} />
       <div className="flex grow flex-col gap-2 overflow-hidden text-left">
         <div className="text-body truncate">{network.name}</div>
         <div className="text-body-secondary truncate text-xs">{network.blockExplorerUrls[0]}</div>

@@ -46,11 +46,11 @@ import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import {
@@ -140,7 +140,7 @@ const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
           key={network.id}
           className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
-          <ChainLogo id={network.id} />
+          <NetworkLogo networkId={network.id} />
           <div className="text-body grow truncate">{network.name}</div>
           <div>{t("{{count}} tokens", { count: tokens })}</div>
         </div>

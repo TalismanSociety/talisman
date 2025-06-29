@@ -3,8 +3,8 @@ import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { Trans, useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworksMapById, useSelectedCurrency } from "@ui/state"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
@@ -50,7 +50,7 @@ export const SwapConfirm = ({
               <Trans t={t}>
                 from{" "}
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <ChainLogo id={fromNetwork?.id} />{" "}
+                  <NetworkLogo networkId={fromNetwork?.id} />{" "}
                   <span className="truncate">{fromNetwork?.name}</span>
                 </div>
               </Trans>
@@ -91,7 +91,7 @@ export const SwapConfirm = ({
               <Trans t={t}>
                 on{" "}
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <ChainLogo id={toNetwork?.id} />{" "}
+                  <NetworkLogo networkId={toNetwork?.id} />{" "}
                   <span className="truncate">{toNetwork?.name}</span>
                 </div>
               </Trans>

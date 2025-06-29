@@ -7,8 +7,8 @@ import { Button } from "talisman-ui"
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
@@ -50,7 +50,7 @@ export const AddEthereumNetwork = () => {
       </PopupHeader>
       <PopupContent>
         <div className="flex h-full w-full flex-col items-center text-center">
-          <ChainLogo id={request.network.id} className="mt-6 inline-block text-3xl" />
+          <NetworkLogo networkId={request.network.id} className="mt-6 inline-block text-3xl" />
           <h1 className="text-md mb-12 mt-8 font-bold">{t("Add Network")}</h1>
           <p className="text-body-secondary leading-[2.6rem]">
             <Trans t={t}>

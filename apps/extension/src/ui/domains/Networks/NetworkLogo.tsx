@@ -1,28 +1,25 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { Network, NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
-import { FC, Suspense, useId, useMemo } from "react"
+import { FC, Suspense, useId } from "react"
 
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useNetworkById } from "@ui/state"
 
-type ChainLogoBaseProps = {
-  id?: NetworkId
-  name?: string
-  logo?: string | null
-  iconUrls?: string[]
+type NetworkLogoBaseProps = {
+  network?: Network | null
   className?: string
 }
 
-export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) => {
+const NetworkLogoBase: FC<NetworkLogoBaseProps> = ({ network, className }) => {
   const rid = useId()
-  const { src, onError } = useGithubImageUrl(logo, UNKNOWN_NETWORK_URL)
+  const { src, onError } = useGithubImageUrl(network?.logo, UNKNOWN_NETWORK_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
       key={`${rid}::${src}`}
-      data-id={id}
+      data-id={network?.id}
       src={src}
       className={classNames("relative block aspect-square w-[1em] shrink-0", className)}
       alt=""
@@ -33,20 +30,18 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) =
   )
 }
 
-type ChainLogoProps = {
+type NetworkLogoProps = {
   className?: string
-  id?: NetworkId
+  networkId?: NetworkId
 }
 
-const ChainLogoInner: FC<ChainLogoProps> = ({ id, className }) => {
+const NetworkLogoInner: FC<NetworkLogoProps> = ({ networkId: id, className }) => {
   const network = useNetworkById(id)
 
-  const props: ChainLogoBaseProps = useMemo(() => network ?? {}, [network])
-
-  return <ChainLogoBase {...props} className={className} />
+  return <NetworkLogoBase network={network} className={className} />
 }
 
-const ChainLogoFallback: FC<{ className?: string }> = ({ className }) => (
+const NetworkLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
@@ -55,8 +50,8 @@ const ChainLogoFallback: FC<{ className?: string }> = ({ className }) => (
   ></div>
 )
 
-export const ChainLogo: FC<ChainLogoProps> = (props) => (
-  <Suspense fallback={<ChainLogoFallback className={props.className} />}>
-    <ChainLogoInner {...props} />
+export const NetworkLogo: FC<NetworkLogoProps> = (props) => (
+  <Suspense fallback={<NetworkLogoFallback className={props.className} />}>
+    <NetworkLogoInner {...props} />
   </Suspense>
 )

@@ -17,7 +17,7 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { AccountAddMnemonicDropdown } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddMnemonicDropdown"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState, useBalancesHydrate, useMnemonic, useNetworks } from "@ui/state"
@@ -104,7 +104,7 @@ const SetVerifierCertificateContent = () => (
 const renderOption = (chain: DotNetwork) => {
   return (
     <div className="flex max-w-full items-center gap-5 overflow-hidden">
-      <ChainLogo id={chain.id} className="text-[1.25em]" />
+      <NetworkLogo networkId={chain.id} className="text-[1.25em]" />
       <span className="overflow-hidden text-ellipsis whitespace-nowrap">{chain.name}</span>
     </div>
   )

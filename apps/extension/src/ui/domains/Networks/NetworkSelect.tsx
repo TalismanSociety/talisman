@@ -3,12 +3,12 @@ import { classNames } from "@talismn/util"
 import { FC, useCallback, useEffect, useState } from "react"
 import { Dropdown } from "talisman-ui"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "./NetworkLogo"
 
 const renderNetwork = (network: Network) => {
   return (
     <div className="flex items-center gap-5">
-      <ChainLogo id={network.id} className="text-[1.25em]" />
+      <NetworkLogo networkId={network.id} className="text-[1.25em]" />
       <span>{network.name}</span>
     </div>
   )

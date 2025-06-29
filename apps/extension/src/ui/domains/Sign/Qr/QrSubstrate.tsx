@@ -13,7 +13,7 @@ import { ReactElement, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
@@ -412,7 +412,7 @@ const SendPage = ({
                 defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
                 components={{
                   Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-                  ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+                  ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
                 }}
                 values={{ chainName: chain?.name ?? t("Unknown") }}
               />

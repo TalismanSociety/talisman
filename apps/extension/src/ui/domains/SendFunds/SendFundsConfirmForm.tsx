@@ -11,11 +11,11 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useAccounts, useSelectedCurrency } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
@@ -46,7 +46,7 @@ const NetworkDisplay = () => {
 
   return (
     <div className="text-body flex items-center gap-4">
-      <ChainLogo id={network.id} className="text-md" />
+      <NetworkLogo networkId={network.id} className="text-md" />
       {network.name}
     </div>
   )

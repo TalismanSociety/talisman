@@ -22,7 +22,7 @@ import {
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
-import { ChainLogoBase } from "./ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -34,7 +34,6 @@ type TokenRowProps = {
   onClick?: () => void
   balances: Balances
   chainName?: string | null
-  chainLogo?: string | null
   hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
@@ -69,7 +68,6 @@ type TokenData = {
   balances: Balances
   chainNameSearch: string | null | undefined
   chainName: string
-  chainLogo: string | null | undefined
   hasFiatRate: boolean
 }
 
@@ -118,7 +116,6 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 chainName={tokenData.chainName}
-                chainLogo={tokenData.chainLogo}
                 hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
@@ -136,7 +133,6 @@ const TokenRow: FC<TokenRowProps> = ({
   selected,
   balances,
   chainName,
-  chainLogo,
   hasFiatRate,
   allowUntransferable,
   onClick,
@@ -200,11 +196,7 @@ const TokenRow: FC<TokenRowProps> = ({
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
           <div className="flex flex-col justify-center">
-            <ChainLogoBase
-              logo={chainLogo}
-              name={chainName ?? ""}
-              className="inline-block text-sm"
-            />
+            <NetworkLogo networkId={token.networkId} className="inline-block text-sm" />
           </div>
           <div>{chainName}</div>
           <div className={classNames("grow", isLoading && "animate-pulse")}>

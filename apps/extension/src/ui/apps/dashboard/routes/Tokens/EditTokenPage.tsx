@@ -39,8 +39,8 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useActivableToken } from "@ui/hooks/useActivableToken"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork, useToken } from "@ui/state"
@@ -136,7 +136,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               autoComplete="off"
               readOnly
               small
-              before={<ChainLogo id={token.networkId} className="size-12" />}
+              before={<NetworkLogo networkId={token.networkId} className="size-12" />}
             />
           </FormFieldContainer>
           {isTokenInTypes(token, ["substrate-assets"]) && (

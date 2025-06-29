@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom"
 import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useActiveNetworksState,
@@ -216,7 +216,7 @@ const NetworkRow: FC<{
   return (
     <div className="relative h-28">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
-        <ChainLogo className="rounded-full text-xl" id={network.id} />
+        <NetworkLogo className="rounded-full text-xl" networkId={network.id} />
         <div className="text-body flex flex-col justify-center gap-1 overflow-hidden">
           <div className="truncate">{network.name}</div>
           <div className="text-body-inactive truncate text-xs">{type}</div>

@@ -13,7 +13,7 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -116,7 +116,7 @@ const NetworkRow: FC<{
       )}
     >
       {network ? (
-        <ChainLogo id={network.id} className="shrink-0 text-xl" />
+        <NetworkLogo networkId={network.id} className="shrink-0 text-xl" />
       ) : (
         <GlobeIcon className="shrink-0 text-xl" />
       )}

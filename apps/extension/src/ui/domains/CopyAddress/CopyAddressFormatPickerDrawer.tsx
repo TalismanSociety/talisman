@@ -8,7 +8,7 @@ import { Button, Drawer } from "talisman-ui"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById, useRemoteConfig } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 // should only be used here and in CopyAddressChainForm
 export type ChainFormat = {
@@ -139,7 +139,7 @@ const FormatRow: FC<{
   return (
     <div className="border-grey-700 flex h-[6.8rem] w-full items-center gap-6 rounded-lg border px-8">
       <div className="size-16 shrink-0">
-        <ChainLogo id={chainId} className="shrink-0 text-xl" />
+        <NetworkLogo networkId={chainId} className="shrink-0 text-xl" />
       </div>
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex items-center gap-4 overflow-hidden">

@@ -7,8 +7,8 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import { useNetworkByGenesisHash, useNetworks } from "@ui/state"
@@ -140,7 +140,7 @@ export const ConfigureAccount = () => {
                   label={
                     <Trans t={t}>
                       <span>This is a derived account (restrict account to </span>
-                      <ChainLogo id={chain.id} className="inline" />
+                      <NetworkLogo networkId={chain.id} className="inline" />
                       <span className="text-body">{chain.name}</span>
                       <span> network)</span>
                     </Trans>

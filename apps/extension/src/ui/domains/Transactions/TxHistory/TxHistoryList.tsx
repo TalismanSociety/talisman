@@ -42,10 +42,10 @@ import {
 import urlJoin from "url-join"
 
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
@@ -177,7 +177,7 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
   }, [])
 
   if (!iconUrl) return null
-  if (isError) return <ChainLogo className={className} />
+  if (isError) return <NetworkLogo className={className} />
 
   return (
     <img
@@ -206,8 +206,8 @@ const TxIconContainer = ({
     <TooltipTrigger className={classNames("relative h-16 w-16 shrink-0 cursor-default", className)}>
       {children}
       {!!networkId && (
-        <ChainLogo
-          id={networkId}
+        <NetworkLogo
+          networkId={networkId}
           className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
         />
       )}
@@ -653,7 +653,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           </TxIconContainer>
         ) : (
           <TxIconContainer tooltip={evmNetwork?.name}>
-            <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
+            <NetworkLogo networkId={evmNetwork?.id} className="!h-16 !w-16" />
           </TxIconContainer>
         )
       }
@@ -923,7 +923,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           </TxIconContainer>
         ) : (
           <TxIconContainer tooltip={chain?.name}>
-            <ChainLogo id={chain?.id} className="!h-16 !w-16" />
+            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
           </TxIconContainer>
         )
       }
