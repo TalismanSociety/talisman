@@ -14,7 +14,6 @@ import { api } from "@ui/api"
 export const getFrontendTypeRegistry = async (
   network?: DotNetwork,
   specVersion?: number | string,
-  blockHash?: string, // TODO yeet
   signedExtensions?: string[],
 ) => {
   const registry = new TypeRegistry()
@@ -50,11 +49,7 @@ export const getFrontendTypeRegistry = async (
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
 
   // metadata must be loaded by backend
-  const metadataDef = await api.subChainMetadata(
-    genesisHash,
-    numSpecVersion,
-    blockHash as HexString, // TODO yeet
-  )
+  const metadataDef = await api.subChainMetadata(genesisHash, numSpecVersion)
 
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 

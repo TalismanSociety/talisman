@@ -304,7 +304,6 @@ export default interface MessageTypes {
   subChainMetadata: (
     genesisHash: HexString,
     specVersion?: number,
-    blockHash?: HexString,
   ) => Promise<MetadataDef | undefined>
 
   assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>

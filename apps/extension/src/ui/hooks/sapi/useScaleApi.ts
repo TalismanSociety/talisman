@@ -16,17 +16,16 @@ import { useDotNetwork, useToken } from "@ui/state"
 export const useScaleApi = (
   chainIdOrHash: DotNetworkId | HexString | null | undefined,
   specVersion?: number,
-  blockHash?: HexString,
 ) => {
   const chain = useDotNetwork(chainIdOrHash)
   const token = useToken(chain?.nativeTokenId)
 
   return useQuery({
-    queryKey: ["useScaleApi", chain, specVersion, blockHash, token],
+    queryKey: ["useScaleApi", chain, specVersion, token],
     queryFn: async () => {
       if (!chain?.genesisHash || !token) return null
 
-      const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion, blockHash)
+      const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion)
       assert(metadataDef?.metadataRpc, `Metadata unavailable for chain ${chain.id}`)
 
       const metadataRpc = getMetadataRpcFromDef(metadataDef)
