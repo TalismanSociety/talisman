@@ -20,12 +20,6 @@ export const SubNativeBalancesConfigSchema = z.object({
 
 export type SubNativeBalancesConfig = z.infer<typeof SubNativeBalancesConfigSchema>
 
-// TODO yeet => wallet only information
-export const CustomSubNativeTokenSchema = SubNativeTokenSchema.extend({
-  isCustom: z.literal(true),
-})
-export type CustomSubNativeToken = z.infer<typeof CustomSubNativeTokenSchema>
-
 export type SubNativeTokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId

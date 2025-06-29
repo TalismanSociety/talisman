@@ -10,7 +10,7 @@ const TOKEN_TYPE = "substrate-psp22"
 export const SubPsp22TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
-  contractAddress: z.string().nonempty(), // TODO validate address format - do we want @talismn/crypto as a dependency in this package?
+  contractAddress: z.string().nonempty(),
 })
 export type SubPsp22Token = z.infer<typeof SubPsp22TokenSchema>
 
@@ -35,6 +35,6 @@ export const parseSubPsp22TokenId = (tokenId: TokenId): SubPsp22TokenIdSpecs => 
   return {
     type,
     networkId,
-    contractAddress, // TODO normalize ?
+    contractAddress,
   }
 }

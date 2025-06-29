@@ -1,10 +1,5 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import {
-  CustomEvmNativeToken,
-  EvmNativeToken,
-  networkIdFromTokenId,
-  TokenList,
-} from "@talismn/chaindata-provider"
+import { EvmNativeToken, networkIdFromTokenId, TokenList } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { fromPairs, keys, toPairs } from "lodash"
 import { hexToBigInt, isHex, PublicClient } from "viem"
@@ -42,7 +37,7 @@ declare module "@talismn/balances/plugins" {
 
 export const EvmNativeModule: NewBalanceModule<
   ModuleType,
-  EvmNativeToken | CustomEvmNativeToken,
+  EvmNativeToken,
   EvmNativeChainMeta,
   EvmNativeModuleConfig,
   EvmNativeTokenConfig
@@ -50,10 +45,7 @@ export const EvmNativeModule: NewBalanceModule<
   const { chainConnectors, chaindataProvider } = hydrate
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<
-      string,
-      EvmNativeToken | CustomEvmNativeToken
-    >
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<string, EvmNativeToken>
   }
 
   return {
@@ -61,7 +53,7 @@ export const EvmNativeModule: NewBalanceModule<
 
     get tokens() {
       return chaindataProvider.getTokensMapById(moduleType) as Promise<
-        Record<string, EvmNativeToken | CustomEvmNativeToken>
+        Record<string, EvmNativeToken>
       >
     },
 
@@ -213,7 +205,7 @@ class EvmNativeBalanceError extends Error {
 
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  addressesByToken: AddressesByToken<EvmNativeToken | CustomEvmNativeToken>,
+  addressesByToken: AddressesByToken<EvmNativeToken>,
   tokens: TokenList,
 ) => {
   if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)

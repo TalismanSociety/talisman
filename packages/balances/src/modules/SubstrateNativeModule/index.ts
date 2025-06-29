@@ -1,12 +1,7 @@
 import { arrayChunk, assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import { ChainConnectionError } from "@talismn/chain-connector"
-import {
-  CustomSubNativeToken,
-  SubNativeToken,
-  subNativeTokenId,
-  TokenId,
-} from "@talismn/chaindata-provider"
+import { SubNativeToken, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
   decAnyMetadata,
@@ -101,7 +96,7 @@ export type SubNativeTokenConfig = z.infer<typeof SubNativeTokenConfigSchema>
 
 export const SubNativeModule: NewBalanceModule<
   ModuleType,
-  SubNativeToken | CustomSubNativeToken,
+  SubNativeToken,
   SubNativeChainMeta,
   SubNativeModuleConfig,
   SubNativeTokenConfig,

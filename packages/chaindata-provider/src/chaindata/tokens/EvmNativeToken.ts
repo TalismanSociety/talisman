@@ -17,12 +17,6 @@ export const EvmNativeBalancesConfigSchema = z.undefined()
 
 export type EvmNativeBalancesConfig = z.infer<typeof EvmNativeBalancesConfigSchema>
 
-// TODO yeet => wallet only information
-export const CustomEvmNativeTokenSchema = EvmNativeTokenSchema.extend({
-  isCustom: z.literal(true),
-})
-export type CustomEvmNativeToken = z.infer<typeof CustomEvmNativeTokenSchema>
-
 export type EvmNativeTokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId
