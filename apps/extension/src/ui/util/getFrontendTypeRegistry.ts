@@ -60,13 +60,14 @@ export const getFrontendTypeRegistry = async (
       registry.setMetadata(metadata)
     }
 
-    registry.setSignedExtensions(signedExtensions, {
-      ...metadataDef.userExtensions,
-      ...network?.signedExtensions,
-    })
+    if (signedExtensions || metadataDef.userExtensions || network?.signedExtensions)
+      registry.setSignedExtensions(signedExtensions, {
+        ...metadataDef.userExtensions,
+        ...network?.signedExtensions,
+      })
 
     if (metadataDef.types) registry.register(metadataDef.types)
-  } else {
+  } else if (signedExtensions || network?.signedExtensions) {
     registry.setSignedExtensions(signedExtensions, network?.signedExtensions)
   }
 
