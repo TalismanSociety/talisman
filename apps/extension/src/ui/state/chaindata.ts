@@ -13,7 +13,7 @@ import {
   TokenOfType,
   TokenType,
 } from "@talismn/chaindata-provider"
-import { getSharedObservable } from "@talismn/util/src/getSharedObservable"
+import { getSharedObservable } from "@talismn/util"
 import {
   activeNetworksStore,
   activeTokensStore,
