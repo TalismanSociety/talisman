@@ -30,7 +30,7 @@ export const getChainFromEvmNetwork = (network: EthNetwork): Chain => {
     const chain: Chain = {
       ...viemChain,
       id: Number(network.id),
-      name: network.name ?? `EVM Chain ${network.id}`,
+      name: network.name ?? `Ethereum Chain ${network.id}`,
       rpcUrls: {
         public: { http: chainRpcs },
         default: { http: chainRpcs },

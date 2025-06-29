@@ -133,7 +133,7 @@ const useBlockFeeData = (
         withFeeOptions ? publicClient.estimateMaxPriorityFeePerGas() : 0n,
       ])
 
-      if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain?.id)) {
+      if (feeHistoryAnalysis && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(publicClient.chain.id)) {
         // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
         // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
         // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
@@ -248,7 +248,7 @@ const useDecodeEvmTransaction = (
       await queryClient.prefetchQuery({
         queryKey: [
           "useDecodeEvmTransaction",
-          publicClient.chain?.id,
+          publicClient.chain.id,
           serializeTransactionRequest(newTx),
         ],
         queryFn: () => decodeEvmTransaction(publicClient, newTx),

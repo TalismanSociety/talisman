@@ -68,7 +68,6 @@ export class QueryCache {
     }
 
     // build queries for token/address pairs which have not been queried before
-    // const miniMetadatas = await firstValueFrom(commonMetadataObservable)
     const uniqueChainIds = keys(byNetwork) // getUniqueChainIds(queryResults.newAddressesByToken, tokens)
     const chainStorageCoders = buildStorageCoders({
       chainIds: uniqueChainIds,

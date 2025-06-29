@@ -35,7 +35,7 @@ export interface TalismanMessages {
   ]
   "pub(talisman.rpc.byGenesisHash.unsubscribe)": [RequestRpcByGenesisHashUnsubscribe, boolean]
 
-  // TODO yeet everything below
+  // TODO yeet everything below once discussed with the team
   "pub(talisman.customSubstrateChains.subscribe)": [null, string, DotNetwork[]]
   "pub(talisman.customSubstrateChains.unsubscribe)": [string, boolean]
   "pub(talisman.customEvmNetworks.subscribe)": [null, string, EthNetwork[]]

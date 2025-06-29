@@ -25,7 +25,7 @@ export const getEvmNetworkPublicClient = (network: EthNetwork): PublicClient => 
   const chain = getChainFromEvmNetwork(network)
 
   if (!publicClientCache.has(network.id)) {
-    if (!network.rpcs.length) throw new Error("No RPCs found for EVM network")
+    if (!network.rpcs.length) throw new Error("No RPCs found for Ethereum network")
 
     const batch = chain.contracts?.multicall3
       ? { multicall: { wait: MUTLICALL_BATCH_WAIT, batchSize: MUTLICALL_BATCH_SIZE } }

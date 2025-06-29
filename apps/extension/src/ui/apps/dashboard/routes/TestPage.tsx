@@ -5,6 +5,8 @@ import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } 
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, usePortfolio, useTokens } from "@ui/state"
 
+// At time time used to test the observables & hooks from ./ui/state, how often they suspense and emit
+// But can be used to test virtually anything in the app
 export const TestPage = () => {
   const [showTokens, setShowTokens] = useState(false)
   const [showAllNetworks, setShowAllNetworks] = useState(false)
@@ -23,20 +25,6 @@ export const TestPage = () => {
           <ToggleButton label="eth networks" show={showEthNetworks} dispatch={setShowEthNetworks} />
           <ToggleButton label="dot networks" show={showDotNetworks} dispatch={setShowDotNetworks} />
           <ToggleButton label="portfolio" show={showPortfolio} dispatch={setShowPortfolio} />
-          {/* <button
-            type="button"
-            className="rounded border p-2"
-            onClick={() => setShowTokens((p) => !p)}
-          >
-            {showTokens ? "hide tokens" : "show tokens"}
-          </button>
-          <button
-            type="button"
-            className="rounded border p-2"
-            onClick={() => setShowPortfolio((p) => !p)}
-          >
-            {showPortfolio ? "hide portfolio" : "show portfolio"}
-          </button> */}
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           {showTokens && <TestTokens />}

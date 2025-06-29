@@ -71,8 +71,6 @@ export type BalanceSource = BalanceJson["source"]
 
 /** TODO: Remove this in favour of a frontend-friendly `ChaindataProvider` */
 export type HydrateDb = Partial<{
-  // chains: ChainList
-  // evmNetworks: SimpleEvmNetworkList
   networks: NetworkList
   tokens: TokenList
   tokenRates: TokenRatesList
@@ -397,10 +395,7 @@ export class Balance {
     //
     // This means that those rates are always available for calculating the uniswapv2 rates,
     // regardless of whether or not the underlying erc20s are actually in chaindata and enabled.
-    if (
-      this.isSource("evm-uniswapv2") &&
-      this.token?.type === "evm-uniswapv2" // &&
-    ) {
+    if (this.isSource("evm-uniswapv2") && this.token?.type === "evm-uniswapv2") {
       const tokenId0 = evmErc20TokenId(this.networkId, this.token.tokenAddress0)
       const tokenId1 = evmErc20TokenId(this.networkId, this.token.tokenAddress1)
 
