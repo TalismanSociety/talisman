@@ -541,7 +541,7 @@ export const chains = [
     id: "kusama-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 594,
+    sortIndex: 598,
     genesisHash: "0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a",
     prefix: 2,
     name: "Kusama Asset Hub",
@@ -551,7 +551,7 @@ export const chains = [
     chainType: "Live",
     implName: "statemine",
     specName: "statemine",
-    specVersion: "1005001",
+    specVersion: "1006000",
     nativeToken: {
       id: "kusama-asset-hub-substrate-native",
     },
@@ -584,6 +584,9 @@ export const chains = [
         url: "wss://sys.ibp.network/asset-hub-kusama",
       },
       {
+        url: "wss://asset-hub-kusama-rpc.dwellir.com",
+      },
+      {
         url: "wss://statemine-rpc-tn.dwellir.com",
       },
       {
@@ -600,9 +603,6 @@ export const chains = [
       },
       {
         url: "wss://ksm-rpc.stakeworld.io/assethub",
-      },
-      {
-        url: "wss://asset-hub-kusama-rpc.dwellir.com",
       },
     ],
     evmNetworks: [],
@@ -656,7 +656,7 @@ export const chains = [
     id: "kusama-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 595,
+    sortIndex: 599,
     genesisHash: "0x00dcb981df86429de8bbacf9803401f09485366c44efbf53af9ecfab03adc7e5",
     prefix: 2,
     name: "Kusama Bridge Hub",
@@ -731,7 +731,7 @@ export const chains = [
     id: "polkadot-asset-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 846,
+    sortIndex: 849,
     genesisHash: "0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f",
     prefix: 0,
     oldPrefix: 0,
@@ -1083,7 +1083,7 @@ export const chains = [
     id: "polkadot-bridge-hub",
     isTestnet: false,
     isDefault: true,
-    sortIndex: 847,
+    sortIndex: 850,
     genesisHash: "0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464",
     prefix: 0,
     oldPrefix: 0,
