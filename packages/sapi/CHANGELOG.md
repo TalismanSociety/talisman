@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.0.6
+
+### Patch Changes
+
+- 2773be6: fix: era reference when creating payloads
+
 ## 0.0.5
 
 ### Patch Changes
