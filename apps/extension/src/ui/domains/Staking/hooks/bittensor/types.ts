@@ -16,7 +16,7 @@ type Key = {
 }
 
 // Validator Data Type
-type ValidatorData = {
+export type ValidatorData = {
   hotkey: Key
   coldkey: Key
   name: string
@@ -44,17 +44,6 @@ type ValidatorData = {
 export type ValidatorsData = {
   pagination: Pagination
   data: ValidatorData[]
-}
-
-export type Validator = {
-  name: string
-  url: string
-  description: string
-  signature: string
-}
-
-export type ValidatorsResponse = {
-  [key: string]: Validator // The key is the unique validator hotkey.
 }
 
 export type BondOption = {
