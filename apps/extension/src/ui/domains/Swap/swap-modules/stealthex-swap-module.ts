@@ -42,6 +42,7 @@ import type {
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
+import { vanaMainnet } from "../swaps-port/vana"
 import {
   BaseQuote,
   fromAddressAtom,
@@ -121,6 +122,7 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
   optimism,
   theta,
   zksync,
+  vana: vanaMainnet,
 }
 
 /**
@@ -202,6 +204,13 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     name: "Ethereum",
     chainId: 10,
     symbol: "ETH",
+    networkType: "evm",
+  },
+  "mainnet::vana": {
+    id: evmNativeTokenId("1480"),
+    name: "Vana",
+    chainId: 1480,
+    symbol: "VANA",
     networkType: "evm",
   },
   "manta::eth": {

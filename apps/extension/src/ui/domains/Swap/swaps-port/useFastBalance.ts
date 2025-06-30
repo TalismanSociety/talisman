@@ -1,9 +1,9 @@
+import type { Chain as ViemChain } from "viem/chains"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
-import { type Chain as ViemChain } from "viem/chains"
-import * as allEvmChains from "viem/chains"
 
 import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
+import { allEvmChains } from "./allEvmChains"
 import { Decimal } from "./Decimal"
 import { useSubstrateBalance } from "./useSubstrateBalance"
 
@@ -44,7 +44,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
     if (props?.type !== "evm") return setEvmBalance(undefined)
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-      (chain) => chain.id === props.networkId,
+      (chain) => chain?.id === props.networkId,
     )
     const rpcUrls = chain?.rpcUrls.default.http
     if (!chain || !rpcUrls?.length) return setEvmBalance(undefined)
