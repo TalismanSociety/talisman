@@ -69,6 +69,7 @@ export class ChainsHandler extends ExtensionHandler {
         nativeToken: { id: newToken.id },
         tokens: existingChain?.tokens ?? [{ id: newToken.id }],
         account: chain.accountFormat,
+        blockExplorerUrls: chain.subscanUrl ? [chain.subscanUrl] : null,
         subscanUrl: chain.subscanUrl ?? null,
         chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
         latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
