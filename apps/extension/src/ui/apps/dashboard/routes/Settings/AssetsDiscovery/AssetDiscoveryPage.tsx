@@ -572,7 +572,7 @@ const ScanInfo: FC = () => {
 
   const formatedTimestamp = useMemo(() => {
     const date = new Date(lastScanTimestamp)
-    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`
+    return `${date.toLocaleDateString(window.navigator.language)} ${date.toLocaleTimeString(window.navigator.language)}`
   }, [lastScanTimestamp])
 
   const accounts = useAccounts()
