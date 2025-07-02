@@ -57,9 +57,10 @@ export const getFeeHistoryAnalysis = async (
       )
 
     // last entry of the array is the base fee for next block, exclude it from further averages
+    // warning: on neuroweb nextBaseFee is lower than the others even when network is idle
     const nextBaseFee = feeHistory.baseFeePerGas.pop() as bigint
 
-    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee) => fee === nextBaseFee)
+    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee, i, arr) => fee === arr[0])
 
     const avgBaseFeePerGas =
       feeHistory.baseFeePerGas.reduce((prev, curr) => prev + curr, 0n) /

@@ -1,5 +1,6 @@
+import { bigIntMax } from "@ethereumjs/util"
 import { EthNetworkId } from "@talismn/chaindata-provider"
-import { isBigInt } from "@talismn/util"
+import { isBigInt, isTruthy } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   EthGasSettings,
@@ -156,7 +157,9 @@ const useBlockFeeData = (
       return {
         estimatedGas,
         gasPrice,
-        baseFeePerGas: feeHistoryAnalysis?.nextBaseFee || baseFeePerGas, // feeHistoryAnalysis?.nextBaseFee can be 0 which is impossible (ex: opBNB chain)
+        baseFeePerGas: bigIntMax(
+          ...[feeHistoryAnalysis?.nextBaseFee, baseFeePerGas].filter(isTruthy),
+        ),
         blockGasLimit,
         networkUsage,
         feeHistoryAnalysis,
