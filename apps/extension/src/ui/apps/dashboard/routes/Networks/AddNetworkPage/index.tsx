@@ -81,7 +81,10 @@ const NetworkCreateForm: FC = () => {
               <FormFieldContainer label={t("Platform")} error={field.state.meta.errors[0]}>
                 <PlatformSelect
                   value={field.state.value ?? null}
-                  onChange={(platform) => field.handleChange(platform)}
+                  onChange={(platform) => {
+                    field.form.reset()
+                    field.handleChange(platform)
+                  }}
                   placeholder={t("Select a platform")}
                 />
               </FormFieldContainer>
@@ -103,6 +106,7 @@ const NetworkCreateForm: FC = () => {
                   platform === "polkadot" ? "wss://" : platform === "ethereum" ? "https://" : ""
                 }
                 small
+                disabled={!platform}
                 after={
                   field.state.meta.isValidating && (
                     <div className="mr-[-1.2rem] shrink-0 px-2">

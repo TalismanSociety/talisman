@@ -180,7 +180,10 @@ const useNetworkCreateFormProvider = () => {
 
   // wrap this in a context so the form object can be passed to sub components easily
   const form = useForm({
-    defaultValues: { ...DEFAULT_FORM_DATA, platform: location.state?.platform },
+    defaultValues: {
+      ...DEFAULT_FORM_DATA,
+      platform: location.state?.platform === "all" ? undefined : location.state?.platform,
+    },
     onSubmit: async ({ value }) => {
       try {
         const req = formDataToNetwork(value as NetworkCreateFormData)
