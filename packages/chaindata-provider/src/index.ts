@@ -4,7 +4,7 @@ export * from "./util"
 export * from "./legacy"
 
 export {
-  // make sure not to export the strict minimum
+  // make sure to export the strict minimum
   // db should definitely not be exported
   ChaindataFileSchema,
   CustomChaindataSchema,
