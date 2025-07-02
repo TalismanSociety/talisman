@@ -63,7 +63,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
                       message: t("Address already saved as a network-limited contact"),
                     })
                   : ctx.createError({ message: t("Contact already exists") })
-                : ctx.createError({ message: t("Cannot save a wallet address as a contact") })
+                : ctx.createError({ message: t("That address is already part of your wallet") })
 
             return true
           }),
