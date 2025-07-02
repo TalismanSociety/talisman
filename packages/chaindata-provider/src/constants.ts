@@ -1,5 +1,5 @@
 /** @dev temporarily change branch here when testing changes in chaindata */
-const CHAINDATA_BRANCH = "feat/chaindata-v4"
+const CHAINDATA_BRANCH = "main"
 const CHAINDATA_PUB_FOLDER = "pub/v4"
 
 //
