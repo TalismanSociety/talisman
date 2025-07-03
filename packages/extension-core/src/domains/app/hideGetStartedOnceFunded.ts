@@ -1,5 +1,5 @@
 import { BalanceJson, Balances } from "@talismn/balances"
-import { isAccountAddressEthereum, isAccountOfType, isAccountOwned } from "@talismn/keyring"
+import { isAccountOwned } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { normalizeAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
@@ -8,7 +8,7 @@ import { combineLatest, throttleTime } from "rxjs"
 
 import { db } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isAccountCompatibleWithChain } from "../accounts/helpers"
+import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { balancePool } from "../balances/pool"
 import { keyringStore } from "../keyring/store"
 import { appStore } from "./store.app"
@@ -25,13 +25,13 @@ export const hideGetStartedOnceFunded = async () => {
   const sub = combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,
-    chaindataProvider.tokensByIdObservable,
-    chaindataProvider.chainsByIdObservable,
+    chaindataProvider.getTokensMapById(),
+    chaindataProvider.getNetworksMapById$(),
     balancePool.observable,
     liveQuery(() => db.tokenRates.toArray()),
   ])
     .pipe(throttleTime(1_000, undefined, { trailing: true }))
-    .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {
+    .subscribe(async ([settings, accounts, tokens, networksById, balances, allTokenRates]) => {
       try {
         const mapOwnedAccounts = Object.fromEntries(
           accounts.filter(isAccountOwned).map((account) => [account.address, account]),
@@ -46,12 +46,11 @@ export const hideGetStartedOnceFunded = async () => {
             if (!account) return acc
 
             if (!acc[address]) acc[address] = []
-            if (isAccountAddressEthereum(account)) acc[address].push(balance)
-            else {
-              const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
-              if (!chain || isAccountOfType(account, "contact")) return acc
-              if (isAccountCompatibleWithChain(chain, account)) acc[address].push(balance)
-            }
+
+            const network = networksById[balance.networkId]
+            if (network && isAccountCompatibleWithNetwork(network, account))
+              acc[address].push(balance)
+
             return acc
           },
           {} as Record<string, BalanceJson[]>,

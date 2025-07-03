@@ -1,5 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address as TAddress } from "@talismn/balances"
+import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
@@ -11,12 +12,12 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
-import { useAccountByAddress, useAccounts, useChain } from "@ui/state"
+import { useAccountByAddress, useAccounts, useNetworkById } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 import { Address } from "../Account/Address"
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { TextQrCode } from "./TextQrCode"
@@ -80,7 +81,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   className,
   onClick,
 }) => {
-  const chain = useChain(chainId as string)
+  const chain = useNetworkById(chainId as string)
   const { t } = useTranslation()
 
   // substrate generic format
@@ -102,7 +103,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
     <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
       <div className="text-body flex flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
-          <ChainLogo className="!text-lg" id={chain.id} />
+          <NetworkLogo className="!text-lg" networkId={chain.id} />
         </div>
         <div>{chain.name}</div>
       </div>
@@ -169,7 +170,7 @@ export const CopyAddressCopyForm = () => {
     networkId,
     formattedAddress,
     logo,
-    chain,
+    network,
     isLogoLoaded,
     legacyFormat,
     goToAddressPage,
@@ -177,15 +178,15 @@ export const CopyAddressCopyForm = () => {
   } = useCopyAddressWizard()
 
   const isEthereum = useMemo(
-    () => !chain && formattedAddress && isEthereumAddress(formattedAddress),
-    [chain, formattedAddress],
+    () => !network && formattedAddress && isEthereumAddress(formattedAddress),
+    [formattedAddress, network],
   )
 
   const isMigratedChain = useMemo(() => {
-    if (!chain) return false
-    const { oldPrefix, prefix } = chain
-    return typeof oldPrefix === "number" && typeof prefix === "number" && oldPrefix !== prefix
-  }, [chain])
+    if (network?.platform !== "polkadot") return false
+    const { oldPrefix, prefix } = network
+    return typeof oldPrefix === "number" && oldPrefix !== prefix
+  }, [network])
 
   const { t } = useTranslation()
 
@@ -200,7 +201,7 @@ export const CopyAddressCopyForm = () => {
             <div>
               <AddressPillButton
                 address={formattedAddress}
-                genesisHash={chain?.genesisHash}
+                genesisHash={getNetworkGenesisHash(network)}
                 onClick={goToAddressPage}
               />
             </div>
@@ -234,13 +235,13 @@ export const CopyAddressCopyForm = () => {
               </FadeIn>
             )}
           </div>
-          {chain && (
+          {network?.platform === "polkadot" && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 <Trans
                   t={t}
                   defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
-                  values={{ name: chain.name }}
+                  values={{ name: network.name }}
                   components={{
                     Highlight: <span className="text-body" />,
                     Tooltip: (
@@ -252,7 +253,7 @@ export const CopyAddressCopyForm = () => {
                           {t(
                             "Only use this address for receiving assets on the {{name}} network.",
                             {
-                              name: chain.name,
+                              name: network.name,
                             },
                           )}
                         </TooltipContent>
@@ -262,7 +263,7 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <ChainLogo className="text-lg" id={chain?.id} />
+                <NetworkLogo className="text-lg" networkId={network?.id} />
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
@@ -332,7 +333,7 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <ChainLogo className="text-lg" id="1" />
+                <NetworkLogo className="text-lg" networkId="1" />
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>

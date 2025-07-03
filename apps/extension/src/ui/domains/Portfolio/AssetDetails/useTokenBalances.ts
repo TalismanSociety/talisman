@@ -11,7 +11,7 @@ import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
-import { useChain, useSelectedCurrency, useToken } from "@ui/state"
+import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -37,7 +37,7 @@ export type TokenBalances = ReturnType<typeof useTokenBalances>
 
 export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => {
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const network = useNetworkById(token?.networkId)
 
   const { selectedAccount: account } = usePortfolioNavigation()
   const { summary, tokenBalances } = useTokenBalancesSummary(balances)
@@ -113,22 +113,6 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       })),
     )
 
-    // CROWDLOANS
-    const crowdloans = tokenBalances.each.flatMap((b) =>
-      b.crowdloans.map((crowdloan, index) => ({
-        key: `${b.id}-crowdloan-${index}`,
-        title: getLockTitle(crowdloan, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        description: (crowdloan.meta as any)?.description ?? undefined,
-        tokens: BigNumber(crowdloan.amount.tokens),
-        fiat: crowdloan.amount.fiat(currency),
-        locked: true,
-        // only show address when we're viewing balances for all accounts
-        address: account ? undefined : b.address,
-        meta: crowdloan.meta,
-      })),
-    )
-
     // BITTENSOR
     const subtensor = tokenBalances.each.flatMap((b) =>
       b.subtensor.map((subtensor, index) => {
@@ -152,17 +136,16 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       }),
     )
 
-    return [...available, ...locked, ...reserved, ...staked, ...crowdloans, ...subtensor]
+    return [...available, ...locked, ...reserved, ...staked, ...subtensor]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])
 
   const detailRows = useEnhanceDetailRows(rawDetailRows)
 
-  const { evmNetwork } = useMemo(() => balances.sorted[0], [balances])
+  const { networkId } = useMemo(() => balances.sorted[0], [balances])
 
-  const relay = useChain(chain?.relay?.id)
-  const networkType = useNetworkCategory({ chain, evmNetwork, relay })
+  const networkType = useNetworkCategory(networkId)
 
   const status = useBalancesStatus(balances)
 
@@ -170,11 +153,9 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
     summary,
     token,
     detailRows,
-    evmNetwork,
-    chain,
     status,
     networkType,
-    chainOrNetwork: chain || evmNetwork,
+    network,
   }
 }
 

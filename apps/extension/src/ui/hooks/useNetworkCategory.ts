@@ -1,6 +1,8 @@
-import { NetworkInfoProps, useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { NetworkId } from "@talismn/chaindata-provider"
 
-export const useNetworkCategory = ({ chain, evmNetwork, relay }: NetworkInfoProps) => {
-  const networkInfo = useNetworkInfo({ chain, evmNetwork, relay })
+import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+
+export const useNetworkCategory = (networkId: NetworkId) => {
+  const networkInfo = useNetworkInfo(networkId)
   return networkInfo.type ?? null
 }

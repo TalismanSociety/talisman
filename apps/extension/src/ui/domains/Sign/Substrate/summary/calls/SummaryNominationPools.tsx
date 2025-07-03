@@ -6,7 +6,7 @@ import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
-import { useChain } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"
@@ -20,9 +20,9 @@ const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]
   mode,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
-  if (!chain?.nativeToken?.id) throw new Error("Missing data")
+  if (!chain?.nativeTokenId) throw new Error("Missing data")
 
   if (mode !== "block")
     return (
@@ -33,7 +33,7 @@ const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]
           LineBreak: <SummaryLineBreak mode={mode} />,
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeToken?.id}
+              tokenId={chain?.nativeTokenId}
               planck={decodedCall.args.amount}
               mode={mode}
             />
@@ -52,7 +52,7 @@ const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]
             Pool: <NomPoolName sapi={sapi} poolId={decodedCall.args.pool_id} />,
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeToken?.id}
+                tokenId={chain?.nativeTokenId}
                 planck={decodedCall.args.amount}
                 mode={mode}
               />
@@ -71,16 +71,16 @@ const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["b
   mode,
 }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
-  if (!chain?.nativeToken?.id) throw new Error("Missing data")
+  if (!chain?.nativeTokenId) throw new Error("Missing data")
 
   if (mode !== "block" && decodedCall.args.extra.type === "Rewards")
     return (
       <Trans
         t={t}
         components={{
-          Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeToken?.id} />,
+          Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeTokenId} />,
         }}
         defaults="Restake your <Tokens /> rewards"
       />
@@ -93,7 +93,7 @@ const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["b
         components={{
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeToken?.id}
+              tokenId={chain?.nativeTokenId}
               planck={decodedCall.args.extra.value}
               mode={mode}
             />
@@ -110,7 +110,7 @@ const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["b
           <Trans
             t={t}
             components={{
-              Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeToken?.id} />,
+              Tokens: <SummaryTokenSymbolDisplay tokenId={chain?.nativeTokenId} />,
             }}
             defaults="Restake your <Tokens /> rewards in current nomination pool"
           />
@@ -126,7 +126,7 @@ const BondExtra: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["b
           components={{
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeToken?.id}
+                tokenId={chain?.nativeTokenId}
                 planck={decodedCall.args.extra.value}
                 mode={mode}
               />
@@ -205,16 +205,16 @@ const WithdrawUnbonded: DecodedCallSummaryComponent<
   PolkadotCalls["NominationPools"]["withdraw_unbonded"]
 > = ({ sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
-  if (!chain?.nativeToken?.id) throw new Error("Missing data")
+  if (!chain?.nativeTokenId) throw new Error("Missing data")
 
   if (mode !== "block")
     return (
       <Trans
         t={t}
         components={{
-          Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+          Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeTokenId} />,
         }}
         defaults="Withdraw unbonded <Token />"
       />
@@ -226,7 +226,7 @@ const WithdrawUnbonded: DecodedCallSummaryComponent<
         <Trans
           t={t}
           components={{
-            Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+            Token: <SummaryTokenSymbolDisplay tokenId={chain.nativeTokenId} />,
           }}
           defaults="Withdraw unbonded <Token /> from nomination pool"
         />

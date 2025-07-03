@@ -1,18 +1,25 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  BalancesConfigTokenParams,
-  EvmNetworkId,
-  githubTokenLogoUrl,
-  Token,
+  EthNetworkId,
+  EvmErc20Token,
+  evmErc20TokenId,
+  EvmErc20TokenSchema,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
 import { Address, Hex, PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { erc20Abi } from "./abis/erc20"
 import { erc20BalancesAggregatorAbi } from "./abis/erc20BalancesAggregator"
 
@@ -21,29 +28,18 @@ export { erc20Abi, erc20BalancesAggregatorAbi }
 type ModuleType = "evm-erc20"
 const moduleType: ModuleType = "evm-erc20"
 
-export type EvmErc20Token = Extract<Token, { type: ModuleType; isCustom?: true }>
-export type CustomEvmErc20Token = Extract<Token, { type: ModuleType; isCustom: true }>
+export type EvmErc20ChainMeta = DefaultChainMeta
 
-export const evmErc20TokenId = (
-  chainId: EvmNetworkId,
-  tokenContractAddress: EvmErc20Token["contractAddress"],
-) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
+export type EvmErc20ModuleConfig = DefaultModuleConfig
 
-export type EvmErc20ChainMeta = {
-  isTestnet: boolean
-}
+export const EvmErc20TokenConfigSchema = z.strictObject({
+  contractAddress: EvmErc20TokenSchema.shape.contractAddress,
+  ...TokenConfigBaseSchema.shape,
+})
 
-export type EvmErc20ModuleConfig = {
-  tokens?: Array<
-    {
-      symbol?: string
-      decimals?: number
-      contractAddress?: string
-    } & BalancesConfigTokenParams
-  >
-}
+export type EvmErc20TokenConfig = z.infer<typeof EvmErc20TokenConfigSchema>
 
-export type EvmErc20Balance = NewBalanceType<ModuleType, "simple", "ethereum">
+export type EvmErc20Balance = NewBalanceType<ModuleType, "simple">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -51,7 +47,7 @@ declare module "@talismn/balances/plugins" {
   }
 }
 type EvmErc20NetworkParams = Record<
-  EvmNetworkId,
+  EthNetworkId,
   Array<{
     token: EvmErc20Token
     address: string
@@ -60,9 +56,10 @@ type EvmErc20NetworkParams = Record<
 
 export const EvmErc20Module: NewBalanceModule<
   ModuleType,
-  EvmErc20Token | CustomEvmErc20Token,
+  EvmErc20Token,
   EvmErc20ChainMeta,
-  EvmErc20ModuleConfig
+  EvmErc20ModuleConfig,
+  EvmErc20TokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
@@ -95,13 +92,15 @@ export const EvmErc20Module: NewBalanceModule<
   }
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<string, EvmErc20Token>
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<string, EvmErc20Token>
   }
 
   const getErc20Aggregators = async () => {
-    const evmNetworks = await chaindataProvider.evmNetworks()
+    const evmNetworks = await chaindataProvider.getNetworks("ethereum")
     return Object.fromEntries(
-      evmNetworks.filter((n) => n.erc20aggregator).map((n) => [n.id, n.erc20aggregator!]),
+      evmNetworks
+        .filter((n) => n.contracts?.Erc20Aggregator)
+        .map((n) => [n.id, n.contracts!.Erc20Aggregator!]),
     )
   }
 
@@ -112,22 +111,23 @@ export const EvmErc20Module: NewBalanceModule<
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
-
-      return { isTestnet }
+    async fetchEvmChainMeta(_chainId) {
+      return { miniMetadata: null, extra: null }
     },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
-
+    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig, tokens) {
       const chainTokens: Record<string, EvmErc20Token> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
-        const { contractAddress, symbol: contractSymbol, decimals: contractDecimals } = tokenConfig
+      for (const tokenConfig of tokens ?? []) {
+        const {
+          contractAddress,
+          symbol: contractSymbol,
+          decimals: contractDecimals,
+          name: contractName,
+        } = tokenConfig
         // TODO : in chaindata's build, filter out all tokens that don't have any of these
         if (!contractAddress || !contractSymbol || contractDecimals === undefined) {
           log.warn("ignoring token on chain %s", chainId, tokenConfig)
@@ -148,22 +148,32 @@ export const EvmErc20Module: NewBalanceModule<
         const token: EvmErc20Token = {
           id,
           type: "evm-erc20",
-          isTestnet,
+          platform: "ethereum",
           isDefault: tokenConfig.isDefault ?? true,
           symbol,
           decimals,
-          logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+          name: contractName ?? symbol,
+          logo: tokenConfig?.logo,
           contractAddress,
-          evmNetwork: { id: chainId },
+          networkId: chainId,
         }
 
         if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
         if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
         if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
 
-        chainTokens[token.id] = token
+        const validation = EvmErc20TokenSchema.safeParse(token)
+        if (validation.success) {
+          chainTokens[token.id] = token
+        } else {
+          log.warn(
+            "Ignoring invalid token",
+            token.id,
+            validation.error.message,
+            validation.error.issues,
+          )
+        }
       }
 
       return chainTokens
@@ -175,7 +185,7 @@ export const EvmErc20Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
       const initialisingBalances = new Set<string>()
       const positiveBalanceNetworks = new Set<string>(
-        (initialBalances as EvmErc20Balance[])?.map((b) => b.evmNetworkId),
+        (initialBalances as EvmErc20Balance[])?.map((b) => b.networkId),
       )
       const tokens = await getModuleTokens()
 
@@ -183,14 +193,14 @@ export const EvmErc20Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
+      const evmNetworks = await chaindataProvider.getNetworksMapById("ethereum")
       const ethAddressesByToken = Object.fromEntries(
         Object.entries(addressesByToken)
           .map(([tokenId, addresses]) => {
             const ethAddresses = addresses.filter(isEthereumAddress)
             if (ethAddresses.length === 0) return null
             const token = tokens[tokenId]
-            const evmNetworkId = token.evmNetwork?.id
+            const evmNetworkId = token.networkId
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses]
           })
@@ -344,26 +354,26 @@ type EvmErc20TokenBalanceResponse = {
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
   tokenAddressesByNetwork: EvmErc20NetworkParams,
-  erc20Aggregators: Record<EvmNetworkId, Hex> = {},
+  erc20Aggregators: Record<EthNetworkId, Hex> = {},
 ): Promise<EvmErc20TokenBalanceResponse> => {
   const result = {
     results: [] as EvmErc20Balance[],
     errors: [] as Array<EvmErc20BalanceError | EvmErc20NetworkError>,
   }
   await Promise.all(
-    Object.entries(tokenAddressesByNetwork).map(async ([evmNetworkId, networkParams]) => {
-      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+    Object.entries(tokenAddressesByNetwork).map(async ([networkId, networkParams]) => {
+      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(networkId)
       if (!publicClient)
         throw new EvmErc20NetworkError(
-          `Could not get rpc provider for evm network ${evmNetworkId}`,
-          evmNetworkId,
+          `Could not get rpc provider for evm network ${networkId}`,
+          networkId,
         )
 
       const balances = await getEvmTokenBalances(
         publicClient,
         networkParams as BalanceDef[],
         result.errors,
-        erc20Aggregators[evmNetworkId],
+        erc20Aggregators[networkId],
       )
 
       // consider only non null balances in the results
@@ -374,8 +384,7 @@ const fetchBalances = async (
               source: "evm-erc20",
               status: "live",
               address: networkParams[i].address,
-              multiChainId: { evmChainId: evmNetworkId },
-              evmNetworkId,
+              networkId,
               tokenId: networkParams[i].token.id,
               value: free!,
             }) as EvmErc20Balance,
@@ -477,7 +486,7 @@ const getErc20BalanceId = ({
 }: {
   token: EvmErc20Token
   address: string
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
 }) => `${evmNetworkId}-${address}-${token.contractAddress}`
 
 function groupAddressesByTokenByEvmNetwork(
@@ -492,7 +501,7 @@ function groupAddressesByTokenByEvmNetwork(
         return byChain
       }
 
-      const chainId = token.evmNetwork?.id
+      const chainId = token.networkId
       if (!chainId) {
         log.error(`Token ${tokenId} has no evm network`)
         return byChain

@@ -1,4 +1,5 @@
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
+import { DEBUG } from "extension-shared"
 import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
@@ -21,7 +22,8 @@ import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAd
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
-import { NetworkPage } from "./routes/Networks/NetworkPage"
+import { AddNetworkPage } from "./routes/Networks/AddNetworkPage"
+import { EditNetworkPage } from "./routes/Networks/EditNetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { PortfolioRoutes } from "./routes/Portfolio"
@@ -40,8 +42,9 @@ import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
 import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
-import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
-import { TokenPage } from "./routes/Tokens/TokenPage"
+import { TestPage } from "./routes/TestPage"
+import { AddTokenPage } from "./routes/Tokens/AddTokenPage"
+import { EditTokenPage } from "./routes/Tokens/EditTokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 import { TxHistory } from "./routes/TxHistory"
 
@@ -90,17 +93,36 @@ const DashboardInner = () => {
             <Route path="asset-discovery" element={<AssetDiscoveryPage />} />
             <Route path="tokens">
               <Route path="" element={<TokensPage />} />
-              <Route path="add" element={<AddCustomTokenPage />} />
-              <Route path=":id" element={<TokenPage />} />
+              <Route path="add" element={<AddTokenPage />} />
+              <Route path=":id" element={<EditTokenPage />} />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>
             <Route path="networks">
-              <Route path="" element={<Navigate to="ethereum" replace />} />
-              <Route path=":networksType" element={<NetworksPage />} />
-              <Route path=":networksType/add" element={<NetworkPage />} />
-              <Route path=":networksType/:id" element={<NetworkPage />} />
+              <Route path="" element={<NetworksPage />} />
+              <Route path="add" element={<AddNetworkPage />} />
+              <Route
+                path="ethereum"
+                element={
+                  <Navigate
+                    to="/settings/networks-tokens/networks"
+                    replace
+                    state={{ platform: "ethereum" }}
+                  />
+                }
+              />
+              <Route
+                path="polkadot"
+                element={
+                  <Navigate
+                    to="/settings/networks-tokens/networks"
+                    replace
+                    state={{ platform: "polkadot" }}
+                  />
+                }
+              />
               <Route path="*" element={<Navigate to="" replace />} />
             </Route>
+            <Route path="network/:id" element={<EditNetworkPage />} />
             <Route path="qr-metadata" element={<QrMetadataPage />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
@@ -131,6 +153,7 @@ const DashboardInner = () => {
           path="qr-metadata"
           element={<Navigate to="/settings/networks-tokens/qr-metadata" replace />}
         />
+        {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<NavigateWithQuery url="/portfolio" replace />} />
       </Routes>
     </Suspense>

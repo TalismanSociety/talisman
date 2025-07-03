@@ -7,11 +7,11 @@ import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useChainByGenesisHash, useChains } from "@ui/state"
+import { useNetworkByGenesisHash, useNetworks } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
@@ -49,7 +49,7 @@ export const ConfigureAccount = () => {
   const { t } = useTranslation()
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
-  const chains = useChains({ activeOnly: true, includeTestnets: true })
+  const chains = useNetworks({ platform: "polkadot", activeOnly: true, includeTestnets: true })
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 
@@ -61,7 +61,7 @@ export const ConfigureAccount = () => {
     return Object.fromEntries(filteredChains.map(({ id }) => [id, [address]]))
   }, [chains, state])
   const balances = useBalancesByParams({ addressesByChain })
-  const chain = useChainByGenesisHash(
+  const chain = useNetworkByGenesisHash(
     (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined,
   )
   const totalFiat = useBalancesFiatTotal(balances.balances)
@@ -140,7 +140,7 @@ export const ConfigureAccount = () => {
                   label={
                     <Trans t={t}>
                       <span>This is a derived account (restrict account to </span>
-                      <ChainLogo id={chain.id} className="inline" />
+                      <NetworkLogo networkId={chain.id} className="inline" />
                       <span className="text-body">{chain.name}</span>
                       <span> network)</span>
                     </Trans>

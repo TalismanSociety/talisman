@@ -16,33 +16,33 @@ import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { TokenMessages } from "../domains/tokens/types"
 import { AssetTransferMessages } from "../domains/transfers/types"
+import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
-  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
+  [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }
 
 export declare type RequestTypesArray = {
-  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
+  [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }[MessageTypes]
 
 export declare type ResponseTypes = {
-  [MessageType in MessageTypes]: RequestSignatures[MessageType][1]
+  [MessageType in MessageTypes]: AllMessages[MessageType][1]
 }
 
 export declare type SubscriptionMessageTypes = NoUndefinedValues<{
-  [MessageType in MessageTypes]: RequestSignatures[MessageType][2]
+  [MessageType in MessageTypes]: AllMessages[MessageType][2]
 }>
 
 export declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefinedValues<{
-  [K in T]: RequestSignatures[K][2]
+  [K in T]: AllMessages[K][2]
 }>
 
-export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = RequestSignatures[T][2]
+export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = AllMessages[T][2]
 
 export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
-  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
+  [MessageType in MessageTypes]: AllMessages[MessageType][0]
 }>
 
 type RemovedMessages =
@@ -69,7 +69,8 @@ type RemovedMessages =
   | "pri(seed.validate)"
   | "pub(authorize.tab)"
 
-type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
+// lists all the messages (public and private) supported by the extension
+type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AccountsMessages &
   AppMessages &
   AssetTransferMessages &
@@ -82,12 +83,13 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   MnemonicMessages &
   SigningMessages &
   TalismanMessages &
-  TokenMessages &
   TokenRatesMessages &
   SubstrateMessages &
   AssetDiscoveryMessages &
   NftsMessages &
-  PingMessages
+  PingMessages &
+  ChaindataMessages &
+  UnsubscribeMessages
 
 interface PingMessages {
   // keeps the background script alive while the UI is open
@@ -96,13 +98,11 @@ interface PingMessages {
   "pri(keepunlocked)": [null, boolean]
 }
 
-export interface RequestSignatures extends RequestSignaturesBase {
-  // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
-
+interface UnsubscribeMessages {
   "pri(unsubscribe)": [RequestIdOnly, null]
 }
 
-export declare type MessageTypes = keyof RequestSignatures
+export declare type MessageTypes = keyof AllMessages
 
 export declare type MessageTypesWithNullRequest = NullKeys<RequestTypes>
 
@@ -163,11 +163,9 @@ export declare type TransportResponseMessage<TMessageType extends MessageTypes> 
       ? TransportResponseMessageSub<TMessageType>
       : never
 
-export declare type RequestType<TMessageType extends keyof RequestSignatures> =
-  RequestSignatures[TMessageType][0]
+export declare type RequestType<TMessageType extends MessageTypes> = AllMessages[TMessageType][0]
 
-export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
-  RequestSignatures[TMessageType][1]
+export declare type ResponseType<TMessageType extends MessageTypes> = AllMessages[TMessageType][1]
 
 /**
  * A callback with either an error or a result.

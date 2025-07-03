@@ -1,7 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalEnv": [
-    "API_KEY_ONFINALITY",
     "BLOWFISH_API_KEY",
     "BLOWFISH_BASE_PATH",
     "BLOWFISH_QA_API_KEY",

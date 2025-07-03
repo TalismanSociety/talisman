@@ -2,12 +2,15 @@ import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { TypeRegistry } from "@polkadot/types"
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { assert } from "@polkadot/util"
+import { ChainConnector } from "@talismn/chain-connector"
 import {
-  BalancesConfigTokenParams,
   ChaindataProvider,
-  ChainId,
-  githubTokenLogoUrl,
-  Token,
+  DotNetworkId,
+  parseSubTokensTokenId,
+  SubTokensBalancesConfig,
+  SubTokensToken,
+  subTokensTokenId,
+  SubTokensTokenSchema,
 } from "@talismn/chaindata-provider"
 import {
   compactMetadata,
@@ -17,55 +20,51 @@ import {
   encodeStateKey,
   getDynamicBuilder,
   getLookupFn,
-  getMetadataVersion,
   papiParse,
   unifyMetadata,
 } from "@talismn/scale"
-import { compressToEncodedURIComponent } from "lz-string"
+import { isAbortError } from "@talismn/util"
+import { keys, toPairs } from "lodash"
 import { Binary } from "polkadot-api"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, NewBalanceModule, NewTransferParamsType } from "../BalanceModule"
-import log from "../log"
-import { db as balancesDb } from "../TalismanBalancesDatabase"
-import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
 import {
-  buildStorageCoders,
-  findChainMeta,
-  getUniqueChainIds,
-  RpcStateQuery,
-  RpcStateQueryHelper,
-} from "./util"
+  ChainMeta,
+  DefaultBalanceModule,
+  NewBalanceModule,
+  NewTransferParamsType,
+} from "../BalanceModule"
+import { getMiniMetadata } from "../getMiniMetadata"
+import log from "../log"
+import { AddressesByToken, AmountWithLabel, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
+import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "./util"
 
 type ModuleType = "substrate-tokens"
 const moduleType: ModuleType = "substrate-tokens"
 
+export const SubTokensTokenConfigSchema = z.strictObject({
+  onChainId: SubTokensTokenSchema.shape.onChainId,
+  ...TokenConfigBaseSchema.shape,
+  existentialDeposit: SubTokensTokenSchema.shape.existentialDeposit.optional(),
+})
+
+export type SubTokensTokenConfig = z.infer<typeof SubTokensTokenConfigSchema>
+
 const defaultPalletId = "Tokens"
 
-export type SubTokensToken = Extract<Token, { type: ModuleType }>
-
-export const subTokensTokenId = (chainId: ChainId, onChainId: string | number) =>
-  `${chainId}-substrate-tokens-${compressToEncodedURIComponent(String(onChainId))}`
-
-export type SubTokensChainMeta = {
-  isTestnet: boolean
+export type SubTokensChainMeta = ChainMeta<{
   palletId?: string
-  miniMetadata?: string
-  metadataVersion?: number
+}>
+
+const UNSUPPORTED_CHAIN_META: SubTokensChainMeta = {
+  miniMetadata: null,
+  extra: {},
 }
 
-export type SubTokensModuleConfig = {
-  palletId?: string
-  tokens?: Array<
-    {
-      symbol?: string
-      decimals?: number
-      ed?: string
-      onChainId?: string | number
-    } & BalancesConfigTokenParams
-  >
-}
+export type SubTokensModuleConfig = SubTokensBalancesConfig
 
-export type SubTokensBalance = NewBalanceType<ModuleType, "complex", "substrate">
+export type SubTokensBalance = NewBalanceType<ModuleType, "complex">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -89,6 +88,7 @@ export const SubTokensModule: NewBalanceModule<
   SubTokensToken,
   SubTokensChainMeta,
   SubTokensModuleConfig,
+  SubTokensTokenConfig,
   SubTokensTransferParams
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
@@ -99,31 +99,26 @@ export const SubTokensModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      const isTestnet = (await chaindataProvider.chainById(chainId))?.isTestnet || false
-      if (metadataRpc === undefined) return { isTestnet }
-      if ((moduleConfig?.tokens ?? []).length < 1) return { isTestnet }
+      if (metadataRpc === undefined) return UNSUPPORTED_CHAIN_META
 
-      const metadataVersion = getMetadataVersion(metadataRpc)
       const metadata = decAnyMetadata(metadataRpc)
       const palletId = moduleConfig?.palletId ?? defaultPalletId
+
       compactMetadata(metadata, [{ pallet: palletId, items: ["Accounts"] }])
 
       const miniMetadata = encodeMetadata(metadata)
 
-      return palletId === defaultPalletId
-        ? { isTestnet, miniMetadata, metadataVersion }
-        : { isTestnet, palletId, miniMetadata, metadataVersion }
+      return { miniMetadata, extra: { palletId } }
     },
 
-    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
-
-      const tokens: Record<string, SubTokensToken> = {}
-      for (const tokenConfig of moduleConfig?.tokens ?? []) {
+    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig, tokens) {
+      const tokenList: Record<string, SubTokensToken> = {}
+      for (const tokenConfig of tokens ?? []) {
         try {
+          // TODO fetch metadata from chain, like we do for assets
           const symbol = tokenConfig?.symbol ?? "Unit"
           const decimals = tokenConfig?.decimals ?? 0
-          const existentialDeposit = tokenConfig?.ed ?? "0"
+          const existentialDeposit = tokenConfig?.existentialDeposit ?? "0"
           const onChainId = tokenConfig?.onChainId ?? undefined
 
           if (onChainId === undefined) continue
@@ -132,25 +127,21 @@ export const SubTokensModule: NewBalanceModule<
           const token: SubTokensToken = {
             id,
             type: "substrate-tokens",
-            isTestnet,
+            platform: "polkadot",
             isDefault: tokenConfig.isDefault ?? true,
             symbol,
             decimals,
-            logo: tokenConfig?.logo || githubTokenLogoUrl(id),
+            name: tokenConfig?.name ?? symbol,
+            logo: tokenConfig?.logo,
             existentialDeposit,
             onChainId,
-            chain: { id: chainId },
+            networkId: chainId,
           }
 
-          if (tokenConfig?.symbol) {
-            token.symbol = tokenConfig?.symbol
-            token.id = subTokensTokenId(chainId, token.onChainId)
-          }
           if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-          if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
           if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
 
-          tokens[token.id] = token
+          tokenList[token.id] = token
         } catch (error) {
           log.error(
             `Failed to build substrate-tokens token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
@@ -160,51 +151,84 @@ export const SubTokensModule: NewBalanceModule<
         }
       }
 
-      return tokens
+      return tokenList
     },
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances({ addressesByToken }, callback) {
-      const queries = await buildQueries(chaindataProvider, addressesByToken)
-      const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
-        (error, result) => {
-          if (error) return callback(error)
-          const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
-          if (balances.length > 0) callback(null, new Balances(balances))
+      const byNetwork = keys(addressesByToken).reduce(
+        (acc, tokenId) => {
+          const networkId = parseSubTokensTokenId(tokenId).networkId
+          if (!acc[networkId]) acc[networkId] = {}
+          acc[networkId][tokenId] = addressesByToken[tokenId]
+
+          return acc
         },
+        {} as Record<DotNetworkId, AddressesByToken<SubTokensToken>>,
       )
 
-      return unsubscribe
+      const controller = new AbortController()
+
+      const pUnsubs = Promise.all(
+        toPairs(byNetwork).map(async ([networkId, addressesByToken]) => {
+          try {
+            const queries = await buildNetworkQueries(
+              networkId,
+              chainConnector,
+              chaindataProvider,
+              addressesByToken,
+              controller.signal,
+            )
+            if (controller.signal.aborted) return () => {}
+
+            const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
+
+            return await stateHelper.subscribe((error, result) => {
+              if (error) return callback(error)
+              const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
+              if (balances.length > 0) callback(null, new Balances(balances))
+            })
+          } catch (err) {
+            if (!isAbortError(err))
+              log.error(`Failed to subscribe balances for network ${networkId}`, err)
+            return () => {}
+          }
+        }),
+      )
+
+      return () => {
+        pUnsubs.then((unsubs) => {
+          unsubs.forEach((unsubscribe) => unsubscribe())
+        })
+        controller.abort()
+      }
     },
 
     async fetchBalances(addressesByToken) {
       assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const queries = await buildQueries(chaindataProvider, addressesByToken)
+      const queries = await buildQueries(chainConnector, chaindataProvider, addressesByToken)
       const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
       const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
       return new Balances(balances)
     },
 
     async transferToken({ tokenId, to, amount, transferMethod, metadataRpc }) {
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId, "substrate-tokens")
       assert(token, `Token ${tokenId} not found in store`)
 
-      if (token.type !== "substrate-tokens")
-        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
-
-      const chainId = token.chain.id
-      const chain = await chaindataProvider.chainById(chainId)
+      const chainId = token.networkId
+      const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
       assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-      const miniMetadatas = new Map(
-        (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-          miniMetadata.id,
-          miniMetadata,
-        ]),
+      const miniMetadata = await getMiniMetadata<typeof SubTokensModule>(
+        chaindataProvider,
+        chainConnector,
+        chainId,
+        moduleType,
       )
-      const [chainMeta] = findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)
-      const tokensPallet = chainMeta?.palletId ?? defaultPalletId
+
+      const tokensPallet = miniMetadata?.extra?.palletId ?? defaultPalletId
 
       const onChainId = (() => {
         try {
@@ -310,36 +334,32 @@ export const SubTokensModule: NewBalanceModule<
   }
 }
 
-async function buildQueries(
+async function buildNetworkQueries(
+  networkId: DotNetworkId,
+  chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<SubTokensToken>,
+  signal?: AbortSignal,
 ): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
-  const allChains = await chaindataProvider.chainsById()
-  const tokens = await chaindataProvider.tokensById()
-  const miniMetadatas = new Map(
-    (await balancesDb.miniMetadatas.toArray()).map((miniMetadata) => [
-      miniMetadata.id,
-      miniMetadata,
-    ]),
+  const miniMetadata = await getMiniMetadata<typeof SubTokensModule>(
+    chaindataProvider,
+    chainConnector,
+    networkId,
+    moduleType,
+    signal,
   )
 
-  const tokensPalletByChain = new Map(
-    Object.values(allChains).map((chain) => [
-      chain.id,
-      findChainMeta<typeof SubTokensModule>(miniMetadatas, moduleType, chain)[0]?.palletId,
-    ]),
-  )
+  const chain = await chaindataProvider.getNetworkById(networkId, "polkadot")
+  const tokens = await chaindataProvider.getTokensMapById()
 
-  const uniqueChainIds = getUniqueChainIds(addressesByToken, tokens)
-  const chains = Object.fromEntries(uniqueChainIds.map((chainId) => [chainId, allChains[chainId]]))
-  const chainStorageCoders = buildStorageCoders({
-    chainIds: uniqueChainIds,
-    chains,
-    miniMetadatas,
-    moduleType: "substrate-tokens",
-    coders: {
-      storage: ({ chainId }) => [tokensPalletByChain.get(chainId) ?? defaultPalletId, "Accounts"],
-    },
+  if (!chain) return []
+
+  signal?.throwIfAborted()
+
+  const palletId = miniMetadata.extra.palletId ?? defaultPalletId
+
+  const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
+    storage: [palletId, "Accounts"],
   })
 
   return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
@@ -352,19 +372,10 @@ async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return []
     }
-    const chainId = token.chain?.id
-    if (!chainId) {
-      log.warn(`Token ${tokenId} has no chain`)
-      return []
-    }
-    const chain = chains[chainId]
-    if (!chain) {
-      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
-      return []
-    }
 
     return addresses.flatMap((address): RpcStateQuery<SubTokensBalance | null> | [] => {
-      const scaleCoder = chainStorageCoders.get(chainId)?.storage
+      const scaleCoder = networkStorageCoders?.storage
+
       const onChainId = (() => {
         try {
           return papiParse(token.onChainId)
@@ -375,7 +386,7 @@ async function buildQueries(
 
       const stateKey = encodeStateKey(
         scaleCoder,
-        `Invalid address / token onChainId in ${chainId} storage query ${address} / ${token.onChainId}`,
+        `Invalid address / token onChainId in ${networkId} storage query ${address} / ${token.onChainId}`,
         address,
         onChainId,
       )
@@ -392,7 +403,7 @@ async function buildQueries(
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-tokens balance on chain ${chainId}`,
+          `Failed to decode substrate-tokens balance on chain ${networkId}`,
         ) ?? { free: 0n, reserved: 0n, frozen: 0n }
 
         const free = (decoded?.free ?? 0n).toString()
@@ -409,14 +420,44 @@ async function buildQueries(
           source: "substrate-tokens",
           status: "live",
           address,
-          multiChainId: { subChainId: chainId },
-          chainId,
+          networkId,
           tokenId: token.id,
           values: balanceValues,
         } as SubTokensBalance
       }
 
-      return { chainId, stateKey, decodeResult }
+      return { chainId: networkId, stateKey, decodeResult }
     })
   })
+}
+
+async function buildQueries(
+  chainConnector: ChainConnector,
+  chaindataProvider: ChaindataProvider,
+  addressesByToken: AddressesByToken<SubTokensToken>,
+  signal?: AbortSignal,
+): Promise<Array<RpcStateQuery<SubTokensBalance | null>>> {
+  const byNetwork = keys(addressesByToken).reduce(
+    (acc, tokenId) => {
+      const networkId = parseSubTokensTokenId(tokenId).networkId
+      if (!acc[networkId]) acc[networkId] = {}
+      acc[networkId][tokenId] = addressesByToken[tokenId]
+      return acc
+    },
+    {} as Record<DotNetworkId, AddressesByToken<SubTokensToken>>,
+  )
+
+  return (
+    await Promise.all(
+      toPairs(byNetwork).map(([networkId, addressesByToken]) => {
+        return buildNetworkQueries(
+          networkId,
+          chainConnector,
+          chaindataProvider,
+          addressesByToken,
+          signal,
+        )
+      }),
+    )
+  ).flat()
 }

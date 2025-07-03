@@ -1,19 +1,26 @@
 import { assert } from "@polkadot/util"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  BalancesConfigTokenParams,
-  EvmNetworkId,
-  EvmNetworkList,
-  githubTokenLogoUrl,
-  Token,
+  EthNetworkId,
+  EthNetworkList,
+  EvmUniswapV2Token,
+  evmUniswapV2TokenId,
+  EvmUniswapV2TokenSchema,
+  getGithubTokenLogoUrl,
   TokenList,
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import isEqual from "lodash/isEqual"
 import { PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import {
   AddressesByToken,
@@ -24,6 +31,7 @@ import {
   getBalanceId,
   NewBalanceType,
 } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { uniswapV2PairAbi } from "./abis/uniswapV2Pair"
 
 export { uniswapV2PairAbi }
@@ -31,36 +39,28 @@ export { uniswapV2PairAbi }
 type ModuleType = "evm-uniswapv2"
 const moduleType: ModuleType = "evm-uniswapv2"
 
-export type EvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom?: true }>
-export type CustomEvmUniswapV2Token = Extract<Token, { type: ModuleType; isCustom: true }>
+export type EvmUniswapV2ChainMeta = DefaultChainMeta
 
-export const evmUniswapV2TokenId = (
-  chainId: EvmNetworkId,
-  contractAddress: EvmUniswapV2Token["contractAddress"],
-) => `${chainId}-evm-uniswapv2-${contractAddress}`.toLowerCase()
+export const EvmUniswapV2TokenConfigSchema = z.strictObject({
+  contractAddress: EvmUniswapV2TokenSchema.shape.contractAddress,
+  ...TokenConfigBaseSchema.shape,
 
-export type EvmUniswapV2ChainMeta = {
-  isTestnet: boolean
-}
+  // on chaindata side these are fetched by a dedicated task
+  symbol0: EvmUniswapV2TokenSchema.shape.symbol0.optional(),
+  symbol1: EvmUniswapV2TokenSchema.shape.symbol1.optional(),
+  decimals0: EvmUniswapV2TokenSchema.shape.decimals0.optional(),
+  decimals1: EvmUniswapV2TokenSchema.shape.decimals1.optional(),
+  tokenAddress0: EvmUniswapV2TokenSchema.shape.tokenAddress0.optional(),
+  tokenAddress1: EvmUniswapV2TokenSchema.shape.tokenAddress1.optional(),
+  coingeckoId0: EvmUniswapV2TokenSchema.shape.coingeckoId0.optional(),
+  coingeckoId1: EvmUniswapV2TokenSchema.shape.coingeckoId1.optional(),
+})
 
-export type EvmUniswapV2ModuleConfig = {
-  pools?: Array<
-    {
-      contractAddress?: string
-      decimals?: number
-      symbol0?: string
-      symbol1?: string
-      decimals0?: number
-      decimals1?: number
-      tokenAddress0?: string
-      tokenAddress1?: string
-      coingeckoId0?: string
-      coingeckoId1?: string
-    } & BalancesConfigTokenParams
-  >
-}
+export type EvmUniswapV2TokenConfig = z.infer<typeof EvmUniswapV2TokenConfigSchema>
 
-export type EvmUniswapV2Balance = NewBalanceType<"evm-uniswapv2", "complex", "ethereum">
+export type EvmUniswapV2ModuleConfig = DefaultModuleConfig
+
+export type EvmUniswapV2Balance = NewBalanceType<"evm-uniswapv2", "complex">
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -70,9 +70,10 @@ declare module "@talismn/balances/plugins" {
 
 export const EvmUniswapV2Module: NewBalanceModule<
   ModuleType,
-  EvmUniswapV2Token | CustomEvmUniswapV2Token,
+  EvmUniswapV2Token,
   EvmUniswapV2ChainMeta,
-  EvmUniswapV2ModuleConfig
+  EvmUniswapV2ModuleConfig,
+  EvmUniswapV2TokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
   const chainConnector = chainConnectors.evm
@@ -81,17 +82,13 @@ export const EvmUniswapV2Module: NewBalanceModule<
   return {
     ...DefaultBalanceModule(moduleType),
 
-    async fetchEvmChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
-
-      return { isTestnet }
+    async fetchEvmChainMeta(_chainId) {
+      return { miniMetadata: null, extra: null }
     },
 
-    async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
-
+    async fetchEvmChainTokens(chainId, _chainMeta, moduleConfig, pools) {
       const tokens: Record<string, EvmUniswapV2Token> = {}
-      for (const tokenConfig of moduleConfig?.pools ?? []) {
+      for (const tokenConfig of pools ?? []) {
         const {
           contractAddress,
           decimals,
@@ -103,6 +100,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
           tokenAddress1,
           coingeckoId0,
           coingeckoId1,
+          name,
         } = tokenConfig
 
         if (
@@ -123,11 +121,12 @@ export const EvmUniswapV2Module: NewBalanceModule<
         const token: EvmUniswapV2Token = {
           id,
           type: "evm-uniswapv2",
-          isTestnet,
+          platform: "ethereum",
           isDefault: tokenConfig.isDefault ?? false,
           symbol: `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
+          name: name ?? `${symbol0 ?? "UNKNOWN"}/${symbol1 ?? "UNKNOWN"}`,
           decimals,
-          logo: tokenConfig?.logo || githubTokenLogoUrl("uniswap"),
+          logo: tokenConfig?.logo || getGithubTokenLogoUrl("uniswap"),
           symbol0,
           decimals0,
           symbol1,
@@ -137,12 +136,11 @@ export const EvmUniswapV2Module: NewBalanceModule<
           tokenAddress1,
           coingeckoId0,
           coingeckoId1,
-          evmNetwork: { id: chainId },
+          networkId: chainId,
         }
 
         if (tokenConfig?.symbol) token.symbol = tokenConfig?.symbol
         if (tokenConfig?.coingeckoId) token.coingeckoId = tokenConfig?.coingeckoId
-        if (tokenConfig?.dcentName) token.dcentName = tokenConfig?.dcentName
         if (tokenConfig?.mirrorOf) token.mirrorOf = tokenConfig?.mirrorOf
         if (tokenConfig?.noDiscovery) token.noDiscovery = tokenConfig?.noDiscovery
 
@@ -158,14 +156,14 @@ export const EvmUniswapV2Module: NewBalanceModule<
       const initDelay = 1_500 // 1_500ms == 1.5 seconds
 
       const initialBalancesByNetwork = (initialBalances as EvmUniswapV2Balance[])?.reduce<
-        Record<EvmNetworkId, BalanceJsonList>
+        Record<EthNetworkId, BalanceJsonList>
       >((result, b) => {
-        if (!b.evmNetworkId) return result
-        if (!result[b.evmNetworkId]) result[b.evmNetworkId] = {}
-        result[b.evmNetworkId][getBalanceId(b)] = b
+        if (!b.networkId) return result
+        if (!result[b.networkId]) result[b.networkId] = {}
+        result[b.networkId][getBalanceId(b)] = b
         return result
       }, {})
-      const cache = new Map<EvmNetworkId, BalanceJsonList>(
+      const cache = new Map<EthNetworkId, BalanceJsonList>(
         Object.entries(initialBalancesByNetwork ?? {}),
       )
 
@@ -173,8 +171,8 @@ export const EvmUniswapV2Module: NewBalanceModule<
       // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
       let zeroBalanceSubscriptionIntervalCounter = 0
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      const evmNetworks = await chaindataProvider.getNetworksMapById("ethereum")
+      const tokens = await chaindataProvider.getTokensMapById()
 
       const poll = async () => {
         if (!subscriptionActive) return
@@ -241,8 +239,8 @@ export const EvmUniswapV2Module: NewBalanceModule<
     async fetchBalances(addressesByToken) {
       if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
 
-      const evmNetworks = await chaindataProvider.evmNetworksById()
-      const tokens = await chaindataProvider.tokensById()
+      const evmNetworks = await chaindataProvider.getNetworksMapById("ethereum")
+      const tokens = await chaindataProvider.getTokensMapById()
 
       return fetchBalances(chainConnectors.evm, evmNetworks, tokens, addressesByToken)
     },
@@ -251,7 +249,7 @@ export const EvmUniswapV2Module: NewBalanceModule<
 
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  evmNetworks: EvmNetworkList,
+  evmNetworks: EthNetworkList,
   tokens: TokenList,
   addressesByToken: AddressesByToken<EvmUniswapV2Token>,
 ) => {
@@ -263,15 +261,15 @@ const fetchBalances = async (
   const balances = (
     await Promise.allSettled(
       Object.entries(addressesByTokenGroupedByEvmNetwork).map(
-        async ([evmNetworkId, addressesByToken]) => {
+        async ([networkId, addressesByToken]) => {
           if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
 
-          const evmNetwork = evmNetworks[evmNetworkId]
-          if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
+          const evmNetwork = evmNetworks[networkId]
+          if (!evmNetwork) throw new Error(`Evm network ${networkId} not found`)
 
-          const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+          const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(networkId)
           if (!publicClient)
-            throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
+            throw new Error(`Could not get rpc provider for evm network ${networkId}`)
 
           const tokensAndAddresses = Object.entries(addressesByToken).reduce(
             (tokensAndAddresses, [tokenId, addresses]) => {
@@ -287,14 +285,11 @@ const fetchBalances = async (
                 return tokensAndAddresses
               }
 
-              const tokenAndAddresses: [EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]] = [
-                token,
-                addresses,
-              ]
+              const tokenAndAddresses: [EvmUniswapV2Token, string[]] = [token, addresses]
 
               return [...tokensAndAddresses, tokenAndAddresses]
             },
-            [] as Array<[EvmUniswapV2Token | CustomEvmUniswapV2Token, string[]]>,
+            [] as Array<[EvmUniswapV2Token, string[]]>,
           )
           // fetch all balances
           const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
@@ -302,8 +297,7 @@ const fetchBalances = async (
               source: "evm-uniswapv2",
               status: "live",
               address: address,
-              multiChainId: { evmChainId: evmNetwork.id },
-              evmNetworkId,
+              networkId,
               tokenId: token.id,
               values: await getPoolBalance(
                 publicClient,
@@ -357,7 +351,7 @@ function groupAddressesByTokenByEvmNetwork(
         return byChain
       }
 
-      const chainId = token.evmNetwork?.id
+      const chainId = token.networkId
       if (!chainId) {
         log.error(`Token ${tokenId} has no evm network`)
         return byChain

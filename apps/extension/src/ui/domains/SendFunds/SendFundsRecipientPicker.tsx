@@ -1,11 +1,11 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
 import {
   Account,
-  Chain,
-  isAccountCompatibleWithChain,
+  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAccountPortfolio,
 } from "extension-core"
@@ -18,16 +18,14 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useChain, useToken } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
+import { useAccounts, useContacts, useNetworkById, useToken } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
 import { ToWarning, useSendFunds } from "./useSendFunds"
 
-const AddressFormatError = ({ chain }: { chain?: Chain }) => {
+const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
   const { t } = useTranslation()
   return (
     <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
@@ -39,7 +37,7 @@ const AddressFormatError = ({ chain }: { chain?: Chain }) => {
           defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
           components={{
             Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-            ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+            ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
           }}
           values={{ chainName: chain?.name ?? t("Unknown") }}
         />
@@ -59,7 +57,7 @@ const UnknownAddressDrawer = ({
   isOpen: boolean
   onProceed: (address: string) => void
   address: string
-  chain?: Chain
+  chain?: Network
 }) => {
   const { t } = useTranslation()
 
@@ -83,7 +81,7 @@ const UnknownAddressDrawer = ({
           <div className="mt-4 flex items-center justify-between gap-8 text-xs">
             <div className="text-body-secondary">{t("Selected Network")}</div>
             <div className="text-body flex items-center gap-4">
-              <ChainLogo id={chain?.id} className="text-md" />
+              <NetworkLogo networkId={chain?.id} className="text-md" />
               {chain?.name}
             </div>
           </div>
@@ -106,12 +104,12 @@ export const SendFundsRecipientPicker = () => {
   const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useNetworkById(token?.networkId)
 
   const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 
   const allAccounts = useAccounts()
-  const { contacts: allContacts } = useAddressBook()
+  const allContacts = useContacts()
 
   const isValidAddressInput = useMemo(() => {
     if (!from) return isValidAddress(search)
@@ -120,8 +118,8 @@ export const SendFundsRecipientPicker = () => {
     const account =
       isValidAddress(search) && allAccounts.find((acc) => isAddressEqual(acc.address, search))
     if (account) {
-      if (chain) return isAccountCompatibleWithChain(chain, account)
-      if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+      if (chain?.platform === "polkadot") return isAccountCompatibleWithNetwork(chain, account)
+      if (isTokenEth(token)) return isAccountPlatformEthereum(account)
     }
 
     return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
@@ -132,7 +130,7 @@ export const SendFundsRecipientPicker = () => {
    * If not a substrate address (ie, any other string, or an ethereum address), it is also valid for the purpose of this check.
    */
   const isValidSubstrateNetworkAddressInput = useMemo(() => {
-    if (!chain) return true
+    if (chain?.platform !== "polkadot") return true
     if (!search || search.trim() === "" || !isValidAddressInput) return true
     const isGenericFormat = convertAddress(search, null) === search
     const isChainFormat =
@@ -174,7 +172,9 @@ export const SendFundsRecipientPicker = () => {
             (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address)),
         )
-        .filter((contact) => !contact.genesisHash || contact.genesisHash === chain?.genesisHash),
+        .filter(
+          (contact) => !contact.genesisHash || contact.genesisHash === getNetworkGenesisHash(chain),
+        ),
     [
       allContacts,
       isFromEthereum,
@@ -185,7 +185,7 @@ export const SendFundsRecipientPicker = () => {
       isNsLookup,
       nsLookup,
       normalizedNsLookup,
-      chain?.genesisHash,
+      chain,
     ],
   )
 
@@ -238,8 +238,8 @@ export const SendFundsRecipientPicker = () => {
       allAccounts
         .filter((account) => normalize(account.address) !== normalizedFrom)
         .filter((account) => {
-          if (chain) return isAccountCompatibleWithChain(chain, account)
-          if (isEvmToken(token)) return isAccountPlatformEthereum(account)
+          if (isTokenEth(token)) return isAccountPlatformEthereum(account)
+          if (chain) return isAccountCompatibleWithNetwork(chain, account)
           return false
         })
         .filter(
@@ -325,7 +325,9 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        {!isValidSubstrateNetworkAddressInput && <AddressFormatError chain={chain ?? undefined} />}
+        {!isValidSubstrateNetworkAddressInput && chain?.platform === "polkadot" && (
+          <AddressFormatError chain={chain ?? undefined} />
+        )}
         {isValidSubstrateNetworkAddressInput && (
           <>
             {newAddresses.length > 0 && (
@@ -340,7 +342,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={contacts}
-              genesisHash={chain?.genesisHash}
+              genesisHash={getNetworkGenesisHash(chain)}
               selected={to}
               onSelect={handleSelect}
               header={
@@ -353,7 +355,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={myAccounts}
-              genesisHash={chain?.genesisHash}
+              genesisHash={getNetworkGenesisHash(chain)}
               selected={to}
               onSelect={handleSelect}
               header={
@@ -369,7 +371,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={watchedAccounts}
-              genesisHash={chain?.genesisHash}
+              genesisHash={getNetworkGenesisHash(chain)}
               selected={to}
               onSelect={handleSelect}
               header={

@@ -8,9 +8,9 @@ import { Button } from "talisman-ui"
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { useBalancesHydrate, useEvmNetwork, useRequest } from "@ui/state"
+import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -33,7 +33,7 @@ export const AddCustomErc20Token = () => {
     if (!request) window.close()
   }, [request])
 
-  const network = useEvmNetwork(request?.token?.evmNetwork?.id)
+  const network = useNetworkById(request?.token?.networkId, "ethereum")
 
   const approve = useCallback(async () => {
     setError(undefined)
@@ -67,7 +67,7 @@ export const AddCustomErc20Token = () => {
           <div>
             <img
               className="inline-block h-28 w-28 rounded-full"
-              src={request.token.image ?? UNKNOWN_TOKEN_URL}
+              src={request.token.logo ?? UNKNOWN_TOKEN_URL}
               alt={request.token.symbol}
               crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
             />
@@ -79,7 +79,7 @@ export const AddCustomErc20Token = () => {
               <FakePill>
                 <img
                   className="h-8 w-8 rounded-full"
-                  src={request.token.image ?? UNKNOWN_TOKEN_URL}
+                  src={request.token.logo ?? UNKNOWN_TOKEN_URL}
                   crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
                   alt=""
                 />
@@ -87,7 +87,7 @@ export const AddCustomErc20Token = () => {
               </FakePill>
               <span>{t("on")}</span>
               <FakePill>
-                <NetworkLogo ethChainId={network.id} />
+                <NetworkLogo networkId={network.id} />
                 <span>{network.name}</span>
               </FakePill>
             </div>

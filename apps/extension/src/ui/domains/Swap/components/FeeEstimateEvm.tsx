@@ -13,7 +13,7 @@ import { TransactionRequest } from "viem"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FeeTooltip } from "@ui/domains/Ethereum/FeeTooltip"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 import { fromAssetAtom } from "../swap-modules/common.swap-module"
 import { useFastBalance } from "../swaps-port/useFastBalance"
@@ -44,7 +44,7 @@ export const FeeEstimateEvm = ({
   const { t } = useTranslation()
 
   const fromAsset = useAtomValue(fromAssetAtom)
-  const fromEvmNetwork = useEvmNetwork(fromAsset?.chainId?.toString())
+  const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
 
   if (loadableState === "hasError") return null
   return (
@@ -59,9 +59,9 @@ export const FeeEstimateEvm = ({
               </span>
             </TooltipTrigger>
             <TooltipContent>
-              {transaction && txDetails && fromEvmNetwork?.nativeToken ? (
+              {transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
                 <FeeTooltip
-                  tokenId={fromEvmNetwork.nativeToken.id}
+                  tokenId={fromEvmNetwork.nativeTokenId}
                   estimatedFee={txDetails.estimatedFee}
                   maxFee={txDetails.maxFee}
                   balance={fastBalance?.balance?.transferable?.planck}
@@ -121,18 +121,18 @@ export const FeeEstimateEvm = ({
             0.0000 TKN ($0.00)
           </div>
         </div>
-      ) : transaction && txDetails && fromEvmNetwork?.nativeToken ? (
+      ) : transaction && txDetails && fromEvmNetwork?.nativeTokenId ? (
         <div className="flex items-center justify-between gap-8">
           <div className="h-12">
             <TokensAndFiat
-              tokenId={fromEvmNetwork.nativeToken.id}
+              tokenId={fromEvmNetwork.nativeTokenId}
               planck={txDetails.estimatedFee.toString()}
             />
           </div>
           <div className="h-12">
             <EthFeeSelect
               tx={transaction}
-              tokenId={fromEvmNetwork.nativeToken.id}
+              tokenId={fromEvmNetwork.nativeTokenId}
               disabled={isPayloadLocked}
               gasSettingsByPriority={gasSettingsByPriority}
               setCustomSettings={setCustomSettings}

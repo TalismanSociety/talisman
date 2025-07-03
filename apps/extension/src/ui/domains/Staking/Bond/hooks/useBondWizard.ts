@@ -95,7 +95,7 @@ export const useBondWizard = () => {
   const existentialDeposit = useExistentialDeposit(token?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
 
-  const { data: sapi } = useScaleApi(token?.chain?.id)
+  const { data: sapi } = useScaleApi(token?.networkId)
 
   const {
     payload,
@@ -116,7 +116,7 @@ export const useBondWizard = () => {
     address,
     poolId,
     plancks,
-    chainId: token?.chain?.id,
+    chainId: token?.networkId,
   })
 
   // TODO rename to amountToStake

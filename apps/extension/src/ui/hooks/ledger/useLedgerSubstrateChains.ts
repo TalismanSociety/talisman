@@ -1,19 +1,19 @@
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { Chain } from "extension-core"
 import { useMemo } from "react"
 
 import { AddSubstrateLedgerAppType } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
-import { useChains } from "@ui/state"
+import { useNetworks } from "@ui/state"
 
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
 
-export type ChainWithLedgerApp = Chain & {
+export type ChainWithLedgerApp = DotNetwork & {
   ledgerAppName?: string
   supportedLedgerApps: AddSubstrateLedgerAppType[]
 }
 
 export const useLedgerSubstrateChains = () => {
-  const chains = useChains({ includeTestnets: false, activeOnly: false })
+  const chains = useNetworks({ platform: "polkadot", includeTestnets: false, activeOnly: false })
 
   // to be used with a ledger, a chain must either have CheckMetadataHash or a ledgerApp
   return useMemo<ChainWithLedgerApp[]>(() => {

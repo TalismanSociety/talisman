@@ -35,13 +35,13 @@ const assetPlatformCache: CoinGeckoAssetPlatformCache = {
 
 const ASSETPLATFORM_CACHE_TIMEOUT = 10 * 60 * 1000 // 10 minutes
 
-const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
+const getCoinGeckoAssetPlatform = async (assetPlatformId: string, signal?: AbortSignal) => {
   if (
     !assetPlatformCache.fetched ||
     assetPlatformCache.fetched + ASSETPLATFORM_CACHE_TIMEOUT < Date.now()
   ) {
     try {
-      const fetchAssetPlaforms = await fetchFromCoingecko("/api/v3/asset_platforms")
+      const fetchAssetPlaforms = await fetchFromCoingecko("/api/v3/asset_platforms", { signal })
       if (fetchAssetPlaforms.ok) {
         assetPlatformCache.data = await fetchAssetPlaforms.json()
         assetPlatformCache.fetched = Date.now()
@@ -63,13 +63,15 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
 export const getCoinGeckoErc20Coin = async (
   assetPlatformId: string,
   contractAddress: string,
+  signal?: AbortSignal,
 ): Promise<CoinGeckoErc20Coin | null> => {
-  const assetPlatform = await getCoinGeckoAssetPlatform(assetPlatformId)
+  const assetPlatform = await getCoinGeckoAssetPlatform(assetPlatformId, signal)
   if (!assetPlatform) return null
 
   try {
     const fetchErc20Coin = await fetchFromCoingecko(
       `/api/v3/coins/${assetPlatform.id}/contract/${contractAddress.toLowerCase()}`,
+      { signal },
     )
     const res = await fetchErc20Coin.json()
 

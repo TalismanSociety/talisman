@@ -1,13 +1,6 @@
-import { ChainList, SimpleEvmNetworkList, TokenList } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, NetworkList, TokenList } from "@talismn/chaindata-provider"
 import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import {
-  BigMath,
-  isArrayOf,
-  isBigInt,
-  isTruthy,
-  NonFunctionProperties,
-  planckToTokens,
-} from "@talismn/util"
+import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
@@ -78,8 +71,7 @@ export type BalanceSource = BalanceJson["source"]
 
 /** TODO: Remove this in favour of a frontend-friendly `ChaindataProvider` */
 export type HydrateDb = Partial<{
-  chains: ChainList
-  evmNetworks: SimpleEvmNetworkList
+  networks: NetworkList
   tokens: TokenList
   tokenRates: TokenRatesList
 }>
@@ -301,14 +293,9 @@ export class Balances {
   }
 }
 
-type BalanceJsonEvm = BalanceJson & { evmNetworkId: string }
-
-const isBalanceEvm = (balance: BalanceJson): balance is BalanceJsonEvm => "evmNetworkId" in balance
-
 export const getBalanceId = (balance: BalanceJson) => {
   const { source, address, tokenId } = balance
-  const locationId = isBalanceEvm(balance) ? balance.evmNetworkId : balance.chainId
-  return [source, address, locationId, tokenId].filter(isTruthy).join("::")
+  return [source, address, tokenId].join("::")
 }
 
 /**
@@ -383,28 +370,19 @@ export class Balance {
     return this.#storage.address
   }
 
-  get chainId() {
-    return isBalanceEvm(this.#storage) ? undefined : this.#storage.chainId
-  }
-  get chain() {
-    return (this.#db?.chains && this.chainId && this.#db?.chains[this.chainId]) || null
+  get networkId() {
+    return this.#storage.networkId
   }
 
-  get evmNetworkId() {
-    return isBalanceEvm(this.#storage) ? this.#storage.evmNetworkId : undefined
-  }
-  get evmNetwork() {
-    return (
-      (this.#db?.evmNetworks && this.evmNetworkId && this.#db?.evmNetworks[this.evmNetworkId]) ||
-      null
-    )
+  get network() {
+    return this.#db?.networks?.[this.networkId] || null
   }
 
   get tokenId() {
     return this.#storage.tokenId
   }
   get token() {
-    return (this.#db?.tokens && this.#db?.tokens[this.tokenId]) || null
+    return this.#db?.tokens?.[this.tokenId] || null
   }
   get decimals() {
     return this.token?.decimals || null
@@ -417,13 +395,9 @@ export class Balance {
     //
     // This means that those rates are always available for calculating the uniswapv2 rates,
     // regardless of whether or not the underlying erc20s are actually in chaindata and enabled.
-    if (
-      this.isSource("evm-uniswapv2") &&
-      this.token?.type === "evm-uniswapv2" &&
-      this.evmNetworkId
-    ) {
-      const tokenId0 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress0)
-      const tokenId1 = evmErc20TokenId(this.evmNetworkId, this.token.tokenAddress1)
+    if (this.isSource("evm-uniswapv2") && this.token?.type === "evm-uniswapv2") {
+      const tokenId0 = evmErc20TokenId(this.networkId, this.token.tokenAddress0)
+      const tokenId1 = evmErc20TokenId(this.networkId, this.token.tokenAddress1)
 
       const decimals = this.token.decimals
       const decimals0 = this.token.decimals0
@@ -527,7 +501,6 @@ export class Balance {
       this.free.planck +
         this.reserved.planck +
         nomPoolStakedPlancks +
-        this.crowdloans.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra),
     )
@@ -563,10 +536,6 @@ export class Balance {
 
   get locks() {
     return this.getValue("locked")
-  }
-
-  get crowdloans() {
-    return this.getValue("crowdloan")
   }
 
   get nompools() {
@@ -658,9 +627,7 @@ export class Balance {
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
 
     const otherUnavailable =
-      nomPoolStakedPlancks +
-      this.crowdloans.reduce((total, each) => total + each.amount.planck, 0n) +
-      this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
+      nomPoolStakedPlancks + this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
     return this.#format(baseUnavailable + otherUnavailable)
   }
 
@@ -943,8 +910,3 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
-
-// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
-// We can't import this directly from EvmErc20Module because then we'd have a circular dependency
-const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
-  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()

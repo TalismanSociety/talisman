@@ -1,14 +1,16 @@
 import PromisePool from "@supercharge/promise-pool"
+import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
-  abiMulticall,
-  erc20Abi,
-  erc20BalancesAggregatorAbi,
+  EthNetworkId,
   EvmErc20Token,
-} from "@talismn/balances"
-import { EvmNetwork, EvmNetworkId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+  isTokenEth,
+  Token,
+  TokenId,
+  TokenList,
+} from "@talismn/chaindata-provider"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
-import { DEBUG, log } from "extension-shared"
+import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash"
 import chunk from "lodash/chunk"
 import groupBy from "lodash/groupBy"
@@ -25,15 +27,15 @@ import {
 import { PublicClient } from "viem"
 
 import { db } from "../../db"
+import { getHasPendingMigrations } from "../../libs/migrations"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isEvmToken } from "../../util/isEvmToken"
 import { appStore } from "../app/store.app"
 import { passwordStore } from "../app/store.password"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "../ethereum/store.activeEvmNetworks"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
+import { activeTokensStore } from "../balances/store.activeTokens"
 import { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
-import { activeTokensStore } from "../tokens/store.activeTokens"
 import { fetchMissingTokens } from "./fetchMissingTokens"
 import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
 import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
@@ -49,17 +51,20 @@ const IGNORED_COINGECKO_IDS = [
 ]
 
 const MANUAL_SCAN_MAX_CONCURRENT_NETWORK = 4
-const BALANCES_FETCH_CHUNK_SIZE = 1000
+const BALANCES_FETCH_CHUNK_SIZE = 50
+const NETWORK_BALANCES_FETCH_CHUNK_SIZE: Record<string, number> = {
+  "1": 200,
+}
 
 // native tokens should be processed and displayed first
 const getSortableIdentifier = (tokenId: TokenId, address: string, tokens: TokenList) => {
   const token = tokens[tokenId]
-  if (!token?.evmNetwork?.id) {
+  if (!token?.networkId) {
     log.warn("No token or network found for tokenId", tokenId)
     return `${tokenId}::${address}`
   }
 
-  return `${token.evmNetwork?.id}::${
+  return `${token.networkId}::${
     tokens[tokenId].type === "evm-native" ? "t1" : "t2"
   }::${tokenId}::${address}`
 }
@@ -91,6 +96,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allAddresses) => {
         try {
+          if (await getHasPendingMigrations()) return
+
           if (prevAllAddresses && !this.#preventAutoStart) {
             const addresses = allAddresses.filter(
               (k) => !(prevAllAddresses as string[]).includes(k),
@@ -119,7 +126,10 @@ class AssetDiscoveryScanner {
     let prevAllActiveNetworkIds: string[] | null = null
 
     // identify newly enabled networks and scan those
-    combineLatest([chaindataProvider.evmNetworksByIdObservable, activeEvmNetworksStore.observable])
+    combineLatest([
+      chaindataProvider.getNetworksMapById$("ethereum"),
+      activeNetworksStore.observable,
+    ])
       .pipe(
         map(([networksById, activeNetworks]) =>
           Object.keys(activeNetworks)
@@ -130,6 +140,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
+          if (await getHasPendingMigrations()) return
+
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
               (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
@@ -166,6 +178,8 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async () => {
         try {
+          if (await getHasPendingMigrations()) return
+
           const accounts = await keyringStore.getAccounts()
           const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
           const networkIds = await getNetworkIdsToForceScan()
@@ -190,7 +204,7 @@ class AssetDiscoveryScanner {
   }
 
   public async startScan(scope: AssetDiscoveryScanScope, dequeue?: boolean): Promise<boolean> {
-    const evmNetworksMap = await chaindataProvider.evmNetworksById()
+    const evmNetworksMap = await chaindataProvider.getNetworksMapById("ethereum")
 
     // for now we only support ethereum addresses and networks
     const addresses = scope.addresses.filter((address) => isEthereumAddress(address))
@@ -278,10 +292,10 @@ class AssetDiscoveryScanner {
     const foundTokenIds = await fetchMissingTokens(scope.addresses)
 
     const [allTokens, evmNetworks, activeTokens, activeNetworks] = await Promise.all([
-      chaindataProvider.tokens(),
-      chaindataProvider.evmNetworksById(),
+      chaindataProvider.getTokens(),
+      chaindataProvider.getNetworksMapById("ethereum"),
       activeTokensStore.get(),
-      activeEvmNetworksStore.get(),
+      activeNetworksStore.get(),
     ])
 
     const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
@@ -293,33 +307,31 @@ class AssetDiscoveryScanner {
       .filter((token) => {
         if (!token || token.noDiscovery) return false
 
+        if (activeNetworks[token.networkId ?? ""] === false) return false
+
         switch (token.type) {
           case "evm-erc20":
-            return activeTokens[token.id] === undefined
           case "evm-native":
-            return (
-              activeNetworks[token.evmNetwork.id] === undefined ||
-              activeTokens[token.id] === undefined
-            )
+            return activeTokens[token.id] === undefined
           default:
             return false
         }
       })
       .map((t) => {
         log.debug("[AssetDiscovery] Forcing scan because of", t.id)
-        return t.evmNetwork?.id
+        return t.networkId
       })
       .filter((id): id is string => !!id)
 
     const networkIdsToScan = [...new Set([...scope.networkIds, ...additionalNetworkIds])]
 
     const tokensToScan = allTokens
-      .filter(isEvmToken)
-      .filter((t) => networkIdsToScan.includes(t.evmNetwork?.id ?? ""))
+      .filter(isTokenEth)
+      .filter((t) => networkIdsToScan.includes(t.networkId ?? ""))
       .filter((token) => {
-        const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+        const evmNetwork = evmNetworks[token.networkId ?? ""]
         if (!evmNetwork) return false
-        if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+        if (!evmNetwork.forceScan && evmNetwork.isTestnet) return false
         if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
         if (token.noDiscovery) return false
         // scan only if token has never been enabled or disabled
@@ -344,6 +356,8 @@ class AssetDiscoveryScanner {
     if (this.#isBusy) return
     this.#isBusy = true
 
+    if (await getHasPendingMigrations()) return
+
     const abortController = new AbortController()
 
     try {
@@ -357,30 +371,30 @@ class AssetDiscoveryScanner {
       const { currentScanCursors: cursors } = await assetDiscoveryStore.get()
 
       const [allTokens, evmNetworks, activeTokens] = await Promise.all([
-        chaindataProvider.tokens(),
-        chaindataProvider.evmNetworksById(),
+        chaindataProvider.getTokens(),
+        chaindataProvider.getNetworksMapById("ethereum"),
         activeTokensStore.get(),
-        activeEvmNetworksStore.get(),
+        activeNetworksStore.get(),
       ])
 
       const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
 
       const tokensToScan = allTokens
-        .filter(isEvmToken)
-        .filter((t) => scope.networkIds.includes(t.evmNetwork?.id ?? ""))
+        .filter(isTokenEth)
+        .filter((t) => scope.networkIds.includes(t.networkId ?? ""))
         .filter((token) => {
-          const evmNetwork = evmNetworks[token.evmNetwork?.id ?? ""]
+          const evmNetwork = evmNetworks[token.networkId ?? ""]
           if (!evmNetwork) return false
-          if (!evmNetwork.forceScan && (evmNetwork.isTestnet || token.isTestnet)) return false
+          if (!evmNetwork.forceScan && evmNetwork.isTestnet) return false
           if (token.coingeckoId && IGNORED_COINGECKO_IDS.includes(token.coingeckoId)) return false
           if (token.noDiscovery) return false
           // scan only if token has never been enabled or disabled
           return activeTokens[token.id] === undefined
         })
 
-      const tokensByNetwork: Record<EvmNetworkId, Token[]> = groupBy(
+      const tokensByNetwork: Record<EthNetworkId, Token[]> = groupBy(
         tokensToScan,
-        (t) => t.evmNetwork?.id,
+        (t) => t.networkId,
       )
 
       const totalChecks = tokensToScan.length * scope.addresses.length
@@ -397,21 +411,21 @@ class AssetDiscoveryScanner {
         .pipe(distinctUntilKeyChanged("currentScanScope", isEqual), skip(1))
         .subscribe(() => {
           log.debug("[AssetDiscovery] Scan cancelled due to currentScanScope change")
-          abortController.abort()
           subScopeChange.unsubscribe()
+          abortController.abort()
         })
 
       const erc20aggregators = Object.fromEntries(
         Object.values(evmNetworks)
-          .filter((n) => n.erc20aggregator)
-          .map((n) => [n.id, n.erc20aggregator] as const),
+          .filter((n) => n.contracts?.Erc20Aggregator)
+          .map((n) => [n.id, n.contracts?.Erc20Aggregator] as const),
       )
 
       const stop = log.timer("[AssetDiscovery] Scan completed")
 
       // process multiple networks at a time
       await PromisePool.withConcurrency(MANUAL_SCAN_MAX_CONCURRENT_NETWORK)
-        .for(Object.keys(tokensByNetwork))
+        .for(Object.keys(tokensByNetwork).sort((a, b) => Number(a) - Number(b)))
         .process(async (networkId) => {
           // stop if scan was cancelled
           if (abortController.signal.aborted) return
@@ -442,20 +456,26 @@ class AssetDiscoveryScanner {
             const remainingChecks = allChecks.slice(startIndex)
 
             //Split into chunks of 50 token+id
-            const chunkedChecks = chunk(remainingChecks, BALANCES_FETCH_CHUNK_SIZE)
+            const chunkedChecks = chunk(
+              remainingChecks,
+              NETWORK_BALANCES_FETCH_CHUNK_SIZE[networkId] ?? BALANCES_FETCH_CHUNK_SIZE,
+            )
 
             for (const checks of chunkedChecks) {
               // stop if scan was cancelled
               if (abortController.signal.aborted) return
 
-              const res = await getEvmTokenBalances(
-                client,
-                checks.map((c) => ({
-                  token: tokensMap[c.tokenId],
-                  address: c.address as EvmAddress,
-                })),
-                erc20aggregators[networkId],
-              )
+              const res = await Promise.race([
+                getEvmTokenBalances(
+                  client,
+                  checks.map((c) => ({
+                    token: tokensMap[c.tokenId],
+                    address: c.address as EvmAddress,
+                  })),
+                  erc20aggregators[networkId],
+                ),
+                throwAfter(10_000, "Timeout"),
+              ])
 
               // stop if scan was cancelled
               if (abortController.signal.aborted) return
@@ -512,7 +532,7 @@ class AssetDiscoveryScanner {
               }
             }
           } catch (err) {
-            log.error(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
+            log.warn(`[AssetDiscovery] Could not scan network ${networkId}`, { err })
           }
         })
 
@@ -547,6 +567,8 @@ class AssetDiscoveryScanner {
 
   /** Used bym migrations */
   public async startPendingScan(): Promise<void> {
+    if (await getHasPendingMigrations()) return
+
     const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
     if (!isAssetDiscoveryScanPending) return
 
@@ -558,13 +580,13 @@ class AssetDiscoveryScanner {
       .map((acc) => acc.address)
 
     // all active evm networks
-    const [evmNetworks, activeEvmNetworks] = await Promise.all([
-      chaindataProvider.evmNetworks(),
-      activeEvmNetworksStore.get(),
+    const [evmNetworks, activeNetworks] = await Promise.all([
+      chaindataProvider.getNetworks("ethereum"),
+      activeNetworksStore.get(),
     ])
 
     const networkIds = evmNetworks
-      .filter((n) => isEvmNetworkActive(n, activeEvmNetworks))
+      .filter((n) => isNetworkActive(n, activeNetworks))
       .map((n) => n.id)
 
     await appStore.set({ isAssetDiscoveryScanPending: false })
@@ -577,39 +599,18 @@ class AssetDiscoveryScanner {
     this.#preventAutoStart = true
 
     try {
-      const [discoveredBalances, activeEvmNetworks, activeTokens] = await Promise.all([
-        db.assetDiscovery.toArray(),
-        activeEvmNetworksStore.get(),
-        activeTokensStore.get(),
-      ])
+      const [discoveredBalances] = await Promise.all([db.assetDiscovery.toArray()])
 
       const tokenIds = uniq(discoveredBalances.map((entry) => entry.tokenId))
       const tokens = (
-        await Promise.all(tokenIds.map((tokenId) => chaindataProvider.tokenById(tokenId)))
-      ).filter(isEvmToken)
+        await Promise.all(tokenIds.map((tokenId) => chaindataProvider.getTokenById(tokenId)))
+      ).filter(isTokenEth)
+      await activeTokensStore.set(Object.fromEntries(tokens.map((t) => [t.id, true])))
 
-      const evmNetworkIds = uniq(
-        tokens.map((token) => token.evmNetwork?.id).filter((id): id is EvmNetworkId => !!id),
+      const evmNetworkIds = uniq(tokens.map((token) => token.networkId))
+      await activeTokensStore.set(
+        Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true])),
       )
-      const evmNetworks = (
-        await Promise.all(evmNetworkIds.map((id) => chaindataProvider.evmNetworkById(id)))
-      ).filter((network): network is EvmNetwork => !!network)
-
-      // activate tokens that have not been explicitely enabled or disabled
-      const tokenIdsToActivate = tokens.filter((t) => activeTokens[t.id] === undefined)
-      if (tokenIdsToActivate.length) {
-        log.debug("[AssetDiscovery] Automatically enabling discovered assets", tokenIdsToActivate)
-        await activeTokensStore.set(Object.fromEntries(tokenIdsToActivate.map((t) => [t.id, true])))
-      }
-
-      // activate networks that have not been explicitely enabled or disabled
-      const networkIdsToActivate = evmNetworks.filter((n) => activeEvmNetworks[n.id] === undefined)
-      if (networkIdsToActivate.length) {
-        log.debug("[AssetDiscovery] Automatically enabling networks", networkIdsToActivate)
-        await activeEvmNetworksStore.set(
-          Object.fromEntries(networkIdsToActivate.map((t) => [t.id, true])),
-        )
-      }
 
       await sleep(100) // pause to ensure local storage observables fires before we exit, to prevent unnecessary scans to be triggered (see watchEnabledNetworks up top)
     } catch (err) {
@@ -624,22 +625,19 @@ class AssetDiscoveryScanner {
 
 const getActiveNetworkIdsToScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.evmNetworks(),
-    activeEvmNetworksStore.get(),
-    // we dont scan substrate tokens for now
-    // chaindataProvider.chains(),
-    // activeChainsStore.get()
+    chaindataProvider.getNetworks("ethereum"),
+    activeNetworksStore.get(),
   ])
 
   return evmNetworks
-    .filter((n) => n.forceScan || (!n.isTestnet && isEvmNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
+    .filter((n) => n.forceScan || (!n.isTestnet && isNetworkActive(n, activeEvmNetworks))) // note: forceScan must also work on testnets
     .map((n) => n.id)
 }
 
 const getNetworkIdsToForceScan = async () => {
   const [evmNetworks, activeEvmNetworks] = await Promise.all([
-    chaindataProvider.evmNetworks(),
-    activeEvmNetworksStore.get(),
+    chaindataProvider.getNetworks("ethereum"),
+    activeNetworksStore.get(),
   ])
 
   return evmNetworks
@@ -707,7 +705,7 @@ const getEvmTokenBalancesWithoutAggregator = async (
 
         throw new Error(`Failed to scan ${token.id} (Timeout)`)
       } catch (err) {
-        log.error(`Failed to scan ${token.id} for ${address}: `, { err })
+        log.warn(`[AssetDiscovery] Failed to get balance of ${token.id} for ${address}: `, { err })
         return "0"
       }
     }),
@@ -765,17 +763,3 @@ const getEvmTokenBalances = (
 }
 
 export const assetDiscoveryScanner = new AssetDiscoveryScanner()
-
-// dev utility to reset active states of all chains and tokens
-if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).resetActiveStates = async () => {
-    await chrome.storage.local.remove("assetDiscovery")
-    await chrome.storage.local.set({
-      activeEvmNetworks: "{}",
-      activeTokens: "{}",
-      activeChains: "{}",
-    })
-    chrome.runtime.reload()
-  }
-}

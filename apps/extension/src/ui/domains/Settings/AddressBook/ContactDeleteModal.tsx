@@ -2,8 +2,8 @@ import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { ContactModalProps } from "./types"
@@ -17,20 +17,19 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
   const { t } = useTranslation()
-  const { deleteContact } = useAddressBook()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     close()
     if (contact) {
-      deleteContact(contact)
+      await api.accountForget(contact.address)
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Interact",
         action: "Delete address book contact",
       })
     }
-  }, [close, contact, deleteContact])
+  }, [close, contact])
 
   const contactName = contact?.name || ""
 

@@ -4,8 +4,13 @@ import { EXTRINSIC_VERSION } from "@polkadot/types/extrinsic/v4/Extrinsic"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { SubNativeToken } from "@talismn/balances"
-import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+import {
+  DotNetwork,
+  DotNetworkId,
+  NetworkId,
+  SubNativeToken,
+  TokenId,
+} from "@talismn/chaindata-provider"
 
 import { balanceModules } from "../../../rpcs/balance-modules"
 import { chainConnector } from "../../../rpcs/chain-connector"
@@ -39,7 +44,7 @@ export default class AssetTransfersRpc {
    * @returns A promise which resolves once the tx is submitted (but before it is included in a block or finalized!)
    */
   static async transfer(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
@@ -60,7 +65,7 @@ export default class AssetTransfersRpc {
 
     assert(signature, "transaction is not signed")
 
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
 
     const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
@@ -86,7 +91,7 @@ export default class AssetTransfersRpc {
     transferInfo: WalletTransactionTransferInfo,
   ) {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const { registry } = await getTypeRegistry(
@@ -123,7 +128,7 @@ export default class AssetTransfersRpc {
    * @returns An object containing the calculated `partialFee` as returned from the `payment_queryInfo` rpc endpoint.
    */
   static async checkFee(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
@@ -161,7 +166,7 @@ export default class AssetTransfersRpc {
    *          - `registry` a type registry containing metadata for the chain this transaction should be submitted to.
    */
   private static async prepareTransaction(
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
@@ -173,18 +178,19 @@ export default class AssetTransfersRpc {
     tx: Extrinsic
     registry: TypeRegistry
     unsigned: SignerPayloadJSON
-    chain: Chain
+    chain: DotNetwork
     signature?: HexString
   }> {
-    const chain = await chaindataProvider.chainById(chainId)
+    const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     assert(token, `Token ${tokenId} not found in store`)
 
-    assert(chain.nativeToken, `Unknown native token for chain ${chainId}`)
-    const nativeToken = (await chaindataProvider.tokenById(chain.nativeToken.id)) as SubNativeToken
+    const nativeToken = (await chaindataProvider.getTokenById(
+      chain.nativeTokenId,
+    )) as SubNativeToken
 
     // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
     // using a finalized block as reference for mortality is necessary for txs to get through
@@ -213,7 +219,6 @@ export default class AssetTransfersRpc {
     if (
       !(
         "substrate-assets" === palletModule.type ||
-        "substrate-equilibrium" === palletModule.type ||
         "substrate-foreignassets" === palletModule.type ||
         "substrate-native" === palletModule.type ||
         "substrate-psp22" === palletModule.type ||
@@ -221,7 +226,7 @@ export default class AssetTransfersRpc {
       )
     )
       throw new Error(
-        `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`,
+        `${token.symbol} transfers on ${token.networkId} are not implemented in this version of Talisman.`,
       )
 
     const checkMetadataHash = getCheckMetadataHashPayloadProps(

@@ -1,4 +1,4 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionRequest } from "extension-core"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
@@ -8,7 +8,7 @@ import { useEthTransaction } from "./useEthTransaction"
 
 export const useEthReplaceTransaction = (
   txToReplace: TransactionRequest<string>,
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   type: TxReplaceType,
   lock?: boolean,
 ) => {

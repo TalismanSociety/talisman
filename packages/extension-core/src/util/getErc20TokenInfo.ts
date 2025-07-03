@@ -1,27 +1,31 @@
+import { EthNetworkId, EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
 import { Client } from "viem"
 
-import { EvmAddress, EvmNetworkId } from "../domains/ethereum/types"
-import { CustomEvmErc20TokenCreate } from "../domains/tokens/types"
+import { EvmAddress } from "../domains/ethereum/types"
 import { getCoinGeckoErc20Coin } from "./coingecko/getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"
 
 export const getErc20TokenInfo = async (
   client: Client,
-  evmNetworkId: EvmNetworkId,
+  networkId: EthNetworkId,
   contractAddress: EvmAddress,
-): Promise<CustomEvmErc20TokenCreate> => {
-  const [{ decimals, symbol }, coinGeckoData] = await Promise.all([
+  signal?: AbortSignal,
+): Promise<EvmErc20Token> => {
+  const [{ decimals, symbol, name }, coinGeckoData] = await Promise.all([
     getErc20ContractData(client, contractAddress),
-    getCoinGeckoErc20Coin(evmNetworkId, contractAddress),
+    getCoinGeckoErc20Coin(networkId, contractAddress, signal),
   ])
 
   return {
+    id: evmErc20TokenId(networkId, contractAddress),
     type: "evm-erc20",
-    evmNetworkId,
+    platform: "ethereum",
+    networkId,
     contractAddress,
     decimals,
     symbol,
-    image: coinGeckoData?.image.small,
+    name,
+    logo: coinGeckoData?.image.small,
     coingeckoId: coinGeckoData?.id,
   }
 }

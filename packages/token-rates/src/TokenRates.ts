@@ -1,4 +1,4 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, Token, TokenId } from "@talismn/chaindata-provider"
 
 import {
   SUPPORTED_CURRENCIES,
@@ -31,26 +31,27 @@ export async function fetchTokenRates(
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
-    // ignore testnet tokens
-    .filter(({ isTestnet }) => !isTestnet)
-
     .flatMap((token) => {
       // BEGIN: LP tokens have a rate which is calculated later on, using the rates of two other tokens.
       //
       // This section contains the logic such that: if token is an LP token, then fetch the rates for the two underlying tokens.
       if (token.type === "evm-uniswapv2") {
-        if (!token.evmNetwork) return []
+        if (token.platform !== "ethereum") return []
 
-        const getToken = (evmNetworkId: string, tokenAddress: string, coingeckoId: string) => ({
+        const getToken = (
+          evmNetworkId: string,
+          tokenAddress: `0x${string}`,
+          coingeckoId: string,
+        ) => ({
           id: evmErc20TokenId(evmNetworkId, tokenAddress),
           coingeckoId,
         })
 
         const token0 = token.coingeckoId0
-          ? [getToken(token.evmNetwork.id, token.tokenAddress0, token.coingeckoId0)]
+          ? [getToken(token.networkId, token.tokenAddress0, token.coingeckoId0)]
           : []
         const token1 = token.coingeckoId1
-          ? [getToken(token.evmNetwork.id, token.tokenAddress1, token.coingeckoId1)]
+          ? [getToken(token.networkId, token.tokenAddress1, token.coingeckoId1)]
           : []
 
         return [...token0, ...token1]
@@ -150,11 +151,6 @@ export async function fetchTokenRates(
 
   return ratesList
 }
-
-// TODO: Move this into a common module which can then be imported both here and into EvmErc20Module
-// We can't import this directly from EvmErc20Module because this package doesn't depend on `@talismn/balances`
-const evmErc20TokenId = (chainId: string, tokenContractAddress: string) =>
-  `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
 
 // To save on bandwidth and work around response size limits, values are returned without json property names
 // (e.g. [[[12, 12332, 0.5]]] instead of { dot : {usd: { value: 12, marketCap: 12332, change24h: 0.5 }} })

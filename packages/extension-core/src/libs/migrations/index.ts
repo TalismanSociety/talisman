@@ -16,6 +16,7 @@ import {
   migrateAssetDiscoveryRollout,
   migrateAssetDiscoveryV2,
 } from "../../domains/assetDiscovery/migrations"
+import { migrateToChaindataV4 } from "../../domains/chaindata/migrations/migrateToChaindataV4"
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateFromPjsKeyring, migrateLedgerPolkadotCurve } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
@@ -41,7 +42,16 @@ export const migrations: Migrations = [
   migrateEnabledTestnets,
   migrateSubstrateTokensIds,
   migrateLedgerPolkadotCurve,
+  migrateToChaindataV4,
 ]
+
+// TODO Turn the migration runner in a singleton so we can provide an observable instead of a promise
+// The problem is that the runner is designed to run migrations as soon as it's instanciated
+export const getHasPendingMigrations = async () => {
+  const storage = await chrome.storage.local.get("migrations")
+  const migrationsData = storage.migrations || {}
+  return Object.keys(migrationsData).length < migrations.length
+}
 
 // @dev snippet to use in dev console of background worker to remove a migration:
 // const state = await chrome.storage.local.get("migrations")

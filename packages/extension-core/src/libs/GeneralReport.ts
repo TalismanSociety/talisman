@@ -1,3 +1,4 @@
+import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { Account, isAccountOwned } from "@talismn/keyring"
 import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
@@ -16,6 +17,7 @@ import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
+import { getHasPendingMigrations } from "./migrations"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -106,11 +108,12 @@ async function getGeneralReport({
    */
   refreshBalances?: boolean
 } = {}) {
-  const [allowTracking, onboarded] = await Promise.all([
+  const [allowTracking, onboarded, hasPendingMigrations] = await Promise.all([
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
+    getHasPendingMigrations(),
   ])
-  if (!allowTracking || !onboarded || IS_FIREFOX) return
+  if (!allowTracking || !onboarded || hasPendingMigrations || IS_FIREFOX) return
 
   //
   // accounts
@@ -197,10 +200,9 @@ async function getGeneralReport({
   // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
   try {
     /* eslint-disable-next-line no-var */
-    var [chains, evmNetworks, tokens, tokenRates] = await Promise.all([
-      chaindataProvider.chainsById(),
-      chaindataProvider.evmNetworksById(),
-      chaindataProvider.tokensById(),
+    var [networks, tokens, tokenRates] = await Promise.all([
+      chaindataProvider.getNetworksMapById(),
+      chaindataProvider.getTokensMapById(),
       db.tokenRates
         .toArray()
         .then((dbTokenRates) =>
@@ -212,7 +214,7 @@ async function getGeneralReport({
       ownedAddresses.includes(balance.address),
     )
     /* eslint-disable-next-line no-var */
-    var balances = new Balances(balanceJsons, { chains, evmNetworks, tokens, tokenRates })
+    var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
     DEBUG && console.error(error) // eslint-disable-line no-console
@@ -226,21 +228,21 @@ async function getGeneralReport({
     balances.each.filter(
       (balance) =>
         balance &&
-        (balance.chain === null || !("isCustom" in balance.chain && balance.chain.isCustom)) &&
-        (balance.token === null || !("isCustom" in balance.token && balance.token.isCustom)),
+        (!balance.token || !isTokenCustom(balance.token)) &&
+        (!balance.network || !isNetworkCustom(balance.network)),
     ),
-    (balance) => `${balance.chainId ?? balance.evmNetworkId}-${balance.tokenId}`,
+    (balance) => `${balance.networkId}-${balance.tokenId}`,
   )
 
   // get fiat sum object for those arrays of balances
   const sortedFiatSumPerChainToken = Object.values(balancesPerChainToken)
-    .map((balances) => new Balances(balances, { chains, evmNetworks, tokens, tokenRates }))
+    .map((balances) => new Balances(balances, { networks, tokens, tokenRates }))
     .map((balances) => ({
       totalBalance: balances.sum.fiat("usd").total,
       transferableBalance: balances.sum.fiat("usd").transferable,
       unavailableBalance: balances.sum.fiat("usd").unavailable,
       numAccounts: new Set(balances.each.map((b) => b.address)).size,
-      chainId: balances.sorted[0].chainId ?? balances.sorted[0].evmNetworkId,
+      chainId: balances.sorted[0].networkId,
       tokenId: balances.sorted[0].tokenId,
       symbol: balances.sorted[0].token?.symbol,
     }))
@@ -265,8 +267,14 @@ async function getGeneralReport({
     .reduce(
       (acc, token) => {
         if (!token.chainId) return acc
-
-        const eco = chains[token.chainId] ? acc.dot : evmNetworks[token.chainId] ? acc.eth : null
+        const network = networks[token.chainId]
+        if (!network) return acc
+        const eco =
+          network.platform === "polkadot"
+            ? acc.dot
+            : network.platform === "ethereum"
+              ? acc.eth
+              : null
         if (!eco) return acc
 
         eco.totalBalance += token.totalBalance

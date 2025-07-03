@@ -10,6 +10,7 @@ import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 import { BittensorSubnetOption, BittensorSubnetOptionSkeleton } from "../BittensorSubnetOption"
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
@@ -162,7 +163,7 @@ export const BittensorSubnetSelect = () => {
                   key={option.netuid!}
                   option={option}
                   selectedNetuid={selectedNetuid}
-                  tokenId="bittensor-substrate-native"
+                  tokenId={BITTENSOR_TOKEN_ID}
                   handleSelectSubnet={setSelectedNetuid}
                   isSubnetsLoading={isSubnetsLoading}
                   isSubnetsError={isSubnetsError}

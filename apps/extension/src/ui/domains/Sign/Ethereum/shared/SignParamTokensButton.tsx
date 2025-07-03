@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 
@@ -7,7 +7,7 @@ import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"
 
 type SignParamTokensButtonProps = {
-  network: SimpleEvmNetwork
+  network: EthNetwork
   address: string
   withIcon?: boolean
   tokenId: string | undefined
@@ -31,7 +31,7 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
 }) => {
   return (
     <SignParamButton
-      explorerUrl={network.explorerUrl}
+      explorerUrl={network.blockExplorerUrls[0]}
       address={address}
       withIcon={withIcon}
       contentClassName="leading-none"

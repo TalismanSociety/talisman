@@ -11,9 +11,6 @@
 //
 
 export * from "./BalanceModule"
-export * from "./EvmTokenFetcher"
-export * from "./MiniMetadataUpdater"
 export * from "./TalismanBalancesDatabase"
 export * from "./modules"
 export * from "./types"
-export * from "./util"

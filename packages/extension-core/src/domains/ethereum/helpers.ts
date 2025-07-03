@@ -1,6 +1,6 @@
 import { assert } from "@polkadot/util"
 import { erc20Abi } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   encodeFunctionData,
@@ -23,7 +23,6 @@ import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EvmAddress,
-  EvmNetworkId,
   LedgerEthDerivationPathType,
 } from "./types"
 
@@ -45,7 +44,7 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
 }
 
 export const getEthTransferTransactionBase = async (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   from: EvmAddress,
   to: EvmAddress,
   token: Token,
@@ -423,7 +422,7 @@ const schemaWatchAssetRequest = yup.object().shape({
     .object()
     .shape({
       address: yup.string().required().test("ethAddress", isEthereumAddress),
-      symbol: yup.string().min(2).max(11).test("noScriptTag", testNoScriptTag),
+      symbol: yup.string().min(1).max(11).test("noScriptTag", testNoScriptTag),
       decimals: yup.number(),
       // ignore image if it doesn't pass security checks
       image: yup.string().transform((value) => (isSafeImageUrl(value) ? value : undefined)),

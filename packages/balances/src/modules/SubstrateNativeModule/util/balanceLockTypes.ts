@@ -77,22 +77,13 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   { balance }: { balance?: Balance } = {},
 ) => {
   if (!lock.label) return lock.label
 
   if (lock.label === "democracy") return "Governance"
-  if (lock.label === "crowdloan") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const paraId = (lock.meta as any)?.paraId
-    if (!paraId) return "Crowdloan"
-
-    const name = balance?.chain?.parathreads?.find(
-      (parathread) => parathread?.paraId === paraId,
-    )?.name
-
-    return `${name ? name : `Parachain ${paraId}`} Crowdloan`
-  }
+  if (lock.label === "crowdloan") return "Crowdloan"
   if (lock.label === "nompools-staking") return "Pooled Staking"
   if (lock.label === "nompools-unbonding") return "Pooled Staking"
   if (lock.label === "subtensor-staking") return "Root Staking"

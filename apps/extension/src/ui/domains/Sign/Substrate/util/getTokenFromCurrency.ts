@@ -1,5 +1,4 @@
-import { Token } from "@talismn/chaindata-provider"
-import { Chain } from "extension-core"
+import { DotNetwork, Token } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import { Enum } from "polkadot-api"
@@ -37,15 +36,15 @@ type SubstrateTokenId = Enum<Record<string, unknown>>
 
 export const getTokenFromCurrency = (
   currencyId: number | SubstrateTokenId,
-  chain: Chain,
+  chain: DotNetwork,
   tokens: Token[],
 ): Token => {
-  const chainTokens = tokens.filter((t) => t.chain?.id === chain.id)
+  const chainTokens = tokens.filter((t) => t.networkId === chain.id)
 
   try {
     // ex: HDX
     if (typeof currencyId === "number") {
-      if (currencyId === 0) return chainTokens.find((t) => t.id === chain.nativeToken?.id) as Token
+      if (currencyId === 0) return chainTokens.find((t) => t.id === chain.nativeTokenId) as Token
       const token = chainTokens.find(
         (t) => t.type === "substrate-tokens" && String(t.onChainId) === String(currencyId),
       )

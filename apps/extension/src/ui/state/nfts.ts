@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { isTruthy } from "@talismn/util"
 import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
@@ -10,7 +11,7 @@ import {
 } from "@ui/domains/Portfolio/Nfts/helpers"
 
 import { getAccountsByCategory$ } from "./accounts"
-import { getEvmNetworks$ } from "./chaindata"
+import { getNetworks$ } from "./chaindata"
 import { NetworkOption, portfolioSelectedAccounts$ } from "./portfolio"
 import { getSettingValue$ } from "./settings"
 import { debugObservable } from "./util/debugObservable"
@@ -48,7 +49,11 @@ const nftData$ = new Observable<NftData>((subscriber) => {
   return () => unsubscribe()
 }).pipe(debugObservable("nftData$"), shareReplay(1))
 
-const evmNetworks$ = getEvmNetworks$({ activeOnly: true, includeTestnets: true })
+const evmNetworks$ = getNetworks$({
+  platform: "ethereum",
+  activeOnly: true,
+  includeTestnets: true,
+})
 
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([evmNetworks$, nftData$]).pipe(
@@ -63,7 +68,8 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
         .filter((network) => networkIdsWithNfts.includes(network.id))
         .map<NetworkOption>((evmNetwork) => {
           return {
-            id: evmNetwork.substrateChain?.id ?? evmNetwork.id,
+            id: evmNetwork.substrateChainId ?? evmNetwork.id,
+            networkIds: [evmNetwork.id, evmNetwork.substrateChainId].filter(isTruthy),
             name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
             evmNetworkId: evmNetwork.id,
           }
@@ -106,9 +112,7 @@ export const [useNfts, nfts$] = bind(
           ? selectedAccounts.map((a) => a.address.toLowerCase())
           : accounts.map((a) => a.address.toLowerCase())
 
-        const networkIds = networkFilter
-          ? [networkFilter.evmNetworkId]
-          : networks.map((n) => n.evmNetworkId)
+        const networkIds = networkFilter ? [networkFilter.id] : networks.map((n) => n.id)
 
         const nfts = allNfts
           // account filter

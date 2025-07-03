@@ -7,7 +7,7 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -22,6 +22,7 @@ import {
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
+  NetworkOption,
   NftVisibilityFilter,
   setNftNetworkFilter,
   setNftSearch,
@@ -34,8 +35,8 @@ import {
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ChainLogo } from "../Asset/ChainLogo"
-import { NetworkFilterModal } from "./NetworkFilterModal"
+import { NetworkLogo } from "../Networks/NetworkLogo"
+import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 export const NftViewModeToggleButton = () => {
@@ -61,19 +62,16 @@ export const NftViewModeToggleButton = () => {
 }
 
 const NetworkFilterButton = () => {
-  const networks = useNftNetworkOptions()
+  const options = useNftNetworkOptions()
   const networkFilter = useNftNetworkFilter()
-  //const { networks, networkFilter } = usePortfolioNftsNetwork()
   const { isOpen, open, close } = useOpenClose()
 
-  const networkIds = useMemo(() => networks.map((network) => network.id), [networks])
-
   const handleChange = useCallback(
-    (networkId: string | null) => {
-      setNftNetworkFilter(networks.find((n) => n.id === networkId))
+    (option: NetworkOption | null) => {
+      setNftNetworkFilter(option ?? undefined)
       close()
     },
-    [close, networks],
+    [close],
   )
 
   return (
@@ -85,7 +83,7 @@ const NetworkFilterButton = () => {
             className={classNames(networkFilter && "text-primary")}
           >
             {networkFilter ? (
-              <ChainLogo className="text-lg" id={networkFilter.id} />
+              <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
             ) : (
               <GlobeIcon />
             )}
@@ -95,12 +93,12 @@ const NetworkFilterButton = () => {
           {networkFilter ? networkFilter.name : t("Filter by network")}
         </TooltipContent>
       </Tooltip>
-      <NetworkFilterModal
+      <NetworkOptionsModal
         onChange={handleChange}
         isOpen={isOpen}
         onClose={close}
-        networkIds={networkIds}
-        networkId={networkFilter?.id ?? null}
+        options={options}
+        selected={networkFilter ?? null}
       />
     </>
   )

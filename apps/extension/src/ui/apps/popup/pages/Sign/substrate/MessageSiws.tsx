@@ -1,6 +1,7 @@
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { UserRightIcon } from "@talismn/icons"
 import { SiwsMessage } from "@talismn/siws"
-import { Account, Chain } from "extension-core"
+import { Account } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
@@ -13,7 +14,7 @@ import { ViewDetailsField } from "@ui/domains/Sign/ViewDetails/ViewDetailsField"
 
 export type Props = {
   account: Account
-  chain: Chain | null | undefined
+  chain: DotNetwork | null | undefined
   request: SiwsMessage
   validationError: string | null
 }

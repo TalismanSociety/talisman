@@ -1,13 +1,14 @@
-import { Chain, Token } from "@talismn/chaindata-provider"
+import { DotNetwork, DotNetworkId, SubNativeToken, Token } from "@talismn/chaindata-provider"
 import { decodeScale, encodeStateKey } from "@talismn/scale"
 import { BigMath, blake2Concat, decodeAnyAddress } from "@talismn/util"
 import { Binary, Enum } from "polkadot-api"
 import { Struct, u32, u128 } from "scale-ts"
 
+import { SubNativeModule } from ".."
 import log from "../../../log"
 import { AddressesByToken, AmountWithLabel, getValueId, MiniMetadata } from "../../../types"
-import { findChainMeta, RpcStateQuery, StorageCoders } from "../../util"
-import { SubNativeBalance, SubNativeToken } from "../types"
+import { RpcStateQuery, StorageCoders } from "../../util"
+import { SubNativeBalance } from "../types"
 import { getLockedType } from "./balanceLockTypes"
 
 export type QueryKey = string
@@ -47,7 +48,7 @@ const AccountInfoOverrides: Record<
 }
 
 export async function buildQueries(
-  chains: Record<string, Chain>,
+  chains: Record<string, DotNetwork>,
   tokens: Record<string, Token>,
   chainStorageCoders: StorageCoders<{
     base: ["System", "Account"]
@@ -57,7 +58,7 @@ export async function buildQueries(
     locks: ["Balances", "Locks"]
     freezes: ["Balances", "Freezes"]
   }>,
-  miniMetadatas: Map<string, MiniMetadata>,
+  miniMetadatas: Map<DotNetworkId, MiniMetadata<typeof SubNativeModule>>,
   addressesByToken: AddressesByToken<SubNativeToken>,
 ): Promise<Record<QueryKey, Array<RpcStateQuery<SubNativeBalance>>>> {
   return Object.entries(addressesByToken).reduce<
@@ -72,7 +73,7 @@ export async function buildQueries(
       log.debug(`This module doesn't handle tokens of type ${token.type}`)
       return outerResult
     }
-    const chainId = token.chain?.id
+    const chainId = token.networkId
     if (!chainId) {
       log.warn(`Token ${tokenId} has no chain`)
       return outerResult
@@ -83,8 +84,8 @@ export async function buildQueries(
       return outerResult
     }
 
-    const [chainMeta] = findChainMeta(miniMetadatas, "substrate-native", chain)
-    const { useLegacyTransferableCalculation } = chainMeta ?? {}
+    const miniMetadata = miniMetadatas.get(chainId)
+    const { useLegacyTransferableCalculation } = miniMetadata?.extra ?? {}
 
     addresses.flat().forEach((address) => {
       const queryKey = `${tokenId}-${address}`
@@ -93,8 +94,7 @@ export async function buildQueries(
         source: "substrate-native",
         status: "live",
         address,
-        multiChainId: { subChainId: chainId },
-        chainId,
+        networkId: chainId,
         tokenId,
         values: [],
       }

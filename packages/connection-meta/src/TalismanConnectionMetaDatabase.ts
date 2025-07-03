@@ -1,18 +1,18 @@
-import { ChainId } from "@talismn/chaindata-provider"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
 
 type ChainPriorityRpcs = {
-  id: ChainId
+  id: DotNetworkId
   urls: string[]
 }
 type ChainBackoffInterval = {
-  id: ChainId
+  id: DotNetworkId
   interval: number
 }
 
 export class TalismanConnectionMetaDatabase extends Dexie {
-  chainPriorityRpcs!: Dexie.Table<ChainPriorityRpcs, ChainId>
-  chainBackoffInterval!: Dexie.Table<ChainBackoffInterval, ChainId>
+  chainPriorityRpcs!: Dexie.Table<ChainPriorityRpcs, DotNetworkId>
+  chainBackoffInterval!: Dexie.Table<ChainBackoffInterval, DotNetworkId>
 
   constructor() {
     super("TalismanConnectionMeta")

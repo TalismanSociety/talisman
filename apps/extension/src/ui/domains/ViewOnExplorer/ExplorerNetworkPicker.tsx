@@ -1,6 +1,6 @@
+import { Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
-import { isEthereumAddress } from "@talismn/util"
-import { isAccountCompatibleWithChain } from "extension-core"
+import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -9,74 +9,40 @@ import urlJoin from "url-join"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useChains, useEvmNetworks } from "@ui/state"
-import { isAddressCompatibleWithChain } from "@ui/util/isAddressCompatibleWithChain"
+import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
-type NetworkWithExplorer = {
-  id: string
-  type: "evm" | "substrate"
-  name: string
-  explorerUrl: string
-}
-
-const useExplorerNetworks = (address: string, search: string): NetworkWithExplorer[] => {
+const useExplorerNetworks = (address: string, search: string): Network[] => {
   const account = useAccountByAddress(address)
-  const chains = useChains({ activeOnly: true, includeTestnets: true })
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: true })
+  const networks = useNetworks({ activeOnly: true, includeTestnets: true })
 
   const balances = useBalancesByAddress(address)
   const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
-  const compatibleChains = useMemo<NetworkWithExplorer[]>(
+  const compatibleChains = useMemo<Network[]>(
     () =>
-      chains
-        .filter(
-          (chain) =>
-            !!chain.subscanUrl &&
-            !!chain.name &&
-            // account is undefined for contacts
-            (account
-              ? isAccountCompatibleWithChain(chain, account)
-              : isAddressCompatibleWithChain(chain, address)),
-        )
-        .map(
-          (chain): NetworkWithExplorer => ({
-            id: chain.id,
-            type: "substrate",
-            name: chain.name!,
-            explorerUrl: chain.subscanUrl!,
-          }),
-        ),
-    [account, address, chains],
-  )
+      networks.filter(
+        (chain) =>
+          !!chain.blockExplorerUrls.length &&
+          !!chain.name &&
+          // account is undefined for contacts
+          (account
+            ? isAccountCompatibleWithNetwork(chain, account)
+            : isAddressCompatibleWithNetwork(chain, address)),
+      ),
 
-  const compatibleEvmNetworks = useMemo<NetworkWithExplorer[]>(
-    () =>
-      isEthereumAddress(address)
-        ? evmNetworks
-            .filter((network) => !!network.name && !!network.explorerUrl)
-            .map(
-              (chain): NetworkWithExplorer => ({
-                id: chain.id,
-                type: "substrate",
-                name: chain.name!,
-                explorerUrl: chain.explorerUrl!,
-              }),
-            )
-        : [],
-    [address, evmNetworks],
+    [account, address, networks],
   )
 
   const sortedNetworks = useMemo(
     () =>
-      [...compatibleChains, ...compatibleEvmNetworks].sort((a, b) => {
+      compatibleChains.sort((a, b) => {
         if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
           return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
         return (a.name ?? "").localeCompare(b.name ?? "")
       }),
-    [balancesPerNetwork, compatibleChains, compatibleEvmNetworks],
+    [balancesPerNetwork, compatibleChains],
   )
 
   return useMemo(() => {
@@ -85,20 +51,17 @@ const useExplorerNetworks = (address: string, search: string): NetworkWithExplor
   }, [search, sortedNetworks])
 }
 
-const NetworkRow: FC<{ network: NetworkWithExplorer; onClick: () => void }> = ({
-  network,
-  onClick,
-}) => {
+const NetworkRow: FC<{ network: Network; onClick: () => void }> = ({ network, onClick }) => {
   return (
     <button
       type="button"
       onClick={onClick}
       className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12"
     >
-      <ChainLogo className="shrink-0 text-xl" id={network.id} />
+      <NetworkLogo className="shrink-0 text-xl" networkId={network.id} />
       <div className="flex grow flex-col gap-2 overflow-hidden text-left">
         <div className="text-body truncate">{network.name}</div>
-        <div className="text-body-secondary truncate text-xs">{network.explorerUrl}</div>
+        <div className="text-body-secondary truncate text-xs">{network.blockExplorerUrls[0]}</div>
       </div>
       <div className="flex gap-6">
         <ExternalLinkIcon className="text-md" />
@@ -116,8 +79,9 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
   const networks = useExplorerNetworks(address, search)
 
   const handleNetworkClick = useCallback(
-    (network: NetworkWithExplorer) => () => {
-      window.open(urlJoin(network.explorerUrl, "address", address), "_blank")
+    (network: Network) => () => {
+      if (!network.blockExplorerUrls.length) return
+      window.open(urlJoin(network.blockExplorerUrls[0], "address", address), "_blank")
       onClose()
     },
     [address, onClose],

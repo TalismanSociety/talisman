@@ -10,7 +10,7 @@ export const useUniswapV2LpTokenTotalValueLocked = (
 ) => {
   if (token?.type !== "evm-uniswapv2") return null
 
-  const byChain = groupBy(balances?.each, (b) => b.chainId)
+  const byChain = groupBy(balances?.each, (b) => b.networkId)
   const chainTvls = Object.values(byChain).map((chainBalances) =>
     extractTvlFromBalance(
       chainBalances?.find?.((b) => b.isSource("evm-uniswapv2")),

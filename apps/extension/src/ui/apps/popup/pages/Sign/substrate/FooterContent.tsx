@@ -155,10 +155,10 @@ const EstimatedFeesRow: FC = () => {
   } = usePolkadotSigningRequest()
   const tokens = useTokensMap()
 
-  const feeToken = useFeeToken(chain?.nativeToken?.id)
+  const feeToken = useFeeToken(chain?.nativeTokenId)
 
   const deliveryFees = useMemo<FeeDetails[]>(() => {
-    if (!chain?.nativeToken?.id || !dryRun?.ok || !dryRun.data.success) return []
+    if (!chain?.nativeTokenId || !dryRun?.ok || !dryRun.data.success) return []
 
     const fees: { plancks: bigint; tokenId: TokenId }[] = []
 

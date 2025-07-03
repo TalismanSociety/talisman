@@ -1,9 +1,9 @@
-import { ChainId } from "extension-core"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type TipOptionName = "low" | "medium" | "high"
 export type TipOptions = Record<TipOptionName, string>
-type TipOptionsResolver = (response: Response, chainId: ChainId) => Promise<TipOptions>
+type TipOptionsResolver = (response: Response, chainId: DotNetworkId) => Promise<TipOptions>
 
 type GasStationInfo = {
   url: string
@@ -21,7 +21,7 @@ const getAstarTipOptions: TipOptionsResolver = async (response) => {
 }
 
 // each gas station has a different response shape
-const gasStations: Record<ChainId, GasStationInfo> = {
+const gasStations: Record<DotNetworkId, GasStationInfo> = {
   astar: {
     url: "https://gas.astar.network/api/gasnow?network=astar",
     resolver: getAstarTipOptions,
@@ -36,7 +36,7 @@ const gasStations: Record<ChainId, GasStationInfo> = {
   },
 }
 
-const useTipStation = (chainId?: ChainId, autoRefresh = true) => {
+const useTipStation = (chainId?: DotNetworkId, autoRefresh = true) => {
   const [tipOptions, setTipOptions] = useState<TipOptions>()
   const [error, setError] = useState<string>()
 

@@ -1,34 +1,25 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import { isAddressEqual, isSs58Address } from "@talismn/crypto"
 import { isValidSubstrateAddress } from "@talismn/util"
-import { AccountContact } from "extension-core"
 import { HexString } from "extension-shared"
+import { keyBy } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import {
-  Button,
-  Checkbox,
-  FormFieldContainer,
-  FormFieldInputText,
-  Modal,
-  ModalDialog,
-} from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
 import { notify } from "@talisman/components/Notifications"
-import { convertAddress } from "@talisman/util/convertAddress"
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { NetworkDropdown } from "@ui/domains/Portfolio/NetworkPicker"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useChainsMapByGenesisHash } from "@ui/state"
+import { useAccounts } from "@ui/state"
 
-import { useAddressEffects, useChainsFilteredByAddressPrefix, useGenesisHashEffects } from "./hooks"
-import { LimitToNetworkTooltip } from "./LimitToNetworkTooltip"
+import { ContactNetworkPickerButton } from "./ContactNetworkModal"
+import { useChainsFilteredByAddressPrefix } from "./hooks"
 import { ContactModalProps } from "./types"
 
 type FormValues = {
@@ -36,12 +27,6 @@ type FormValues = {
   searchAddress: string
   address: string
   genesisHash?: HexString
-  limitToNetwork?: boolean
-}
-
-interface ValidationContext {
-  accounts: string[]
-  contacts: AccountContact[]
 }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -51,18 +36,9 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact create",
 }
 
-const normaliseMethods = {
-  ss58: (addr: string) => convertAddress(addr, null),
-  ethereum: (addr: string) => addr.toLowerCase(),
-}
-
-const normalise = (address: string, addressType?: "ss58" | "ethereum") =>
-  normaliseMethods[addressType || "ss58"](address)
-
 export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const { t } = useTranslation()
-  const { add, contacts } = useAddressBook()
-  const accounts = useAccounts()
+  const accounts = useAccounts("all")
 
   const schema = useMemo(
     () =>
@@ -74,46 +50,26 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           .required(" ")
           .transform((value) => value.trim())
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
-            const context = ctx.options.context as ValidationContext
             if (!value) return false
             const isEthAddress = isEthereumAddress(value)
-
             const isValidAddress = isEthAddress || isValidSubstrateAddress(value)
-
             if (!isValidAddress) return ctx.createError({ message: t("Invalid Address") })
 
-            const normalised = normalise(value, isEthAddress ? "ethereum" : "ss58")
-            const { accounts, contacts } = context
+            const existing = accounts.find((c) => isAddressEqual(c.address, value))
+            if (existing)
+              return existing.type === "contact"
+                ? existing.genesisHash
+                  ? ctx.createError({
+                      message: t("Address already saved as a network-limited contact"),
+                    })
+                  : ctx.createError({ message: t("Contact already exists") })
+                : ctx.createError({ message: t("That address is already part of your wallet") })
 
-            const contact = contacts.find((c) => isAddressEqual(c.address, normalised))
-
-            if (!contact && accounts.includes(normalised))
-              return ctx.createError({ message: t("Cannot save a wallet address as a contact") })
-
-            if (contact) {
-              // existing contact is limited to a single network
-              if (contact.genesisHash)
-                return ctx.createError({
-                  message: t("Address already saved as a network-limited contact"),
-                })
-
-              // existing contact is a multichain contact
-              return ctx.createError({ message: t("Contact already exists") })
-            }
             return true
           }),
         genesisHash: yup.mixed<HexString>(),
-        limitToNetwork: yup.bool(),
       }),
-    [t],
-  )
-
-  const { existingNormalisedContacts, existingAccountAddresses } = useMemo(
-    () => ({
-      existingNormalisedContacts: contacts,
-      existingAccountAddresses: accounts.map((acc) => normalizeAddress(acc.address)),
-    }),
-    [contacts, accounts],
+    [accounts, t],
   )
 
   const {
@@ -126,10 +82,6 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     watch,
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
-    context: {
-      contacts: existingNormalisedContacts,
-      accounts: existingAccountAddresses,
-    },
     mode: "all",
     reValidateMode: "onChange",
   })
@@ -138,7 +90,17 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     if (isOpen) reset()
   }, [isOpen, reset])
 
-  const { searchAddress, genesisHash, limitToNetwork } = watch()
+  const { searchAddress, address, genesisHash } = watch()
+  const isAddressSs58 = useMemo(() => isSs58Address(address), [address])
+
+  useEffect(() => {
+    // reset genesisHash if address changes
+    setValue("genesisHash", undefined, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+  }, [setValue, searchAddress])
 
   const [nsLookup, { nsLookupType, isNsLookup, isNsFetching }] = useResolveNsName(searchAddress)
   useEffect(() => {
@@ -162,45 +124,48 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
       })
   }, [nsLookup, isNsLookup, searchAddress, setValue, isNsFetching])
 
-  const { address } = watch()
-  const chains = useChainsFilteredByAddressPrefix(address)
-  const chainsByGenesisHash = useChainsMapByGenesisHash()
-  const setGenesisHash = useCallback(
-    (genesisHash?: HexString) =>
+  const compatibleNetworks = useChainsFilteredByAddressPrefix(address)
+  const [compatibleNetworksById, compatibleNetworksByGenesisHash] = useMemo(
+    () => [keyBy(compatibleNetworks, (n) => n.id), keyBy(compatibleNetworks, (n) => n.genesisHash)],
+    [compatibleNetworks],
+  )
+
+  const selectedNetworkId = useMemo(() => {
+    if (!genesisHash) return null
+    return compatibleNetworksByGenesisHash[genesisHash]?.id ?? null
+  }, [compatibleNetworksByGenesisHash, genesisHash])
+
+  const handleNetworkChange = useCallback(
+    (networkId: string | null) => {
+      const genesisHash = networkId
+        ? compatibleNetworksById[networkId ?? ""]?.genesisHash
+        : undefined
       setValue("genesisHash", genesisHash, {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true,
-      }),
-    [setValue],
+      })
+    },
+    [compatibleNetworksById, setValue],
   )
-  useGenesisHashEffects(chains, genesisHash, setGenesisHash)
-  const setLimitToNetwork = useCallback(
-    (limitToNetwork?: boolean) =>
-      setValue("limitToNetwork", limitToNetwork, {
-        shouldDirty: true,
-        shouldTouch: true,
-        shouldValidate: true,
-      }),
-    [setValue],
-  )
-  useAddressEffects(address, setLimitToNetwork)
-  const showLimitToNetworkControl = useMemo(() => chains.length !== 0, [chains])
 
   const submit = useCallback(
     async (formData: FormValues) => {
       try {
-        const { name, address, genesisHash, limitToNetwork } = formData
-        await add({
-          name,
-          address,
-          genesisHash: limitToNetwork ? genesisHash : undefined,
-        })
-        sendAnalyticsEvent({
-          ...ANALYTICS_PAGE,
-          name: "Interact",
-          action: "Create address book contact",
-        })
+        const { name, address, genesisHash } = formData
+        await api.accountAddExternal([
+          {
+            type: "contact",
+            name,
+            address,
+            genesisHash,
+          },
+        ]),
+          sendAnalyticsEvent({
+            ...ANALYTICS_PAGE,
+            name: "Interact",
+            action: "Create address book contact",
+          })
         notify({
           type: "success",
           title: t("New contact added"),
@@ -211,78 +176,67 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         setError("address", { message: (error as Error).message }, { shouldFocus: true })
       }
     },
-    [close, add, setError, t],
+    [close, setError, t],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
-      <ModalDialog title={t("Add new contact")}>
-        <form onSubmit={handleSubmit(submit)} className="grid gap-8">
-          <FormFieldContainer error={errors.name?.message} label={t("Name")}>
-            <FormFieldInputText
-              type="text"
-              {...register("name")}
-              placeholder={t("Contact name")}
-              autoComplete="off"
-              spellCheck="false"
-            />
-          </FormFieldContainer>
-          <FormFieldContainer error={errors.address?.message} label={t("Address")}>
-            <FormFieldInputText
-              type="text"
-              {...register("searchAddress")}
-              placeholder={t("Address")}
-              autoComplete="off"
-              spellCheck="false"
-              /* Fixes implicit min-width of approx. 180px */
-              size={1}
-              after={
-                <AddressFieldNsBadge
-                  nsLookup={nsLookup}
-                  nsLookupType={nsLookupType}
-                  isNsLookup={isNsLookup}
-                  isNsFetching={isNsFetching}
+      <div id="create-contact-modal" className="h-[60rem] w-[40rem] overflow-hidden">
+        <ModalDialog title={t("Add new contact")} className="size-full overflow-hidden">
+          <form onSubmit={handleSubmit(submit)} className="flex size-full flex-col overflow-hidden">
+            <div className="grow">
+              <FormFieldContainer error={errors.name?.message} label={t("Name")}>
+                <FormFieldInputText
+                  type="text"
+                  {...register("name")}
+                  placeholder={t("Contact name")}
+                  autoComplete="off"
+                  spellCheck="false"
                 />
-              }
-            />
-          </FormFieldContainer>
-          {showLimitToNetworkControl && (
-            <>
-              <Checkbox
-                childProps={{ className: "flex items-center gap-2" }}
-                {...register("limitToNetwork")}
-              >
-                {t("Limit to Network")}
-                <LimitToNetworkTooltip />
-              </Checkbox>
-              {limitToNetwork && (
-                <NetworkDropdown
-                  placeholder={t("Select network")}
-                  networks={chains}
-                  value={chainsByGenesisHash[genesisHash!]}
-                  onChange={(c) =>
-                    setValue("genesisHash", c?.genesisHash ?? undefined, {
-                      shouldDirty: true,
-                      shouldTouch: true,
-                      shouldValidate: true,
-                    })
+              </FormFieldContainer>
+              <FormFieldContainer error={errors.address?.message} label={t("Address")}>
+                <FormFieldInputText
+                  type="text"
+                  {...register("searchAddress")}
+                  placeholder={t("Address")}
+                  autoComplete="off"
+                  spellCheck="false"
+                  /* Fixes implicit min-width of approx. 180px */
+                  size={1}
+                  after={
+                    <AddressFieldNsBadge
+                      nsLookup={nsLookup}
+                      nsLookupType={nsLookupType}
+                      isNsLookup={isNsLookup}
+                      isNsFetching={isNsFetching}
+                    />
                   }
                 />
+              </FormFieldContainer>
+              {isAddressSs58 && (
+                <FormFieldContainer label={t("Limit to network")}>
+                  <ContactNetworkPickerButton
+                    networks={compatibleNetworks}
+                    selected={selectedNetworkId}
+                    onChange={handleNetworkChange}
+                    containerId="create-contact-modal"
+                  />
+                </FormFieldContainer>
               )}
-            </>
-          )}
-          <div className="flex items-stretch gap-4 pt-4">
-            <Button fullWidth onClick={close}>
-              {t("Cancel")}
-            </Button>
-            <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
-              {t("Save")}
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+            </div>
+            <div className="flex items-stretch gap-4 pt-4">
+              <Button fullWidth onClick={close}>
+                {t("Cancel")}
+              </Button>
+              <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
+                {t("Save")}
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
+      </div>
     </Modal>
   )
 }

@@ -1,19 +1,19 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
-import { ChainId } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useChain, useRemoteConfig } from "@ui/state"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 // should only be used here and in CopyAddressChainForm
 export type ChainFormat = {
   key: string
-  chainId: ChainId | null
+  chainId: DotNetworkId | null
   prefix: number | null
   oldPrefix?: number
   name: string
@@ -23,7 +23,7 @@ export type ChainFormat = {
 
 export type MigratedChainFormat = {
   key: string
-  chainId: ChainId
+  chainId: DotNetworkId
   prefix: number
   oldPrefix: number
   name: string
@@ -65,7 +65,7 @@ const DrawerContent: FC<{
   onSelect: (legacyFormat: boolean) => void
 }> = ({ format, onSelect }) => {
   const { t } = useTranslation()
-  const chain = useChain(format.chainId)
+  const chain = useNetworkById(format.chainId, "polkadot")
 
   const handleSelect = useCallback(
     (legacyFormat: boolean) => () => {
@@ -128,7 +128,7 @@ const LearnMore = () => {
 }
 
 const FormatRow: FC<{
-  chainId: ChainId
+  chainId: DotNetworkId
   chainName: string
   address: string
   label: string
@@ -139,7 +139,7 @@ const FormatRow: FC<{
   return (
     <div className="border-grey-700 flex h-[6.8rem] w-full items-center gap-6 rounded-lg border px-8">
       <div className="size-16 shrink-0">
-        <ChainLogo id={chainId} className="shrink-0 text-xl" />
+        <NetworkLogo networkId={chainId} className="shrink-0 text-xl" />
       </div>
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex items-center gap-4 overflow-hidden">

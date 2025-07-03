@@ -1,10 +1,10 @@
 import md5 from "blueimp-md5"
 import {
+  AddressesAndEvmNetworks,
   AddressesAndTokens,
   AddressesByChain,
   Balances,
   BalanceSubscriptionResponse,
-  AddressesAndEvmNetwork as EvmNetworksAndAddresses,
 } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
@@ -17,15 +17,16 @@ import { useBalancesHydrate } from "@ui/state"
 const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", data: [] }
 
 const DEFAULT_BY_CHAIN: AddressesByChain = {}
-const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: EvmNetworksAndAddresses = {
+const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: AddressesAndEvmNetworks = {
   addresses: [],
   evmNetworks: [],
 }
 const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }
 
+// TODO merge addressesByChain and addressesandNetworks into a single addressesByNetwork object, or just remove both
 export type BalanceByParamsProps = {
   addressesByChain?: AddressesByChain
-  addressesAndEvmNetworks?: EvmNetworksAndAddresses
+  addressesAndEvmNetworks?: AddressesAndEvmNetworks
   addressesAndTokens?: AddressesAndTokens
 }
 
@@ -43,9 +44,7 @@ export const useBalancesByParams = ({
         addressesByChain,
         addressesAndEvmNetworks,
         addressesAndTokens,
-        async (update) => {
-          return subject.next(update)
-        },
+        (update) => subject.next(update),
       )
     },
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens],
@@ -54,9 +53,7 @@ export const useBalancesByParams = ({
   // subscription must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () =>
-      `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
-        JSON.stringify(addressesAndEvmNetworks),
-      )}-${md5(JSON.stringify(addressesAndTokens))}`,
+      `useBalancesByParams-${md5(JSON.stringify({ addressesByChain, addressesAndEvmNetworks, addressesAndTokens }))}`,
     [addressesByChain, addressesAndEvmNetworks, addressesAndTokens],
   )
 

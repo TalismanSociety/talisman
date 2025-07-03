@@ -1,15 +1,15 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import { useChainsMap, useEvmNetworksMap } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 
-type Props = { ids?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
+type Props = { ids?: NetworkId[]; className?: string; max?: number }
 
 const prioNetworks = [
   "1", // ethereum mainnet
@@ -34,23 +34,17 @@ const prioNetworks = [
 
 export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
   const { t } = useTranslation()
-
-  const chainsMap = useChainsMap()
-  const evmNetworksMap = useEvmNetworksMap()
+  const allNetworksMap = useNetworksMapById()
   const networks = useMemo(
     () =>
       ids?.flatMap((id) => {
-        const chain = chainsMap[id]
-        const evmNetwork = evmNetworksMap[id]
-        if (!chain && !evmNetwork) return []
-        if (chain?.isTestnet || evmNetwork?.isTestnet) return []
+        const network = allNetworksMap[id]
+        if (!network || network.isTestnet) return []
+        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworksMap })
 
-        const relay = chain?.relay?.id ? chainsMap[chain.relay.id] : null
-        const { label, type } = getNetworkInfo(t, { chain, evmNetwork, relay })
-
-        return { id, label, type, logo: chain?.logo ?? evmNetwork?.logo }
+        return { id, label, type, logo: network?.logo }
       }),
-    [chainsMap, evmNetworksMap, ids, t],
+    [allNetworksMap, ids, t],
   )
   const sorted = useMemo(
     () =>
@@ -88,7 +82,7 @@ function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
   const tooltip = useMemo(
     () => (
       <div className="flex items-center gap-2">
-        <ChainLogo id={network?.id} />
+        <NetworkLogo networkId={network?.id} />
         <div>
           {network?.label} ({network?.type})
         </div>
@@ -102,7 +96,7 @@ function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
-        <ChainLogo key={network.id} id={network.id} />
+        <NetworkLogo key={network.id} networkId={network.id} />
       </WithTooltip>
     </div>
   )

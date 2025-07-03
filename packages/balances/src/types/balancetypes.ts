@@ -1,5 +1,5 @@
 import { PluginBalanceTypes } from "@talismn/balances/plugins"
-import { ChainId, EvmChainId, EvmNetworkId, SubChainId, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { Address } from "./addresses"
 
@@ -58,19 +58,8 @@ type IBalanceBase = {
   address: Address
   /** The token this balance is for */
   tokenId: TokenId
-}
 
-type IBalanceBaseEvm = {
-  /** WIP, use `chainId` or `evmNetworkId` for now */
-  multiChainId: EvmChainId
-  /** The evm chain this balance is on */
-  evmNetworkId: EvmNetworkId
-}
-
-type IBalanceBaseSubstrate = {
-  multiChainId: SubChainId
-  /** The substrate chain this balance is on */
-  chainId: ChainId
+  networkId: NetworkId
 }
 
 type IBalanceSimpleValues = {
@@ -86,28 +75,19 @@ type IBalanceComplexValues = {
 }
 
 /** `IBalance` is a common interface which all balance types must implement. */
-export type IBalance = IBalanceBase &
-  (IBalanceSimpleValues | IBalanceComplexValues) &
-  (IBalanceBaseEvm | IBalanceBaseSubstrate)
+export type IBalance = IBalanceBase & (IBalanceSimpleValues | IBalanceComplexValues)
 
 export type EvmBalance = IBalanceBase &
-  IBalanceBaseEvm &
+  // IBalanceBaseEvm &
   (IBalanceSimpleValues | IBalanceComplexValues)
 export type SubstrateBalance = IBalanceBase &
-  IBalanceBaseSubstrate &
+  // IBalanceBaseSubstrate &
   (IBalanceSimpleValues | IBalanceComplexValues)
 
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes =
-  | "free"
-  | "reserved"
-  | "locked"
-  | "extra"
-  | "crowdloan"
-  | "nompool"
-  | "subtensor"
+export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "nompool" | "subtensor"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {
@@ -115,12 +95,12 @@ type BaseAmountWithLabel<TLabel extends string> = {
   /**
    * For modules which fetch balances via module sources, the source is equivalent to previous 'subSource' field
    * on the parent balance object
-   * e.g. `staking` or `crowdloans`
+   * e.g. `staking`
    **/
   source?: string
   label: TLabel
   amount: Amount
-  meta?: unknown
+  meta?: unknown // TODO type this with an object that has a discriminator property
 }
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
@@ -129,7 +109,6 @@ export const getValueId = (amount: AmountWithLabel<string>) => {
       | { poolId?: number; paraId?: number; hotkey?: string; netuid?: number }
       | undefined
     if (!meta) return ""
-    if (amount.type === "crowdloan") return meta.paraId?.toString() ?? ""
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
     if (amount.type === "subtensor") {
       const { hotkey, netuid } = meta
@@ -176,9 +155,7 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
 export type NewBalanceType<
   TModuleType extends string,
   TBalanceValueType extends "simple" | "complex",
-  TNetworkType extends "ethereum" | "substrate",
 > = IBalanceBase &
-  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) &
-  (TNetworkType extends "ethereum" ? IBalanceBaseEvm : IBalanceBaseSubstrate) & {
+  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) & {
     source: TModuleType
   }

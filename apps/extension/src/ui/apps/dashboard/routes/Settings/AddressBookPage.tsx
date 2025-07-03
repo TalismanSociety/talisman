@@ -40,11 +40,10 @@ import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDele
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useChainByGenesisHash } from "@ui/state"
+import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -84,7 +83,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     undefined,
     contact.address,
   )
-  const contactChain = useChainByGenesisHash(contact.genesisHash)
+  const contactChain = useNetworkByGenesisHash(contact.genesisHash)
   const { open: viewOnExplorer, canOpen: canViewOnExplorer } = useViewOnExplorer(
     contact.address,
     contact.genesisHash,
@@ -172,7 +171,6 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
                     <div>{t("Send to this contact")}</div>
                   </TooltipTrigger>
                   {/* TODO fix tooltip which appears behind context menu */}
-                  {/* {cannotSendFundsReason && <TooltipContent>{cannotSendFundsReason}</TooltipContent>} */}
                 </Tooltip>
               </ContextMenuItem>
               <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
@@ -204,7 +202,7 @@ const Content = () => {
   // preload balances because of the send button
   useBalances("owned")
 
-  const { contacts } = useAddressBook()
+  const contacts = useContacts()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
     [contacts],

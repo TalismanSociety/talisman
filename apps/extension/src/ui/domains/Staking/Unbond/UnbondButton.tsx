@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { useBittensorBondModal } from "../Bittensor/hooks/useBittensorBondModal"
+import { BITTENSOR_TOKEN_ID } from "../Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useUnbondModal } from "./useUnbondModal"
 
@@ -29,7 +30,7 @@ export const UnbondButton: FC<{
   const canUnstake = useMemo(
     () =>
       !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake) ||
-      tokenId === "bittensor-substrate-native",
+      tokenId === BITTENSOR_TOKEN_ID,
     [address, stakingStatus?.accounts, tokenId],
   )
 

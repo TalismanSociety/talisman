@@ -30,7 +30,7 @@ const HeaderRow: FC<{
   summary: BalanceSummary
 }> = ({ token, summary }) => {
   const { t } = useTranslation()
-  const canHaveLockedState = Boolean(token?.chain?.id)
+  const canHaveLockedState = Boolean(token?.networkId)
 
   if (summary.totalTokens.isZero()) return null
 

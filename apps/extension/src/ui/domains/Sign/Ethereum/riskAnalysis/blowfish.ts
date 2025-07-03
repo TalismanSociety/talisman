@@ -1,12 +1,12 @@
 import { createEvmClient, Languages } from "@blowfishxyz/api-client/v20230605"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { BLOWFISH_API_KEY, BLOWFISH_BASE_PATH } from "extension-shared"
 import i18next from "i18next"
 import urlJoin from "url-join"
 
 import { BlowfishEvmChainInfo } from "./types"
 
-const BLOWFISH_SUPPORTED_CHAINS: Record<EvmNetworkId, BlowfishEvmChainInfo | undefined> = {
+const BLOWFISH_SUPPORTED_CHAINS: Record<EthNetworkId, BlowfishEvmChainInfo | undefined> = {
   "1": { chainFamily: "ethereum", chainNetwork: "mainnet" },
   "11155111": { chainFamily: "ethereum", chainNetwork: "sepolia" },
   "137": { chainFamily: "polygon", chainNetwork: "mainnet" },
@@ -43,12 +43,12 @@ export const getBlowfishLanguage = (): Languages => {
   }
 }
 
-export const getBlowfishChainInfo = (evmNetworkId: EvmNetworkId) => {
+export const getBlowfishChainInfo = (evmNetworkId: EthNetworkId) => {
   return BLOWFISH_SUPPORTED_CHAINS[evmNetworkId] ?? null
 }
 
 // TODO delete after personal_sign client fix
-export const getBlowfishApiUrl = (evmNetworkId: EvmNetworkId) => {
+export const getBlowfishApiUrl = (evmNetworkId: EthNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
   const config = getBlowfishChainInfo(evmNetworkId)
@@ -57,7 +57,7 @@ export const getBlowfishApiUrl = (evmNetworkId: EvmNetworkId) => {
   return urlJoin(BLOWFISH_BASE_PATH, config.chainFamily, "v0", config.chainNetwork)
 }
 
-export const getBlowfishClient = (evmNetworkId: EvmNetworkId) => {
+export const getBlowfishClient = (evmNetworkId: EthNetworkId) => {
   if (!BLOWFISH_SUPPORTED_CHAINS[evmNetworkId]) return null
 
   const config = getBlowfishChainInfo(evmNetworkId)

@@ -8,6 +8,7 @@ import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunde
 import { trackPopupSummaryData } from "../domains/app/popupSummaries"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
+import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
@@ -19,7 +20,6 @@ import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
-import TokensHandler from "../domains/tokens/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
@@ -41,6 +41,7 @@ export default class Extension extends ExtensionHandler {
     this.#routes = {
       accounts: new AccountsHandler(stores),
       chains: new ChainsHandler(stores),
+      chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
       assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),
@@ -51,7 +52,6 @@ export default class Extension extends ExtensionHandler {
       signing: new SigningHandler(stores),
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
-      tokens: new TokensHandler(stores),
       substrate: new SubHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),

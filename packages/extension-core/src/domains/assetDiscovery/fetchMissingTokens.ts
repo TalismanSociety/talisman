@@ -1,5 +1,9 @@
-import { evmErc20TokenId, evmNativeTokenId } from "@talismn/balances"
-import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import {
+  EthNetworkId,
+  evmErc20TokenId,
+  evmNativeTokenId,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { ASSET_DISCOVERY_API_URL, log } from "extension-shared"
 import urlJoin from "url-join"
@@ -9,13 +13,13 @@ import { EvmAddress } from "../ethereum/types"
 
 type DiscoveredAssetErc20 = {
   type: "erc20"
-  networkId: EvmNetworkId
+  networkId: EthNetworkId
   contractAddress: EvmAddress
 }
 
 type DiscoveredAssetNative = {
   type: "native"
-  networkId: EvmNetworkId
+  networkId: EthNetworkId
 }
 
 type DiscoveredAsset = DiscoveredAssetErc20 | DiscoveredAssetNative
@@ -61,14 +65,14 @@ const getTokenIdFromAsset = (asset: DiscoveredAsset): TokenId | null => {
     case "native":
       return evmNativeTokenId(asset.networkId)
     case "erc20":
-      return evmErc20TokenId(asset.networkId, asset.contractAddress.toLowerCase())
+      return evmErc20TokenId(asset.networkId, asset.contractAddress)
     default:
       return null
   }
 }
 
 const getDiscoveredTokenIds = async (assets: DiscoveredAsset[]) => {
-  const tokensById = await chaindataProvider.tokensById()
+  const tokensById = await chaindataProvider.getTokensMapById()
 
   return assets
     .map(getTokenIdFromAsset)

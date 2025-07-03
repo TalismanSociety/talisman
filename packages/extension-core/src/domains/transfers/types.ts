@@ -1,17 +1,16 @@
 import { HexString } from "@polkadot/util/types"
 import { Address } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
 import { TransactionRequest } from "viem"
 
-import { ChainId } from "../chains/types"
-import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
+import { EthGasSettings } from "../ethereum/types"
 import { SignerPayloadJSON } from "../signing/types"
 import { WalletTransactionTransferInfo } from "../transactions"
 
 // Asset Transfer Messages
 export type AssetTransferMethod = "transfer_keep_alive" | "transfer_allow_death" | "transfer_all"
 export interface RequestAssetTransfer {
-  chainId: ChainId
+  chainId: NetworkId
   tokenId: TokenId
   fromAddress: string
   toAddress: string
@@ -20,7 +19,7 @@ export interface RequestAssetTransfer {
   method?: AssetTransferMethod
 }
 export interface RequestAssetTransferEth {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   tokenId: TokenId
   fromAddress: string
   toAddress: string
@@ -28,7 +27,7 @@ export interface RequestAssetTransferEth {
   gasSettings: EthGasSettings<string>
 }
 export interface RequestAssetTransferEthHardware {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   tokenId: TokenId
   amount: string
   to: Address

@@ -1,4 +1,4 @@
-import { EvmNetwork, Token } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { createPublicClient, PublicClient } from "viem"
 
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
@@ -21,26 +21,17 @@ export const clearPublicClientCache = (evmNetworkId?: string) => {
   else publicClientCache.clear()
 }
 
-type PublicClientOptions = {
-  onFinalityApiKey?: string
-}
+export const getEvmNetworkPublicClient = (network: EthNetwork): PublicClient => {
+  const chain = getChainFromEvmNetwork(network)
 
-export const getEvmNetworkPublicClient = (
-  evmNetwork: EvmNetwork,
-  nativeToken: Token | null,
-  options: PublicClientOptions = {},
-): PublicClient => {
-  const chain = getChainFromEvmNetwork(evmNetwork, nativeToken)
-
-  if (!publicClientCache.has(evmNetwork.id)) {
-    if (!evmNetwork.rpcs?.length) throw new Error("No RPCs found for EVM network")
+  if (!publicClientCache.has(network.id)) {
+    if (!network.rpcs.length) throw new Error("No RPCs found for Ethereum network")
 
     const batch = chain.contracts?.multicall3
       ? { multicall: { wait: MUTLICALL_BATCH_WAIT, batchSize: MUTLICALL_BATCH_SIZE } }
       : undefined
 
     const transportOptions: TransportOptions = {
-      ...options,
       batch: {
         batchSize: chain.contracts?.multicall3
           ? HTTP_BATCH_SIZE_WITH_MULTICALL
@@ -49,10 +40,10 @@ export const getEvmNetworkPublicClient = (
       },
     }
 
-    const transport = getTransportForEvmNetwork(evmNetwork, transportOptions)
+    const transport = getTransportForEvmNetwork(network, transportOptions)
 
     publicClientCache.set(
-      evmNetwork.id,
+      network.id,
       createPublicClient({
         chain,
         transport,
@@ -61,5 +52,5 @@ export const getEvmNetworkPublicClient = (
     )
   }
 
-  return publicClientCache.get(evmNetwork.id) as PublicClient
+  return publicClientCache.get(network.id) as PublicClient
 }

@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { Chain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
@@ -13,9 +13,9 @@ import { ReactElement, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import { useChainByGenesisHash, useSetting } from "@ui/state"
+import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
@@ -82,7 +82,7 @@ export const QrSubstrate = ({
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" },
   )
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
   const { qrCodeSource } = qrCodeSourceSelectorState
 
@@ -271,7 +271,7 @@ const SendPage = ({
   scanState: SendScanState
   qrCodeSource: QrCodeSource | undefined
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
-  chain: Chain | null
+  chain: DotNetwork | null
   containerId: string
 }) => {
   const { t } = useTranslation()
@@ -412,7 +412,7 @@ const SendPage = ({
                 defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
                 components={{
                   Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-                  ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+                  ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
                 }}
                 values={{ chainName: chain?.name ?? t("Unknown") }}
               />

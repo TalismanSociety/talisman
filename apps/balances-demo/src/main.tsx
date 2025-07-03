@@ -10,15 +10,12 @@ import { App } from "./App"
 
 loglevel.setLevel("info")
 
-const onfinalityApiKey = undefined
-
 const Root = () => {
   const [withTestnets, setWithTestnets] = useState(false)
 
   return (
     <StrictMode>
       <BalancesProvider
-        onfinalityApiKey={onfinalityApiKey}
         withTestnets={withTestnets}
         // enabledChains={[
         //   // polkadot

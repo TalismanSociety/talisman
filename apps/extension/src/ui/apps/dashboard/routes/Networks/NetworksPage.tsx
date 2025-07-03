@@ -1,8 +1,8 @@
 import { bind } from "@react-rxjs/core"
 import { InfoIcon, PlusIcon } from "@talismn/icons"
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { combineLatest } from "rxjs"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -14,12 +14,49 @@ import { TogglePill } from "@talisman/components/TogglePill"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { activeChainsState$, activeEvmNetworksState$, balancesHydrate$ } from "@ui/state"
+import { activeNetworksState$, balancesHydrate$ } from "@ui/state"
 
 import { ANALYTICS_PAGE } from "./analytics"
-import { ChainsList } from "./ChainsList"
-import { EvmNetworksList } from "./EvmNetworksList"
-import { useNetworksType } from "./useNetworksType"
+import { NetworksList } from "./NetworksList"
+import { PlatformOption, usePlatformOptions } from "./usePlatformOptions"
+
+export const NetworksPage = () => {
+  const { t } = useTranslation()
+  usePreload()
+
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
+  const handleAddNetworkClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add network button",
+    })
+    navigate("./add", { state: { platform: location.state?.platform } })
+  }, [location.state?.platform, navigate])
+
+  return (
+    <DashboardLayout sidebar="settings">
+      <div className="flex w-full justify-between">
+        <HeaderBlock
+          title={t("Manage Networks")}
+          text={
+            <>
+              {t("Add, enable and disable networks")} <NoticeTooltip />
+            </>
+          }
+        />
+        <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
+          {t("Add network")}
+        </Button>
+      </div>
+      <Content />
+    </DashboardLayout>
+  )
+}
 
 const NoticeTooltip: FC = () => {
   const { t } = useTranslation()
@@ -40,82 +77,58 @@ const NoticeTooltip: FC = () => {
   )
 }
 
-const [usePreload] = bind(
-  combineLatest([balancesHydrate$, activeChainsState$, activeEvmNetworksState$]),
-)
+const [usePreload] = bind(combineLatest([balancesHydrate$, activeNetworksState$]))
 
 const Content = () => {
   const { t } = useTranslation()
-  usePreload()
-  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const [networksType, setNetworksType] = useNetworksType()
+  const [platform, setPlatform, platformOptions] = usePlatformOptions(
+    location.state?.platform as PlatformOption,
+  )
+  const [search, setSearch] = useState(() => (location.state?.search as string) ?? "")
+  const [activeOnly, setActiveOnly] = useState(
+    () => (location.state?.activeOnly as boolean) ?? false,
+  )
 
-  const handleAddNetworkClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Add network button",
+  useEffect(() => {
+    navigate(location.pathname, {
+      replace: true,
+      state: { platform, search, activeOnly },
     })
-    navigate("./add")
-  }, [navigate])
-
-  const [search, setSearch] = useState("")
-  const [activeOnly, setActiveOnly] = useState(false)
+  }, [activeOnly, location.pathname, navigate, platform, search])
 
   return (
     <>
-      <div className="flex w-full justify-between">
-        <HeaderBlock
-          title={t("Manage Networks")}
-          text={
-            <>
-              {t("Add, enable and disable networks")} <NoticeTooltip />
-            </>
-          }
-        />
-        <Button primary iconLeft={PlusIcon} small onClick={handleAddNetworkClick}>
-          {t("Add network")}
-        </Button>
-      </div>
       <Spacer small />
       <div className="flex justify-end gap-4">
         <OptionSwitch
-          options={[
-            ["ethereum", t("Ethereum")],
-            ["polkadot", t("Polkadot")],
-          ]}
+          options={platformOptions.map(({ value, label }) => [value, label] as const)}
           className="text-xs [&>div]:h-full"
-          defaultOption={networksType}
-          onChange={setNetworksType}
+          defaultOption={platform}
+          onChange={setPlatform}
         />
 
         <div className="flex-grow" />
 
         <TogglePill
           label={t("Active only")}
-          checked={activeOnly}
+          checked={!search && activeOnly}
           onChange={() => setActiveOnly((prev) => !prev)}
           disabled={!!search}
         />
       </div>
       <Spacer small />
       <div className="flex gap-4">
-        <SearchInput onChange={setSearch} placeholder={t("Search networks")} />
+        <SearchInput
+          initialValue={search}
+          onChange={setSearch}
+          placeholder={t("Search networks")}
+        />
       </div>
       <Spacer small />
-      {networksType === "polkadot" ? (
-        <ChainsList activeOnly={activeOnly} search={search} />
-      ) : (
-        <EvmNetworksList activeOnly={activeOnly} search={search} />
-      )}
+      <NetworksList platform={platform} activeOnly={activeOnly} search={search} />
     </>
   )
 }
-
-export const NetworksPage = () => (
-  <DashboardLayout sidebar="settings">
-    <Content />
-  </DashboardLayout>
-)

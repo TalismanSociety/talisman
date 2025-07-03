@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useChain } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 export type LedgerAccountDefSubstrate = Extract<
   AddAccountExternalOptions,
@@ -36,7 +36,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
     platform: params.get("platform") as Platform | undefined,
   }))
-  const chain = useChain(data.chainId as string)
+  const chain = useNetworkById(data.chainId as string, "polkadot")
 
   const updateData = useCallback((newData: Partial<LedgerCreationInputs>) => {
     setData((prev) => ({

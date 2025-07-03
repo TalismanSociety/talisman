@@ -1,8 +1,8 @@
-import { EvmNetworkId, isCustomEvmNetwork, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
-export type ActiveEvmNetworks = Record<EvmNetworkId, boolean>
+type ActiveEvmNetworks = Record<EthNetworkId, boolean>
 
 /**
  * Stores the active state of each EVM network, if and only if the user has overriden it.
@@ -15,25 +15,16 @@ class ActiveEvmNetworksStore extends StorageProvider<ActiveEvmNetworks> {
     super("activeEvmNetworks", initialData)
   }
 
-  async setActive(networkId: EvmNetworkId, active: boolean) {
+  async setActive(networkId: EthNetworkId, active: boolean) {
     const activeNetworks = await this.get()
     if (activeNetworks[networkId] === active) return
     return await this.mutate((activeEvmNetworks) => ({ ...activeEvmNetworks, [networkId]: active }))
   }
 
-  async resetActive(networkId: EvmNetworkId) {
+  async resetActive(networkId: EthNetworkId) {
     await this.delete(networkId)
   }
 }
 
+/** @deprecated use activeNetworksStore */
 export const activeEvmNetworksStore = new ActiveEvmNetworksStore()
-
-export const isEvmNetworkActive = (
-  network: SimpleEvmNetwork,
-  activeNetworks: ActiveEvmNetworks,
-) => {
-  return (
-    activeNetworks[network.id] ??
-    (isCustomEvmNetwork(network) || (network.isDefault && !network.isTestnet))
-  )
-}

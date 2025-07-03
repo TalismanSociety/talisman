@@ -34,14 +34,14 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useEvmNetwork, useIsFavoriteNft, useIsHiddenNftCollection, useNft } from "@ui/state"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"
-import { ChainLogo } from "../Asset/ChainLogo"
 import { Fiat } from "../Asset/Fiat"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NftImage } from "./NftImage"
 import { getNftCollectionFloorUsd } from "./Nfts/helpers"
 
@@ -125,7 +125,7 @@ const TabContentCollection: FC<{
   nft: Nft
 }> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  const network = useEvmNetwork(nft.evmNetworkId)
+  const network = useNetworkById(nft.evmNetworkId, "ethereum")
 
   const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
 
@@ -142,7 +142,7 @@ const TabContentCollection: FC<{
         <div className="text-right">{collection.distinctOwners}</div>
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
-          <ChainLogo id={nft.evmNetworkId} className="text-md" />
+          <NetworkLogo networkId={nft.evmNetworkId} className="text-md" />
           <div className="truncate">{network?.name}</div>
         </div>
         <div className="text-body-secondary">{t("Contract")}</div>

@@ -4,19 +4,18 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { TooltipContent } from "talisman-ui"
 
-import { useChainsMap, useEvmNetworksMap, useTokensMap } from "@ui/state"
+import { useNetworksMapById, useTokensMap } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | undefined }> = ({
   balances,
 }) => {
   const { t } = useTranslation()
   const tokens = useTokensMap()
-  const evmNetworks = useEvmNetworksMap()
-  const chains = useChainsMap()
+  const networksMap = useNetworksMapById()
 
   const tokenBalances = useMemo(() => {
     const positiveBalances = (balances ?? new Balances([])).each.filter((b) => b.total.planck > 0)
@@ -27,9 +26,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
       .map((tokenId) => {
         const token = tokens[tokenId]
         if (!token) return null
-        const network =
-          (token.evmNetwork && evmNetworks[token.evmNetwork.id]) ||
-          (token.chain && chains[token.chain.id])
+        const network = networksMap[token.networkId]
         if (!network) return null
         if (token.mirrorOf && tokenIds.includes(token.mirrorOf)) return null
 
@@ -51,7 +48,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
         if (b1.symbol !== b2.symbol) return b1.symbol.localeCompare(b2.symbol)
         return b2.total - b1.total > 0 ? 1 : -1
       })
-  }, [balances, chains, evmNetworks, tokens])
+  }, [balances, networksMap, tokens])
 
   if (!tokenBalances.length) return null
 
@@ -65,7 +62,7 @@ export const BalancesSummaryTooltipContent: FC<{ balances: Balances | null | und
               <TokensAndFiat tokenId={b.tokenId} planck={b.total} noTooltip noCountUp isBalance />
             </span>
             <span className="mx-2">{t("on")}</span>
-            <ChainLogo id={b.networkId} className="h-8 w-8" />
+            <NetworkLogo networkId={b.networkId} className="h-8 w-8" />
             <span className="ml-2 truncate">{b.networkName}</span>
           </div>
         ))}

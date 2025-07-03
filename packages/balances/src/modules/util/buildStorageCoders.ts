@@ -1,10 +1,9 @@
-import { ChainId, ChainList } from "@talismn/chaindata-provider"
+import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 
 import log from "../../log"
 import { MiniMetadata } from "../../types"
-import { findChainMeta } from "./findChainMeta"
-import { AnyNewBalanceModule, InferModuleType } from "./InferBalanceModuleTypes"
+import { AnyNewBalanceModule } from "./InferBalanceModuleTypes"
 
 export type StorageCoders<TCoders extends { [key: string]: [string, string] }> = Map<
   string,
@@ -15,6 +14,7 @@ export type StorageCoders<TCoders extends { [key: string]: [string, string] }> =
   }
 >
 
+// TODO remove this one in favor of the network specific one below
 export const buildStorageCoders = <
   TBalanceModule extends AnyNewBalanceModule,
   TCoders extends {
@@ -24,13 +24,11 @@ export const buildStorageCoders = <
   chainIds,
   chains,
   miniMetadatas,
-  moduleType,
   coders,
 }: {
-  chainIds: ChainId[]
-  chains: ChainList
-  miniMetadatas: Map<string, MiniMetadata>
-  moduleType: InferModuleType<TBalanceModule>
+  chainIds: DotNetworkId[]
+  chains: Record<NetworkId, DotNetwork>
+  miniMetadatas: Map<DotNetworkId, MiniMetadata<TBalanceModule>>
   coders: TCoders
 }) =>
   new Map(
@@ -38,7 +36,7 @@ export const buildStorageCoders = <
       const chain = chains[chainId]
       if (!chain) return []
 
-      const [, miniMetadata] = findChainMeta<TBalanceModule>(miniMetadatas, moduleType, chain)
+      const miniMetadata = miniMetadatas.get(chainId) // findMiniMetadata<TBalanceModule>(miniMetadatas, moduleType, chain)
       if (!miniMetadata) return []
       if (!miniMetadata.data) return []
 
@@ -81,3 +79,58 @@ export const buildStorageCoders = <
       }
     }),
   )
+
+type NetworkCoders = { [key: string]: [string, string] }
+
+type NetworkStorageCoders<TCoders extends NetworkCoders> = {
+  [Property in keyof TCoders]:
+    | ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
+    | undefined
+}
+
+export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [string, string] }>(
+  chainId: DotNetworkId,
+  miniMetadata: MiniMetadata,
+  coders: TCoders,
+): NetworkStorageCoders<TCoders> | null => {
+  if (!miniMetadata.data) return null
+
+  const metadata = unifyMetadata(decAnyMetadata(miniMetadata.data))
+
+  try {
+    const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
+    const builtCoders = Object.fromEntries(
+      Object.entries(coders).flatMap(
+        ([key, moduleMethodOrFn]: [
+          keyof TCoders,
+          [string, string] | ((params: { chainId: string }) => [string, string]),
+        ]) => {
+          const [module, method] =
+            typeof moduleMethodOrFn === "function"
+              ? moduleMethodOrFn({ chainId })
+              : moduleMethodOrFn
+          try {
+            return [[key, scaleBuilder.buildStorage(module, method)] as const]
+          } catch (cause) {
+            log.trace(
+              `Failed to build SCALE coder for chain ${chainId} (${module}::${method})`,
+              cause,
+            )
+            return []
+          }
+        },
+      ),
+    ) as {
+      [Property in keyof TCoders]: ReturnType<(typeof scaleBuilder)["buildStorage"]> | undefined
+    }
+
+    return builtCoders
+  } catch (cause) {
+    log.error(
+      `Failed to build SCALE coders for chain ${chainId} (${JSON.stringify(coders)})`,
+      cause,
+    )
+  }
+
+  return null
+}

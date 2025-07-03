@@ -1,5 +1,4 @@
-import type { CustomEvmErc20Token } from "@talismn/balances"
-import { AddEthereumChainParameter } from "viem"
+import { EvmErc20Token, EvmNativeToken, Network } from "@talismn/chaindata-provider"
 
 import type { Port } from "../../types/base"
 import { requestStore } from "../../libs/requests/store"
@@ -15,7 +14,8 @@ class AddNetworkError extends Error {}
 
 export const requestAddNetwork = async (
   url: string,
-  network: AddEthereumChainParameter,
+  network: Network,
+  nativeToken: EvmNativeToken,
   port: Port,
 ) => {
   const { err, val: urlVal } = urlToDomain(url)
@@ -32,7 +32,7 @@ export const requestAddNetwork = async (
     )
   }
   await requestStore.createRequest(
-    { url, network, idStr: urlVal, type: ETH_NETWORK_ADD_PREFIX },
+    { url, network, nativeToken, idStr: urlVal, type: ETH_NETWORK_ADD_PREFIX },
     port,
   )
 }
@@ -47,7 +47,7 @@ export const ignoreRequest = ({ id }: WatchAssetRequestIdOnly) => {
 export const requestWatchAsset = async (
   url: string,
   request: WatchAssetBase,
-  token: CustomEvmErc20Token,
+  token: EvmErc20Token,
   warnings: string[],
   port: Port,
 ) => {

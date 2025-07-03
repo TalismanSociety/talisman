@@ -1,40 +1,29 @@
 import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { CustomEvmNativeToken, evmNativeTokenId } from "@talismn/balances"
-import {
-  CustomEvmNetwork,
-  EvmNetwork,
-  githubUnknownTokenLogoUrl,
-  SimpleEvmNetwork,
-} from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import Dexie from "dexie"
-import { DEBUG, log } from "extension-shared"
-import { isEqual } from "lodash"
-import { distinctUntilChanged, map } from "rxjs"
+import { DEBUG } from "extension-shared"
 import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
-import { genericSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
+import { urlToDomain } from "../../util/urlToDomain"
 import { getHostName } from "../app/helpers"
+import { activeNetworksStore } from "../balances/store.activeNetworks"
+import { activeTokensStore } from "../balances/store.activeTokens"
+import { customChaindataStore } from "../chaindata/store"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { activeTokensStore } from "../tokens/store.activeTokens"
 import { watchEthereumTransaction } from "../transactions"
 import { getHumanReadableErrorMessage } from "./errors"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
 import { parseTransactionRequest } from "./helpers"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { ETH_NETWORK_ADD_PREFIX } from "./types"
 
 export class EthHandler extends ExtensionHandler {
   private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
@@ -340,195 +329,30 @@ export class EthHandler extends ExtensionHandler {
 
   private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async ({
     id,
-    enableDefault,
   }) => {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
+    const { url, network, nativeToken, resolve } = queued
 
-    const { network, resolve } = queued
-    const networkId = parseInt(network.chainId, 16).toString()
-    const known = await chaindataProvider.evmNetworkById(networkId)
-
-    if (enableDefault) {
-      assert(known?.nativeToken?.id, "Network not found")
-
-      await activeEvmNetworksStore.setActive(known.id, true)
+    const known = await chaindataProvider.getNetworkById(network.id, "ethereum")
+    if (!known) {
+      await customChaindataStore.upsertNetwork(network, nativeToken)
 
       talismanAnalytics.captureDelayed("add network evm", {
-        network: network.chainName,
-        isCustom: false,
-      })
-    } else {
-      const knownNativeTokenConfig = known?.balancesConfig?.find(
-        (mod) => mod.moduleType === "evm-native",
-      )?.moduleConfig as { coingeckoId?: string; logo?: string }
-
-      const isTestnet =
-        known?.isTestnet || queued.network.chainName.toLowerCase().includes("testnet")
-
-      const newToken: CustomEvmNativeToken | null = network.nativeCurrency
-        ? {
-            id: `${networkId}-evm-native`.toLowerCase(),
-            type: "evm-native",
-            isTestnet: isTestnet,
-            symbol: network.nativeCurrency.symbol,
-            decimals: network.nativeCurrency.decimals,
-            logo:
-              (network.iconUrls || [knownNativeTokenConfig?.logo])[0] || githubUnknownTokenLogoUrl,
-            evmNetwork: { id: networkId },
-            isCustom: true,
-            coingeckoId: knownNativeTokenConfig?.coingeckoId,
-            // TODO fix typings and include this
-            // mirrorOf: "mirrorOf" in knownNativeTokenConfig ? knownNativeTokenConfig.mirrorOf : undefined
-          }
-        : null
-
-      const existingNetwork = await chaindataProvider.evmNetworkById(networkId)
-
-      const newNetwork: CustomEvmNetwork = {
-        ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
-        id: networkId,
-        isTestnet: isTestnet,
-        isDefault: existingNetwork?.isDefault ?? false,
-        forceScan: existingNetwork?.forceScan ?? false,
-        sortIndex: null,
-        name: network.chainName,
-        themeColor: "#505050",
-        logo: (network.iconUrls || [known?.logo])[0] ?? null,
-        nativeToken: newToken ? { id: newToken.id } : null,
-        tokens: [],
-        explorerUrl: (network.blockExplorerUrls || [])[0],
-        rpcs: (network.rpcUrls || []).map((url) => ({ url })),
-        substrateChain: null,
-        isCustom: true,
-        explorerUrls: network.blockExplorerUrls || (known?.explorerUrl ? [known.explorerUrl] : []),
-        iconUrls: network.iconUrls || [],
-        balancesConfig: existingNetwork?.balancesConfig ?? [],
-        balancesMetadata: [],
-      }
-
-      await chaindataProvider.addCustomEvmNetwork(newNetwork)
-      if (newToken) await chaindataProvider.addCustomToken(newToken)
-
-      await activeEvmNetworksStore.setActive(newNetwork.id, true)
-
-      talismanAnalytics.captureDelayed("add network evm", {
-        network: network.chainName,
+        network: network.name,
         isCustom: true,
       })
     }
+
+    await activeTokensStore.setActive(network.nativeTokenId, true)
+    await activeNetworksStore.setActive(network.id, true)
+
+    // associate the network with the dapp that requested it
+    const { err, val } = urlToDomain(url)
+    if (err) throw new Error(val)
+    await this.stores.sites.updateSite(val, { ethChainId: Number(network.id) })
 
     resolve(null)
-
-    return true
-  }
-
-  private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
-    const existingNetwork = (await chaindataProvider.evmNetworkById(network.id)) as
-      | EvmNetwork
-      | undefined
-
-    try {
-      await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
-        const existingToken = existingNetwork?.nativeToken?.id
-          ? await chaindataProvider.tokenById(existingNetwork.nativeToken.id)
-          : null
-
-        const newToken: CustomEvmNativeToken = {
-          id: evmNativeTokenId(network.id),
-          type: "evm-native",
-          isTestnet: network.isTestnet,
-          symbol: network.tokenSymbol,
-          decimals: network.tokenDecimals,
-          logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
-          coingeckoId: network.tokenCoingeckoId ?? "",
-          chain: existingToken?.chain,
-          evmNetwork: { id: network.id },
-          isCustom: true,
-        }
-
-        const newNetwork: CustomEvmNetwork = {
-          ...(existingNetwork ?? {}), // preserve talisman properties (l2Fee, erc20aggregator, etc.)
-          // EvmNetwork
-          id: network.id,
-          isTestnet: network.isTestnet,
-          preserveGasEstimate: network.preserveGasEstimate,
-          isDefault: existingNetwork?.isDefault ?? false,
-          forceScan: existingNetwork?.forceScan ?? false,
-          sortIndex: null,
-          name: network.name,
-          themeColor: "#505050",
-          logo: existingNetwork?.logo ?? null,
-          nativeToken: { id: newToken.id },
-          tokens: existingNetwork?.tokens ?? [],
-          explorerUrl: network.blockExplorerUrl ?? null,
-          rpcs: network.rpcs.map(({ url }) => ({ url })),
-          substrateChain: existingNetwork?.substrateChain ?? null,
-          balancesConfig: existingNetwork?.balancesConfig ?? [],
-          balancesMetadata: [],
-          // CustomEvmNetwork
-          isCustom: true,
-          explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
-          iconUrls: [],
-        }
-
-        await chaindataProvider.addCustomToken(newToken)
-        await chaindataProvider.addCustomEvmNetwork(newNetwork)
-        await Dexie.waitFor(activeEvmNetworksStore.setActive(newNetwork.id, true))
-
-        // if symbol changed, id is different and previous native token must be deleted
-        // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
-        if (existingToken && existingToken.id !== newToken.id)
-          await chaindataProvider.removeToken(existingToken.id)
-
-        // RPCs may have changed, clear cache
-        chainConnectorEvm.clearRpcProvidersCache(network.id)
-      })
-
-      talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
-        networkType: "evm",
-        network: network.id.toString(),
-      })
-
-      return true
-    } catch (err) {
-      log.error("ethNetworkUpsert", { err })
-      throw new Error("Error saving network", { cause: err })
-    }
-  }
-
-  private ethNetworkRemove: MessageHandler<"pri(eth.networks.remove)"> = async (request) => {
-    await chaindataProvider.removeCustomEvmNetwork(request.id)
-
-    talismanAnalytics.capture("remove custom network", {
-      networkType: "evm",
-      network: request.id,
-    })
-
-    chainConnectorEvm.clearRpcProvidersCache(request.id)
-
-    return true
-  }
-
-  private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
-    const network = await chaindataProvider.evmNetworkById(request.id)
-    const isActive = network && isEvmNetworkActive(network, await activeEvmNetworksStore.get())
-
-    if (isActive) {
-      // network may be active only because it's a custom network,
-      // enforce the value or the network could be deactivated unintentionally
-      activeEvmNetworksStore.setActive(request.id, true)
-    }
-
-    await chaindataProvider.resetEvmNetwork(request.id)
-
-    talismanAnalytics.capture("reset custom network", {
-      networkType: "evm",
-      network: request.id,
-    })
-
-    chainConnectorEvm.clearRpcProvidersCache(request.id)
-
     return true
   }
 
@@ -549,27 +373,19 @@ export class EthHandler extends ExtensionHandler {
   private ethWatchAssetRequestApprove: MessageHandler<"pri(eth.watchasset.requests.approve)"> =
     async ({ id }) => {
       const queued = requestStore.getRequest(id)
-
       assert(queued, "Unable to find request")
+
       const { resolve, token } = queued
 
-      const knownToken = await chaindataProvider.tokenById(token.id)
-      if (knownToken) {
-        await activeTokensStore.setActive(knownToken.id, true)
-      } else {
-        // some dapps set decimals as a string, which breaks balances
-        const safeToken = {
-          ...token,
-          decimals: Number(token.decimals),
-        }
-        const newTokenId = await chaindataProvider.addCustomToken(safeToken)
-        if (newTokenId) await activeTokensStore.setActive(newTokenId, true)
-      }
+      const knownToken = await chaindataProvider.getTokenById(token.id)
+      if (!knownToken) await customChaindataStore.upsertToken(token)
+
+      await activeTokensStore.setActive(token.id, true)
 
       talismanAnalytics.captureDelayed("add asset evm", {
         contractAddress: token.contractAddress,
         symbol: token.symbol,
-        network: token.evmNetwork,
+        network: token.networkId,
         isCustom: !knownToken,
       })
 
@@ -647,35 +463,6 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.networks.add.approve)":
         return this.ethNetworkAddApprove(request as RequestTypes["pri(eth.networks.add.approve)"])
-
-      case "pri(eth.networks.add.requests)":
-        return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
-
-      case "pri(eth.networks.subscribe)":
-        // TODO: Run this on a timer or something instead of when subscribing to evmNetworks
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: false })
-
-        return genericSubscription(
-          id,
-          port,
-          chaindataProvider.evmNetworksObservable.pipe(
-            // the balancesConfig is not needed for the UI and can be HUGE
-            map((evmNetworks) =>
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              evmNetworks.map(({ balancesConfig, balancesMetadata, ...network }) => network),
-            ),
-            distinctUntilChanged<Array<SimpleEvmNetwork>>(isEqual),
-          ),
-        )
-
-      case "pri(eth.networks.upsert)":
-        return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
-
-      case "pri(eth.networks.remove)":
-        return this.ethNetworkRemove(request as RequestTypes["pri(eth.networks.remove)"])
-
-      case "pri(eth.networks.reset)":
-        return this.ethNetworkReset(request as RequestTypes["pri(eth.networks.reset)"])
 
       // --------------------------------------------------------------------
       // ethereum other handlers ------------------------------------------

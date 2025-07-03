@@ -4,7 +4,7 @@ import { Subscription } from "dexie"
 import { log } from "extension-shared"
 import { uniq } from "lodash"
 import debounce from "lodash/debounce"
-import { BehaviorSubject, combineLatest } from "rxjs"
+import { BehaviorSubject, combineLatest, map } from "rxjs"
 
 import { db } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
@@ -12,7 +12,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
-import { activeTokensStore, filterActiveTokens } from "../tokens/store.activeTokens"
+import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 
 // refresh token rates on subscription start if older than 1 minute
 const MIN_REFRESH_INTERVAL = 1 * 60_000
@@ -23,7 +23,7 @@ const REFRESH_INTERVAL = 2 * 60_000
 type TokenRatesSubscriptionCallback = (rates: DbTokenRates[]) => void
 
 export class TokenRatesStore {
-  #lastUpdateTokenIds = ""
+  #lastUpdateKey = ""
   #lastUpdateAt = Date.now() // will prevent a first empty call if tokens aren't loaded yet
   #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
@@ -51,14 +51,17 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = chaindataProvider.tokensByIdObservable
+        const obsTokens = chaindataProvider.getTokensMapById()
         const obsActiveTokens = activeTokensStore.observable
+        const obsCurrencies = settingsStore.observable.pipe(
+          map((settings) => settings.selectableCurrencies),
+        )
 
-        subTokenList = combineLatest([obsTokens, obsActiveTokens]).subscribe(
-          debounce(async ([tokens, activeTokens]) => {
+        subTokenList = combineLatest([obsTokens, obsActiveTokens, obsCurrencies]).subscribe(
+          debounce(async ([tokens, activeTokens, currencies]) => {
             if (this.#subscriptions.observed) {
               const tokensList = filterActiveTokens(tokens, activeTokens)
-              await this.updateTokenRates(tokensList)
+              await this.updateTokenRates(tokensList, currencies)
             }
           }, 500),
         )
@@ -82,13 +85,14 @@ export class TokenRatesStore {
 
   async hydrateStore(): Promise<boolean> {
     try {
-      const [tokens, activeTokens] = await Promise.all([
-        chaindataProvider.tokensById(),
+      const [tokens, activeTokens, currencies] = await Promise.all([
+        chaindataProvider.getTokensMapById(),
         activeTokensStore.get(),
+        settingsStore.get("selectableCurrencies"),
       ])
 
       const tokensList = filterActiveTokens(tokens, activeTokens)
-      await this.updateTokenRates(tokensList)
+      await this.updateTokenRates(tokensList, currencies)
 
       return true
     } catch (error) {
@@ -100,24 +104,27 @@ export class TokenRatesStore {
   /**
    * WARNING: Make sure the tokens list `tokens` only includes active tokens.
    */
-  private async updateTokenRates(tokens: TokenList): Promise<void> {
+  private async updateTokenRates(
+    tokens: TokenList,
+    currencies: TokenRateCurrency[],
+  ): Promise<void> {
     const now = Date.now()
-    const strTokenIds = Object.keys(tokens ?? {})
+
+    const updateKey = Object.keys(tokens ?? {})
+      .concat(...currencies)
       .sort()
       .join(",")
-    if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateTokenIds === strTokenIds)
-      return
+    if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateKey === updateKey) return
 
     // update lastUpdateAt & lastUpdateTokenIds before fetching to prevent api call bursts
     this.#lastUpdateAt = now
-    this.#lastUpdateTokenIds = strTokenIds
+    this.#lastUpdateKey = updateKey
 
     try {
       const coinsApiConfig = await remoteConfigStore.get("coinsApi")
-      const currencyIds = await settingsStore.get("selectableCurrencies")
 
       // force usd to be included, because hide small balances feature requires it
-      const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencyIds, "usd"])
+      const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd"])
 
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, coinsApiConfig)
       const putTokenRates: DbTokenRates[] = Object.entries(tokenRates).map(([tokenId, rates]) => ({
@@ -140,7 +147,7 @@ export class TokenRatesStore {
       })
     } catch (err) {
       // reset lastUpdateTokenIds to retry on next call
-      this.#lastUpdateTokenIds = ""
+      this.#lastUpdateKey = ""
       throw err
     }
   }

@@ -3,11 +3,12 @@ import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
 } from "@polkadot/extension-base/background/types"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { Account } from "@talismn/keyring"
 import { RpcTransactionRequest } from "viem"
 
 import { BaseRequest, BaseRequestId } from "../../types/base"
-import { EthGasSettingsEip1559, EthGasSettingsLegacy, EvmNetworkId } from "../ethereum/types"
+import { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -56,7 +57,7 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
 export type SubstrateSignResponse = Omit<SignerResult, "id"> & { id: string }
 
 export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
-  ethChainId: EvmNetworkId
+  ethChainId: EthNetworkId
   account: Account
   request: string | RpcTransactionRequest
 }
@@ -82,13 +83,13 @@ export type EthSignMessageMethod =
 
 export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
-  ethChainId: EvmNetworkId
+  ethChainId: EthNetworkId
   method: EthSignMessageMethod
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
   request: RpcTransactionRequest
-  ethChainId: EvmNetworkId
+  ethChainId: EthNetworkId
   method: "eth_sendTransaction"
 }
 
@@ -155,7 +156,7 @@ export type GasSettingsByPriority = GasSettingsByPriorityEip1559 | GasSettingsBy
 export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
 
 export type EthTransactionDetails = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   estimatedGas: bigint
   gasPrice: bigint
   estimatedFee: bigint

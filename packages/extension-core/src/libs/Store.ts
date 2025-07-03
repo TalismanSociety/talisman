@@ -41,6 +41,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
     mutation: (currentValue: T) => T
     /** A function which is called after the mutation completes. */
     callback?: (newValue: T) => void
+    onError: (error: unknown) => void
   }>()
 
   constructor(prefix: string, initialData: Partial<T> = {}) {
@@ -120,8 +121,13 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
           const callbacks = []
           let newValue = currentValue
 
-          for (const { mutation, callback } of mutations) {
-            newValue = mutation(newValue)
+          for (const { mutation, callback, onError } of mutations) {
+            try {
+              newValue = mutation(newValue)
+            } catch (error) {
+              onError(error)
+              continue
+            }
             const valueAfterThisMutation = newValue
             if (callback) callbacks.push(() => callback(valueAfterThisMutation))
           }
@@ -204,8 +210,8 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   /** Clear all stored data. */
   async clear(): Promise<boolean> {
     const mutation = () => ({}) as T
-    return await new Promise((resolve) =>
-      this.#mutationQueue.next({ mutation, callback: () => resolve(true) }),
+    return await new Promise((resolve, reject) =>
+      this.#mutationQueue.next({ mutation, callback: () => resolve(true), onError: reject }),
     )
   }
 
@@ -215,7 +221,9 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    * @returns A Promise which resolves to the new value once the mutation has been processed.
    */
   async mutate(mutation: (currentValue: T) => T): Promise<T> {
-    return await new Promise((resolve) => this.#mutationQueue.next({ mutation, callback: resolve }))
+    return await new Promise((resolve, reject) =>
+      this.#mutationQueue.next({ mutation, callback: resolve, onError: reject }),
+    )
   }
 
   /** Delete key:value pairs. */

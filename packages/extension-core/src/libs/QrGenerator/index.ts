@@ -1,6 +1,6 @@
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
-import { Chain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { getMetadataRpcFromDef, log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
@@ -17,7 +17,7 @@ import {
 import { getRuntimeVersion } from "../../util/getRuntimeVersion"
 import { $addNetworkSpecsPayload, $networkSpecs, $updateNetworkMetadataPayload } from "./codecs"
 
-const getEncryptionForChain = (chain: Chain) => {
+const getEncryptionForChain = (chain: DotNetwork) => {
   // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
   switch (chain.account) {
     case "secp256k1":
@@ -60,7 +60,7 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
  */
 
 export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesisHash) => {
-  const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
+  const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
   assert(chain, "Chain not found")
 
   const systemProperties = await chainConnector.send(chain.id, "system_properties", [])

@@ -29,7 +29,6 @@ import {
   tokensAtom,
   tokensByIdAtom,
 } from "./chaindata"
-import { miniMetadataHydratedAtom } from "./chaindataProvider"
 import { enabledChainsAtom, enabledTokensAtom } from "./config"
 import { cryptoWaitReadyAtom } from "./cryptoWaitReady"
 import { tokenRatesAtom } from "./tokenRates"
@@ -71,12 +70,12 @@ const hydrateBalancesObservableAtom = atom(async (get) => {
 })
 
 const balancesHydrateDataAtom = atom(async (get): Promise<HydrateDb> => {
-  const [{ chainsById, evmNetworksById, tokensById }, tokenRates] = await Promise.all([
+  const [{ networksById, tokensById }, tokenRates] = await Promise.all([
     get(chaindataAtom),
     get(tokenRatesAtom),
   ])
 
-  return { chains: chainsById, evmNetworks: evmNetworksById, tokens: tokensById, tokenRates }
+  return { networks: networksById, tokens: tokensById, tokenRates }
 })
 
 const balancesSubscriptionAtomEffect = atomEffect((get) => {
@@ -89,7 +88,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     get(cryptoWaitReadyAtom),
 
     get(balanceModulesAtom),
-    get(miniMetadataHydratedAtom),
 
     get(allAddressesAtom),
     get(chainsAtom),
@@ -112,7 +110,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       _cryptoReady,
 
       balanceModules,
-      miniMetadataHydrated,
 
       allAddresses,
       chains,
@@ -127,7 +124,6 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       enabledTokensConfig,
     ] = await atomDependencies
 
-    if (!miniMetadataHydrated) return
     if (abort.signal.aborted) return
 
     // persist data every thirty seconds
@@ -193,7 +189,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       (genesisHash) => chains.find((chain) => chain.genesisHash === genesisHash)?.id,
     )
     const enabledChainsFilter = enabledChainIds
-      ? (token: Token) => token.chain && enabledChainIds?.includes(token.chain.id)
+      ? (token: Token) =>
+          token.platform === "polkadot" && enabledChainIds?.includes(token.networkId)
       : () => true
     const enabledTokensFilter = enabledTokensConfig
       ? (token: Token) => enabledTokensConfig.includes(token.id)
@@ -212,16 +209,16 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       .forEach((token) => {
         // filter out tokens on chains/evmNetworks which have no rpcs
         const hasRpcs =
-          (token.chain?.id && (chainsById[token.chain.id]?.rpcs?.length ?? 0) > 0) ||
-          (token.evmNetwork?.id && (evmNetworksById[token.evmNetwork.id]?.rpcs?.length ?? 0) > 0)
+          (token.networkId && (chainsById[token.networkId]?.rpcs?.length ?? 0) > 0) ||
+          (token.networkId && (evmNetworksById[token.networkId]?.rpcs?.length ?? 0) > 0)
         if (!hasRpcs) return
 
         if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
         addressesByTokenByModule[token.type][token.id] = allAddresses.filter((address) => {
           // for each address, fetch balances only from compatible chains
           return isEthereumAddress(address)
-            ? token.evmNetwork?.id || chainsById[token.chain?.id ?? ""]?.account === "secp256k1"
-            : token.chain?.id && chainsById[token.chain?.id ?? ""]?.account !== "secp256k1"
+            ? token.networkId || chainsById[token.networkId ?? ""]?.account === "secp256k1"
+            : token.networkId && chainsById[token.networkId ?? ""]?.account !== "secp256k1"
         })
       })
 
@@ -233,10 +230,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       if (!balance.address || !allAddresses.includes(balance.address)) return true
 
       // delete cached balances when chain/evmNetwork doesn't exist
-      if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
-      if (balance.chainId !== undefined && !chainIds.has(balance.chainId)) return true
-      if (balance.evmNetworkId !== undefined && !evmNetworkIds.has(balance.evmNetworkId))
-        return true
+      if (!chainIds.has(balance.networkId) && !evmNetworkIds.has(balance.networkId)) return true
 
       // delete cached balance when token doesn't exist / is disabled
       if (!enabledTokenIds.includes(balance.tokenId)) return true
@@ -247,9 +241,9 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       // delete cached balance for accounts on incompatible chains
       // (substrate accounts shouldn't have evm balances)
       // (evm accounts shouldn't have substrate balances (unless the chain uses secp256k1 accounts))
-      const chain = (balance.chainId && chains.find(({ id }) => id === balance.chainId)) || null
-      const hasChain = balance.chainId && chainIds.has(balance.chainId)
-      const hasEvmNetwork = balance.evmNetworkId && evmNetworkIds.has(balance.evmNetworkId)
+      const chain = chains.find(({ id }) => id === balance.networkId) || null
+      const hasChain = chainIds.has(balance.networkId)
+      const hasEvmNetwork = evmNetworkIds.has(balance.networkId)
       const chainUsesSecp256k1Accounts = chain?.account === "secp256k1"
       if (!isEthereumAddress(balance.address)) {
         if (!hasChain) return true

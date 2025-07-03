@@ -1,6 +1,6 @@
 import type { PrimitiveAtom } from "jotai"
 import type { Chain as ViemChain } from "viem/chains"
-import { evmErc20TokenId } from "@talismn/balances"
+import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { isAccountAddressEthereum, isAccountAddressSs58, remoteConfigStore } from "extension-core"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -9,13 +9,7 @@ import { Loadable } from "jotai/vanilla/utils/loadable"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { erc20Abi, isAddress } from "viem"
 
-import {
-  getEvmNetworks$,
-  getTokensMap$,
-  tokenRatesMap$,
-  useAccounts,
-  useTokensMap,
-} from "@ui/state"
+import { getNetworks$, getTokensMap$, tokenRatesMap$, useAccounts, useTokensMap } from "@ui/state"
 
 import type {
   BaseQuote,
@@ -189,7 +183,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find((c) => c?.id === chainId)
     if (!chain) return null
-    const evmNetworks = await get(atomWithObservable(() => getEvmNetworks$()))
+    const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
     const network = evmNetworks.find((network) => network.id.toString() === chainId.toString())
     if (!network) return null
     const platforms = await get(coingeckoAssetPlatformsAtom)
@@ -225,7 +219,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
     if (!symbol || !decimals || !name) return null
 
     const coingeckoData = await get(coingeckoCoinByAddressAtom(`${address}:${platform.id}`))
-    const id = evmErc20TokenId(address, chainIdString)
+    const id = evmErc20TokenId(chainIdString, address)
 
     return {
       id,
@@ -485,7 +479,7 @@ export const approvalAtom = atom(async (get) => {
   // chain unsupported
   if (!chain) return null
 
-  const evmNetworks = await get(atomWithObservable(() => getEvmNetworks$()))
+  const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
   const network = evmNetworks.find(
     (network) => network.id.toString() === approval.chainId.toString(),
   )

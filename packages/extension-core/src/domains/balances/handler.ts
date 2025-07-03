@@ -1,14 +1,20 @@
-import { isAccountAddressSs58 } from "@talismn/keyring"
-import { isValidSubstrateAddress } from "@talismn/util"
+import { getSharedObservable } from "@talismn/util"
+import { Observable, of } from "rxjs"
 
-import { createSubscription, portDisconnected, unsubscribe } from "../../handlers/subscriptions"
+import {
+  createSubscription,
+  genericSubscription,
+  portDisconnected,
+} from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { keyringStore } from "../keyring/store"
 import { balancePool, ExternalBalancePool } from "./pool"
-import { RequestBalance, RequestBalancesByParamsSubscribe } from "./types"
+import {
+  BalanceSubscriptionResponse,
+  RequestBalance,
+  RequestBalancesByParamsSubscribe,
+} from "./types"
 
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -25,16 +31,8 @@ export class BalancesHandler extends ExtensionHandler {
         return balancePool.getBalance(request as RequestBalance)
 
       case "pri(balances.subscribe)": {
+        // TODO turn balancePool into a promise, and leverage genericSubscription
         const onDisconnected = portDisconnected(port)
-
-        const accounts = await keyringStore.getAccounts()
-
-        // TODO fix this logic: some chains with evm type accounts should still be updated (ex: Mythos, Moonbeam, LAOS)
-        const updateSubstrateChains = accounts.some(isAccountAddressSs58)
-
-        // TODO: Run this on a timer or something instead of when subscribing to balances
-        // todo check if not awaiting this causes any issues with custom networks
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
         const callback = createSubscription<"pri(balances.subscribe)">(id, port)
 
         balancePool.subscribe(id, onDisconnected, callback)
@@ -46,7 +44,11 @@ export class BalancesHandler extends ExtensionHandler {
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
       // instead of being limited to the accounts which are in the wallet's keystore
       case "pri(balances.byparams.subscribe)":
-        return subscribeBalancesByParams(id, port, request as RequestBalancesByParamsSubscribe)
+        return genericSubscription(
+          id,
+          port,
+          getExternalBalances$(request as RequestBalancesByParamsSubscribe),
+        )
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
@@ -54,49 +56,59 @@ export class BalancesHandler extends ExtensionHandler {
   }
 }
 
-const subscribeBalancesByParams = async (
-  id: string,
-  port: Port,
-  {
-    addressesByChain,
-    addressesAndEvmNetworks,
-    addressesAndTokens,
-  }: RequestBalancesByParamsSubscribe,
-): Promise<boolean> => {
-  // if no addresses, return early
-  if (
-    !Object.keys(addressesByChain).length &&
-    !addressesAndTokens.addresses.length &&
-    !addressesAndEvmNetworks.addresses.length
+const getExternalBalances$ = (
+  params: RequestBalancesByParamsSubscribe,
+): Observable<BalanceSubscriptionResponse> => {
+  return getSharedObservable(
+    "getExternalBalances$",
+    params,
+    (): Observable<BalanceSubscriptionResponse> => {
+      const { addressesAndEvmNetworks, addressesAndTokens, addressesByChain } = params
+      const flatAddressesByChains = Object.values(addressesByChain).flat()
+
+      // if no addresses, return early
+      if (
+        !flatAddressesByChains.length &&
+        !addressesAndTokens.addresses.length &&
+        !addressesAndEvmNetworks.addresses.length
+      )
+        return of<BalanceSubscriptionResponse>({
+          data: [],
+          status: "live",
+        })
+
+      let externalBalancePool: ExternalBalancePool
+      return new Observable<BalanceSubscriptionResponse>((subscriber) => {
+        externalBalancePool = new ExternalBalancePool()
+
+        // init synchronously
+        subscriber.next({
+          data: [],
+          status: "initialising",
+        })
+
+        // TODO refactor pool so it doesnt need an id nor a disconnect function..
+        const id = crypto.randomUUID()
+        let disconnect: () => void
+        const onDisconnected = new Promise<void>((resolve) => {
+          disconnect = () => resolve()
+        })
+
+        externalBalancePool.setSubcriptionParameters({
+          addressesByChain,
+          addressesAndEvmNetworks,
+          addressesAndTokens,
+        })
+
+        externalBalancePool.subscribe(id, onDisconnected, (balances) => {
+          subscriber.next(balances)
+        })
+
+        return () => {
+          disconnect() // this triggers some 5 sec timeout in the pool, then only it will actually unsubscribe
+          externalBalancePool.destroy() // not sure if this plays well with the above, though I havent noticed any issues yet
+        }
+      })
+    },
   )
-    return true
-  // create safe onDisconnect handler
-  const onDisconnected = portDisconnected(port)
-
-  // create subscription callback
-  const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
-
-  const updateSubstrateChains =
-    Object.values(addressesByChain).flat().some(isValidSubstrateAddress) ||
-    addressesAndTokens.addresses.some(isValidSubstrateAddress)
-
-  // wait for chaindata to hydrate
-  updateAndWaitForUpdatedChaindata({ updateSubstrateChains })
-
-  const externalBalancePool = new ExternalBalancePool()
-
-  externalBalancePool.setSubcriptionParameters({
-    addressesByChain,
-    addressesAndEvmNetworks,
-    addressesAndTokens,
-  })
-  externalBalancePool.subscribe(id, onDisconnected, callback)
-
-  // unsub on port disconnect
-  onDisconnected.then((): void => {
-    unsubscribe(id)
-  })
-
-  // subscription created
-  return true
 }

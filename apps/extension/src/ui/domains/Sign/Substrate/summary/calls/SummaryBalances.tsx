@@ -5,7 +5,7 @@ import { Address } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useChain, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
@@ -25,7 +25,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
   | HydrationCalls["Balances"]["transfer_keep_alive"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.dest)
@@ -35,7 +35,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
     return sapi.getConstant("Balances", "ExistentialDeposit") as bigint
   }, [sapi])
 
-  if (!chain?.nativeToken?.id || !target) throw new Error("Missing data")
+  if (!chain?.nativeTokenId || !target) throw new Error("Missing data")
 
   if (mode !== "block")
     return (
@@ -46,7 +46,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
           LineBreak: <SummaryLineBreak mode={mode} />,
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeToken?.id}
+              tokenId={chain.nativeTokenId}
               planck={decodedCall.args.value}
               mode={mode}
             />
@@ -65,7 +65,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
             Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeToken?.id}
+                tokenId={chain.nativeTokenId}
                 planck={decodedCall.args.value}
                 mode={mode}
               />
@@ -80,7 +80,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
           t={t}
           components={{
             Tokens: (
-              <SummaryTokensAndFiat tokenId={chain.nativeToken.id} planck={ed} mode={mode} noFiat />
+              <SummaryTokensAndFiat tokenId={chain.nativeTokenId} planck={ed} mode={mode} noFiat />
             ),
           }}
           defaults="Transaction will revert if sender balance goes below the <Tokens /> existential deposit"
@@ -95,7 +95,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
   | HydrationCalls["Balances"]["transfer_allow_death"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.dest)
@@ -105,7 +105,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
     return sapi.getConstant("Balances", "ExistentialDeposit") as bigint
   }, [sapi])
 
-  if (!chain?.nativeToken?.id || !target) throw new Error("Missing data")
+  if (!chain?.nativeTokenId || !target) throw new Error("Missing data")
 
   if (mode !== "block")
     return (
@@ -114,7 +114,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
         components={{
           Tokens: (
             <SummaryTokensAndFiat
-              tokenId={chain?.nativeToken?.id}
+              tokenId={chain.nativeTokenId}
               planck={decodedCall.args.value}
               mode={mode}
             />
@@ -135,7 +135,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
             Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
             Tokens: (
               <SummaryTokensAndFiat
-                tokenId={chain?.nativeToken?.id}
+                tokenId={chain.nativeTokenId}
                 planck={decodedCall.args.value}
                 mode={mode}
               />
@@ -150,7 +150,7 @@ const TransferAllowDeath: DecodedCallSummaryComponent<
           t={t}
           components={{
             Tokens: (
-              <SummaryTokensAndFiat tokenId={chain.nativeToken.id} planck={ed} mode={mode} noFiat />
+              <SummaryTokensAndFiat tokenId={chain.nativeTokenId} planck={ed} mode={mode} noFiat />
             ),
           }}
           defaults="If this causes the sender balance goes below the <Tokens /> existential deposit, the remaining balance will be lost and account will be removed from chain state."
@@ -164,8 +164,8 @@ const TransferAll: DecodedCallSummaryComponent<
   PolkadotCalls["Balances"]["transfer_all"] | HydrationCalls["Balances"]["transfer_all"]
 > = ({ decodedCall, sapi, payload, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
-  const nativeToken = useToken(chain?.nativeToken?.id)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
+  const nativeToken = useToken(chain?.nativeTokenId)
 
   const target = useMemo(() => {
     return getAddressFromMultiAddress(decodedCall.args.dest)
@@ -184,7 +184,7 @@ const TransferAll: DecodedCallSummaryComponent<
     return transferable > keepAlive ? transferable - keepAlive : 0n
   }, [account, decodedCall.args.keep_alive, ed])
 
-  if (!chain?.nativeToken?.id || !nativeToken || !account || transferable === null)
+  if (!chain?.nativeTokenId || !nativeToken || !account || transferable === null)
     throw new Error("Missing data")
 
   if (mode !== "block")
@@ -192,7 +192,7 @@ const TransferAll: DecodedCallSummaryComponent<
       <Trans
         t={t}
         components={{
-          Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+          Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeTokenId} />,
           LineBreak: <SummaryLineBreak mode={mode} />,
           Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
         }}
@@ -207,7 +207,7 @@ const TransferAll: DecodedCallSummaryComponent<
           t={t}
           components={{
             Target: <SummaryAddressDisplay address={target} networkId={chain.id} mode={mode} />,
-            Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeToken.id} />,
+            Symbol: <SummaryTokenSymbolDisplay tokenId={chain.nativeTokenId} />,
           }}
           defaults="Transfer all available <Symbol /><br/> to <Target />"
         />
@@ -220,7 +220,7 @@ const TransferAll: DecodedCallSummaryComponent<
             Tokens: (
               <SummaryTokensAndFiat
                 planck={transferable}
-                tokenId={chain.nativeToken.id}
+                tokenId={chain.nativeTokenId}
                 mode={mode}
               />
             ),
@@ -235,7 +235,7 @@ const TransferAll: DecodedCallSummaryComponent<
             components={{
               Tokens: (
                 <SummaryTokensAndFiat
-                  tokenId={chain.nativeToken.id}
+                  tokenId={chain.nativeTokenId}
                   planck={ed}
                   mode={mode}
                   noFiat

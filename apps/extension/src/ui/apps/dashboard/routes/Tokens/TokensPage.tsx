@@ -1,261 +1,24 @@
-import { EvmNetworkId, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
-import { InfoIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { activeTokensStore, isTokenActive } from "extension-core"
-import sortBy from "lodash/sortBy"
+import { Network, NetworkId } from "@talismn/chaindata-provider"
+import { PlusIcon } from "@talismn/icons"
+import { activeTokensStore } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Dropdown,
-  Modal,
-  ModalDialog,
-  PillButton,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
-import urlJoin from "url-join"
+import { Button, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import {
-  useActiveTokensState,
-  useBalancesHydrate,
-  useEvmNetwork,
-  useEvmNetworks,
-  useEvmNetworksMap,
-  useTokens,
-} from "@ui/state"
-import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
-import { isCustomUniswapV2Token } from "@ui/util/isCustomUniswapV2Token"
-import { isErc20Token } from "@ui/util/isErc20Token"
-import { isUniswapV2Token } from "@ui/util/isUniswapV2Token"
+import { useAnyNetwork, useBalancesHydrate, useNetworks } from "@ui/state"
 
-const NoticeTooltip: FC = () => {
-  const { t } = useTranslation()
-
-  return (
-    <Tooltip>
-      <TooltipTrigger className="align-text-top">
-        <InfoIcon />
-      </TooltipTrigger>
-      <TooltipContent>{t("Tokens list is provided by Coingecko.")}</TooltipContent>
-    </Tooltip>
-  )
-}
-const CustomPill = () => {
-  const { t } = useTranslation()
-
-  return (
-    <div className="bg-primary/10 text-primary inline-block rounded p-4 py-2 text-xs font-light">
-      {t("Custom")}
-    </div>
-  )
-}
-
-const useBlockExplorerUrl = (token: Token) => {
-  const evmNetwork = useEvmNetwork(token.evmNetwork?.id)
-
-  return useMemo(() => {
-    if (isErc20Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
-    if (isUniswapV2Token(token) && evmNetwork?.explorerUrl)
-      return urlJoin(evmNetwork.explorerUrl, "token", token.contractAddress)
-
-    return null
-  }, [token, evmNetwork?.explorerUrl])
-}
-
-const useCoingeckoUrl = (token: Token) => {
-  return useMemo(
-    () =>
-      token.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token],
-  )
-}
-
-const TokenRow: FC<{ token: Token }> = ({ token }) => {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-
-  const activeTokens = useActiveTokensState()
-  const network = useEvmNetwork(token.evmNetwork?.id)
-  const blockExplorerUrl = useBlockExplorerUrl(token)
-  const coingeckoUrl = useCoingeckoUrl(token)
-
-  return (
-    <div className="relative h-28 w-full">
-      <div className="bg-grey-850 text-body-secondary grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm px-8 pr-6 font-normal">
-        <div className="text-body flex items-center gap-4 overflow-hidden">
-          <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
-          <div className="truncate">{token.symbol}</div>
-          <TokenTypePill type={token.type} />
-          {isCustomErc20Token(token) && <CustomPill />}
-          {isCustomUniswapV2Token(token) && <CustomPill />}
-        </div>
-        <div className="text-body flex items-center gap-4 overflow-hidden">
-          <NetworkLogo ethChainId={network?.id} className="shrink-0 text-lg" />
-          <div className="truncate">{network?.name}</div>
-        </div>
-        <div className="flex w-full items-center justify-end gap-4 text-right">
-          <Toggle
-            checked={isTokenActive(token, activeTokens)}
-            onChange={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-              activeTokensStore.setActive(token.id, e.target.checked)
-            }}
-          />
-          <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="hover:text-body bg-grey-800 hover:bg-grey-700 rounded-sm p-3">
-              <MoreHorizontalIcon />
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuItem onClick={() => navigate(`./${token.id}`)}>
-                {t("Token details")}
-              </ContextMenuItem>
-              {!!blockExplorerUrl && (
-                <ContextMenuItem onClick={() => window.open(blockExplorerUrl, "_blank")}>
-                  {t("View on block explorer")}
-                </ContextMenuItem>
-              )}
-              {coingeckoUrl && (
-                <ContextMenuItem onClick={() => window.open(coingeckoUrl, "_blank")}>
-                  {t("View on Coingecko")}
-                </ContextMenuItem>
-              )}
-            </ContextMenuContent>
-          </ContextMenu>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
-  const virtualizer = useVirtualizer({
-    count: tokens.length,
-    overscan: 6,
-    gap: 8,
-    estimateSize: () => 56,
-    getScrollElement: () => document.getElementById("main"),
-  })
-
-  return (
-    <div>
-      <div
-        className="relative w-full"
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-        }}
-      >
-        {virtualizer.getVirtualItems().map((item) => (
-          <div
-            key={item.key}
-            className="absolute left-0 top-0 w-full"
-            style={{
-              height: `${item.size}px`,
-              transform: `translateY(${item.start}px)`,
-            }}
-          >
-            <TokenRow token={tokens[item.index]} />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const TokensTable: FC<{ tokens: Token[] }> = ({ tokens }) => {
-  const { t } = useTranslation()
-
-  if (!tokens.length)
-    return (
-      <div className="bg-grey-850 text-body-secondary my-12 rounded py-24 text-center">
-        <div>{t("No token found")}</div>
-        <div>{t("Consider adding it manually as a custom token")}</div>
-      </div>
-    )
-
-  return (
-    <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[40%_40%_20%] px-8 text-sm font-normal">
-        <div>{t("Asset")}</div>
-        <div>{t("Network")}</div>
-        <div className="pr-20 text-right">{t("Active")}</div>
-      </div>
-      <VirtualizedRows tokens={tokens} />
-    </div>
-  )
-}
-
-const renderNetwork = (network: SimpleEvmNetwork) => {
-  return (
-    <div className="flex items-center gap-5">
-      <NetworkLogo ethChainId={network.id} className="text-[1.25em]" />
-      <span>{network.name}</span>
-    </div>
-  )
-}
-
-const NetworkSelect = ({
-  networks,
-  selectedId,
-  onChange,
-}: {
-  networks: SimpleEvmNetwork[]
-  selectedId: EvmNetworkId | null
-  onChange: (evmNetworkId: EvmNetworkId) => void
-}) => {
-  const [selected, setSelected] = useState<SimpleEvmNetwork | undefined>(
-    networks.find((n) => n.id === selectedId),
-  )
-
-  useEffect(() => {
-    // networks may not be loaded on first render
-    // handle default selection here
-    if (!selected) {
-      const defaultNetwork = networks.find((n) => n.id === selectedId)
-      if (defaultNetwork) setSelected(defaultNetwork)
-    }
-  }, [selectedId, networks, selected])
-
-  const handleChange = useCallback(
-    (item: SimpleEvmNetwork | null) => {
-      if (!item) return
-      setSelected(item)
-      if (onChange) onChange(item.id)
-    },
-    [onChange],
-  )
-
-  return (
-    <Dropdown
-      items={networks}
-      propertyKey="id"
-      renderItem={renderNetwork}
-      value={selected}
-      onChange={handleChange}
-      className="[&>div>button]:h-[4.6rem]"
-    />
-  )
-}
+import { PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
+import { TokensList } from "./TokensList"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -271,13 +34,21 @@ const Content = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const location = useLocation()
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: true })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly: true, includeTestnets: true })
-  const tokens = useTokens()
-  const activeTokens = useActiveTokensState()
-  const [isActiveOnly, setIsActiveOnly] = useState(true)
-  const [isCustomOnly, setIsCustomOnly] = useState(false)
-  const [isHidePools, setIsHidePools] = useState(false)
+
+  // filters to persist in location state
+  const [isActiveOnly, setIsActiveOnly] = useState(
+    (location.state?.isActiveOnly as boolean) ?? true,
+  )
+  const [isCustomOnly, setIsCustomOnly] = useState(
+    (location.state?.isCustomOnly as boolean) ?? false,
+  )
+  const [isHidePools, setIsHidePools] = useState((location.state?.isHidePools as boolean) ?? false)
+  const [search, setSearch] = useState((location.state?.search as string) ?? "")
+  const [platform, setPlatform, platformOptions] = usePlatformOptions(
+    (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption),
+  )
+  const [networkId, setNetworkId] = useState<NetworkId>(location.state?.networkId ?? "ALL")
+  const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
@@ -285,59 +56,29 @@ const Content = () => {
 
   const networkOptions = useMemo(() => {
     return [
-      { id: "ALL", name: t("All active networks") } as SimpleEvmNetwork,
-      ...evmNetworks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
+      { id: "ALL", name: t("All active networks") } as Network,
+      ...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
     ]
-  }, [evmNetworks, t])
-  const [evmNetworkId, setEvmNetworkId] = useState<EvmNetworkId>("ALL")
+  }, [networks, t])
 
-  // search value is debounced by SearchInput component
-  // keep search value in location state to preserve it when user clicks a token then goes back
-  const [search, setSearch] = useState(location.state?.search ?? "")
+  const network = useAnyNetwork(networkId)
+
+  // persist all filters in location state so token page can navigate back here without losing filters
   useEffect(() => {
-    navigate(location.pathname, { replace: true, state: { search } })
-  }, [location.pathname, navigate, search])
-
-  const filteredTokens = useMemo(() => {
-    const result = tokens
-      .filter((t) => isErc20Token(t) || isUniswapV2Token(t))
-      .filter((t) => !!t.evmNetwork?.id && evmNetworksMap[t.evmNetwork.id])
-      .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
-      .filter(
-        (t) => !!search || !isCustomOnly || isCustomErc20Token(t) || isCustomUniswapV2Token(t),
-      )
-      .filter((t) => !!search || !isHidePools || !isUniswapV2Token(t))
-      .filter((t) => evmNetworkId === "ALL" || t.evmNetwork?.id === evmNetworkId)
-
-    return sortBy(
-      result,
-      (t) => evmNetworksMap[t.evmNetwork!.id]?.name,
-      (t) => t.symbol,
-    )
+    navigate(location.pathname, {
+      replace: true,
+      state: { search, platform, isActiveOnly, isCustomOnly, isHidePools, networkId },
+    })
   }, [
-    activeTokens,
-    evmNetworkId,
-    evmNetworksMap,
     isActiveOnly,
     isCustomOnly,
     isHidePools,
+    location.pathname,
+    navigate,
+    platform,
     search,
-    tokens,
+    networkId,
   ])
-
-  const displayTokens = useMemo(() => {
-    const lowerSearch = search.trim().toLowerCase()
-
-    return filteredTokens.filter(
-      (t) =>
-        !lowerSearch ||
-        (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
-        (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
-        t.symbol.toLowerCase().includes(lowerSearch) ||
-        (isErc20Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)) ||
-        (isUniswapV2Token(t) && t.contractAddress.toLowerCase().includes(lowerSearch)),
-    )
-  }, [filteredTokens, search])
 
   const handleAddToken = useCallback(() => {
     sendAnalyticsEvent({
@@ -350,38 +91,38 @@ const Content = () => {
 
   const ocResetAllModal = useOpenClose()
 
-  if (!filteredTokens) return null
+  useEffect(() => {
+    // reset selected network if platform changes to an incompatible one
+    if (platform !== "all" && networkId && network?.platform !== platform) setNetworkId("ALL")
+  }, [platform, networkId, network])
 
   return (
     <>
       <div className="flex w-full gap-8">
         <HeaderBlock
-          title={t("Ethereum Tokens")}
+          title={t("Tokens")}
           className="grow"
-          text={
-            <>
-              {t("Enable, add or delete custom ERC20 tokens.")} <NoticeTooltip />
-            </>
-          }
+          text={t("Enable, add or delete custom tokens.")}
         />
         <Button primary iconLeft={PlusIcon} small onClick={handleAddToken}>
           {t("Add custom token")}
         </Button>
       </div>
-      <Spacer large />
-      <NetworkSelect
-        networks={networkOptions}
-        onChange={setEvmNetworkId}
-        selectedId={evmNetworkId}
+      <Spacer small />
+      <OptionSwitch
+        options={platformOptions.map(({ value, label }) => [value, label] as const)}
+        className="text-xs [&>div]:h-full"
+        defaultOption={platform}
+        onChange={setPlatform}
       />
+      <div className="h-4"></div>
+      <NetworkSelect networks={networkOptions} onChange={setNetworkId} selectedId={networkId} />
       <div className="h-4"></div>
       <div className="flex gap-4">
         <SearchInput
           initialValue={search}
           onChange={setSearch}
-          placeholder={
-            evmNetworkId === "ALL" ? t("Search to display more tokens") : t("Search tokens")
-          }
+          placeholder={t("Search tokens")}
           containerClassName="rounded-sm"
         />
       </div>
@@ -412,7 +153,14 @@ const Content = () => {
         />
       </div>
       <Spacer />
-      <TokensTable tokens={displayTokens} />
+      <TokensList
+        platform={platform}
+        isActiveOnly={isActiveOnly}
+        isCustomOnly={isCustomOnly}
+        isHidePools={isHidePools}
+        networkId={networkId}
+        search={search}
+      />
       <Modal isOpen={ocResetAllModal.isOpen} onDismiss={ocResetAllModal.close}>
         <ResetStatesModalContent onClose={ocResetAllModal.close} />
       </Modal>
@@ -439,7 +187,7 @@ const ResetStatesModalContent: FC<{
   return (
     <ModalDialog title={t("Reset tokens")} onClose={onClose}>
       <div className="text-body-secondary mb-8 text-sm">
-        {t("This will reset active state of all Ethereum tokens to their Talisman defaults.")}
+        {t("This will reset active state of all tokens to their Talisman defaults.")}
       </div>
 
       <div className="mt-4 flex justify-end gap-8">

@@ -1,6 +1,13 @@
 import { HexString } from "@polkadot/util/types"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  isNetworkDot,
+  isTokenDot,
+  isTokenEth,
+  isTokenNeedExistentialDeposit,
+  Token,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -29,15 +36,12 @@ import {
   useBalance,
   useBalancesByAddress,
   useBalancesHydrate,
-  useChain,
-  useEvmNetwork,
+  useNetworkById,
   useToken,
   useTokenRates,
   useTokenRatesMap,
   useTokensMap,
 } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
@@ -54,8 +58,11 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
   return useQuery({
     queryKey: [token?.id, address, hydrate],
     queryFn: async () => {
-      if (!token || !token.chain || !address || !hydrate) return null
-      const storage = await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
+      if (!token || !address || !hydrate) return null
+      const storage = await api.getBalance({
+        address,
+        tokenId: token.id,
+      })
       if (!storage) throw Error(t("Could not fetch recipient balance."))
       return storage ? new Balance(storage, hydrate) : null
     },
@@ -76,12 +83,11 @@ const useIsSendingEnough = (
         case "evm-uniswapv2":
         case "evm-erc20":
         case "evm-native":
+        case "substrate-psp22":
           return true
         case "substrate-assets":
-        case "substrate-equilibrium":
         case "substrate-foreignassets":
         case "substrate-native":
-        case "substrate-psp22":
         case "substrate-tokens": {
           const existentialDeposit = new BalanceFormatter(
             token.existentialDeposit ?? "0",
@@ -117,8 +123,8 @@ const useEvmTransaction = (
   useEffect(() => {
     setEvmInvalidTxError(undefined)
     if (
-      !isEvmToken(token) ||
-      !token.evmNetwork?.id ||
+      !isTokenEth(token) ||
+      !token.networkId ||
       !token ||
       !planck ||
       !isEthereumAddress(from) ||
@@ -126,7 +132,7 @@ const useEvmTransaction = (
     )
       setTx(undefined)
     else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, BigInt(planck))
+      getEthTransferTransactionBase(token.networkId, from, to, token, BigInt(planck))
         .then(setTx)
         .catch((err) => {
           setEvmInvalidTxError(err)
@@ -137,10 +143,10 @@ const useEvmTransaction = (
     }
   }, [from, to, token, planck])
 
-  const result = useEthTransaction(tx, token?.evmNetwork?.id, isLocked, false)
+  const result = useEthTransaction(tx, token?.networkId, isLocked, false)
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId: token?.evmNetwork?.id,
+    evmNetworkId: token?.networkId,
     tx,
     disableAutoRiskScan: true,
   })
@@ -162,9 +168,9 @@ const useSubTransaction = (
   const qSubstrateEstimateFee = useQuery({
     queryKey: ["estimateFee", from, to, token?.id, amount, tip, method],
     queryFn: async () => {
-      if (!token?.chain?.id || !from || !to || !amount) return null
+      if (!token?.networkId || !from || !to || !amount) return null
       const { partialFee, unsigned } = await api.assetTransferCheckFees(
-        token.chain.id,
+        token.networkId,
         token.id,
         from,
         to,
@@ -183,7 +189,7 @@ const useSubTransaction = (
   )
 
   return useMemo(() => {
-    if (!isSubToken(token)) return undefined
+    if (!isTokenDot(token)) return undefined
 
     const { partialFee, unsigned: unsignedOriginal } = qSubstrateEstimateFee.data ?? {}
     const {
@@ -227,10 +233,11 @@ const useSendFundsProvider = () => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const chain = useChain(token?.chain?.id)
-  const tipToken = useToken(chain?.nativeToken?.id)
-  const tipTokenRates = useTokenRates(chain?.nativeToken?.id)
+  // const evmNetwork = useEvmNetwork(token?.networkId)
+  // const chain = useChain(token?.networkId)
+  const network = useNetworkById(token?.networkId)
+  const tipToken = useToken(network?.nativeTokenId)
+  const tipTokenRates = useTokenRates(network?.nativeTokenId)
   const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
@@ -241,7 +248,7 @@ const useSendFundsProvider = () => {
     [amount, token, tokenRates],
   )
 
-  const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
+  const { requiresTip, tip: tipPlanck } = useTip(token?.networkId, !isLocked)
   const tip = useMemo(
     () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals, tipTokenRates) : null),
     [tipPlanck, tipToken?.decimals, tipTokenRates],
@@ -386,7 +393,7 @@ const useSendFundsProvider = () => {
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
-        if (remaining === 0n || !isSubToken(token) || sendMax) return null
+        if (remaining === 0n || !isTokenNeedExistentialDeposit(token) || sendMax) return null
 
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
@@ -468,7 +475,7 @@ const useSendFundsProvider = () => {
       // if paying fee makes the feeToken balance go below the existential deposit, then the transaction is invalid
       // https://github.com/paritytech/polkadot/issues/2485#issuecomment-782794995
       if (
-        isSubToken(feeToken) &&
+        isTokenNeedExistentialDeposit(feeToken) &&
         feeToken.existentialDeposit &&
         feeTokenBalance.transferable.planck - estimatedFee.planck <
           BigInt(feeToken.existentialDeposit) &&
@@ -486,7 +493,7 @@ const useSendFundsProvider = () => {
             error: t("Insufficient {{symbol}}", { symbol: cost.token.symbol }),
           }
 
-      if (!isSendingEnough && isSubToken(token)) {
+      if (!isSendingEnough && token && isTokenNeedExistentialDeposit(token)) {
         const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
         return {
           isValid: false,
@@ -546,21 +553,21 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !maxAmount) return
 
-    if (isSubToken(token)) set("sendMax", true)
+    if (isTokenDot(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
   }, [maxAmount, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
     if (isAccountOfType(fromAccount, "polkadot-vault")) {
-      if (isSubToken(token)) return "qrSubstrate"
-      else if (isEvmToken(token))
+      if (isTokenDot(token)) return "qrSubstrate"
+      else if (isTokenEth(token))
         return "unknown" // Parity signer / parity vault don't support ethereum accounts
       else throw new Error("Unknown token type")
     }
     if (isAccountInTypes(fromAccount, ["ledger-ethereum", "ledger-polkadot"])) {
-      if (isSubToken(token)) return "hardwareSubstrate"
-      else if (isEvmToken(token)) return "hardwareEthereum"
+      if (isTokenDot(token)) return "hardwareSubstrate"
+      else if (isTokenEth(token)) return "hardwareEthereum"
       else throw new Error("Unknown token type")
     }
     return "normal"
@@ -583,9 +590,9 @@ const useSendFundsProvider = () => {
         options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
       })
 
-      if (token.chain?.id && chain?.genesisHash) {
+      if (token.networkId && isNetworkDot(network)) {
         const { hash } = await api.assetTransfer(
-          token.chain.id,
+          token.networkId,
           token.id,
           from,
           to,
@@ -594,15 +601,15 @@ const useSendFundsProvider = () => {
           method,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
-      } else if (token.evmNetwork?.id) {
+        gotoProgress({ hash, networkIdOrHash: network.genesisHash })
+      } else if (token.networkId) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
         if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
         if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
         const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
         const { hash } = await api.assetTransferEth(
-          token.evmNetwork.id,
+          token.networkId,
           token.id,
           from,
           to,
@@ -610,7 +617,7 @@ const useSendFundsProvider = () => {
           gasSettings,
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
+        gotoProgress({ hash, networkIdOrHash: token.networkId })
       } else throw new Error("Unknown network")
     } catch (err) {
       log.error("Failed to submit tx", { err })
@@ -618,13 +625,13 @@ const useSendFundsProvider = () => {
       setIsProcessing(false)
     }
   }, [
-    chain,
     sendMax,
     maxAmount,
     transfer,
     from,
     to,
     token,
+    network,
     tip?.planck,
     method,
     gotoProgress,
@@ -635,7 +642,7 @@ const useSendFundsProvider = () => {
     async (signature: HexString, payload?: SignerPayloadJSON) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
+        if (subTransaction?.unsigned && token?.id && isNetworkDot(network)) {
           // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
           // otherwise, signature is for the initial payload
           const { hash } = await api.assetTransferApproveSign(
@@ -648,18 +655,13 @@ const useSendFundsProvider = () => {
             },
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
+          gotoProgress({ hash, networkIdOrHash: network.genesisHash })
           return
         }
-        if (
-          evmTransaction?.transaction &&
-          amount &&
-          token?.evmNetwork?.id &&
-          isEthereumAddress(to)
-        ) {
+        if (evmTransaction?.transaction && amount && token?.networkId && isEthereumAddress(to)) {
           const serialized = serializeTransactionRequest(evmTransaction.transaction)
           const { hash } = await api.assetTransferEthHardware(
-            token.evmNetwork.id,
+            token.networkId,
             token.id,
             amount,
             to,
@@ -667,7 +669,7 @@ const useSendFundsProvider = () => {
             signature,
           )
           await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
+          gotoProgress({ hash, networkIdOrHash: token.networkId })
           return
         }
         throw new Error("Unknown transaction")
@@ -676,7 +678,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain],
+    [subTransaction, token, network, evmTransaction, amount, to, gotoProgress],
   )
 
   // reset send error if route or params changes
@@ -698,8 +700,7 @@ const useSendFundsProvider = () => {
     sendMax,
     allowReap,
     onSendMaxClick,
-    chain,
-    evmNetwork,
+    network,
     evmTransaction,
     subTransaction,
     method,

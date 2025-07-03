@@ -38,7 +38,7 @@ export const EthSignMoonVotingVote: FC = () => {
   )
 
   if (
-    !network?.nativeToken?.id ||
+    !network?.nativeTokenId ||
     !icon ||
     conviction === undefined ||
     voteAmount === undefined ||
@@ -49,7 +49,7 @@ export const EthSignMoonVotingVote: FC = () => {
   return (
     <SignContainer networkType="ethereum" title={title} header={<SignViewIconHeader icon={icon} />}>
       <SignViewVotingVote
-        tokenId={network.nativeToken.id}
+        tokenId={network.nativeTokenId}
         conviction={conviction}
         voteAmount={voteAmount}
         pollIndex={pollIndex}

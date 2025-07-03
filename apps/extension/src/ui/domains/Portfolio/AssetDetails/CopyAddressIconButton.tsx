@@ -1,4 +1,4 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon } from "@talismn/icons"
 import { FC, Suspense, useCallback } from "react"
 
@@ -9,7 +9,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 type CopyAddressButtonProps = {
-  networkId: ChainId | EvmNetworkId | null | undefined
+  networkId: NetworkId | null | undefined
 }
 
 const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {

@@ -1,8 +1,6 @@
-import { EvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { Chain } from "viem"
 import * as chains from "viem/chains"
-
-import { addOnfinalityApiKey } from "./util"
 
 // viem chains benefit from multicall config & other viem goodies
 const VIEM_CHAINS = Object.keys(chains).reduce(
@@ -16,32 +14,23 @@ const VIEM_CHAINS = Object.keys(chains).reduce(
 
 const chainsCache = new Map<string, Chain>()
 
-export const clearChainsCache = (evmNetworkId?: string) => {
-  if (evmNetworkId) chainsCache.delete(evmNetworkId)
+export const clearChainsCache = (networkId?: EthNetworkId) => {
+  if (networkId) chainsCache.delete(networkId)
   else chainsCache.clear()
 }
 
-export type ChainOptions = {
-  onFinalityApiKey?: string
-}
+export const getChainFromEvmNetwork = (network: EthNetwork): Chain => {
+  const { symbol, decimals } = network.nativeCurrency
 
-export const getChainFromEvmNetwork = (
-  evmNetwork: EvmNetwork,
-  nativeToken: { symbol: string; decimals: number } | null,
-  options: ChainOptions = {},
-): Chain => {
-  const { symbol, decimals } = nativeToken ?? { symbol: "ETH", decimals: 18 }
+  if (!chainsCache.has(network.id)) {
+    const chainRpcs = network.rpcs ?? []
 
-  if (!chainsCache.has(evmNetwork.id)) {
-    const chainRpcs =
-      evmNetwork.rpcs?.map((rpc) => addOnfinalityApiKey(rpc.url, options.onFinalityApiKey)) ?? []
-
-    const viemChain = VIEM_CHAINS[Number(evmNetwork.id)] ?? {}
+    const viemChain = VIEM_CHAINS[Number(network.id)] ?? {}
 
     const chain: Chain = {
       ...viemChain,
-      id: Number(evmNetwork.id),
-      name: evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`,
+      id: Number(network.id),
+      name: network.name ?? `Ethereum Chain ${network.id}`,
       rpcUrls: {
         public: { http: chainRpcs },
         default: { http: chainRpcs },
@@ -53,8 +42,8 @@ export const getChainFromEvmNetwork = (
       },
     }
 
-    chainsCache.set(evmNetwork.id, chain)
+    chainsCache.set(network.id, chain)
   }
 
-  return chainsCache.get(evmNetwork.id) as Chain
+  return chainsCache.get(network.id) as Chain
 }

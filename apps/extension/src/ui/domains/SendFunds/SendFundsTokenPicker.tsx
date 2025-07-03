@@ -1,10 +1,8 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { isTokenDot, isTokenEth, Token, TokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
 import { useCallback, useMemo } from "react"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { isEvmToken } from "@ui/util/isEvmToken"
-import { isSubToken } from "@ui/util/isSubToken"
 
 import { TokenPicker } from "../Asset/TokenPicker"
 
@@ -37,7 +35,7 @@ export const SendFundsTokenPicker = () => {
 }
 
 const getTokenFilter = (address: string) => {
-  if (isEthereumAddress(address)) return isEvmToken
-  else if (isValidSubstrateAddress(address)) return isSubToken
+  if (isEthereumAddress(address)) return isTokenEth
+  else if (isValidSubstrateAddress(address)) return isTokenDot
   throw new Error("Unknown address type")
 }

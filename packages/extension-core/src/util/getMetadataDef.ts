@@ -1,6 +1,6 @@
 import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { Chain, ChainId } from "@talismn/chaindata-provider"
+import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { DEBUG, encodeMetadataRpc, log } from "extension-shared"
 
@@ -133,9 +133,9 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
   const hash = isHex(chainIdOrGenesisHash) ? chainIdOrGenesisHash : null
 
   const chain = chainId
-    ? await chaindataProvider.chainById(chainId)
+    ? await chaindataProvider.getNetworkById(chainId, "polkadot")
     : hash
-      ? await chaindataProvider.chainByGenesisHash(hash)
+      ? await chaindataProvider.getNetworkByGenesisHash(hash)
       : null
 
   const genesisHash = hash ?? chain?.genesisHash
@@ -146,14 +146,14 @@ export const getChainAndGenesisHashFromIdOrHash = async (chainIdOrGenesisHash: s
 }
 
 export const fetchMetadataDefFromChain = async (
-  chain: Chain,
+  chain: DotNetwork,
   genesisHash: `0x${string}`,
   runtimeSpecVersion?: number,
   blockHash?: string,
 
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
   fetchMethod: (
-    chainId: ChainId,
+    chainId: NetworkId,
     blockHash?: string,
   ) => Promise<`0x${string}`> = getLatestMetadataRpc,
 ): Promise<TalismanMetadataDef | undefined> => {
@@ -176,7 +176,7 @@ export const fetchMetadataDefFromChain = async (
 
   return {
     genesisHash,
-    chain: chain.chainName,
+    chain: chain.name,
     specVersion: runtimeSpecVersion,
     ss58Format: chainProperties.ss58Format,
     tokenSymbol: Array.isArray(chainProperties.tokenSymbol)
@@ -207,10 +207,10 @@ if (DEBUG) {
   }
 }
 
-export const getLatestMetadataRpc = (chainId: ChainId) =>
+export const getLatestMetadataRpc = (chainId: DotNetworkId) =>
   fetchBestMetadata((method, params, isCacheable) =>
-    chainConnector.send(chainId, method, params, isCacheable),
+    chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true }),
   )
 
-export const getLegacyMetadataRpc = (chainId: ChainId) =>
+export const getLegacyMetadataRpc = (chainId: DotNetworkId) =>
   chainConnector.send<HexString>(chainId, "state_getMetadata", [], true)

@@ -10,7 +10,6 @@ import {
   Balances,
   getAccountGenesisHash,
 } from "extension-core"
-import { HexString } from "polkadot-api"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenCloseStatus } from "talisman-ui"
@@ -38,7 +37,7 @@ export const RampsAccountPicker: FC<{
   balancesLoadingStatus: BalanceLoadingStatus
 
   /** Used to format addresses */
-  genesisHash: HexString | null | undefined
+  genesisHash: `0x${string}` | null | undefined
   selected: string | undefined
 
   onSelect: (address: string) => void
@@ -117,7 +116,7 @@ const AccountsList: FC<{
   balancesDisplayMode: RampAccountPickerBalancesDisplayMode
   balancesLoadingStatus: BalanceLoadingStatus
   /** Used to format addresses */
-  genesisHash: HexString | null | undefined
+  genesisHash: `0x${string}` | null | undefined
   selected: string | undefined
   onSelect: (address: string) => void
 }> = ({
@@ -132,7 +131,7 @@ const AccountsList: FC<{
   onSelect,
 }) => {
   const { t } = useTranslation()
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
     count: accounts?.length ?? 0,
@@ -197,7 +196,7 @@ const AccountButtonRow: FC<{
   balancesDisplayMode: RampAccountPickerBalancesDisplayMode
   balancesLoadingStatus: BalanceLoadingStatus
   /** Used to format addresses */
-  genesisHash: HexString | null | undefined
+  genesisHash: `0x${string}` | null | undefined
   isSelected: boolean
   onClick: () => void
 }> = ({

@@ -1,5 +1,5 @@
 import { EvmSignTypedDataData, ScanMessageEvm200Response } from "@blowfishxyz/api-client/v20230605"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { EthSignMessageMethod } from "extension-core"
 import { BLOWFISH_API_KEY, log } from "extension-shared"
 import urlJoin from "url-join"
@@ -21,7 +21,7 @@ const getTypedDataPayload = (msg: string): EvmSignTypedDataData | null => {
 }
 
 type UseEvmMessageRiskAnalysisProps = {
-  evmNetworkId: EvmNetworkId | undefined
+  evmNetworkId: EthNetworkId | undefined
   method: EthSignMessageMethod | undefined
   message: string | undefined
   account: string | undefined
@@ -31,7 +31,7 @@ type UseEvmMessageRiskAnalysisProps = {
 
 // TODO delete once client.scanMessage supports personal_sign
 const fetchPersonalSignMessageScan = async (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: EthNetworkId,
   message: string,
   account: string,
   origin: string,

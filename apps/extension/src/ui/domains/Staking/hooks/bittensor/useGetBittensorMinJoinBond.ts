@@ -1,13 +1,13 @@
 import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "@talismn/balances"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
 
 type GetBittensorMinJoinBond = {
-  chainId: ChainId | null | undefined
+  chainId: DotNetworkId | null | undefined
   stakeType: StakeType
 }
 

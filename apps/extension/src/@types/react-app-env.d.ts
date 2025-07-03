@@ -7,7 +7,6 @@ declare namespace NodeJS {
     readonly NODE_ENV: "development" | "production" | "test"
     readonly PUBLIC_URL: string
     readonly POSTHOG_AUTH_TOKEN?: string
-    readonly API_KEY_ONFINALITY?: string
     readonly SENTRY_DSN?: string
     readonly SENTRY_AUTH_TOKEN?: string
     readonly SIMPLE_LOCALIZE_API_KEY?: string

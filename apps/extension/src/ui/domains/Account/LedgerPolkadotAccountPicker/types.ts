@@ -1,5 +1,5 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { ChainId } from "extension-core"
 
 import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase } from "../DerivedAccountPickerBase"
@@ -7,7 +7,7 @@ import { DerivedAccountBase } from "../DerivedAccountPickerBase"
 export type LedgerPolkadotGenericAccountPickerProps = {
   onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
   app?: SubstrateAppParams | null
-  chainId?: ChainId
+  chainId?: DotNetworkId
 }
 
 export type LedgerPolkadotAccountPickerDef = DerivedAccountBase & LedgerAccountDefSubstrate

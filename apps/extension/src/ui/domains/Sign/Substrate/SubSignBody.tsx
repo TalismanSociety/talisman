@@ -1,9 +1,9 @@
-import { Chain } from "extension-core"
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { AccountPill } from "@ui/domains/Account/AccountPill"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"
@@ -40,7 +40,7 @@ export const SubSignBody: FC = () => {
   )
 }
 
-const ChainLabel = ({ chain }: { chain: Chain | null }) => {
+const ChainLabel = ({ chain }: { chain: DotNetwork | null }) => {
   const { t } = useTranslation()
 
   if (!chain) return null
@@ -56,11 +56,14 @@ const ChainLabel = ({ chain }: { chain: Chain | null }) => {
   )
 }
 
-const ChainName = ({ chain }: { chain: Chain }) => {
+const ChainName = ({ chain }: { chain: DotNetwork }) => {
   return (
     <span className="text-body inline-flex max-w-full items-baseline gap-[0.3em]">
       <span>
-        <ChainLogo id={chain.id} className="inline-block shrink-0 align-middle text-[1.4em]" />
+        <NetworkLogo
+          networkId={chain.id}
+          className="inline-block shrink-0 align-middle text-[1.4em]"
+        />
       </span>
       <span className="truncate">{chain.name}</span>
     </span>

@@ -1,5 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Token } from "@talismn/chaindata-provider"
+import { isTokenEth, Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { Account, Address, getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
@@ -8,8 +8,7 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useAccounts, useChain } from "@ui/state"
-import { isEvmToken } from "@ui/util/isEvmToken"
+import { useAccounts, useNetworkById } from "@ui/state"
 
 import { BondAccountsList } from "./BondAccountsList"
 import { useBondModal } from "./hooks/useBondModal"
@@ -33,7 +32,7 @@ export const BondAccountPicker = ({
   const { close } = useBondModal()
   const [search, setSearch] = useState("")
 
-  const chain = useChain(token?.chain?.id)
+  const chain = useNetworkById(token?.networkId, "polkadot")
 
   const allAccounts = useAccounts("owned")
 
@@ -46,7 +45,7 @@ export const BondAccountPicker = ({
 
           if (isEthereumAddress(account.address))
             return (
-              isEvmToken(token) ||
+              isTokenEth(token) ||
               (chain?.account === "secp256k1" && !isAccountOfType(account, "ledger-polkadot"))
             )
           else return chain && chain?.account !== "secp256k1"

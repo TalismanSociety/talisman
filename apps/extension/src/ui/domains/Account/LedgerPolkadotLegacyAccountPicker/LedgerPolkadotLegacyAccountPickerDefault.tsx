@@ -1,6 +1,6 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil, validateHexString } from "@talismn/util"
-import { Account, getAccountGenesisHash, isChainActive } from "extension-core"
+import { Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useActiveChainsState, useChain } from "@ui/state"
+import { useAccounts, useActiveNetworksState, useNetworkById } from "@ui/state"
 
 import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
@@ -82,10 +82,10 @@ const useLedgerChainAccounts = (
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
-  const chain = useChain(chainId)
-  const activeChains = useActiveChainsState()
+  const chain = useNetworkById(chainId, "polkadot")
+  const activeChains = useActiveNetworksState()
   const withBalances = useMemo(
-    () => !chain?.isTestnet && !!chain && isChainActive(chain, activeChains),
+    () => !chain?.isTestnet && !!chain && isNetworkActive(chain, activeChains),
     [chain, activeChains],
   )
 
@@ -206,7 +206,7 @@ const useLedgerChainAccounts = (
         )
 
         const accountBalances = balances.balances.find(
-          (b) => isAddressEqual(b.address, acc.address) && b.chainId === chain?.id,
+          (b) => isAddressEqual(b.address, acc.address) && b.networkId === chain?.id,
         )
 
         const isBalanceLoading =

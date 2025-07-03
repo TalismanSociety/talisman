@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
-import { useChain, useChains, useToken, useTokens } from "@ui/state"
+import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -67,7 +67,7 @@ const decodeMultilocation = (multilocation?: {
 export const EthSignMoonXTokensTransfer: FC = () => {
   const { t } = useTranslation()
   const { network, decodedTx, account } = useEthSignKnownTransactionRequest()
-  const substrateChain = useChain(network?.substrateChain?.id)
+  const substrateChain = useNetworkById(network?.substrateChainId, "polkadot")
   const tokens = useTokens()
 
   const [destination, amount, currencyAddress] = useMemo(
@@ -80,20 +80,20 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
-  const nativeToken = useToken(network?.nativeToken?.id)
+  const nativeToken = useToken(network?.nativeTokenId)
 
-  const { decimals, symbol, coingeckoId, image } = useMemo(() => {
+  const { decimals, symbol, coingeckoId, logo } = useMemo(() => {
     // native token on moonbeam is available as an ERC20 on this precompiled contract
     if (currencyAddress === "0x0000000000000000000000000000000000000802") {
       if (!nativeToken) return {}
       const { decimals, symbol, coingeckoId, logo } = nativeToken
-      return { decimals, symbol, coingeckoId, image: logo }
+      return { decimals, symbol, coingeckoId, logo }
     }
 
     const token = tokens.find(
       (t) =>
         t.type === "evm-erc20" &&
-        t.evmNetwork?.id === network?.id &&
+        t.networkId === network?.id &&
         t.contractAddress === currencyAddress,
     )
 
@@ -103,28 +103,28 @@ export const EthSignMoonXTokensTransfer: FC = () => {
     }
 
     if (erc20.token?.type === "evm-erc20") {
-      const { decimals, symbol, coingeckoId, image } = erc20.token || {}
-      return { decimals, symbol, coingeckoId, image }
+      const { decimals, symbol, coingeckoId, logo } = erc20.token || {}
+      return { decimals, symbol, coingeckoId, logo }
     }
 
-    const { decimals, symbol, image } = erc20.token || {}
-    return { decimals, symbol, image }
+    const { decimals, symbol, logo } = erc20.token || {}
+    return { decimals, symbol, logo }
   }, [currencyAddress, erc20.token, nativeToken, network?.id, tokens])
 
   const target = useMemo(() => decodeMultilocation(destination), [destination])
 
-  const chains = useChains()
-  const targetChain = useMemo(
-    () =>
-      target
-        ? target.paraId !== undefined // if no paraId, target is the relay chain
-          ? chains.find(
-              (c) => c.relay?.id === substrateChain?.relay?.id && c.paraId === target.paraId,
-            )
-          : chains.find((c) => c.id === substrateChain?.relay?.id)
-        : undefined,
-    [chains, substrateChain?.relay?.id, target],
-  )
+  const chains = useNetworks({ platform: "polkadot" })
+  const targetChain = useMemo(() => {
+    if (!target || !substrateChain) return undefined
+
+    // assume paraId is on the same relay chain as substrateChain
+    if (substrateChain.topology.type !== "parachain") return undefined
+    const relayId = substrateChain.topology.relayId
+
+    return target.paraId
+      ? chains.find((c) => c.topology.type === "parachain" && c.topology.paraId === target.paraId)
+      : chains.find((c) => c.id === relayId)
+  }, [chains, substrateChain, target])
 
   const targetAddress = useMemo(
     () =>
@@ -159,7 +159,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
         value={amount}
         tokenDecimals={decimals}
         tokenSymbol={symbol}
-        tokenLogo={image}
+        tokenLogo={logo}
         tokenRates={tokenRates}
         fromNetwork={network.id}
         fromAddress={account.address}

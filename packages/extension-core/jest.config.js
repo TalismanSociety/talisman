@@ -3,12 +3,11 @@
 const { defaults } = require("jest-config")
 
 module.exports = {
-  transformIgnorePatterns: [
-    "/node_modules/.pnpm/(?!@polkadot|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|@talismn|scale-ts|@rx-state)",
-  ],
+  transformIgnorePatterns: [],
   transform: {
-    "^.+\\.(t|j)s$": ["@swc/jest"],
+    "^.+\\.(t|j)sx?$": ["@swc/jest"],
   },
+  extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
   moduleNameMapper: {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     "uuid": require.resolve("uuid"),

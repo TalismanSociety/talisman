@@ -1,3 +1,4 @@
+import { NetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowRightIcon,
   LoaderIcon,
@@ -10,9 +11,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   BalanceFormatter,
-  ChainId,
   db,
-  EvmNetworkId,
   EvmWalletTransaction,
   SubWalletTransaction,
   TransactionStatus,
@@ -43,17 +42,16 @@ import {
 import urlJoin from "url-join"
 
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { NetworkLogo } from "@ui/domains/Ethereum/NetworkLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
-  useChainByGenesisHash,
-  useEvmNetwork,
+  useNetworkByGenesisHash,
+  useNetworkById,
   useSelectedCurrency,
   useToken,
   useTokenRates,
@@ -114,7 +112,7 @@ const TransactionRows: FC<{
   onContextMenuOpen: (hash: string) => void
   onContextMenuClose: (hash: string) => void
 }> = ({ transactions, activeTxHash, onContextMenuOpen, onContextMenuClose }) => {
-  const refContainer = useScrollContainer() // used/defined in popup only
+  const { ref: refContainer } = useScrollContainer() // used/defined in popup only
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
@@ -201,15 +199,15 @@ const TxIconContainer = ({
 }: {
   className?: string
   tooltip?: string | null
-  networkId?: EvmNetworkId | ChainId
+  networkId?: NetworkId
   children?: ReactNode
 }) => (
   <Tooltip>
     <TooltipTrigger className={classNames("relative h-16 w-16 shrink-0 cursor-default", className)}>
       {children}
       {!!networkId && (
-        <ChainLogo
-          id={networkId}
+        <NetworkLogo
+          networkId={networkId}
           className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
         />
       )}
@@ -295,7 +293,7 @@ const EvmTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
   const swapHref = useMemo(() => {
     if (!txInfo) return
@@ -313,8 +311,11 @@ const EvmTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
-    [evmNetwork?.explorerUrl, tx.hash],
+    () =>
+      evmNetwork?.blockExplorerUrls[0]
+        ? urlJoin(evmNetwork.blockExplorerUrls[0], "tx", tx.hash)
+        : null,
+    [evmNetwork?.blockExplorerUrls, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -570,7 +571,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
   const txInfo = tx.txInfo
   const { isTransfer, value, tokenId } = useMemo(() => {
@@ -585,11 +586,11 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       : {
           isTransfer,
           value: tx.unsigned.value,
-          tokenId: evmNetwork?.nativeToken?.id,
+          tokenId: evmNetwork?.nativeTokenId,
           to: tx.unsigned.to,
         }
   }, [
-    evmNetwork?.nativeToken?.id,
+    evmNetwork?.nativeTokenId,
     tx.to,
     tx.tokenId,
     tx.unsigned.to,
@@ -636,13 +637,10 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           </TxIconContainer>
         ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer
-              className="-ml-4"
-              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
-            >
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
@@ -655,7 +653,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           </TxIconContainer>
         ) : (
           <TxIconContainer tooltip={evmNetwork?.name}>
-            <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
+            <NetworkLogo networkId={evmNetwork?.id} className="!h-16 !w-16" />
           </TxIconContainer>
         )
       }
@@ -764,7 +762,7 @@ const SubTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const chain = useChainByGenesisHash(tx.genesisHash)
+  const chain = useNetworkByGenesisHash(tx.genesisHash)
 
   const swapHref = useMemo(() => {
     if (!txInfo) return
@@ -782,8 +780,8 @@ const SubTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : null),
-    [chain?.subscanUrl, tx.hash],
+    () => (chain?.blockExplorerUrls[0] ? urlJoin(chain.blockExplorerUrls[0], "tx", tx.hash) : null),
+    [chain?.blockExplorerUrls, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -863,7 +861,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   onContextMenuClose,
 }) => {
   const { genesisHash } = tx.unsigned
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const token = useToken(tx.tokenId)
   const tokenRates = useTokenRates(tx.tokenId)
   const currency = useSelectedCurrency()
@@ -912,13 +910,10 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           </TxIconContainer>
         ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.chain?.id ?? fromToken?.evmNetwork?.id}>
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer
-              className="-ml-4"
-              networkId={toToken?.chain?.id ?? toToken?.evmNetwork?.id}
-            >
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
@@ -928,7 +923,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
           </TxIconContainer>
         ) : (
           <TxIconContainer tooltip={chain?.name}>
-            <ChainLogo id={chain?.id} className="!h-16 !w-16" />
+            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
           </TxIconContainer>
         )
       }

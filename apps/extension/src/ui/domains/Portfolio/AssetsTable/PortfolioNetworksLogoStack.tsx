@@ -1,9 +1,9 @@
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useMemo } from "react"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 
 import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
@@ -18,7 +18,7 @@ export const PortfolioNetworksLogoStackItem = ({ network }: { network?: Portfoli
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
-        <ChainLogo key={network.id} id={network.id} />
+        <NetworkLogo key={network.id} networkId={network.id} />
       </WithTooltip>
     </div>
   )
@@ -50,7 +50,7 @@ export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: Portfol
   )
 }
 
-type Props = { networkIds?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
+type Props = { networkIds?: NetworkId[]; className?: string; max?: number }
 
 export const PortfolioNetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
   const { networks } = usePortfolioNetworks(networkIds)

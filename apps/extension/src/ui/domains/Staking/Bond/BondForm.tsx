@@ -305,7 +305,7 @@ const StakeAprBase: FC<{
 
 const NomPoolStakeApr = () => {
   const { token } = useBondWizard()
-  const { data, isLoading, isError, error } = useStakingAPR(token?.chain?.id)
+  const { data, isLoading, isError, error } = useStakingAPR(token?.networkId)
 
   return (
     <StakeAprBase apr={Number(data ?? 0)} isLoading={isLoading} isError={isError} error={error} />
@@ -319,7 +319,7 @@ const AnalogTimechainStakeApr = () => {
 const StakeApr = () => {
   const { token } = useBondWizard()
 
-  switch (token?.chain?.id) {
+  switch (token?.networkId) {
     case "analog-timechain":
       return <AnalogTimechainStakeApr />
     default:
@@ -336,7 +336,7 @@ const WithAprDocsLink = ({ children }: { children: ReactNode }) => {
   const { token } = useBondWizard()
 
   // return the APR
-  if (token?.chain?.id !== "analog-timechain") return children
+  if (token?.networkId !== "analog-timechain") return children
 
   // return the APR wrapped with a tooltip
   return (
@@ -404,7 +404,7 @@ export const BondForm = () => {
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Pool")}</div>
           <div className="text-body truncate">
-            <NominationPoolName poolId={poolId} chainId={token?.chain?.id} />
+            <NominationPoolName poolId={poolId} chainId={token?.networkId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">
@@ -426,7 +426,7 @@ export const BondForm = () => {
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
           <div className="text-body overflow-hidden">
-            <StakingUnbondingPeriod chainId={token?.chain?.id} />
+            <StakingUnbondingPeriod chainId={token?.networkId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8">

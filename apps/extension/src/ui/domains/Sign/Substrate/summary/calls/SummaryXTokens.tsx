@@ -2,7 +2,7 @@ import { AcalaCalls, HydrationCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
 import { useMemo } from "react"
 
-import { useChain, useChains, useTokens } from "@ui/state"
+import { useNetworkById, useNetworks, useTokens } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromXcmLocation } from "../../util/getAddressFromXcmLocation"
@@ -24,9 +24,9 @@ const Transfer: DecodedCallSummaryComponent<TransferArgs> = ({
   payload,
   mode,
 }) => {
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokens = useTokens()
-  const chains = useChains()
+  const chains = useNetworks({ platform: "polkadot" })
 
   const props = useMemo<SummaryCrossChainTransferProps>(() => {
     if (!chain) throw new Error("chain not found")

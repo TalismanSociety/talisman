@@ -1,13 +1,12 @@
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { getScaleApi, ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { ChainId } from "extension-core"
 import { getMetadataRpcFromDef } from "extension-shared"
-import { useMemo } from "react"
 
 import { api } from "@ui/api"
-import { useChain, useChainByGenesisHash, useToken } from "@ui/state"
+import { useDotNetwork, useToken } from "@ui/state"
 
 /**
  * useScaleApi instantiates a ScaleApi object for a given chainIdOrHash, specVersion, and blockHash.
@@ -15,21 +14,18 @@ import { useChain, useChainByGenesisHash, useToken } from "@ui/state"
  * It is recommended to use this hook only when necessary and not in a loop where it may be called many times for many chains.
  */
 export const useScaleApi = (
-  chainIdOrHash: ChainId | HexString | null | undefined,
+  chainIdOrHash: DotNetworkId | HexString | null | undefined,
   specVersion?: number,
-  blockHash?: HexString,
 ) => {
-  const chainById = useChain(chainIdOrHash)
-  const chainByGenesisHash = useChainByGenesisHash(chainIdOrHash)
-  const chain = useMemo(() => chainById || chainByGenesisHash, [chainById, chainByGenesisHash])
-  const token = useToken(chain?.nativeToken?.id)
+  const chain = useDotNetwork(chainIdOrHash)
+  const token = useToken(chain?.nativeTokenId)
 
   return useQuery({
-    queryKey: ["useScaleApi", chain, specVersion, blockHash, token],
+    queryKey: ["useScaleApi", chain, specVersion, token],
     queryFn: async () => {
       if (!chain?.genesisHash || !token) return null
 
-      const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion, blockHash)
+      const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion)
       assert(metadataDef?.metadataRpc, `Metadata unavailable for chain ${chain.id}`)
 
       const metadataRpc = getMetadataRpcFromDef(metadataDef)

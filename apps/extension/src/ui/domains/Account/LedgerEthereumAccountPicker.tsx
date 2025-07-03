@@ -9,7 +9,7 @@ import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/Account
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useEvmNetworks } from "@ui/state"
+import { useAccounts, useNetworks } from "@ui/state"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
@@ -42,7 +42,11 @@ const useLedgerEthereumAccounts = (
     refAddressCache.current = {} // reset if app changes
   }, [])
 
-  const evmNetworks = useEvmNetworks({ activeOnly: true, includeTestnets: false })
+  const evmNetworks = useNetworks({
+    platform: "ethereum",
+    activeOnly: true,
+    includeTestnets: false,
+  })
   const withBalances = useMemo(() => !!evmNetworks.length, [evmNetworks])
 
   // keep page index as ref to allow for cancelling current page load when changing page

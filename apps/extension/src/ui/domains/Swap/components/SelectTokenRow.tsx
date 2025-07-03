@@ -1,5 +1,5 @@
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, CopyIcon, ExternalLinkIcon } from "@talismn/icons"
+import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useMemo } from "react"
@@ -97,8 +97,8 @@ export const SelectTokenRow: React.FC<Props> = ({
                 />
               ) : null}
               <img
-                key={asset.image ?? githubUnknownTokenLogoUrl}
-                src={asset.image ?? githubUnknownTokenLogoUrl}
+                key={asset.image ?? UNKNOWN_TOKEN_URL}
+                src={asset.image ?? UNKNOWN_TOKEN_URL}
                 alt=""
                 className="h-[24px] w-[24px] min-w-[24px] rounded-full sm:h-[40px] sm:w-[40px] sm:min-w-[40px]"
               />

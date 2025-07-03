@@ -50,7 +50,7 @@
     "@talismn/siws": "^0.0.19",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
-    "@tanstack/react-form": "^1.4.0",
+    "@tanstack/react-form": "^1.12.3",
     "@tanstack/react-query": "5.59.16",
     "@tanstack/react-virtual": "^3.11.1",
     "@zondax/ledger-substrate": "1.1.2",
@@ -105,7 +105,7 @@
     "url-join": "^5.0.0",
     "viem": "^2.27.3",
     "yup": "1.4.0",
-    "zod": "^3.24.2"
+    "zod": "^3.25.62"
   },
   "devDependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -209,7 +209,7 @@
     "build:extension:canary:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
     "build:extension:prod:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.prod.js --env build=production",
-    "test": "PORT_PREFIX=talisman jest --maxWorkers=50% --collectCoverage",
+    "test": "PORT_PREFIX=talisman jest --maxWorkers=50%",
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",

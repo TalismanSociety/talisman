@@ -1,17 +1,17 @@
+import { NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ChainId, EvmNetworkId } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useChain, useEvmNetwork } from "@ui/state"
+import { useAnyNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
 
 import { Address } from "./Address"
 
 type NetworkAddressProps = {
   address: string
-  networkId: ChainId | EvmNetworkId
+  networkId: NetworkId
   className?: string
   mode?: "copy" | "link"
   noShorten?: boolean
@@ -26,13 +26,12 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
   noShorten,
   noOnChainId,
 }) => {
-  const evmNetwork = useEvmNetwork(networkId)
-  const chain = useChain(networkId)
+  const network = useAnyNetwork(networkId)
 
   const blockExplorerUrl = useMemo(() => {
-    const baseUrl = evmNetwork?.explorerUrl ?? chain?.subscanUrl ?? null
+    const baseUrl = network?.blockExplorerUrls?.[0] || null
     return baseUrl ? urlJoin(baseUrl, "address", address) : null
-  }, [address, chain?.subscanUrl, evmNetwork?.explorerUrl])
+  }, [address, network?.blockExplorerUrls])
 
   const effectiveMode = useMemo(() => {
     // link must fallback to copy if no blockExplorerUrl

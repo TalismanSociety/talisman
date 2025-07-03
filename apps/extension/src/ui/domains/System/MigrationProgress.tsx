@@ -62,6 +62,20 @@ export const MigrationProgress = () => {
                 {t("Continue anyway")}
               </Button>
             </div>
+          ) : migration.acknowledgeRequest ? (
+            <div className="flex grow flex-col">
+              <p className="text-body-secondary mt-4 grow text-center text-base">
+                {migration.acknowledgeRequest}
+              </p>
+              <Button
+                className="mt-8"
+                onClick={() => {
+                  appStore.set({ currentMigration: { ...migration, acknowledged: true } })
+                }}
+              >
+                {t("Continue")}
+              </Button>
+            </div>
           ) : (
             <p className="text-body-secondary mt-4 text-center text-base">
               <span>{t("Progress:")}</span>{" "}

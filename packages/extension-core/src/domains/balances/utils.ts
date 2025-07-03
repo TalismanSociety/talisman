@@ -1,4 +1,4 @@
-import { isAccountAddressEthereum, isAccountNotContact, isAccountOfType } from "@talismn/keyring"
+import { isAccountNotContact } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
@@ -6,7 +6,7 @@ import { combineLatest, throttleTime } from "rxjs"
 
 import { db as extensionDb } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { isAccountCompatibleWithChain } from "../accounts/helpers"
+import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
 import { balancePool } from "./pool"
@@ -23,13 +23,13 @@ export const trackBalanceTotals = async () => {
   combineLatest([
     settingsStore.observable,
     keyringStore.accounts$,
-    chaindataProvider.tokensByIdObservable,
-    chaindataProvider.chainsByIdObservable,
+    chaindataProvider.getTokensMapById$(),
+    chaindataProvider.getNetworksMapById$(),
     balancePool.observable,
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
-    .subscribe(async ([settings, accounts, tokens, chainsById, balances, allTokenRates]) => {
+    .subscribe(async ([settings, accounts, tokens, networks, balances, allTokenRates]) => {
       try {
         const mapAccounts = Object.fromEntries(
           accounts.filter(isAccountNotContact).map((account) => [account.address, account]),
@@ -41,17 +41,19 @@ export const trackBalanceTotals = async () => {
 
         const balancesByAddress = Object.values(balances).reduce(
           (acc, balance) => {
-            const { address } = balance
+            const { address, networkId } = balance
             const account = mapAccounts[address]
             if (!account) return acc
 
+            // ignore if token rate isnt available yet
+            if (!tokenRates[balance.tokenId]) return acc
+
             if (!acc[address]) acc[address] = []
-            if (isAccountAddressEthereum(account)) acc[address].push(balance)
-            else {
-              const chain = "chainId" in balance && balance.chainId && chainsById[balance.chainId]
-              if (!chain || isAccountOfType(account, "contact")) return acc
-              if (isAccountCompatibleWithChain(chain, account)) acc[address].push(balance)
-            }
+
+            const network = networks[networkId]
+            if (network && isAccountCompatibleWithNetwork(network, account))
+              acc[address].push(balance)
+
             return acc
           },
           {} as Record<string, BalanceJson[]>,
@@ -62,6 +64,7 @@ export const trackBalanceTotals = async () => {
             const balances = new Balances(balancesByAddress[address] ?? [], {
               tokens,
               tokenRates,
+              networks,
             })
             return settings.selectableCurrencies.map((currency) => {
               const total = balances.sum.fiat(currency).total

@@ -1,14 +1,11 @@
 // address types from https://wiki.polkadot.network/docs/learn-accounts
 
-import { Chain } from "@talismn/chaindata-provider"
+import { DotNetwork } from "@talismn/chaindata-provider"
 
 import { AccountAddressType } from "./getAddressType"
 
-export const getChainAddressType = (chain: Chain): AccountAddressType => {
-  switch (chain?.account?.toLowerCase()) {
-    case "sr25519":
-    case "ed25519":
-    case "sr25519*":
+export const getChainAddressType = (chain: DotNetwork): AccountAddressType => {
+  switch (chain.account) {
     case "*25519":
       return "ss58"
     case "secp256k1":

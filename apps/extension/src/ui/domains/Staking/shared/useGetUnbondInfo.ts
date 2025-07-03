@@ -1,5 +1,5 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { ScaleApi } from "@talismn/sapi"
-import { ChainId } from "extension-core"
 
 import { useGetNomPoolPlanksToUnbond } from "../hooks/nomPools/useGetNomPoolPlanksToUnbond"
 import { useGetNomPoolUnbondPayload } from "../hooks/nomPools/useGetNomPoolUnbondPayload"
@@ -8,7 +8,7 @@ import { useGetFeeEstimate } from "./useGetFeeEstimate"
 
 type GetUnbondInfo = {
   sapi: ScaleApi | undefined | null
-  chainId: ChainId | undefined
+  chainId: DotNetworkId | undefined
   address: string | undefined
 }
 

@@ -1,15 +1,16 @@
+import { EthNetworkId } from "@talismn/chaindata-provider"
+
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
-import { EvmNetworkId } from "./types"
 
 const dicTransactionCount = new Map<string, number>()
 
-const getKey = (address: string, evmNetworkId: EvmNetworkId) =>
+const getKey = (address: string, evmNetworkId: EthNetworkId) =>
   `${address}-${evmNetworkId}`.toLowerCase()
 
 /*
   To be called to set a valid nonce for a transaction
 */
-export const getTransactionCount = async (address: `0x${string}`, evmNetworkId: EvmNetworkId) => {
+export const getTransactionCount = async (address: `0x${string}`, evmNetworkId: EthNetworkId) => {
   const key = getKey(address, evmNetworkId)
 
   const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
@@ -32,7 +33,7 @@ export const getTransactionCount = async (address: `0x${string}`, evmNetworkId: 
 /*
   To be called each time a transaction is submitted to blockchain
 */
-export const incrementTransactionCount = (address: string, evmNetworkId: EvmNetworkId) => {
+export const incrementTransactionCount = (address: string, evmNetworkId: EthNetworkId) => {
   const key = getKey(address, evmNetworkId)
 
   const count = dicTransactionCount.get(key)
@@ -42,7 +43,7 @@ export const incrementTransactionCount = (address: string, evmNetworkId: EvmNetw
   dicTransactionCount.set(key, count + 1)
 }
 
-export const resetTransactionCount = (address: string, evmNetworkId: EvmNetworkId) => {
+export const resetTransactionCount = (address: string, evmNetworkId: EthNetworkId) => {
   const key = getKey(address, evmNetworkId)
   dicTransactionCount.delete(key)
 }

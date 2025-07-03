@@ -1,8 +1,9 @@
+import { DotNetwork } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames, encodeAnyAddress } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, Chain, isAccountLedgerPolkadotLegacy, LedgerPolkadotCurve } from "extension-core"
+import { Account, isAccountLedgerPolkadotLegacy, LedgerPolkadotCurve } from "extension-core"
 import { log } from "extension-shared"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,7 +13,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateAppByChain } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChain } from "@ui/state"
+import { useAccounts, useNetworkById } from "@ui/state"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"
@@ -25,7 +26,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
   LedgerPolkadotLegacyAccountPickerProps
 > = ({ onChange, chainId }) => {
   const { t } = useTranslation()
-  const chain = useChain(chainId)
+  const chain = useNetworkById(chainId, "polkadot")
   if (!chain) throw new Error("Chain not found")
 
   const curve: LedgerPolkadotCurve = useMemo(
@@ -229,7 +230,7 @@ type CustomAccountDetails = {
 
 const getNextAccountDetails = (
   accounts: Account[],
-  chain: Chain,
+  chain: DotNetwork,
   app: SubstrateAppParams,
 ): CustomAccountDetails => {
   let nextAccountIndex = 0

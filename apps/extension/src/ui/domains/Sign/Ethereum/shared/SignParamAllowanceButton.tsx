@@ -1,9 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Address } from "@talismn/balances"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { abiErc20, BalanceFormatter, EvmAddress, EvmNetworkId } from "extension-core"
+import { abiErc20, BalanceFormatter, EvmAddress } from "extension-core"
 import { log } from "extension-shared"
 import { FC, FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -40,7 +41,7 @@ const INPUT_PROPS: FormFieldInputContainerProps = {
 }
 
 type Erc20TokenInfo = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   contractAddress: EvmAddress
   decimals: number
   symbol: string

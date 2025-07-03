@@ -1,11 +1,8 @@
 import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import {
-  BalanceSubscriptionResponse,
-  isAccountAddressEthereum,
-  isAccountCompatibleWithChain,
-} from "extension-core"
+import { BalanceSubscriptionResponse } from "extension-core"
+import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import {
   combineLatest,
   distinctUntilChanged,
@@ -18,7 +15,7 @@ import {
 import { api } from "@ui/api"
 
 import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
-import { getChainsMap$, getEvmNetworksMap$, getTokensMap$ } from "./chaindata"
+import { getNetworksMapById$, getTokensMap$ } from "./chaindata"
 import { tokenRatesMap$ } from "./tokenRates"
 import { debugObservable } from "./util/debugObservable"
 
@@ -27,8 +24,7 @@ const BALANCES_CHAINDATA_QUERY = { includeTestnets: true, activeOnly: true }
 
 export const [useBalancesHydrate, balancesHydrate$] = bind(
   combineLatest({
-    chains: getChainsMap$(BALANCES_CHAINDATA_QUERY),
-    evmNetworks: getEvmNetworksMap$(BALANCES_CHAINDATA_QUERY),
+    networks: getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
     tokens: getTokensMap$(BALANCES_CHAINDATA_QUERY),
     tokenRates: tokenRatesMap$,
   }).pipe(debugObservable("balancesHydrate$")),
@@ -56,24 +52,20 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
 
 const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
-  getChainsMap$(BALANCES_CHAINDATA_QUERY),
+  getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
   accountsMap$,
   rawBalances$.pipe(map((balances) => balances.data)),
   balancesHydrate$,
 ]).pipe(
-  map(([tokens, chains, accounts, balances, hydrate]) => {
+  map(([tokens, networks, accounts, balances, hydrate]) => {
     const validBalances = balances.filter((b) => {
-      // ensure there is a matching token
-      if (!tokens[b.tokenId]) return false
-
+      const token = tokens[b.tokenId]
+      const network = networks[b.networkId]
       const account = accounts[b.address]
-      if (!account || !account.type) return false
 
-      // for chain specific accounts, exclude balances from other chains
-      if ("chainId" in b && b.chainId && chains[b.chainId])
-        return isAccountCompatibleWithChain(chains[b.chainId], account)
-      if ("evmNetworkId" in b && b.evmNetworkId) return isAccountAddressEthereum(account)
-      return false
+      if (!token || !network || !account) return false
+
+      return isAccountCompatibleWithNetwork(network, account)
     })
     return new Balances(validBalances, hydrate)
   }),

@@ -1,9 +1,9 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { NFTS_API_BASE_PATH, NFTS_API_KEY } from "extension-shared"
 
 import { FetchNftsRequestBody, FetchNftsResponse } from "./types"
 
-export const fetchNfts = async (addresses: string[], evmNetworkIds: EvmNetworkId[]) => {
+export const fetchNfts = async (addresses: string[], evmNetworkIds: EthNetworkId[]) => {
   const body: FetchNftsRequestBody = { addresses, evmNetworkIds }
 
   const headers: HeadersInit = { "Content-Type": "application/json" }

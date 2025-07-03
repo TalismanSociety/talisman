@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
 
@@ -171,7 +172,7 @@ const TokenInput = () => {
       />
       <div className="text-body flex shrink-0 items-center gap-2 text-base font-normal">
         {isSubnetUnbond ? (
-          <TokenLogo className="text-lg" url={DTAO_LOGO} />
+          <AssetLogo className="text-lg" url={DTAO_LOGO} />
         ) : (
           <TokenLogo className="text-lg" tokenId={token?.id} />
         )}

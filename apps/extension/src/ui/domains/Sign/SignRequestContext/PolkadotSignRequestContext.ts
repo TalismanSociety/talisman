@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useBalancesHydrate, useChainByGenesisHash } from "@ui/state"
+import { useBalancesHydrate, useNetworkByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 
 import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
@@ -21,7 +21,7 @@ const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
   extrinsic: GenericExtrinsic | null | undefined,
 ) => {
-  const chain = useChainByGenesisHash(
+  const chain = useNetworkByGenesisHash(
     payload && isJsonPayload(payload) ? payload.genesisHash : undefined,
   )
 
@@ -158,7 +158,7 @@ const usePolkadotSigningRequestProvider = ({
     cancelSignFn: api.cancelSignRequest,
   })
 
-  const chain = useChainByGenesisHash(jsonPayload?.genesisHash)
+  const chain = useNetworkByGenesisHash(jsonPayload?.genesisHash)
 
   const { data: fee, isLoading: isLoadingFee, error: errorFee } = usePartialFee(payload, extrinsic)
 

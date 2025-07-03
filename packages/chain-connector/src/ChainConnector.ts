@@ -1,5 +1,5 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { ChainId, IChaindataChainProvider } from "@talismn/chaindata-provider"
+import { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
 
@@ -78,22 +78,22 @@ type SocketUserId = number
  * handle the websocket connections.
  */
 export class ChainConnector {
-  #chaindataChainProvider: IChaindataChainProvider
+  #chaindataChainProvider: IChaindataNetworkProvider
   #connectionMetaDb?: TalismanConnectionMetaDatabase
 
-  #socketConnections: Record<ChainId, Websocket> = {}
-  #socketKeepAliveIntervals: Record<ChainId, ReturnType<typeof setInterval>> = {}
-  #socketUsers: Record<ChainId, SocketUserId[]> = {}
+  #socketConnections: Record<DotNetworkId, Websocket> = {}
+  #socketKeepAliveIntervals: Record<DotNetworkId, ReturnType<typeof setInterval>> = {}
+  #socketUsers: Record<DotNetworkId, SocketUserId[]> = {}
 
   constructor(
-    chaindataChainProvider: IChaindataChainProvider,
+    chaindataChainProvider: IChaindataNetworkProvider,
     connectionMetaDb?: TalismanConnectionMetaDatabase,
   ) {
     this.#chaindataChainProvider = chaindataChainProvider
     this.#connectionMetaDb = connectionMetaDb
 
     if (this.#connectionMetaDb) {
-      this.#chaindataChainProvider.chainIds().then((chainIds) => {
+      this.#chaindataChainProvider.getNetworkIds("polkadot").then((chainIds) => {
         // tidy up connectionMeta for chains which no longer exist
         this.#connectionMetaDb?.chainPriorityRpcs.where("id").noneOf(chainIds).delete()
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
@@ -107,7 +107,7 @@ export class ChainConnector {
    *   const provider = chainConnector.asProvider('polkadot')
    *   const api = new ApiPromise({ provider })
    */
-  asProvider(chainId: ChainId): ProviderInterface {
+  asProvider(chainId: DotNetworkId): ProviderInterface {
     const unsubHandler = new Map<string, (unsubscribeMethod: string) => void>()
 
     const providerFacade: ProviderInterface = {
@@ -152,7 +152,7 @@ export class ChainConnector {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async send<T = any>(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     method: string,
     params: unknown[],
     isCacheable?: boolean | undefined,
@@ -172,7 +172,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.chainById(chainId)
+        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -248,7 +248,7 @@ export class ChainConnector {
   }
 
   async subscribe(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],
@@ -258,7 +258,7 @@ export class ChainConnector {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
-        const chain = await this.#chaindataChainProvider.chainById(chainId)
+        const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
         if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
         const { genesisHash } = chain
@@ -407,7 +407,7 @@ export class ChainConnector {
    * Kills current websocket if any
    * Useful after changing rpc order to make sure it's applied for futher requests
    */
-  async reset(chainId: ChainId) {
+  async reset(chainId: DotNetworkId) {
     log.info("ChainConnector reset", chainId)
     const ws = this.#socketConnections[chainId]
     if (!ws) return
@@ -443,7 +443,7 @@ export class ChainConnector {
    *
    * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
    */
-  private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, Websocket]> {
+  private async connectChainSocket(chainId: DotNetworkId): Promise<[SocketUserId, Websocket]> {
     const rpcs = await this.getEndpoints(chainId)
     const socketUserId = this.addSocketUser(chainId)
 
@@ -514,7 +514,10 @@ export class ChainConnector {
     return [socketUserId, this.#socketConnections[chainId]]
   }
 
-  private async disconnectChainSocket(chainId: ChainId, socketUserId: SocketUserId): Promise<void> {
+  private async disconnectChainSocket(
+    chainId: DotNetworkId,
+    socketUserId: SocketUserId,
+  ): Promise<void> {
     this.removeSocketUser(chainId, socketUserId)
 
     if (this.#socketUsers[chainId].length > 0) return
@@ -532,13 +535,13 @@ export class ChainConnector {
     delete this.#socketKeepAliveIntervals[chainId]
   }
 
-  private addSocketUser(chainId: ChainId): SocketUserId {
+  private addSocketUser(chainId: DotNetworkId): SocketUserId {
     if (!Array.isArray(this.#socketUsers[chainId])) this.#socketUsers[chainId] = []
     const socketUserId: SocketUserId = this.getExclusiveRandomId(this.#socketUsers[chainId])
     this.#socketUsers[chainId].push(socketUserId)
     return socketUserId
   }
-  private removeSocketUser(chainId: ChainId, socketUserId: SocketUserId) {
+  private removeSocketUser(chainId: DotNetworkId, socketUserId: SocketUserId) {
     const userIndex = this.#socketUsers[chainId].indexOf(socketUserId)
     if (userIndex === -1)
       throw new Error(
@@ -603,7 +606,7 @@ export class ChainConnector {
     }
   }
 
-  private async updateRpcPriority(chainId: ChainId, rpc: string, priority: "first" | "last") {
+  private async updateRpcPriority(chainId: DotNetworkId, rpc: string, priority: "first" | "last") {
     if (!this.#connectionMetaDb) return
 
     const rpcs = await this.getEndpoints(chainId)
@@ -620,11 +623,11 @@ export class ChainConnector {
     }
   }
 
-  private async getEndpoints(chainId: ChainId): Promise<string[]> {
-    const chain = await this.#chaindataChainProvider.chainById(chainId)
+  private async getEndpoints(chainId: DotNetworkId): Promise<string[]> {
+    const chain = await this.#chaindataChainProvider.getNetworkById(chainId, "polkadot")
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
-    let rpcs = (chain.rpcs ?? []).map(({ url }) => url)
+    let rpcs = chain.rpcs.concat() // clone to avoid mutating the original array
     const priorityRpcs = this.#connectionMetaDb
       ? await this.#connectionMetaDb.chainPriorityRpcs.get(chainId)
       : undefined

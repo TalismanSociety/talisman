@@ -3,8 +3,8 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
-import { useChainByGenesisHash } from "@ui/state"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
@@ -22,7 +22,7 @@ export const RecipientWarningDrawer = ({
   const { tokenId } = useSendFundsWizard()
   const { recipientWarning } = useSendFunds()
   const genesisHash = useGenesisHashFromTokenId(tokenId)
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
@@ -38,7 +38,7 @@ export const RecipientWarningDrawer = ({
               defaults="The Azero ID which you entered has been converted to a <Chain><ChainLogo />{{chainName}}</Chain> address. Make sure this is the chain you intend to transfer on."
               components={{
                 Chain: <div className="text-body inline-flex items-baseline gap-1" />,
-                ChainLogo: <ChainLogo className="self-center" id={chain?.id} />,
+                ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
               }}
               values={{ chainName: chain?.name ?? t("Unknown") }}
             />

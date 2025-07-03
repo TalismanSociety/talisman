@@ -1,41 +1,30 @@
+import { Network } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback, useMemo } from "react"
+import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
-import { AddEthereumChainParameter } from "viem"
 
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
 const NetworkDetailsDrawer: FC<{
-  network: AddEthereumChainParameter
+  network: Network
   isOpen: boolean
   onClose: () => void
   title?: ReactNode
 }> = ({ network, isOpen, title, onClose }) => {
   const { t } = useTranslation()
 
-  const tryParseIntFromHex = useCallback(
-    (value: string) => {
-      try {
-        return parseInt(value, 16)
-      } catch (err) {
-        return t("N/A")
-      }
-    },
-    [t],
-  )
-
   const { name, rpcs, chainId, tokenSymbol, blockExplorers } = useMemo(() => {
     return {
-      name: network.chainName || "N/A",
-      rpcs: network.rpcUrls?.join("\n") || "N/A",
-      chainId: tryParseIntFromHex(network.chainId),
+      name: network.name || "N/A",
+      rpcs: network.rpcs?.join("\n") || "N/A",
+      chainId: network.id,
       tokenSymbol: network.nativeCurrency?.symbol || "N/A",
       blockExplorers: network.blockExplorerUrls?.join("\n"),
     }
-  }, [network, tryParseIntFromHex])
+  }, [network])
 
   return (
     <Drawer containerId="main" isOpen={isOpen} onDismiss={onClose} anchor="bottom">
@@ -57,7 +46,7 @@ const NetworkDetailsDrawer: FC<{
 }
 
 export const NetworkDetailsButton: FC<{
-  network: AddEthereumChainParameter
+  network: Network
   label?: string
   className?: string
 }> = ({ network, label, className }) => {
@@ -75,7 +64,7 @@ export const NetworkDetailsButton: FC<{
 }
 
 export const NetworkDetailsLink: FC<{
-  network: AddEthereumChainParameter
+  network: Network
   label?: string
   className?: string
   title?: ReactNode

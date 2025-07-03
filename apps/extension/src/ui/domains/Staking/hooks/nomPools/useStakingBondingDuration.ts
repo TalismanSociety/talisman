@@ -1,11 +1,11 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getStakingBondingDurationMs } from "../../helpers"
 
-export const useStakingBondingDuration = (chainId: ChainId | null | undefined) => {
+export const useStakingBondingDuration = (chainId: DotNetworkId | null | undefined) => {
   const { data: sapi } = useScaleApi(chainId)
 
   return useQuery({

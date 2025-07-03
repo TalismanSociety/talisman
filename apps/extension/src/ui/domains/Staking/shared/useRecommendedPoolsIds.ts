@@ -1,9 +1,9 @@
-import { ChainId } from "extension-core"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useRemoteConfig } from "@ui/state"
 
-export const useRecommendedPoolsIds = (chainId?: ChainId | null | undefined) => {
+export const useRecommendedPoolsIds = (chainId?: DotNetworkId | null | undefined) => {
   const remoteConfig = useRemoteConfig()
 
   return useMemo(() => {

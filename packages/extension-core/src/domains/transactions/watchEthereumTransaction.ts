@@ -1,5 +1,5 @@
 import { assert } from "@polkadot/util"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
 import urlJoin from "url-join"
 import { Hex, TransactionReceipt, TransactionRequest } from "viem"
@@ -15,7 +15,7 @@ import { addEvmTransaction, updateTransactionStatus } from "./helpers"
 import { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
-  evmNetworkId: EvmNetworkId,
+  evmNetworkId: NetworkId,
   hash: `0x${string}`,
   unsigned: TransactionRequest<string>,
   options: WatchTransactionOptions = {},
@@ -24,15 +24,15 @@ export const watchEthereumTransaction = async (
     const { siteUrl, notifications, transferInfo = {}, txInfo } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(evmNetworkId)
+    const ethereumNetwork = await chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${evmNetworkId}`)
 
     const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
     if (!client) throw new Error(`No client for network ${evmNetworkId} (${ethereumNetwork.name})`)
 
     const networkName = ethereumNetwork.name ?? "unknown network"
-    const txUrl = ethereumNetwork.explorerUrl
-      ? urlJoin(ethereumNetwork.explorerUrl, "tx", hash)
+    const txUrl = ethereumNetwork.blockExplorerUrls[0]
+      ? urlJoin(ethereumNetwork.blockExplorerUrls[0], "tx", hash)
       : chrome.runtime.getURL("dashboard.html#/tx-history")
 
     // PENDING

@@ -1,16 +1,15 @@
-import { EvmNativeToken } from "@talismn/balances"
-import { EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
 import { api } from "@ui/api"
-import { useEvmNetwork, useToken } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
 const viemRequest =
-  (chainId: EvmNetworkId): ViemRequest =>
+  (chainId: EthNetworkId): ViemRequest =>
   async ({ method, params }) => {
     try {
       return await api.ethRequest({ chainId, method, params })
@@ -20,10 +19,7 @@ const viemRequest =
     }
   }
 
-export const getExtensionPublicClient = (
-  evmNetwork: SimpleEvmNetwork,
-  nativeToken: EvmNativeToken,
-): PublicClient => {
+export const getExtensionPublicClient = (evmNetwork: EthNetwork): PublicClient => {
   const name = evmNetwork.name ?? `EVM Chain ${evmNetwork.id}`
 
   return createPublicClient({
@@ -31,11 +27,7 @@ export const getExtensionPublicClient = (
       id: Number(evmNetwork.id),
       name: name,
       network: name,
-      nativeCurrency: {
-        symbol: nativeToken.symbol,
-        decimals: nativeToken.decimals,
-        name: nativeToken.symbol,
-      },
+      nativeCurrency: evmNetwork.nativeCurrency,
       rpcUrls: {
         // rpcs are a typescript requirement, but won't be used by the custom transport
         public: { http: [] },
@@ -54,14 +46,13 @@ export const getExtensionPublicClient = (
   })
 }
 
-export const usePublicClient = (evmNetworkId?: EvmNetworkId): PublicClient | undefined => {
-  const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id)
+export const usePublicClient = (evmNetworkId?: EthNetworkId): PublicClient | undefined => {
+  const evmNetwork = useNetworkById(evmNetworkId, "ethereum")
 
   const publicClient = useMemo(() => {
-    if (!evmNetwork || nativeToken?.type !== "evm-native") return undefined
-    return getExtensionPublicClient(evmNetwork, nativeToken)
-  }, [evmNetwork, nativeToken])
+    if (!evmNetwork) return undefined
+    return getExtensionPublicClient(evmNetwork)
+  }, [evmNetwork])
 
   return publicClient
 }

@@ -1,10 +1,11 @@
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import { EvmAddress, SimpleEvmNetwork } from "extension-core"
+import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Address } from "@ui/domains/Account/Address"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useToken } from "@ui/state"
 
@@ -12,7 +13,7 @@ import { SignParamButton } from "./SignParamButton"
 
 type SignParamNetworkAddressButtonProps = {
   address: string
-  network: SimpleEvmNetwork
+  network: EthNetwork
   className?: string
   name?: string
 }
@@ -23,15 +24,15 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
   name,
   className,
 }) => {
-  const nativeToken = useToken(network.nativeToken?.id)
+  const nativeToken = useToken(network.nativeTokenId)
   const isInvalidAddress = useMemo(() => address.toLowerCase().startsWith("javascript:"), [address])
   const erc20Token = useErc20Token(network.id, address as EvmAddress)
 
   return (
     <SignParamButton
-      explorerUrl={isInvalidAddress ? undefined : network.explorerUrl}
+      explorerUrl={isInvalidAddress ? undefined : network.blockExplorerUrls[0]}
       address={address}
-      iconPrefix={<AssetLogo id={erc20Token?.id ?? nativeToken?.id} />}
+      iconPrefix={<TokenLogo tokenId={erc20Token?.id ?? nativeToken?.id} />}
       withIcon
       className={className}
       contentClassName={isInvalidAddress ? "text-alert-warn" : undefined}

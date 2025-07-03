@@ -2,7 +2,7 @@ import { PolkadotAssetHubCalls, PolkadotCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/util"
 import { useMemo } from "react"
 
-import { useChain, useChains, useTokensMap } from "@ui/state"
+import { useNetworkById, useNetworks, useTokensMap } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromXcmLocation } from "../../util/getAddressFromXcmLocation"
@@ -27,14 +27,14 @@ const TransferAssets: DecodedCallSummaryComponent<TransferAssetArgs> = ({
   payload,
   mode,
 }) => {
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokensMap = useTokensMap()
-  const chains = useChains()
+  const chains = useNetworks({ platform: "polkadot" })
 
   const props = useMemo<SummaryCrossChainTransferProps>(() => {
     if (!chain) throw new Error("chain not found")
 
-    const { tokenId, value } = getMultiAssetTokenId(args.assets, chain, tokensMap)
+    const { tokenId, value } = getMultiAssetTokenId(args.assets, chain)
     const token = tokensMap[tokenId]
     if (!token) throw new Error("Unknown token")
 

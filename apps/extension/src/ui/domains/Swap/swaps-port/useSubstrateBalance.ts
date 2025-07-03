@@ -2,7 +2,7 @@ import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { useChainsMap } from "@ui/state"
+import { useNetworksMapById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 import { computeSubstrateBalance } from "./computeSubstrateBalance"
@@ -36,7 +36,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     ),
   )
   const unsubRef = useRef<() => void>()
-  const chains = useChainsMap()
+  const chains = useNetworksMapById({ platform: "polkadot" })
   const chain = useMemo(() => {
     if (!props) return chains["polkadot"]
     return chains[props.chainId]

@@ -1,26 +1,22 @@
 import { useCallback, useMemo } from "react"
 import urlJoin from "url-join"
 
-import { useChain, useChainByGenesisHash, useEvmNetwork } from "@ui/state"
+import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 
 const useChainByIdOrGenesisHash = (idOrGenesisHash: string | null | undefined) => {
-  const chainById = useChain(idOrGenesisHash)
-  const chainByGenesisHash = useChainByGenesisHash(idOrGenesisHash)
+  const networkById = useNetworkById(idOrGenesisHash)
+  const chainByGenesisHash = useNetworkByGenesisHash(idOrGenesisHash as `0x${string}`)
 
-  return chainById ?? chainByGenesisHash ?? null
+  return networkById ?? chainByGenesisHash ?? null
 }
 
 export const useViewOnExplorer = (address: string, networkIdOrHash?: string | null) => {
   const { open: openNetworkPickerModal } = useExplorerNetworkPickerModal()
-  const chain = useChainByIdOrGenesisHash(networkIdOrHash)
-  const evmNetwork = useEvmNetwork(networkIdOrHash)
+  const network = useChainByIdOrGenesisHash(networkIdOrHash)
 
-  const blockExplorerUrl = useMemo(
-    () => chain?.subscanUrl || evmNetwork?.explorerUrl || null,
-    [chain, evmNetwork],
-  )
+  const blockExplorerUrl = useMemo(() => network?.blockExplorerUrls[0] || null, [network])
 
   const canOpen = useMemo(
     () => !networkIdOrHash || blockExplorerUrl,

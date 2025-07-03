@@ -8,7 +8,7 @@ import imgAnimation1 from "./monad-animated-1.gif"
 import imgAnimation2 from "./monad-animated-2.gif"
 
 export const MonadAnimation = () => {
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
   const [step, setStep] = useState(0)
 
   useEffect(() => {

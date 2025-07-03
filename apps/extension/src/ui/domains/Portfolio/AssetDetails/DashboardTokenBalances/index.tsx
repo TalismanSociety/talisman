@@ -1,13 +1,13 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "extension-core"
 
+import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
+
 import { useTokenBalances } from "../useTokenBalances"
 import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
-
-const BITTENSOR_TOKEN_ID = "bittensor-substrate-native"
 
 type TokenBalancesParams = {
   balances: Balances
@@ -15,7 +15,14 @@ type TokenBalancesParams = {
 }
 
 export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
-  const { chainOrNetwork, summary, token, detailRows, status, networkType } = useTokenBalances({
+  const {
+    network: chainOrNetwork,
+    summary,
+    token,
+    detailRows,
+    status,
+    networkType,
+  } = useTokenBalances({
     tokenId,
     balances,
   })

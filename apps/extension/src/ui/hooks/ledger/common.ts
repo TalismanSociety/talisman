@@ -1,8 +1,8 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { supportedApps } from "@zondax/ledger-substrate"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { ChainId } from "extension-core"
 
-export const CHAIN_ID_TO_LEDGER_APP_NAME: Partial<Record<ChainId, string>> = {
+export const CHAIN_ID_TO_LEDGER_APP_NAME: Partial<Record<DotNetworkId, string>> = {
   "kusama": "Kusama",
   "astar": "Astar",
   "acala": "Acala",

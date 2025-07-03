@@ -1,12 +1,18 @@
 import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
-import { chainConnectorsAtom } from "@talismn/balances-react"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  chainConnectorsAtom,
+  evmErc20TokenId,
+  evmNativeTokenId,
+  subAssetTokenId,
+  subNativeTokenId,
+} from "@talismn/balances-react"
 import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
 import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
+import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, ExtractAtomValue, Getter } from "jotai"
 import { withAtomEffect } from "jotai-effect"
 import { atomWithObservable, loadable } from "jotai/utils"
@@ -25,7 +31,7 @@ import {
   sonic,
 } from "viem/chains"
 
-import { accounts$, getChains$, getEvmNetworksMap$, getToken$, getTokensMap$ } from "@ui/state"
+import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 
 import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
@@ -100,21 +106,21 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
  */
 const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   dot: {
-    id: "polkadot-substrate-native",
+    id: subNativeTokenId("polkadot"),
     name: "Polkadot",
     symbol: "DOT",
     chainId: "polkadot",
     networkType: "substrate",
   },
   ksm: {
-    id: "kusama-substrate-native",
+    id: subNativeTokenId("kusama"),
     name: "Kusama",
     symbol: "KSM",
     chainId: "kusama",
     networkType: "substrate",
   },
   usdtdot: {
-    id: "polkadot-asset-hub-substrate-assets-1984-usdt",
+    id: subAssetTokenId("polkadot-asset-hub", "1984"),
     name: "USDT (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDT",
@@ -122,7 +128,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1984",
   },
   usdcdot: {
-    id: "polkadot-asset-hub-substrate-assets-1337-usdc",
+    id: subAssetTokenId("polkadot-asset-hub", "1337"),
     name: "USDC (Polkadot)",
     chainId: "polkadot-asset-hub",
     symbol: "USDC",
@@ -130,49 +136,49 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     assetHubAssetId: "1337",
   },
   eth: {
-    id: "1-evm-native",
+    id: evmNativeTokenId("1"),
     name: "Ethereum",
     chainId: 1,
     symbol: "ETH",
     networkType: "evm",
   },
   etharb: {
-    id: "42161-evm-native",
+    id: evmNativeTokenId("42161"),
     name: "Ethereum",
     chainId: 42161,
     symbol: "ETH",
     networkType: "evm",
   },
   ethop: {
-    id: "10-evm-native",
+    id: evmNativeTokenId("10"),
     name: "Ethereum",
     chainId: 10,
     symbol: "ETH",
     networkType: "evm",
   },
   s: {
-    id: "146-evm-native",
+    id: evmNativeTokenId("146"),
     name: "Sonic",
     chainId: 146,
     symbol: "S",
     networkType: "evm",
   },
   vana: {
-    id: "1480-evm-native",
+    id: evmNativeTokenId("1480"),
     name: "Vana",
     chainId: 1480,
     symbol: "VANA",
     networkType: "evm",
   },
   ethmanta: {
-    id: "169-evm-native",
+    id: evmNativeTokenId("169"),
     name: "Ethereum (Manta Pacific)",
     chainId: 169,
     symbol: "ETH",
     networkType: "evm",
   },
   manta: {
-    id: "169-evm-erc20-0x95cef13441be50d20ca4558cc0a27b601ac544e5",
+    id: evmErc20TokenId("169", "0x95cef13441be50d20ca4558cc0a27b601ac544e5"),
     name: "Manta Network",
     chainId: 169,
     symbol: "MANTA",
@@ -180,14 +186,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     contractAddress: "0x95cef13441be50d20ca4558cc0a27b601ac544e5",
   },
   tao: {
-    id: "bittensor-substrate-native",
+    id: subNativeTokenId("bittensor"),
     name: "Bittensor",
     chainId: "bittensor",
     symbol: "TAO",
     networkType: "substrate",
   },
   anlog: {
-    id: "analog-timechain-substrate-native",
+    id: subNativeTokenId("analog-timechain"),
     name: "Analog",
     chainId: "analog-timechain",
     symbol: "ANLOG",
@@ -202,14 +208,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects substrate address when swapping ASTR */
   astr: {
-    id: "astar-substrate-native",
+    id: subNativeTokenId("astar"),
     name: "Astar",
     symbol: "ASTR",
     chainId: "astar",
     networkType: "substrate",
   },
   azero: {
-    id: "aleph-zero-substrate-native",
+    id: subNativeTokenId("aleph-zero"),
     name: "Aleph Zero",
     symbol: "AZERO",
     chainId: "aleph-zero",
@@ -217,7 +223,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects substrate address when swapping ACA */
   aca: {
-    id: "acala-substrate-native",
+    id: subNativeTokenId("acala"),
     name: "ACALA",
     symbol: "ACA",
     chainId: "acala",
@@ -225,7 +231,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects EVM address when swapping GLMR */
   glmr: {
-    id: "1284-evm-native",
+    id: evmNativeTokenId("1284"),
     name: "Moonbeam",
     symbol: "GLMR",
     chainId: "moonbeam",
@@ -233,14 +239,14 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   },
   /** SS expects EVM address when swapping MOVR */
   movr: {
-    id: "1285-evm-native",
+    id: evmNativeTokenId("1285"),
     name: "Moonriver",
     symbol: "MOVR",
     chainId: "moonriver",
     networkType: "evm",
   },
   avail: {
-    id: "avail-substrate-native",
+    id: subNativeTokenId("avail"),
     name: "Avail",
     symbol: "AVAIL",
     chainId: "avail",
@@ -443,9 +449,8 @@ const simpleswapAssetsAtom = atom(async (get) => {
         if (!id || !chainId) return acc
 
         const image =
-          (knownTokens[id]?.logo !== githubUnknownTokenLogoUrl
-            ? knownTokens[id]?.logo
-            : undefined) ?? currency.image
+          (knownTokens[id]?.logo !== UNKNOWN_TOKEN_URL ? knownTokens[id]?.logo : undefined) ??
+          currency.image
         const asset: SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }> = {
           id,
           name: polkadotAsset?.name ?? currency.name,
@@ -585,7 +590,9 @@ export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
 export type SimpleswapExchange = Exchange
 const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
   try {
-    const substrateChains = await get(atomWithObservable(() => getChains$()))
+    const substrateChains = await get(
+      atomWithObservable(() => getNetworks$({ platform: "polkadot" })),
+    )
     const formatAddress = (
       address: string | null,
       asset: SwappableAssetWithDecimals<unknown> | null,
@@ -788,9 +795,11 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
-    const knownEvmNetworks = await get(atomWithObservable(() => getEvmNetworksMap$()))
+    const knownEvmNetworks = await get(
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+    )
     const network = knownEvmNetworks[fromAsset.chainId]
-    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeToken?.id)))
+    const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
     const evmChain = Object.values(supportedEvmChains).find(
       (c) => c?.id.toString() === fromAsset.chainId.toString(),
     )
@@ -824,7 +833,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (swappingFromBtc) return null
 
   // swapping from Polkadot
-  const chains = await get(atomWithObservable(() => getChains$()))
+  const chains = await get(atomWithObservable(() => getNetworks$({ platform: "polkadot" })))
   const substrateChain = chains.find((c) => c.id === fromAsset.chainId)
   const polkadotApi = await get(apiPromiseAtom(substrateChain?.id))
   if (!polkadotApi) return null
@@ -845,7 +854,7 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
   return {
     name: "Est. Gas Fees",
-    tokenId: substrateChain?.nativeToken?.id ?? "polkadot-substrate-native",
+    tokenId: substrateChain?.nativeTokenId ?? subNativeTokenId("polkadot"),
     amount: BigNumber(paymentInfo.partialFee.toBigInt().toString()).times(10 ** -decimals),
   }
 }

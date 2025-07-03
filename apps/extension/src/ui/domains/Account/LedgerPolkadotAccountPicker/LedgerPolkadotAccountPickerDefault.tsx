@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
-import { useAccounts, useChain, useChains } from "@ui/state"
+import { useAccounts, useNetworkById, useNetworks } from "@ui/state"
 
 import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
@@ -21,7 +21,7 @@ export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccount
   app,
   chainId,
 }) => {
-  const chain = useChain(chainId)
+  const chain = useNetworkById(chainId, "polkadot")
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
     [chain],
@@ -105,7 +105,7 @@ const useLedgerSubstrateGenericAccounts = (
 
   const { getAddress } = useGetLedgerPolkadotAddress(curve, legacyApp)
 
-  const chains = useChains({ activeOnly: true, includeTestnets: false })
+  const chains = useNetworks({ platform: "polkadot", activeOnly: true, includeTestnets: false })
   const withBalances = useMemo(() => chains.some((chain) => chain.hasCheckMetadataHash), [chains])
 
   const [connectionStatus, setConnectionStatus] = useState<LedgerConnectionStatusProps>({

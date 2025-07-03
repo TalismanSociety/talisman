@@ -4,6 +4,7 @@ import { assert } from "@polkadot/util"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { Err, Ok, Result } from "ts-results"
 import urlJoin from "url-join"
@@ -12,7 +13,6 @@ import { sentry } from "../../config/sentry"
 import { createNotification, NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { settingsStore } from "../app/store.settings"
-import { Chain, ChainId } from "../chains/types"
 import {
   addSubstrateTransaction,
   getExtrinsicHash,
@@ -43,7 +43,7 @@ const getStorageKeyHash = (...names: string[]) => {
 const getExtrinsincResult = async (
   registry: TypeRegistry,
   blockHash: IU8a,
-  chainId: ChainId,
+  chainId: DotNetworkId,
   extrinsicHash: string,
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
@@ -109,7 +109,7 @@ const getExtrinsincResult = async (
 }
 
 const watchExtrinsicStatus = async (
-  chainId: ChainId,
+  chainId: DotNetworkId,
   registry: TypeRegistry,
   extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler,
@@ -249,7 +249,7 @@ const watchExtrinsicStatus = async (
 }
 
 export const watchSubstrateTransaction = async (
-  chain: Chain,
+  chain: DotNetwork,
   registry: TypeRegistry,
   payload: SignerPayloadJSON,
   signature: HexString,
@@ -272,8 +272,8 @@ export const watchSubstrateTransaction = async (
       async (result, blockNumber, extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
 
-        const url = chain.subscanUrl
-          ? urlJoin(chain.subscanUrl, "extrinsic", `${blockNumber}-${extIndex}`)
+        const url = chain.blockExplorerUrls[0]
+          ? urlJoin(chain.blockExplorerUrls[0], "extrinsic", `${blockNumber}-${extIndex}`)
           : chrome.runtime.getURL("dashboard.html#/tx-history")
 
         if (withNotifications) createNotification(type, chain.name ?? "chain", url)

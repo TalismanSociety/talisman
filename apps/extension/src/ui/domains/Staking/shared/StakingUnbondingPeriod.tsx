@@ -1,10 +1,10 @@
-import { ChainId } from "extension-core"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { FC } from "react"
 
 import { BittensorUnbondingPeriod } from "../Bittensor/BittensorBondModal/BittensorUnbondingPeriod"
 import { NomPoolUnbondingPeriod } from "../NominationPools/NomPoolUnbondingPeriod"
 
-export const StakingUnbondingPeriod: FC<{ chainId: ChainId | null | undefined }> = ({
+export const StakingUnbondingPeriod: FC<{ chainId: DotNetworkId | null | undefined }> = ({
   chainId,
 }) => {
   switch (chainId) {

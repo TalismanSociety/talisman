@@ -1,4 +1,4 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { Balances } from "extension-core"
 import { uniq } from "lodash"
 import { useMemo } from "react"
@@ -36,10 +36,10 @@ export const useAssetDetails = (balances: Balances) => {
           if (!aHasBalance && bHasBalance) return 1
 
           // polkadot and kusama should appear first
-          if (aTokenId.toLowerCase() === "polkadot-substrate-native") return -1
-          if (bTokenId.toLowerCase() === "polkadot-substrate-native") return 1
-          if (aTokenId.toLowerCase() === "kusama-substrate-native") return -1
-          if (bTokenId.toLowerCase() === "kusama-substrate-native") return 1
+          if (aTokenId.toLowerCase() === subNativeTokenId("polkadot")) return -1
+          if (bTokenId.toLowerCase() === subNativeTokenId("polkadot")) return 1
+          if (aTokenId.toLowerCase() === subNativeTokenId("kusama")) return -1
+          if (bTokenId.toLowerCase() === subNativeTokenId("kusama")) return 1
 
           // keep alphabetical sort
           return 0

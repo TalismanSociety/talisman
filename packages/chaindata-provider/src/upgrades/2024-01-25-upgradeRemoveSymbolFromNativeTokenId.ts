@@ -1,18 +1,19 @@
 import { Transaction } from "dexie"
 
-import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token, TokenId } from "../types"
+import { Token, TokenId } from "../chaindata"
+import { LegacyChain, LegacyChainId, LegacyEvmNetwork, LegacyEvmNetworkId } from "../legacy"
 
-const subNativeTokenId = (chainId: ChainId) =>
+const legacySubNativeTokenId = (chainId: LegacyChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
 
-const evmNativeTokenId = (chainId: EvmNetworkId) =>
+const legacyEvmNativeTokenId = (chainId: LegacyEvmNetworkId) =>
   `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
 
 // for DB version 2, Wallet version 1.21.0
 export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   const tokensTable = tx.table<Token, TokenId>("tokens")
-  const chainsTable = tx.table<Chain, ChainId>("chains")
-  const evmNetworksTable = tx.table<EvmNetwork, EvmNetworkId>("evmNetworks")
+  const chainsTable = tx.table<LegacyChain, LegacyChainId>("chains")
+  const evmNetworksTable = tx.table<LegacyEvmNetwork, LegacyEvmNetworkId>("evmNetworks")
 
   const nativeTokens = (await tokensTable.toArray()).filter((t) =>
     ["substrate-native", "evm-native"].includes(t.type),
@@ -22,18 +23,18 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
 
   const tokenIdsToDelete: TokenId[] = []
   const tokensToUpsert: Token[] = []
-  const chainsToUpsert: Chain[] = []
-  const evmNetworksToUpsert: EvmNetwork[] = []
+  const chainsToUpsert: LegacyChain[] = []
+  const evmNetworksToUpsert: LegacyEvmNetwork[] = []
 
   for (const nativeToken of nativeTokens) {
-    const networkId = nativeToken.chain?.id || nativeToken.evmNetwork?.id
+    const networkId = nativeToken.networkId || nativeToken.networkId
     if (!networkId) continue
 
     const id =
       nativeToken.type === "substrate-native"
-        ? subNativeTokenId(networkId)
+        ? legacySubNativeTokenId(networkId)
         : nativeToken.type === "evm-native"
-          ? evmNativeTokenId(networkId)
+          ? legacyEvmNativeTokenId(networkId)
           : undefined
     if (!id) continue
 

@@ -1,12 +1,16 @@
 import { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
-import { SubAssetsToken, SubForeignAssetsToken, SubNativeToken } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import {
+  DotNetwork,
+  SubAssetsToken,
+  SubForeignAssetsToken,
+  SubNativeToken,
+  Token,
+} from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
-import { Chain } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useChain, useTokens } from "@ui/state"
+import { useNetworkById, useTokens } from "@ui/state"
 
 import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
@@ -18,7 +22,7 @@ const SwapExactTokensForTokens: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["AssetConversion"]["swap_exact_tokens_for_tokens"]
 > = ({ decodedCall, sapi, mode }) => {
   const { t } = useTranslation()
-  const chain = useChain(sapi.chainId)
+  const chain = useNetworkById(sapi.chainId, "polkadot")
   const tokens = useTokens()
 
   const [tokenIn, tokenOut] = useMemo(() => {
@@ -112,7 +116,7 @@ type XcmV3MultiLocation = {
 }
 
 const getTokenFromlocation = (
-  chain: Chain,
+  chain: DotNetwork,
   tokens: Token[],
   location: XcmV3MultiLocation,
 ): Token => {
@@ -120,14 +124,14 @@ const getTokenFromlocation = (
   const onChainId = papiStringify(location)
   const token = tokens.find(
     (t) =>
-      t.type === "substrate-foreignassets" && t.chain.id === chain.id && t.onChainId === onChainId,
+      t.type === "substrate-foreignassets" && t.networkId === chain.id && t.onChainId === onChainId,
   ) as SubForeignAssetsToken
   if (token) return token
 
   if (location.parents === 0) {
     if (location.interior.type === "Here") {
       const token = tokens.find(
-        (t) => t.type === "substrate-native" && t.chain.id === chain.id,
+        (t) => t.type === "substrate-native" && t.networkId === chain.id,
       ) as SubNativeToken
       if (token) return token
     }
@@ -138,17 +142,22 @@ const getTokenFromlocation = (
       location.interior.value[0].value === 50 &&
       location.interior.value[1].type === "GeneralIndex"
     ) {
-      const assetId = String(location.interior.value[1].value)
+      const assetId = location.interior.value[1].value
       const token = tokens.find(
-        (t) => t.type === "substrate-assets" && t.assetId === assetId,
+        (t) => t.type === "substrate-assets" && BigInt(t.assetId) === assetId,
       ) as SubAssetsToken
       if (token) return token
     }
   }
 
-  if (location.parents === 1 && !!chain.relay && location.interior.type === "Here") {
+  if (
+    location.parents === 1 &&
+    chain.topology.type === "parachain" &&
+    location.interior.type === "Here"
+  ) {
+    const relayId = chain.topology.relayId
     const token = tokens.find(
-      (t) => t.type === "substrate-native" && t.chain.id === chain.relay?.id,
+      (t) => t.type === "substrate-native" && t.networkId === relayId,
     ) as SubNativeToken
     if (token) return token
   }

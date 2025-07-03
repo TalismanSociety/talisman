@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 import { bytesToHex } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
@@ -43,7 +43,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
     const result = await withPjsKeyringPair(fromAddress, async (pair) => {
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       transferAnalytics({ network: { chainId }, amount, tokenId, toAddress })
@@ -51,7 +51,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const tokenType = token.type
       if (
         tokenType === "substrate-assets" ||
-        tokenType === "substrate-equilibrium" ||
         tokenType === "substrate-foreignassets" ||
         tokenType === "substrate-native" ||
         tokenType === "substrate-psp22" ||
@@ -111,13 +110,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip = "0",
     method = "transfer_keep_alive",
   }: RequestAssetTransfer) {
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     const tokenType = token.type
     if (
       tokenType === "substrate-assets" ||
-      tokenType === "substrate-equilibrium" ||
       tokenType === "substrate-foreignassets" ||
       tokenType === "substrate-native" ||
       tokenType === "substrate-psp22" ||
@@ -163,7 +161,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const client = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
       if (!client) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      const token = await chaindataProvider.tokenById(tokenId)
+      const token = await chaindataProvider.getTokenById(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const { from, to } = unsigned
@@ -206,7 +204,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     gasSettings,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransfer> {
-    const token = await chaindataProvider.tokenById(tokenId)
+    const token = await chaindataProvider.getTokenById(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     assert(isEthereumAddress(fromAddress), "Invalid from address")
@@ -272,14 +270,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
     transferInfo,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
     const genesisHash = validateHexString(unsigned.genesisHash)
-    const chain = await chaindataProvider.chainByGenesisHash(genesisHash)
+    const chain = await chaindataProvider.getNetworkByGenesisHash(genesisHash)
     if (!chain) throw new Error(`Could not find chain for genesisHash ${genesisHash}`)
 
     const hash = await AssetTransfersRpc.transferSigned(unsigned, signature, transferInfo)
     return { hash }
   }
 
-  handle<TMessageType extends keyof RequestSignatures>(
+  handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],

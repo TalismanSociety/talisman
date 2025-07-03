@@ -1,6 +1,6 @@
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { HexString } from "@polkadot/util/types"
-import type { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
+import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
 import type { ResponseType, SendRequest } from "extension-core"
 import { log } from "extension-shared"
 
@@ -41,12 +41,12 @@ const rpcProvider = (sendRequest: SendRequest) => ({
 })
 
 const tokensProvider = (sendRequest: SendRequest) => ({
-  subscribeCustomSubstrateChains: (callback: (chains: CustomChain[]) => unknown) => {
+  subscribeCustomSubstrateChains: (callback: (chains: DotNetwork[]) => unknown) => {
     const idPromise = sendRequest("pub(talisman.customSubstrateChains.subscribe)", null, callback)
     return () =>
       idPromise.then((id) => sendRequest("pub(talisman.customSubstrateChains.unsubscribe)", id))
   },
-  subscribeCustomEvmNetworks: (callback: (networks: CustomEvmNetwork[]) => unknown) => {
+  subscribeCustomEvmNetworks: (callback: (networks: EthNetwork[]) => unknown) => {
     const idPromise = sendRequest("pub(talisman.customEvmNetworks.subscribe)", null, callback)
     return () =>
       idPromise.then((id) => sendRequest("pub(talisman.customEvmNetworks.unsubscribe)", id))

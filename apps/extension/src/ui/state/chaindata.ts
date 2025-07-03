@@ -1,213 +1,161 @@
-import { bind } from "@react-rxjs/core"
+import { bind, StateObservable } from "@react-rxjs/core"
 import {
-  Chain,
-  ChainId,
-  ChainList,
-  CustomChain,
-  EvmNetworkId,
-  SimpleEvmNetwork,
-  SimpleEvmNetworkList,
+  DotNetwork,
+  DotNetworkId,
+  Network,
+  NetworkId,
+  NetworkOfPlatform,
+  NetworkPlatform,
   Token,
   TokenId,
-  TokenList,
+  TokenOfPlatform,
+  TokenOfType,
+  TokenType,
 } from "@talismn/chaindata-provider"
+import { getSharedObservable } from "@talismn/util"
 import {
-  activeChainsStore,
-  activeEvmNetworksStore,
+  activeNetworksStore,
   activeTokensStore,
-  isChainActive,
-  isEvmNetworkActive,
+  isNetworkActive,
   isTokenActive,
 } from "extension-core"
-import { combineLatest, map, Observable, shareReplay } from "rxjs"
+import { keyBy } from "lodash"
+import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"
 
 import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
-export type AnyChain = Chain | CustomChain
+type PlatformFilter = NetworkPlatform | "all"
 
-export type ChaindataQueryOptions = {
+type NetworkOf<P extends PlatformFilter> = P extends NetworkPlatform
+  ? NetworkOfPlatform<P>
+  : Network
+
+type TokenOf<P extends PlatformFilter> = P extends NetworkPlatform ? TokenOfPlatform<P> : Token
+
+export type ChaindataQueryOptions<P extends PlatformFilter = "all"> = Partial<{
+  platform: P
   activeOnly: boolean
   includeTestnets: boolean
-}
+}>
 
-const ALL: ChaindataQueryOptions = {
+const ALL: Required<ChaindataQueryOptions> = {
+  platform: "all",
   activeOnly: false,
   includeTestnets: true,
 }
 
-const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
+export const [useActiveNetworksState, activeNetworksState$] = bind(activeNetworksStore.observable)
 
-export const [useActiveEvmNetworksState, activeEvmNetworksState$] = bind(
-  activeEvmNetworksStore.observable,
-)
-
-export const [useActiveChainsState, activeChainsState$] = bind(activeChainsStore.observable)
-
-const allEvmNetworks$ = new Observable<SimpleEvmNetwork[]>((subscriber) => {
-  const unsubscribe = api.ethereumNetworks((data) => subscriber.next(data))
+const allNetworks$ = new Observable<Network[]>((subscriber) => {
+  const unsubscribe = api.networks((data) => subscriber.next(data))
   return () => {
     unsubscribe()
   }
-}).pipe(debugObservable("allEvmNetworks$"), shareReplay(1))
+}).pipe(debugObservable("allNetworks$"), shareReplay(1))
 
-const allChains$ = new Observable<AnyChain[]>((subscriber) => {
-  const unsubscribe = api.chains((data) => subscriber.next(data))
-  return () => {
-    unsubscribe()
-  }
-}).pipe(debugObservable("allChains$"), shareReplay(1))
+const activeNetworks$ = combineLatest([allNetworks$, activeNetworksState$])
+  .pipe(map(([networks, activeState]) => networks.filter((n) => isNetworkActive(n, activeState))))
+  .pipe(shareReplay(1))
 
-const allEvmNetworksMap$ = allEvmNetworks$.pipe(
-  map(
-    (evmNetworks): SimpleEvmNetworkList =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
-  ),
-  shareReplay(1),
-)
+const filterByPlatform =
+  <P extends PlatformFilter, T extends { platform: NetworkPlatform }>(platform: P) =>
+  (item: T): boolean =>
+    !platform || platform === "all" || item.platform === platform
+const filterIncludeTestnets = (includeTestnets: boolean) => (item: { isTestnet?: boolean }) =>
+  includeTestnets || !item.isTestnet
 
-const allChainsMap$ = allChains$.pipe(
-  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
-  shareReplay(1),
-)
+export const [useNetworks, getNetworks$] = bind((options?: ChaindataQueryOptions) => {
+  // argument is an object, need to cache the output observable
+  return getSharedObservable("getNetworks$", options, (opts) => {
+    const { platform, activeOnly, includeTestnets } = { ...ALL, ...opts }
+    const networks$ = activeOnly ? activeNetworks$ : allNetworks$
+    return networks$.pipe(
+      map((networks) => networks.filter(filterByPlatform(platform))),
+      map((networks) => networks.filter(filterIncludeTestnets(includeTestnets))),
+      debugObservable("getNetworks$"),
+    )
+  })
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => NetworkOf<P>[],
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => StateObservable<NetworkOf<P>[]>,
+]
 
-const allEvmNetworksWithoutTestnets$ = allEvmNetworks$.pipe(
-  map((evmNetworks) => evmNetworks.filter(filterNoTestnet)),
-  shareReplay(1),
-)
+export const [useNetworksMapById, getNetworksMapById$] = bind((options: ChaindataQueryOptions) => {
+  return getSharedObservable("getNetworksMapById$", options, (opts) => {
+    return getNetworks$(opts).pipe(map((networks) => keyBy(networks, (n) => n.id)))
+  })
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<NetworkId, NetworkOf<P>>,
+  <P extends PlatformFilter>(
+    options?: ChaindataQueryOptions<P>,
+  ) => StateObservable<Record<NetworkId, NetworkOf<P>>>,
+]
 
-const allChainsWithoutTestnets$ = allChains$.pipe(
-  map((chains) => chains.filter(filterNoTestnet)),
-  shareReplay(1),
-)
-
-const allEvmNetworksWithoutTestnetsMap$ = allEvmNetworksWithoutTestnets$.pipe(
-  map(
-    (evmNetworks): SimpleEvmNetworkList =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
-  ),
-  shareReplay(1),
-)
-const allChainsWithoutTestnetsMap$ = allChainsWithoutTestnets$.pipe(
-  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
-  shareReplay(1),
-)
-
-const activeEvmNetworksWithTestnets$ = combineLatest([
-  allEvmNetworks$,
-  activeEvmNetworksState$,
-]).pipe(
-  map(([evmNetworks, activeNetworks]) =>
-    evmNetworks.filter((network) => isEvmNetworkActive(network, activeNetworks)),
-  ),
-  shareReplay(1),
-)
-
-const activeChainsWithTestnets$ = combineLatest([allChains$, activeChainsState$]).pipe(
-  map(([chains, activeChains]) => chains.filter((network) => isChainActive(network, activeChains))),
-  shareReplay(1),
-)
-
-const activeEvmNetworksWithTestnetsMap$ = activeEvmNetworksWithTestnets$.pipe(
-  map(
-    (evmNetworks): SimpleEvmNetworkList =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
-  ),
-  shareReplay(1),
-)
-
-const activeChainsWithTestnetsMap$ = activeChainsWithTestnets$.pipe(
-  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
-  shareReplay(1),
-)
-
-const activeEvmNetworksWithoutTestnets$ = activeEvmNetworksWithTestnets$.pipe(
-  map((evmNetworks) => evmNetworks.filter(filterNoTestnet)),
-  shareReplay(1),
-)
-
-const activeChainsWithoutTestnets$ = activeChainsWithTestnets$.pipe(
-  map((chains) => chains.filter(filterNoTestnet)),
-  shareReplay(1),
-)
-
-const activeEvmNetworksWithoutTestnetsMap$ = activeEvmNetworksWithoutTestnets$.pipe(
-  map(
-    (evmNetworks): SimpleEvmNetworkList =>
-      Object.fromEntries(evmNetworks.map((network) => [network.id, network])),
-  ),
-  shareReplay(1),
-)
-
-const activeChainsWithoutTestnetsMap$ = activeChainsWithoutTestnets$.pipe(
-  map((chains): ChainList => Object.fromEntries(chains.map((network) => [network.id, network]))),
-  shareReplay(1),
-)
-
-export const [useEvmNetworks, getEvmNetworks$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets ? activeEvmNetworksWithTestnets$ : activeEvmNetworksWithoutTestnets$
-    return includeTestnets ? allEvmNetworks$ : allEvmNetworksWithoutTestnets$
-  },
-)
-export const [useChains, getChains$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets ? activeChainsWithTestnets$ : activeChainsWithoutTestnets$
-    return includeTestnets ? allChains$ : allChainsWithoutTestnets$
-  },
-)
-
-export const [useEvmNetworksMap, getEvmNetworksMap$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets
-        ? activeEvmNetworksWithTestnetsMap$
-        : activeEvmNetworksWithoutTestnetsMap$
-    return includeTestnets ? allEvmNetworksMap$ : allEvmNetworksWithoutTestnetsMap$
-  },
-)
-
-export const [useChainsMap, getChainsMap$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets ? activeChainsWithTestnetsMap$ : activeChainsWithoutTestnetsMap$
-    return includeTestnets ? allChainsMap$ : allChainsWithoutTestnetsMap$
-  },
-)
-
-export const [useChainsMapByGenesisHash, allChainsByGenesisHash$] = bind(
-  allChains$.pipe(
-    map(
-      (chains): ChainList =>
-        Object.fromEntries(
-          chains
-            .filter((network) => network.genesisHash)
-            .map((network) => [network.genesisHash, network]),
-        ),
+export const [useNetworkById, getNetworkById$] = bind(
+  (id: NetworkId | null | undefined, platform?: NetworkPlatform) =>
+    getNetworksMapById$().pipe(
+      map((networksById): Network | null => {
+        const network = networksById[id ?? ""] || null
+        return network && (!platform || network.platform === platform) ? network : null
+      }),
     ),
-  ),
+) as [
+  // allows forcing platform output type when calling the hook like useNetwork<"ethereum">(id)
+  // TODO change this to a PlatformFilter optional arg, and actually check it
+  <
+    P extends NetworkPlatform | undefined,
+    R extends P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    id: NetworkId | null | undefined,
+    platform?: P,
+  ) => R | null,
+  <
+    P extends NetworkPlatform | undefined,
+    R extends P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
+  >(
+    id: NetworkId | null | undefined,
+    platform?: P,
+  ) => StateObservable<R | null>,
+]
+
+export const [useNetworksMapByGenesisHash, getNetworksMapByGenesisHash$] = bind(
+  (options?: Omit<ChaindataQueryOptions, "platform">) => {
+    return getSharedObservable("getNetworksMapByGenesisHash$", options, (opts) => {
+      return getNetworks$({ platform: "polkadot", ...opts }).pipe(
+        map((networks) => keyBy(networks, "genesisHash")),
+      )
+    })
+  },
 )
 
-export const [useEvmNetwork, getEvmNetwork$] = bind(
-  (evmNetworkId: EvmNetworkId | null | undefined) =>
-    allEvmNetworksMap$.pipe(
-      map((evmNetworksMap) => (evmNetworkId && evmNetworksMap[evmNetworkId ?? "#"]) || null),
+export const [useNetworkByGenesisHash, getNetworkByGenesisHash$] = bind(
+  (genesisHash: `0x${string}` | null | undefined) =>
+    getNetworksMapByGenesisHash$().pipe(
+      map(
+        (networksByGenesisHash): DotNetwork | null =>
+          networksByGenesisHash[genesisHash ?? "#"] ?? null,
+      ),
     ),
 )
 
-export const [useChain, getChain$] = bind((chainId: ChainId | null | undefined) =>
-  allChainsMap$.pipe(map((chainsMap) => (chainId && chainsMap[chainId ?? "#"]) || null)),
-)
+/**
+ * prefer either useNetworkById or useNetworkByGenesisHash
+ * @param idOrGenesisHash
+ * @returns
+ */
+export const useAnyNetwork = (idOrGenesisHash: NetworkId | `0x${string}` | null | undefined) => {
+  const networkById = useNetworkById(idOrGenesisHash)
+  const networkByGenesisHash = useNetworkByGenesisHash(idOrGenesisHash as `0x${string}`)
+  return networkById ?? networkByGenesisHash ?? null
+}
 
-export const [useChainByGenesisHash, getChainByGenesisHash$] = bind(
-  (genesisHash: string | null | undefined) =>
-    allChainsByGenesisHash$.pipe(
-      map((chainsMap) => (genesisHash && chainsMap[genesisHash ?? "#"]) || null),
-    ),
-)
+export const useDotNetwork = (id: DotNetworkId | `0x${string}` | null | undefined) => {
+  const network1 = useNetworkById(id, "polkadot")
+  const network2 = useNetworkByGenesisHash(id as `0x${string}`)
+  return network1 ?? network2 ?? null
+}
 
 export const [useActiveTokensState, activeTokenState$] = bind(activeTokensStore.observable)
 
@@ -220,101 +168,69 @@ const rawTokens$ = new Observable<Token[]>((subscriber) => {
   }
 }).pipe(debugObservable("rawTokens$"), shareReplay(1))
 
-const allTokens$ = combineLatest([rawTokens$, allEvmNetworksMap$, allChainsMap$]).pipe(
-  map(([tokens, evmNetworksMap, chainsMap]) =>
-    tokens.filter(
-      (token) => chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"],
-    ),
+const allTokens$ = combineLatest([rawTokens$, getNetworksMapById$()]).pipe(
+  map(([tokens, networksById]) => tokens.filter((token) => networksById[token.networkId])),
+  shareReplay(1),
+)
+
+const activeTokens$ = combineLatest({
+  tokens: allTokens$,
+  activeNetworksById: getNetworksMapById$({ activeOnly: true, includeTestnets: true }),
+  activeTokens: activeTokenState$,
+}).pipe(
+  map(({ tokens, activeNetworksById, activeTokens }) =>
+    tokens.filter((n) => activeNetworksById[n.networkId] && isTokenActive(n, activeTokens)),
   ),
   shareReplay(1),
 )
 
-const allTokensMap$ = rawTokens$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token]))),
-  shareReplay(1),
-)
+export const [useTokens, getTokens$] = bind((options?: ChaindataQueryOptions) => {
+  return getSharedObservable("getTokens$", options, (opts) => {
+    const { platform, activeOnly, includeTestnets } = { ...ALL, ...opts }
+    const tokens$ = activeOnly ? activeTokens$ : allTokens$
+    return tokens$.pipe(
+      map((tokens) => tokens.filter(filterByPlatform(platform))),
+      switchMap((tokens) => {
+        if (includeTestnets) return of(tokens)
+        return getNetworksMapById$(opts).pipe(
+          map((networksById) => tokens.filter((t) => !networksById[t.networkId]?.isTestnet)),
+        )
+      }),
+      debugObservable("getTokens$"),
+    )
+  })
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => TokenOf<P>[],
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => StateObservable<TokenOf<P>[]>,
+]
 
-const allTokensWithoutTestnets$ = combineLatest([
-  rawTokens$,
-  allEvmNetworksWithoutTestnetsMap$,
-  allChainsWithoutTestnetsMap$,
-]).pipe(
-  map(([tokens, evmNetworksMap, chainsMap]) =>
-    tokens.filter(
-      (token) =>
-        !token.isTestnet &&
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]),
-    ),
-  ),
-  shareReplay(1),
-)
-
-const allTokensWithoutTestnetsMap$ = allTokensWithoutTestnets$.pipe(
-  map((tokens) => Object.fromEntries(tokens.map((token) => [token.id, token]))),
-  shareReplay(1),
-)
-
-const activeTokensWithTestnets$ = combineLatest([
-  rawTokens$,
-  activeEvmNetworksWithTestnetsMap$,
-  activeChainsWithTestnetsMap$,
-  activeTokenState$,
-]).pipe(
-  map(([tokens, evmNetworksMap, chainsMap, activeTokens]) =>
-    tokens.filter(
-      (token) =>
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]) &&
-        isTokenActive(token, activeTokens),
-    ),
-  ),
-  shareReplay(1),
-)
-
-const activeTokensWithTestnetsMap$ = activeTokensWithTestnets$.pipe(
-  map((tokens): TokenList => Object.fromEntries(tokens.map((token) => [token.id, token]))),
-  shareReplay(1),
-)
-
-const activeTokensWithoutTestnets$ = combineLatest([
-  activeTokensWithTestnets$,
-  activeChainsWithoutTestnetsMap$,
-  activeEvmNetworksWithoutTestnetsMap$,
-]).pipe(
-  map(([tokens, chainsMap, evmNetworksMap]) =>
-    tokens.filter(
-      (token) =>
-        !token.isTestnet &&
-        (chainsMap[token.chain?.id ?? "#"] || evmNetworksMap[token.evmNetwork?.id ?? "#"]),
-    ),
-  ),
-  shareReplay(1),
-)
-
-const activeTokensWithoutTestnetsMap$ = activeTokensWithoutTestnets$.pipe(
-  map((tokens): TokenList => Object.fromEntries(tokens.map((token) => [token.id, token]))),
-  shareReplay(1),
-)
-
-export const [useTokens, getTokens$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets ? activeTokensWithTestnets$ : activeTokensWithoutTestnets$
-    return includeTestnets ? allTokens$ : allTokensWithoutTestnets$
-  },
-)
-
-export const [useTokensMap, getTokensMap$] = bind(
-  ({ activeOnly, includeTestnets }: ChaindataQueryOptions = ALL) => {
-    if (activeOnly)
-      return includeTestnets ? activeTokensWithTestnetsMap$ : activeTokensWithoutTestnetsMap$
-    return includeTestnets ? allTokensMap$ : allTokensWithoutTestnetsMap$
-  },
-)
-
-export const [useToken, getToken$] = bind((tokenId: TokenId | null | undefined) => {
-  return allTokensMap$.pipe(
-    map((tokensMap): Token | null => (tokenId && tokensMap[tokenId ?? "#"]) || null),
+export const [useTokensMap, getTokensMap$] = bind((options?: ChaindataQueryOptions) => {
+  return getSharedObservable("getTokensMap$", options, (opts) =>
+    getTokens$(opts).pipe(map((tokens) => keyBy(tokens, (t) => t.id))),
   )
-})
+}) as [
+  <P extends PlatformFilter>(options?: ChaindataQueryOptions<P>) => Record<TokenId, TokenOf<P>>,
+  <P extends PlatformFilter>(
+    options?: ChaindataQueryOptions<P>,
+  ) => StateObservable<Record<TokenId, TokenOf<P>>>,
+]
 
-export type UseTokenReturnType = ReturnType<typeof useToken>
+export const [useToken, getToken$] = bind(
+  (tokenId: TokenId | null | undefined, type?: TokenType) => {
+    return getTokensMap$().pipe(
+      map((tokensMap): Token | null => {
+        const token = (tokenId && tokensMap[tokenId ?? "#"]) || null
+        return token && (!type || token.type === type) ? token : null
+      }),
+    )
+  },
+) as [
+  <T extends TokenType | undefined, R extends T extends TokenType ? TokenOfType<T> : Token>(
+    id: TokenId | null | undefined,
+    type?: T,
+  ) => R | null,
+  <T extends TokenType | undefined, R extends T extends TokenType ? TokenOfType<T> : Token>(
+    id: TokenId | null | undefined,
+    type?: T,
+  ) => StateObservable<R | null>,
+]

@@ -36,13 +36,13 @@ const Content = () => {
           iconRight={ChevronRightIcon}
           title={t("Manage networks")}
           subtitle={t("Add, enable and disable networks")}
-          to={`/settings/networks-tokens/networks/ethereum`}
+          to={`/settings/networks-tokens/networks`}
         />
         <CtaButton
           iconLeft={ListIcon}
           iconRight={ChevronRightIcon}
-          title={t("Manage Ethereum tokens")}
-          subtitle={t("Add or delete custom ERC20 tokens")}
+          title={t("Manage tokens")}
+          subtitle={t("View all tokens, and add or delete custom ERC20 tokens")}
           to={`/settings/networks-tokens/tokens`}
         />
         <CtaButton

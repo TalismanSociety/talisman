@@ -12,7 +12,7 @@ import {
   TransactionRequest,
 } from "viem"
 
-import { useEvmNetwork } from "@ui/state"
+import { useNetworkById } from "@ui/state"
 
 const getOpStackEthL1DataFee = async (
   publicClient: PublicClient,
@@ -53,7 +53,7 @@ export const useEthEstimateL1DataFee = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
 ) => {
-  const evmNetwork = useEvmNetwork(publicClient?.chain?.id?.toString())
+  const evmNetwork = useNetworkById(publicClient?.chain?.id?.toString(), "ethereum")
 
   const serialized = useMemo(
     () =>

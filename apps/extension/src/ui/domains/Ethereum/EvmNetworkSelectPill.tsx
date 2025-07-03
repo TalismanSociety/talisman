@@ -1,17 +1,17 @@
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
-import { useAuthorisedSites, useEvmNetwork } from "@ui/state"
+import { useAuthorisedSites, useNetworkById } from "@ui/state"
 
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
-import { NetworkLogo } from "./NetworkLogo"
 
-const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EvmNetworkId }) => {
-  const network = useEvmNetwork(evmNetworkId)
+const EvmNetworkName = ({ evmNetworkId }: { evmNetworkId: EthNetworkId }) => {
+  const network = useNetworkById(evmNetworkId, "ethereum")
 
   if (!network) return null
 
@@ -44,7 +44,7 @@ export const EvmNetworkSelectPill = () => {
             <Suspense>
               <NetworkLogo
                 className={classNames("text-[2.8rem] transition-opacity")} // flickering hack
-                ethChainId={evmNetworkId}
+                networkId={evmNetworkId}
               />
               <ChevronDownIcon className="shrink-0 text-base" />
             </Suspense>

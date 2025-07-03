@@ -19,13 +19,13 @@ export type NomPoolBondAccount = {
   address: string
   type?: AccountType
   name?: string
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   balance?: Balance
 }
 
 type AccountRowProps = {
   account: NomPoolBondAccount
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   selected: boolean
   showBalances?: boolean
   token?: Token | null
@@ -120,7 +120,7 @@ const AccountRow: FC<AccountRowProps> = ({
 
 type NomPoolBondAccountsListProps = {
   accounts: NomPoolBondAccount[]
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   noFormat?: boolean
   selected?: string | null
   onSelect?: (address: string) => void

@@ -1,22 +1,9 @@
 import { assert, u8aToHex } from "@polkadot/util"
-import { CustomSubNativeToken, subNativeTokenId } from "@talismn/balances"
-import { Chain, CustomChain, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
-import { connectionMetaDb } from "@talismn/connection-meta"
-import Dexie from "dexie"
-import { isEqual } from "lodash"
-import { distinctUntilChanged } from "rxjs"
 
-import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
-import { chainConnector } from "../../rpcs/chain-connector"
-import { chaindataProvider } from "../../rpcs/chaindata"
-import { updateAndWaitForUpdatedChaindata } from "../../rpcs/mini-metadata-updater"
-import { MessageHandler, MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
-import { activeChainsStore } from "./store.activeChains"
 
 export class ChainsHandler extends ExtensionHandler {
   private async validateVaultVerifierCertificateMnemonic() {
@@ -27,146 +14,12 @@ export class ChainsHandler extends ExtensionHandler {
     return true
   }
 
-  private chainUpsert: MessageHandler<"pri(chains.upsert)"> = async (chain) => {
-    await chaindataProvider.transaction("rw", ["chains", "tokens"], async () => {
-      const existingChain = (await chaindataProvider.chainById(chain.id)) as Chain | undefined
-      const existingToken = existingChain?.nativeToken?.id
-        ? await chaindataProvider.tokenById(existingChain.nativeToken.id)
-        : null
-      const existingNativeToken = existingToken?.type === "substrate-native" ? existingToken : null
-
-      const newToken: CustomSubNativeToken = {
-        id: subNativeTokenId(chain.id),
-        type: "substrate-native",
-        isTestnet: chain.isTestnet,
-        symbol: chain.nativeTokenSymbol,
-        decimals: chain.nativeTokenDecimals,
-        existentialDeposit: existingNativeToken?.existentialDeposit ?? "0", // TODO: query this for custom chains
-        logo: chain.nativeTokenLogoUrl ?? githubUnknownTokenLogoUrl,
-        chain: { id: chain.id },
-        evmNetwork: existingNativeToken?.evmNetwork,
-        isCustom: true,
-      }
-
-      if (chain.nativeTokenCoingeckoId !== null && chain.nativeTokenCoingeckoId?.length > 0)
-        newToken.coingeckoId = chain.nativeTokenCoingeckoId
-
-      const newChain: CustomChain = {
-        id: chain.id,
-        isTestnet: chain.isTestnet,
-        isDefault: false,
-        sortIndex: null,
-        genesisHash: chain.genesisHash,
-        prefix: existingChain?.prefix ?? 42, // TODO: query this for custom chains
-        name: chain.name,
-        themeColor: existingChain?.themeColor ?? "#505050",
-        logo: existingChain?.logo ?? null,
-        chainName: existingChain?.chainName ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
-        chainType: existingChain?.chainType ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
-        implName: existingChain?.implName ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
-        specName: existingChain?.specName ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
-        specVersion: existingChain?.specVersion ?? "", // NOTE: This is kept up to date by miniMetadataUpdater::hydrateCustomChains
-        nativeToken: { id: newToken.id },
-        tokens: existingChain?.tokens ?? [{ id: newToken.id }],
-        account: chain.accountFormat,
-        blockExplorerUrls: chain.subscanUrl ? [chain.subscanUrl] : null,
-        subscanUrl: chain.subscanUrl ?? null,
-        chainspecQrUrl: existingChain?.chainspecQrUrl ?? null,
-        latestMetadataQrUrl: existingChain?.latestMetadataQrUrl ?? null,
-        isUnknownFeeToken: existingChain?.isUnknownFeeToken ?? false,
-        feeToken: existingChain?.feeToken ?? null,
-        rpcs: chain.rpcs.map(({ url }) => ({ url })),
-        evmNetworks: existingChain?.evmNetworks ?? [],
-
-        parathreads: existingChain?.parathreads ?? [],
-
-        paraId: existingChain?.paraId ?? null,
-        relay: existingChain?.relay ?? null,
-
-        balancesConfig: existingChain?.balancesConfig ?? [],
-        balancesMetadata: [],
-        hasCheckMetadataHash: chain.hasCheckMetadataHash,
-
-        // CustomChain
-        isCustom: true,
-      }
-
-      await chaindataProvider.addCustomToken(newToken)
-      await chaindataProvider.addCustomChain(newChain)
-      await Dexie.waitFor(activeChainsStore.setActive(newChain.id, true))
-
-      // if symbol changed, id is different and previous native token must be deleted
-      // note: keep this code to allow for cleanup of custom chains edited prior 1.21.0
-      if (existingToken && existingToken.id !== newToken.id)
-        await chaindataProvider.removeToken(existingToken.id)
-
-      talismanAnalytics.capture(`${existingChain ? "update" : "create"} custom chain`, {
-        network: chain.id,
-      })
-    })
-
-    await connectionMetaDb.chainPriorityRpcs.delete(chain.id)
-    await connectionMetaDb.chainBackoffInterval.delete(chain.id)
-    chainConnector.reset(chain.id)
-
-    // ensure miniMetadatas are immediately updated, but don't wait for them to update before returning
-    updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
-
-    return true
-  }
-
-  private chainRemove: MessageHandler<"pri(chains.remove)"> = async (request) => {
-    await chaindataProvider.removeCustomChain(request.id)
-
-    talismanAnalytics.capture("remove custom chain", { chain: request.id })
-
-    return true
-  }
-
-  private chainReset: MessageHandler<"pri(chains.reset)"> = async (request) => {
-    await chaindataProvider.resetChain(request.id)
-
-    await connectionMetaDb.chainPriorityRpcs.delete(request.id)
-    await connectionMetaDb.chainBackoffInterval.delete(request.id)
-    chainConnector.reset(request.id)
-
-    talismanAnalytics.capture("reset chain", { chain: request.id })
-
-    return true
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      // --------------------------------------------------------------------
-      // chain handlers -----------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(chains.subscribe)":
-        // TODO: Run this on a timer or something instead of when subscribing to chains
-        updateAndWaitForUpdatedChaindata({ updateSubstrateChains: true })
-        return genericSubscription(
-          id,
-          port,
-          chaindataProvider.chainsObservable.pipe(distinctUntilChanged(isEqual)),
-        )
-
-      case "pri(chains.upsert)":
-        try {
-          return this.chainUpsert(request as RequestTypes["pri(chains.upsert)"])
-        } catch (err) {
-          throw new Error("Error saving chain", { cause: err })
-        }
-
-      case "pri(chains.remove)":
-        return this.chainRemove(request as RequestTypes["pri(chains.remove)"])
-
-      case "pri(chains.reset)":
-        return this.chainReset(request as RequestTypes["pri(chains.reset)"])
-
       case "pri(chains.generateQr.addNetworkSpecs)": {
         await this.validateVaultVerifierCertificateMnemonic()
 

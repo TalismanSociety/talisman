@@ -1,12 +1,10 @@
 import { XcmVersionedAssets } from "@polkadot-api/descriptors"
-import { TokenId, TokenList } from "@talismn/chaindata-provider"
-import { Chain } from "extension-core"
+import { DotNetwork, subAssetTokenId, TokenId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,
-  chain: Chain,
-  tokens: TokenList,
+  chain: DotNetwork,
 ): { tokenId: TokenId; value: bigint } => {
   if (assets.type === "V3") {
     // our view only support displaying one asset
@@ -16,8 +14,8 @@ export const getMultiAssetTokenId = (
       if (asset.id.type === "Concrete" && asset.fun.type === "Fungible") {
         const value = asset.fun.value
         const interior = asset.id.value.interior
-        if (interior.type === "Here" && chain.nativeToken?.id) {
-          return { tokenId: chain.nativeToken.id, value }
+        if (interior.type === "Here" && chain.nativeTokenId) {
+          return { tokenId: chain.nativeTokenId, value }
         }
         if (interior.type === "X2") {
           if (
@@ -27,9 +25,7 @@ export const getMultiAssetTokenId = (
           ) {
             // Assets pallet
             const assetId = interior.value[1].value
-            // at this stage we don't know the symbol but we know the start of the id
-            const search = `${chain?.id}-substrate-assets-${assetId}`
-            const tokenId = Object.keys(tokens).find((id) => id.startsWith(search))
+            const tokenId = subAssetTokenId(chain.id, String(assetId))
 
             if (!tokenId) throw new Error("Unknown multi asset")
 

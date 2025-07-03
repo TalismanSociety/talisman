@@ -5,23 +5,17 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react"
-import { Chain, SimpleEvmNetwork } from "@talismn/chaindata-provider"
+import { isNetworkDot } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { isChainActive, isEvmNetworkActive } from "extension-core"
+import { isNetworkActive } from "extension-core"
 import startCase from "lodash/startCase"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
-import {
-  useActiveChainsState,
-  useActiveEvmNetworksState,
-  useChainsMap,
-  useEvmNetworksMap,
-  useTokensMap,
-} from "@ui/state"
+import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
 
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
@@ -36,52 +30,45 @@ export function AccountTypeNetworkSearch({
 
   const [search, setSearch] = useState("")
 
-  const chainsMap = useChainsMap()
-  const evmNetworksMap = useEvmNetworksMap()
   const tokensMap = useTokensMap()
-  const activeEvmNetworks = useActiveEvmNetworksState()
-  const activePolkadotNetworks = useActiveChainsState()
+  const activeNetworkStates = useActiveNetworksState()
+  const allNetworksAggregated = useNetworks()
+  const allNetworksMap = useNetworksMapById()
 
-  const allNetworks = useMemo(
+  const allNetworkItems = useMemo(
     () =>
-      [
-        ...Object.values(chainsMap).flatMap((chain) => {
-          if (chain.isTestnet) return []
-          const relay = chain.relay?.id ? chainsMap[chain.relay.id] : null
-          const { label, type } = getNetworkInfo(t, { chain, relay })
-          const symbol = tokensMap[chain.nativeToken?.id ?? ""]?.symbol
-          const isActive = isChainActive(chain, activePolkadotNetworks)
-
-          return { id: chain.id, label, type, symbol, account: chain.account, isActive }
+      allNetworksAggregated
+        .map((network) => {
+          const { label, type } = getNetworkInfo(t, {
+            networkId: network.id,
+            networks: allNetworksMap,
+          })
+          const symbol = tokensMap[network.nativeTokenId]?.symbol
+          const isActive = isNetworkActive(network, activeNetworkStates)
+          const account = isNetworkDot(network) ? network.account : undefined
+          return { id: network.id, label, type, symbol, account, isActive }
+        })
+        .sort((a, b) => {
+          // First sort by isActive (true values first)
+          if (a.isActive !== b.isActive) {
+            return a.isActive ? -1 : 1
+          }
+          // Then sort alphabetically by label
+          return a.label?.localeCompare(b.label ?? "") ?? 0
         }),
-        ...Object.values(evmNetworksMap).flatMap((evmNetwork) => {
-          if (evmNetwork.isTestnet) return []
-          const { label, type } = getNetworkInfo(t, { evmNetwork })
-          const symbol = tokensMap[evmNetwork.nativeToken?.id ?? ""]?.symbol
-          const isActive = isEvmNetworkActive(evmNetwork, activeEvmNetworks)
-          return { id: evmNetwork.id, label, type, symbol, isActive }
-        }),
-      ].sort((a, b) => {
-        // First sort by isActive (true values first)
-        if (a.isActive !== b.isActive) {
-          return a.isActive ? -1 : 1
-        }
-        // Then sort alphabetically by label
-        return a.label?.localeCompare(b.label ?? "") ?? 0
-      }),
 
-    [t, chainsMap, evmNetworksMap, tokensMap, activeEvmNetworks, activePolkadotNetworks],
+    [allNetworksAggregated, t, allNetworksMap, tokensMap, activeNetworkStates],
   )
-  type Network = (typeof networks)[number]
+  type Network = (typeof filteredNetworkItems)[number]
 
-  const networks = useMemo(() => {
-    if (!search) return allNetworks
-    return allNetworks.filter(
+  const filteredNetworkItems = useMemo(() => {
+    if (!search) return allNetworkItems
+    return allNetworkItems.filter(
       (network) =>
         network.label?.toLowerCase().includes(search.toLowerCase().trim()) ||
         network.symbol?.toLowerCase().includes(search.toLowerCase().trim()),
     )
-  }, [allNetworks, search])
+  }, [allNetworkItems, search])
 
   const [selected, setSelected] = useState<Network | null>(null)
 
@@ -92,19 +79,25 @@ export function AccountTypeNetworkSearch({
 
       if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountType()
 
-      const network: Chain | SimpleEvmNetwork | undefined =
-        chainsMap[option.id] ?? evmNetworksMap[option.id] ?? undefined
+      const network = allNetworksMap[option.id] // ?? evmNetworksMap[option.id] ?? undefined
       setAccountType(getAccountType(network))
     },
-    [chainsMap, evmNetworksMap, setAccountType],
+    [allNetworksMap, setAccountType],
   )
 
   const networksWithHeader = useMemo(
     () => [
-      { id: "combobox-header", label: null, type: "", symbol: "", isActive: false },
-      ...networks,
+      {
+        id: "combobox-header",
+        label: "",
+        type: "",
+        symbol: "",
+        account: undefined,
+        isActive: false,
+      },
+      ...filteredNetworkItems,
     ],
-    [networks],
+    [filteredNetworkItems],
   )
 
   return (
@@ -129,7 +122,7 @@ export function AccountTypeNetworkSearch({
           <SearchIcon className="shrink-0 text-base" />
           {selected && selected.id !== DEFAULT_COMBO_BOX_HEADER_ID && (
             <div className="flex items-center gap-4">
-              <ChainLogo id={selected.id} className="text-md" />
+              <NetworkLogo networkId={selected.id} className="text-md" />
               <span className="text-base text-white">{selected.label}</span>
             </div>
           )}
@@ -167,7 +160,7 @@ export function AccountTypeNetworkSearch({
                   className="hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800 flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base"
                   value={network}
                 >
-                  <ChainLogo id={network.id} className="text-md" />
+                  <NetworkLogo networkId={network.id} className="text-md" />
                   <span className="text-white">{network.label}</span>
                   <span className="text-body-secondary/50 text-base">{network.type}</span>
                   <div className="flex-grow" />

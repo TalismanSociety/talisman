@@ -1,4 +1,4 @@
-import type { MessageTypes, RequestSignatures, RequestType, ResponseType } from "../types"
+import type { MessageTypes, RequestType, ResponseType } from "../types"
 import type { Port } from "../types/base"
 import { ExtensionStore, Store, TabStore } from "../handlers/stores"
 
@@ -23,7 +23,7 @@ abstract class BaseHandler<TStore extends Store> implements THandler {
     return this.#stores
   }
 
-  abstract handle<TMessageType extends keyof RequestSignatures>(
+  abstract handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
@@ -33,7 +33,7 @@ abstract class BaseHandler<TStore extends Store> implements THandler {
 }
 
 export abstract class TabsHandler extends BaseHandler<TabStore> {
-  abstract handle<TMessageType extends keyof RequestSignatures>(
+  abstract handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
@@ -47,7 +47,7 @@ export abstract class ExtensionHandler extends BaseHandler<ExtensionStore> {
   // This handler should be used on the extension side only, because it
   // provides access to the passowrd store which contains sensitive data.
   */
-  abstract handle<TMessageType extends keyof RequestSignatures>(
+  abstract handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,

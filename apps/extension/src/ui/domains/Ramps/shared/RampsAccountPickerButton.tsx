@@ -11,7 +11,7 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useChain, useToken } from "@ui/state"
+import { useNetworkById, useToken } from "@ui/state"
 
 import { RampAccountPickerBalancesDisplayMode, RampsAccountPicker } from "./RampsAccountPicker"
 
@@ -26,7 +26,7 @@ export const RampsAccountPickerButton: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
+  const chain = useNetworkById(token?.networkId, "polkadot")
 
   const account = useMemo(() => {
     if (!selected) return null

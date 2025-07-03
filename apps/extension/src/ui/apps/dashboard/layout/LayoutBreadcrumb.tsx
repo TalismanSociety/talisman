@@ -8,6 +8,7 @@ import { MethodType } from "@ui/domains/Account/AccountAdd/context"
 
 const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> => {
   const { t } = useTranslation()
+  const location = useLocation()
 
   // this array contains all entries, instead of being a tree
   // this allows for route structures to be more flexible (ex: account add paths are not under /settings/accounts)
@@ -120,6 +121,18 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
         networksAndTokens,
         { label: t("Networks"), to: "/settings/networks-tokens/networks" },
       ],
+      "/settings/networks-tokens/networks/add": [
+        settings,
+        networksAndTokens,
+        { label: t("Networks"), to: "/settings/networks-tokens/networks" },
+        { label: t("Add Network"), to: location.pathname },
+      ],
+      "/settings/networks-tokens/network": [
+        settings,
+        networksAndTokens,
+        { label: t("Networks"), to: "/settings/networks-tokens/networks" },
+        { label: t("Edit Network"), to: location.pathname },
+      ],
       "/settings/networks-tokens/tokens": [
         settings,
         networksAndTokens,
@@ -133,7 +146,7 @@ const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> =>
       "/settings/about": [settings, { label: t("About"), to: "/settings/about" }],
       "/settings/analytics": [settings, { label: t("Usage Settings"), to: "/settings/analytics" }],
     }
-  }, [t])
+  }, [location.pathname, t])
 }
 
 const useBreadcrumb = () => {

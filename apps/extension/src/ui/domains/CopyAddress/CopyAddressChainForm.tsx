@@ -14,13 +14,13 @@ import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPe
 import {
   useAccountByAddress,
   useBalancesByAddress,
-  useChains,
   useFeatureFlag,
+  useNetworks,
   useRemoteConfig,
 } from "@ui/state"
 
 import { AccountIcon } from "../Account/AccountIcon"
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import {
   ChainFormat,
@@ -84,7 +84,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   return (
     <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
       {format.chainId ? (
-        <ChainLogo className="shrink-0 text-xl" id={format.chainId} />
+        <NetworkLogo className="shrink-0 text-xl" networkId={format.chainId} />
       ) : (
         <AccountIcon
           className="shrink-0 text-xl"
@@ -146,7 +146,7 @@ const ChainFormatsList = ({ formats }: { formats: ChainFormat[] }) => (
 export const CopyAddressChainForm = () => {
   const { address } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  const chains = useChains({ activeOnly: false, includeTestnets: true })
+  const chains = useNetworks({ platform: "polkadot", activeOnly: false, includeTestnets: true })
   const { t } = useTranslation()
 
   const account = useAccountByAddress(address)

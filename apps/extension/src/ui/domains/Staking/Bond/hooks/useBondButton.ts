@@ -57,14 +57,13 @@ export const useBondButton = ({
   const address = sorted[0]?.address
 
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
-    if (!balances || !tokenId || !token?.chain || token?.type !== "substrate-native")
-      return [null, false]
+    if (!balances || !tokenId || token?.type !== "substrate-native") return [null, false]
     try {
       const poolId =
-        remoteConfig.stakingPools[token.chain.id]?.[0] ||
-        remoteConfig.nominationPools[token.chain.id]?.[0]
+        remoteConfig.stakingPools[token.networkId]?.[0] ||
+        remoteConfig.nominationPools[token.networkId]?.[0]
 
-      const isStakingEnabled = !!remoteConfig.stakingPools[token.chain.id]
+      const isStakingEnabled = !!remoteConfig.stakingPools[token.networkId]
 
       if (!poolId && !isStakingEnabled) return [null, false]
 
@@ -73,7 +72,7 @@ export const useBondButton = ({
 
       // lookup existing poolId for that account
       for (const balance of sorted.filter((b) => b.address === address)) {
-        switch (token.chain.id) {
+        switch (token.networkId) {
           case "bittensor": {
             type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
             const entry = balance.subtensor.find(
@@ -104,14 +103,23 @@ export const useBondButton = ({
     }
 
     return [null, false]
-  }, [balances, remoteConfig, tokenId, token?.chain, token?.type, address, sorted, netuid])
+  }, [
+    balances,
+    tokenId,
+    token,
+    remoteConfig.stakingPools,
+    remoteConfig.nominationPools,
+    sorted,
+    address,
+    netuid,
+  ])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       if (!openArgs) return
       e.stopPropagation()
 
-      if (token?.chain?.id === "bittensor") {
+      if (token?.networkId === "bittensor") {
         handleOpenBittensorModal({
           ...openArgs,
           stakeType,
@@ -124,7 +132,7 @@ export const useBondButton = ({
       }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [openArgs, token?.chain?.id, genericEvent, handleOpenBittensorModal, stakeType, open, netuid],
+    [openArgs, token?.networkId, genericEvent, handleOpenBittensorModal, stakeType, open, netuid],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }

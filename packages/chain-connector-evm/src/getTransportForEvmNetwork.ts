@@ -1,10 +1,7 @@
-import { EvmNetwork } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { fallback, http } from "viem"
 
-import { addOnfinalityApiKey } from "./util"
-
 export type TransportOptions = {
-  onFinalityApiKey?: string
   batch?:
     | boolean
     | {
@@ -14,20 +11,15 @@ export type TransportOptions = {
 }
 
 export const getTransportForEvmNetwork = (
-  evmNetwork: EvmNetwork,
+  evmNetwork: EthNetwork,
   options: TransportOptions = {},
 ) => {
   if (!evmNetwork.rpcs?.length) throw new Error("No RPCs found for EVM network")
 
-  const { batch, onFinalityApiKey } = options
+  const { batch } = options
 
   return fallback(
-    evmNetwork.rpcs.map((rpc) =>
-      http(addOnfinalityApiKey(rpc.url, onFinalityApiKey), {
-        batch,
-        retryCount: 0,
-      }),
-    ),
+    evmNetwork.rpcs.map((url) => http(url, { batch, retryCount: 0 })),
     { retryCount: 0 },
   )
 }

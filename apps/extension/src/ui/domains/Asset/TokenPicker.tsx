@@ -1,31 +1,28 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Address, getAccountGenesisHash } from "extension-core"
+import { Address, isAccountCompatibleWithNetwork } from "extension-core"
 import sortBy from "lodash/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useAccountByAddress,
   useBalances,
-  useChains,
-  useChainsMap,
-  useEvmNetworksMap,
   useIsBalanceInitializing,
+  useNetworksMapById,
   useSelectedCurrency,
   useTokenRatesMap,
   useTokens,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
-import { useFormatNetworkName } from "../SendFunds/useNetworkDetails"
-import { ChainLogoBase } from "./ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -37,7 +34,6 @@ type TokenRowProps = {
   onClick?: () => void
   balances: Balances
   chainName?: string | null
-  chainLogo?: string | null
   hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
@@ -72,7 +68,6 @@ type TokenData = {
   balances: Balances
   chainNameSearch: string | null | undefined
   chainName: string
-  chainLogo: string | null | undefined
   hasFiatRate: boolean
 }
 
@@ -82,7 +77,7 @@ const TokenRows: FC<{
   allowUntransferable?: boolean
   onTokenClick: (tokenId: TokenId) => void
 }> = ({ tokens, selectedTokenId, allowUntransferable, onTokenClick }) => {
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
@@ -121,7 +116,6 @@ const TokenRows: FC<{
                 token={tokenData.token}
                 balances={tokenData.balances}
                 chainName={tokenData.chainName}
-                chainLogo={tokenData.chainLogo}
                 hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
@@ -139,7 +133,6 @@ const TokenRow: FC<TokenRowProps> = ({
   selected,
   balances,
   chainName,
-  chainLogo,
   hasFiatRate,
   allowUntransferable,
   onClick,
@@ -203,11 +196,7 @@ const TokenRow: FC<TokenRowProps> = ({
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
           <div className="flex flex-col justify-center">
-            <ChainLogoBase
-              logo={chainLogo}
-              name={chainName ?? ""}
-              className="inline-block text-sm"
-            />
+            <NetworkLogo networkId={token.networkId} className="inline-block text-sm" />
           </div>
           <div>{chainName}</div>
           <div className={classNames("grow", isLoading && "animate-pulse")}>
@@ -252,12 +241,10 @@ const TokensList: FC<TokensListProps> = ({
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
-  const chains = useChains({ activeOnly, includeTestnets: true })
-  const chainsMap = useChainsMap({ activeOnly, includeTestnets: true })
-  const evmNetworksMap = useEvmNetworksMap({ activeOnly, includeTestnets: true })
   const allTokens = useTokens({ activeOnly, includeTestnets: true })
   const tokenRatesMap = useTokenRatesMap()
-  const formatNetworkName = useFormatNetworkName()
+  const networksMap = useNetworksMapById()
+
   const isBalancesInitializing = useIsBalanceInitializing()
   const balances = useBalances(ownedOnly ? "owned" : "all")
   const currency = useSelectedCurrency()
@@ -267,26 +254,15 @@ const TokensList: FC<TokensListProps> = ({
     [address, selected, balances],
   )
 
-  const accountChain = useMemo(() => {
-    const genesisHash = getAccountGenesisHash(account)
-    return genesisHash && chains.find((c) => c.genesisHash === genesisHash)
-  }, [account, chains])
-
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
-      if (!account || selected) return true
-      if (accountChain) return token.chain?.id === accountChain.id
+      const network = networksMap[token.networkId]
+      if (!network) return false
+      if (!account) return true
 
-      // substrate accounts can send as long as we have a corresponding chain
-      if (!isEthereumAddress(address)) return !!token.chain
-
-      // ethereum ledger account can only sign on evm chain
-      if (account.type === "ledger-ethereum") return !!token.evmNetwork
-
-      // non ledger ethereum accounts may also sign on substrate chains (MOVR, GLMR, ..)
-      return !!chainsMap[token.chain?.id ?? ""] || !!token.evmNetwork
+      return isAccountCompatibleWithNetwork(network, account)
     },
-    [account, accountChain, selected, address, chainsMap],
+    [account, networksMap],
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -295,26 +271,19 @@ const TokensList: FC<TokensListProps> = ({
       .filter(filterAccountCompatibleTokens)
       .filter(isTransferableToken)
       .map((token) => {
-        const chain = token.chain && chainsMap[token.chain.id]
-        const evmNetwork = token.evmNetwork && evmNetworksMap[token.evmNetwork.id]
+        const network = networksMap[token.networkId]
+        const networkId = token.networkId
+        const netInfo = getNetworkInfo(t, { networkId, networks: networksMap })
         return {
           id: token.id,
           token,
-          chainNameSearch: chain?.name ?? evmNetwork?.name,
-          chainName: formatNetworkName(chain ?? undefined, evmNetwork ?? undefined),
-          chainLogo: chain?.logo ?? evmNetwork?.logo,
+          chainNameSearch: network?.name,
+          chainName: netInfo.fullName,
+          chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
-  }, [
-    allTokens,
-    chainsMap,
-    evmNetworksMap,
-    filterAccountCompatibleTokens,
-    formatNetworkName,
-    tokenFilter,
-    tokenRatesMap,
-  ])
+  }, [allTokens, filterAccountCompatibleTokens, networksMap, t, tokenFilter, tokenRatesMap])
 
   // sort alphabetically by symbol + chain name
   const sortTokens = useCallback(
@@ -343,10 +312,10 @@ const TokensList: FC<TokensListProps> = ({
         if (!aHasBalance && bHasBalance) return 1
 
         // polkadot and kusama should appear first
-        if (a.token.id === "polkadot-substrate-native") return -1
-        if (b.token.id === "polkadot-substrate-native") return 1
-        if (a.token.id === "kusama-substrate-native") return -1
-        if (b.token.id === "kusama-substrate-native") return 1
+        if (a.token.id === subNativeTokenId("polkadot")) return -1
+        if (b.token.id === subNativeTokenId("polkadot")) return 1
+        if (a.token.id === subNativeTokenId("kusama")) return -1
+        if (b.token.id === subNativeTokenId("kusama")) return 1
 
         // keep alphabetical sort
         return 0

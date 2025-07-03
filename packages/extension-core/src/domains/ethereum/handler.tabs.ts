@@ -1,7 +1,12 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { CustomEvmErc20Token, evmErc20TokenId } from "@talismn/balances"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  EthNetwork,
+  EvmErc20Token,
+  evmErc20TokenId,
+  EvmNativeToken,
+  evmNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { convertAddress, throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
@@ -17,7 +22,7 @@ import {
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
 
-import type { RequestSignatures, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -26,6 +31,8 @@ import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
 import { TalismanNotOnboardedError } from "../app/utils"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
+import { activeTokensStore, isTokenActive } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
 import { signAndSendEth, signEth } from "../signing/requests"
 import {
@@ -38,7 +45,6 @@ import {
   EthWalletPermissions,
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
-import { activeTokensStore, isTokenActive } from "../tokens/store.activeTokens"
 import { getEvmErrorCause } from "./errors"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
@@ -59,7 +65,6 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import { activeEvmNetworksStore, isEvmNetworkActive } from "./store.activeEvmNetworks"
 import {
   AnyEthRequest,
   AnyEvmError,
@@ -109,7 +114,10 @@ export class EthTabsHandler extends TabsHandler {
   private async getPublicClient(url: string, authorisedAddress?: string): Promise<PublicClient> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(site.ethChainId.toString())
+    const ethereumNetwork = await chaindataProvider.getNetworkById(
+      site.ethChainId.toString(),
+      "ethereum",
+    )
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -312,33 +320,49 @@ export class EthTabsHandler extends TabsHandler {
     port: Port,
   ): Promise<EthRequestResult<"wallet_addEthereumChain">> => {
     const {
-      params: [network],
+      params: [ethChain],
     } = request
 
-    const chainId = parseInt(network.chainId, 16)
-    const existing = await chaindataProvider.evmNetworkById(chainId.toString())
-    const activeNetworks = await activeEvmNetworksStore.get()
+    const chainId = parseInt(ethChain.chainId, 16)
+    if (isNaN(chainId))
+      throw new EthProviderRpcError("Invalid chain id", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    const networkId = String(chainId)
+    const knownNetwork = await chaindataProvider.getNetworkById(chainId.toString(), "ethereum")
+
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
-    if (existing && isEvmNetworkActive(existing, activeNetworks))
+    const activeNetworks = await activeNetworksStore.get()
+    if (knownNetwork && isNetworkActive(knownNetwork, activeNetworks))
       return this.switchEthereumChain(url, {
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: network.chainId }],
+        params: [{ chainId: ethChain.chainId }],
       })
 
+    if (knownNetwork) {
+      const nativeToken = await chaindataProvider.getTokenById(
+        knownNetwork.nativeTokenId,
+        "evm-native",
+      )
+      if (nativeToken) {
+        await requestAddNetwork(url, knownNetwork, nativeToken, port)
+        return null
+      }
+    }
+
     // on some dapps (ex: https://app.pangolin.exchange/), iconUrls is a string instead of an array
-    if (typeof network.iconUrls === "string") network.iconUrls = [network.iconUrls]
+    if (typeof ethChain.iconUrls === "string") ethChain.iconUrls = [ethChain.iconUrls]
 
     // type check payload
-    if (!isValidAddEthereumRequestParam(network))
+    if (!isValidAddEthereumRequestParam(ethChain))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     // check that the RPC exists and has the correct chain id
-    if (!network.rpcUrls.length)
+    if (!ethChain.rpcUrls.length)
       throw new EthProviderRpcError("Missing rpcUrls", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     await Promise.all(
-      network.rpcUrls.map(async (rpcUrl) => {
+      ethChain.rpcUrls.map(async (rpcUrl) => {
         try {
           const client = createClient({ transport: http(rpcUrl, { retryCount: 1 }) })
           const rpcChainIdHex = await Promise.race([
@@ -356,15 +380,34 @@ export class EthTabsHandler extends TabsHandler {
       }),
     )
 
-    await requestAddNetwork(url, network, port)
+    const nativeToken: EvmNativeToken = {
+      id: evmNativeTokenId(networkId),
+      type: "evm-native",
+      networkId,
+      platform: "ethereum",
+      symbol: ethChain.nativeCurrency.symbol,
+      name: ethChain.nativeCurrency.name || ethChain.nativeCurrency.symbol,
+      decimals: ethChain.nativeCurrency.decimals || 18,
 
-    // switch automatically to new chain
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(chainId.toString())
-    if (ethereumNetwork) {
-      const { err, val } = urlToDomain(url)
-      if (err) throw new Error(val)
-      this.stores.sites.updateSite(val, { ethChainId: chainId })
+      isDefault: true,
     }
+
+    const network: EthNetwork = {
+      id: networkId,
+      platform: "ethereum",
+      name: ethChain.chainName || "Unknown Network",
+      rpcs: ethChain.rpcUrls,
+      nativeTokenId: nativeToken.id,
+      nativeCurrency: {
+        decimals: nativeToken.decimals,
+        name: nativeToken.name ?? nativeToken.symbol,
+        symbol: nativeToken.symbol,
+      },
+      blockExplorerUrls: ethChain.blockExplorerUrls ?? [],
+      logo: ethChain.iconUrls?.[0],
+    }
+
+    await requestAddNetwork(url, network, nativeToken, port)
 
     return null
   }
@@ -380,9 +423,12 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const ethChainId = parseInt(hexChainId, 16)
 
-    const ethereumNetwork = await chaindataProvider.evmNetworkById(ethChainId.toString())
-    const activeNetworks = await activeEvmNetworksStore.get()
-    if (!ethereumNetwork || !isEvmNetworkActive(ethereumNetwork, activeNetworks))
+    const ethereumNetwork = await chaindataProvider.getNetworkById(
+      ethChainId.toString(),
+      "ethereum",
+    )
+    const activeNetworks = await activeNetworksStore.get()
+    if (!ethereumNetwork || !isNetworkActive(ethereumNetwork, activeNetworks))
       throw new EthProviderRpcError(
         `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
@@ -496,8 +542,8 @@ export class EthTabsHandler extends TabsHandler {
         if (typeof ethChainId !== "number")
           throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-        const tokenId = evmErc20TokenId(ethChainId.toString(), address)
-        const existing = await chaindataProvider.tokenById(tokenId)
+        const tokenId = evmErc20TokenId(ethChainId.toString(), address as `0x${string}`)
+        const existing = await chaindataProvider.getTokenById(tokenId)
         if (existing && isTokenActive(existing, await activeTokensStore.get()))
           throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
@@ -515,11 +561,11 @@ export class EthTabsHandler extends TabsHandler {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
 
-        const allTokens = await chaindataProvider.tokens()
+        const allTokens = await chaindataProvider.getTokens()
         const symbolFound = allTokens.some(
           (token) =>
             token.type === "evm-erc20" &&
-            token.evmNetwork?.id === ethChainId.toString() &&
+            token.networkId === ethChainId.toString() &&
             token.symbol === symbol &&
             token.contractAddress.toLowerCase() !== address.toLowerCase(),
         )
@@ -543,18 +589,17 @@ export class EthTabsHandler extends TabsHandler {
             i18next.t(`Another {{symbol}} token already exists on this network`, { symbol }),
           )
 
-        const token: CustomEvmErc20Token = {
+        const token: EvmErc20Token = {
           id: tokenId,
           type: "evm-erc20",
-          isTestnet: false,
+          platform: "ethereum",
           symbol: symbol ?? tokenInfo.symbol,
           decimals: decimals ?? tokenInfo.decimals,
-          logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
+          name: tokenInfo.name ?? symbol ?? tokenInfo.symbol,
+          logo: image ?? tokenInfo.logo,
           coingeckoId: tokenInfo.coingeckoId,
-          contractAddress: address,
-          evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
-          isCustom: true,
-          image: image ?? tokenInfo.image,
+          contractAddress: address as `0x${string}`,
+          networkId: tokenInfo.networkId,
         }
 
         await requestWatchAsset(url, request.params, token, warnings, port)
@@ -784,7 +829,7 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  async handle<TMessageType extends keyof RequestSignatures>(
+  async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],

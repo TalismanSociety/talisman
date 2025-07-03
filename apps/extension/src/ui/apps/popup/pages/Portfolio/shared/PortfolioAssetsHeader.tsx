@@ -29,7 +29,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useChainByGenesisHash, usePortfolio, useSelectedCurrency } from "@ui/state"
+import { useBalances, useNetworkByGenesisHash, usePortfolio, useSelectedCurrency } from "@ui/state"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
@@ -65,7 +65,7 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
 
   const { genericEvent } = useAnalytics()
 
-  const chain = useChainByGenesisHash(getAccountGenesisHash(account))
+  const chain = useNetworkByGenesisHash(getAccountGenesisHash(account))
   const copyAddress = useCallback(() => {
     openCopyAddressModal({
       address: account?.address,

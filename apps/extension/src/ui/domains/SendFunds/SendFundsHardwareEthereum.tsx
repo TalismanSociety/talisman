@@ -8,7 +8,7 @@ import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
 import { useSendFunds } from "./useSendFunds"
 
 export const SendFundsHardwareEthereum = () => {
-  const { from, evmTransaction, sendWithSignature, setIsLocked, evmNetwork } = useSendFunds()
+  const { from, evmTransaction, sendWithSignature, setIsLocked, network } = useSendFunds()
   const account = useAccountByAddress(from)
 
   const [error, setError] = useState<Error>()
@@ -30,7 +30,7 @@ export const SendFundsHardwareEthereum = () => {
 
   return (
     <SignHardwareEthereum
-      evmNetworkId={evmNetwork?.id}
+      evmNetworkId={network?.id}
       account={account}
       method="eth_sendTransaction"
       payload={evmTransaction?.transaction}

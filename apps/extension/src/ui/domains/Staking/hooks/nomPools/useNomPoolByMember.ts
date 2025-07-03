@@ -1,12 +1,12 @@
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { ChainId } from "extension-core"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { NomPoolMember } from "../../types"
 
 export const useNomPoolByMember = (
-  chainId: ChainId | null | undefined,
+  chainId: DotNetworkId | null | undefined,
   address: string | null | undefined,
 ) => {
   const { data: sapi } = useScaleApi(chainId)

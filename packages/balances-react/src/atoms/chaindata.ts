@@ -25,9 +25,9 @@ export const miniMetadatasAtom = atom(async (get) => (await get(chaindataAtom)).
 export const chaindataAtom = atomWithObservable((get) => {
   const enableTestnets = get(enableTestnetsAtom)
 
-  const filterTestnets = <T extends { isTestnet: boolean }>(items: T[]) =>
+  const filterTestnets = <T extends { isTestnet?: boolean }>(items: T[]) =>
     enableTestnets ? items : items.filter(({ isTestnet }) => !isTestnet)
-  const filterMapTestnets = <T extends { isTestnet: boolean }>(items: Record<string, T>) =>
+  const filterMapTestnets = <T extends { isTestnet?: boolean }>(items: Record<string, T>) =>
     enableTestnets
       ? items
       : Object.fromEntries(Object.entries(items).filter(([, { isTestnet }]) => !isTestnet))
@@ -43,43 +43,35 @@ export const chaindataAtom = atomWithObservable((get) => {
 
   const distinctUntilIsEqual = distinctUntilChanged(<T>(a: T, b: T) => isEqual(a, b))
 
-  const chains = get(chaindataProviderAtom).chainsObservable.pipe(
+  const chains = get(chaindataProviderAtom)
+    .getNetworks$("polkadot")
+    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
+  const chainsById = get(chaindataProviderAtom)
+    .getNetworksMapById$("polkadot")
+    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
+  const chainsByGenesisHash = get(chaindataProviderAtom)
+    .getNetworksMapByGenesisHash$()
+    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
+  const evmNetworks = get(chaindataProviderAtom)
+    .getNetworks$("ethereum")
+    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
+  const networks = get(chaindataProviderAtom)
+    .getNetworks$()
+    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
+  const evmNetworksById = get(chaindataProviderAtom)
+    .getNetworksMapById$("ethereum")
+    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
+  const networksById = get(chaindataProviderAtom)
+    .getNetworksMapById$()
+    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
+  const tokens = get(chaindataProviderAtom).tokens$.pipe(
     distinctUntilIsEqual,
-    map(filterTestnets),
-    distinctUntilIsEqual,
-  )
-  const chainsById = get(chaindataProviderAtom).chainsByIdObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterMapTestnets),
-    distinctUntilIsEqual,
-  )
-  const chainsByGenesisHash = get(chaindataProviderAtom).chainsByGenesisHashObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterMapTestnets),
-    distinctUntilIsEqual,
-  )
-  const evmNetworks = get(chaindataProviderAtom).evmNetworksObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterTestnets),
-    distinctUntilIsEqual,
-  )
-  const evmNetworksById = get(chaindataProviderAtom).evmNetworksByIdObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterMapTestnets),
-    distinctUntilIsEqual,
-  )
-  const tokens = get(chaindataProviderAtom).tokensObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterTestnets),
     map(filterEnabledTokens),
     distinctUntilIsEqual,
   )
-  const tokensById = get(chaindataProviderAtom).tokensByIdObservable.pipe(
-    distinctUntilIsEqual,
-    map(filterMapTestnets),
-    map(filterMapEnabledTokens),
-    distinctUntilIsEqual,
-  )
+  const tokensById = get(chaindataProviderAtom)
+    .getTokensMapById$()
+    .pipe(distinctUntilIsEqual, map(filterMapEnabledTokens), distinctUntilIsEqual)
   const miniMetadatasObservable = dexieToRxjs(liveQuery(() => balancesDb.miniMetadatas.toArray()))
   const miniMetadatas = combineLatest([
     miniMetadatasObservable.pipe(distinctUntilIsEqual),
@@ -90,6 +82,8 @@ export const chaindataAtom = atomWithObservable((get) => {
   )
 
   return combineLatest({
+    networks,
+    networksById,
     chains,
     chainsById,
     chainsByGenesisHash,

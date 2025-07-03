@@ -1,6 +1,5 @@
 import { XcmV3Junctions } from "@polkadot-api/descriptors"
-import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
-import { Chain } from "extension-core"
+import { DotNetwork, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { values } from "lodash"
 
@@ -11,12 +10,12 @@ type MultiLocation = {
 
 export const getMultiLocationTokenId = (
   location: MultiLocation,
-  chain: Chain,
+  chain: DotNetwork,
   tokens: TokenList,
 ): TokenId | null => {
-  if (location.interior.type === "Here" && chain.nativeToken?.id) {
+  if (location.interior.type === "Here") {
     // native token
-    return chain.nativeToken.id
+    return chain.nativeTokenId
   }
 
   if (location.interior.type === "X2") {
@@ -31,8 +30,8 @@ export const getMultiLocationTokenId = (
         values(tokens).find(
           (token: Token) =>
             token.type === "substrate-assets" &&
-            token.chain.id === chain.id &&
-            token.assetId === String(assetId),
+            token.networkId === chain.id &&
+            BigInt(token.assetId) === assetId,
         )?.id ?? null
       )
     }

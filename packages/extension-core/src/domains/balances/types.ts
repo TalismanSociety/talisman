@@ -1,17 +1,15 @@
 import { BalanceJson } from "@talismn/balances"
-import { ChainId, EvmNetwork, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
 import { Address, AddressesByChain } from "../../types/base"
 
-export { Balances, Balance, BalanceFormatter, filterMirrorTokens } from "@talismn/balances"
+export { Balance, BalanceFormatter, Balances, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
 export type BalanceLoadingStatus = "initialising" | "loading" | "cached" | "live"
 
 export interface RequestBalance {
-  chainId?: ChainId
-  evmNetworkId?: EvmNetworkId
   tokenId: TokenId
   address: Address
 }
@@ -21,9 +19,9 @@ export type BalanceSubscriptionResponse = {
   status: BalanceLoadingStatus
 }
 
-export type AddressesAndEvmNetwork = {
+export type AddressesAndEvmNetworks = {
   addresses: string[]
-  evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+  evmNetworks: Array<Pick<EthNetwork, "id" | "nativeTokenId">>
 }
 export type AddressesAndTokens = {
   addresses: string[]
@@ -31,7 +29,7 @@ export type AddressesAndTokens = {
 }
 export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
-  addressesAndEvmNetworks: AddressesAndEvmNetwork
+  addressesAndEvmNetworks: AddressesAndEvmNetworks
   addressesAndTokens: AddressesAndTokens
 }
 
@@ -43,7 +41,7 @@ export type NomPoolStakedBalance = {
 }
 
 export type RequestNomPoolStake = {
-  chainId?: ChainId
+  chainId?: DotNetworkId
   addresses: Address[]
 }
 

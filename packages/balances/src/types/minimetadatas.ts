@@ -1,23 +1,19 @@
 import { u8aToHex } from "@polkadot/util"
 import { xxhashAsU8a } from "@polkadot/util-crypto"
-import { ChainId } from "@talismn/chaindata-provider"
+import { AnyMiniMetadataSchema } from "@talismn/chaindata-provider"
+import z from "zod/v4"
+
+import { AnyNewBalanceModule, InferChainMeta } from "../modules"
 
 /** For fast db access, you can calculate the primary key for a miniMetadata using this method */
 export const deriveMiniMetadataId = ({
   source,
   chainId,
-  specName,
   specVersion,
-  balancesConfig,
-}: Pick<
-  MiniMetadata,
-  "source" | "chainId" | "specName" | "specVersion" | "balancesConfig"
->): string =>
+  libVersion,
+}: Pick<MiniMetadata, "source" | "chainId" | "specVersion" | "libVersion">): string =>
   u8aToHex(
-    xxhashAsU8a(
-      new TextEncoder().encode(`${source}${chainId}${specName}${specVersion}${balancesConfig}`),
-      64,
-    ),
+    xxhashAsU8a(new TextEncoder().encode(`${source}${chainId}${specVersion}${libVersion}`), 64),
     undefined,
     false,
   )
@@ -30,34 +26,9 @@ export type MiniMetadataStatus =
   /** Metadata doesn't exist */
   | "none"
 
-export type MiniMetadata = {
-  /** The DB id for this metadata */
-  id: string
-
-  /** The balance module which created this miniMetadata */
-  source: string
-
-  /** The chain this miniMetadata came from */
-  chainId: ChainId
-
-  /** The chain specName which this miniMetadata is valid for */
-  specName: string
-
-  /** The chain specVersion which this miniMetadata is valid for */
-  specVersion: string
-
-  /** The JSON-encoded chain balancesConfig which this miniMetadata is valid for */
-  balancesConfig: string
-
-  /** The version of the metadata format e.g. 13, 14, 15, etc */
-  version: number
-
-  /** The miniMetadata encoded as a hex string */
-  data: `0x${string}` | null
-
-  /**
-   * Some balance modules need a little bit of extra data in addition to the miniMetadata.
-   * They can store that data as a JSON-encoded string here.
-   */
-  extra: string
+export type MiniMetadata<M extends AnyNewBalanceModule = AnyNewBalanceModule> = Omit<
+  z.infer<typeof AnyMiniMetadataSchema>,
+  "extra"
+> & {
+  extra: InferChainMeta<M>["extra"]
 }

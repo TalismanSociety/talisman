@@ -55,10 +55,7 @@ const useSendFundsWizardProvider = () => {
           // if token's network changes, reset from/to as accounts could be incompatible or network restricted
           const prevToken = allTokensMap[searchParams.get("tokenId") as TokenId]
           const nextToken = allTokensMap[value as TokenId]
-          if (
-            prevToken?.evmNetwork?.id !== nextToken?.evmNetwork?.id ||
-            prevToken?.chain?.id !== nextToken?.chain?.id
-          ) {
+          if (prevToken?.networkId !== nextToken?.networkId) {
             searchParams.delete("from")
             searchParams.delete("to")
           }

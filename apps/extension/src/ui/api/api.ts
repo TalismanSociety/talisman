@@ -126,8 +126,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.derivationPath.next)", { mnemonicId, curve }),
 
   // balance messages ---------------------------------------------------
-  getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>
-    messageService.sendMessage("pri(balances.get)", { chainId, evmNetworkId, tokenId, address }),
+  getBalance: ({ tokenId, address }) =>
+    messageService.sendMessage("pri(balances.get)", { tokenId, address }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
   balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
     messageService.subscribe(
@@ -164,10 +164,6 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(metadata.updates.subscribe)", { id: genesisHash }, cb),
 
   // chain message types
-  chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
-  chainUpsert: (chain) => messageService.sendMessage("pri(chains.upsert)", chain),
-  chainRemove: (id) => messageService.sendMessage("pri(chains.remove)", { id }),
-  chainReset: (id) => messageService.sendMessage("pri(chains.reset)", { id }),
   generateChainSpecsQr: (genesisHash) =>
     messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
   generateChainMetadataQr: (genesisHash, specVersion) =>
@@ -176,15 +172,22 @@ export const api: MessageTypes = {
       specVersion,
     }),
 
-  // token message types
-  tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
+  // chaindata message types
+  networks: (cb) => messageService.subscribe("pri(chaindata.networks.subscribe)", null, cb),
+  networkUpsert: ({ platform, network, nativeToken }) =>
+    messageService.sendMessage("pri(chaindata.networks.upsert)", {
+      platform,
+      network,
+      nativeToken,
+    }),
+  networkRemove: (id) => messageService.sendMessage("pri(chaindata.networks.remove)", { id }),
+
+  tokens: (cb) => messageService.subscribe("pri(chaindata.tokens.subscribe)", null, cb),
+  tokenUpsert: (token) => messageService.sendMessage("pri(chaindata.tokens.upsert)", token),
+  tokenRemove: (id) => messageService.sendMessage("pri(chaindata.tokens.remove)", { id }),
 
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),
-
-  // custom erc20 token management
-  addCustomEvmToken: (token) => messageService.sendMessage("pri(tokens.evm.custom.add)", token),
-  removeCustomEvmToken: (id) => messageService.sendMessage("pri(tokens.evm.custom.remove)", { id }),
 
   // asset transfer messages
   assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
@@ -275,17 +278,8 @@ export const api: MessageTypes = {
   ethRequest: (request) => messageService.sendMessage("pri(eth.request)", request),
   ethGetTransactionsCount: (address, evmNetworkId) =>
     messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
-  ethNetworkAddGetRequests: () =>
-    messageService.sendMessage("pri(eth.networks.add.requests)", null),
-  ethNetworkAddApprove: (id, enableDefault) =>
-    messageService.sendMessage("pri(eth.networks.add.approve)", { id, enableDefault }),
+  ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
-
-  // ethereum network message types
-  ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
-  ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
-  ethNetworkRemove: (id) => messageService.sendMessage("pri(eth.networks.remove)", { id }),
-  ethNetworkReset: (id) => messageService.sendMessage("pri(eth.networks.reset)", { id }),
 
   // ethereum watch assets
   ethWatchAssetRequestApprove: (id) =>

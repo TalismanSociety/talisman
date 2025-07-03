@@ -1,44 +1,33 @@
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import {
-  BalancesConfigTokenParams,
-  EvmNetworkId,
-  githubTokenLogoUrl,
-  Token,
-  TokenList,
-} from "@talismn/chaindata-provider"
+import { EvmNativeToken, networkIdFromTokenId, TokenList } from "@talismn/chaindata-provider"
 import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
+import { fromPairs, keys, toPairs } from "lodash"
 import { hexToBigInt, isHex, PublicClient } from "viem"
+import z from "zod/v4"
 
-import { DefaultBalanceModule, NewBalanceModule } from "../BalanceModule"
+import {
+  DefaultBalanceModule,
+  DefaultChainMeta,
+  DefaultModuleConfig,
+  NewBalanceModule,
+} from "../BalanceModule"
 import log from "../log"
 import { Address, AddressesByToken, Balances, NewBalanceType } from "../types"
+import { TokenConfigBaseSchema } from "../types/tokens"
 import { abiMulticall } from "./abis/multicall"
 
 type ModuleType = "evm-native"
 const moduleType: ModuleType = "evm-native"
 
-export type EvmNativeToken = Extract<Token, { type: ModuleType }>
-export type CustomEvmNativeToken = Extract<Token, { type: ModuleType }>
+export type EvmNativeChainMeta = DefaultChainMeta
 
-export const evmNativeTokenId = (chainId: EvmNetworkId) =>
-  `${chainId}-evm-native`.toLowerCase().replace(/ /g, "-")
+export type EvmNativeModuleConfig = DefaultModuleConfig
 
-const getEvmNetworkIdFromTokenId = (tokenId: string) => {
-  const evmNetworkId = tokenId.split("-")[0] as EvmNetworkId
-  if (!evmNetworkId) throw new Error(`Can't detect chainId for token ${tokenId}`)
-  return evmNetworkId
-}
+export type EvmNativeBalance = NewBalanceType<ModuleType, "simple">
 
-export type EvmNativeChainMeta = {
-  isTestnet: boolean
-}
+export const EvmNativeTokenConfigSchema = TokenConfigBaseSchema
 
-export type EvmNativeModuleConfig = {
-  symbol?: string
-  decimals?: number
-} & BalancesConfigTokenParams
-
-export type EvmNativeBalance = NewBalanceType<ModuleType, "simple", "ethereum">
+export type EvmNativeTokenConfig = z.infer<typeof EvmNativeTokenConfigSchema>
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
@@ -48,25 +37,23 @@ declare module "@talismn/balances/plugins" {
 
 export const EvmNativeModule: NewBalanceModule<
   ModuleType,
-  EvmNativeToken | CustomEvmNativeToken,
+  EvmNativeToken,
   EvmNativeChainMeta,
-  EvmNativeModuleConfig
+  EvmNativeModuleConfig,
+  EvmNativeTokenConfig
 > = (hydrate) => {
   const { chainConnectors, chaindataProvider } = hydrate
 
   const getModuleTokens = async () => {
-    return (await chaindataProvider.tokensByIdForType(moduleType)) as Record<
-      string,
-      EvmNativeToken | CustomEvmNativeToken
-    >
+    return (await chaindataProvider.getTokensMapById(moduleType)) as Record<string, EvmNativeToken>
   }
 
   return {
     ...DefaultBalanceModule(moduleType),
 
     get tokens() {
-      return chaindataProvider.tokensByIdForType(moduleType) as Promise<
-        Record<string, EvmNativeToken | CustomEvmNativeToken>
+      return chaindataProvider.getTokensMapById(moduleType) as Promise<
+        Record<string, EvmNativeToken>
       >
     },
 
@@ -74,41 +61,17 @@ export const EvmNativeModule: NewBalanceModule<
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L280-L284).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainMeta(chainId) {
-      const isTestnet = (await chaindataProvider.evmNetworkById(chainId))?.isTestnet || false
-
-      return { isTestnet }
+    async fetchEvmChainMeta(_chainId) {
+      return { miniMetadata: null, extra: null }
     },
 
     /**
      * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/updateEvmNetworksFromGithub.ts#L338-L343).
      * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
      */
-    async fetchEvmChainTokens(chainId, chainMeta, moduleConfig) {
-      const { isTestnet } = chainMeta
-
-      const symbol = moduleConfig?.symbol ?? "ETH"
-      const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
-
-      const id = evmNativeTokenId(chainId)
-      const nativeToken: EvmNativeToken = {
-        id,
-        type: "evm-native",
-        isTestnet,
-        isDefault: true,
-        symbol,
-        decimals,
-        logo: moduleConfig?.logo || githubTokenLogoUrl(id),
-        evmNetwork: { id: chainId },
-      }
-
-      if (moduleConfig?.symbol) nativeToken.symbol = moduleConfig?.symbol
-      if (moduleConfig?.coingeckoId) nativeToken.coingeckoId = moduleConfig?.coingeckoId
-      if (moduleConfig?.dcentName) nativeToken.dcentName = moduleConfig?.dcentName
-      if (moduleConfig?.mirrorOf) nativeToken.mirrorOf = moduleConfig?.mirrorOf
-      if (moduleConfig?.noDiscovery) nativeToken.noDiscovery = moduleConfig?.noDiscovery
-
-      return { [nativeToken.id]: nativeToken }
+    async fetchEvmChainTokens() {
+      // token is currently generated in chaindata from the EthNetworkConfig["nativeCurrency"] field
+      return {}
     },
 
     async subscribeBalances({ addressesByToken, initialBalances }, callback) {
@@ -117,13 +80,13 @@ export const EvmNativeModule: NewBalanceModule<
       const initDelay = 500 // 500ms == 0.5 seconds
 
       const tokens = await getModuleTokens()
-      const ethAddressesByToken = Object.fromEntries(
-        Object.entries(addressesByToken)
+      const ethAddressesByToken = fromPairs(
+        toPairs(addressesByToken)
           .map(([tokenId, addresses]) => {
             const ethAddresses = addresses.filter(isEthereumAddress)
             if (ethAddresses.length === 0) return null
             const token = tokens[tokenId]
-            const evmNetworkId = token.evmNetwork?.id
+            const evmNetworkId = token.networkId
             if (!evmNetworkId) return null
             return [tokenId, ethAddresses] as [string, Address[]]
           })
@@ -135,10 +98,10 @@ export const EvmNativeModule: NewBalanceModule<
       let zeroBalanceSubscriptionIntervalCounter = 0
 
       // setup initialising balances for all active evm networks
-      const activeEvmNetworkIds = Object.keys(ethAddressesByToken).map(getEvmNetworkIdFromTokenId)
+      const activeEvmNetworkIds = keys(ethAddressesByToken).map(networkIdFromTokenId)
       const initialisingBalances = new Set<string>(activeEvmNetworkIds)
       const positiveBalanceNetworks = new Set<string>(
-        (initialBalances as EvmNativeBalance[])?.map((b) => b.evmNetworkId),
+        (initialBalances as EvmNativeBalance[])?.map((b) => b.networkId),
       )
 
       const poll = async () => {
@@ -149,7 +112,7 @@ export const EvmNativeModule: NewBalanceModule<
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           for (const [tokenId, addresses] of Object.entries(ethAddressesByToken)) {
-            const evmNetworkId = getEvmNetworkIdFromTokenId(tokenId)
+            const evmNetworkId = networkIdFromTokenId(tokenId)
 
             // a zero balance network is one that has initialised and does not have a positive balance
             const isZeroBalanceNetwork =
@@ -176,10 +139,10 @@ export const EvmNativeModule: NewBalanceModule<
                   log.error(balance.message, balance.networkId)
                   initialisingBalances.delete(balance.networkId)
                 } else {
-                  if (balance.evmNetworkId) {
-                    initialisingBalances.delete(balance.evmNetworkId)
+                  if (balance.networkId) {
+                    initialisingBalances.delete(balance.networkId)
                     if (BigInt(balance.value) > 0n) {
-                      positiveBalanceNetworks.add(balance.evmNetworkId)
+                      positiveBalanceNetworks.add(balance.networkId)
                     }
                     resultBalances.push(balance)
                   }
@@ -242,33 +205,31 @@ class EvmNativeBalanceError extends Error {
 
 const fetchBalances = async (
   evmChainConnector: ChainConnectorEvm,
-  addressesByToken: AddressesByToken<EvmNativeToken | CustomEvmNativeToken>,
+  addressesByToken: AddressesByToken<EvmNativeToken>,
   tokens: TokenList,
 ) => {
   if (!evmChainConnector) throw new Error(`This module requires an evm chain connector`)
   return Promise.all(
     Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
       const token = tokens[tokenId]
-      const evmNetworkId = token.evmNetwork?.id
-      if (!evmNetworkId) throw new Error(`Token ${token.id} has no evm network`)
-      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(evmNetworkId)
+      const networkId = token.networkId
+      if (!networkId) throw new Error(`Token ${token.id} has no evm network`)
+      const publicClient = await evmChainConnector.getPublicClientForEvmNetwork(networkId)
 
-      if (!publicClient)
-        throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
+      if (!publicClient) throw new Error(`Could not get rpc provider for evm network ${networkId}`)
 
       // fetch all balances
       const freeBalances = await getFreeBalances(publicClient, addresses)
 
       const balanceResults = addresses.map((address, i) => {
         if (freeBalances[i] === "error")
-          return new EvmNativeBalanceError("Could not fetch balance ", evmNetworkId)
+          return new EvmNativeBalanceError("Could not fetch balance ", networkId)
 
         return {
           source: "evm-native",
           status: "live",
           address: address,
-          multiChainId: { evmChainId: evmNetworkId },
-          evmNetworkId,
+          networkId,
           tokenId,
           value: freeBalances[i].toString(),
         } as EvmNativeBalance
@@ -351,7 +312,7 @@ async function getFreeBalances(
           ? err.message
           : err
       log.warn(
-        `Failed to get balance from chain ${publicClient.chain?.id} for ${ethAddresses.length} addresses: ${errorMessage}`,
+        `Failed to get balance from chain ${publicClient.chain.id} for ${ethAddresses.length} addresses: ${errorMessage}`,
       )
       return ethAddresses.map(() => "error")
     }

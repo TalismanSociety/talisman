@@ -1,6 +1,6 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChaindataProvider, ChainId, Token } from "@talismn/chaindata-provider"
+import { ChaindataProvider, DotNetworkId, EthNetworkId, Token } from "@talismn/chaindata-provider"
 
 import {
   AddressesByToken,
@@ -10,16 +10,33 @@ import {
   UnsubscribeFn,
 } from "./types"
 
+export type ChainMeta<Extra extends Record<string, unknown> | null> = {
+  miniMetadata: `0x${string}` | null
+  extra: Extra
+}
+
+export type TokenConfig = object
+
+export type BalancesConfig<
+  ModConfig extends object | undefined,
+  TokenConfig extends object | undefined,
+> = {
+  config?: ModConfig
+  tokens?: TokenConfig[]
+}
+
 export type BalancesCommonTransferMethods = "transfer_keep_alive" | "transfer_all"
 export type BalancesTransferMethods = "transfer_allow_death" | BalancesCommonTransferMethods
 export type BalancesLegacyTransferMethods = "transfer" | BalancesCommonTransferMethods
 export type BalancesAllTransferMethods = BalancesLegacyTransferMethods | BalancesTransferMethods
 
 export type SelectableTokenType = Token
-export type ExtendableChainMeta = Record<string, unknown> | undefined
-export type DefaultChainMeta = undefined
+export type ExtendableChainMeta = ChainMeta<Record<string, unknown> | null>
+export type DefaultChainMeta = ChainMeta<null>
 export type ExtendableModuleConfig = Record<string, unknown> | undefined
+export type ExtendableTokenConfig = Record<string, unknown> | undefined
 export type DefaultModuleConfig = undefined
+export type DefaultTokenConfig = undefined
 export type BaseTransferParams = {
   tokenId: string
   from: string
@@ -46,25 +63,42 @@ export type NewBalanceModule<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > = (
   hydrate: Hydrate,
-) => BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>
+) => BalanceModule<
+  TModuleType,
+  TTokenType,
+  TChainMeta,
+  TModuleConfig,
+  TTokenConfig,
+  TTransferParams
+>
 
 export interface BalanceModule<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleSubstrate<
       TModuleType,
       TTokenType,
       TChainMeta,
       TModuleConfig,
+      TTokenConfig,
       TTransferParams
     >,
-    BalanceModuleEvm<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> {}
+    BalanceModuleEvm<
+      TModuleType,
+      TTokenType,
+      TChainMeta,
+      TModuleConfig,
+      TTokenConfig,
+      TTransferParams
+    > {}
 
 // TODO: Document default balances module purpose/usage
 export const DefaultBalanceModule = <
@@ -72,10 +106,18 @@ export const DefaultBalanceModule = <
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 >(
   type: TModuleType,
-): BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> => ({
+): BalanceModule<
+  TModuleType,
+  TTokenType,
+  TChainMeta,
+  TModuleConfig,
+  TTokenConfig,
+  TTransferParams
+> => ({
   get type() {
     return type
   },
@@ -116,23 +158,24 @@ export const DefaultBalanceModule = <
 interface BalanceModuleSubstrate<
   TModuleType extends string,
   TTokenType extends SelectableTokenType,
-  TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
-  TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
+  TChainMeta extends ExtendableChainMeta,
+  TModuleConfig extends ExtendableModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig,
+  TTransferParams extends ExtendableTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     moduleConfig?: TModuleConfig,
     metadataRpc?: `0x${string}`,
-    systemProperties?: Record<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */
   fetchSubstrateChainTokens(
-    chainId: ChainId,
+    chainId: DotNetworkId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
+    tokens?: TTokenConfig[],
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -141,16 +184,18 @@ interface BalanceModuleEvm<
   TTokenType extends SelectableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTokenConfig extends ExtendableTokenConfig = DefaultTokenConfig,
   TTransferParams extends ExtendableTransferParams = DefaultTransferParams,
 > extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
-  fetchEvmChainMeta(chainId: ChainId, moduleConfig?: TModuleConfig): Promise<TChainMeta | null>
+  fetchEvmChainMeta(chainId: EthNetworkId, moduleConfig?: TModuleConfig): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given evm chain */
   fetchEvmChainTokens(
-    chainId: ChainId,
+    chainId: EthNetworkId,
     chainMeta: TChainMeta,
     moduleConfig?: TModuleConfig,
+    tokens?: TTokenConfig[],
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 

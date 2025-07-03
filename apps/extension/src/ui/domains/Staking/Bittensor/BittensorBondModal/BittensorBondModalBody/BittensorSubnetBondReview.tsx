@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useAppState } from "@ui/state"
@@ -91,7 +92,7 @@ export const BittensorSubnetBondReview = () => {
             <div className="flex items-center gap-4 overflow-hidden">
               {isSubnetUnbond ? (
                 <>
-                  <TokenLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
+                  <AssetLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
                   <Tokens
                     amount={amountToStakeAlpha?.tokens}
                     symbol={selectedSubnetLabel}
@@ -116,7 +117,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pt-2">
             <div className="whitespace-nowrap">{t("Account")} </div>
             <div className="flex items-center gap-4 overflow-hidden">
-              <StakingAccountDisplay address={account.address} chainId={token?.chain?.id} />
+              <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
             </div>
           </div>
           <div className="py-8">
@@ -137,7 +138,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
             <div className="text-body truncate">
-              <StakingUnbondingPeriod chainId={token?.chain?.id} />
+              <StakingUnbondingPeriod chainId={token?.networkId} />
             </div>
           </div>
 

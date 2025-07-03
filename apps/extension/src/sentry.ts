@@ -58,6 +58,10 @@ export const initSentryFrontend = () => {
     // of transactions for performance monitoring.
     // We recommend adjusting this value in production
     tracesSampleRate: 0.05,
+
+    // disable replays
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 0,
   })
   const scope = SentryReact.getCurrentScope()
   scope.addEventProcessor(async (event: Event) => {

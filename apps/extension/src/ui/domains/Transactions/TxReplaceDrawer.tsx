@@ -25,7 +25,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAccountByAddress, useBalance, useEvmNetwork } from "@ui/state"
+import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -117,7 +117,7 @@ const EvmDrawerContent: FC<{
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
-  const evmNetwork = useEvmNetwork(tx.evmNetworkId)
+  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
   const [isLocked, setIsLocked] = useState(false)
   const {
     transaction,
@@ -260,7 +260,7 @@ const EvmDrawerContent: FC<{
             {t("Estimated Fee")}{" "}
             <EvmEstimatedFeeTooltip
               account={tx.account}
-              feeTokenId={evmNetwork?.nativeToken?.id}
+              feeTokenId={evmNetwork?.nativeTokenId}
               txDetails={txDetails}
             />
           </div>
@@ -269,16 +269,13 @@ const EvmDrawerContent: FC<{
         <div className="flex h-12 w-full items-center justify-between">
           <div>
             {txDetails?.estimatedFee ? (
-              <TokensAndFiat
-                planck={txDetails.estimatedFee}
-                tokenId={evmNetwork?.nativeToken?.id}
-              />
+              <TokensAndFiat planck={txDetails.estimatedFee} tokenId={evmNetwork?.nativeTokenId} />
             ) : null}
           </div>
           <div>
-            {evmNetwork?.nativeToken && txDetails && transaction && (
+            {evmNetwork && txDetails && transaction && (
               <EthFeeSelect
-                tokenId={evmNetwork.nativeToken.id}
+                tokenId={evmNetwork.nativeTokenId}
                 drawerContainerId={containerId ?? "main"}
                 gasSettingsByPriority={gasSettingsByPriority}
                 setCustomSettings={setCustomSettings}

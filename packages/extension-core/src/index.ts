@@ -21,7 +21,8 @@ export * from "./domains/accounts/helpers.catalog"
 export {
   formatSuri,
   isCurveCompatibleWithChain,
-  isAccountCompatibleWithChain,
+  isAccountCompatibleWithNetwork,
+  isAddressCompatibleWithNetwork,
 } from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 
@@ -45,20 +46,15 @@ export * from "./domains/ethereum/helpers"
 export { assetDiscoveryStore } from "./domains/assetDiscovery/store"
 
 export {
-  activeChainsStore,
-  isChainActive,
-  type ActiveChains,
-} from "./domains/chains/store.activeChains"
-export {
-  activeEvmNetworksStore,
-  isEvmNetworkActive,
-  type ActiveEvmNetworks,
-} from "./domains/ethereum/store.activeEvmNetworks"
-export {
   activeTokensStore,
   isTokenActive,
   type ActiveTokens,
-} from "./domains/tokens/store.activeTokens"
+} from "./domains/balances/store.activeTokens"
+export {
+  activeNetworksStore,
+  isNetworkActive,
+  type ActiveNetworks,
+} from "./domains/balances/store.activeNetworks"
 
 export * from "./types"
 export * from "./types/domains"

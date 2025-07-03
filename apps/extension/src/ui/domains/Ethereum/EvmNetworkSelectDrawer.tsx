@@ -1,6 +1,7 @@
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { InfoIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { activeEvmNetworksStore, isEvmNetworkActive, SimpleEvmNetwork } from "extension-core"
+import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
@@ -12,14 +13,9 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import {
-  useActiveEvmNetworksState,
-  useAuthorisedSites,
-  useEvmNetwork,
-  useEvmNetworks,
-} from "@ui/state"
+import { useActiveNetworksState, useAuthorisedSites, useNetworkById, useNetworks } from "@ui/state"
 
-import { NetworkLogo } from "./NetworkLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t } = useTranslation()
@@ -31,10 +27,10 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
-  const currentNetwork = useEvmNetwork(initialNetworkId)
+  const currentNetwork = useNetworkById(initialNetworkId, "ethereum")
 
-  const evmNetworks = useEvmNetworks()
-  const activeEvmNetworksState = useActiveEvmNetworksState()
+  const evmNetworks = useNetworks({ platform: "ethereum" })
+  const activeEvmNetworksState = useActiveNetworksState()
 
   const [allActiveEvmNetworks, allInactiveEvmNetworks] = useMemo(() => {
     return evmNetworks
@@ -50,11 +46,11 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       })
       .reduce(
         (acc, network) => {
-          const arr = isEvmNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
+          const arr = isNetworkActive(network, activeEvmNetworksState) ? acc[0] : acc[1]
           arr.push(network)
           return acc
         },
-        [[] as SimpleEvmNetwork[], [] as SimpleEvmNetwork[]],
+        [[] as EthNetwork[], [] as EthNetwork[]],
       )
   }, [activeEvmNetworksState, currentNetwork?.id, evmNetworks])
 
@@ -72,7 +68,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     async (id: string) => {
       const ethChainId = Number(id)
       if (!currentSite?.id || isNaN(ethChainId)) return
-      if (!activeEvmNetworksState[id]) await activeEvmNetworksStore.setActive(id, true)
+      if (!activeEvmNetworksState[id]) await activeNetworksStore.setActive(id, true)
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
@@ -154,7 +150,7 @@ const NETWORK_VISIBILITY_OPTIONS: IntersectionObserverInit = {
 }
 
 const NetworkButton: FC<{
-  network: SimpleEvmNetwork
+  network: EthNetwork
   isSelected: boolean
   onClick: () => void
 }> = ({ network, isSelected, onClick }) => {
@@ -172,7 +168,7 @@ const NetworkButton: FC<{
           onClick={onClick}
           className="bg-field hover:bg-grey-750 flex h-28 w-full shrink-0 items-center gap-6 rounded-sm px-6"
         >
-          <NetworkLogo className="shrink-0 text-xl" ethChainId={network.id} />
+          <NetworkLogo className="shrink-0 text-xl" networkId={network.id} />
           <div className="grow truncate text-left">{network?.name}</div>
           {!!network.isTestnet && (
             <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
@@ -192,7 +188,7 @@ const NetworkButton: FC<{
 }
 
 const NetworkRows: FC<{
-  networks: SimpleEvmNetwork[]
+  networks: EthNetwork[]
   selectedNetworkId?: string
   onSelect: (networkId: string) => void
 }> = ({ networks, selectedNetworkId, onSelect }) => {

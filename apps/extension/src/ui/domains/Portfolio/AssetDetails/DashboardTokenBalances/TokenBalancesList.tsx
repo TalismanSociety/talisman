@@ -1,17 +1,17 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { Balances } from "extension-core"
 import { ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { UseTokenReturnType } from "@ui/state"
 
 import { BalanceSummary } from "../../useTokenBalancesSummary"
 import { CopyAddressButton } from "../CopyAddressIconButton"
@@ -20,7 +20,7 @@ import { TokenContextMenu } from "../TokenContextMenu"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
-  token: UseTokenReturnType
+  token: Token | null
   tokenLogoUrl?: string
   balances: Balances
   detailRowsLength: number
@@ -71,11 +71,11 @@ export const TokenBalancesList = ({
       >
         <div className="flex">
           <div className="shrink-0 p-8 text-xl">
-            <TokenLogo tokenId={tokenId} url={tokenLogoUrl} />
+            {tokenLogoUrl ? <AssetLogo url={tokenLogoUrl} /> : <TokenLogo tokenId={tokenId} />}
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="base text-body flex items-center font-bold">
-              <ChainLogo className="mr-2" id={chainOrNetworkId} />
+              <NetworkLogo className="mr-2" networkId={chainOrNetworkId} />
               <span className="mr-2">{chainOrNetworkName}</span>
               {shouldDisplayActionBtns && (
                 <>

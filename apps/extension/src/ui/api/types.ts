@@ -2,22 +2,14 @@ import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { BalanceJson } from "@talismn/balances"
-import {
-  Chain,
-  ChainId,
-  CustomChain,
-  EvmNetworkId,
-  Token,
-  TokenId,
-} from "@talismn/chaindata-provider"
+import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
 import {
   Account,
-  AddEthereumChainRequest,
   AddEthereumChainRequestId,
-  AddressesAndEvmNetwork,
+  AddressesAndEvmNetworks,
   AddressesAndTokens,
   AddressesByChain,
   AnalyticsCaptureRequest,
@@ -31,7 +23,6 @@ import {
   AuthRequestId,
   BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
-  CustomEvmTokenCreate,
   DecryptRequestId,
   EncryptRequestId,
   EthGasSettings,
@@ -50,16 +41,14 @@ import {
   RequestAddressLookup,
   RequestBalance,
   RequestMetadataId,
+  RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
-  RequestUpsertCustomChain,
-  RequestUpsertCustomEvmNetwork,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
-  SimpleEvmNetwork,
   Trees,
   UnsubscribeFn,
   ValidRequests,
@@ -170,16 +159,11 @@ export default interface MessageTypes {
   getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({
-    chainId,
-    evmNetworkId,
-    tokenId,
-    address,
-  }: RequestBalance) => Promise<BalanceJson | undefined>
+  getBalance: ({ tokenId, address }: RequestBalance) => Promise<BalanceJson | undefined>
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
-    addressesAndEvmNetworks: AddressesAndEvmNetwork,
+    addressesAndEvmNetworks: AddressesAndEvmNetworks,
     addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalanceSubscriptionResponse) => void,
   ) => UnsubscribeFn
@@ -205,29 +189,28 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
 
   // chain message types
-  chains: (cb: (chains: Array<Chain | CustomChain>) => void) => UnsubscribeFn
-  chainUpsert: (chain: RequestUpsertCustomChain) => Promise<boolean>
-  chainRemove: (id: string) => Promise<boolean>
-  chainReset: (id: string) => Promise<boolean>
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
     specVersion?: number,
   ) => Promise<HexString>
 
+  // networks message types
+  networks: (cb: (chains: Array<Network>) => void) => UnsubscribeFn
+  networkUpsert: (req: RequestNetworkUpsert) => Promise<boolean>
+  networkRemove: (id: NetworkId) => Promise<boolean>
+
   // token message types
   tokens: (cb: (tokens: Token[]) => void) => UnsubscribeFn
+  tokenUpsert: (token: Token) => Promise<boolean>
+  tokenRemove: (id: TokenId) => Promise<boolean>
 
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
 
-  // custom erc20 token management
-  addCustomEvmToken: (token: CustomEvmTokenCreate) => Promise<boolean>
-  removeCustomEvmToken: (id: string) => Promise<boolean>
-
   // asset transfer messages
   assetTransfer: (
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
@@ -236,7 +219,7 @@ export default interface MessageTypes {
     method?: AssetTransferMethod,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEth: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     tokenId: TokenId,
     fromAddress: EvmAddress,
     toAddress: EvmAddress,
@@ -244,7 +227,7 @@ export default interface MessageTypes {
     gasSettings: EthGasSettings<string>,
   ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     tokenId: TokenId,
     amount: string,
     to: EvmAddress,
@@ -252,7 +235,7 @@ export default interface MessageTypes {
     signedTransaction: HexString,
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
-    chainId: ChainId,
+    chainId: NetworkId,
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
@@ -268,13 +251,13 @@ export default interface MessageTypes {
 
   // eth related messages
   ethSignAndSend: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethSendSigned: (
-    evmNetworkId: EvmNetworkId,
+    evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
     transferInfo?: WalletTransactionTransferInfo,
@@ -296,16 +279,9 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
-  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: EvmNetworkId) => Promise<number>
-  ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
-  ethNetworkAddApprove: (id: AddEthereumChainRequestId, enableDefault: boolean) => Promise<boolean>
+  ethGetTransactionsCount: (address: EvmAddress, evmNetworkId: NetworkId) => Promise<number>
+  ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
-
-  // ethereum networks message types
-  ethereumNetworks: (cb: (networks: Array<SimpleEvmNetwork>) => void) => UnsubscribeFn
-  ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
-  ethNetworkRemove: (id: string) => Promise<boolean>
-  ethNetworkReset: (id: string) => Promise<boolean>
 
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
@@ -313,7 +289,7 @@ export default interface MessageTypes {
 
   // substrate rpc calls
   subSend: <T>(
-    chainId: ChainId,
+    chainId: NetworkId,
     method: string,
     params: unknown[],
     isCacheable?: boolean,
@@ -328,7 +304,6 @@ export default interface MessageTypes {
   subChainMetadata: (
     genesisHash: HexString,
     specVersion?: number,
-    blockHash?: HexString,
   ) => Promise<MetadataDef | undefined>
 
   assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>

@@ -4,9 +4,9 @@ import { Address, IdenticonType } from "extension-core"
 import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useChainByGenesisHash, useSetting } from "@ui/state"
+import { useNetworkByGenesisHash, useSetting } from "@ui/state"
 
-import { ChainLogo } from "../Asset/ChainLogo"
+import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 
@@ -15,16 +15,16 @@ const IDENTICON_STYLE: CSSProperties = { cursor: "inherit" }
 export type AccountIconProps = {
   address: Address
   className?: string
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   type?: IdenticonType
 }
 
-const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
-  const chain = useChainByGenesisHash(genesisHash)
+const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
+  const chain = useNetworkByGenesisHash(genesisHash)
 
   return chain ? (
-    <ChainLogo
-      id={chain.id}
+    <NetworkLogo
+      networkId={chain.id}
       className="bg-grey-800 !absolute right-[-0.2em] top-[-0.2em] z-10 rounded-full text-[0.5em]"
     />
   ) : null

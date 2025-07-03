@@ -1,5 +1,5 @@
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon } from "@talismn/icons"
 import { TokenRates } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
@@ -9,12 +9,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useChain, useEvmNetwork, useSelectedCurrency } from "@ui/state"
+import { useNetworkById, useSelectedCurrency } from "@ui/state"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
   const isKnown = useIsKnownAddress(address)
@@ -42,7 +42,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
 }) => (
   <div className="flex w-[150px] flex-col items-center gap-5 overflow-hidden">
     <div className="flex w-full items-center justify-center gap-2">
-      <ChainLogo id={networkId} className="!h-9 !w-9 shrink-0" />
+      <NetworkLogo networkId={networkId} className="!h-9 !w-9 shrink-0" />
       <div className="text-md text-body overflow-hidden text-ellipsis whitespace-nowrap font-bold">
         {networkName}
       </div>
@@ -60,9 +60,9 @@ export const SignViewXTokensTransfer: FC<{
   tokenDecimals: number
   coingeckoId?: string
   tokenRates?: TokenRates | null
-  fromNetwork: EvmNetworkId | ChainId
+  fromNetwork: NetworkId
   fromAddress: Address
-  toNetwork: EvmNetworkId | ChainId
+  toNetwork: NetworkId
   toAddress: Address
 }> = ({
   value,
@@ -76,19 +76,8 @@ export const SignViewXTokensTransfer: FC<{
   toAddress,
 }) => {
   const { t } = useTranslation()
-  const fromChain = useChain(fromNetwork)
-  const fromEvmNetwork = useEvmNetwork(fromNetwork)
-  const toChain = useChain(toNetwork)
-  const toEvmNetwork = useEvmNetwork(toAddress)
-
-  const fromNetworkName = useMemo(
-    () => fromChain?.name ?? fromEvmNetwork?.name ?? t("Unknown"),
-    [fromChain, fromEvmNetwork, t],
-  )
-  const toNetworkName = useMemo(
-    () => toChain?.name ?? toEvmNetwork?.name ?? t("Unknown"),
-    [toChain, toEvmNetwork, t],
-  )
+  const sourceNetwork = useNetworkById(fromNetwork)
+  const targetNetworkNetwork = useNetworkById(toNetwork)
 
   const amount = useMemo(
     () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
@@ -101,7 +90,7 @@ export const SignViewXTokensTransfer: FC<{
     <div className="flex w-full flex-col items-center gap-16">
       <div className="flex items-center gap-4">
         <div>
-          <AssetLogoBase url={tokenLogo} className="h-24 w-24 text-[48px]" />
+          <AssetLogo url={tokenLogo} className="h-24 w-24 text-[48px]" />
         </div>
         <div className="text-body flex-col items-start gap-4">
           <div className="text-md text-left font-bold">
@@ -122,7 +111,7 @@ export const SignViewXTokensTransfer: FC<{
       <div className="flex w-full items-center justify-center gap-8">
         <NetworkAndAccount
           networkId={fromNetwork}
-          networkName={fromNetworkName}
+          networkName={sourceNetwork?.name ?? t("Unknown")}
           address={fromAddress}
         />
         <div className="shrink-0">
@@ -130,7 +119,7 @@ export const SignViewXTokensTransfer: FC<{
         </div>
         <NetworkAndAccount
           networkId={toNetwork as string}
-          networkName={toNetworkName}
+          networkName={targetNetworkNetwork?.name ?? t("Unknown")}
           address={toAddress as string}
         />
       </div>

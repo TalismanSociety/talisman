@@ -1,23 +1,7 @@
 jest.setTimeout(20_000)
 
-// mock the `pnpm preconstruct dev` version of the package
-jest.mock("@talismn/chaindata-provider/src/net")
-
-// mock the `pnpm build:packages` version of the package
-//
-// it only exists after calling pnpm build:packages,
-// so there's a `try {} catch {}` to ignore when it doesn't exist
-try {
-  jest.mock(
-    "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
-    () => ({
-      ...jest.requireActual(
-        "@talismn/chaindata-provider/net/dist/talismn-chaindata-provider-net.cjs.dev.js",
-      ),
-      ...jest.requireActual("@talismn/chaindata-provider/src/__mocks__/net.ts"),
-    }),
-  )
-} catch {} // eslint-disable-line no-empty
+// prevent chaindata-provider from trying to connect to the network
+jest.mock("@talismn/chaindata-provider/src/state/net")
 
 jest.mock("bcryptjs", () => {
   return {

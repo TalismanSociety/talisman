@@ -5,7 +5,7 @@ import { IS_FIREFOX } from "extension-shared"
 
 import { api } from "@ui/api"
 import { useImageLoaded } from "@ui/hooks/useImageLoaded"
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { QrCode, QrCodeError } from "./QrCode"
 import { qrCodeLogoForSource, QrCodeSource } from "./QrCodeSourceSelector"
@@ -17,7 +17,7 @@ type Props = {
 }
 
 export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props) => {
-  const chain = useChainByGenesisHash(genesisHash)
+  const chain = useNetworkByGenesisHash(genesisHash)
   const latestMetadataQrUrl = chain?.latestMetadataQrUrl
 
   const { data, isLoading, error } = useQuery({

@@ -1,5 +1,5 @@
 import { Address as TAddress } from "@talismn/balances"
-import { ChainId } from "@talismn/chaindata-provider"
+import { DotNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useMemo } from "react"
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
-import { useAccountByAddress, useChain } from "@ui/state"
+import { useAccountByAddress, useNetworkById } from "@ui/state"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
@@ -51,12 +51,12 @@ const AddressTooltip: FC<{
 
 type AddressDisplayProps = {
   address: TAddress | null | undefined
-  chainId: ChainId | null | undefined
+  chainId: DotNetworkId | null | undefined
   className?: string
 }
 
 export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainId, className }) => {
-  const chain = useChain(chainId as string)
+  const chain = useNetworkById(chainId as string, "polkadot")
   const account = useAccountByAddress(address)
 
   const resolvedAddress = useMemo(() => {

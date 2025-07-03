@@ -1,4 +1,4 @@
-import { Chain, SimpleEvmNetwork, Token } from "@talismn/chaindata-provider"
+import { Network, Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
@@ -10,15 +10,15 @@ import { useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useChainsMap, useEvmNetworksMap, useRemoteConfig, useSelectedCurrency } from "@ui/state"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useNetworksMapById, useRemoteConfig, useSelectedCurrency } from "@ui/state"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
 type TokenDisplay = Token & {
-  network: Chain | SimpleEvmNetwork
+  network: Network
   rates?: TokenRates
 }
 
@@ -34,19 +34,18 @@ export const RampsTokenPicker: FC<{
   const [search, setSearch] = useState("")
   const remoteConfig = useRemoteConfig()
 
-  const evmNetworksMap = useEvmNetworksMap()
-  const dotNetworksMap = useChainsMap()
+  const networksMap = useNetworksMapById()
 
   const tokensWithNetwork = useMemo<TokenDisplay[] | undefined>(
     () =>
       tokens
         ?.map((t) => ({
           ...t,
-          network: evmNetworksMap[t.evmNetwork?.id ?? ""] ?? dotNetworksMap[t.chain?.id ?? ""],
+          network: networksMap[t.networkId],
           rates: tokenRates?.[t.id],
         }))
         .filter((t) => !!t.network),
-    [tokenRates, dotNetworksMap, evmNetworksMap, tokens],
+    [tokens, networksMap, tokenRates],
   )
 
   const sortedTokens = useMemo(
@@ -120,7 +119,7 @@ const TokensList: FC<{
   onSelect: (tokenId: string) => void
 }> = ({ tokens, selected, onSelect }) => {
   const { t } = useTranslation()
-  const refContainer = useScrollContainer()
+  const { ref: refContainer } = useScrollContainer()
 
   const virtualizer = useVirtualizer({
     count: tokens.length,
@@ -198,10 +197,7 @@ const TokenButtonRow: FC<{
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden truncate text-xs">
-            <ChainLogo
-              id={token.evmNetwork?.id ?? token.chain?.id}
-              className="inline-block shrink-0"
-            />
+            <NetworkLogo networkId={token.networkId} className="inline-block shrink-0" />
             <div className="text-body-secondary grow truncate">{token.network.name}</div>
           </div>
         </div>

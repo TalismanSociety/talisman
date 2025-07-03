@@ -205,9 +205,11 @@ export class Keyring {
       account.isPortfolio = isPortfolio
     }
     // allow updating genesisHash only for contacts
-    if (account.type === "contact" && genesisHash) {
-      if (!isHexString(genesisHash)) throw new Error("genesisHash must be a hex string")
-      account.genesisHash = genesisHash
+    if (account.type === "contact") {
+      if (genesisHash) {
+        if (!isHexString(genesisHash)) throw new Error("genesisHash must be a hex string")
+        account.genesisHash = genesisHash
+      } else delete account.genesisHash
     }
 
     return accountFromStorage(account)

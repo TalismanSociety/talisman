@@ -18,14 +18,14 @@ type AccountRowAccount = {
   address: string
   type?: AccountType
   name?: string
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   balance?: Balance | undefined
   total?: number
 }
 
 type AccountRowProps = {
   account: AccountRowAccount
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   selected: boolean
   showBalances?: boolean
   showTotalBalance?: boolean

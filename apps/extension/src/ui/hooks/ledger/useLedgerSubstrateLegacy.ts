@@ -13,7 +13,7 @@ import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useChainByGenesisHash } from "@ui/state"
+import { useNetworkByGenesisHash } from "@ui/state"
 
 import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {
@@ -29,9 +29,9 @@ import { useLedgerTransport } from "./useLedgerTransport"
 
 type LedgerRequest<T> = (ledger: SubstrateApp) => Promise<T>
 
-export const useLedgerSubstrateLegacy = (genesis?: string | null) => {
+export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
   const { t } = useTranslation()
-  const chain = useChainByGenesisHash(genesis)
+  const chain = useNetworkByGenesisHash(genesis)
   const app = useLedgerSubstrateAppByChain(chain)
   const { ensureTransport, closeTransport } = useLedgerTransport()
   const refIsBusy = useRef(false)

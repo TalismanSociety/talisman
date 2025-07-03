@@ -5,12 +5,11 @@ const { pathsToModuleNameMapper } = require("ts-jest")
 const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
-  transformIgnorePatterns: [
-    "/node_modules/.pnpm/(?!@polkadot|@react-rxjs|@rx-state|@substrate|@azns|@babel/runtime/helpers/esm/|@metamask|url-join|isows|@talismn|scale-ts)",
-  ],
+  transformIgnorePatterns: [],
   transform: {
     "^.+\\.(t|j)sx?$": ["@swc/jest"],
   },
+  extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
   moduleNameMapper: {
     "^rxjs/internal/(.*)$": "rxjs/dist/cjs/internal/$1",
     "uuid": require.resolve("uuid"),

@@ -1,11 +1,8 @@
-import { evmErc20TokenId } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
-import { CSSProperties, FC, Suspense, useId, useMemo } from "react"
+import { CSSProperties, FC, useId, useMemo } from "react"
 
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
-import { useToken } from "@ui/state"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -15,23 +12,21 @@ const isTalismanLogo = (url?: string | null) => {
   )
 }
 
-type AssetLogoBaseProps = {
-  id?: string
+export const AssetLogo: FC<{
+  tokenId?: string
   className?: string
   style?: CSSProperties
   url?: string | null
-  rounded?: boolean
-}
-
-export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoBaseProps) => {
+}> = ({ tokenId, className, style, url }) => {
   const rid = useId()
+  const rounded = useMemo(() => !isTalismanLogo(url), [url])
   const { src, onError } = useGithubImageUrl(url, UNKNOWN_TOKEN_URL)
 
   // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
     <img
       key={`${rid}::${src}`}
-      data-id={id}
+      data-id={tokenId}
       src={src}
       className={classNames(
         "relative block aspect-square w-[1em] shrink-0",
@@ -46,68 +41,3 @@ export const AssetLogoBase = ({ id, className, style, url, rounded }: AssetLogoB
     />
   )
 }
-
-const LpAssetLogo = ({ className, id }: { className?: string; id?: TokenId }) => {
-  const lpToken = useToken(id)
-  const tokenId0 =
-    lpToken?.type === "evm-uniswapv2"
-      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress0)
-      : null
-  const tokenId1 =
-    lpToken?.type === "evm-uniswapv2"
-      ? evmErc20TokenId(lpToken?.evmNetwork?.id ?? "", lpToken?.tokenAddress1)
-      : null
-  const token0 = useToken(tokenId0)
-  const token1 = useToken(tokenId1)
-
-  return (
-    <div className={classNames("relative block aspect-square w-[1em] shrink-0", className)}>
-      <AssetLogoBase
-        className="absolute h-full w-full"
-        url={token0?.logo}
-        style={{ clipPath: "polygon(0% 0%, 48% 0%, 48% 100%, 0% 100%)" }}
-      />
-      <AssetLogoBase
-        className="absolute h-full w-full"
-        url={token1?.logo}
-        style={{ clipPath: "polygon(100% 0%, 52% 0%, 52% 100%, 100% 100%)" }}
-      />
-    </div>
-  )
-}
-
-type AssetLogoProps = {
-  className?: string
-
-  // for tokens which are in our tokens store, we can just reference them
-  // by id and this component will fetch their logo from our chaindata
-  id?: TokenId
-  url?: string | null
-}
-
-const AssetLogoInner: FC<AssetLogoProps> = ({ className, id, url }) => {
-  const token = useToken(id)
-
-  // round logos except if they are hosted in Talisman's chaindata repo
-  const rounded = useMemo(() => !isTalismanLogo(token?.logo), [token?.logo])
-
-  // special logos for LP tokens
-  if (token?.type === "evm-uniswapv2") return <LpAssetLogo className={className} id={id} />
-
-  return <AssetLogoBase className={className} url={token?.logo || url} rounded={rounded} />
-}
-
-const AssetLogoFallback: FC<{ className?: string }> = ({ className }) => (
-  <div
-    className={classNames(
-      "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className,
-    )}
-  ></div>
-)
-
-export const AssetLogo: FC<AssetLogoProps> = (props) => (
-  <Suspense fallback={<AssetLogoFallback className={props.className} />}>
-    <AssetLogoInner {...props} />
-  </Suspense>
-)

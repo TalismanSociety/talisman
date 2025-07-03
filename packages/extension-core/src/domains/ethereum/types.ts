@@ -1,7 +1,10 @@
-import type { CustomEvmErc20Token } from "@talismn/balances"
-import type { EvmNetworkId, SimpleEvmNetwork } from "@talismn/chaindata-provider"
 import type {
-  AddEthereumChainParameter,
+  EthNetwork,
+  EthNetworkId,
+  EvmErc20Token,
+  EvmNativeToken,
+} from "@talismn/chaindata-provider"
+import type {
   EIP1193Parameters,
   Address as EvmAddress,
   Chain as EvmChain,
@@ -11,7 +14,7 @@ import { HexString } from "@polkadot/util/types"
 import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
-import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
+import { BaseRequest, BaseRequestId } from "../../types/base"
 import { WalletTransactionInfo, WalletTransactionTransferInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
@@ -29,15 +32,6 @@ export type AnyEvmError = {
   cause?: AnyEvmError
   data?: unknown
 }
-
-export type {
-  EvmNetwork,
-  CustomEvmNetwork,
-  SimpleEvmNetwork,
-  EvmNetworkId,
-  EvmNetworkList,
-  EthereumRpc,
-} from "@talismn/chaindata-provider"
 
 // define here the rpc methods that do not exist in viem or that need to be overriden
 type TalismanRpcSchema = [
@@ -106,13 +100,13 @@ export interface EthProviderMessage {
 }
 
 export type EthTxSignAndSend = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
   transferInfo?: WalletTransactionTransferInfo
   txInfo?: WalletTransactionInfo
 }
 export type EthTxSendSigned = {
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
   signed: `0x${string}`
   transferInfo?: WalletTransactionTransferInfo
@@ -133,12 +127,12 @@ export type EthRequestSignAndSendApproveSignature = KnownSigningRequestIdOnly<ET
 }
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
-  chainId: EvmNetworkId
+  chainId: EthNetworkId
 }
 
 export type EthNonceRequest = {
   address: `0x${string}`
-  evmNetworkId: EvmNetworkId
+  evmNetworkId: EthNetworkId
 }
 
 // ethereum networks
@@ -159,19 +153,6 @@ export interface Web3WalletPermission {
 // from https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
 export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
 
-export type RequestUpsertCustomEvmNetwork = {
-  id: EvmNetworkId
-  name: string
-  isTestnet: boolean
-  rpcs: { url: string }[]
-  blockExplorerUrl?: string
-  tokenSymbol: string
-  tokenDecimals: number
-  tokenCoingeckoId: string | null
-  tokenLogoUrl: string | null
-  preserveGasEstimate: boolean
-}
-
 export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, unknown]
@@ -188,19 +169,11 @@ export interface EthMessages {
   "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSignAndSendApproveSignature, boolean]
   // eth add networks requests management
-  // TODO change naming for network add requests, and maybe delete the first one
-  "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
-  "pri(eth.networks.add.approve)": [AddEthereumChainRequestApprove, boolean]
+  "pri(eth.networks.add.approve)": [AddEthereumChainRequestIdOnly, boolean]
   "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
   // eth watchassets requests  management
   "pri(eth.watchasset.requests.approve)": [WatchAssetRequestIdOnly, boolean]
   "pri(eth.watchasset.requests.cancel)": [WatchAssetRequestIdOnly, boolean]
-
-  // ethereum networks message signatures
-  "pri(eth.networks.subscribe)": [null, boolean, Array<SimpleEvmNetwork>]
-  "pri(eth.networks.remove)": [RequestIdOnly, boolean]
-  "pri(eth.networks.reset)": [RequestIdOnly, boolean]
-  "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
 export type EthGasSettingsLegacy<TQuantity = bigint> = {
@@ -225,15 +198,12 @@ export type ETH_NETWORK_ADD_PREFIX = "eth-network-add"
 export const ETH_NETWORK_ADD_PREFIX: ETH_NETWORK_ADD_PREFIX = "eth-network-add"
 export type AddEthereumChainRequestId = BaseRequestId<ETH_NETWORK_ADD_PREFIX>
 export type AddEthereumChainRequestIdOnly = { id: AddEthereumChainRequestId }
-export type AddEthereumChainRequestApprove = {
-  id: AddEthereumChainRequestId
-  enableDefault: boolean
-}
 
 export type AddEthereumChainRequest = BaseRequest<ETH_NETWORK_ADD_PREFIX> & {
   idStr: string
   url: string
-  network: AddEthereumChainParameter
+  network: EthNetwork
+  nativeToken: EvmNativeToken
 }
 
 export type WatchAssetBase = {
@@ -253,7 +223,7 @@ export type WatchAssetRequestIdOnly = { id: WatchAssetRequestId }
 export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
   url: string
   request: WatchAssetBase
-  token: CustomEvmErc20Token
+  token: EvmErc20Token
   warnings: string[]
 }
 

@@ -23,7 +23,7 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetworkIds"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useChainByGenesisHash } from "@ui/state"
+import { useAccountByAddress, useNetworkByGenesisHash } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
@@ -83,7 +83,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
     useAccountToggleIsPortfolio(account)
 
-  const chain = useChainByGenesisHash(getAccountGenesisHash(account))
+  const chain = useNetworkByGenesisHash(getAccountGenesisHash(account))
 
   // TODO: These modal providers used to be used in multiple places,
   // hence the hectic API we've got going on here.

@@ -1,5 +1,5 @@
+import { EthNetworkId } from "@talismn/chaindata-provider"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
-import { EvmNetworkId } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -22,7 +22,7 @@ type UseEvmRiskAnalysisBaseProps<
   Func = QueryFunction<ResponseType<Type>, Key>,
 > = {
   type: Type
-  evmNetworkId: EvmNetworkId | undefined
+  evmNetworkId: EthNetworkId | undefined
   disableAutoRiskScan?: boolean
   queryKey: Key
   queryFn: Func

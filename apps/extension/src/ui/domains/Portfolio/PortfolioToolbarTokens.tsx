@@ -1,7 +1,7 @@
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -15,25 +15,23 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { usePortfolio, useSetting } from "@ui/state"
+import { NetworkOption, usePortfolio, useSetting } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ChainLogo } from "../Asset/ChainLogo"
-import { NetworkFilterModal } from "./NetworkFilterModal"
+import { NetworkLogo } from "../Networks/NetworkLogo"
+import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 const NetworkFilterButton = () => {
-  const { networks, networkFilter, setNetworkFilter } = usePortfolio()
+  const { networkOptions, networkFilter, setNetworkFilter } = usePortfolio()
   const { isOpen, open, close } = useOpenClose()
 
-  const networkIds = useMemo(() => networks.map((network) => network.id), [networks])
-
   const handleChange = useCallback(
-    (networkId: string | null) => {
-      setNetworkFilter(networks.find((network) => network.id === networkId))
+    (option: NetworkOption | null) => {
+      setNetworkFilter(option ?? undefined)
       close()
     },
-    [close, networks, setNetworkFilter],
+    [close, setNetworkFilter],
   )
 
   return (
@@ -45,7 +43,7 @@ const NetworkFilterButton = () => {
             className={classNames(networkFilter && "text-primary")}
           >
             {networkFilter ? (
-              <ChainLogo className="text-lg" id={networkFilter.id} />
+              <NetworkLogo className="text-lg" networkId={networkFilter.networkIds[0]} />
             ) : (
               <GlobeIcon />
             )}
@@ -55,12 +53,12 @@ const NetworkFilterButton = () => {
           {networkFilter ? networkFilter.name : t("Filter by network")}
         </TooltipContent>
       </Tooltip>
-      <NetworkFilterModal
+      <NetworkOptionsModal
         onChange={handleChange}
         isOpen={isOpen}
         onClose={close}
-        networkIds={networkIds}
-        networkId={networkFilter?.id ?? null}
+        options={networkOptions}
+        selected={networkFilter ?? null}
       />
     </>
   )

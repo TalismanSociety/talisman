@@ -1,7 +1,13 @@
-export * from "./constants"
-export * from "./init"
-export * from "./net"
-export * from "./types"
+export * from "./chaindata"
+export * from "./provider"
 export * from "./util"
+export * from "./legacy"
 
-export * from "./ChaindataProvider"
+export {
+  // make sure to export the strict minimum
+  // db should definitely not be exported
+  ChaindataFileSchema,
+  CustomChaindataSchema,
+  type Chaindata,
+  type CustomChaindata,
+} from "./state"
