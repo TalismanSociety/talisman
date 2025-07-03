@@ -13,7 +13,7 @@ export const AnyMiniMetadataSchema = z.strictObject({
   /** The chain specVersion which this miniMetadata is valid for */
   specVersion: DotNetworkSchema.shape.specVersion,
   /** the version of the balances library used to craft the mini metadata */
-  libVersion: z.string().nonempty(),
+  version: z.string().nonempty(),
   /** The miniMetadata encoded as a hex string */
   data: HexStringSchema.nullable(),
   // /** module specific information about the chain, such as pallet ids for specific features */

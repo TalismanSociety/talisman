@@ -1,6 +1,5 @@
 import "anylogger-loglevel"
 
-import { DEBUG } from "extension-shared"
 import loglevel from "loglevel"
 
-loglevel.setLevel(DEBUG ? "debug" : "info")
+loglevel.setLevel("debug")

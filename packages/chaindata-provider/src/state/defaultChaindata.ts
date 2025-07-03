@@ -11,7 +11,7 @@ import { Chaindata, ChaindataFileSchema } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 
-const result = new ReplaySubject<Chaindata>(1)
+const subjectGhChaindata$ = new ReplaySubject<Chaindata>(1)
 
 let lastUpdatedAt = 0
 
@@ -39,7 +39,7 @@ const dbChaindata$ = combineLatest({
 const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
   const controller = new AbortController()
 
-  const subscription = result.subscribe(subscriber)
+  const subscription = subjectGhChaindata$.subscribe(subscriber)
 
   let timeout: ReturnType<typeof setTimeout> | null = null
 
@@ -53,12 +53,12 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
       const data = await fetchChaindata(controller.signal)
       lastUpdatedAt = Date.now()
 
-      result.next(data)
+      subjectGhChaindata$.next(data)
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return
 
       log.error("Failed to fetch chaindata", error)
-      if (!subscriber.closed) result.error(error)
+      if (!subscriber.closed) subjectGhChaindata$.error(error)
     } finally {
       if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
     }
@@ -82,7 +82,13 @@ const shouldUpdateGhEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chainda
 export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
   const subUpdateFromGithub = ghChaindata$.subscribe({
     error: async () => {
-      const dbData = await firstValueFrom(dbChaindata$)
+      const dbData = await Promise.race([
+        firstValueFrom(dbChaindata$),
+        new Promise<Chaindata>((resolve) =>
+          // db promise might hand indefinitely if schema is invalid, fallback to empty data if this happens
+          setTimeout(() => resolve({ networks: [], tokens: [], miniMetadatas: [] }), 2_000),
+        ),
+      ])
 
       if (dbData.networks.length || dbData.tokens.length || dbData.miniMetadatas.length)
         return log.info(
@@ -113,7 +119,13 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
     next: async (ghData) => {
       const now = performance.now()
       try {
-        const dbData = await firstValueFrom(dbChaindata$)
+        const dbData = await Promise.race([
+          firstValueFrom(dbChaindata$),
+          new Promise<Chaindata>((resolve) =>
+            // db promise might hand indefinitely if schema is invalid, fallback to init data if this happens
+            setTimeout(() => resolve(initChaindata as Chaindata), 2_000),
+          ),
+        ])
 
         // TODO consider adding a hash in chaindata.json and compare just that ?
         const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
