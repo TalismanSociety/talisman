@@ -10,10 +10,10 @@ export const deriveMiniMetadataId = ({
   source,
   chainId,
   specVersion,
-  libVersion,
-}: Pick<MiniMetadata, "source" | "chainId" | "specVersion" | "libVersion">): string =>
+  version,
+}: Pick<MiniMetadata, "source" | "chainId" | "specVersion" | "version">): string =>
   u8aToHex(
-    xxhashAsU8a(new TextEncoder().encode(`${source}${chainId}${specVersion}${libVersion}`), 64),
+    xxhashAsU8a(new TextEncoder().encode(`${source}${chainId}${specVersion}${version}`), 64),
     undefined,
     false,
   )

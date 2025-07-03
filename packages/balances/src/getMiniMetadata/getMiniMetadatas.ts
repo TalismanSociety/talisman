@@ -10,10 +10,10 @@ import PQueue from "p-queue"
 import z from "zod/v4"
 
 import { ChainConnectors, DefaultModuleConfig } from "../BalanceModule"
-import { libVersion } from "../libVersion"
 import log from "../log"
 import { defaultBalanceModules } from "../modules"
 import { deriveMiniMetadataId, MiniMetadata } from "../types"
+import { MINIMETADATA_VERSION } from "../version"
 import { getMetadataRpc } from "./getMetadataRpc"
 
 // share requests as all modules will call this at once
@@ -96,11 +96,11 @@ const fetchMiniMetadatas = async (
         )
 
         return {
-          id: deriveMiniMetadataId({ source, chainId, specVersion, libVersion }),
+          id: deriveMiniMetadataId({ source, chainId, specVersion, version: MINIMETADATA_VERSION }),
           source,
           chainId,
           specVersion,
-          libVersion,
+          version: MINIMETADATA_VERSION,
           data: chainMeta?.miniMetadata ?? null,
           extra: chainMeta?.extra ?? null,
         } as MiniMetadata
