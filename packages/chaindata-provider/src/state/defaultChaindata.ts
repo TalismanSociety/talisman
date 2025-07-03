@@ -1,14 +1,6 @@
 import { liveQuery } from "dexie"
 import { isEqual, isEqualWith, sortBy } from "lodash"
-import {
-  combineLatest,
-  filter,
-  firstValueFrom,
-  map,
-  Observable,
-  ReplaySubject,
-  shareReplay,
-} from "rxjs"
+import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { AnyMiniMetadata, Network, Token } from "../chaindata"
 import log from "../log"
@@ -30,16 +22,16 @@ const dbChaindata$ = combineLatest({
 }).pipe(
   // tables are not coming all at once, even if provisionned by the same transaction
   // tokens are coming after networks, because they are larger
-  filter((data) => !!data.networks.length || !!data.tokens.length || !!data.miniMetadatas.length),
-  map((data) => {
-    // the schema will verify that there is a native token for each network
-    // chaindata has the same check so we're sure this won't make the app hang
-    const parsed = ChaindataFileSchema.safeParse(data)
-    if (!parsed.success) log.error("Invalid chaindata from DB", { data, error: parsed.error })
-
-    // data may be invalida if the schema changed. in that case return an empty chaindata
-    // in this specific case it will be overriden by github's chaindata anyway, but this promise needs to emit at least once for it to happen
-    return parsed.success ? parsed.data : { networks: [], tokens: [], miniMetadatas: [] }
+  // the schema will verify that there is a native token for each network
+  // chaindata has the same check so we're sure this won't make the app hang
+  filter((data) => {
+    const start = performance.now()
+    const isValid = ChaindataFileSchema.safeParse(data).success
+    log.debug(
+      "[defaultChaindata$] Chaindata schema validation: %sms",
+      (performance.now() - start).toFixed(2),
+    )
+    return isValid
   }),
   shareReplay(1),
 )
@@ -121,7 +113,13 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
     next: async (ghData) => {
       const now = performance.now()
       try {
-        const dbData = await firstValueFrom(dbChaindata$)
+        const dbData = await Promise.race([
+          firstValueFrom(dbChaindata$),
+          new Promise<Chaindata>((resolve) =>
+            // db promise might hand indefinitely if schema is invalid, fallback to init data if this happens
+            setTimeout(() => resolve(initChaindata as Chaindata), 2_000),
+          ),
+        ])
 
         // TODO consider adding a hash in chaindata.json and compare just that ?
         const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
