@@ -172,16 +172,3 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
     subOutput.unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
-
-defaultChaindata$.subscribe({
-  next: (data) => {
-    log.debug("[defaultChaindata$] New chaindata received", {
-      networks: data.networks.length,
-      tokens: data.tokens.length,
-      miniMetadatas: data.miniMetadatas.length,
-    })
-  },
-  error: (error) => {
-    log.error("[defaultChaindata$] Error in chaindata stream", error)
-  },
-})
