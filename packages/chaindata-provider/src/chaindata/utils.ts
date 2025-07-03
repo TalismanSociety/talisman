@@ -6,6 +6,7 @@ import {
   parseEvmUniswapV2TokenId,
   parseSubAssetTokenId,
   parseSubForeignAssetTokenId,
+  parseSubHydrationTokenId,
   parseSubNativeTokenId,
   parseSubPsp22TokenId,
   parseSubTokensTokenId,
@@ -140,6 +141,8 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
       return parseSubForeignAssetTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-tokens":
       return parseSubTokensTokenId(tokenId) as TokenIdSpecs<T>
+    case "substrate-hydration":
+      return parseSubHydrationTokenId(tokenId) as TokenIdSpecs<T>
   }
 }
 

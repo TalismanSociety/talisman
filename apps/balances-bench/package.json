@@ -1,0 +1,36 @@
+{
+  "name": "balances-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsx src/hydration.ts",
+    "dev": "tsx watch src/hydration.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.10.0",
+  "dependencies": {
+    "@polkadot-api/utils": "0.2.0",
+    "@polkadot/rpc-provider": "16.1.2",
+    "@polkadot/util": "13.5.1",
+    "@polkadot/util-crypto": "13.5.1",
+    "@talismn/balances": "workspace:^",
+    "@talismn/chain-connector": "workspace:^",
+    "@talismn/chain-connector-evm": "workspace:^",
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/sapi": "workspace:^",
+    "@talismn/scale": "workspace:^",
+    "extension-shared": "workspace:^",
+    "lodash": "4.17.21",
+    "rxjs": "^7.8.2",
+    "viem": "^2.27.3",
+    "zod": "^3.25.62"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.12",
+    "tsx": "^4.20.3"
+  }
+}

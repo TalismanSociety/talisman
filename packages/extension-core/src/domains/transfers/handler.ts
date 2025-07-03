@@ -54,7 +54,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
         tokenType === "substrate-foreignassets" ||
         tokenType === "substrate-native" ||
         tokenType === "substrate-psp22" ||
-        tokenType === "substrate-tokens"
+        tokenType === "substrate-tokens" ||
+        tokenType === "substrate-hydration"
       ) {
         try {
           const hash = await AssetTransfersRpc.transfer(
@@ -119,7 +120,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
       tokenType === "substrate-foreignassets" ||
       tokenType === "substrate-native" ||
       tokenType === "substrate-psp22" ||
-      tokenType === "substrate-tokens"
+      tokenType === "substrate-tokens" ||
+      tokenType === "substrate-hydration"
     ) {
       const pair = getPjsKeyringPairFake(fromAddress) // no need for an unlocked pair for fee estimation
       try {

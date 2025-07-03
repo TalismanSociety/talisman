@@ -27,6 +27,8 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
         return "PSP22"
       case "substrate-tokens":
         return "ORML"
+      case "substrate-hydration":
+        return "HYDRATION"
     }
   }, [t, type])
 
