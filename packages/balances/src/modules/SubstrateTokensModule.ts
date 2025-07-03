@@ -184,7 +184,6 @@ export const SubTokensModule: NewBalanceModule<
             const stateHelper = new RpcStateQueryHelper(chainConnector, queries)
 
             return await stateHelper.subscribe((error, result) => {
-              //  console.log("SubstrateAssetsModule.callback", { error, result })
               if (error) return callback(error)
               const balances = result?.filter((b): b is SubTokensBalance => b !== null) ?? []
               if (balances.length > 0) callback(null, new Balances(balances))
