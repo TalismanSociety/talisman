@@ -1,5 +1,5 @@
 /** @dev temporarily change branch here when testing changes in chaindata */
-const CHAINDATA_BRANCH = "main"
+const CHAINDATA_BRANCH = "fix/minimetadata-versions"
 const CHAINDATA_PUB_FOLDER = "pub/v4"
 
 //

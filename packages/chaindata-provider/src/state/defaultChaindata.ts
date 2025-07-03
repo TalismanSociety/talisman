@@ -1,6 +1,14 @@
 import { liveQuery } from "dexie"
 import { isEqual, isEqualWith, sortBy } from "lodash"
-import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
+import {
+  combineLatest,
+  filter,
+  firstValueFrom,
+  map,
+  Observable,
+  ReplaySubject,
+  shareReplay,
+} from "rxjs"
 
 import { AnyMiniMetadata, Network, Token } from "../chaindata"
 import log from "../log"
@@ -11,7 +19,7 @@ import { Chaindata, ChaindataFileSchema } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 
-const result = new ReplaySubject<Chaindata>(1)
+const subjectGhChaindata$ = new ReplaySubject<Chaindata>(1)
 
 let lastUpdatedAt = 0
 
@@ -22,16 +30,16 @@ const dbChaindata$ = combineLatest({
 }).pipe(
   // tables are not coming all at once, even if provisionned by the same transaction
   // tokens are coming after networks, because they are larger
-  // the schema will verify that there is a native token for each network
-  // chaindata has the same check so we're sure this won't make the app hang
-  filter((data) => {
-    const start = performance.now()
-    const isValid = ChaindataFileSchema.safeParse(data).success
-    log.debug(
-      "[defaultChaindata$] Chaindata schema validation: %sms",
-      (performance.now() - start).toFixed(2),
-    )
-    return isValid
+  filter((data) => !!data.networks.length || !!data.tokens.length || !!data.miniMetadatas.length),
+  map((data) => {
+    // the schema will verify that there is a native token for each network
+    // chaindata has the same check so we're sure this won't make the app hang
+    const parsed = ChaindataFileSchema.safeParse(data)
+    if (!parsed.success) log.error("Invalid chaindata from DB", { data, error: parsed.error })
+
+    // data may be invalida if the schema changed. in that case return an empty chaindata
+    // in this specific case it will be overriden by github's chaindata anyway, but this promise needs to emit at least once for it to happen
+    return parsed.success ? parsed.data : { networks: [], tokens: [], miniMetadatas: [] }
   }),
   shareReplay(1),
 )
@@ -39,7 +47,7 @@ const dbChaindata$ = combineLatest({
 const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
   const controller = new AbortController()
 
-  const subscription = result.subscribe(subscriber)
+  const subscription = subjectGhChaindata$.subscribe(subscriber)
 
   let timeout: ReturnType<typeof setTimeout> | null = null
 
@@ -53,12 +61,12 @@ const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
       const data = await fetchChaindata(controller.signal)
       lastUpdatedAt = Date.now()
 
-      result.next(data)
+      subjectGhChaindata$.next(data)
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return
 
       log.error("Failed to fetch chaindata", error)
-      if (!subscriber.closed) result.error(error)
+      if (!subscriber.closed) subjectGhChaindata$.error(error)
     } finally {
       if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
     }
@@ -160,3 +168,16 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
     subOutput.unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+
+defaultChaindata$.subscribe({
+  next: (data) => {
+    log.debug("[defaultChaindata$] New chaindata received", {
+      networks: data.networks.length,
+      tokens: data.tokens.length,
+      miniMetadatas: data.miniMetadatas.length,
+    })
+  },
+  error: (error) => {
+    log.error("[defaultChaindata$] Error in chaindata stream", error)
+  },
+})
