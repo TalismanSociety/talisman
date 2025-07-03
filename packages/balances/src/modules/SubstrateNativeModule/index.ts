@@ -85,7 +85,7 @@ export * from "./util/subtensor"
 const POLLING_WINDOW_SIZE = 20
 const MAX_SUBSCRIPTION_SIZE = 40
 
-const UNSUPPORTED_CHAIN_META: SubNativeChainMeta = {
+const EMPTY_CHAIN_META: SubNativeChainMeta = {
   miniMetadata: null,
   extra: null,
 }
@@ -369,13 +369,15 @@ export const SubNativeModule: NewBalanceModule<
     ...DefaultBalanceModule(moduleType),
 
     async fetchSubstrateChainMeta(chainId, moduleConfig, metadataRpc) {
-      if (!metadataRpc) return UNSUPPORTED_CHAIN_META
+      if (moduleConfig?.disable) return EMPTY_CHAIN_META
+
+      if (!metadataRpc) return EMPTY_CHAIN_META
 
       //
       // process metadata into SCALE encoders/decoders
       //
       const metadataVersion = getMetadataVersion(metadataRpc)
-      if (metadataVersion < 14) return UNSUPPORTED_CHAIN_META
+      if (metadataVersion < 14) return EMPTY_CHAIN_META
 
       const metadata = decAnyMetadata(metadataRpc)
       const unifiedMetadata = unifyMetadata(metadata)
