@@ -1,6 +1,6 @@
 import { u8aToHex } from "@polkadot/util"
 import { xxhashAsU8a } from "@polkadot/util-crypto"
-import { AnyMiniMetadataSchema } from "@talismn/chaindata-provider"
+import { AnyMiniMetadataSchema, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import z from "zod/v4"
 
 import { AnyNewBalanceModule, InferChainMeta } from "../modules"
@@ -10,10 +10,12 @@ export const deriveMiniMetadataId = ({
   source,
   chainId,
   specVersion,
-  version,
-}: Pick<MiniMetadata, "source" | "chainId" | "specVersion" | "version">): string =>
+}: Pick<MiniMetadata, "source" | "chainId" | "specVersion">): string =>
   u8aToHex(
-    xxhashAsU8a(new TextEncoder().encode(`${source}${chainId}${specVersion}${version}`), 64),
+    xxhashAsU8a(
+      new TextEncoder().encode(`${source}${chainId}${specVersion}${MINIMETADATA_VERSION}`),
+      64,
+    ),
     undefined,
     false,
   )

@@ -2,6 +2,7 @@ export * from "./chaindata"
 export * from "./provider"
 export * from "./util"
 export * from "./legacy"
+export { MINIMETADATA_VERSION } from "./constants"
 
 export {
   // make sure to export the strict minimum

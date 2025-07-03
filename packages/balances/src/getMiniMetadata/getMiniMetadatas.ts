@@ -96,7 +96,7 @@ const fetchMiniMetadatas = async (
         )
 
         return {
-          id: deriveMiniMetadataId({ source, chainId, specVersion, version: MINIMETADATA_VERSION }),
+          id: deriveMiniMetadataId({ source, chainId, specVersion }),
           source,
           chainId,
           specVersion,

@@ -24,7 +24,6 @@ export const getMiniMetadata = async <T extends AnyNewBalanceModule>(
     source,
     chainId,
     specVersion,
-    version: MINIMETADATA_VERSION,
   })
 
   // lookup local ones
