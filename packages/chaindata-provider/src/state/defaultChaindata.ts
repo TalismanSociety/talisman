@@ -82,7 +82,13 @@ const shouldUpdateGhEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chainda
 export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
   const subUpdateFromGithub = ghChaindata$.subscribe({
     error: async () => {
-      const dbData = await firstValueFrom(dbChaindata$)
+      const dbData = await Promise.race([
+        firstValueFrom(dbChaindata$),
+        new Promise<Chaindata>((resolve) =>
+          // db promise might hand indefinitely if schema is invalid, fallback to empty data if this happens
+          setTimeout(() => resolve({ networks: [], tokens: [], miniMetadatas: [] }), 2_000),
+        ),
+      ])
 
       if (dbData.networks.length || dbData.tokens.length || dbData.miniMetadatas.length)
         return log.info(
