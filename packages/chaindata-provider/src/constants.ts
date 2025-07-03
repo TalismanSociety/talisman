@@ -4,7 +4,10 @@ const CHAINDATA_BRANCH = "fix/minimetadata-versions"
 // pub subfolder needs to be incremented each time the schema of chaindata changes, or when the content of the minimetadata changes
 const CHAINDATA_PUB_FOLDER = "pub/v4"
 
-export const MINIMETADATA_VERSION = CHAINDATA_PUB_FOLDER.split("/").pop()
+export const MINIMETADATA_VERSION = CHAINDATA_PUB_FOLDER.split("/").pop()!
+if (!MINIMETADATA_VERSION) {
+  throw new Error("MINIMETADATA_VERSION is not defined, please check CHAINDATA_PUB_FOLDER")
+}
 
 //
 // GitHub repo constants
