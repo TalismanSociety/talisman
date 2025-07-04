@@ -1,16 +1,21 @@
 import { mergeUint8 } from "@polkadot-api/utils"
+import { isTokenOfType } from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../IBalanceModule"
+import { MODULE_TYPE } from "./config"
 
-export const getTransferCallData: IBalanceModule<"substrate-hydration">["getTransferCallData"] = ({
+export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
   from,
   to,
   value: planck,
   token,
   metadataRpc,
 }) => {
+  if (!isTokenOfType(token, MODULE_TYPE))
+    throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
+
   // there is only one transfer method, no existential deposit handling.
   // => leave this to the frontend and dry runs
   const builder = getDynamicBuilder(getLookupFn(unifyMetadata(decAnyMetadata(metadataRpc))))

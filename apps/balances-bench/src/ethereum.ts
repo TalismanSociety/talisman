@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { webcrypto } from "crypto"
 
-import { EvmErc20TokenConfig, NEW_BALANCE_MODULES } from "@talismn/balances"
+import { NEW_BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { EthNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
@@ -57,6 +57,11 @@ const NETWORK_CONFIG = {
         coingeckoId: "tether",
       },
     ],
+    "evm-uniswapv2": [
+      { contractAddress: "0x21b8065d10f73EE2e260e5B47D3344d3Ced7596E" },
+      { contractAddress: "0x517F9dD285e75b599234F7221227339478d0FcC8" },
+      { contractAddress: "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852" },
+    ],
   },
 }
 
@@ -76,13 +81,13 @@ const run = async () => {
     const modules = keys(NETWORK_CONFIG.tokens) as TokenType[]
 
     for (const mod of NEW_BALANCE_MODULES.filter((mod) => mod && modules.includes(mod.type)).filter(
-      (mod) => mod.platform === "ethereum", // then we can use a ChainConnector
+      (mod) => mod.platform === "ethereum",
     )) {
       const source = mod.type
       log.log("source", source)
       log.log()
 
-      const tokenConfigs = NETWORK_CONFIG.tokens[source as "evm-erc20"] as EvmErc20TokenConfig[]
+      const tokenConfigs = NETWORK_CONFIG.tokens[mod.type] as any
       log.log("Token configs", tokenConfigs)
       log.log()
 
@@ -100,72 +105,8 @@ const run = async () => {
         to: TEST_ADDRESS_ETH2,
         token: tokens[0],
         value: "1000000000000000", // 0.001 ETH
-        // metadataRpc: null,
       })
       log.log("Transfer call data", transfer)
-
-      // if (tokens.length > 3) log.log("+ %s other tokens", tokens.length - 3)
-      // log.log()
-
-      // const balances = await mod.fetchBalances({
-      //   networkId,
-      //   addressesByToken: relevantTokens.map((token) => [token, [TEST_ADDRESS_SUB]] as const),
-      //   connector,
-      //   miniMetadata,
-      // })
-
-      // log.log("Balances", balances)
-      // log.log()
-
-      // const xferTokenOnChainId = 69
-      // log.log("Attempting to transfer token ", xferTokenOnChainId)
-      // const xferTokenId = subHydrationTokenId(networkId, xferTokenOnChainId)
-      // const xferToken = tokens.find((t) => t.id === xferTokenId && t.type === "substrate-hydration")
-      // const xferBalance = balances.find((b) => b.tokenId === xferTokenId)
-      // const xferFreeBalance = xferBalance?.values?.find((v) => v.type === "free")?.amount
-      // if (!xferFreeBalance) {
-      //   log.error("No balance found for the test address")
-      //   return
-      // }
-      // if (!xferToken || xferToken.type !== "substrate-hydration") {
-      //   log.error("No MYTH token found")
-      //   return
-      // }
-      // if (mod.type !== "substrate-hydration") return
-
-      // // try transfer half of the MYTH balance to TEST_ADDRESS2
-      // const payloadBase = mod.getTransferCallData({
-      //   from: TEST_ADDRESS_SUB,
-      //   to: TEST_ADDRESS_SUB2,
-      //   planck: xferFreeBalance.toString(),
-      //   token: xferToken,
-      //   metadataRpc,
-      // })
-
-      // log.log("Transfer payload", payloadBase)
-      // const lookup = getLookupFn(unifyMetadata(decAnyMetadata(metadataRpc)))
-      // const builder = getDynamicBuilder(lookup)
-      // const def = builder.buildDefinition(lookup.call!)
-      // const decodedCall = def.dec(payloadBase.method)
-      // log.log("Decoded call", decodedCall)
-
-      // const pallet = decodedCall.type
-      // const method = decodedCall.value.type
-      // const args = decodedCall.value.value
-      // log.log({ pallet, method, args })
-
-      // // dry run
-      // const call = builder.buildRuntimeCall("DryRunApi", "dry_run_call")
-      // const hex = await connector.send<string>(networkId, "state_call", [
-      //   `DryRunApi_dry_run_call`,
-      //   toHex(call.args.enc([Enum("system", Enum("Signed", payloadBase.address)), decodedCall])),
-      // ])
-
-      // log.log("hex", hex)
-
-      // const dryRun = call.value.dec(hex)
-      // log.log("Dry run result")
-      // log.log(papiStringify(dryRun, 2))
     }
     stopAll()
   } catch (err) {

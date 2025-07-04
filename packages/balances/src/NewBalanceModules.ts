@@ -1,4 +1,9 @@
 import { EvmErc20BalanceModule } from "./modules/evm-erc20/index"
+import { EvmUniswapV2BalanceModule } from "./modules/evm-uniswapv2"
 import { SubHydrationBalanceModule } from "./modules/substrate-hydration"
 
-export const NEW_BALANCE_MODULES = [SubHydrationBalanceModule, EvmErc20BalanceModule]
+export const NEW_BALANCE_MODULES = [
+  SubHydrationBalanceModule,
+  EvmErc20BalanceModule,
+  EvmUniswapV2BalanceModule,
+]

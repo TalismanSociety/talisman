@@ -3,7 +3,6 @@ import { log } from "extension-shared"
 import { assign } from "lodash"
 
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE, PLATFORM } from "./config"
 import { EvmErc20TokenConfig } from "./types"
 import { getErc20ContractData } from "./utils"
 
@@ -13,10 +12,12 @@ const TokenCacheSchema = EvmErc20TokenSchema.pick({
   name: true,
 })
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  EvmErc20TokenConfig
->["fetchTokens"] = async ({ networkId, tokens, connector, cache }) => {
+export const fetchTokens: IBalanceModule<"evm-erc20", EvmErc20TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+  connector,
+  cache,
+}) => {
   const result: EvmErc20Token[] = []
 
   for (const tokenConfig of tokens) {
@@ -47,8 +48,8 @@ export const fetchTokens: IBalanceModule<
     }
 
     const base: Pick<EvmErc20Token, "type" | "networkId" | "platform"> = {
-      type: MODULE_TYPE,
-      platform: PLATFORM,
+      type: "evm-erc20",
+      platform: "ethereum",
       networkId,
     }
 

@@ -153,7 +153,7 @@ export interface IBalanceModule<
           from: string
           to: string
           value: string
-          token: TokenOfType<Type>
+          token: Token
           metadataRpc: `0x${string}`
         }
       : PlatformOf<Type> extends "ethereum"
@@ -161,7 +161,7 @@ export interface IBalanceModule<
             from: string
             to: string
             value: string
-            token: TokenOfType<Type>
+            token: Token
           }
         : never,
   ) => CallDataOf<PlatformOf<Type>>

@@ -39,24 +39,24 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   return fetchWithoutAggregator(client, balanceDefs)
 }
 
-class EvmErc20BalanceError extends Error {
+class EvmUniswapV2BalanceError extends Error {
   tokenId: TokenId
   address: Address
 
   constructor(message: string, tokenId: TokenId, address: Address, cause?: Error) {
     super(message)
-    this.name = "EvmErc20BalanceError"
+    this.name = "EvmUniswapV2BalanceError"
     this.tokenId = tokenId
     this.address = address
     if (cause) this.cause = cause
   }
 }
-class EvmErc20NetworkError extends Error {
+class EvmUniswapV2NetworkError extends Error {
   evmNetworkId: string | undefined
 
   constructor(message: string, evmNetworkId?: string, cause?: Error) {
     super(message)
-    this.name = "EvmErc20NetworkError"
+    this.name = "EvmUniswapV2NetworkError"
     this.evmNetworkId = evmNetworkId
     if (cause) this.cause = cause
   }
@@ -89,7 +89,7 @@ const fetchWithoutAggregator = async (
 
         return balance
       } catch (err) {
-        throw new EvmErc20BalanceError(
+        throw new EvmUniswapV2BalanceError(
           `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
           token.id,
           address,
@@ -103,7 +103,7 @@ const fetchWithoutAggregator = async (
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
-        const error = result.reason as EvmErc20BalanceError
+        const error = result.reason as EvmUniswapV2BalanceError
         acc.errors.push({
           tokenId: error.tokenId,
           address: error.address,
@@ -151,7 +151,7 @@ const fetchWithAggregator = async (
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
       tokenId: balanceDef.token.id,
       address: balanceDef.address,
-      error: new EvmErc20NetworkError(
+      error: new EvmUniswapV2NetworkError(
         `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
         String(client.chain?.id),
         err as Error,

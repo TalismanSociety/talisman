@@ -10,11 +10,12 @@ import { assign } from "lodash"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../IBalanceModule"
+import { MODULE_TYPE } from "./config"
 import { SubHydrationTokenConfig } from "./types"
 import { getStorageKeyPrefix } from "./utils"
 
 export const fetchTokens: IBalanceModule<
-  "substrate-hydration",
+  typeof MODULE_TYPE,
   SubHydrationTokenConfig
 >["fetchTokens"] = async ({ networkId, tokens, connector, miniMetadata }) => {
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
@@ -65,7 +66,7 @@ export const fetchTokens: IBalanceModule<
       .map(
         (asset): SubHydrationToken => ({
           id: subHydrationTokenId(networkId, asset.onChainId),
-          type: "substrate-hydration",
+          type: MODULE_TYPE,
           platform: "polkadot",
           networkId,
           onChainId: asset.onChainId,

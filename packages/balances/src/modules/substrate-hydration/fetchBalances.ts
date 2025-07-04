@@ -5,15 +5,16 @@ import { keyBy, uniq } from "lodash"
 import { IBalance } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared/types"
+import { MODULE_TYPE } from "./config"
 import { fetchRuntimeCallResult } from "./utils"
 
-export const fetchBalances: IBalanceModule<"substrate-hydration">["fetchBalances"] = async ({
+export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
   addressesByToken,
   connector,
   miniMetadata,
 }) => {
-  const balanceDefs = getBalanceDefs<"substrate-hydration">(addressesByToken)
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
 
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) {
@@ -27,7 +28,7 @@ export const fetchBalances: IBalanceModule<"substrate-hydration">["fetchBalances
       })),
     }
   }
-  if (anyMiniMetadata.source !== "substrate-hydration") {
+  if (anyMiniMetadata.source !== MODULE_TYPE) {
     log.warn(`Ignoring miniMetadata with source ${anyMiniMetadata.source} in substrate-hydration`)
     return {
       success: [],
@@ -78,7 +79,7 @@ export const fetchBalances: IBalanceModule<"substrate-hydration">["fetchBalances
     const balancesByKey = keyBy(fetchedBalances, (b) => `${b.address}:${b.onChainId}`)
 
     const success = addressesByToken.reduce((acc, [token, addresses]) => {
-      if (token.type === "substrate-hydration")
+      if (token.type === MODULE_TYPE)
         for (const address of addresses) {
           const rawBalance = balancesByKey[`${address}:${token.onChainId}`]
 
@@ -88,7 +89,7 @@ export const fetchBalances: IBalanceModule<"substrate-hydration">["fetchBalances
             address,
             networkId,
             tokenId: token.id,
-            source: "substrate-hydration",
+            source: MODULE_TYPE,
             status: "cache",
             values: [
               {

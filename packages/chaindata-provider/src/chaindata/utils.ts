@@ -106,6 +106,10 @@ export const isTokenSubTokens = (token: Token | null | undefined) => {
   return isTokenOfType(token, "substrate-tokens")
 }
 
+export const isTokenSubHydration = (token: Token | null | undefined) => {
+  return isTokenOfType(token, "substrate-hydration")
+}
+
 export const isTokenEvmNative = (token: Token | null | undefined) => {
   return isTokenOfType(token, "evm-native")
 }

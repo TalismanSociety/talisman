@@ -3,16 +3,14 @@ import { isEqual } from "lodash"
 import { distinctUntilChanged, Observable } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
 
 const SUBSCRIPTION_INTERVAL = 6_000
 
-export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBalances"] = ({
+export const subscribeBalances: IBalanceModule<"evm-erc20">["subscribeBalances"] = ({
   networkId,
   addressesByToken,
   connector,
-  miniMetadata,
 }) => {
   return new Observable((subscriber) => {
     const abortController = new AbortController()
@@ -27,7 +25,6 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
           networkId,
           addressesByToken,
           connector,
-          miniMetadata,
         })
 
         if (abortController.signal.aborted) return
@@ -37,9 +34,8 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         setTimeout(poll, SUBSCRIPTION_INTERVAL)
       } catch (error) {
         log.error("Error", {
-          module: MODULE_TYPE,
+          module: "evm-erc20",
           networkId,
-          miniMetadata,
           addressesByToken,
           error,
         })

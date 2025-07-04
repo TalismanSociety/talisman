@@ -1,18 +1,16 @@
-import { isTokenOfType } from "@talismn/chaindata-provider"
+import { isTokenEvmErc20 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { encodeFunctionData, erc20Abi } from "viem"
 
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE } from "./config"
 
-export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
+export const getTransferCallData: IBalanceModule<"evm-erc20">["getTransferCallData"] = ({
   from,
   to,
   value,
   token,
 }) => {
-  if (!isTokenOfType(token, MODULE_TYPE))
-    throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
+  if (!isTokenEvmErc20(token)) throw new Error("Token is not an EVM ERC20 token")
   if (!isEthereumAddress(from)) throw new Error("Invalid from address")
   if (!isEthereumAddress(to)) throw new Error("Invalid to address")
 

@@ -1,14 +1,13 @@
-import { parseEvmErc20TokenId, TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, parseEvmErc20TokenId, TokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import { isHexString } from "extension-shared"
 import { ChainContract, erc20Abi, PublicClient } from "viem"
 
 import { Address, IBalance } from "../../types"
 import { erc20BalancesAggregatorAbi } from "../EvmErc20Module"
 import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
-import { MODULE_TYPE } from "./config"
 
-export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
+export const fetchBalances: IBalanceModule<"evm-erc20">["fetchBalances"] = async ({
   networkId,
   addressesByToken,
   connector,
@@ -17,7 +16,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   if (!client) throw new Error(`Could not get rpc provider for evm network ${networkId}`)
 
   for (const [token, addresses] of addressesByToken) {
-    if (token.type !== MODULE_TYPE || token.networkId !== networkId)
+    if (token.type !== "evm-erc20" || token.networkId !== networkId)
       throw new Error(
         `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`,
       )
@@ -29,7 +28,12 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         )
   }
 
-  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
+  const balanceDefs: BalanceDef[] = addressesByToken.flatMap(([token, addresses]) =>
+    addresses.filter(isHexString).map((address) => ({
+      token: token as EvmErc20Token,
+      address,
+    })),
+  )
 
   if (client.chain?.contracts?.erc20Aggregator) {
     const erc20Aggregator = client.chain.contracts.erc20Aggregator as ChainContract
@@ -38,6 +42,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   return fetchWithoutAggregator(client, balanceDefs)
 }
+
+type BalanceDef = { token: EvmErc20Token; address: `0x${string}` }
 
 class EvmErc20BalanceError extends Error {
   tokenId: TokenId
@@ -64,7 +70,7 @@ class EvmErc20NetworkError extends Error {
 
 const fetchWithoutAggregator = async (
   client: PublicClient,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
+  balanceDefs: BalanceDef[],
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
@@ -82,7 +88,7 @@ const fetchWithoutAggregator = async (
           address,
           tokenId: token.id,
           value: result.toString(),
-          source: MODULE_TYPE,
+          source: "evm-erc20",
           networkId: parseEvmErc20TokenId(token.id).networkId,
           status: "cache",
         }
@@ -118,7 +124,7 @@ const fetchWithoutAggregator = async (
 
 const fetchWithAggregator = async (
   client: PublicClient,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
+  balanceDefs: BalanceDef[],
   erc20BalancesAggregatorAddress: `0x${string}`,
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
@@ -141,7 +147,7 @@ const fetchWithAggregator = async (
         address: balanceDef.address,
         tokenId: balanceDef.token.id,
         value: erc20Balances[index].toString(),
-        source: MODULE_TYPE,
+        source: "evm-erc20",
         networkId: parseEvmErc20TokenId(balanceDef.token.id).networkId,
         status: "cache",
       }),
