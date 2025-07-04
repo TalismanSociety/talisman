@@ -43,7 +43,7 @@ type EthTransferCallData = {
   from: string
   to: string
   data: `0x${string}`
-  value?: `0x${string}` // optional, for native transfers only
+  value?: string // optional, for native transfers only
 }
 
 type CallDataOf<P extends PlatformOf<TokenType>> = P extends "ethereum"

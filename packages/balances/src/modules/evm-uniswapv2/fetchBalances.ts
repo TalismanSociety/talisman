@@ -1,10 +1,11 @@
-import { parseEvmErc20TokenId, TokenId } from "@talismn/chaindata-provider"
+import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { ChainContract, erc20Abi, PublicClient } from "viem"
 
-import { Address, IBalance } from "../../types"
+import { IBalance } from "../../types"
 import { erc20BalancesAggregatorAbi } from "../EvmErc20Module"
 import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
+import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
 import { BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
@@ -39,29 +40,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   return fetchWithoutAggregator(client, balanceDefs)
 }
 
-class EvmUniswapV2BalanceError extends Error {
-  tokenId: TokenId
-  address: Address
-
-  constructor(message: string, tokenId: TokenId, address: Address, cause?: Error) {
-    super(message)
-    this.name = "EvmUniswapV2BalanceError"
-    this.tokenId = tokenId
-    this.address = address
-    if (cause) this.cause = cause
-  }
-}
-class EvmUniswapV2NetworkError extends Error {
-  evmNetworkId: string | undefined
-
-  constructor(message: string, evmNetworkId?: string, cause?: Error) {
-    super(message)
-    this.name = "EvmUniswapV2NetworkError"
-    this.evmNetworkId = evmNetworkId
-    if (cause) this.cause = cause
-  }
-}
-
 const fetchWithoutAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
@@ -83,13 +61,13 @@ const fetchWithoutAggregator = async (
           tokenId: token.id,
           value: result.toString(),
           source: MODULE_TYPE,
-          networkId: parseEvmErc20TokenId(token.id).networkId,
+          networkId: parseTokenId(token.id).networkId,
           status: "cache",
         }
 
         return balance
       } catch (err) {
-        throw new EvmUniswapV2BalanceError(
+        throw new BalanceFetchError(
           `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
           token.id,
           address,
@@ -103,7 +81,7 @@ const fetchWithoutAggregator = async (
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
-        const error = result.reason as EvmUniswapV2BalanceError
+        const error = result.reason as BalanceFetchError
         acc.errors.push({
           tokenId: error.tokenId,
           address: error.address,
@@ -142,7 +120,7 @@ const fetchWithAggregator = async (
         tokenId: balanceDef.token.id,
         value: erc20Balances[index].toString(),
         source: MODULE_TYPE,
-        networkId: parseEvmErc20TokenId(balanceDef.token.id).networkId,
+        networkId: parseTokenId(balanceDef.token.id).networkId,
         status: "cache",
       }),
     )
@@ -151,7 +129,7 @@ const fetchWithAggregator = async (
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
       tokenId: balanceDef.token.id,
       address: balanceDef.address,
-      error: new EvmUniswapV2NetworkError(
+      error: new BalanceFetchNetworkError(
         `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
         String(client.chain?.id),
         err as Error,

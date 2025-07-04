@@ -5,6 +5,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { assign } from "lodash"
+import { BaseError } from "viem"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, PLATFORM } from "./config"
@@ -60,7 +61,10 @@ export const fetchTokens: IBalanceModule<
           symbol1,
         }
       } catch (err) {
-        log.warn(`Failed to fetch UniswapV2 token data for ${tokenConfig.contractAddress}`, err)
+        log.warn(
+          `Failed to fetch UniswapV2 token data for ${tokenConfig.contractAddress}`,
+          (err as BaseError).shortMessage,
+        )
         continue
       }
     }

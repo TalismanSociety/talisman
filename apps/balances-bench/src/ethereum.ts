@@ -4,9 +4,8 @@ import { webcrypto } from "crypto"
 
 import { NEW_BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { EthNetwork, TokenType } from "@talismn/chaindata-provider"
+import { EthNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { keys } from "lodash"
 
 import { getEvmNetworkPublicClient } from "./utils"
 
@@ -78,16 +77,18 @@ const run = async () => {
         getEvmNetworkPublicClient(NETWORK_CONFIG as unknown as EthNetwork),
     } as unknown as ChainConnectorEvm
 
-    const modules = keys(NETWORK_CONFIG.tokens) as TokenType[]
-
-    for (const mod of NEW_BALANCE_MODULES.filter((mod) => mod && modules.includes(mod.type)).filter(
-      (mod) => mod.platform === "ethereum",
-    )) {
+    for (const mod of NEW_BALANCE_MODULES.filter((mod) => mod.platform === "ethereum")) {
       const source = mod.type
-      log.log("source", source)
+      log.log()
+      log.log("///////////////////////////////////////////////////////////////////////////////////")
+      log.log(`                         ${source}`)
+      log.log("///////////////////////////////////////////////////////////////////////////////////")
       log.log()
 
-      const tokenConfigs = NETWORK_CONFIG.tokens[mod.type] as any
+      const tokenConfigs =
+        mod.type === "evm-native"
+          ? [NETWORK_CONFIG.nativeCurrency]
+          : (NETWORK_CONFIG.tokens[mod.type] as any)
       log.log("Token configs", tokenConfigs)
       log.log()
 
@@ -99,6 +100,17 @@ const run = async () => {
       })
 
       log.log("mod.fetchTokens results", tokens)
+
+      const balances = await mod.fetchBalances({
+        networkId,
+        connector,
+        addressesByToken: tokens.map((token) => [token, [TEST_ADDRESS_ETH, TEST_ADDRESS_ETH2]]),
+      })
+      log.log("Balances", balances.success)
+      if (balances.errors.length) {
+        log.log("Balance errors:")
+        for (const error of balances.errors) log.error(error)
+      }
 
       const transfer = mod.getTransferCallData({
         from: TEST_ADDRESS_ETH,
