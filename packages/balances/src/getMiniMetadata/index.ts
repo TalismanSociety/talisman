@@ -1,11 +1,11 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider, NetworkId as DotNetworkId } from "@talismn/chaindata-provider"
 
-import { libVersion } from "../libVersion"
 import log from "../log"
 import { AnyNewBalanceModule } from "../modules"
 import { db } from "../TalismanBalancesDatabase"
 import { deriveMiniMetadataId, MiniMetadata } from "../types"
+import { MINIMETADATA_VERSION } from "../version"
 import { getSpecVersion } from "./getSpecVersion"
 import { getUpdatedMiniMetadatas } from "./getUpdatedMiniMetadatas"
 
@@ -24,7 +24,6 @@ export const getMiniMetadata = async <T extends AnyNewBalanceModule>(
     source,
     chainId,
     specVersion,
-    libVersion,
   })
 
   // lookup local ones
@@ -55,7 +54,7 @@ export const getMiniMetadata = async <T extends AnyNewBalanceModule>(
       source,
       chainId,
       specVersion,
-      libVersion,
+      version: MINIMETADATA_VERSION,
       miniMetadataId,
       miniMetadatas,
     })
