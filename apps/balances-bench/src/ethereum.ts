@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { webcrypto } from "crypto"
+
+import "./common/polyfills"
 
 import { NEW_BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { EthNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
-import { getEvmNetworkPublicClient } from "./utils"
-
-// Ensure globalThis.crypto is available (for Node.js)
-if (typeof globalThis.crypto === "undefined") {
-  globalThis.crypto = webcrypto
-}
+import { getEvmNetworkPublicClient } from "./common/utils"
 
 const NETWORK_CONFIG = {
   id: "1",

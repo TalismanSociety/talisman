@@ -1,0 +1,52 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { webcrypto } from "crypto"
+
+import { log } from "extension-shared"
+
+import { testDotNetwork } from "./common/testPolkadotNetwork"
+
+// Ensure globalThis.crypto is available (for Node.js)
+if (typeof globalThis.crypto === "undefined") {
+  globalThis.crypto = webcrypto
+}
+
+const NETWORK_CONFIG = {
+  id: "polkadot-asset-hub",
+  rpcs: ["wss://sys.ibp.network/asset-hub-polkadot"],
+  nativeCurrency: { coingeckoId: "polkadot" },
+  tokens: {
+    "substrate-assets": [
+      {
+        onChainId: "1337", // MYTH
+        coingeckoId: "usd-coin",
+      },
+      {
+        onChainId: "1984", // SKY
+        coingeckoId: "tether",
+      },
+    ],
+    "substrate-foreignassets": [
+      {
+        onChainId:
+          '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc0"}}]}}',
+        coingeckoId: "weth",
+      },
+      {
+        onChainId:
+          '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":3369}}}',
+        coingeckoId: "mythos",
+      },
+    ],
+  },
+}
+
+testDotNetwork(NETWORK_CONFIG)
+  .then(() => {
+    log.log("Balances testbench completed successfully")
+    process.exit(0)
+  })
+  .catch((error) => {
+    log.error("Error starting balances testbench:", error)
+    process.exit(1)
+  })

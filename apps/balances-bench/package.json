@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsx src/hydration.ts",
     "dev:ethereum": "tsx watch src/ethereum.ts",
-    "dev:hydration": "tsx watch src/hydration.ts"
+    "dev:hydration": "tsx watch src/hydration.ts",
+    "dev:pah": "tsx watch src/polkadot-asset-hub.ts"
   },
   "keywords": [],
   "author": "",

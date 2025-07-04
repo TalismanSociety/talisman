@@ -19,7 +19,7 @@ export const fetchTokens: IBalanceModule<
   SubHydrationTokenConfig
 >["fetchTokens"] = async ({ networkId, tokens, connector, miniMetadata }) => {
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
-  if (!anyMiniMetadata?.data) throw new Error("MiniMetadata is required for fetching tokens")
+  if (!anyMiniMetadata?.data) return []
 
   const metadata = unifyMetadata(decAnyMetadata(anyMiniMetadata.data))
   const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))

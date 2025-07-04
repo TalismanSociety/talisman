@@ -4,6 +4,7 @@ import { log } from "extension-shared"
 
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
+import { hasRuntimeApi, hasStorageItem } from "../shared/utils"
 import { MODULE_TYPE } from "./config"
 import { getConstantValue } from "./utils"
 
@@ -15,8 +16,8 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
   const source = MODULE_TYPE
   const chainId = networkId
 
-  const systemVersion = getConstantValue<{ specVersion: number }>(metadataRpc, "System", "Version")
-  if (specVersion !== systemVersion.specVersion)
+  const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
+  if (specVersion !== systemVersion.spec_version)
     log.warn("specVersion mismatch", { networkId, specVersion, systemVersion })
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
@@ -28,6 +29,29 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
     throw new Error(
       `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`,
     )
+
+  return {
+    id,
+    source,
+    chainId,
+    specVersion,
+    version: MINIMETADATA_VERSION,
+    data: getData(metadataRpc),
+    extra: null,
+  } as AnyMiniMetadata
+}
+
+const getData = (metadataRpc: string): `0x${string}` | null => {
+  const metadata = decAnyMetadata(metadataRpc)
+  const unifiedMetadata = unifyMetadata(metadata)
+
+  // ensure the network has all the required bits
+  if (
+    !hasStorageItem(unifiedMetadata, "AssetRegistry", "Assets") ||
+    !hasStorageItem(unifiedMetadata, "Tokens", "Accounts") ||
+    !hasRuntimeApi(unifiedMetadata, "CurrenciesApi", "accounts")
+  )
+    return null
 
   compactMetadata(
     metadata,
@@ -43,15 +67,5 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
     ],
   )
 
-  const data = encodeMetadata(metadata)
-
-  return {
-    id,
-    source,
-    chainId,
-    specVersion,
-    version: MINIMETADATA_VERSION,
-    data,
-    extra: null,
-  } as AnyMiniMetadata
+  return encodeMetadata(metadata)
 }
