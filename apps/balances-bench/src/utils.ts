@@ -1,5 +1,6 @@
 import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
-import { Chain, createPublicClient, fallback, http, PublicClient } from "viem"
+import { camelCase, fromPairs, toPairs } from "lodash"
+import { Chain, ChainContract, createPublicClient, fallback, http, PublicClient } from "viem"
 import * as chains from "viem/chains"
 
 const VIEM_CHAINS = Object.keys(chains).reduce(
@@ -39,6 +40,17 @@ export const getChainFromEvmNetwork = (network: EthNetwork): Chain => {
         decimals,
         name: symbol,
       },
+      contracts: {
+        ...viemChain.contracts,
+        ...(network.contracts
+          ? fromPairs(
+              toPairs(network.contracts).map(([name, address]): [string, ChainContract] => [
+                camelCase(name),
+                { address },
+              ]),
+            )
+          : {}),
+      },
     }
 
     chainsCache.set(network.id, chain)
@@ -69,9 +81,6 @@ export const getTransportForEvmNetwork = (
     { retryCount: 0 },
   )
 }
-
-// import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
-// import { getTransportForEvmNetwork, TransportOptions } from "./getTransportForEvmNetwork"
 
 const MUTLICALL_BATCH_WAIT = 25
 const MUTLICALL_BATCH_SIZE = 100

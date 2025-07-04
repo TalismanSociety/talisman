@@ -1,5 +1,6 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import { log } from "extension-shared"
 import { ChainContract, erc20Abi, PublicClient } from "viem"
 
 import { IBalance } from "../../types"
@@ -32,7 +33,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
 
-  if (client.chain?.contracts?.erc20Aggregator) {
+  if (client.chain?.contracts?.erc20Aggregator && balanceDefs.length > 1) {
     const erc20Aggregator = client.chain.contracts.erc20Aggregator as ChainContract
     return fetchWithAggregator(client, balanceDefs, erc20Aggregator.address)
   }
@@ -45,6 +46,8 @@ const fetchWithoutAggregator = async (
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
+
+  log.debug("fetching %s balances without aggregator", MODULE_TYPE, balanceDefs.length)
 
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
@@ -100,6 +103,7 @@ const fetchWithAggregator = async (
   erc20BalancesAggregatorAddress: `0x${string}`,
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
+  log.debug("fetching %s balances with aggregator", MODULE_TYPE, balanceDefs.length)
 
   try {
     const erc20Balances = await client.readContract({

@@ -1,5 +1,6 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
+import { log } from "extension-shared"
 import { PublicClient } from "viem"
 
 import { IBalance } from "../../types"
@@ -45,6 +46,8 @@ const fetchWithoutMulticall = async (
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
+
+  log.debug("fetching %s balances without multicall3", MODULE_TYPE, balanceDefs.length)
 
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
@@ -95,6 +98,8 @@ const fetchWithMulticall = async (
   multicall3Address: `0x${string}`,
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
+
+  log.debug("fetching %s balances with multicall3", MODULE_TYPE, balanceDefs.length)
 
   try {
     const callResults = await client.multicall({
