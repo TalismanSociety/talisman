@@ -1,8 +1,8 @@
-import { deriveMiniMetadataId } from "@talismn/balances"
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
+import { AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, decAnyMetadata, encodeMetadata, unifyMetadata } from "@talismn/scale"
 import { log } from "extension-shared"
 
+import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
 import { getConstantValue } from "./utils"
 
@@ -22,7 +22,6 @@ export const getMiniMetadata: IBalanceModule<"substrate-hydration">["getMiniMeta
     source: "substrate-hydration",
     chainId: networkId,
     specVersion,
-    libVersion: "0.0.0",
   })
 
   const metadata = decAnyMetadata(metadataRpc)
@@ -54,7 +53,7 @@ export const getMiniMetadata: IBalanceModule<"substrate-hydration">["getMiniMeta
     source,
     chainId,
     specVersion,
-    libVersion: "0.0.0",
+    version: MINIMETADATA_VERSION,
     data,
     extra: null,
   } as AnyMiniMetadata

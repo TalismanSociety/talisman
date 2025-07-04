@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname } from "path"
 
 import { WsProvider } from "@polkadot/rpc-provider"
+import { NEW_BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnector } from "@talismn/chain-connector"
 import { SubHydrationToken, subHydrationTokenId, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
@@ -19,8 +20,6 @@ import {
 import { log } from "extension-shared"
 import { keys } from "lodash"
 import { Enum } from "polkadot-api"
-
-import { BALANCE_MODULES } from "./IBalanceModule"
 
 // Ensure globalThis.crypto is available (for Node.js)
 if (typeof globalThis.crypto === "undefined") {
@@ -92,7 +91,7 @@ const run = async () => {
 
     const modules = keys(NETWORK_CONFIG.tokens) as TokenType[]
 
-    for (const mod of BALANCE_MODULES.filter((mod) => mod && modules.includes(mod.type)).filter(
+    for (const mod of NEW_BALANCE_MODULES.filter((mod) => mod && modules.includes(mod.type)).filter(
       (mod) => mod.platform === "polkadot", // then we can use a ChainConnector
     )) {
       const source = mod.type
@@ -142,7 +141,7 @@ const run = async () => {
       log.log("Attempting to transfer token ", xferTokenOnChainId)
       const xferTokenId = subHydrationTokenId(networkId, xferTokenOnChainId)
       const xferToken = tokens.find((t) => t.id === xferTokenId && t.type === "substrate-hydration")
-      const xferBalance = balances.find((b) => b.tokenId === xferTokenId)
+      const xferBalance = balances.success.find((b) => b.tokenId === xferTokenId)
       const xferFreeBalance = xferBalance?.values?.find((v) => v.type === "free")?.amount
       if (!xferFreeBalance) {
         log.error("No balance found for the test address")
@@ -158,7 +157,7 @@ const run = async () => {
       const payloadBase = mod.getTransferCallData({
         from: TEST_ADDRESS_SUB,
         to: TEST_ADDRESS_SUB2,
-        planck: xferFreeBalance.toString(),
+        value: xferFreeBalance.toString(),
         token: xferToken,
         metadataRpc,
       })

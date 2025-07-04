@@ -1,19 +1,19 @@
-import { IBalance } from "@talismn/balances"
 import { log } from "extension-shared"
-import { Observable } from "rxjs"
+import { isEqual } from "lodash"
+import { distinctUntilChanged, Observable } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { fetchBalances } from "./fetchBalances"
 
 const SUBSCRIPTION_INTERVAL = 6_000
 
-export const subscribeBalances: IBalanceModule<"substrate-hydration">["subscribeBalances"] = ({
+export const subscribeBalances: IBalanceModule<"evm-erc20">["subscribeBalances"] = ({
   networkId,
   addressesByToken,
   connector,
   miniMetadata,
 }) => {
-  return new Observable<IBalance[]>((subscriber) => {
+  return new Observable((subscriber) => {
     const abortController = new AbortController()
 
     // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
@@ -31,12 +31,12 @@ export const subscribeBalances: IBalanceModule<"substrate-hydration">["subscribe
 
         if (abortController.signal.aborted) return
 
-        subscriber.next(balances.map((b) => ({ ...b, status: "live" })))
+        subscriber.next(balances)
 
         setTimeout(poll, SUBSCRIPTION_INTERVAL)
       } catch (error) {
         log.error("Error", {
-          module: "substrate-hydration",
+          module: "evm-erc20",
           networkId,
           miniMetadata,
           addressesByToken,
@@ -51,5 +51,5 @@ export const subscribeBalances: IBalanceModule<"substrate-hydration">["subscribe
     return () => {
       abortController.abort()
     }
-  })
+  }).pipe(distinctUntilChanged(isEqual))
 }

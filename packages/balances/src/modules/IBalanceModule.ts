@@ -56,6 +56,17 @@ type MiniMetadataOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "p
   ? AnyMiniMetadata
   : null
 
+export type FetchBalanceErrors = Array<{ tokenId: TokenId; address: Address; error: Error }>
+
+export type FetchBalanceResults = {
+  success: IBalance[]
+  errors: FetchBalanceErrors
+}
+
+type MetadataRpcOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
+  ? `0x${string}`
+  : null
+
 export interface IBalanceModule<
   Type extends TokenType,
   TokenConfig = unknown,
@@ -67,43 +78,66 @@ export interface IBalanceModule<
 
   // compact metadata for storage and runtime apis + "extra" which contains constant values
   // => extra could actually stay encoded in the metadata, would just need to keep constant keys when compacting
-  getMiniMetadata: (arg: {
-    networkId: string
-    specVersion: number
-    metadataRpc: `0x${string}`
-    config?: BalanceConfig
-  }) => MiniMetadataOfPlatform<PlatformOfToken<Type>>
+  getMiniMetadata: (
+    arg: PlatformOfToken<Type> extends "polkadot"
+      ? {
+          networkId: string
+          specVersion: number
+          metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
+          config?: BalanceConfig
+        }
+      : never,
+  ) => MiniMetadataOfPlatform<PlatformOfToken<Type>>
 
   // ex: fetch missing erc20s info from contracts, but pick from cache instead if its already there
   // most modules wouldnt leverage the cache, unless there is a network issue ?
   // chaindata would handle the storage of the cache (which could be just one file that stores all tokens of all types)
-  fetchTokens: (arg: {
-    networkId: string
-    tokens: TokenConfig[]
-    connector: ConnectorOfPlatform<PlatformOfToken<Type>>
-    miniMetadata: MiniMetadataOfPlatform<PlatformOfToken<Type>>
-    cache: Record<TokenId, unknown>
-  }) => Promise<TokenOfType<Type>[]>
+  fetchTokens: (
+    arg: PlatformOfToken<Type> extends "polkadot"
+      ? {
+          networkId: string
+          tokens: TokenConfig[]
+          connector: ChainConnector
+          miniMetadata: AnyMiniMetadata
+          cache: Record<TokenId, unknown>
+        }
+      : {
+          networkId: string
+          tokens: TokenConfig[]
+          connector: ChainConnectorEvm
+          cache: Record<TokenId, unknown>
+        },
+  ) => Promise<TokenOfType<Type>[]>
 
   fetchBalances: (arg: {
     networkId: string
     addressesByToken: TokensWithAddresses
     connector: ConnectorOfPlatform<PlatformOfToken<Type>>
     miniMetadata: MiniMetadataOfPlatform<PlatformOfToken<Type>>
-  }) => Promise<IBalance[]>
+  }) => Promise<FetchBalanceResults>
 
   subscribeBalances: (arg: {
     networkId: string
     addressesByToken: TokensWithAddresses
     connector: ConnectorOfPlatform<PlatformOfToken<Type>>
     miniMetadata: MiniMetadataOfPlatform<PlatformOfToken<Type>>
-  }) => Observable<IBalance[]>
+  }) => Observable<FetchBalanceResults>
 
-  getTransferCallData: (arg: {
-    from: string
-    to: string
-    planck: string
-    token: TokenOfType<Type>
-    metadataRpc: `0x${string}`
-  }) => CallDataOfPlatform<PlatformOfToken<Type>>
+  getTransferCallData: (
+    arg: PlatformOfToken<Type> extends "polkadot"
+      ? {
+          from: string
+          to: string
+          value: string
+          token: TokenOfType<Type>
+          metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
+        }
+      : {
+          from: string
+          to: string
+          value: string
+          token: TokenOfType<Type>
+          //metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
+        },
+  ) => CallDataOfPlatform<PlatformOfToken<Type>>
 }

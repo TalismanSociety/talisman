@@ -60,8 +60,8 @@ const NETWORK_CONFIG = {
   },
 }
 
-// const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
-// const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
+const TEST_ADDRESS_ETH = "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67"
+const TEST_ADDRESS_ETH2 = "0x1367e59070Ec898867C35c0600C0ec7483c96AF9"
 
 const run = async () => {
   const stopAll = log.timer("Balances testbench")
@@ -83,7 +83,6 @@ const run = async () => {
       log.log()
 
       const tokenConfigs = NETWORK_CONFIG.tokens[source as "evm-erc20"] as EvmErc20TokenConfig[]
-      //  const relevantTokensOnChainIds = tokenConfigs.map((t) => t.contractAddress)
       log.log("Token configs", tokenConfigs)
       log.log()
 
@@ -91,11 +90,19 @@ const run = async () => {
         networkId,
         tokens: tokenConfigs,
         connector,
-        miniMetadata: null,
         cache: {},
       })
 
       log.log("mod.fetchTokens results", tokens)
+
+      const transfer = mod.getTransferCallData({
+        from: TEST_ADDRESS_ETH,
+        to: TEST_ADDRESS_ETH2,
+        token: tokens[0],
+        value: "1000000000000000", // 0.001 ETH
+        // metadataRpc: null,
+      })
+      log.log("Transfer call data", transfer)
 
       // if (tokens.length > 3) log.log("+ %s other tokens", tokens.length - 3)
       // log.log()

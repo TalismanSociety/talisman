@@ -7,7 +7,7 @@ import { IBalanceModule } from "../IBalanceModule"
 export const getTransferCallData: IBalanceModule<"substrate-hydration">["getTransferCallData"] = ({
   from,
   to,
-  planck,
+  value: planck,
   token,
   metadataRpc,
 }) => {

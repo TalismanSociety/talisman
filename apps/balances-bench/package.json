@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/hydration.ts",
-    "dev": "tsx watch src/ethereum.ts"
+    "dev:ethereum": "tsx watch src/ethereum.ts",
+    "dev:hydration": "tsx watch src/hydration.ts"
   },
   "keywords": [],
   "author": "",

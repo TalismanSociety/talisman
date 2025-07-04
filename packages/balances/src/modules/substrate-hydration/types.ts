@@ -1,6 +1,7 @@
-import { TokenConfigBaseSchema } from "@talismn/balances/src/types/tokens"
-import { SubHydrationTokenSchema } from "@talismn/chaindata-provider/src/chaindata/tokens/SubstrateHydrationToken"
+import { SubHydrationTokenSchema } from "@talismn/chaindata-provider"
 import z from "zod/v4"
+
+import { TokenConfigBaseSchema } from "../../types/tokens"
 
 // to be used by chaindata too
 export const SubHydrationTokenConfigSchema = z.strictObject({

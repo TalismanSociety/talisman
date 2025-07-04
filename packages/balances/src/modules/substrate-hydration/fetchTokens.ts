@@ -1,9 +1,9 @@
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import {
+  AnyMiniMetadata,
   SubHydrationToken,
   subHydrationTokenId,
   SubHydrationTokenSchema,
-} from "@talismn/chaindata-provider/src/chaindata/tokens/SubstrateHydrationToken"
+} from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 import { log } from "extension-shared"
 import { assign } from "lodash"
