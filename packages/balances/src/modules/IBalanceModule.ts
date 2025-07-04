@@ -3,6 +3,8 @@ import type { ChainConnector } from "@talismn/chain-connector"
 import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
   AnyMiniMetadata,
+  DotNetworkId,
+  EthNetworkId,
   Token,
   TokenId,
   TokenOfType,
@@ -24,9 +26,9 @@ import { Observable } from "rxjs"
 // would be defined in chaindata provider, for now we dont know the type of the extra field
 // would be null for all ethereum tokens so we dont have to store them
 
-export type PlatformOfToken<T extends TokenType> = TokenOfType<T>["platform"]
+export type PlatformOf<T extends TokenType> = TokenOfType<T>["platform"]
 
-export type ConnectorOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "ethereum"
+export type ConnectorOf<P extends PlatformOf<TokenType>> = P extends "ethereum"
   ? ChainConnectorEvm
   : P extends "polkadot"
     ? ChainConnector
@@ -44,7 +46,7 @@ type EthTransferCallData = {
   value?: `0x${string}` // optional, for native transfers only
 }
 
-type CallDataOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "ethereum"
+type CallDataOf<P extends PlatformOf<TokenType>> = P extends "ethereum"
   ? EthTransferCallData
   : P extends "polkadot"
     ? DotTransferCallData
@@ -52,9 +54,9 @@ type CallDataOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "ether
 
 export type TokensWithAddresses = Array<[Token, Address[]]>
 
-type MiniMetadataOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
-  ? AnyMiniMetadata
-  : null
+// type MiniMetadataOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
+//   ? AnyMiniMetadata
+//   : null
 
 export type FetchBalanceErrors = Array<{ tokenId: TokenId; address: Address; error: Error }>
 
@@ -63,9 +65,9 @@ export type FetchBalanceResults = {
   errors: FetchBalanceErrors
 }
 
-type MetadataRpcOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
-  ? `0x${string}`
-  : null
+// type MetadataRpcOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
+//   ? `0x${string}`
+//   : null
 
 export interface IBalanceModule<
   Type extends TokenType,
@@ -74,70 +76,93 @@ export interface IBalanceModule<
 > {
   type: Type
 
-  platform: PlatformOfToken<Type>
+  platform: PlatformOf<Type>
 
   // compact metadata for storage and runtime apis + "extra" which contains constant values
   // => extra could actually stay encoded in the metadata, would just need to keep constant keys when compacting
   getMiniMetadata: (
-    arg: PlatformOfToken<Type> extends "polkadot"
+    arg: PlatformOf<Type> extends "polkadot"
       ? {
           networkId: string
           specVersion: number
-          metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
+          metadataRpc: `0x${string}`
           config?: BalanceConfig
         }
       : never,
-  ) => MiniMetadataOfPlatform<PlatformOfToken<Type>>
+  ) => PlatformOf<Type> extends "polkadot" ? AnyMiniMetadata : never
 
   // ex: fetch missing erc20s info from contracts, but pick from cache instead if its already there
   // most modules wouldnt leverage the cache, unless there is a network issue ?
   // chaindata would handle the storage of the cache (which could be just one file that stores all tokens of all types)
   fetchTokens: (
-    arg: PlatformOfToken<Type> extends "polkadot"
+    arg: PlatformOf<Type> extends "polkadot"
       ? {
-          networkId: string
+          networkId: DotNetworkId
           tokens: TokenConfig[]
           connector: ChainConnector
           miniMetadata: AnyMiniMetadata
           cache: Record<TokenId, unknown>
         }
-      : {
-          networkId: string
-          tokens: TokenConfig[]
-          connector: ChainConnectorEvm
-          cache: Record<TokenId, unknown>
-        },
+      : PlatformOf<Type> extends "ethereum"
+        ? {
+            networkId: EthNetworkId
+            tokens: TokenConfig[]
+            connector: ChainConnectorEvm
+            cache: Record<TokenId, unknown>
+          }
+        : never,
   ) => Promise<TokenOfType<Type>[]>
 
-  fetchBalances: (arg: {
-    networkId: string
-    addressesByToken: TokensWithAddresses
-    connector: ConnectorOfPlatform<PlatformOfToken<Type>>
-    miniMetadata: MiniMetadataOfPlatform<PlatformOfToken<Type>>
-  }) => Promise<FetchBalanceResults>
+  fetchBalances: (
+    arg: PlatformOf<Type> extends "polkadot"
+      ? {
+          networkId: DotNetworkId
+          addressesByToken: TokensWithAddresses
+          connector: ChainConnector
+          miniMetadata: AnyMiniMetadata
+        }
+      : PlatformOf<Type> extends "ethereum"
+        ? {
+            networkId: EthNetworkId
+            addressesByToken: TokensWithAddresses
+            connector: ChainConnectorEvm
+          }
+        : never,
+  ) => Promise<FetchBalanceResults>
 
-  subscribeBalances: (arg: {
-    networkId: string
-    addressesByToken: TokensWithAddresses
-    connector: ConnectorOfPlatform<PlatformOfToken<Type>>
-    miniMetadata: MiniMetadataOfPlatform<PlatformOfToken<Type>>
-  }) => Observable<FetchBalanceResults>
+  subscribeBalances: (
+    arg: PlatformOf<Type> extends "polkadot"
+      ? {
+          networkId: DotNetworkId
+          addressesByToken: TokensWithAddresses
+          connector: ChainConnector
+          miniMetadata: AnyMiniMetadata
+        }
+      : PlatformOf<Type> extends "ethereum"
+        ? {
+            networkId: EthNetworkId
+            addressesByToken: TokensWithAddresses
+            connector: ChainConnectorEvm
+          }
+        : never,
+  ) => Observable<FetchBalanceResults>
 
   getTransferCallData: (
-    arg: PlatformOfToken<Type> extends "polkadot"
+    arg: PlatformOf<Type> extends "polkadot"
       ? {
           from: string
           to: string
           value: string
           token: TokenOfType<Type>
-          metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
+          metadataRpc: `0x${string}`
         }
-      : {
-          from: string
-          to: string
-          value: string
-          token: TokenOfType<Type>
-          //metadataRpc: MetadataRpcOfPlatform<PlatformOfToken<Type>>
-        },
-  ) => CallDataOfPlatform<PlatformOfToken<Type>>
+      : PlatformOf<Type> extends "ethereum"
+        ? {
+            from: string
+            to: string
+            value: string
+            token: TokenOfType<Type>
+          }
+        : never,
+  ) => CallDataOf<PlatformOf<Type>>
 }

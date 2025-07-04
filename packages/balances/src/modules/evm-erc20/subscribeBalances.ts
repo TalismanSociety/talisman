@@ -11,7 +11,6 @@ export const subscribeBalances: IBalanceModule<"evm-erc20">["subscribeBalances"]
   networkId,
   addressesByToken,
   connector,
-  miniMetadata,
 }) => {
   return new Observable((subscriber) => {
     const abortController = new AbortController()
@@ -26,7 +25,6 @@ export const subscribeBalances: IBalanceModule<"evm-erc20">["subscribeBalances"]
           networkId,
           addressesByToken,
           connector,
-          miniMetadata,
         })
 
         if (abortController.signal.aborted) return
@@ -38,7 +36,6 @@ export const subscribeBalances: IBalanceModule<"evm-erc20">["subscribeBalances"]
         log.error("Error", {
           module: "evm-erc20",
           networkId,
-          miniMetadata,
           addressesByToken,
           error,
         })
