@@ -18,12 +18,12 @@ const NETWORK_CONFIG = {
   tokens: {
     "substrate-assets": [
       {
-        onChainId: "1337", // MYTH
+        assetId: "1337", // MYTH
         coingeckoId: "usd-coin",
       },
       {
-        onChainId: "1984", // SKY
-        coingeckoId: "tether",
+        assetId: "31337",
+        coingeckoId: "gavun-wud",
       },
     ],
     "substrate-foreignassets": [

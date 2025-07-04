@@ -6,7 +6,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
 import { log } from "extension-shared"
-import { assign } from "lodash"
+import { assign, keyBy } from "lodash"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../IBalanceModule"
@@ -35,6 +35,8 @@ export const fetchTokens: IBalanceModule<
 
   const assetStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
     assetStorageResults[0].changes
+
+  const configTokenByAssetId = keyBy(tokens, (t) => t.onChainId)
 
   return (
     assetStorageEntries
@@ -81,12 +83,12 @@ export const fetchTokens: IBalanceModule<
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {
-        const configToken = tokens.find((c) => c.onChainId === token.onChainId)
+        const configToken = configTokenByAssetId[token.onChainId]
         return configToken || token.isSufficient
       })
       // apply config overrides
       .map((token) => {
-        const configToken = tokens.find((c) => c.onChainId === token.onChainId)
+        const configToken = configTokenByAssetId[token.onChainId]
         return configToken ? assign({}, token, configToken) : token
       })
       // validate results

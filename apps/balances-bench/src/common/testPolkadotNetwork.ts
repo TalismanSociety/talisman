@@ -114,7 +114,12 @@ export const testDotNetwork = async (network: DotNetworkConfig) => {
         miniMetadata,
       })
 
-      log.log("Balances", balances)
+      log.log("Balances")
+      for (const b of balances.success) log.log(b)
+      if (balances.errors.length) {
+        log.log("Balance errors:")
+        for (const error of balances.errors) log.error(error)
+      }
       log.log()
 
       const anyPositiveBalance = balances.success.find(

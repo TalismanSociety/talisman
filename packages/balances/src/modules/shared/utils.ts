@@ -10,6 +10,16 @@ export const hasStorageItem = (
   return pallet.storage.items.some((item) => item.name === itemName)
 }
 
+export const hasStorageItems = (
+  metadata: UnifiedMetadata,
+  palletName: string,
+  itemNames: string[],
+): boolean => {
+  const pallet = metadata.pallets.find((p) => p.name === palletName)
+  if (!pallet || !pallet.storage) return false
+  return itemNames.every((itemName) => pallet.storage?.items.some((item) => item.name === itemName))
+}
+
 export const hasRuntimeApi = (
   metadata: UnifiedMetadata,
   apiName: string,

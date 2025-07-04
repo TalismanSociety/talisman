@@ -1,10 +1,10 @@
 import { TokenOfType, TokenType } from "@talismn/chaindata-provider"
 
-import { TokensWithAddresses } from "../IBalanceModule"
+import { PlatformOf, TokensWithAddresses } from "../IBalanceModule"
 
 export type BalanceDef<T extends TokenType = TokenType> = {
   token: TokenOfType<T>
-  address: `0x${string}`
+  address: PlatformOf<T> extends "ethereum" ? `0x${string}` : string
 }
 
 export const getBalanceDefs = <T extends TokenType = TokenType>(

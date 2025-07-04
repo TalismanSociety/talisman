@@ -177,6 +177,7 @@ export const SubAssetsModule: NewBalanceModule<
             logo: tokenConfig?.logo,
             existentialDeposit,
             assetId,
+            isSufficient: false,
             isFrozen,
             networkId: chainId,
           }
