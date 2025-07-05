@@ -12,24 +12,21 @@ if (typeof globalThis.crypto === "undefined") {
 }
 
 const NETWORK_CONFIG = {
-  id: "astar",
-  rpcs: ["wss://rpc.astar.network"],
-  nativeCurrency: { coingeckoId: "astar" },
+  id: "aleph-zero",
+  rpcs: ["wss://ws.azero.dev"],
+  nativeCurrency: { coingeckoId: "aleph-zero" },
   tokens: {
-    "substrate-assets": [
+    "substrate-psp22": [
       {
-        assetId: "18446744073709551616",
-        coingeckoId: "acala",
-      },
-      {
-        assetId: "340282366920938463463374607431768211455",
-        coingeckoId: "dot",
+        contractAddress: "5GSGAcvqpF5SuH2MhJ1YUdbLAbssCjeqCn2miMUCWUjnr5DQ",
+        symbol: "PANX",
+        coingeckoId: "panorama-swap-token",
       },
     ],
   },
 }
 
-testDotNetwork(NETWORK_CONFIG)
+testDotNetwork(NETWORK_CONFIG, ["substrate-psp22"])
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

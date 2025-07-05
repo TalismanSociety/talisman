@@ -92,7 +92,7 @@ export const fetchTokens: IBalanceModule<
       // validate results
       .filter((t) => {
         const parsed = SubHydrationTokenSchema.safeParse(t)
-        if (!parsed.success) log.warn("Ignoring token invalid substrate-hydration token", t)
+        if (!parsed.success) log.warn(`Ignoring invalid token ${MODULE_TYPE}`, t)
 
         return parsed.success
       })

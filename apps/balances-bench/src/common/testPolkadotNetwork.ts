@@ -90,7 +90,6 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
           ? [network.nativeCurrency]
           : // @ts-ignore
             (network.tokens[mod.type] ?? [])
-      //const relevantTokensOnChainIds = tokenConfigs.map((t) => t.onChainId)
       log.log("Token configs", tokenConfigs)
       log.log()
 
@@ -125,7 +124,8 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
       const anyPositiveBalance = balances.success.find(
         (b) =>
           b.address === TEST_ADDRESS_SUB &&
-          b.values?.find((v) => v.type === "free" && !!BigInt(v.amount)),
+          ((b.value && !!BigInt(b.value)) ||
+            b.values?.find((v) => v.type === "free" && !!BigInt(v.amount))),
       )
       if (!anyPositiveBalance) {
         log.log("No positive balance found for the test address")
@@ -135,20 +135,23 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
       const xferToken = tokens.find((t) => t.id === anyPositiveBalance.tokenId)!
       log.log("attempting transfer with ", xferToken.id)
 
-      const available = anyPositiveBalance.values?.find((v) => v.type === "free")!.amount
+      const available =
+        anyPositiveBalance.value ??
+        anyPositiveBalance.values?.find((v) => v.type === "free")!.amount
       if (!available || BigInt(available) <= BigInt(0)) {
         log.error("No available balance found for the test address")
         continue
       }
       const value = BigInt(available) / BigInt(2) // transfer half of the balance
       // try transfer half of the MYTH balance to TEST_ADDRESS2
-      const payloadBase = mod.getTransferCallData({
+      const payloadBase = await mod.getTransferCallData({
         from: TEST_ADDRESS_SUB,
         to: TEST_ADDRESS_SUB2,
         value: value.toString(),
         token: xferToken,
         metadataRpc,
         type: "keep-alive",
+        connector,
       })
 
       log.log("Transfer payload", payloadBase)
@@ -156,7 +159,9 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
       const builder = getDynamicBuilder(lookup)
       const def = builder.buildDefinition(lookup.call!)
       const decodedCall = def.dec(payloadBase.method)
-      log.log("Decoded call", decodedCall)
+      log.log("Decoded call")
+      log.log(decodedCall)
+      log.log()
 
       const pallet = decodedCall.type
       const method = decodedCall.value.type

@@ -108,7 +108,7 @@ const run = async () => {
         for (const error of balances.errors) log.error(error)
       }
 
-      const transfer = mod.getTransferCallData({
+      const transfer = await mod.getTransferCallData({
         from: TEST_ADDRESS_ETH,
         to: TEST_ADDRESS_ETH2,
         token: tokens[0],

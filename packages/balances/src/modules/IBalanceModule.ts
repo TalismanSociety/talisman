@@ -158,6 +158,7 @@ export interface IBalanceModule<
           token: Token
           metadataRpc: `0x${string}`
           type: BalanceTransferType
+          connector: ChainConnector // because of psp22
         }
       : PlatformOf<Type> extends "ethereum"
         ? {
@@ -167,5 +168,5 @@ export interface IBalanceModule<
             token: Token
           }
         : never,
-  ) => CallDataOf<PlatformOf<Type>>
+  ) => CallDataOf<PlatformOf<Type>> | Promise<CallDataOf<PlatformOf<Type>>> // because of psp22
 }
