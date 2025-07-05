@@ -4,7 +4,7 @@ import {
   subHydrationTokenId,
   SubHydrationTokenSchema,
 } from "@talismn/chaindata-provider"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { log } from "extension-shared"
 import { assign, keyBy } from "lodash"
 import { Binary } from "polkadot-api"
@@ -12,7 +12,6 @@ import { Binary } from "polkadot-api"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { SubHydrationTokenConfig } from "./types"
-import { getStorageKeyPrefix } from "./utils"
 
 export const fetchTokens: IBalanceModule<
   typeof MODULE_TYPE,
@@ -21,9 +20,8 @@ export const fetchTokens: IBalanceModule<
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const metadata = unifyMetadata(decAnyMetadata(anyMiniMetadata.data))
-  const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
-  const assetsCodec = scaleBuilder.buildStorage("AssetRegistry", "Assets")
+  const { builder } = parseMetadataRpc(anyMiniMetadata.data)
+  const assetsCodec = builder.buildStorage("AssetRegistry", "Assets")
 
   const allAssetStorageKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [
     getStorageKeyPrefix("AssetRegistry", "Assets"),

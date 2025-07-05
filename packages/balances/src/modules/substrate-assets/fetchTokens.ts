@@ -4,14 +4,13 @@ import {
   SubAssetsTokenSchema,
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { log } from "extension-shared"
 import { assign, keyBy, keys } from "lodash"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, TokenConfig } from "./config"
-import { getStorageKeyPrefix } from "./utils"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -22,10 +21,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const metadata = unifyMetadata(decAnyMetadata(anyMiniMetadata.data))
-  const scaleBuilder = getDynamicBuilder(getLookupFn(metadata))
-  const assetCodec = scaleBuilder.buildStorage("Assets", "Asset")
-  const metadataCodec = scaleBuilder.buildStorage("Assets", "Metadata")
+  const { builder } = parseMetadataRpc(anyMiniMetadata.data)
+  const assetCodec = builder.buildStorage("Assets", "Asset")
+  const metadataCodec = builder.buildStorage("Assets", "Metadata")
 
   const [allAssetStorageKeys, allMetadataStorageKeys] = await Promise.all([
     connector.send<`0x${string}`[]>(networkId, "state_getKeys", [

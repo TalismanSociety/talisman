@@ -6,7 +6,8 @@
   "scripts": {
     "dev:ethereum": "tsx watch src/ethereum.ts",
     "dev:hydration": "tsx watch src/hydration.ts",
-    "dev:pah": "tsx watch src/polkadot-asset-hub.ts"
+    "dev:pah": "tsx watch src/polkadot-asset-hub.ts",
+    "dev:astar": "tsx watch src/astar.ts"
   },
   "keywords": [],
   "author": "",

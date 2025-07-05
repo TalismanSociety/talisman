@@ -4,9 +4,9 @@ import { log } from "extension-shared"
 
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
+import { getConstantValue } from "../shared"
 import { hasRuntimeApi, hasStorageItem } from "../shared/utils"
 import { MODULE_TYPE } from "./config"
-import { getConstantValue } from "./utils"
 
 export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadata"] = ({
   networkId,

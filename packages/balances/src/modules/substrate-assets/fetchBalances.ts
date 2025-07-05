@@ -109,7 +109,11 @@ const buildQueries = (
         /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
         type DecodedType = {
           balance?: bigint
+
+          // On other networks than Astar
           is_frozen?: boolean
+
+          // Astar specific fields
           reason?: { type?: "Sufficient" }
           status?: { type?: "Liquid" } | { type?: "Frozen" }
           extra?: undefined

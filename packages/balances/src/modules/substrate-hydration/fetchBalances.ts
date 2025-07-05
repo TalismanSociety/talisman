@@ -4,9 +4,9 @@ import { keyBy, uniq } from "lodash"
 
 import { IBalance } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
+import { fetchRuntimeCallResult } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
-import { fetchRuntimeCallResult } from "./utils"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
