@@ -1,5 +1,5 @@
 import { AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
-import { compactMetadata, decAnyMetadata, encodeMetadata, unifyMetadata } from "@talismn/scale"
+import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
 import { log } from "extension-shared"
 
 import { deriveMiniMetadataId } from "../../types"
@@ -22,8 +22,7 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
 
-  const metadata = decAnyMetadata(metadataRpc)
-  const unifiedMetadata = unifyMetadata(metadata)
+  const { unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   if (unifiedMetadata.version < 14)
     throw new Error(
@@ -41,9 +40,8 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
   } as AnyMiniMetadata
 }
 
-const getData = (metadataRpc: string): `0x${string}` | null => {
-  const metadata = decAnyMetadata(metadataRpc)
-  const unifiedMetadata = unifyMetadata(metadata)
+const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
+  const { metadata, unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   // ensure the network has all the required bits
   if (!hasStorageItems(unifiedMetadata, "Assets", ["Account", "Asset", "Metadata"])) return null

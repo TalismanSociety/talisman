@@ -27,7 +27,7 @@ export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   tokens: Partial<Record<TokenType, unknown[]>>
 }
 
-export const testDotNetwork = async (network: DotNetworkConfig) => {
+export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenType[]) => {
   const rpcUrl = network.rpcs[0]
 
   const stopAll = log.timer("testDotNetwork " + network.id)
@@ -69,7 +69,7 @@ export const testDotNetwork = async (network: DotNetworkConfig) => {
 
     for (const mod of NEW_BALANCE_MODULES.filter(
       (mod) => mod.platform === "polkadot", // then we can use a ChainConnector
-    )) {
+    ).filter((mod) => !modules || modules.includes(mod.type as TokenType))) {
       const source = mod.type
       log.log()
       log.log("///////////////////////////////////////////////////////////////////////////////////")
@@ -102,14 +102,14 @@ export const testDotNetwork = async (network: DotNetworkConfig) => {
         cache: {},
       })
 
-      log.log("mod.fetchTokens results", tokens.slice(0, 3))
+      log.log("mod.fetchTokens results", tokens) // .slice(0, 3))
 
       if (tokens.length > 3) log.log("+ %s other tokens", tokens.length - 3)
       log.log()
 
       const balances = await mod.fetchBalances({
         networkId,
-        addressesByToken: tokens.slice(0, 3).map((token) => [token, [TEST_ADDRESS_SUB]] as const),
+        addressesByToken: tokens.map((token) => [token, [TEST_ADDRESS_SUB]] as const),
         connector,
         miniMetadata,
       })

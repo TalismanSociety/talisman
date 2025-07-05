@@ -41,7 +41,7 @@ const NETWORK_CONFIG = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG)
+testDotNetwork(NETWORK_CONFIG, ["substrate-foreignassets"])
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

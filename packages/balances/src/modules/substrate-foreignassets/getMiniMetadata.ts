@@ -4,8 +4,8 @@ import { log } from "extension-shared"
 
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
-import { getConstantValue } from "../shared"
-import { hasRuntimeApi, hasStorageItem } from "../shared/utils"
+import { getConstantValue } from "../shared/getContantValue"
+import { hasStorageItems } from "../shared/utils"
 import { MODULE_TYPE } from "./config"
 
 export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadata"] = ({
@@ -44,26 +44,10 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
   const { metadata, unifiedMetadata } = parseMetadataRpc(metadataRpc)
 
   // ensure the network has all the required bits
-  if (
-    !hasStorageItem(unifiedMetadata, "AssetRegistry", "Assets") ||
-    !hasStorageItem(unifiedMetadata, "Tokens", "Accounts") ||
-    !hasRuntimeApi(unifiedMetadata, "CurrenciesApi", "accounts")
-  )
+  if (!hasStorageItems(unifiedMetadata, "ForeignAssets", ["Account", "Asset", "Metadata"]))
     return null
 
-  compactMetadata(
-    metadata,
-    [
-      { pallet: "AssetRegistry", items: ["Assets"] }, // token specs
-      { pallet: "Tokens", items: ["Accounts"] }, // balances for tokens
-    ],
-    [
-      {
-        runtimeApi: "CurrenciesApi",
-        methods: ["accounts"],
-      },
-    ],
-  )
+  compactMetadata(metadata, [{ pallet: "ForeignAssets", items: ["Account", "Asset", "Metadata"] }])
 
   return encodeMetadata(metadata)
 }

@@ -1691,6 +1691,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":2,"interior":{"type":"X1","value":{"type":"GlobalConsensus","value":{"type":"Kusama"}}}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1000000000",
   },
   {
@@ -1707,6 +1708,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"}}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "10000",
   },
   {
@@ -1723,6 +1725,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":2,"interior":{"type":"X2","value":[{"type":"GlobalConsensus","value":{"type":"Ethereum","value":{"chain_id":"bigint:1"}}},{"type":"AccountKey20","value":{"key":"hex:0xdac17f958d2ee523a2206206994597c13d831ec7"}}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "10000",
   },
   {
@@ -1739,6 +1742,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2034},{"type":"GeneralIndex","value":"bigint:0"}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1",
   },
   {
@@ -1755,6 +1759,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0900000000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1",
   },
   {
@@ -1771,6 +1776,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2030},{"type":"GeneralKey","value":{"length":2,"data":"hex:0x0001000000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1",
   },
   {
@@ -1787,6 +1793,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2004},{"type":"PalletInstance","value":10}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1",
   },
   {
@@ -1802,6 +1809,7 @@ const mockTokens: Token[] = [
     onChainId:
       '{"parents":1,"interior":{"type":"X2","value":[{"type":"Parachain","value":2011},{"type":"GeneralKey","value":{"length":3,"data":"hex:0x6571640000000000000000000000000000000000000000000000000000000000"}}]}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1000000000",
   },
   {
@@ -1817,6 +1825,7 @@ const mockTokens: Token[] = [
     isDefault: true,
     onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2051}}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "1000000000",
   },
   {
@@ -1832,6 +1841,7 @@ const mockTokens: Token[] = [
     isDefault: true,
     onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":2011}}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "100000000000",
   },
   {
@@ -1847,6 +1857,7 @@ const mockTokens: Token[] = [
     isDefault: true,
     onChainId: '{"parents":1,"interior":{"type":"X1","value":{"type":"Parachain","value":3369}}}',
     isFrozen: false,
+    isSufficient: false,
     existentialDeposit: "10000000000000000",
   },
   {

@@ -1,6 +1,6 @@
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import { parseMetadataRpc } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../IBalanceModule"
@@ -18,7 +18,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 
   // there is only one transfer method, no existential deposit handling.
   // => leave this to the frontend and dry runs
-  const builder = getDynamicBuilder(getLookupFn(unifyMetadata(decAnyMetadata(metadataRpc))))
+  const { builder } = parseMetadataRpc(metadataRpc)
   const { codec, location } = builder.buildCall("Currencies", "transfer")
   const args = {
     dest: to,

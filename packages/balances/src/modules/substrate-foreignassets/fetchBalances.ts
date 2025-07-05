@@ -1,5 +1,5 @@
 import { AnyMiniMetadata } from "@talismn/chaindata-provider"
-import { decodeScale, getDynamicBuilder } from "@talismn/scale"
+import { decodeScale, papiParse } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 
@@ -84,23 +84,30 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
 const buildQueries = (
   networkId: string,
-  balanceDefs: BalanceDef<"substrate-assets">[],
+  balanceDefs: BalanceDef<"substrate-foreignassets">[],
   miniMetadata: AnyMiniMetadata,
 ): Array<RpcStateQuery<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
-    storage: ["Assets", "Account"],
+    storage: ["ForeignAssets", "Account"],
   })
 
   return balanceDefs
     .map(({ token, address }): RpcStateQuery<IBalance> | null => {
       const scaleCoder = networkStorageCoders?.storage
-      const stateKey =
-        tryEncode(scaleCoder, Number(token.assetId), address) ?? // Asset Hub
-        tryEncode(scaleCoder, BigInt(token.assetId), address) // Astar
+
+      const getStateKey = (onChainId: string) => {
+        try {
+          return scaleCoder?.keys?.enc?.(papiParse(onChainId), address)
+        } catch {
+          return null
+        }
+      }
+
+      const stateKey = getStateKey(token.onChainId)
 
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
+          `Invalid assetId / address in ${networkId} storage query ${token.onChainId} / ${address}`,
         )
         return null
       }
@@ -109,11 +116,7 @@ const buildQueries = (
         /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
         type DecodedType = {
           balance?: bigint
-
-          // On other networks than Astar
-          is_frozen?: boolean
-
-          // Astar specific fields
+          is_frozen?: boolean // most likely not used
           reason?: { type?: "Sufficient" }
           status?: { type?: "Liquid" } | { type?: "Frozen" }
           extra?: undefined
@@ -131,7 +134,7 @@ const buildQueries = (
           extra: undefined,
         }
 
-        const isFrozen = decoded?.status?.type === "Frozen"
+        const isFrozen = decoded.is_frozen ?? decoded?.status?.type === "Frozen"
         const amount = (decoded?.balance ?? 0n).toString()
 
         // due to the following balance calculations, which are made in the `Balance` type:
@@ -171,14 +174,4 @@ const buildQueries = (
       }
     })
     .filter(isNotNil)
-}
-
-type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
-
-const tryEncode = (scaleCoder: ScaleStorageCoder | undefined, ...args: unknown[]) => {
-  try {
-    return scaleCoder?.keys?.enc?.(...args)
-  } catch {
-    return null
-  }
 }

@@ -188,6 +188,7 @@ export const SubForeignAssetsModule: NewBalanceModule<
             logo: tokenConfig?.logo,
             existentialDeposit,
             onChainId: tokenConfig.onChainId,
+            isSufficient: assetsAsset?.is_sufficient ?? false,
             isFrozen,
             networkId: chainId,
           }

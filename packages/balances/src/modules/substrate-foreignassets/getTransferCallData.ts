@@ -1,7 +1,7 @@
 import { Codec, Enum } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { parseMetadataRpc } from "@talismn/scale"
+import { papiParse, parseMetadataRpc } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
 import { BalanceTransferType, IBalanceModule } from "../IBalanceModule"
@@ -20,8 +20,8 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 
   const { builder } = parseMetadataRpc(metadataRpc)
   const method = getTransferMethod(type)
-  const { codec, location } = builder.buildCall("Assets", method)
-  const args = getEncodedArgs(method, token.assetId, to, value, codec)
+  const { codec, location } = builder.buildCall("ForeignAssets", method)
+  const args = getEncodedArgs(method, token.onChainId, to, value, codec)
   const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), args]))
 
   return {
@@ -43,7 +43,7 @@ const getTransferMethod = (type: BalanceTransferType) => {
 
 const getEncodedArgs = (
   method: ReturnType<typeof getTransferMethod>,
-  assetId: string,
+  onChainId: string,
   to: string,
   value: string,
   argsCodec: Codec<unknown>,
@@ -52,12 +52,14 @@ const getEncodedArgs = (
     switch (method) {
       case "transfer_keep_alive":
       case "transfer":
-        return getTransferEncodedArgs(assetId, to, value, argsCodec)
+        return getTransferEncodedArgs(onChainId, to, value, argsCodec)
       case "transfer_all":
-        return getTransferAllEncodedArgs(assetId, to, argsCodec)
+        return getTransferAllEncodedArgs(onChainId, to, argsCodec)
     }
   } catch {
-    throw new Error(`Failed to encode arguments for method ${method}: ${assetId}, ${to}, ${value}`)
+    throw new Error(
+      `Failed to encode arguments for method ${method}: ${onChainId}, ${to}, ${value}`,
+    )
   }
 }
 
@@ -75,34 +77,24 @@ const getEncodedValue = (codec: Codec<unknown>, possibleValue: Array<() => unkno
 
 // same inputs for both KeepAlive and allowDeath
 const getTransferEncodedArgs = (
-  assetId: string,
+  onChainId: string,
   to: string,
   value: string,
   codec: Codec<unknown>,
 ) => {
   return getEncodedValue(codec, [
     () => ({
-      id: Number(assetId), // for most networks
-      target: Enum("Id", to),
-      amount: BigInt(value),
-    }),
-    () => ({
-      id: BigInt(assetId), // for Astar
+      id: papiParse(onChainId), // for most networks
       target: Enum("Id", to),
       amount: BigInt(value),
     }),
   ])
 }
 
-const getTransferAllEncodedArgs = (assetId: string, to: string, codec: Codec<unknown>) => {
+const getTransferAllEncodedArgs = (onChainId: string, to: string, codec: Codec<unknown>) => {
   return getEncodedValue(codec, [
     () => ({
-      id: Number(assetId), // for most networks
-      target: Enum("Id", to),
-      keep_alive: false,
-    }),
-    () => ({
-      id: BigInt(assetId), // for Astar
+      id: papiParse(onChainId), // for most networks
       target: Enum("Id", to),
       keep_alive: false,
     }),
