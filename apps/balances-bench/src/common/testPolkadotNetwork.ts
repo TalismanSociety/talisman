@@ -148,6 +148,7 @@ export const testDotNetwork = async (network: DotNetworkConfig) => {
         value: value.toString(),
         token: xferToken,
         metadataRpc,
+        type: "keep-alive",
       })
 
       log.log("Transfer payload", payloadBase)

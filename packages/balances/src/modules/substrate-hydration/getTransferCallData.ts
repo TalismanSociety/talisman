@@ -9,7 +9,7 @@ import { MODULE_TYPE } from "./config"
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
   from,
   to,
-  value: planck,
+  value,
   token,
   metadataRpc,
 }) => {
@@ -23,7 +23,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   const args = {
     dest: to,
     currency_id: token.onChainId,
-    amount: BigInt(planck),
+    amount: BigInt(value),
   }
 
   const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))

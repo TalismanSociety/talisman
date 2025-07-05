@@ -46,6 +46,8 @@ type EthTransferCallData = {
   value?: string // optional, for native transfers only
 }
 
+export type BalanceTransferType = "keep-alive" | "all" | "allow-death"
+
 type CallDataOf<P extends PlatformOf<TokenType>> = P extends "ethereum"
   ? EthTransferCallData
   : P extends "polkadot"
@@ -155,6 +157,7 @@ export interface IBalanceModule<
           value: string
           token: Token
           metadataRpc: `0x${string}`
+          type: BalanceTransferType
         }
       : PlatformOf<Type> extends "ethereum"
         ? {
