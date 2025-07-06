@@ -12,21 +12,13 @@ if (typeof globalThis.crypto === "undefined") {
 }
 
 const NETWORK_CONFIG = {
-  id: "aleph-zero",
-  rpcs: ["wss://ws.azero.dev"],
-  nativeCurrency: { coingeckoId: "aleph-zero" },
-  tokens: {
-    "substrate-psp22": [
-      {
-        contractAddress: "5GSGAcvqpF5SuH2MhJ1YUdbLAbssCjeqCn2miMUCWUjnr5DQ",
-        symbol: "PANX",
-        coingeckoId: "panorama-swap-token",
-      },
-    ],
-  },
+  id: "bittensor",
+  rpcs: ["wss://entrypoint-finney.opentensor.ai"],
+  nativeCurrency: { coingeckoId: "bittensor" },
+  tokens: {},
 }
 
-testDotNetwork(NETWORK_CONFIG, ["substrate-psp22", "substrate-native"])
+testDotNetwork(NETWORK_CONFIG, ["substrate-native"])
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

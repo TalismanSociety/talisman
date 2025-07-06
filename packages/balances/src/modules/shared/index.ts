@@ -1,5 +1,7 @@
 export * from "./fetchRuntimeCallResult"
 export * from "./errors"
+export * from "./hasConstantValue"
 export * from "./getContantValue"
+export * from "./tryGetConstantValue"
 export * from "./types"
 export * from "./utils"

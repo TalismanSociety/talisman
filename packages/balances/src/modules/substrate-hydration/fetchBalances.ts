@@ -1,4 +1,3 @@
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { keyBy, uniq } from "lodash"
 
@@ -16,8 +15,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 }) => {
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
 
-  const anyMiniMetadata = miniMetadata as AnyMiniMetadata
-  if (!anyMiniMetadata?.data) {
+  if (!miniMetadata?.data) {
     log.warn("MiniMetadata is required for fetching balances")
     return {
       success: [],
@@ -28,20 +26,20 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       })),
     }
   }
-  if (anyMiniMetadata.source !== MODULE_TYPE) {
-    log.warn(`Ignoring miniMetadata with source ${anyMiniMetadata.source} in substrate-hydration`)
+  if (miniMetadata.source !== MODULE_TYPE) {
+    log.warn(`Ignoring miniMetadata with source ${miniMetadata.source} in ${MODULE_TYPE}.`)
     return {
       success: [],
       errors: balanceDefs.map((def) => ({
         tokenId: def.token.id,
         address: def.address,
-        error: new Error("Invalid request: miniMetadata source is not 'substrate-hydration'"),
+        error: new Error(`Invalid request: miniMetadata source is not ${MODULE_TYPE}`),
       })),
     }
   }
-  if (anyMiniMetadata.chainId !== networkId) {
+  if (miniMetadata.chainId !== networkId) {
     log.warn(
-      `Ignoring miniMetadata with chainId ${anyMiniMetadata.chainId} in substrate-hydration. Expected chainId is ${networkId}`,
+      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`,
     )
     return {
       success: [],
@@ -60,7 +58,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       addresses.map((address) =>
         fetchRuntimeCallResult<
           [onChainId: number, balance: { free: bigint; reserved: bigint; frozen: bigint }][]
-        >(connector, networkId, anyMiniMetadata.data!, "CurrenciesApi", "accounts", [address]),
+        >(connector, networkId, miniMetadata.data!, "CurrenciesApi", "accounts", [address]),
       ),
     )
 

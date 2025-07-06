@@ -1,0 +1,561 @@
+import { AnyMiniMetadata } from "@talismn/chaindata-provider"
+import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
+import { isNotNil } from "@talismn/util"
+import { Binary, Enum } from "polkadot-api"
+
+import { AmountWithLabel, IBalance } from "../../../types"
+import { BalanceDef } from "../../shared"
+import { getLockedType } from "../../SubstrateNativeModule/util/balanceLockTypes"
+import { buildNetworkStorageCoders } from "../../util"
+import { RpcQueryPack } from "../../util/RpcStateQueriesHelper"
+import { MiniMetadataExtra } from "../config"
+
+export type NomPoolMemberInfo = {
+  points: string
+  poolId: string
+  unbondingEras: Array<{ era: string; amount: string }>
+}
+
+export type BaseBalance = { balance: IBalance; nomPoolMemberInfo: NomPoolMemberInfo | null }
+
+export const buildBaseQueries = (
+  networkId: string,
+  balanceDefs: BalanceDef<"substrate-native">[],
+  miniMetadata: Omit<AnyMiniMetadata, "extra"> & { extra: MiniMetadataExtra },
+): Array<RpcQueryPack<BaseBalance>> => {
+  const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
+    account: ["System", "Account"],
+    stakingLedger: ["Staking", "Ledger"],
+    reserves: ["Balances", "Reserves"], // unused ??
+    holds: ["Balances", "Holds"],
+    locks: ["Balances", "Locks"],
+    freezes: ["Balances", "Freezes"],
+    poolMembers: ["NominationPools", "PoolMembers"],
+  })
+
+  if (!networkStorageCoders)
+    throw new Error(`No network storage coders found for networkId: ${networkId}`)
+
+  return balanceDefs
+    .map(({ token, address }): RpcQueryPack<BaseBalance> | null => {
+      const accountStateKey = networkStorageCoders.account
+        ? (networkStorageCoders.account.keys.enc(address) as `0x${string}`)
+        : null
+
+      const locksStateKey = networkStorageCoders.locks
+        ? (networkStorageCoders.locks.keys.enc(address) as `0x${string}`)
+        : null
+
+      const freezesStateKey = networkStorageCoders.freezes
+        ? (networkStorageCoders.freezes.keys.enc(address) as `0x${string}`)
+        : null
+
+      const holdsStateKey = networkStorageCoders.holds
+        ? (networkStorageCoders.holds.keys.enc(address) as `0x${string}`)
+        : null
+
+      const stakingLedgerStateKey = networkStorageCoders.stakingLedger
+        ? (networkStorageCoders.stakingLedger.keys.enc(address) as `0x${string}`)
+        : null
+
+      const poolMemberStateKey = networkStorageCoders.poolMembers
+        ? (networkStorageCoders.poolMembers.keys.enc(address) as `0x${string}`)
+        : null
+
+      const stateKeys = [
+        accountStateKey,
+        locksStateKey,
+        freezesStateKey,
+        holdsStateKey,
+        stakingLedgerStateKey,
+        poolMemberStateKey,
+      ]
+
+      return {
+        stateKeys,
+        decodeResult: (changes: (`0x${string}` | null)[]) => {
+          const balance: IBalance = {
+            source: "substrate-native",
+            status: "live",
+            address,
+            networkId,
+            tokenId: token.id,
+            values: [],
+            useLegacyTransferableCalculation: miniMetadata.extra.useLegacyTransferableCalculation,
+          }
+
+          let nomPoolMemberInfo: NomPoolMemberInfo | null = null
+
+          const [
+            accountChange,
+            lockChange,
+            freezesChange,
+            holdsChange,
+            stakingLedgerChange,
+            nomPoolMemberChange,
+          ] = changes
+
+          if (networkStorageCoders.account) {
+            // for account balance we decode even empty values
+            const baseValues = decodeBaseResult(
+              networkStorageCoders.account,
+              accountChange,
+              networkId,
+            )
+            balance.values.push(...baseValues)
+          }
+
+          if (networkStorageCoders.locks && lockChange) {
+            const lockValues = decodeLocksResult(networkStorageCoders.locks, lockChange, networkId)
+            balance.values.push(...lockValues)
+          }
+
+          if (networkStorageCoders.freezes && freezesChange) {
+            const freezesValues = decodeFreezesResult(
+              networkStorageCoders.freezes,
+              freezesChange,
+              networkId,
+            )
+            balance.values.push(...freezesValues)
+          }
+
+          if (networkStorageCoders.holds && holdsChange) {
+            const holdsValues = decodeHoldsResult(
+              networkStorageCoders.holds,
+              holdsChange,
+              networkId,
+            )
+            balance.values.push(...holdsValues)
+          }
+
+          if (networkStorageCoders.stakingLedger && stakingLedgerChange) {
+            const stakingLedgerValues = decodeStakingLedgerResult(
+              networkStorageCoders.stakingLedger,
+              stakingLedgerChange,
+              networkId,
+            )
+            balance.values.push(...stakingLedgerValues)
+          }
+
+          if (networkStorageCoders.poolMembers && nomPoolMemberChange) {
+            const nomPoolMemberValue = decodePoolMemberResult(
+              networkStorageCoders.poolMembers,
+              nomPoolMemberChange,
+              networkId,
+            )
+
+            if (nomPoolMemberValue) nomPoolMemberInfo = nomPoolMemberValue
+          }
+
+          return { balance, nomPoolMemberInfo }
+        },
+      }
+    })
+    .filter(isNotNil)
+}
+
+// AccountInfo is the state_storage data format for nativeToken balances
+// Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
+// But for chains we want to support which aren't on metadata v14, hardcode them here:
+// If the chain upgrades to metadata v14, this override will be ignored :)
+// const RegularAccountInfoFallback = Struct({
+//   nonce: u32,
+//   consumers: u32,
+//   providers: u32,
+//   sufficients: u32,
+//   data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
+// })
+// const NoSufficientsAccountInfoFallback = Struct({
+//   nonce: u32,
+//   consumers: u32,
+//   providers: u32,
+//   data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
+// })
+// const AccountInfoOverrides: Record<
+//   string,
+//   typeof RegularAccountInfoFallback | typeof NoSufficientsAccountInfoFallback | undefined
+// > = {
+//   // crown-sterlin is not yet on metadata v14
+//   "crown-sterling": NoSufficientsAccountInfoFallback,
+
+//   // crust is not yet on metadata v14
+//   "crust": NoSufficientsAccountInfoFallback,
+
+//   // kulupu is not yet on metadata v14
+//   "kulupu": RegularAccountInfoFallback,
+
+//   // nftmart is not yet on metadata v14
+//   "nftmart": RegularAccountInfoFallback,
+// }
+
+const decodeBaseResult = (
+  coder: ScaleStorageCoder,
+  value: string | null,
+  networkId: string,
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = {
+    data?: {
+      flags?: bigint
+      free?: bigint
+      frozen?: bigint
+      reserved?: bigint
+
+      // deprecated fields (they only show up on old chains)
+      feeFrozen?: bigint
+      miscFrozen?: bigint
+    }
+  }
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode base native balance on chain ${networkId}`,
+  )
+
+  const free = (decoded?.data?.free ?? 0n).toString()
+  const reserved = (decoded?.data?.reserved ?? 0n).toString()
+  const miscLock = (
+    (decoded?.data?.miscFrozen ?? 0n) +
+    // new chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
+    // for these chains, we'll use the `frozen` amount as `miscFrozen`.
+    ((decoded?.data as DecodedType["data"])?.frozen ?? 0n)
+  ).toString()
+  const feesLock = (decoded?.data?.feeFrozen ?? 0n).toString()
+
+  // even if these values are 0, we still need to add them to the balanceJson.values array
+  // so that the balance pool can handle newly zeroed balances
+  // const existingValues = Object.fromEntries(
+  //   balanceJson.values.map((v) => [getValueId(v), v]),
+  // )
+  const newValues: AmountWithLabel<string>[] = [
+    { type: "free", label: "free", amount: free.toString() },
+    { type: "reserved", label: "reserved", amount: reserved.toString() },
+    { type: "locked", label: "misc", amount: miscLock.toString() },
+    { type: "locked", label: "fees", amount: feesLock.toString() },
+  ]
+
+  return newValues
+}
+
+const decodeLocksResult = (
+  coder: ScaleStorageCoder,
+  value: string | null,
+  networkId: string,
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = Array<{
+    id?: Binary
+    amount?: bigint
+  }>
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode lock on chain ${networkId}`,
+  )
+
+  const locksQueryLocks: Array<AmountWithLabel<string>> =
+    decoded?.map?.((lock) => ({
+      type: "locked",
+      source: "substrate-native-locks",
+      label: getLockedType(lock?.id?.asText?.()),
+      meta: { id: lock?.id?.asText?.() },
+      amount: (lock?.amount ?? 0n).toString(),
+    })) ?? []
+
+  return locksQueryLocks
+
+  // // locked values should be replaced entirely, not merged or appended
+  // const nonLockValues = balanceJson.values.filter(
+  //   (v) => v.source !== "substrate-native-locks",
+  // )
+  // balanceJson.values = nonLockValues.concat(locksQueryLocks)
+
+  // // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
+  // balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
+}
+
+const decodeFreezesResult = (
+  coder: ScaleStorageCoder,
+  value: `0x${string}` | null,
+  networkId: string,
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = Array<{
+    id?: { type?: string }
+    amount?: bigint
+  }>
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode freeze on chain ${networkId}`,
+  )
+
+  const freezesValues: Array<AmountWithLabel<string>> =
+    decoded?.map?.((lock) => ({
+      type: "locked",
+      source: "substrate-native-freezes",
+      label: getLockedType(lock?.id?.type?.toLowerCase?.()),
+      amount: lock?.amount?.toString?.() ?? "0",
+    })) ?? []
+
+  return freezesValues
+
+  // // freezes values should be replaced entirely, not merged or appended
+  // const nonFreezesValues = balanceJson.values.filter(
+  //   (v) => v.source !== "substrate-native-freezes",
+  // )
+  // balanceJson.values = nonFreezesValues.concat(freezesQueryLocks)
+
+  // return balanceJson
+}
+
+const decodeHoldsResult = (
+  coder: ScaleStorageCoder,
+  value: `0x${string}` | null,
+  networkId: string,
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = Array<{
+    id?: Enum<{ DelegatedStaking: Enum<{ StakingDelegation: undefined }> }>
+    amount?: bigint
+  }>
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode holds on chain ${networkId}`,
+  )
+
+  // at this time we re only interested in DelegatedStaking holds, to determine if nom pool staked amount is included in reserved or not
+  const holdsValues: Array<AmountWithLabel<string>> =
+    decoded
+      ?.filter((hold) => hold.id?.type)
+      .map((hold) => ({
+        type: "locked",
+        source: "substrate-native-holds",
+        label: hold.id!.type,
+        // anount needs to be 0 or a row could appear in the UI, this entry is just for information
+        amount: "0",
+        meta: { amount: (hold?.amount ?? 0n).toString() },
+      })) ?? []
+
+  return holdsValues
+
+  // // values should be replaced entirely, not merged or appended
+  // const nonHoldsValues = balanceJson.values.filter(
+  //   (v) => v.source !== "substrate-native-holds",
+  // )
+  // balanceJson.values = nonHoldsValues.concat(holdsQueryLocks)
+
+  // return balanceJson
+}
+
+const decodeStakingLedgerResult = (
+  coder: ScaleStorageCoder,
+  value: `0x${string}` | null,
+  networkId: string,
+): Array<AmountWithLabel<string>> => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type DecodedType = {
+    active: bigint
+    legacy_claimed_rewards: number[]
+    stash: string
+    total: bigint
+    unlocking: Array<{
+      era: number
+      value: bigint
+    }>
+  } | null
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode unbonding query on chain ${networkId}`,
+  )
+
+  const totalUnlocking =
+    decoded?.unlocking?.reduce?.((acc, unlocking) => acc + unlocking.value, 0n) ?? 0n
+
+  const stakingLedgerResults: Array<AmountWithLabel<string>> =
+    totalUnlocking <= 0n
+      ? []
+      : [
+          {
+            type: "locked",
+            source: "substrate-native-unbonding",
+            label: "Unbonding",
+            amount: totalUnlocking.toString(),
+          },
+        ]
+
+  return stakingLedgerResults
+
+  // if (totalUnlocking <= 0n) unbondingQueryLocks = []
+  // else {
+  //   unbondingQueryLocks = [
+  //     {
+  //       type: "locked",
+  //       source: "substrate-native-unbonding",
+  //       label: "Unbonding",
+  //       amount: totalUnlocking.toString(),
+  //     },
+  //   ]
+  // }
+
+  // // unbonding values should be replaced entirely, not merged or appended
+  // const nonUnbondingValues = balanceJson.values.filter(
+  //   (v) => v.source !== "substrate-native-unbonding",
+  // )
+  // balanceJson.values = nonUnbondingValues.concat(unbondingQueryLocks)
+
+  // // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
+  // balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
+
+  // return balanceJson
+}
+
+const decodePoolMemberResult = (
+  coder: ScaleStorageCoder,
+  value: `0x${string}` | null,
+  networkId: string,
+): NomPoolMemberInfo | null => {
+  /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+  type DecodedType = {
+    pool_id: number
+    points: bigint
+    last_recorded_reward_counter?: bigint
+    /** Array of `[Era, Amount]` */
+    unbonding_eras: Array<[number, bigint] | undefined>
+  }
+
+  const decoded = decodeScale<DecodedType>(
+    coder,
+    value,
+    `Failed to decode poolMembers on chain ${networkId}`,
+  )
+
+  if (!decoded) return null
+
+  const poolId: string = decoded.pool_id.toString()
+  const points: string = decoded.points.toString()
+  const unbondingEras: Array<{ era: string; amount: string }> = Array.from(
+    decoded.unbonding_eras ?? [],
+  ).flatMap((entry) => {
+    if (entry === undefined) return []
+    const [key, value] = Array.from(entry)
+
+    const era = key.toString()
+    const amount = value.toString()
+    if (typeof era !== "string" || typeof amount !== "string") return []
+
+    return { era, amount }
+  })
+
+  return { poolId, points, unbondingEras }
+}
+
+// const getBaseQuery = (
+//   networkId: string,
+//   address: string,
+//   coder: ScaleStorageCoder,
+// ): RpcStateQuery<Array<AmountWithLabel<string>>> | null => {
+//   // For chains which are using metadata < v14
+//   const getFallbackStateKey = () => {
+//     const addressBytes = decodeAnyAddress(address) // TODO replace with modern api, this is slow
+//     const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
+//     const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
+//     const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
+//     const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
+//     return `0x${moduleStorageHash}${addressHash}`
+//   }
+
+//   // const scaleCoder = chainStorageCoders.get(chainId)?.base
+//   // NOTE: Only use fallback key when `scaleCoder` is not defined
+//   // i.e. when chain doesn't have metadata v14/v15
+//   const stateKey = coder
+//     ? encodeStateKey(coder, `Invalid address in ${networkId} base query ${address}`, address)
+//     : getFallbackStateKey()
+//   if (!stateKey) return null
+
+//   const decodeResult = (change: string | null) => {
+//     // BEGIN: Handle chains which use metadata < v14
+//     let oldChainBalance = null
+//     if (!coder) {
+//       const scaleAccountInfo = AccountInfoOverrides[networkId]
+//       if (scaleAccountInfo === undefined) {
+//         // chain metadata version is < 15 and we also don't have an override hardcoded in
+//         // the best way to handle this case: log a warning and return an empty balance
+//         log.debug(
+//           `Native token on chain ${networkId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`,
+//         )
+//         return []
+//       }
+
+//       try {
+//         // eslint-disable-next-line no-var
+//         oldChainBalance = change === null ? null : scaleAccountInfo.dec(change)
+//       } catch (error) {
+//         log.warn(
+//           `Failed to create pre-metadataV14 balance type for native on chain ${networkId}: ${error?.toString()}`,
+//         )
+//         return []
+//       }
+//     }
+//     // END: Handle chains which use metadata < v14
+
+//     /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
+//     type DecodedType = {
+//       data?: {
+//         flags?: bigint
+//         free?: bigint
+//         frozen?: bigint
+//         reserved?: bigint
+
+//         // deprecated fields (they only show up on old chains)
+//         feeFrozen?: bigint
+//         miscFrozen?: bigint
+//       }
+//     }
+//     const decoded =
+//       decodeScale<DecodedType>(
+//         coder,
+//         change,
+//         `Failed to decode base native balance on chain ${networkId}`,
+//       ) ?? oldChainBalance
+
+//     const free = (decoded?.data?.free ?? 0n).toString()
+//     const reserved = (decoded?.data?.reserved ?? 0n).toString()
+//     const miscLock = (
+//       (decoded?.data?.miscFrozen ?? 0n) +
+//       // new chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
+//       // for these chains, we'll use the `frozen` amount as `miscFrozen`.
+//       ((decoded?.data as DecodedType["data"])?.frozen ?? 0n)
+//     ).toString()
+//     const feesLock = (decoded?.data?.feeFrozen ?? 0n).toString()
+
+//     // even if these values are 0, we still need to add them to the balanceJson.values array
+//     // so that the balance pool can handle newly zeroed balances
+//     // const existingValues = Object.fromEntries(
+//     //   balanceJson.values.map((v) => [getValueId(v), v]),
+//     // )
+//     const newValues: AmountWithLabel<string>[] = [
+//       { type: "free", label: "free", amount: free.toString() },
+//       { type: "reserved", label: "reserved", amount: reserved.toString() },
+//       { type: "locked", label: "misc", amount: miscLock.toString() },
+//       { type: "locked", label: "fees", amount: feesLock.toString() },
+//     ]
+
+//     return newValues
+
+//     // const newValuesObj = Object.fromEntries(newValues.map((v) => [getValueId(v), v]))
+
+//     // balanceJson.values = Object.values({ ...existingValues, ...newValuesObj })
+
+//     // return balanceJson
+//   }
+
+//   return { chainId: networkId, stateKey, decodeResult }
+// }

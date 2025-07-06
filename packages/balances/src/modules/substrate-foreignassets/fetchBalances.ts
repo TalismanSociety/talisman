@@ -29,19 +29,19 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     }
   }
   if (miniMetadata.source !== MODULE_TYPE) {
-    log.warn(`Ignoring miniMetadata with source ${miniMetadata.source} in substrate-hydration`)
+    log.warn(`Ignoring miniMetadata with source ${miniMetadata.source} in ${MODULE_TYPE}.`)
     return {
       success: [],
       errors: balanceDefs.map((def) => ({
         tokenId: def.token.id,
         address: def.address,
-        error: new Error("Invalid request: miniMetadata source is not 'substrate-hydration'"),
+        error: new Error(`Invalid request: miniMetadata source is not ${MODULE_TYPE}`),
       })),
     }
   }
   if (miniMetadata.chainId !== networkId) {
     log.warn(
-      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in substrate-hydration. Expected chainId is ${networkId}`,
+      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`,
     )
     return {
       success: [],

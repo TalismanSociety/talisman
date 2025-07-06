@@ -71,10 +71,13 @@ export type FetchBalanceResults = {
 //   ? `0x${string}`
 //   : null
 
+type MiniMetadata<Extra = null> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }
+
 export interface IBalanceModule<
   Type extends TokenType,
   TokenConfig = unknown,
-  BalanceConfig = unknown,
+  ModuleConfig = unknown,
+  MiniMetadataExtra = unknown,
 > {
   type: Type
 
@@ -88,10 +91,10 @@ export interface IBalanceModule<
           networkId: string
           specVersion: number
           metadataRpc: `0x${string}`
-          config?: BalanceConfig
+          config?: ModuleConfig
         }
       : never,
-  ) => PlatformOf<Type> extends "polkadot" ? AnyMiniMetadata : never
+  ) => PlatformOf<Type> extends "polkadot" ? MiniMetadata<MiniMetadataExtra> : never
 
   // ex: fetch missing erc20s info from contracts, but pick from cache instead if its already there
   // most modules wouldnt leverage the cache, unless there is a network issue ?
@@ -102,7 +105,7 @@ export interface IBalanceModule<
           networkId: DotNetworkId
           tokens: TokenConfig[]
           connector: ChainConnector
-          miniMetadata: AnyMiniMetadata
+          miniMetadata: MiniMetadata<MiniMetadataExtra>
           cache: Record<TokenId, unknown>
         }
       : PlatformOf<Type> extends "ethereum"
@@ -121,7 +124,7 @@ export interface IBalanceModule<
           networkId: DotNetworkId
           addressesByToken: TokensWithAddresses
           connector: ChainConnector
-          miniMetadata: AnyMiniMetadata
+          miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : PlatformOf<Type> extends "ethereum"
         ? {
@@ -138,7 +141,7 @@ export interface IBalanceModule<
           networkId: DotNetworkId
           addressesByToken: TokensWithAddresses
           connector: ChainConnector
-          miniMetadata: AnyMiniMetadata
+          miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : PlatformOf<Type> extends "ethereum"
         ? {

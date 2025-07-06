@@ -21,6 +21,7 @@ import { Enum } from "polkadot-api"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
+const TEST_ADDRESS_EMPTY = "14BbPtmnepvdw2t34CvUbNGDxXazc4iHJZPc8vS3MiCDFzpn"
 
 export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<DotNetwork["nativeCurrency"]>
@@ -82,7 +83,10 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         specVersion,
         metadataRpc,
       })
-      log.log("mod.getMiniMetadata() result", miniMetadata)
+      log.log("mod.getMiniMetadata() result", {
+        ...miniMetadata,
+        data: miniMetadata.data ? `<length:${miniMetadata.data.length}>` : null,
+      })
       log.log()
 
       const tokenConfigs =
@@ -97,7 +101,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         networkId,
         tokens: tokenConfigs as any,
         connector,
-        miniMetadata,
+        miniMetadata: miniMetadata as any,
         cache: {},
       })
 
@@ -106,15 +110,17 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
       if (tokens.length > 3) log.log("+ %s other tokens", tokens.length - 3)
       log.log()
 
+      const BALANCES_ADDRESSES = [TEST_ADDRESS_SUB, TEST_ADDRESS_SUB2, TEST_ADDRESS_EMPTY]
+
       const balances = await mod.fetchBalances({
         networkId,
-        addressesByToken: tokens.map((token) => [token, [TEST_ADDRESS_SUB]] as const),
+        addressesByToken: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
         connector,
-        miniMetadata,
+        miniMetadata: miniMetadata as any,
       })
 
       log.log("Balances")
-      for (const b of balances.success) log.log(b)
+      for (const b of balances.success) log.log(JSON.stringify(b, null, 2))
       if (balances.errors.length) {
         log.log("Balance errors:")
         for (const error of balances.errors) log.error(error)

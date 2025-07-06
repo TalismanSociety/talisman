@@ -8,7 +8,9 @@
     "dev:hydration": "tsx watch src/hydration.ts",
     "dev:pah": "tsx watch src/polkadot-asset-hub.ts",
     "dev:astar": "tsx watch src/astar.ts",
-    "dev:azero": "tsx watch src/aleph-zero.ts"
+    "dev:azero": "tsx watch src/aleph-zero.ts",
+    "dev:bittensor": "tsx watch src/bittensor.ts",
+    "dev:polkadot": "tsx watch src/polkadot.ts"
   },
   "keywords": [],
   "author": "",

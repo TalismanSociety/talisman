@@ -1,5 +1,11 @@
 import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import {
+  decAnyMetadata,
+  getDynamicBuilder,
+  getLookupFn,
+  ScaleStorageCoder,
+  unifyMetadata,
+} from "@talismn/scale"
 
 import log from "../../log"
 import { MiniMetadata } from "../../types"
@@ -83,10 +89,10 @@ export const buildStorageCoders = <
 type NetworkCoders = { [key: string]: [string, string] }
 
 type NetworkStorageCoders<TCoders extends NetworkCoders> = {
-  [Property in keyof TCoders]:
-    | ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
-    | undefined
+  [Property in keyof TCoders]: ScaleStorageCoder | undefined
 }
+
+// type StorageCoder<TCoders extends NetworkCoders> = ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>[keyof TCoders]
 
 export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [string, string] }>(
   chainId: DotNetworkId,
