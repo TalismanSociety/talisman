@@ -156,7 +156,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         value: value.toString(),
         token: xferToken,
         metadataRpc,
-        type: "keep-alive",
+        type: "allow-death", // "keep-alive",
         connector,
       })
 
