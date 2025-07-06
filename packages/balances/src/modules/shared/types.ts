@@ -1,4 +1,4 @@
-import { TokenOfType, TokenType } from "@talismn/chaindata-provider"
+import { AnyMiniMetadata, TokenOfType, TokenType } from "@talismn/chaindata-provider"
 
 import { PlatformOf, TokensWithAddresses } from "../IBalanceModule"
 
@@ -13,4 +13,8 @@ export const getBalanceDefs = <T extends TokenType = TokenType>(
   return addressesByToken.flatMap(([token, addresses]) =>
     addresses.map((address) => ({ token, address })),
   ) as BalanceDef<T>[]
+}
+
+export type ModuleMiniMetadata<MiniMetadataExtra> = Omit<AnyMiniMetadata, "extra"> & {
+  extra: MiniMetadataExtra
 }

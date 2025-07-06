@@ -1,4 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
+import { isNotNil } from "@talismn/util"
 
 /**
  * Pass some these into an `RpcStateQueryHelper` in order to easily batch multiple state queries into the one rpc call.
@@ -8,65 +9,37 @@ export type RpcQueryPack<T> = {
   decodeResult: (changes: (`0x${string}` | null)[]) => T
 }
 
-// TODO subscription support
-
 export const fetchQueriesPack = async <T>(
   connector: ChainConnector,
   networkId: string,
   queries: RpcQueryPack<T>[],
 ) => {
-  const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys)
+  const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys).filter(isNotNil)
+
+  // doing a query with only null keys would throw an error => return early
+  if (!allStateKeys.length)
+    return queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null)))
 
   const response = await connector.send<
     { block: `0x${string}`; changes: [stateKey: `0x${string}`, value: `0x${string}`][] }[]
   >(networkId, "state_queryStorageAt", [allStateKeys])
 
-  // console.log("fetchQueriesPack response for ", queries)
-  // console.log(response[0].changes)
+  const results = queries.reduce((acc, { stateKeys, decodeResult }) => {
+    const changes = stateKeys.map((stateKey) => {
+      if (!stateKey) return null
 
-  const allChanges = response[0].changes
+      const change = response[0].changes.find(([key]) => key === stateKey)
+      if (!change) return null
 
-  const results = queries.reduce(
-    (acc, { stateKeys, decodeResult }) => {
-      const changes = allChanges
-        .slice(acc.stateKeysStartIndex, acc.stateKeysStartIndex + stateKeys.length)
-        .map(([, value]) => value)
-      return {
-        stateKeysStartIndex: acc.stateKeysStartIndex + stateKeys.length,
-        results: [...acc.results, decodeResult(changes)],
-      }
-    },
-    { stateKeysStartIndex: 0, results: [] } as { stateKeysStartIndex: number; results: T[] },
-  )
+      return change[1]
+    })
 
-  return results.results
+    acc.push(decodeResult(changes))
 
-  // return queries.map(({ stateKeys, decodeResult }) => {
-  //   const result = results[stateKeys]
-  //   if (Array.isArray(result)) {
-  //     return decodeResult(result)
-  //   }
-  //   log.warn(`Unexpected result for query ${stateKeys}:`, result)
-  //   return []
-  // })
+    return acc
+  }, [] as T[])
 
-  // return Promise.all(
-  //   queries.map(async ({ stateKeys, decodeResult }) => {
-  //     try {
-  //     } catch (err) {}
-  //   }),
-  // )
-
-  // return queries.map(({ stateKeys, decodeResult }) => {
-  //   const params = [stateKeys]
-  //   return connector.send(networkId, "state_queryStorageAt", params).then((result) => {
-  //     if (Array.isArray(result)) {
-  //       return decodeResult(result)
-  //     }
-  //     log.warn(`Unexpected result for query ${stateKeys}:`, result)
-  //     return []
-  //   })
-  // })
+  return results
 }
 
 /**

@@ -1,8 +1,10 @@
 import { log } from "extension-shared"
+import { firstValueFrom } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared/types"
 import { fetchQueriesPack } from "../util/RpcStateQueriesHelper"
+import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
 import { buildNomPoolQueries } from "./queries/buildNomPoolQueries"
@@ -59,6 +61,19 @@ export const fetchBalances: IBalanceModule<
   const balances = await fetchQueriesPack(connector, networkId, nomPoolQueries)
 
   // TODO ⚠️ dedupe locks
+
+  const subtensorBalances$ = getSubtensorStakingBalances$(
+    connector,
+    networkId,
+    balanceDefs,
+    miniMetadata,
+  )
+  const subtensorBalancesByAddress = await firstValueFrom(subtensorBalances$)
+
+  for (const [address, subtensorBalances] of Object.entries(subtensorBalancesByAddress)) {
+    const balance = balances.find((b) => b.address === address)
+    if (balance?.values) balance.values.push(...subtensorBalances)
+  }
 
   return { success: balances, errors: [] }
 }
