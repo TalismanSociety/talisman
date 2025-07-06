@@ -26,6 +26,7 @@ const TEST_ADDRESS_EMPTY = "14BbPtmnepvdw2t34CvUbNGDxXazc4iHJZPc8vS3MiCDFzpn"
 export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<DotNetwork["nativeCurrency"]>
   tokens: Partial<Record<TokenType, unknown[]>>
+  balancesConfig?: Partial<Record<TokenType, any>>
 }
 
 export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenType[]) => {
@@ -82,6 +83,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         networkId,
         specVersion,
         metadataRpc,
+        config: network.balancesConfig?.[mod.type],
       })
       log.log("mod.getMiniMetadata() result", {
         ...miniMetadata,

@@ -1,20 +1,19 @@
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
-import { decodeScale, getDynamicBuilder } from "@talismn/scale"
+import { decodeScale, papiParse } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 
 import { AmountWithLabel, IBalance } from "../../types"
 import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
+import { BalanceDef, getBalanceDefs, ModuleMiniMetadata } from "../shared/types"
 import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "../util"
-import { MODULE_TYPE } from "./config"
+import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
-export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
-  networkId,
-  addressesByToken,
-  connector,
-  miniMetadata,
-}) => {
+export const fetchBalances: IBalanceModule<
+  typeof MODULE_TYPE,
+  TokenConfig,
+  ModuleConfig,
+  MiniMetadataExtra
+>["fetchBalances"] = async ({ networkId, addressesByToken, connector, miniMetadata }) => {
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
 
   if (!miniMetadata?.data) {
@@ -85,22 +84,29 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 const buildQueries = (
   networkId: string,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  miniMetadata: AnyMiniMetadata,
+  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
 ): Array<RpcStateQuery<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
-    storage: ["Assets", "Account"],
+    storage: [miniMetadata.extra.palletId, "Accounts"],
   })
 
   return balanceDefs
     .map(({ token, address }): RpcStateQuery<IBalance> | null => {
       const scaleCoder = networkStorageCoders?.storage
-      const stateKey =
-        tryEncode(scaleCoder, Number(token.assetId), address) ?? // Asset Hub
-        tryEncode(scaleCoder, BigInt(token.assetId), address) // Astar
+
+      const getStateKey = (onChainId: string | number) => {
+        try {
+          return scaleCoder!.keys.enc(address, papiParse(onChainId))
+        } catch {
+          return null
+        }
+      }
+
+      const stateKey = getStateKey(token.onChainId)
 
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
+          `Invalid assetId / address in ${networkId} storage query ${token.onChainId} / ${address}`,
         )
         return null
       }
@@ -108,60 +114,35 @@ const buildQueries = (
       const decodeResult = (change: string | null) => {
         /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
         type DecodedType = {
-          balance?: bigint
-
-          // On other networks than Astar
-          is_frozen?: boolean
-
-          // Astar specific fields
-          reason?: { type?: "Sufficient" }
-          status?: { type?: "Liquid" } | { type?: "Frozen" }
-          extra?: undefined
+          free?: bigint
+          reserved?: bigint
+          frozen?: bigint
         }
 
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           change,
-          `Failed to decode substrate-assets balance on chain ${networkId}`,
-        ) ?? {
-          balance: 0n,
-          is_frozen: false,
-          reason: { type: "Sufficient" },
-          status: { type: "Liquid" },
-          extra: undefined,
-        }
+          `Failed to decode substrate-tokens balance on chain ${networkId}`,
+        ) ?? { free: 0n, reserved: 0n, frozen: 0n }
 
-        const isFrozen = decoded?.status?.type === "Frozen"
-        const amount = (decoded?.balance ?? 0n).toString()
+        const free = (decoded?.free ?? 0n).toString()
+        const reserved = (decoded?.reserved ?? 0n).toString()
+        const frozen = (decoded?.frozen ?? 0n).toString()
 
-        // due to the following balance calculations, which are made in the `Balance` type:
-        //
-        // total balance        = (free balance) + (reserved balance)
-        // transferable balance = (free balance) - (frozen balance)
-        //
-        // when `isFrozen` is true we need to set **both** the `free` and `frozen` amounts
-        // of this balance to the value we received from the RPC.
-        //
-        // if we only set the `frozen` amount, then the `total` calculation will be incorrect!
-        const free = amount
-        const frozen = token.isFrozen || isFrozen ? amount : "0"
-
-        // include balance values even if zero, so that newly-zero values overwrite old values
         const balanceValues: Array<AmountWithLabel<string>> = [
           { type: "free", label: "free", amount: free.toString() },
+          { type: "reserved", label: "reserved", amount: reserved.toString() },
           { type: "locked", label: "frozen", amount: frozen.toString() },
         ]
 
-        const balance: IBalance = {
-          source: "substrate-assets",
+        return {
+          source: "substrate-tokens",
           status: "live",
           address,
           networkId,
           tokenId: token.id,
           values: balanceValues,
-        }
-
-        return balance
+        } as IBalance
       }
 
       return {
@@ -171,14 +152,4 @@ const buildQueries = (
       }
     })
     .filter(isNotNil)
-}
-
-type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
-
-const tryEncode = (scaleCoder: ScaleStorageCoder | undefined, ...args: unknown[]) => {
-  try {
-    return scaleCoder?.keys?.enc?.(...args)
-  } catch {
-    return null
-  }
 }

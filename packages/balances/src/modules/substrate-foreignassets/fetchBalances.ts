@@ -84,7 +84,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
 const buildQueries = (
   networkId: string,
-  balanceDefs: BalanceDef<"substrate-foreignassets">[],
+  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
   miniMetadata: AnyMiniMetadata,
 ): Array<RpcStateQuery<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {

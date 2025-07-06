@@ -6,11 +6,14 @@
   "scripts": {
     "dev:ethereum": "tsx watch src/ethereum.ts",
     "dev:hydration": "tsx watch src/hydration.ts",
-    "dev:pah": "tsx watch src/polkadot-asset-hub.ts",
+    "dev:pah": "tsx watch src/pah.ts",
     "dev:astar": "tsx watch src/astar.ts",
     "dev:azero": "tsx watch src/aleph-zero.ts",
     "dev:bittensor": "tsx watch src/bittensor.ts",
-    "dev:polkadot": "tsx watch src/polkadot.ts"
+    "dev:polkadot": "tsx watch src/polkadot.ts",
+    "dev:acala": "tsx watch src/acala.ts",
+    "dev:centrifuge": "tsx watch src/centrifuge.ts",
+    "dev:bifrost": "tsx watch src/bifrost.ts"
   },
   "keywords": [],
   "author": "",

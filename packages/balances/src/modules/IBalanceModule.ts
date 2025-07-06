@@ -162,6 +162,7 @@ export interface IBalanceModule<
           metadataRpc: `0x${string}`
           type: BalanceTransferType
           connector: ChainConnector // because of psp22
+          config?: ModuleConfig
         }
       : PlatformOf<Type> extends "ethereum"
         ? {

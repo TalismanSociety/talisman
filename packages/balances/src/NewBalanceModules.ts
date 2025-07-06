@@ -6,6 +6,7 @@ import { SubForeignAssetsBalanceModule } from "./modules/substrate-foreignassets
 import { SubHydrationBalanceModule } from "./modules/substrate-hydration"
 import { SubNativeBalanceModule } from "./modules/substrate-native"
 import { SubPsp22BalanceModule } from "./modules/substrate-psp22"
+import { SubTokensBalanceModule } from "./modules/substrate-tokens"
 
 export const NEW_BALANCE_MODULES = [
   SubNativeBalanceModule,
@@ -13,6 +14,7 @@ export const NEW_BALANCE_MODULES = [
   SubHydrationBalanceModule,
   SubForeignAssetsBalanceModule,
   SubPsp22BalanceModule,
+  SubTokensBalanceModule,
   EvmErc20BalanceModule,
   EvmUniswapV2BalanceModule,
   EvmNativeBalanceModule,
