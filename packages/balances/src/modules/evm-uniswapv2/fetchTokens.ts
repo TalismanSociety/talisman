@@ -3,7 +3,7 @@ import {
   evmUniswapV2TokenId,
   EvmUniswapV2TokenSchema,
 } from "@talismn/chaindata-provider"
-import { assign } from "lodash"
+import { assign, omit } from "lodash"
 import { BaseError } from "viem"
 import z from "zod/v4"
 
@@ -30,7 +30,6 @@ const TokenCacheSchema = z.discriminatedUnion("isValid", [
     id: EvmUniswapV2TokenSchema.shape.id,
     isValid: z.literal(true),
     ...EvmUniswapV2TokenSchema.pick({
-      id: true,
       symbol: true,
       decimals: true,
       name: true,
@@ -40,7 +39,7 @@ const TokenCacheSchema = z.discriminatedUnion("isValid", [
       decimals1: true,
       symbol0: true,
       symbol1: true,
-    }),
+    }).shape,
   }),
   z.strictObject({
     id: EvmUniswapV2TokenSchema.shape.id,
@@ -63,7 +62,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     const cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
       | CachedToken
       | undefined
-    if (cached?.isValid) {
+
+    if (!cached) {
       const client = await connector.getPublicClientForEvmNetwork(networkId)
       if (!client) {
         log.warn(`No client found for network ${networkId} while fetching EVM ERC20 tokens`)
@@ -115,7 +115,15 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       networkId,
     }
 
-    const token = assign(base, cache[tokenId], tokenConfig) as EvmUniswapV2Token
+    const cached2 = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
+      | CachedToken
+      | undefined
+
+    const token = assign(
+      base,
+      cached2?.isValid ? omit(cached2, ["isValid"]) : {},
+      tokenConfig,
+    ) as EvmUniswapV2Token
 
     const parsed = EvmUniswapV2TokenSchema.safeParse(token)
     if (!parsed.success) {
