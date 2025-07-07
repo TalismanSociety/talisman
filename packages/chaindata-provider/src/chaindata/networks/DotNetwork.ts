@@ -10,6 +10,7 @@ import {
 } from "../tokens"
 import { NetworkBaseSchema } from "./NetworkBase"
 
+// TODO adjust
 export const DotNetworkBalancesConfigSchema = z.strictObject({
   "substrate-native": SubNativeBalancesConfigSchema.optional(),
   "substrate-assets": SubAssetsBalancesConfigSchema.optional(),
