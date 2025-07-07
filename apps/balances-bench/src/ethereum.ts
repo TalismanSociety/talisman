@@ -103,7 +103,8 @@ const run = async () => {
         networkId,
         tokens: tokenConfigs,
         connector,
-        cache: {},
+        // @ts-ignore
+        cache: cache[mod.type] ?? {},
       })
 
       log.log("mod.fetchTokens results", tokens)
