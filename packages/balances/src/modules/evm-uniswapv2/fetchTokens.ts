@@ -90,6 +90,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals1,
           symbol0,
           symbol1,
+          isValid: true,
         }
       } catch (err) {
         const msg = (err as BaseError).shortMessage
@@ -109,7 +110,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       }
     }
 
-    const base: Pick<EvmUniswapV2Token, "type" | "networkId" | "platform"> = {
+    const base: Pick<EvmUniswapV2Token, "id" | "type" | "networkId" | "platform"> = {
+      id: tokenId,
       type: MODULE_TYPE,
       platform: PLATFORM,
       networkId,

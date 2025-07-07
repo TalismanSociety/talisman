@@ -130,8 +130,8 @@ const run = async () => {
     }
     stopAll()
 
-    writeFileSync(`./cache/evm-erc20.json`, JSON.stringify(cache["evm-erc20"]))
-    writeFileSync(`./cache/evm-uniswapv2.json`, JSON.stringify(cache["evm-uniswapv2"]))
+    writeFileSync(`./cache/evm-erc20.json`, JSON.stringify(cache["evm-erc20"], null, 2))
+    writeFileSync(`./cache/evm-uniswapv2.json`, JSON.stringify(cache["evm-uniswapv2"], null, 2))
   } catch (err) {
     log.error(err)
   }
