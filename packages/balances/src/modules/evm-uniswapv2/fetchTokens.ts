@@ -121,6 +121,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       | CachedToken
       | undefined
 
+    if (cached2?.isValid === false) continue
+
     const token = assign(
       base,
       cached2?.isValid ? omit(cached2, ["isValid"]) : {},

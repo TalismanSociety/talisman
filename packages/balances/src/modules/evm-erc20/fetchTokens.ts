@@ -95,6 +95,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       | CachedToken
       | undefined
 
+    if (cached2?.isValid === false) continue
+
     const token = assign(
       base,
       cached2?.isValid ? omit(cached2, ["isValid"]) : {},
@@ -105,9 +107,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     if (!parsed.success) {
       log.warn("Ignoring token with invalid EvmErc20TokenSchema", {
         token,
-        base,
-        cached: cached2?.isValid ? omit(cached2, ["isValid"]) : {},
-        tokenConfig,
       })
       continue
     }
