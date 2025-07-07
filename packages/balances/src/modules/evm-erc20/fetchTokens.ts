@@ -1,6 +1,6 @@
 import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
 import { assign, omit } from "lodash"
-import { BaseError, withRetry } from "viem"
+import { BaseError } from "viem"
 import z from "zod/v4"
 
 import log from "../../log"
@@ -44,20 +44,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       }
 
       try {
-        const { name, decimals, symbol } = await withRetry(
-          () => getErc20ContractData(client, tokenConfig.contractAddress),
-          {
-            delay: 1000, // should help with rate limiting
-            retryCount: 1,
-            shouldRetry: (err) => {
-              const msg = (err.error as BaseError).shortMessage
-              return (
-                !msg.includes("returned no data") &&
-                !msg.includes("is out of bounds") &&
-                !msg.includes("reverted")
-              )
-            },
-          },
+        const { name, decimals, symbol } = await getErc20ContractData(
+          client,
+          tokenConfig.contractAddress,
         )
 
         cache[tokenId] = {
