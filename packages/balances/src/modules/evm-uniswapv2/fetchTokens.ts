@@ -5,24 +5,50 @@ import {
 } from "@talismn/chaindata-provider"
 import { assign } from "lodash"
 import { BaseError } from "viem"
+import z from "zod/v4"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 
-const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
-  id: true,
-  symbol: true,
-  decimals: true,
-  name: true,
-  tokenAddress0: true,
-  tokenAddress1: true,
-  decimals0: true,
-  decimals1: true,
-  symbol0: true,
-  symbol1: true,
-})
+// const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
+//   id: true,
+//   symbol: true,
+//   decimals: true,
+//   name: true,
+//   tokenAddress0: true,
+//   tokenAddress1: true,
+//   decimals0: true,
+//   decimals1: true,
+//   symbol0: true,
+//   symbol1: true,
+// })
+
+const TokenCacheSchema = z.discriminatedUnion("isValid", [
+  z.strictObject({
+    id: EvmUniswapV2TokenSchema.shape.id,
+    isValid: z.literal(true),
+    ...EvmUniswapV2TokenSchema.pick({
+      id: true,
+      symbol: true,
+      decimals: true,
+      name: true,
+      tokenAddress0: true,
+      tokenAddress1: true,
+      decimals0: true,
+      decimals1: true,
+      symbol0: true,
+      symbol1: true,
+    }),
+  }),
+  z.strictObject({
+    id: EvmUniswapV2TokenSchema.shape.id,
+    isValid: z.literal(false),
+  }),
+])
+
+type CachedToken = z.infer<typeof TokenCacheSchema>
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -34,7 +60,10 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
   for (const tokenConfig of tokens) {
     const tokenId = evmUniswapV2TokenId(networkId, tokenConfig.contractAddress)
-    if (!cache[tokenId] || !TokenCacheSchema.safeParse(cache[tokenId]).success) {
+    const cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
+      | CachedToken
+      | undefined
+    if (cached?.isValid) {
       const client = await connector.getPublicClientForEvmNetwork(networkId)
       if (!client) {
         log.warn(`No client found for network ${networkId} while fetching EVM ERC20 tokens`)
@@ -63,10 +92,19 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           symbol1,
         }
       } catch (err) {
-        log.warn(
-          `Failed to fetch UniswapV2 token data for ${tokenConfig.contractAddress}`,
-          (err as BaseError).shortMessage,
-        )
+        const msg = (err as BaseError).shortMessage
+        if (
+          msg.includes("returned no data") ||
+          msg.includes("is out of bounds") ||
+          msg.includes("reverted")
+        ) {
+          cache[tokenId] = { id: tokenId, isValid: false }
+        } else {
+          log.warn(
+            `Failed to fetch UniswapV2 token data for ${tokenConfig.contractAddress}`,
+            (err as BaseError).shortMessage,
+          )
+        }
         continue
       }
     }

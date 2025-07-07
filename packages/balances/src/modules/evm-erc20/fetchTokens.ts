@@ -1,18 +1,26 @@
 import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
 import { assign } from "lodash"
 import { BaseError, withRetry } from "viem"
+import z from "zod/v4"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData } from "./utils"
 
-const TokenCacheSchema = EvmErc20TokenSchema.pick({
-  id: true,
-  symbol: true,
-  decimals: true,
-  name: true,
-})
+const TokenCacheSchema = z.discriminatedUnion("isValid", [
+  z.strictObject({
+    id: EvmErc20TokenSchema.shape.id,
+    isValid: z.literal(true),
+    ...EvmErc20TokenSchema.pick({ symbol: true, decimals: true, name: true }),
+  }),
+  z.strictObject({
+    id: EvmErc20TokenSchema.shape.id,
+    isValid: z.literal(false),
+  }),
+])
+
+type CachedToken = z.infer<typeof TokenCacheSchema>
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -24,7 +32,10 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
   for (const tokenConfig of tokens) {
     const tokenId = evmErc20TokenId(networkId, tokenConfig.contractAddress)
-    if (!cache[tokenId] || !TokenCacheSchema.safeParse(cache[tokenId]).success) {
+    const cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
+      | CachedToken
+      | undefined
+    if (cached?.isValid) {
       const client = await connector.getPublicClientForEvmNetwork(networkId)
       if (!client) {
         log.warn(`No client found for network ${networkId} while fetching EVM ERC20 tokens`)
@@ -55,10 +66,18 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           name,
         }
       } catch (err) {
-        log.warn(
-          `Failed to fetch ERC20 token data for ${tokenConfig.contractAddress}`,
-          (err as BaseError).shortMessage,
+        const msg = (err as BaseError).shortMessage
+        if (
+          msg.includes("returned no data") ||
+          msg.includes("is out of bounds") ||
+          msg.includes("reverted")
         )
+          cache[tokenId] = { id: tokenId, isValid: false }
+        else
+          log.warn(
+            `Failed to fetch ERC20 token data for ${networkId}:${tokenConfig.contractAddress}`,
+            (err as BaseError).shortMessage,
+          )
         continue
       }
     }
