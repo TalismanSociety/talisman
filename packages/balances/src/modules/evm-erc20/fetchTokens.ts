@@ -49,13 +49,13 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           tokenConfig.contractAddress,
         )
 
-        cache[tokenId] = {
+        cache[tokenId] = TokenCacheSchema.parse({
           id: tokenId,
           symbol,
           decimals,
           name,
           isValid: true,
-        }
+        })
       } catch (err) {
         const msg = (err as BaseError).shortMessage
         if (

@@ -28,7 +28,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
   const parsed = EvmNativeTokenSchema.safeParse(token)
   if (!parsed.success) {
-    log.warn("Ignoring token with invalid EvmErc20TokenSchema", token)
+    log.warn("Ignoring token with invalid schema", token)
     return []
   }
 

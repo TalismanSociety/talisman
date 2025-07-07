@@ -79,7 +79,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         const { symbol: symbol0, decimals: decimals0 } = await getErc20ContractData(client, token0)
         const { symbol: symbol1, decimals: decimals1 } = await getErc20ContractData(client, token1)
 
-        cache[tokenId] = {
+        cache[tokenId] = TokenCacheSchema.parse({
           id: tokenId,
           symbol: `${symbol0}/${symbol1}`,
           decimals,
@@ -91,7 +91,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           symbol0,
           symbol1,
           isValid: true,
-        }
+        })
       } catch (err) {
         const msg = (err as BaseError).shortMessage
         if (
@@ -131,7 +131,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
     const parsed = EvmUniswapV2TokenSchema.safeParse(token)
     if (!parsed.success) {
-      log.warn("Ignoring token with invalid EvmErc20TokenSchema", token)
+      log.warn("Ignoring token with invalid schema", token)
       continue
     }
 
