@@ -1,7 +1,7 @@
 import { AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
-import { log } from "extension-shared"
 
+import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
 import { getConstantValue } from "../shared/getContantValue"

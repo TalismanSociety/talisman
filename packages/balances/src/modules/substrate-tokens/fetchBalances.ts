@@ -1,7 +1,7 @@
 import { decodeScale, papiParse } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import { log } from "extension-shared"
 
+import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
 import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
 import { BalanceDef, getBalanceDefs, ModuleMiniMetadata } from "../shared/types"

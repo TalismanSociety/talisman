@@ -1,7 +1,7 @@
-import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import { distinctUntilChanged, Observable } from "rxjs"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"

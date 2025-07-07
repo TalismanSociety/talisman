@@ -5,10 +5,10 @@ import {
   SubHydrationTokenSchema,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
-import { log } from "extension-shared"
 import { assign, keyBy } from "lodash"
 import { Binary } from "polkadot-api"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { SubHydrationTokenConfig } from "./types"

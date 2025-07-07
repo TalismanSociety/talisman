@@ -8,7 +8,7 @@ import {
   hexToString,
 } from "viem"
 
-import { uniswapV2PairAbi } from "../EvmUniswapV2Module"
+import { uniswapV2PairAbi } from "../abis"
 
 export const getErc20ContractData = async (
   client: Client,

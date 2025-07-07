@@ -1,8 +1,8 @@
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
-import { log } from "extension-shared"
 import { Binary } from "polkadot-api"
 
+import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
 import { tryGetConstantValue } from "../shared"

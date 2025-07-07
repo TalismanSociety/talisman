@@ -8,7 +8,7 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress, isTruthy } from "@talismn/util"
-import { Address, Hex, PublicClient } from "viem"
+import { Address, erc20Abi, Hex, PublicClient } from "viem"
 import z from "zod/v4"
 
 import {
@@ -20,7 +20,6 @@ import {
 import log from "../log"
 import { AddressesByToken, Balances, NewBalanceType } from "../types"
 import { TokenConfigBaseSchema } from "../types/tokens"
-import { erc20Abi } from "./abis/erc20"
 import { erc20BalancesAggregatorAbi } from "./abis/erc20BalancesAggregator"
 
 export { erc20Abi, erc20BalancesAggregatorAbi }

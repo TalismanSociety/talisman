@@ -1,10 +1,9 @@
 import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { assign } from "lodash"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE, PLATFORM } from "./config"
-import { EvmErc20TokenConfig } from "./types"
+import { EvmErc20TokenConfig, MODULE_TYPE, PLATFORM } from "./config"
 import { getErc20ContractData } from "./utils"
 
 const TokenCacheSchema = EvmErc20TokenSchema.pick({

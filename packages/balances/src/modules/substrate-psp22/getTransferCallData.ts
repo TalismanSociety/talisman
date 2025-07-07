@@ -1,10 +1,9 @@
-import { Enum } from "@polkadot-api/substrate-bindings"
 import { mergeUint8 } from "@polkadot-api/utils"
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
 import { isTokenOfType, parseTokenId } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
-import { Binary } from "polkadot-api"
+import { Binary, Enum } from "polkadot-api"
 
 import psp22Abi from "../abis/psp22.json"
 import { IBalanceModule } from "../IBalanceModule"

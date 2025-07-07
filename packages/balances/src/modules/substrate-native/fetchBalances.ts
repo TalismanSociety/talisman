@@ -1,6 +1,6 @@
-import { log } from "extension-shared"
 import { firstValueFrom } from "rxjs"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared/types"
 import { fetchQueriesPack } from "../util/RpcStateQueriesHelper"

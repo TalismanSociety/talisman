@@ -1,10 +1,10 @@
 import { parseEvmErc20TokenId, parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import { log } from "extension-shared"
 import { ChainContract, erc20Abi, PublicClient } from "viem"
 
+import log from "../../log"
 import { IBalance } from "../../types"
-import { erc20BalancesAggregatorAbi } from "../EvmErc20Module"
+import { erc20BalancesAggregatorAbi } from "../abis"
 import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
 import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
 import { BalanceDef, getBalanceDefs } from "../shared/types"

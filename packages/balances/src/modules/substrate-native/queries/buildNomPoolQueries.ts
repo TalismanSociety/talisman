@@ -3,10 +3,10 @@ import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
 import { IBalance } from "../../../types"
-import { nompoolStashAccountId } from "../../SubstrateNativeModule/util/nompoolAccountId"
 import { buildNetworkStorageCoders } from "../../util"
 import { RpcQueryPack } from "../../util/RpcStateQueriesHelper"
 import { MiniMetadataExtra } from "../config"
+import { nompoolStashAccountId } from "../util/nompoolAccountId"
 import { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
 
 export const buildNomPoolQueries = (

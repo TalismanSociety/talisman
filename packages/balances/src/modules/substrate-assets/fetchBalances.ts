@@ -1,8 +1,8 @@
 import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import { decodeScale, getDynamicBuilder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import { log } from "extension-shared"
 
+import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
 import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
 import { BalanceDef, getBalanceDefs } from "../shared/types"

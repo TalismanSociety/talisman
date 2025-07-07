@@ -1,8 +1,8 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import { log } from "extension-shared"
 import { PublicClient } from "viem"
 
+import log from "../../log"
 import { IBalance } from "../../types"
 import { abiMulticall } from "../abis"
 import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../IBalanceModule"

@@ -1,5 +1,5 @@
 import PromisePool from "@supercharge/promise-pool"
-import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
+import { abiMulticall, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
   EthNetworkId,
   EvmErc20Token,
@@ -24,7 +24,7 @@ import {
   map,
   skip,
 } from "rxjs"
-import { PublicClient } from "viem"
+import { erc20Abi, PublicClient } from "viem"
 
 import { db } from "../../db"
 import { getHasPendingMigrations } from "../../libs/migrations"

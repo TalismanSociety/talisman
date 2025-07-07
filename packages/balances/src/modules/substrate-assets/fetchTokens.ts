@@ -5,10 +5,10 @@ import {
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
-import { log } from "extension-shared"
 import { assign, keyBy, keys } from "lodash"
 import { Binary } from "polkadot-api"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, TokenConfig } from "./config"
 

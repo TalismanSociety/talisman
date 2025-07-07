@@ -1,9 +1,9 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { SubNativeToken, subNativeTokenId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { assign } from "lodash"
 import z from "zod/v4"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 

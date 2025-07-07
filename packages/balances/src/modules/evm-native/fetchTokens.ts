@@ -1,10 +1,9 @@
 import { EvmNativeToken, evmNativeTokenId, EvmNativeTokenSchema } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { assign } from "lodash"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE, PLATFORM } from "./config"
-import { EvmNativeTokenConfig } from "./types"
+import { EvmNativeTokenConfig, MODULE_TYPE, PLATFORM } from "./config"
 
 export const fetchTokens: IBalanceModule<
   typeof MODULE_TYPE,

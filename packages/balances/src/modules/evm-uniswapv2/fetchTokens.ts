@@ -3,13 +3,12 @@ import {
   evmUniswapV2TokenId,
   EvmUniswapV2TokenSchema,
 } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
 import { assign } from "lodash"
 import { BaseError } from "viem"
 
+import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE, PLATFORM } from "./config"
-import { EvmUniswapV2TokenConfig } from "./types"
+import { EvmUniswapV2TokenConfig, MODULE_TYPE, PLATFORM } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 
 const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({

@@ -1,6 +1,6 @@
-import { log } from "extension-shared"
 import { keyBy, uniq } from "lodash"
 
+import log from "../../log"
 import { IBalance } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"

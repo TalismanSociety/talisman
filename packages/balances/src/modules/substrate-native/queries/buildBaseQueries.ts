@@ -5,10 +5,10 @@ import { Binary, Enum } from "polkadot-api"
 
 import { AmountWithLabel, IBalance } from "../../../types"
 import { BalanceDef } from "../../shared"
-import { getLockedType } from "../../SubstrateNativeModule/util/balanceLockTypes"
 import { buildNetworkStorageCoders } from "../../util"
 import { RpcQueryPack } from "../../util/RpcStateQueriesHelper"
 import { MiniMetadataExtra } from "../config"
+import { getLockedType } from "../util/lockTypes"
 
 export type NomPoolMemberInfo = {
   points: string
