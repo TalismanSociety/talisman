@@ -8,11 +8,13 @@ import { log } from "extension-shared"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { Message } from "@ui/domains/Sign/Message"
 import { useNetworkById } from "@ui/state"
 
 import { SignAlertMessage } from "../SignAlertMessage"
+import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
 import { RiskAnalysisPillButton } from "./riskAnalysis"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
@@ -102,6 +104,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   const { t } = useTranslation()
   const { siwe, isTypedData, text, verifyingAddress, ethChainId, isInvalidVerifyingContract } =
     useEthSignMessage(request)
+  const ocViewDetails = useOpenClose()
 
   const evmNetwork = useNetworkById(ethChainId, "ethereum")
 
@@ -129,6 +132,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
       </div>
       <div className="mb-8">
         <RiskAnalysisPillButton />
+        <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>
       <Message
         className={classNames("w-full grow", isTypedData && "whitespace-pre text-xs")}
@@ -140,6 +144,45 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           {t("Verifying contract's address is invalid.")}
         </SignAlertMessage>
       )}
+      <Drawer
+        anchor="bottom"
+        containerId="main"
+        isOpen={ocViewDetails.isOpen}
+        onDismiss={ocViewDetails.close}
+      >
+        <ViewDetailsContent message={request.request} onClose={ocViewDetails.close} />
+      </Drawer>
+    </div>
+  )
+}
+
+const ViewDetailsContent: FC<{
+  message: string
+  onClose: () => void
+}> = ({ message, onClose }) => {
+  const { t } = useTranslation()
+
+  const formatted = useMemo(() => {
+    try {
+      const parsed = JSON.parse(message)
+      return JSON.stringify(parsed, null, 2)
+    } catch (err) {
+      log.error("Failed to parse typed message", err)
+      return message
+    }
+  }, [message])
+
+  return (
+    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+      <div className="flex w-full grow flex-col overflow-hidden text-sm leading-[2rem]">
+        <div className="text-body-secondary">{t("Message")}</div>
+        <pre className="text-body-secondary scrollable scrollable-700 bg-grey-800 rounded-xs w-full grow overflow-auto p-4">
+          {formatted}
+        </pre>
+      </div>
+      <Button className="shrink-0" onClick={onClose}>
+        {t("Close")}
+      </Button>
     </div>
   )
 }
