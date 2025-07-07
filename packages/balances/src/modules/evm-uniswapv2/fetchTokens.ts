@@ -8,7 +8,7 @@ import { BaseError } from "viem"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { EvmUniswapV2TokenConfig, MODULE_TYPE, PLATFORM } from "./config"
+import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 
 const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
@@ -23,10 +23,12 @@ const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
   symbol1: true,
 })
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  EvmUniswapV2TokenConfig
->["fetchTokens"] = async ({ networkId, tokens, connector, cache }) => {
+export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+  connector,
+  cache,
+}) => {
   const result: EvmUniswapV2Token[] = []
 
   for (const tokenConfig of tokens) {

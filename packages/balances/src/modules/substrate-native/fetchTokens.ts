@@ -1,5 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { SubNativeToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { SubNativeToken, subNativeTokenId, SubNativeTokenSchema } from "@talismn/chaindata-provider"
 import { assign } from "lodash"
 import z from "zod/v4"
 
@@ -37,7 +37,15 @@ export const fetchTokens: IBalanceModule<
     existentialDeposit: miniMetadata.extra.existentialDeposit ?? "0",
   }
 
-  return [assign(nativeToken, tokenConfig)]
+  const token = assign(nativeToken, tokenConfig)
+
+  const parsed = SubNativeTokenSchema.safeParse(token)
+  if (!parsed.success) {
+    log.warn(`Ignoring invalid token ${MODULE_TYPE}`, token, parsed.error)
+    return []
+  }
+
+  return [parsed.data]
 }
 
 const DotNetworkPropertiesSimple = z.object({

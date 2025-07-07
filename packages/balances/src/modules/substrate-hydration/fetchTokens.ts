@@ -10,13 +10,14 @@ import { Binary } from "polkadot-api"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { MODULE_TYPE } from "./config"
-import { SubHydrationTokenConfig } from "./types"
+import { MODULE_TYPE, TokenConfig } from "./config"
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  SubHydrationTokenConfig
->["fetchTokens"] = async ({ networkId, tokens, connector, miniMetadata }) => {
+export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+  connector,
+  miniMetadata,
+}) => {
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 

@@ -35,7 +35,7 @@ const NETWORK_CONFIG = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG, ["substrate-tokens"])
+testDotNetwork(NETWORK_CONFIG, ["substrate-tokens", "substrate-native"])
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

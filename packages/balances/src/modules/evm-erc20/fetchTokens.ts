@@ -3,7 +3,7 @@ import { assign } from "lodash"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { EvmErc20TokenConfig, MODULE_TYPE, PLATFORM } from "./config"
+import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData } from "./utils"
 
 const TokenCacheSchema = EvmErc20TokenSchema.pick({
@@ -12,10 +12,12 @@ const TokenCacheSchema = EvmErc20TokenSchema.pick({
   name: true,
 })
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  EvmErc20TokenConfig
->["fetchTokens"] = async ({ networkId, tokens, connector, cache }) => {
+export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+  connector,
+  cache,
+}) => {
   const result: EvmErc20Token[] = []
 
   for (const tokenConfig of tokens) {

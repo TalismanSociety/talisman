@@ -3,12 +3,12 @@ import { assign } from "lodash"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
-import { EvmNativeTokenConfig, MODULE_TYPE, PLATFORM } from "./config"
+import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  EvmNativeTokenConfig
->["fetchTokens"] = async ({ networkId, tokens }) => {
+export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+}) => {
   // assume there is one and only one token in the array
   if (tokens.length !== 1)
     throw new Error(
@@ -23,7 +23,7 @@ export const fetchTokens: IBalanceModule<
       networkId,
       isDefault: true,
     },
-    tokens[0] as EvmNativeTokenConfig,
+    tokens[0] as TokenConfig,
   ) as EvmNativeToken
 
   const parsed = EvmNativeTokenSchema.safeParse(token)

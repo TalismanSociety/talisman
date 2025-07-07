@@ -3,7 +3,7 @@
 
 import "./common/polyfills"
 
-import { NEW_BALANCE_MODULES } from "@talismn/balances"
+import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { EthNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
@@ -73,7 +73,7 @@ const run = async () => {
         getEvmNetworkPublicClient(NETWORK_CONFIG as unknown as EthNetwork),
     } as unknown as ChainConnectorEvm
 
-    for (const mod of NEW_BALANCE_MODULES.filter((mod) => mod.platform === "ethereum")) {
+    for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "ethereum")) {
       const source = mod.type
       log.log()
       log.log("///////////////////////////////////////////////////////////////////////////////////")

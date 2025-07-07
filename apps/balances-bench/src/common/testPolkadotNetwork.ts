@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname } from "path"
 
 import { WsProvider } from "@polkadot/rpc-provider"
-import { NEW_BALANCE_MODULES } from "@talismn/balances"
+import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnector } from "@talismn/chain-connector"
 import { DotNetwork, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
@@ -69,7 +69,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
     const metadata = unifyMetadata(anyMetadata)
     log.log("Metadata version", metadata.version)
 
-    for (const mod of NEW_BALANCE_MODULES.filter(
+    for (const mod of BALANCE_MODULES.filter(
       (mod) => mod.platform === "polkadot", // then we can use a ChainConnector
     ).filter((mod) => !modules || modules.includes(mod.type as TokenType))) {
       const source = mod.type
