@@ -3,6 +3,8 @@
 
 import "./common/polyfills"
 
+import { existsSync, readFileSync, writeFileSync } from "fs"
+
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { EthNetwork } from "@talismn/chaindata-provider"
@@ -67,6 +69,15 @@ const run = async () => {
   const stopAll = log.timer("Balances testbench")
   const networkId = NETWORK_CONFIG.id
 
+  const cache = {
+    "evm-erc20": existsSync(`./cache/evm-erc20.json`)
+      ? JSON.parse(readFileSync(`./cache/evm-erc20.json`, "utf-8"))
+      : {},
+    "evm-uniswapv2": existsSync(`./cache/evm-uniswapv2.json`)
+      ? JSON.parse(readFileSync(`./cache/evm-uniswapv2.json`, "utf-8"))
+      : {},
+  }
+
   try {
     const connector = {
       getPublicClientForEvmNetwork: () =>
@@ -117,6 +128,9 @@ const run = async () => {
       log.log("Transfer call data", transfer)
     }
     stopAll()
+
+    writeFileSync(`./cache/evm-erc20.json`, JSON.stringify(cache["evm-erc20"]))
+    writeFileSync(`./cache/evm-uniswapv2.json`, JSON.stringify(cache["evm-uniswapv2"]))
   } catch (err) {
     log.error(err)
   }

@@ -7,6 +7,7 @@ import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData } from "./utils"
 
 const TokenCacheSchema = EvmErc20TokenSchema.pick({
+  id: true,
   symbol: true,
   decimals: true,
   name: true,

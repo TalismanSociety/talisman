@@ -12,6 +12,7 @@ import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 
 const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
+  id: true,
   symbol: true,
   decimals: true,
   name: true,
