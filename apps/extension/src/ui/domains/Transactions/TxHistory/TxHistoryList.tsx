@@ -119,7 +119,7 @@ const TransactionRows: FC<{
     count: transactions.length,
     estimateSize: () => (IS_POPUP ? 52 : 58),
     overscan: 5,
-    getScrollElement: () => refContainer.current ?? document.getElementById("main"), // fallback to main, the container for dashboard
+    getScrollElement: () => refContainer?.current ?? document.getElementById("main"), // fallback to main, the container for dashboard
     gap: 8,
   })
 
