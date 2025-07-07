@@ -1,5 +1,6 @@
 import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
 import { assign } from "lodash"
+import { BaseError } from "viem"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
@@ -43,7 +44,10 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           name,
         }
       } catch (err) {
-        log.warn(`Failed to fetch ERC20 token data for ${tokenConfig.contractAddress}`, err)
+        log.warn(
+          `Failed to fetch ERC20 token data for ${tokenConfig.contractAddress}`,
+          (err as BaseError).shortMessage,
+        )
         continue
       }
     }
