@@ -1,17 +1,22 @@
 import {
   AnyMiniMetadata,
   ChaindataProvider,
+  DotNetworkId,
   isNetworkDot,
+  MINIMETADATA_VERSION,
+  NetworkId,
   parseTokenId,
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash"
+import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash"
 import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
+  filter,
+  firstValueFrom,
   from,
   map,
   Observable,
@@ -23,6 +28,7 @@ import {
 
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas } from "./getMiniMetadata/getMiniMetadatas"
+import { getSpecVersion } from "./getMiniMetadata/getSpecVersion"
 import log from "./log"
 import { TokensWithAddresses } from "./modules/IBalanceModule"
 import { Address, getBalanceId, IBalance } from "./types"
@@ -78,13 +84,25 @@ export class BalancesProvider {
     )
   }
 
-  getBalances$(addressesByToken: Record<TokenId, Address[]>): Observable<BalancesResult> {
-    const networkIds = uniq(
-      keys(addressesByToken).map((tokenId) => parseTokenId(tokenId).networkId),
+  // this is the only public method
+  public getBalances$(addressesByTokenId: Record<TokenId, Address[]>): Observable<BalancesResult> {
+    // split by network
+    const addressesByTokenIdByNetworkId: Record<NetworkId, Record<TokenId, Address[]>> = toPairs(
+      addressesByTokenId,
+    ).reduce(
+      (acc, [tokenId, addresses]) => {
+        const networkId = parseTokenId(tokenId).networkId
+        if (!acc[networkId]) acc[networkId] = {}
+        acc[networkId][tokenId] = addresses
+        return acc
+      },
+      {} as Record<NetworkId, Record<TokenId, Address[]>>,
     )
 
     return combineLatest(
-      networkIds.map((networkId) => this.getNetworkBalances$(networkId, addressesByToken)),
+      toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
+        this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+      ),
     ).pipe(
       map((results) => {
         return {
@@ -94,9 +112,19 @@ export class BalancesProvider {
       }),
       startWith({
         status: "initialising",
-        balances: this.getStoredBalances(addressesByToken),
+        balances: this.getStoredBalances(addressesByTokenId),
       } as BalancesResult),
       distinctUntilChanged<BalancesResult>(isEqual),
+    )
+  }
+
+  public fetchBalances(addressesByTokenId: Record<TokenId, Address[]>): Promise<IBalance[]> {
+    // TODO: better
+    return firstValueFrom(
+      this.getBalances$(addressesByTokenId).pipe(
+        filter(({ status }) => status === "live"),
+        map(({ balances }) => balances),
+      ),
     )
   }
 
@@ -211,22 +239,90 @@ export class BalancesProvider {
     )
   }
 
-  private getNetworkMiniMetadatas$(networkId: string): Observable<AnyMiniMetadata[]> {
+  private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<AnyMiniMetadata[]> {
     return this.#chaindataProvider
       .getNetworkById$(networkId)
       .pipe(
         switchMap((network) =>
           isNetworkDot(network) && this.#chainConnectors.substrate
-            ? from(
-                getMiniMetadatas(
-                  this.#chainConnectors.substrate,
-                  this.#chaindataProvider,
-                  networkId,
-                ),
+            ? from(getSpecVersion(this.#chainConnectors.substrate, networkId)).pipe(
+                switchMap((specVersion) => this.getMiniMetadatas$(networkId, specVersion)),
               )
             : of([]),
         ),
       )
+  }
+
+  private getMiniMetadatas$(
+    networkId: DotNetworkId,
+    specVersion: number,
+  ): Observable<AnyMiniMetadata[]> {
+    return combineLatest({
+      defaultMiniMetadatas: this.getDefaultMiniMetadatas$(networkId, specVersion),
+      storedMiniMetadatas: this.getStoredMiniMetadatas$(networkId, specVersion),
+    }).pipe(
+      switchMap(({ storedMiniMetadatas, defaultMiniMetadatas }) => {
+        if (defaultMiniMetadatas.length) return of(defaultMiniMetadatas)
+        if (storedMiniMetadatas.length) return of(storedMiniMetadatas)
+        if (!this.#chainConnectors.substrate) return of([])
+
+        return from(
+          // fetch them from the chain
+          getMiniMetadatas(this.#chainConnectors.substrate!, this.#chaindataProvider, networkId),
+        ).pipe(
+          // and persist in storage for later reuse
+          tap((newMiniMetadatas) => {
+            if (!newMiniMetadatas.length) return
+            const storage = this.#storage.getValue()
+            const miniMetadatas = assign(
+              // keep minimetadatas of other networks
+              keyBy(
+                values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
+                (m) => m.id,
+              ),
+              // add the ones for our network
+              keyBy(newMiniMetadatas, (m) => m.id),
+            )
+
+            this.#storage.next(assign({}, storage, { miniMetadatas }))
+          }),
+        )
+      }),
+    )
+  }
+
+  private getStoredMiniMetadatas$(
+    networkId: string,
+    specVersion: number,
+  ): Observable<AnyMiniMetadata[]> {
+    return this.storage$.pipe(
+      map((storage) =>
+        storage.miniMetadatas.filter(
+          (m) =>
+            m.chainId === networkId &&
+            m.specVersion === specVersion &&
+            m.version === MINIMETADATA_VERSION,
+        ),
+      ),
+      distinctUntilChanged<AnyMiniMetadata[]>(isEqual),
+    )
+  }
+
+  private getDefaultMiniMetadatas$(
+    networkId: string,
+    specVersion: number,
+  ): Observable<AnyMiniMetadata[]> {
+    return this.#chaindataProvider.miniMetadatas$.pipe(
+      map((miniMetadatas) =>
+        miniMetadatas.filter(
+          (m) =>
+            m.chainId === networkId &&
+            m.specVersion === specVersion &&
+            m.version === MINIMETADATA_VERSION,
+        ),
+      ),
+      distinctUntilChanged<AnyMiniMetadata[]>(isEqual),
+    )
   }
 
   private getStoredBalances(addressesByToken: Record<TokenId, Address[]>) {
@@ -239,10 +335,3 @@ export class BalancesProvider {
       .filter(isNotNil)
   }
 }
-
-// const getStoredBalances = (
-//   storedBalances: Record<string, IBalance>,
-//   addressesByToken: Record<TokenId, Address[]>,
-// ): IBalance[] => {
-
-// }

@@ -1,12 +1,12 @@
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { Binary, Enum } from "polkadot-api"
 
 import { AmountWithLabel, IBalance } from "../../../types"
+import { MiniMetadata } from "../../IBalanceModule"
 import { BalanceDef } from "../../shared"
 import { buildNetworkStorageCoders } from "../../util"
-import { RpcQueryPack } from "../../util/rpcQueryPack"
+import { MaybeStateKey, RpcQueryPack } from "../../util/rpcQueryPack"
 import { MiniMetadataExtra } from "../config"
 import { getLockedType } from "../util/lockTypes"
 
@@ -21,7 +21,7 @@ export type BaseBalance = { balance: IBalance; nomPoolMemberInfo: NomPoolMemberI
 export const buildBaseQueries = (
   networkId: string,
   balanceDefs: BalanceDef<"substrate-native">[],
-  miniMetadata: Omit<AnyMiniMetadata, "extra"> & { extra: MiniMetadataExtra },
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
 ): Array<RpcQueryPack<BaseBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     account: ["System", "Account"],
@@ -73,7 +73,7 @@ export const buildBaseQueries = (
 
       return {
         stateKeys,
-        decodeResult: (changes: (`0x${string}` | null)[]) => {
+        decodeResult: (changes: MaybeStateKey[]) => {
           const balance: IBalance = {
             source: "substrate-native",
             status: "live",

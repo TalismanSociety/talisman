@@ -1,8 +1,8 @@
-import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
 import { IBalance } from "../../../types"
+import { MiniMetadata } from "../../IBalanceModule"
 import { buildNetworkStorageCoders } from "../../util"
 import { RpcQueryPack } from "../../util/rpcQueryPack"
 import { MiniMetadataExtra } from "../config"
@@ -12,7 +12,7 @@ import { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
 export const buildNomPoolQueries = (
   networkId: string,
   partialBalances: BaseBalance[],
-  miniMetadata: Omit<AnyMiniMetadata, "extra"> & { extra: MiniMetadataExtra },
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
 ): Array<RpcQueryPack<IBalance>> => {
   const networkStorageCoders = getNomPoolCoders(networkId, miniMetadata)
 
@@ -88,10 +88,7 @@ export const buildNomPoolQueries = (
   })
 }
 
-const getNomPoolCoders = (
-  networkId: string,
-  miniMetadata: Omit<AnyMiniMetadata, "extra"> & { extra: MiniMetadataExtra },
-) => {
+const getNomPoolCoders = (networkId: string, miniMetadata: MiniMetadata<MiniMetadataExtra>) => {
   return buildNetworkStorageCoders(networkId, miniMetadata, {
     poolMembers: ["NominationPools", "PoolMembers"],
     bondedPools: ["NominationPools", "BondedPools"],

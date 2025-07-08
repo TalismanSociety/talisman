@@ -3,7 +3,7 @@ import { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
-type MaybeStateKey = `0x${string}` | null
+export type MaybeStateKey = `0x${string}` | null
 
 export type RpcQueryPack<T> = {
   stateKeys: MaybeStateKey[]

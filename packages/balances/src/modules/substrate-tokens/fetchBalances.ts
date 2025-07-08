@@ -3,8 +3,8 @@ import { isNotNil } from "@talismn/util"
 
 import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
-import { BalanceDef, getBalanceDefs, ModuleMiniMetadata } from "../shared/types"
+import { FetchBalanceResults, IBalanceModule, MiniMetadata } from "../IBalanceModule"
+import { BalanceDef, getBalanceDefs } from "../shared/types"
 import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "../util"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
@@ -84,7 +84,7 @@ export const fetchBalances: IBalanceModule<
 const buildQueries = (
   networkId: string,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
 ): Array<RpcStateQuery<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     storage: [miniMetadata.extra.palletId, "Accounts"],

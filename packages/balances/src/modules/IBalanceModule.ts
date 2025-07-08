@@ -71,7 +71,7 @@ export type FetchBalanceResults = {
 //   ? `0x${string}`
 //   : null
 
-type MiniMetadata<Extra = null> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }
+export type MiniMetadata<Extra = unknown> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }
 
 export interface IBalanceModule<
   Type extends TokenType,

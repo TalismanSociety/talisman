@@ -5,7 +5,8 @@ import { from, Observable, of, switchMap, timer } from "rxjs"
 import { withRetry } from "viem"
 
 import { AmountWithLabel } from "../../../types"
-import { BalanceDef, fetchRuntimeCallResult, ModuleMiniMetadata } from "../../shared"
+import { MiniMetadata } from "../../IBalanceModule"
+import { BalanceDef, fetchRuntimeCallResult } from "../../shared"
 import { MiniMetadataExtra } from "../config"
 import {
   calculateTaoFromDynamicInfo,
@@ -23,7 +24,7 @@ export const getSubtensorStakingBalances$ = (
   connector: ChainConnector,
   networkId: DotNetworkId,
   balanceDefs: BalanceDef<"substrate-native">[],
-  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
 ): Observable<StakingValuesByAddress> => {
   const addresses = balanceDefs.map((def) => def.address)
   const token = balanceDefs[0].token
@@ -52,7 +53,7 @@ export const getSubtensorStakingBalances$ = (
 const fetchStakingBalanceValuesByAddress = async (
   connector: ChainConnector,
   networkId: DotNetworkId,
-  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
   stakeInfoByAddress: Record<string, GetStakeInfoForColdkeyResult>,
 ) => {
   const uniqueNetuids = uniq(
@@ -137,7 +138,7 @@ const fetchStakingBalanceValuesByAddress = async (
 const fetchStakeInfoByAddress = async (
   connector: ChainConnector,
   networkId: DotNetworkId,
-  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
   addresses: string[],
 ) => {
   const pairs = await Promise.all(
@@ -171,7 +172,7 @@ const getCacheKey = (networkId: DotNetworkId, netuid: number) => `${networkId}:$
 const fetchDynamicInfoByNetuid = async (
   connector: ChainConnector,
   networkId: DotNetworkId,
-  miniMetadata: ModuleMiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>,
   uniqueNetuids: number[],
 ) => {
   const fetchInfo = async (netuid: number): Promise<GetDynamicInfoResult | null | undefined> => {
