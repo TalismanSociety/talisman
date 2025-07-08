@@ -162,6 +162,7 @@ const SendButton = () => {
             className="w-full"
             primary
             disabled={!isReady}
+            data-testid="send-funds-confirm-button"
             onClick={send}
             processing={isProcessing}
           >

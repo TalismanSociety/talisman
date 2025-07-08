@@ -228,6 +228,7 @@ const NetworkRow: FC<{
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
+        data-testid={network.id}
         checked={!!isActive}
         onChange={handleEnableChanged}
       />
