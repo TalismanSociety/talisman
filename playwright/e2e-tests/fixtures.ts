@@ -1,4 +1,4 @@
-import type { BrowserContext, Page } from "@playwright/test"
+import type { BrowserContext, Locator, Page } from "@playwright/test"
 import { randomBytes } from "@noble/hashes/utils"
 import { test as base, chromium } from "@playwright/test"
 import { xxhashAsHex } from "@polkadot/util-crypto"
@@ -13,6 +13,7 @@ export const test = base.extend<{
   onboardedPage: Page
   importAccount: (opts: { type: AccountType; name?: string; mnemonic?: string }) => Promise<Page>
   addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
+  walletPopup: (opts: { locator: Locator }) => Promise<Page>
 }>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, utilize) => {
@@ -56,10 +57,18 @@ export const test = base.extend<{
     }
 
     await page.getByTestId("onboarding-get-started-button").click()
+    // Password validation
+    await page.getByPlaceholder("Enter password").fill("12345")
+    await expect(page.getByText("Password must be at least 6 characters long")).toBeVisible()
     await page.getByPlaceholder("Enter password").fill(constants.DEFAULT_PASSWORD)
+    await page.getByPlaceholder("Confirm password").fill("wrong-confirmation-password")
+    await expect(page.getByText("Passwords must match")).toBeVisible()
+    await expect(page.getByTestId("onboarding-password-confirm-button")).toBeDisabled()
     await page.getByPlaceholder("Confirm password").fill(constants.DEFAULT_PASSWORD)
     await page.getByTestId("onboarding-password-confirm-button").click()
+    // accepting privacy terms
     await page.getByTestId("onboarding-privacy-accept-button").click()
+    // Enter Talisman
     await page.getByTestId("onboarding-enter-talisman-button").click()
     await utilize(page)
   },
@@ -80,7 +89,9 @@ export const test = base.extend<{
         name || (type === "ethereum" ? constants.ETH_ACC_NAME : constants.DOT_ACC_NAME)
       const seed =
         mnemonic ||
-        (type === "ethereum" ? constants.ETH_TEST_MNEMONIC : constants.DOT_TEST_MNEMONIC)
+        (type === "ethereum"
+          ? process.env.E2E_TESTS_MNEMONIC || constants.ETH_TEST_MNEMONIC
+          : process.env.E2E_TESTS_MNEMONIC || constants.DOT_TEST_MNEMONIC)
 
       await page.goto(`chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`)
       await page.getByTestId(`account-platform-selector-${type}`).click()
@@ -134,8 +145,18 @@ export const test = base.extend<{
       await page.waitForTimeout(1000)
       return page
     }
-
     await utilize(addNewAccount)
+  },
+  walletPopup: async ({ context }, utilize) => {
+    const walletPopup = async ({ locator }: { locator: Locator }): Promise<Page> => {
+      const [popup] = await Promise.all([context.waitForEvent("page"), locator.click()])
+      // opens wallet popup
+      await popup.waitForTimeout(5000)
+      await popup.bringToFront()
+      await popup.setViewportSize({ width: 400, height: 600 })
+      return popup
+    }
+    await utilize(walletPopup)
   },
 })
 export const expect = test.expect
