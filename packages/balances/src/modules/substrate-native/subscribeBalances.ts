@@ -1,5 +1,5 @@
 import { toPairs } from "lodash"
-import { combineLatest, map, switchMap } from "rxjs"
+import { combineLatest, map, of, switchMap } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared"
@@ -15,6 +15,8 @@ export const subscribeBalances: IBalanceModule<
   ModuleConfig,
   MiniMetadataExtra
 >["subscribeBalances"] = ({ networkId, tokensWithAddresses, connector, miniMetadata }) => {
+  if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
+
   // could be use as shared observable key if we decide to cache the sub
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 

@@ -1,5 +1,5 @@
 import { isEqual } from "lodash"
-import { distinctUntilChanged, Observable } from "rxjs"
+import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
@@ -14,6 +14,8 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
   connector,
   miniMetadata,
 }) => {
+  if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
+
   return new Observable((subscriber) => {
     const abortController = new AbortController()
 

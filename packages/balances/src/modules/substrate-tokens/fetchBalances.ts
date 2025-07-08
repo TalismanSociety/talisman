@@ -1,11 +1,8 @@
-import { decodeScale, papiParse } from "@talismn/scale"
-import { isNotNil } from "@talismn/util"
-
 import log from "../../log"
-import { AmountWithLabel, IBalance } from "../../types"
-import { FetchBalanceResults, IBalanceModule, MiniMetadata } from "../IBalanceModule"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
-import { buildNetworkStorageCoders, RpcStateQuery, RpcStateQueryHelper } from "../util"
+import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
+import { getBalanceDefs } from "../shared/types"
+import { fetchRpcQueryPack } from "../util/rpcQueryPack"
+import { buildQueries } from "./buildQueries"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
 export const fetchBalances: IBalanceModule<
@@ -56,7 +53,7 @@ export const fetchBalances: IBalanceModule<
 
   const queries = buildQueries(networkId, balanceDefs, miniMetadata)
 
-  const balances = await new RpcStateQueryHelper(connector, queries).fetch()
+  const balances = await fetchRpcQueryPack(connector, networkId, queries)
 
   return balanceDefs.reduce(
     (acc, def) => {
@@ -81,77 +78,4 @@ export const fetchBalances: IBalanceModule<
     },
     { success: [], errors: [] } as FetchBalanceResults,
   )
-}
-
-const buildQueries = (
-  networkId: string,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  miniMetadata: MiniMetadata<MiniMetadataExtra>,
-): Array<RpcStateQuery<IBalance>> => {
-  const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
-    storage: [miniMetadata.extra.palletId, "Accounts"],
-  })
-
-  return balanceDefs
-    .map(({ token, address }): RpcStateQuery<IBalance> | null => {
-      const scaleCoder = networkStorageCoders?.storage
-
-      const getStateKey = (onChainId: string | number) => {
-        try {
-          return scaleCoder!.keys.enc(address, papiParse(onChainId))
-        } catch {
-          return null
-        }
-      }
-
-      const stateKey = getStateKey(token.onChainId)
-
-      if (!stateKey) {
-        log.warn(
-          `Invalid assetId / address in ${networkId} storage query ${token.onChainId} / ${address}`,
-        )
-        return null
-      }
-
-      const decodeResult = (change: string | null) => {
-        /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-        type DecodedType = {
-          free?: bigint
-          reserved?: bigint
-          frozen?: bigint
-        }
-
-        const decoded = decodeScale<DecodedType>(
-          scaleCoder,
-          change,
-          `Failed to decode substrate-tokens balance on chain ${networkId}`,
-        ) ?? { free: 0n, reserved: 0n, frozen: 0n }
-
-        const free = (decoded?.free ?? 0n).toString()
-        const reserved = (decoded?.reserved ?? 0n).toString()
-        const frozen = (decoded?.frozen ?? 0n).toString()
-
-        const balanceValues: Array<AmountWithLabel<string>> = [
-          { type: "free", label: "free", amount: free.toString() },
-          { type: "reserved", label: "reserved", amount: reserved.toString() },
-          { type: "locked", label: "frozen", amount: frozen.toString() },
-        ]
-
-        return {
-          source: "substrate-tokens",
-          status: "live",
-          address,
-          networkId,
-          tokenId: token.id,
-          values: balanceValues,
-        } as IBalance
-      }
-
-      return {
-        chainId: networkId,
-        stateKey,
-        decodeResult,
-      }
-    })
-    .filter(isNotNil)
 }
