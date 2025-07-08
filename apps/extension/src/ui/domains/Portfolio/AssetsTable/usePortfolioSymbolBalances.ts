@@ -163,6 +163,11 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
         return { symbolBalances, availableSymbolBalances, lockedSymbolBalances }
       }),
     ),
+  {
+    symbolBalances: [],
+    availableSymbolBalances: [],
+    lockedSymbolBalances: [],
+  },
 )
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {

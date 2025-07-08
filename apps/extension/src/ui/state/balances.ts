@@ -4,6 +4,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceSubscriptionResponse } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import {
+  BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
   map,
@@ -30,17 +31,28 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
   }).pipe(debugObservable("balancesHydrate$")),
 )
 
+const rawBalancesCache$ = new BehaviorSubject<BalanceSubscriptionResponse>({
+  status: "initialising",
+  balances: [],
+})
+
 // Reading this atom triggers the balances backend subscription
 // Unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
 const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) => {
   const unsubscribe = api.balances((balances) => {
-    subscriber.next(balances)
+    rawBalancesCache$.next(balances)
   })
-  return () => unsubscribe()
+
+  const subscription = rawBalancesCache$.subscribe(subscriber)
+
+  return () => {
+    unsubscribe()
+    subscription.unsubscribe()
+  }
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
   debugObservable("rawBalances$", true),
-  shareReplay(1),
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
@@ -48,6 +60,7 @@ export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
     map((balances) => balances.status === "initialising"),
     distinctUntilChanged(),
   ),
+  true,
 )
 
 const allBalances$ = combineLatest([
@@ -69,7 +82,7 @@ const allBalances$ = combineLatest([
     })
     return new Balances(validBalances, hydrate)
   }),
-  shareReplay(1),
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
 
 type BalanceQueryParams = {
@@ -98,12 +111,15 @@ const getBalancesByCategory$ = (category: AccountCategory = "all") =>
 export const [useBalance, getBalance$] = bind(
   (address: Address | null | undefined, tokenId: TokenId | null | undefined) =>
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
+  null,
 )
 
-export const [useBalances, getBalances$] = bind((category: AccountCategory = "all") =>
-  getBalancesByCategory$(category),
+export const [useBalances, getBalances$] = bind(
+  (category: AccountCategory = "all") => getBalancesByCategory$(category),
+  new Balances([]),
 )
 
-export const [useBalancesByAddress] = bind((address: Address | null | undefined) =>
-  getBalancesByQuery$({ address }),
+export const [useBalancesByAddress] = bind(
+  (address: Address | null | undefined) => getBalancesByQuery$({ address }),
+  new Balances([]),
 )

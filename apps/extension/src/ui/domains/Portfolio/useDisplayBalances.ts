@@ -84,6 +84,7 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
         }
       }),
     ),
+  new Balances([]),
 )
 
 /**

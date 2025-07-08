@@ -1,12 +1,13 @@
-import { isEqual } from "lodash"
-import { distinctUntilChanged, Observable } from "rxjs"
+import { toPairs } from "lodash"
+import { combineLatest, map, switchMap } from "rxjs"
 
-import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
+import { getBalanceDefs } from "../shared"
+import { getRpcQueryPack$ } from "../util/rpcQueryPack"
+import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
-import { fetchBalances } from "./fetchBalances"
-
-const SUBSCRIPTION_INTERVAL = 6_000
+import { buildBaseQueries } from "./queries/buildBaseQueries"
+import { buildNomPoolQueries } from "./queries/buildNomPoolQueries"
 
 export const subscribeBalances: IBalanceModule<
   typeof MODULE_TYPE,
@@ -14,43 +15,34 @@ export const subscribeBalances: IBalanceModule<
   ModuleConfig,
   MiniMetadataExtra
 >["subscribeBalances"] = ({ networkId, tokensWithAddresses, connector, miniMetadata }) => {
-  return new Observable((subscriber) => {
-    const abortController = new AbortController()
+  // could be use as shared observable key if we decide to cache the sub
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-    // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
-    // => poll values for each block
-    const poll = async () => {
-      try {
-        if (abortController.signal.aborted) return
+  const baseQueries = buildBaseQueries(networkId, balanceDefs, miniMetadata)
+  const baseBalances$ = getRpcQueryPack$(connector, networkId, baseQueries).pipe(
+    switchMap((partialBalances) => {
+      // now for each balance that includes nomPoolStaking, we need to fetch the metadata for the pool
+      const nomPoolQueries = buildNomPoolQueries(networkId, partialBalances, miniMetadata)
+      return getRpcQueryPack$(connector, networkId, nomPoolQueries)
+    }),
+  )
 
-        const balances = await fetchBalances({
-          networkId,
-          tokensWithAddresses: tokensWithAddresses,
-          connector,
-          miniMetadata,
-        })
+  const subtensorBalancesByAddress$ = getSubtensorStakingBalances$(
+    connector,
+    networkId,
+    balanceDefs,
+    miniMetadata,
+  )
 
-        if (abortController.signal.aborted) return
-
-        subscriber.next(balances)
-
-        setTimeout(poll, SUBSCRIPTION_INTERVAL)
-      } catch (error) {
-        log.error("Error", {
-          module: MODULE_TYPE,
-          networkId,
-          miniMetadata,
-          addressesByToken: tokensWithAddresses,
-          error,
-        })
-        subscriber.error(error)
+  return combineLatest([baseBalances$, subtensorBalancesByAddress$]).pipe(
+    map(([baseBalances, subtensorBalancesByAddress]) => {
+      // add subtensor balances to base balances
+      for (const [address, subtensorBalances] of toPairs(subtensorBalancesByAddress)) {
+        const balance = baseBalances.find((b) => b.address === address)
+        if (balance?.values) balance.values.push(...subtensorBalances)
       }
-    }
 
-    poll()
-
-    return () => {
-      abortController.abort()
-    }
-  }).pipe(distinctUntilChanged(isEqual))
+      return { success: baseBalances, errors: [] }
+    }),
+  )
 }

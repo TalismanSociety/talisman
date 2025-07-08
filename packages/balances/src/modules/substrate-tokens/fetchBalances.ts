@@ -17,7 +17,7 @@ export const fetchBalances: IBalanceModule<
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {
-    log.warn("MiniMetadata is required for fetching balances")
+    log.warn(`MiniMetadata is required for fetching ${MODULE_TYPE} balances on ${networkId}.`)
     return {
       success: [],
       errors: balanceDefs.map((def) => ({

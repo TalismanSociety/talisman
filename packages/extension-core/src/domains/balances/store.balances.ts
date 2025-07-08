@@ -47,7 +47,6 @@ export const updateBalancesStore = (data: BalancesStorage) => {
   log.debug("[balances] updating store with data", data)
   subjectBalancesStore.next({
     id: BLOB_ID,
-
     balances: data.balances
       .map(cleanupBalanceForStorage)
       // enforce consistent ordering of balances and miniMetadatas to allow for easier change comparison

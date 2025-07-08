@@ -180,7 +180,7 @@ const portfolioForSelectedNetwork$ = combineLatest([
       }
     },
   ),
-  shareReplay(1),
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
 
 export const [usePortfolio, portfolio$] = bind(
@@ -203,4 +203,19 @@ export const [usePortfolio, portfolio$] = bind(
       }
     }),
   ),
+  {
+    allBalances: new Balances([]),
+    searchBalances: new Balances([]),
+    tokens: [],
+    hydrate: {},
+    networkFilter: undefined,
+    networkBalances: new Balances([]),
+    networks: [],
+    networkOptions: [],
+    isInitialising: false,
+    isProvisioned: false,
+    search: "",
+    setNetworkFilter,
+    setSearch,
+  },
 )

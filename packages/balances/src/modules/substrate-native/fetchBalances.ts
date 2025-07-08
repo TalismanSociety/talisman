@@ -3,7 +3,7 @@ import { firstValueFrom } from "rxjs"
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared/types"
-import { fetchQueriesPack } from "../util/RpcStateQueriesHelper"
+import { fetchRpcQueryPack } from "../util/rpcQueryPack"
 import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
@@ -18,7 +18,7 @@ export const fetchBalances: IBalanceModule<
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {
-    log.warn("MiniMetadata is required for fetching balances")
+    log.warn(`MiniMetadata is required for fetching ${MODULE_TYPE} balances on ${networkId}.`)
     return {
       success: [],
       errors: balanceDefs.map((def) => ({
@@ -53,12 +53,12 @@ export const fetchBalances: IBalanceModule<
     }
   }
 
-  const queries = buildBaseQueries(networkId, balanceDefs, miniMetadata)
-  const partialBalances = await fetchQueriesPack(connector, networkId, queries)
+  const baseQueries = buildBaseQueries(networkId, balanceDefs, miniMetadata)
+  const partialBalances = await fetchRpcQueryPack(connector, networkId, baseQueries)
 
   // now for each balance that includes nomPoolStaking, we need to fetch the metadata for the pool
   const nomPoolQueries = buildNomPoolQueries(networkId, partialBalances, miniMetadata)
-  const balances = await fetchQueriesPack(connector, networkId, nomPoolQueries)
+  const balances = await fetchRpcQueryPack(connector, networkId, nomPoolQueries)
 
   // TODO ⚠️ dedupe locks
 

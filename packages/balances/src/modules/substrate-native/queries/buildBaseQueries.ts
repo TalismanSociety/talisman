@@ -6,7 +6,7 @@ import { Binary, Enum } from "polkadot-api"
 import { AmountWithLabel, IBalance } from "../../../types"
 import { BalanceDef } from "../../shared"
 import { buildNetworkStorageCoders } from "../../util"
-import { RpcQueryPack } from "../../util/RpcStateQueriesHelper"
+import { RpcQueryPack } from "../../util/rpcQueryPack"
 import { MiniMetadataExtra } from "../config"
 import { getLockedType } from "../util/lockTypes"
 

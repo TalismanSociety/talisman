@@ -4,7 +4,7 @@ import { Binary } from "polkadot-api"
 
 import { IBalance } from "../../../types"
 import { buildNetworkStorageCoders } from "../../util"
-import { RpcQueryPack } from "../../util/RpcStateQueriesHelper"
+import { RpcQueryPack } from "../../util/rpcQueryPack"
 import { MiniMetadataExtra } from "../config"
 import { nompoolStashAccountId } from "../util/nompoolAccountId"
 import { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
