@@ -92,7 +92,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             networkId,
             tokenId: token.id,
             source: MODULE_TYPE,
-            status: "cache",
+            status: "live",
             values: [
               {
                 type: "free",

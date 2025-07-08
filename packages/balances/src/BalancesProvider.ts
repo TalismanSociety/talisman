@@ -24,6 +24,7 @@ import {
   startWith,
   switchMap,
   tap,
+  timer,
 } from "rxjs"
 
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
@@ -99,17 +100,26 @@ export class BalancesProvider {
       {} as Record<NetworkId, Record<TokenId, Address[]>>,
     )
 
-    return combineLatest(
-      toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
-        this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+    return combineLatest({
+      isStale: timer(30_000).pipe(
+        map(() => true),
+        startWith(false),
       ),
-    ).pipe(
-      map((results) => {
-        return {
-          status: results.some(({ status }) => status === "initialising") ? "initialising" : "live",
+      results: combineLatest(
+        toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
+          this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+        ),
+      ),
+    }).pipe(
+      map(
+        ({ isStale, results }): BalancesResult => ({
+          status:
+            !isStale && results.some(({ status }) => status === "initialising")
+              ? "initialising"
+              : "live",
           balances: results.flatMap((result) => result.balances),
-        } as BalancesResult
-      }),
+        }),
+      ),
       startWith({
         status: "initialising",
         balances: this.getStoredBalances(addressesByTokenId),

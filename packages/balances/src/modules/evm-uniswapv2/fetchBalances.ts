@@ -2,7 +2,6 @@ import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { ChainContract, erc20Abi, PublicClient } from "viem"
 
-import log from "../../log"
 import { IBalance } from "../../types"
 import { erc20BalancesAggregatorAbi } from "../abis"
 import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
@@ -49,8 +48,6 @@ const fetchWithoutAggregator = async (
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
-  log.debug("fetching %s balances without aggregator", MODULE_TYPE, balanceDefs.length)
-
   const results = await Promise.allSettled(
     balanceDefs.map(async ({ token, address }) => {
       try {
@@ -67,7 +64,7 @@ const fetchWithoutAggregator = async (
           value: result.toString(),
           source: MODULE_TYPE,
           networkId: parseTokenId(token.id).networkId,
-          status: "cache",
+          status: "live",
         }
 
         return balance
@@ -105,7 +102,6 @@ const fetchWithAggregator = async (
   erc20BalancesAggregatorAddress: `0x${string}`,
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
-  log.debug("fetching %s balances with aggregator", MODULE_TYPE, balanceDefs.length)
 
   try {
     const erc20Balances = await client.readContract({
@@ -127,7 +123,7 @@ const fetchWithAggregator = async (
         value: erc20Balances[index].toString(),
         source: MODULE_TYPE,
         networkId: parseTokenId(balanceDef.token.id).networkId,
-        status: "cache",
+        status: "live",
       }),
     )
     return { success, errors: [] }

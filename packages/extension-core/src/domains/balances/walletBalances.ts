@@ -1,4 +1,6 @@
+import { BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { firstThenDebounce } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap } from "rxjs"
 import { Address } from "viem"
@@ -41,5 +43,7 @@ export const walletBalances$ = combineLatest({
   switchMap(({ balancesProvider, addressesByTokenId }) =>
     balancesProvider.getBalances$(addressesByTokenId),
   ),
+  firstThenDebounce(200),
+  distinctUntilChanged<BalancesResult>(isEqual),
   shareReplay({ refCount: true, bufferSize: 1 }),
 )

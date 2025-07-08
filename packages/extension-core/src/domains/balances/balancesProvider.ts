@@ -1,5 +1,5 @@
 import { BalancesProvider } from "@talismn/balances"
-import { first, Observable, shareReplay, skip, switchMap } from "rxjs"
+import { debounceTime, first, Observable, shareReplay, skip, switchMap } from "rxjs"
 
 import { chainConnectors } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -14,7 +14,7 @@ export const balancesProvider$ = balancesStore$.pipe(
 
         subscriber.next(provider)
 
-        return provider.storage$.pipe(skip(1)).subscribe((data) => {
+        return provider.storage$.pipe(skip(1), debounceTime(200)).subscribe((data) => {
           updateBalancesStore(data)
         })
       }),
