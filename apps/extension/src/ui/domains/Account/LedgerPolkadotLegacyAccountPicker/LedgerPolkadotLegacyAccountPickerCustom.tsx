@@ -87,7 +87,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
       address,
       curve,
       balances: balances.balances.find((b) => isAddressEqual(b.address, address)),
-      isBalanceLoading: balances.status === "initialising" || balances.status === "cached",
+      isBalanceLoading: balances.status === "initialising",
       connected: !!walletAccounts.find((wa) => isAddressEqual(wa.address, address)),
       genesisHash: chain.genesisHash,
     }

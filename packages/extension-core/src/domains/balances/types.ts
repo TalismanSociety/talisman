@@ -1,4 +1,4 @@
-import { BalanceJson } from "@talismn/balances"
+import { BalanceJson, BalancesResult } from "@talismn/balances"
 import { DotNetworkId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
@@ -14,10 +14,7 @@ export interface RequestBalance {
   address: Address
 }
 
-export type BalanceSubscriptionResponse = {
-  data: BalanceJson[]
-  status: BalanceLoadingStatus
-}
+export type BalanceSubscriptionResponse = BalancesResult
 
 export type AddressesAndEvmNetworks = {
   addresses: string[]

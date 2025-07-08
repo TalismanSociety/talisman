@@ -104,7 +104,7 @@ const mockedApiMethods = {
   balances: jest.fn().mockImplementation((cb: (balances: BalanceSubscriptionResponse) => void) => {
     cb({
       status: "initialising",
-      data: [],
+      balances: [],
     })
   }),
   networks: jest.fn().mockImplementation((cb: (chains: Network[]) => void) => {

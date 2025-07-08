@@ -14,7 +14,7 @@ import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state"
 
-const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", data: [] }
+const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", balances: [] }
 
 const DEFAULT_BY_CHAIN: AddressesByChain = {}
 const DEFAULT_EVM_NETWORKS_AND_ADDRESSES: AddressesAndEvmNetworks = {
@@ -68,7 +68,7 @@ export const useBalancesByParams = ({
   return useMemo(
     () => ({
       status: debouncedBalances.status,
-      balances: new Balances(debouncedBalances.data, hydrate),
+      balances: new Balances(debouncedBalances.balances, hydrate),
     }),
     [debouncedBalances, hydrate],
   )

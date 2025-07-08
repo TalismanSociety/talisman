@@ -98,7 +98,7 @@ abstract class BalancePool {
   #initialising = new BehaviorSubject<string[]>([])
   #isRestartPending = new BehaviorSubject(false)
 
-  #balances: Observable<{ status: "initialising" | "live"; data: BalanceJson[] }>
+  #balances: Observable<{ status: "initialising" | "live"; balances: BalanceJson[] }>
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -140,7 +140,7 @@ abstract class BalancePool {
         distinctUntilChanged<Record<string, BalanceJson>>(isEqual),
         map((balances) => Object.values(balances)),
       ),
-    ]).pipe(map(([status, data]) => ({ status, data })))
+    ]).pipe(map(([status, balances]) => ({ status, balances })))
 
     // subscribe this store to all of the inputs it depends on
     this.#cleanupSubs = [this.initializeChaindataSubscription()]

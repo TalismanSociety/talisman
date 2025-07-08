@@ -1,11 +1,7 @@
 import { getSharedObservable } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
-import {
-  createSubscription,
-  genericSubscription,
-  portDisconnected,
-} from "../../handlers/subscriptions"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
@@ -15,6 +11,7 @@ import {
   RequestBalance,
   RequestBalancesByParamsSubscribe,
 } from "./types"
+import { walletBalances$ } from "./walletBalances"
 
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -30,15 +27,8 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.get)":
         return balancePool.getBalance(request as RequestBalance)
 
-      case "pri(balances.subscribe)": {
-        // TODO turn balancePool into a promise, and leverage genericSubscription
-        const onDisconnected = portDisconnected(port)
-        const callback = createSubscription<"pri(balances.subscribe)">(id, port)
-
-        balancePool.subscribe(id, onDisconnected, callback)
-
-        return true
-      }
+      case "pri(balances.subscribe)":
+        return genericSubscription(id, port, walletBalances$)
 
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
@@ -55,6 +45,55 @@ export class BalancesHandler extends ExtensionHandler {
     }
   }
 }
+
+// const getWalletBalances$ = () => {
+//   return getSharedObservable(
+//     "getWalletBalances$",
+//     null,
+//     (): Observable<BalanceSubscriptionResponse> => {
+//       const balancesProvider = new BalancesProvider(chaindataProvider, chainConnectors)
+
+//       const addressesByTokenId$ = combineLatest({
+//         networks: chaindataProvider.networks$,
+//         tokens: chaindataProvider.tokens$,
+//         accounts: keyringStore.accounts$,
+//         activeTokens: activeTokensStore.observable,
+//         activeNetworks: activeNetworksStore.observable,
+//       }).pipe(
+//         map(({ networks, tokens, accounts, activeTokens, activeNetworks }) => {
+//           const arNetworks = networks.filter((n) => isNetworkActive(n, activeNetworks))
+//           const arTokens = tokens.filter((t) => isTokenActive(t, activeTokens))
+
+//           return fromPairs(
+//             arNetworks.flatMap((network) => {
+//               const networkTokens = arTokens.filter((t) => t.networkId === network.id)
+//               const networkAccounts = accounts.filter((a) =>
+//                 isAccountCompatibleWithNetwork(network, a),
+//               )
+//               return networkTokens.map(
+//                 (token) =>
+//                   [token.id, networkAccounts.map((a) => a.address)] as [TokenId, Address[]],
+//               )
+//             }),
+//           )
+//         }),
+//       )
+
+//       return addressesByTokenId$.pipe(
+//         switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
+//         map(
+//           (result): BalanceSubscriptionResponse => ({
+//             status: result.status,
+//             data: result.balances as BalanceJson[],
+//           }),
+//         ),
+//         tap((data) => {
+//           console.log("walletBalancesEmit", data)
+//         }),
+//       )
+//     },
+//   )
+// }
 
 const getExternalBalances$ = (
   params: RequestBalancesByParamsSubscribe,
@@ -73,7 +112,7 @@ const getExternalBalances$ = (
         !addressesAndEvmNetworks.addresses.length
       )
         return of<BalanceSubscriptionResponse>({
-          data: [],
+          balances: [],
           status: "live",
         })
 
@@ -83,7 +122,7 @@ const getExternalBalances$ = (
 
         // init synchronously
         subscriber.next({
-          data: [],
+          balances: [],
           status: "initialising",
         })
 

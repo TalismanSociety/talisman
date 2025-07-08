@@ -39,7 +39,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
   return () => unsubscribe()
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
-  debugObservable("rawBalances$"),
+  debugObservable("rawBalances$", true),
   shareReplay(1),
 )
 
@@ -54,7 +54,7 @@ const allBalances$ = combineLatest([
   getTokensMap$(BALANCES_CHAINDATA_QUERY),
   getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
   accountsMap$,
-  rawBalances$.pipe(map((balances) => balances.data)),
+  rawBalances$.pipe(map((balances) => balances.balances)),
   balancesHydrate$,
 ]).pipe(
   map(([tokens, networks, accounts, balances, hydrate]) => {

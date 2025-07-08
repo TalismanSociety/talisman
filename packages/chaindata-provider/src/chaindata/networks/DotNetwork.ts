@@ -17,6 +17,7 @@ export const DotNetworkBalancesConfigSchema = z.strictObject({
   "substrate-psp22": SubPsp22BalancesConfigSchema.optional(),
   "substrate-tokens": SubTokensBalancesConfigSchema.optional(),
   "substrate-foreignassets": SubForeignAssetsBalancesConfigSchema.optional(),
+  "substrate-hydration": z.any().optional(),
 })
 
 export type DotNetworkBalancesConfig = z.infer<typeof DotNetworkBalancesConfigSchema>

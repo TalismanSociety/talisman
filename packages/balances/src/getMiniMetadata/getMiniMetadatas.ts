@@ -1,19 +1,11 @@
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import {
-  ChaindataProvider,
-  DotNetworkBalancesConfigSchema,
-  DotNetworkId,
-} from "@talismn/chaindata-provider"
+import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
 import { isAbortError } from "@talismn/util"
 import PQueue from "p-queue"
-import z from "zod/v4"
 
-import { ChainConnectors, DefaultModuleConfig } from "../BalanceModule"
 import log from "../log"
-import { defaultBalanceModules } from "../modules"
-import { deriveMiniMetadataId, MiniMetadata } from "../types"
-import { MINIMETADATA_VERSION } from "../version"
+import { BALANCE_MODULES } from "../modules"
+import { MiniMetadata } from "../types"
 import { getMetadataRpc } from "./getMetadataRpc"
 import { getSpecVersion } from "./getSpecVersion"
 
@@ -57,10 +49,6 @@ export const getMiniMetadatas = async (
   }
 }
 
-const DotBalanceModuleTypeSchema = z.keyof(DotNetworkBalancesConfigSchema)
-
-type DotBalanceModuleType = z.infer<typeof DotBalanceModuleTypeSchema>
-
 const fetchMiniMetadatas = async (
   chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
@@ -72,42 +60,22 @@ const fetchMiniMetadatas = async (
   log.info("[miniMetadata] fetching minimetadatas for %s", chainId)
 
   try {
+    const network = await chaindataProvider.getNetworkById(chainId, "polkadot")
+    if (!network) throw new Error(`Network ${chainId} not found in chaindataProvider`)
+    signal?.throwIfAborted()
+
     const metadataRpc = await getMetadataRpc(chainConnector, chainId)
     signal?.throwIfAborted()
 
-    const chainConnectors: ChainConnectors = {
-      substrate: chainConnector,
-      evm: {} as ChainConnectorEvm, // wont be used but workarounds error for module creation
-    }
-
-    const modules = defaultBalanceModules
-      .map((mod) => mod({ chainConnectors, chaindataProvider }))
-      .filter((mod) => DotBalanceModuleTypeSchema.safeParse(mod.type).success)
-
     return Promise.all(
-      modules.map(async (mod) => {
-        const source = mod.type as DotBalanceModuleType
-
-        const chain = await chaindataProvider.getNetworkById(chainId, "polkadot")
-
-        const balancesConfig = chain?.balancesConfig?.[mod.type as DotBalanceModuleType]
-
-        const chainMeta = await mod.fetchSubstrateChainMeta(
-          chainId,
-          balancesConfig as DefaultModuleConfig, // TODO better typing
+      BALANCE_MODULES.filter((m) => m.platform === "polkadot").map((mod) =>
+        mod.getMiniMetadata({
+          networkId: chainId,
           metadataRpc,
-        )
-
-        return {
-          id: deriveMiniMetadataId({ source, chainId, specVersion }),
-          source,
-          chainId,
           specVersion,
-          version: MINIMETADATA_VERSION,
-          data: chainMeta?.miniMetadata ?? null,
-          extra: chainMeta?.extra ?? null,
-        } as MiniMetadata
-      }),
+          config: network.balancesConfig?.[mod.type],
+        }),
+      ),
     )
   } finally {
     log.debug(

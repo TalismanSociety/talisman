@@ -206,8 +206,7 @@ const useLedgerSubstrateGenericAccounts = (
           connected: !!existingAccount,
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
-          isBalanceLoading:
-            withBalances && (balances.status === "initialising" || balances.status === "cached"),
+          isBalanceLoading: withBalances && balances.status === "initialising",
         }
       }),
     [ledgerAccounts, walletAccounts, balances, selectedAccounts, withBalances],
