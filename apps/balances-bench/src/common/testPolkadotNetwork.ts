@@ -116,7 +116,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
 
       const balances = await mod.fetchBalances({
         networkId,
-        addressesByToken: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
+        tokensWithAddresses: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
         connector,
         miniMetadata: miniMetadata as any,
       })

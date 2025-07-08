@@ -11,11 +11,11 @@ import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
-  addressesByToken,
+  tokensWithAddresses,
   connector,
   miniMetadata,
 }) => {
-  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {
     log.warn("MiniMetadata is required for fetching balances")

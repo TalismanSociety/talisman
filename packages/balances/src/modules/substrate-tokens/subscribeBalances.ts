@@ -13,7 +13,7 @@ export const subscribeBalances: IBalanceModule<
   TokenConfig,
   ModuleConfig,
   MiniMetadataExtra
->["subscribeBalances"] = ({ networkId, addressesByToken, connector, miniMetadata }) => {
+>["subscribeBalances"] = ({ networkId, tokensWithAddresses, connector, miniMetadata }) => {
   return new Observable((subscriber) => {
     const abortController = new AbortController()
 
@@ -25,7 +25,7 @@ export const subscribeBalances: IBalanceModule<
 
         const balances = await fetchBalances({
           networkId,
-          addressesByToken,
+          tokensWithAddresses: tokensWithAddresses,
           connector,
           miniMetadata,
         })
@@ -40,7 +40,7 @@ export const subscribeBalances: IBalanceModule<
           module: MODULE_TYPE,
           networkId,
           miniMetadata,
-          addressesByToken,
+          addressesByToken: tokensWithAddresses,
           error,
         })
         subscriber.error(error)

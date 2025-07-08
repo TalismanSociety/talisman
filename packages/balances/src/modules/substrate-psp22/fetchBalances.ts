@@ -11,10 +11,10 @@ import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
-  addressesByToken,
+  tokensWithAddresses,
   connector,
 }) => {
-  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!balanceDefs.length) return { success: [], errors: [] }
 

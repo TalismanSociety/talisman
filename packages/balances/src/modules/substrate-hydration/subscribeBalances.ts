@@ -10,7 +10,7 @@ const SUBSCRIPTION_INTERVAL = 6_000
 
 export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBalances"] = ({
   networkId,
-  addressesByToken,
+  tokensWithAddresses,
   connector,
   miniMetadata,
 }) => {
@@ -25,7 +25,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 
         const balances = await fetchBalances({
           networkId,
-          addressesByToken,
+          tokensWithAddresses: tokensWithAddresses,
           connector,
           miniMetadata,
         })
@@ -40,7 +40,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
           module: MODULE_TYPE,
           networkId,
           miniMetadata,
-          addressesByToken,
+          addressesByToken: tokensWithAddresses,
           error,
         })
         subscriber.error(error)

@@ -112,7 +112,7 @@ const run = async () => {
       const balances = await mod.fetchBalances({
         networkId,
         connector,
-        addressesByToken: tokens.map((token) => [token, [TEST_ADDRESS_ETH, TEST_ADDRESS_ETH2]]),
+        tokensWithAddresses: tokens.map((token) => [token, [TEST_ADDRESS_ETH, TEST_ADDRESS_ETH2]]),
       })
       log.log("Balances", balances.success)
       if (balances.errors.length) {

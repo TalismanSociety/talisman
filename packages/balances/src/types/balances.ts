@@ -293,7 +293,7 @@ export class Balances {
   }
 }
 
-export const getBalanceId = (balance: BalanceJson) => {
+export const getBalanceId = (balance: IBalance) => {
   const { source, address, tokenId } = balance
   return [source, address, tokenId].join("::")
 }

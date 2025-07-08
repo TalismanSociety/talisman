@@ -122,14 +122,14 @@ export interface IBalanceModule<
     arg: PlatformOf<Type> extends "polkadot"
       ? {
           networkId: DotNetworkId
-          addressesByToken: TokensWithAddresses
+          tokensWithAddresses: TokensWithAddresses
           connector: ChainConnector
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : PlatformOf<Type> extends "ethereum"
         ? {
             networkId: EthNetworkId
-            addressesByToken: TokensWithAddresses
+            tokensWithAddresses: TokensWithAddresses
             connector: ChainConnectorEvm
           }
         : never,
@@ -139,14 +139,14 @@ export interface IBalanceModule<
     arg: PlatformOf<Type> extends "polkadot"
       ? {
           networkId: DotNetworkId
-          addressesByToken: TokensWithAddresses
+          tokensWithAddresses: TokensWithAddresses
           connector: ChainConnector
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : PlatformOf<Type> extends "ethereum"
         ? {
             networkId: EthNetworkId
-            addressesByToken: TokensWithAddresses
+            tokensWithAddresses: TokensWithAddresses
             connector: ChainConnectorEvm
           }
         : never,

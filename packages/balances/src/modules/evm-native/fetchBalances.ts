@@ -12,13 +12,13 @@ import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
-  addressesByToken,
+  tokensWithAddresses,
   connector,
 }) => {
   const client = await connector.getPublicClientForEvmNetwork(networkId)
   if (!client) throw new Error(`Could not get rpc provider for evm network ${networkId}`)
 
-  for (const [token, addresses] of addressesByToken) {
+  for (const [token, addresses] of tokensWithAddresses) {
     if (token.type !== MODULE_TYPE || token.networkId !== networkId)
       throw new Error(
         `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`,
@@ -31,7 +31,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         )
   }
 
-  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(addressesByToken)
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (client.chain?.contracts?.multicall3 && balanceDefs.length > 1) {
     const multicall3 = client.chain.contracts.multicall3

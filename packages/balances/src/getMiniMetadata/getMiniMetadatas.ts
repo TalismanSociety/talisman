@@ -15,6 +15,7 @@ import { defaultBalanceModules } from "../modules"
 import { deriveMiniMetadataId, MiniMetadata } from "../types"
 import { MINIMETADATA_VERSION } from "../version"
 import { getMetadataRpc } from "./getMetadataRpc"
+import { getSpecVersion } from "./getSpecVersion"
 
 // share requests as all modules will call this at once
 const CACHE = new Map<string, Promise<MiniMetadata[]>>()
@@ -26,7 +27,7 @@ export const getMiniMetadatas = async (
   chainConnector: ChainConnector,
   chaindataProvider: ChaindataProvider,
   networkId: DotNetworkId,
-  specVersion: number,
+  specVersion?: number,
   signal?: AbortSignal,
 ) => {
   if (CACHE.has(networkId)) return CACHE.get(networkId)!
@@ -36,6 +37,8 @@ export const getMiniMetadatas = async (
       "[miniMetadata] getMiniMetadatas called without signal, this may hang the updates",
       new Error("No signal provided"), // this will show the stack trace
     )
+
+  if (specVersion === undefined) specVersion = await getSpecVersion(chainConnector, networkId)
 
   const pResult = POOL.add(
     () => fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
