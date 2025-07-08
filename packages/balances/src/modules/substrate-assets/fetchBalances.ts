@@ -15,6 +15,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   connector,
   miniMetadata,
 }) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
+
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {

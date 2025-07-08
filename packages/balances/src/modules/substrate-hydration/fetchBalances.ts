@@ -13,10 +13,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   connector,
   miniMetadata,
 }) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
+
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {
-    log.warn(`MiniMetadata is required for fetching ${MODULE_TYPE} balances on ${networkId}.`)
+    log.warn(`MiniMetadata is required for fetching ${MODULE_TYPE} balances on ${networkId}.`, {
+      tokensWithAddresses,
+    })
     return {
       success: [],
       errors: balanceDefs.map((def) => ({

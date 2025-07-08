@@ -14,6 +14,8 @@ export const fetchBalances: IBalanceModule<
   ModuleConfig,
   MiniMetadataExtra
 >["fetchBalances"] = async ({ networkId, tokensWithAddresses, connector, miniMetadata }) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
+
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!miniMetadata?.data) {

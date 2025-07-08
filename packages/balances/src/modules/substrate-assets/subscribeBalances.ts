@@ -48,10 +48,7 @@ const buildQueries = (
           `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
         )
         return null
-      } else
-        log.log(
-          `VALID assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
-        )
+      }
 
       const decodeResult = (changes: MaybeStateKey[]) => {
         /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */

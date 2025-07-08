@@ -15,6 +15,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   tokensWithAddresses,
   connector,
 }) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
+
   const client = await connector.getPublicClientForEvmNetwork(networkId)
   if (!client) throw new Error(`Could not get rpc provider for evm network ${networkId}`)
 

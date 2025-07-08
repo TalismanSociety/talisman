@@ -14,6 +14,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   tokensWithAddresses,
   connector,
 }) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
+
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   if (!balanceDefs.length) return { success: [], errors: [] }
