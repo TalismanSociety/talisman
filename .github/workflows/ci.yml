@@ -84,6 +84,8 @@ jobs:
     needs: build
     timeout-minutes: 15
     runs-on: ubuntu-latest
+    env:
+      E2E_TESTS_MNEMONIC: ${{ secrets.E2E_TESTS_MNEMONIC }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
