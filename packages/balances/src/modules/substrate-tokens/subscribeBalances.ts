@@ -17,6 +17,7 @@ export const subscribeBalances: IBalanceModule<
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
   const queries = buildQueries(networkId, balanceDefs, miniMetadata)
+
   return getRpcQueryPack$(connector, networkId, queries).pipe(
     map((balances) => ({
       success: balances,
