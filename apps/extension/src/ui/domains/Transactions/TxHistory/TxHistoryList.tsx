@@ -17,7 +17,7 @@ import {
   WalletTransactionDot,
   WalletTransactionEth,
 } from "extension-core"
-import { isTxInfoSwap } from "extension-core/src/domains/transactions"
+import { isTxInfoSwap, isTxInfoTransfer } from "extension-core/src/domains/transactions"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
 import {
@@ -865,22 +865,32 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   onContextMenuClose,
 }) => {
   const { genesisHash } = tx.unsigned
+
+  const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
+  const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || tx.tokenId
+
   const chain = useNetworkByGenesisHash(genesisHash)
-  const token = useToken(tx.tokenId)
-  const tokenRates = useTokenRates(tx.tokenId)
+  const token = useToken(tokenId)
+  const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
 
-  const txInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const txInfo = tx.txInfo
   const { isTransfer, amount } = useMemo(() => {
-    const isTransfer = txInfo && tx.value && tx.tokenId && tx.to && token
+    // historically txInfo wasnt a property, transfer params were set on the tx object
+    const isTransfer = token && (txTransfer || (txInfo && tx.value && tx.tokenId && tx.to))
+
     return {
       isTransfer,
-      amount: isTransfer ? new BalanceFormatter(tx.value, token.decimals, tokenRates) : null,
+      amount: isTransfer
+        ? new BalanceFormatter(txTransfer?.value ?? tx.value, token.decimals, tokenRates)
+        : null,
     }
-  }, [token, tokenRates, tx.to, tx.tokenId, tx.value, txInfo])
+  }, [token, tokenRates, tx.to, tx.tokenId, tx.value, txInfo, txTransfer])
 
-  const fromToken = useToken(txInfo?.fromTokenId)
-  const toToken = useToken(txInfo?.toTokenId)
+  const fromToken = useToken(isTxInfoSwap(txInfo) ? txInfo.fromTokenId : undefined)
+  const toToken = useToken(isTxInfoSwap(txInfo) ? txInfo.toTokenId : undefined)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
