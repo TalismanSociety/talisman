@@ -1,4 +1,5 @@
 import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
+import { isTokenActive } from "extension-core"
 import { ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -9,9 +10,9 @@ import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
-import { useNetworkByGenesisHash, useNetworks } from "@ui/state"
+import { useActiveTokensState, useNetworkByGenesisHash, useNetworks, useTokens } from "@ui/state"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
@@ -49,25 +50,39 @@ export const ConfigureAccount = () => {
   const { t } = useTranslation()
   const { state, dispatch, submitConfigure } = useAccountAddQr()
 
+  const tokens = useTokens({ platform: "polkadot", activeOnly: true, includeTestnets: false })
+  const activeTokens = useActiveTokensState()
+
   const chains = useNetworks({ platform: "polkadot", activeOnly: true, includeTestnets: true })
-  const addressesByChain = useMemo(() => {
-    if (state.type !== "CONFIGURE") return
+  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+    if (state.type !== "CONFIGURE") return {}
 
     const { address, genesisHash, lockToNetwork } = state.accountConfig
     const filteredChains = lockToNetwork
       ? chains.filter((chain) => chain.genesisHash === genesisHash)
       : chains
+    const networkIds = filteredChains.map((chain) => chain.id)
 
-    return Object.fromEntries(filteredChains.map(({ id }) => [id, [address]]))
-  }, [chains, state])
-  const balances = useBalancesByParams({ addressesByChain })
+    const tokenIds = tokens
+      .filter((t) => networkIds.includes(t.networkId) && isTokenActive(t, activeTokens))
+      .map((t) => t.id)
+
+    return {
+      addressesAndTokens: {
+        addresses: [address],
+        tokenIds,
+      },
+    }
+  }, [activeTokens, chains, state, tokens])
+
+  const balances = useBalancesByParams(balanceParams)
   const chain = useNetworkByGenesisHash(
     (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined,
   )
   const totalFiat = useBalancesFiatTotal(balances.balances)
 
   const isBalanceLoading =
-    !addressesByChain ||
+    !balanceParams.addressesAndTokens ||
     balances.balances.each.some((b) => b.status !== "live") ||
     balances.status === "initialising"
 

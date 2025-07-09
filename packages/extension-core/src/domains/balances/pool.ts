@@ -692,16 +692,16 @@ export class ExternalBalancePool extends BalancePool {
   }
 
   async setSubcriptionParameters({
-    addressesByChain,
-    addressesAndEvmNetworks,
+    // addressesByChain,
+    // addressesAndEvmNetworks,
     addressesAndTokens,
   }: RequestBalancesByParamsSubscribe) {
     // must wait until initialised because some of the parameters to getSubscriptionParams
     // will be set during initialisation
     await this.hasInitialised.promise
     const subscriptionParameters = getSubscriptionParams(
-      addressesByChain,
-      addressesAndEvmNetworks,
+      {}, //addressesByChain:,
+      { addresses: [], evmNetworks: [] }, // addressesAndEvmNetworks:{},
       addressesAndTokens,
       this.networks,
       this.tokens,

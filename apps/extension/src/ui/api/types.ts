@@ -9,9 +9,7 @@ import { DbTokenRates } from "@talismn/token-rates"
 import {
   Account,
   AddEthereumChainRequestId,
-  AddressesAndEvmNetworks,
   AddressesAndTokens,
-  AddressesByChain,
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AssetDiscoveryScanScope,
@@ -162,8 +160,6 @@ export default interface MessageTypes {
   getBalance: ({ tokenId, address }: RequestBalance) => Promise<BalanceJson | undefined>
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
-    addressesByChain: AddressesByChain,
-    addressesAndEvmNetworks: AddressesAndEvmNetworks,
     addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalanceSubscriptionResponse) => void,
   ) => UnsubscribeFn

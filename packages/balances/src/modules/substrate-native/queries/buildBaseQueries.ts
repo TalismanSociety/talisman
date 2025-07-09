@@ -38,41 +38,48 @@ export const buildBaseQueries = (
 
   return balanceDefs
     .map(({ token, address }): RpcQueryPack<BaseBalance> | null => {
-      const accountStateKey = networkStorageCoders.account
-        ? (networkStorageCoders.account.keys.enc(address) as `0x${string}`)
-        : null
+      const getStateKeys = () => {
+        try {
+          const accountStateKey = networkStorageCoders.account
+            ? (networkStorageCoders.account.keys.enc(address) as `0x${string}`)
+            : null
 
-      const locksStateKey = networkStorageCoders.locks
-        ? (networkStorageCoders.locks.keys.enc(address) as `0x${string}`)
-        : null
+          const locksStateKey = networkStorageCoders.locks
+            ? (networkStorageCoders.locks.keys.enc(address) as `0x${string}`)
+            : null
 
-      const freezesStateKey = networkStorageCoders.freezes
-        ? (networkStorageCoders.freezes.keys.enc(address) as `0x${string}`)
-        : null
+          const freezesStateKey = networkStorageCoders.freezes
+            ? (networkStorageCoders.freezes.keys.enc(address) as `0x${string}`)
+            : null
 
-      const holdsStateKey = networkStorageCoders.holds
-        ? (networkStorageCoders.holds.keys.enc(address) as `0x${string}`)
-        : null
+          const holdsStateKey = networkStorageCoders.holds
+            ? (networkStorageCoders.holds.keys.enc(address) as `0x${string}`)
+            : null
 
-      const stakingLedgerStateKey = networkStorageCoders.stakingLedger
-        ? (networkStorageCoders.stakingLedger.keys.enc(address) as `0x${string}`)
-        : null
+          const stakingLedgerStateKey = networkStorageCoders.stakingLedger
+            ? (networkStorageCoders.stakingLedger.keys.enc(address) as `0x${string}`)
+            : null
 
-      const poolMemberStateKey = networkStorageCoders.poolMembers
-        ? (networkStorageCoders.poolMembers.keys.enc(address) as `0x${string}`)
-        : null
+          const poolMemberStateKey = networkStorageCoders.poolMembers
+            ? (networkStorageCoders.poolMembers.keys.enc(address) as `0x${string}`)
+            : null
 
-      const stateKeys = [
-        accountStateKey,
-        locksStateKey,
-        freezesStateKey,
-        holdsStateKey,
-        stakingLedgerStateKey,
-        poolMemberStateKey,
-      ]
+          return [
+            accountStateKey,
+            locksStateKey,
+            freezesStateKey,
+            holdsStateKey,
+            stakingLedgerStateKey,
+            poolMemberStateKey,
+          ]
+        } catch {
+          // most likely invalid address
+          return []
+        }
+      }
 
       return {
-        stateKeys,
+        stateKeys: getStateKeys(),
         decodeResult: (changes: MaybeStateKey[]) => {
           const balance: IBalance = {
             source: "substrate-native",

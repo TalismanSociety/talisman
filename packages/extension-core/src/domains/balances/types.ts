@@ -2,7 +2,7 @@ import { BalanceJson, BalancesResult } from "@talismn/balances"
 import { DotNetworkId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
-import { Address, AddressesByChain } from "../../types/base"
+import { Address } from "../../types/base"
 
 export { Balance, BalanceFormatter, Balances, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
@@ -25,8 +25,6 @@ export type AddressesAndTokens = {
   tokenIds: TokenId[]
 }
 export interface RequestBalancesByParamsSubscribe {
-  addressesByChain: AddressesByChain
-  addressesAndEvmNetworks: AddressesAndEvmNetworks
   addressesAndTokens: AddressesAndTokens
 }
 

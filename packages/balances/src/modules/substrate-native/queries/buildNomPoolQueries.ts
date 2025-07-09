@@ -164,12 +164,16 @@ const getNomPoolStateKeys = (
   )
     return []
 
-  const poolId = nomPoolMemberInfo.poolId
-  const stashAddress = nompoolStashAccountId(extra.nominationPoolsPalletId, poolId)
+  try {
+    const poolId = nomPoolMemberInfo.poolId
+    const stashAddress = nompoolStashAccountId(extra.nominationPoolsPalletId, poolId)
 
-  const poolPointsStateKey = coders.bondedPools.keys.enc(poolId) as `0x${string}`
-  const poolStakeStateKey = coders.ledger.keys.enc(stashAddress) as `0x${string}`
-  const poolMetaStateKey = coders.metadata.keys.enc(poolId) as `0x${string}`
+    const poolPointsStateKey = coders.bondedPools.keys.enc(poolId) as `0x${string}`
+    const poolStakeStateKey = coders.ledger.keys.enc(stashAddress) as `0x${string}`
+    const poolMetaStateKey = coders.metadata.keys.enc(poolId) as `0x${string}`
 
-  return [poolPointsStateKey, poolStakeStateKey, poolMetaStateKey]
+    return [poolPointsStateKey, poolStakeStateKey, poolMetaStateKey]
+  } catch {
+    return []
+  }
 }

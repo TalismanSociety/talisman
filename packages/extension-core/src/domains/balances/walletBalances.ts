@@ -1,9 +1,8 @@
-import { BalancesResult } from "@talismn/balances"
+import { Address, BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap } from "rxjs"
-import { Address } from "viem"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"

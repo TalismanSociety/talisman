@@ -129,12 +129,10 @@ export const api: MessageTypes = {
   getBalance: ({ tokenId, address }) =>
     messageService.sendMessage("pri(balances.get)", { tokenId, address }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
+  balancesByParams: (addressesAndTokens, cb) =>
     messageService.subscribe(
       "pri(balances.byparams.subscribe)",
       {
-        addressesByChain,
-        addressesAndEvmNetworks,
         addressesAndTokens,
       },
       cb,

@@ -1,11 +1,16 @@
+import { parseTokenId } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
-import { Observable, of } from "rxjs"
+import { fromPairs } from "lodash"
+import { combineLatest, map, Observable, of, switchMap } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
+import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { balancePool, ExternalBalancePool } from "./pool"
+import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
+import { balancesProvider$ } from "./balancesProvider"
+import { balancePool } from "./pool"
 import {
   BalanceSubscriptionResponse,
   RequestBalance,
@@ -46,55 +51,6 @@ export class BalancesHandler extends ExtensionHandler {
   }
 }
 
-// const getWalletBalances$ = () => {
-//   return getSharedObservable(
-//     "getWalletBalances$",
-//     null,
-//     (): Observable<BalanceSubscriptionResponse> => {
-//       const balancesProvider = new BalancesProvider(chaindataProvider, chainConnectors)
-
-//       const addressesByTokenId$ = combineLatest({
-//         networks: chaindataProvider.networks$,
-//         tokens: chaindataProvider.tokens$,
-//         accounts: keyringStore.accounts$,
-//         activeTokens: activeTokensStore.observable,
-//         activeNetworks: activeNetworksStore.observable,
-//       }).pipe(
-//         map(({ networks, tokens, accounts, activeTokens, activeNetworks }) => {
-//           const arNetworks = networks.filter((n) => isNetworkActive(n, activeNetworks))
-//           const arTokens = tokens.filter((t) => isTokenActive(t, activeTokens))
-
-//           return fromPairs(
-//             arNetworks.flatMap((network) => {
-//               const networkTokens = arTokens.filter((t) => t.networkId === network.id)
-//               const networkAccounts = accounts.filter((a) =>
-//                 isAccountCompatibleWithNetwork(network, a),
-//               )
-//               return networkTokens.map(
-//                 (token) =>
-//                   [token.id, networkAccounts.map((a) => a.address)] as [TokenId, Address[]],
-//               )
-//             }),
-//           )
-//         }),
-//       )
-
-//       return addressesByTokenId$.pipe(
-//         switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
-//         map(
-//           (result): BalanceSubscriptionResponse => ({
-//             status: result.status,
-//             data: result.balances as BalanceJson[],
-//           }),
-//         ),
-//         tap((data) => {
-//           console.log("walletBalancesEmit", data)
-//         }),
-//       )
-//     },
-//   )
-// }
-
 const getExternalBalances$ = (
   params: RequestBalancesByParamsSubscribe,
 ): Observable<BalanceSubscriptionResponse> => {
@@ -102,52 +58,39 @@ const getExternalBalances$ = (
     "getExternalBalances$",
     params,
     (): Observable<BalanceSubscriptionResponse> => {
-      const { addressesAndEvmNetworks, addressesAndTokens, addressesByChain } = params
-      const flatAddressesByChains = Object.values(addressesByChain).flat()
+      const { addressesAndTokens } = params
 
       // if no addresses, return early
-      if (
-        !flatAddressesByChains.length &&
-        !addressesAndTokens.addresses.length &&
-        !addressesAndEvmNetworks.addresses.length
-      )
+      if (!addressesAndTokens.addresses.length || !addressesAndTokens.tokenIds.length)
         return of<BalanceSubscriptionResponse>({
           balances: [],
           status: "live",
         })
 
-      let externalBalancePool: ExternalBalancePool
-      return new Observable<BalanceSubscriptionResponse>((subscriber) => {
-        externalBalancePool = new ExternalBalancePool()
+      const { tokenIds, addresses } = addressesAndTokens
 
-        // init synchronously
-        subscriber.next({
-          balances: [],
-          status: "initialising",
-        })
+      const addressesByTokenId$ = chaindataProvider.getNetworksMapById$().pipe(
+        map((networksMap) => {
+          // check which addresses are compatible with which tokens,
+          return fromPairs(
+            tokenIds
+              .map((tokenId) => {
+                const network = networksMap[parseTokenId(tokenId).networkId]
+                return [
+                  tokenId,
+                  addresses.filter(
+                    (address) => !!network && isAddressCompatibleWithNetwork(network, address),
+                  ),
+                ] as [string, string[]]
+              })
+              .filter(([, addresses]) => addresses.length),
+          )
+        }),
+      )
 
-        // TODO refactor pool so it doesnt need an id nor a disconnect function..
-        const id = crypto.randomUUID()
-        let disconnect: () => void
-        const onDisconnected = new Promise<void>((resolve) => {
-          disconnect = () => resolve()
-        })
-
-        externalBalancePool.setSubcriptionParameters({
-          addressesByChain,
-          addressesAndEvmNetworks,
-          addressesAndTokens,
-        })
-
-        externalBalancePool.subscribe(id, onDisconnected, (balances) => {
-          subscriber.next(balances)
-        })
-
-        return () => {
-          disconnect() // this triggers some 5 sec timeout in the pool, then only it will actually unsubscribe
-          externalBalancePool.destroy() // not sure if this plays well with the above, though I havent noticed any issues yet
-        }
-      })
+      return combineLatest([balancesProvider$, addressesByTokenId$]).pipe(
+        switchMap(([provider, addressesByTokenId]) => provider.getBalances$(addressesByTokenId)),
+      )
     },
   )
 }
