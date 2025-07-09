@@ -1,34 +1,24 @@
-import { HexString } from "@polkadot/util/types"
-import { Address, Balance, BalanceFormatter } from "@talismn/balances"
+import { Address, Balance, BALANCE_MODULES, BalanceFormatter } from "@talismn/balances"
+import { BalanceTransferType } from "@talismn/balances/src/modules/IBalanceModule"
 import {
-  isNetworkDot,
   isTokenDot,
   isTokenEth,
   isTokenNeedExistentialDeposit,
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { formatDecimals, isEthereumAddress, isNotNil, sleep } from "@talismn/util"
+import { formatDecimals, isEthereumAddress, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import {
-  AssetTransferMethod,
-  getEthTransferTransactionBase,
-  isAccountInTypes,
-  isAccountOfType,
-  privacyRoundCurrency,
-  serializeGasSettings,
-  serializeTransactionRequest,
-  SignerPayloadJSON,
-} from "extension-core"
+import { getEthTransferTransactionBase, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation } from "react-router-dom"
 import { TransactionRequest } from "viem"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useSubstrateDryRun } from "@ui/hooks/useSubstrateDryRun"
 import { useTip } from "@ui/hooks/useTip"
 import {
@@ -44,12 +34,11 @@ import {
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
+import { ChainConnector } from "../../../../../../packages/chain-connector/src"
 import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
 import { useFeeToken } from "./useFeeToken"
-
-type SignMethod = "normal" | "hardwareSubstrate" | "hardwareEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
   const { t } = useTranslation()
@@ -161,25 +150,66 @@ const useSubTransaction = (
   to?: string,
   amount?: string,
   tip?: string,
-  method?: AssetTransferMethod,
+  method?: BalanceTransferType,
   isLocked?: boolean,
 ) => {
   const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
 
-  const qSubstrateEstimateFee = useQuery({
-    queryKey: ["estimateFee", from, to, token?.id, amount, tip, method],
+  const qSapi = useScaleApi(token?.networkId)
+
+  const qPayload = useQuery({
+    queryKey: ["callData", token?.id, from, to, amount, qSapi?.data?.id, method],
     queryFn: async () => {
-      if (!token?.networkId || !from || !to || !amount) return null
-      const { partialFee, unsigned } = await api.assetTransferCheckFees(
-        token.networkId,
-        token.id,
+      if (
+        !token?.networkId ||
+        network?.platform !== "polkadot" ||
+        !from ||
+        !to ||
+        !amount ||
+        !qSapi?.data ||
+        !method
+      )
+        return null
+
+      const { data: sapi } = qSapi
+
+      const mod = BALANCE_MODULES.find((mod) => mod.type === token.type)
+      if (mod?.platform !== "polkadot") throw new Error(`Unsupported module type: ${mod?.type}`)
+
+      const callData = await mod.getTransferCallData({
         from,
         to,
-        amount,
-        tip ?? "0",
-        method,
-      )
-      return { partialFee, unsigned }
+        value: amount,
+        token,
+        metadataRpc: sapi.chain.metadataRpc,
+        connector: { send: api.subSend } as ChainConnector,
+        type: method,
+        config: network.balancesConfig?.[mod.type],
+      })
+
+      const decodedCall = sapi.getDecodedCallFromPayload(callData)
+
+      return sapi.getExtrinsicPayload(decodedCall.pallet, decodedCall.method, decodedCall.args, {
+        address: from,
+        tip: tip ? BigInt(tip) : 0n,
+      })
+    },
+    refetchInterval: false,
+    enabled: !isLocked,
+  })
+
+  const qSubstrateEstimateFee = useQuery({
+    queryKey: ["estimateFee", qSapi?.data?.id, qPayload?.data?.payload],
+    queryFn: async () => {
+      if (!qSapi?.data || !qPayload?.data?.payload) return null
+
+      const sapi = qSapi.data
+      const payload = qPayload.data.payload
+
+      const fee = await sapi.getFeeEstimate(payload)
+
+      return { partialFee: fee.toString(), unsigned: payload }
     },
     refetchInterval: false,
     enabled: !isLocked,
@@ -199,24 +229,25 @@ const useSubTransaction = (
       payloadWithMetadataHash,
     } = qPayloadMetadata.data ?? {}
 
-    const isLoading = qSubstrateEstimateFee.isLoading || qPayloadMetadata.isLoading
-    const isRefetching = qSubstrateEstimateFee.isRefetching || qPayloadMetadata.isRefetching
-    const error = qSubstrateEstimateFee.error || qPayloadMetadata.error
+    const queries = [qSapi, qPayload, qSubstrateEstimateFee, qPayloadMetadata]
+
+    const isLoading = queries.some((q) => q.isLoading)
+    const isRefetching = queries.some((q) => q.isRefetching)
+    const error = queries.map((q) => q.error).find((err) => !!err)
 
     const unsigned = payloadWithMetadataHash ?? unsignedOriginal
 
-    return { partialFee, unsigned, isLoading, isRefetching, error, registry, shortMetadata }
-  }, [
-    qPayloadMetadata.data,
-    qPayloadMetadata.error,
-    qPayloadMetadata.isLoading,
-    qPayloadMetadata.isRefetching,
-    qSubstrateEstimateFee.data,
-    qSubstrateEstimateFee.error,
-    qSubstrateEstimateFee.isLoading,
-    qSubstrateEstimateFee.isRefetching,
-    token,
-  ])
+    return {
+      partialFee,
+      unsigned,
+      isLoading,
+      isRefetching,
+      error,
+      registry,
+      shortMetadata,
+      sapi: qSapi.data,
+    }
+  }, [qPayload, qPayloadMetadata, qSapi, qSubstrateEstimateFee, token])
 }
 
 export type ToWarning = "AZERO_ID" | undefined
@@ -234,8 +265,6 @@ const useSendFundsProvider = () => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
-  // const evmNetwork = useEvmNetwork(token?.networkId)
-  // const chain = useChain(token?.networkId)
   const network = useNetworkById(token?.networkId)
   const tipToken = useToken(network?.nativeTokenId)
   const tipTokenRates = useTokenRates(network?.nativeTokenId)
@@ -255,11 +284,7 @@ const useSendFundsProvider = () => {
     [tipPlanck, tipToken?.decimals, tipTokenRates],
   )
 
-  const method: AssetTransferMethod = sendMax
-    ? "transfer_all"
-    : allowReap
-      ? "transfer_allow_death"
-      : "transfer_keep_alive"
+  const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
   const { evmTransaction, evmInvalidTxError } = useEvmTransaction(
     tokenId,
@@ -558,145 +583,34 @@ const useSendFundsProvider = () => {
     else set("amount", maxAmount.planck.toString())
   }, [maxAmount, set, token])
 
-  const signMethod: SignMethod = useMemo(() => {
-    if (!fromAccount || !token) return "unknown"
-    if (isAccountOfType(fromAccount, "polkadot-vault")) {
-      if (isTokenDot(token)) return "qrSubstrate"
-      else if (isTokenEth(token))
-        return "unknown" // Parity signer / parity vault don't support ethereum accounts
-      else throw new Error("Unknown token type")
-    }
-    if (isAccountInTypes(fromAccount, ["ledger-ethereum", "ledger-polkadot"])) {
-      if (isTokenDot(token)) return "hardwareSubstrate"
-      else if (isTokenEth(token)) return "hardwareEthereum"
-      else throw new Error("Unknown token type")
-    }
-    return "normal"
-  }, [fromAccount, token])
-
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [sendErrorMessage, setSendErrorMessage] = useState<string>()
-  const send = useCallback(async () => {
-    try {
-      const value = sendMax ? maxAmount : transfer
-      if (!from) throw new Error("Sender not found")
-      if (!to) throw new Error("Recipient not found")
-      if (!value) throw new Error("Amount not found")
-      if (!token) throw new Error("Token not found")
-
-      setIsProcessing(true)
-
-      api.analyticsCapture({
-        eventName: "asset transfer fiat value",
-        options: { value: privacyRoundCurrency(value.fiat("usd") ?? 0) ?? "0" },
-      })
-
-      if (token.networkId && isNetworkDot(network)) {
-        const { hash } = await api.assetTransfer(
-          token.networkId,
-          token.id,
-          from,
-          to,
-          value.planck.toString(),
-          tip?.planck.toString(),
-          method,
-        )
-        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: network.genesisHash })
-      } else if (token.networkId) {
-        if (!transfer) throw new Error("Missing send amount")
-        if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
-        if (!isEthereumAddress(from)) throw new Error("Invalid sender address")
-        if (!isEthereumAddress(to)) throw new Error("Invalid recipient address")
-        const gasSettings = serializeGasSettings(evmTransaction.gasSettings)
-        const { hash } = await api.assetTransferEth(
-          token.networkId,
-          token.id,
-          from,
-          to,
-          value.planck.toString(),
-          gasSettings,
-        )
-        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash, networkIdOrHash: token.networkId })
-      } else throw new Error("Unknown network")
-    } catch (err) {
-      log.error("Failed to submit tx", { err })
-      setSendErrorMessage((err as Error).message)
-      setIsProcessing(false)
-    }
-  }, [
-    sendMax,
-    maxAmount,
-    transfer,
-    from,
-    to,
-    token,
-    network,
-    tip?.planck,
-    method,
-    gotoProgress,
-    evmTransaction?.gasSettings,
-  ])
-
-  const sendWithSignature = useCallback(
-    async (signature: HexString, payload?: SignerPayloadJSON) => {
-      try {
-        setIsProcessing(true)
-        if (subTransaction?.unsigned && token?.id && isNetworkDot(network)) {
-          // if a payload is supplied, it means the transaction was signed by a hardware wallet and payload had to be modified to include metadata hash
-          // otherwise, signature is for the initial payload
-          const { hash } = await api.assetTransferApproveSign(
-            payload || subTransaction.unsigned,
-            signature,
-            {
-              tokenId: token.id,
-              value: amount,
-              to,
-            },
-          )
-          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: network.genesisHash })
-          return
-        }
-        if (evmTransaction?.transaction && amount && token?.networkId && isEthereumAddress(to)) {
-          const serialized = serializeTransactionRequest(evmTransaction.transaction)
-          const { hash } = await api.assetTransferEthHardware(
-            token.networkId,
-            token.id,
-            amount,
-            to,
-            serialized,
-            signature,
-          )
-          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-          gotoProgress({ hash, networkIdOrHash: token.networkId })
-          return
-        }
-        throw new Error("Unknown transaction")
-      } catch (err) {
-        setSendErrorMessage((err as Error).message)
-        setIsProcessing(false)
-      }
+  const onSubmitted = useCallback(
+    (args: { hash: `0x${string}`; networkIdOrHash: string }) => {
+      gotoProgress(args)
     },
-    [subTransaction, token, network, evmTransaction, amount, to, gotoProgress],
+    [gotoProgress],
   )
-
-  // reset send error if route or params changes
-  const location = useLocation()
-  useEffect(() => {
-    setSendErrorMessage(undefined)
-  }, [location])
 
   useEffect(() => {
     if (dryRun) log.debug("Dry run result", dryRun)
   }, [dryRun])
+
+  const txInfo = useMemo<WalletTransactionInfo | null>(() => {
+    if (!tokenId || !from || !to || !transfer) return null
+
+    return {
+      type: "transfer",
+      to,
+      tokenId,
+      value: transfer.planck.toString(),
+    }
+  }, [from, to, tokenId, transfer])
 
   return {
     from,
     to,
     tokenId,
     amount,
+    txInfo,
     transfer,
     sendMax,
     allowReap,
@@ -726,12 +640,8 @@ const useSendFundsProvider = () => {
     setIsLocked,
     isValid,
     tokensToBeReaped,
-    send,
-    sendWithSignature,
-    signMethod,
-    isProcessing,
-    sendErrorMessage,
     isEstimatingMaxAmount,
+    onSubmitted,
   }
 }
 

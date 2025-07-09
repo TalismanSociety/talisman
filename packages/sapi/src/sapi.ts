@@ -1,7 +1,6 @@
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import { SignerPayloadJSON } from "@polkadot/types/types"
-import { assert } from "@polkadot/util"
-import { decAnyMetadata, getDynamicBuilder, getLookupFn, unifyMetadata } from "@talismn/scale"
+import { parseMetadataRpc } from "@talismn/scale"
 
 import { getCallDocs } from "./helpers/getCallDocs"
 import { getChainInfo } from "./helpers/getChainInfo"
@@ -28,11 +27,7 @@ export const getScaleApi = (
   signedExtensions?: ExtDef,
   registryTypes?: unknown,
 ) => {
-  const metadata = unifyMetadata(decAnyMetadata(hexMetadata))
-  assert(metadata, `Missing Metadata V14+ for chain ${connector.chainId}`)
-
-  const lookup = getLookupFn(metadata)
-  const builder = getDynamicBuilder(lookup)
+  const { unifiedMetadata: metadata, lookupFn: lookup, builder } = parseMetadataRpc(hexMetadata)
 
   const chain: Chain = {
     connector: getSapiConnector(connector),
@@ -46,6 +41,7 @@ export const getScaleApi = (
     metadata,
     lookup,
     builder,
+    metadataRpc: hexMetadata,
   }
 
   const chainInfo = getChainInfo(chain)
@@ -60,6 +56,7 @@ export const getScaleApi = (
     hasCheckMetadataHash,
     base58Prefix,
     token: chain.token,
+    chain,
 
     getConstant: <T>(pallet: string, constant: string) =>
       getConstantValue<T>(chain, pallet, constant),
@@ -70,8 +67,9 @@ export const getScaleApi = (
     getDecodedCall: (pallet: string, method: string, args: unknown) =>
       getDecodedCall(pallet, method, args),
 
-    getDecodedCallFromPayload: <Res extends DecodedCall>(payload: SignerPayloadJSON) =>
-      getDecodedCallFromPayload<Res>(chain, payload),
+    getDecodedCallFromPayload: <Res extends DecodedCall>(payload: {
+      method: SignerPayloadJSON["method"]
+    }) => getDecodedCallFromPayload<Res>(chain, payload),
 
     getExtrinsicPayload: (
       pallet: string,

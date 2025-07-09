@@ -12,11 +12,12 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   db,
-  EvmWalletTransaction,
-  SubWalletTransaction,
   TransactionStatus,
   WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
 } from "extension-core"
+import { isTxInfoSwap } from "extension-core/src/domains/transactions"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
 import {
@@ -163,8 +164,8 @@ type TransactionRowProps = {
   onContextMenuClose?: () => void
 }
 
-type TransactionRowEvmProps = TransactionRowProps & { tx: EvmWalletTransaction }
-type TransactionRowSubProps = TransactionRowProps & { tx: SubWalletTransaction }
+type TransactionRowEvmProps = TransactionRowProps & { tx: WalletTransactionEth }
+type TransactionRowSubProps = TransactionRowProps & { tx: WalletTransactionDot }
 
 type TransactionAction = "cancel" | "speed-up" | "dismiss"
 
@@ -258,7 +259,7 @@ ActionButton.displayName = "ActionButton"
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
 const EvmTxActions: FC<{
-  tx: EvmWalletTransaction
+  tx: WalletTransactionEth
   enabled: boolean
   isOpen: boolean
   onContextMenuOpen?: () => void
@@ -296,7 +297,7 @@ const EvmTxActions: FC<{
   const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
   const swapHref = useMemo(() => {
-    if (!txInfo) return
+    if (!isTxInfoSwap(txInfo)) return
     if (!txInfo.exchangeId) return
     if (txInfo.type === "swap-simpleswap")
       return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
@@ -462,10 +463,13 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
 const SwapTransactionStatusLabel = ({
   tx,
 }: {
-  tx: SubWalletTransaction | EvmWalletTransaction
+  tx: WalletTransactionDot | WalletTransactionEth
 }) => {
   const { t } = useTranslation()
-  const swapStatus = useSwapStatus(tx.txInfo?.type, tx.txInfo?.exchangeId)
+  const swapStatus = useSwapStatus(
+    tx.txInfo?.type,
+    isTxInfoSwap(tx.txInfo) ? tx.txInfo.exchangeId : undefined,
+  )
 
   // show regular tx status while tx is still submitting
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
@@ -573,7 +577,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }) => {
   const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
-  const txInfo = tx.txInfo
+  const txInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
   const { isTransfer, value, tokenId } = useMemo(() => {
     const isTransfer =
       txInfo?.type !== "swap-simpleswap" &&
@@ -732,7 +736,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
 const SubTxActions: FC<{
-  tx: SubWalletTransaction
+  tx: WalletTransactionDot
   enabled: boolean
   isOpen: boolean
   onContextMenuOpen?: () => void
@@ -765,7 +769,7 @@ const SubTxActions: FC<{
   const chain = useNetworkByGenesisHash(tx.genesisHash)
 
   const swapHref = useMemo(() => {
-    if (!txInfo) return
+    if (!isTxInfoSwap(txInfo)) return
     if (!txInfo.exchangeId) return
     if (txInfo.type === "swap-simpleswap")
       return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
@@ -866,15 +870,9 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   const tokenRates = useTokenRates(tx.tokenId)
   const currency = useSelectedCurrency()
 
-  const txInfo = tx.txInfo
+  const txInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
   const { isTransfer, amount } = useMemo(() => {
-    const isTransfer =
-      txInfo?.type !== "swap-simpleswap" &&
-      txInfo?.type !== "swap-stealthex" &&
-      tx.value &&
-      tx.tokenId &&
-      tx.to &&
-      token
+    const isTransfer = txInfo && tx.value && tx.tokenId && tx.to && token
     return {
       isTransfer,
       amount: isTransfer ? new BalanceFormatter(tx.value, token.decimals, tokenRates) : null,
@@ -945,7 +943,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        txInfo && ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
+        isTxInfoSwap(txInfo) ? (
           // tx is a swap deposit
           <div className="flex flex-col">
             <div className="flex items-center justify-end gap-1">

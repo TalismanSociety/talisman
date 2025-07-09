@@ -1,7 +1,7 @@
 import { HexString } from "@polkadot/util/types"
 import { Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { EvmWalletTransaction, SubWalletTransaction, WalletTransaction } from "extension-core"
+import { WalletTransaction, WalletTransactionDot, WalletTransactionEth } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
@@ -194,7 +194,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
 }
 
 type SendFundsProgressSubstrateProps = {
-  tx: SubWalletTransaction
+  tx: WalletTransactionDot
   onClose?: () => void
   className?: string
 }
@@ -219,7 +219,7 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
 }
 
 type SendFundsProgressEvmProps = {
-  tx: EvmWalletTransaction
+  tx: WalletTransactionEth
   onClose?: () => void
   className?: string
 }

@@ -1,5 +1,6 @@
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
+import { classNames } from "@talismn/util"
 import { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
 import { FC, Suspense, useCallback, useMemo, useState } from "react"
@@ -18,10 +19,11 @@ type SapiSendButtonProps = {
   containerId?: string
   label?: string
   payload?: SignerPayloadJSON
-  txMetadata?: Uint8Array
+  txMetadata?: Uint8Array | `0x${string}`
   txInfo?: WalletTransactionInfo
   loading?: boolean
   disabled?: boolean
+  className?: string
   onSubmitted: (hash: Hex) => void
 }
 
@@ -30,11 +32,12 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txMetadata,
   txInfo,
+  className,
   onSubmitted,
 }) => {
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
-  const shortMetadata = useMemo(() => (txMetadata ? toHex(txMetadata) : undefined), [txMetadata])
+  const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
   const registry = useMemo(() => {
     if (!sapi) return undefined
@@ -63,6 +66,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
     <div className="flex w-full flex-col gap-6">
       <SubmitErrorDisplay error={error} />
       <SignHardwareSubstrate
+        className={className}
         containerId={containerId}
         payload={payload}
         shortMetadata={shortMetadata}
@@ -78,12 +82,13 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   txInfo,
   txMetadata,
+  className,
   onSubmitted,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
-  const shortMetadata = useMemo(() => (txMetadata ? toHex(txMetadata) : undefined), [txMetadata])
+  const shortMetadata = useMemo(() => getHexShortMetadata(txMetadata), [txMetadata])
 
   const handleSigned = useCallback(
     async ({ signature }: { signature: Hex }) => {
@@ -109,6 +114,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
       <SubmitErrorDisplay error={error} />
       <QrSubstrate
         containerId={containerId ?? "main"}
+        className={className}
         genesisHash={payload?.genesisHash}
         payload={payload}
         shortMetadata={shortMetadata}
@@ -124,6 +130,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   payload,
   disabled,
   txInfo,
+  className,
   onSubmitted,
 }) => {
   const { t } = useTranslation()
@@ -153,7 +160,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     <div className="flex w-full flex-col gap-6">
       <SubmitErrorDisplay error={error} />
       <Button
-        className="w-full"
+        className={classNames("w-full", className)}
         primary
         disabled={disabled}
         onClick={handleSubmitClick}
@@ -189,12 +196,12 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
       {signMethod === "hardware" && <HardwareAccountSendButton {...props} />}
       {signMethod === "qr" && <QrAccountSendButton {...props} />}
       {signMethod === "loading" && (
-        <Button className="w-full" primary disabled>
+        <Button className={classNames("w-full", props.className)} primary disabled>
           <LoaderIcon className="animate-spin-slow text-lg" />
         </Button>
       )}
       {signMethod === "unsupported" && (
-        <Button className="w-full" primary disabled>
+        <Button className={classNames("w-full", props.className)} primary disabled>
           {t("Unsupported account type: {{type}}", { type: account?.type })}
         </Button>
       )}
@@ -209,3 +216,10 @@ const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error })
       <div className="scrollable scrollable-800 max-h-40 overflow-y-auto pr-5">{error}</div>
     </div>
   ) : null
+
+const getHexShortMetadata = (
+  txMetadata?: Uint8Array | `0x${string}`,
+): `0x${string}` | undefined => {
+  if (typeof txMetadata === "string") return txMetadata as `0x${string}`
+  return txMetadata ? (toHex(txMetadata) as `0x${string}`) : undefined
+}

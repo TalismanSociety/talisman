@@ -201,3 +201,20 @@ export const getExtrinsicHash = (
 }
 
 export const dismissTransaction = (hash: string) => db.transactions.delete(hash)
+
+export const isTxInfoOfType = <T extends WalletTransactionInfo["type"]>(
+  txInfo: WalletTransactionInfo | undefined | null,
+  type: T,
+): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
+  return !!txInfo && txInfo.type === type
+}
+
+export const isTxInfoInTypes = <T extends WalletTransactionInfo["type"]>(
+  txInfo: WalletTransactionInfo | undefined | null,
+  types: T[],
+): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
+  return types.some((type) => isTxInfoOfType(txInfo, type))
+}
+
+export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =>
+  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex"])

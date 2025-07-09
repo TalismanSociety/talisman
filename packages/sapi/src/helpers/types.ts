@@ -16,6 +16,7 @@ export type Chain = {
   metadata: UnifiedMetadata
   lookup: ScaleLookup
   builder: ScaleBuilder
+  metadataRpc: `0x${string}`
 }
 
 export type ChainInfo = {

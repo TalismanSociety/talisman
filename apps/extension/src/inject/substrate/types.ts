@@ -36,7 +36,7 @@ export type {
 
 declare type This = typeof globalThis
 export interface MetadataDef extends PjsMetadataDef {
-  metadataRpc?: string
+  metadataRpc?: `0x${string}`
 }
 export interface InjectedMetadata {
   get: () => Promise<InjectedMetadataKnown[]>

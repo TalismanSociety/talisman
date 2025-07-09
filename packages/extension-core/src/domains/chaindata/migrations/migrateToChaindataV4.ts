@@ -25,6 +25,7 @@ import { activeTokensStore } from "../../balances/store.activeTokens"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
+import { isTxInfoSwap } from "../../transactions"
 import { customChaindataStore } from "../store"
 
 const MIGRATION_LABEL = "Updating Balances System"
@@ -132,7 +133,7 @@ const migrateTransactions = async (oldToNewTokenId: Dictionary<string | null>) =
     const newTx = structuredClone(tx)
     newTx.tokenId = (tx.tokenId && oldToNewTokenId[tx.tokenId]) ?? undefined
 
-    if (newTx.txInfo) {
+    if (isTxInfoSwap(newTx.txInfo)) {
       if (newTx.txInfo.fromTokenId && oldToNewTokenId[newTx.txInfo.fromTokenId])
         newTx.txInfo.fromTokenId = oldToNewTokenId[newTx.txInfo.fromTokenId]!
       if (newTx.txInfo.toTokenId && oldToNewTokenId[newTx.txInfo.toTokenId])

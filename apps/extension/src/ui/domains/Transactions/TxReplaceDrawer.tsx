@@ -4,10 +4,10 @@ import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/ic
 import { classNames } from "@talismn/util"
 import {
   EthTransactionDetails,
-  EvmWalletTransaction,
   isAccountOfType,
   serializeTransactionRequest,
   WalletTransaction,
+  WalletTransactionEth,
 } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -94,14 +94,14 @@ export const EvmEstimatedFeeTooltip: FC<{
   )
 }
 
-const getTransferInfo = (tx: EvmWalletTransaction) => {
+const getTransferInfo = (tx: WalletTransactionEth) => {
   return tx.value && tx.tokenId && tx.to
     ? { value: tx.value, tokenId: tx.tokenId, to: tx.to }
     : undefined
 }
 
 const EvmDrawerContent: FC<{
-  tx: EvmWalletTransaction
+  tx: WalletTransactionEth
   type: TxReplaceType
   fullHeight?: boolean
   containerId?: string
