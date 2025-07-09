@@ -16,7 +16,6 @@ import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { AssetTransferMessages } from "../domains/transfers/types"
 import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
@@ -73,7 +72,6 @@ type RemovedMessages =
 type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AccountsMessages &
   AppMessages &
-  AssetTransferMessages &
   AuthorisedSiteMessages &
   BalancesMessages &
   ChainsMessages &

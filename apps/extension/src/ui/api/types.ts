@@ -13,7 +13,6 @@ import {
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AssetDiscoveryScanScope,
-  AssetTransferMethod,
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
@@ -23,7 +22,6 @@ import {
   ChangePasswordStatusUpdate,
   DecryptRequestId,
   EncryptRequestId,
-  EthGasSettings,
   EvmAddress,
   LoggedinType,
   MetadataUpdateStatus,
@@ -41,8 +39,6 @@ import {
   RequestMetadataId,
   RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -51,7 +47,6 @@ import {
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionInfo,
-  WalletTransactionTransferInfo,
   WatchAssetRequestId,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
@@ -204,59 +199,16 @@ export default interface MessageTypes {
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
 
-  // asset transfer messages
-  assetTransfer: (
-    chainId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
-    amount?: string,
-    tip?: string,
-    method?: AssetTransferMethod,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferEth: (
-    evmNetworkId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: EvmAddress,
-    toAddress: EvmAddress,
-    amount: string,
-    gasSettings: EthGasSettings<string>,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferEthHardware: (
-    evmNetworkId: NetworkId,
-    tokenId: TokenId,
-    amount: string,
-    to: EvmAddress,
-    unsigned: TransactionRequest<string>,
-    signedTransaction: HexString,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferCheckFees: (
-    chainId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
-    amount?: string,
-    tip?: string,
-    method?: AssetTransferMethod,
-  ) => Promise<ResponseAssetTransferFeeQuery>
-  assetTransferApproveSign: (
-    unsigned: SignerPayloadJSON,
-    signature: `0x${string}`,
-    transferInfo: WalletTransactionTransferInfo,
-  ) => Promise<ResponseAssetTransfer>
-
   // eth related messages
   ethSignAndSend: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
-    transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethSendSigned: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
-    transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>

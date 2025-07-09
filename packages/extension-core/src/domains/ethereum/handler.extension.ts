@@ -129,7 +129,6 @@ export class EthHandler extends ExtensionHandler {
     evmNetworkId,
     unsigned,
     signed,
-    transferInfo,
     txInfo,
   }) => {
     assert(evmNetworkId, "chainId is not defined")
@@ -142,7 +141,6 @@ export class EthHandler extends ExtensionHandler {
 
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {
         notifications: true,
-        transferInfo,
         txInfo,
       })
 
@@ -161,7 +159,6 @@ export class EthHandler extends ExtensionHandler {
   private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({
     evmNetworkId,
     unsigned,
-    transferInfo,
     txInfo,
   }) => {
     assert(evmNetworkId, "chainId is not defined")
@@ -186,7 +183,6 @@ export class EthHandler extends ExtensionHandler {
     if (result.ok) {
       watchEthereumTransaction(evmNetworkId, result.val, unsigned, {
         notifications: true,
-        transferInfo,
         txInfo,
       })
 

@@ -85,11 +85,8 @@ export const getScaleApi = (
 
     getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(chain, payload),
 
-    submit: (
-      payload: SignerPayloadJSON,
-      signature?: `0x${string}`,
-      txInfo?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    ) => chain.connector.submit(payload, signature, txInfo),
+    submit: (payload: SignerPayloadJSON, signature?: `0x${string}`, txInfo?: unknown) =>
+      chain.connector.submit(payload, signature, txInfo),
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),
 

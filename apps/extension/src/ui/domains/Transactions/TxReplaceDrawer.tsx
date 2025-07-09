@@ -94,12 +94,6 @@ export const EvmEstimatedFeeTooltip: FC<{
   )
 }
 
-const getTransferInfo = (tx: WalletTransactionEth) => {
-  return tx.value && tx.tokenId && tx.to
-    ? { value: tx.value, tokenId: tx.tokenId, to: tx.to }
-    : undefined
-}
-
 const EvmDrawerContent: FC<{
   tx: WalletTransactionEth
   type: TxReplaceType
@@ -139,9 +133,8 @@ const EvmDrawerContent: FC<{
     if (!transaction) return
     setIsProcessing(true)
     try {
-      const transferInfo = getTransferInfo(tx)
       const serialized = serializeTransactionRequest(transaction)
-      const newHash = await api.ethSignAndSend(tx.evmNetworkId, serialized, transferInfo)
+      const newHash = await api.ethSignAndSend(tx.evmNetworkId, serialized, tx.txInfo)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
@@ -169,14 +162,8 @@ const EvmDrawerContent: FC<{
       if (!transaction) return
       setIsProcessing(true)
       try {
-        const transferInfo = getTransferInfo(tx)
         const serialized = serializeTransactionRequest(transaction)
-        const newHash = await api.ethSendSigned(
-          tx.evmNetworkId,
-          serialized,
-          signature,
-          transferInfo,
-        )
+        const newHash = await api.ethSendSigned(tx.evmNetworkId, serialized, signature, tx.txInfo)
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {

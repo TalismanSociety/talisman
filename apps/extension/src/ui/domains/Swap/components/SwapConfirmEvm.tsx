@@ -139,12 +139,7 @@ export const SwapConfirmEvm = ({
     setIsProcessing(true)
     try {
       const serialized = serializeTransactionRequest(transaction)
-      const hash = await api.ethSignAndSend(
-        fromAsset?.chainId.toString(),
-        serialized,
-        undefined,
-        txInfo,
-      )
+      const hash = await api.ethSignAndSend(fromAsset?.chainId.toString(), serialized, txInfo)
 
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
       if (
@@ -190,7 +185,6 @@ export const SwapConfirmEvm = ({
           fromAsset?.chainId.toString(),
           serialized,
           signature,
-          undefined,
           txInfo,
         )
 

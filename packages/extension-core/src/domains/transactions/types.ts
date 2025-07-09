@@ -10,7 +10,6 @@ export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "r
 export type WatchTransactionOptions = {
   siteUrl?: string
   notifications?: boolean
-  transferInfo?: WalletTransactionTransferInfo
   /**
    * Used to store extra information about this tx.
    * For populating the transaction history.
@@ -19,9 +18,13 @@ export type WatchTransactionOptions = {
   txInfo?: WalletTransactionInfo
 }
 
+/** @deprecated */
 export type WalletTransactionTransferInfo = {
+  /** @deprecated */
   tokenId?: TokenId
+  /** @deprecated */
   value?: string
+  /** @deprecated */
   to?: Address
 }
 

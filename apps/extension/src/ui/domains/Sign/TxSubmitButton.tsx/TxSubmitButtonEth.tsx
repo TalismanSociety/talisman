@@ -30,13 +30,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         const serialized = serializeTransactionRequest(tx.payload)
         if (!serialized) throw new Error("Failed to serialize transaction request")
 
-        const hash = await api.ethSendSigned(
-          tx.networkId,
-          serialized,
-          signature,
-          undefined,
-          tx.txInfo,
-        )
+        const hash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
 
         onSubmit(hash)
       } catch (cause) {
@@ -59,7 +53,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
       const serialized = serializeTransactionRequest(tx.payload)
       if (!serialized) throw new Error("Failed to serialize transaction request")
 
-      const hash = await api.ethSignAndSend(tx.networkId, serialized, undefined, tx.txInfo)
+      const hash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
 
       onSubmit(hash)
     } catch (cause) {

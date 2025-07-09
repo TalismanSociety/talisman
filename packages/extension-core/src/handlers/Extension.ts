@@ -21,7 +21,6 @@ import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
-import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
 import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
@@ -43,7 +42,6 @@ export default class Extension extends ExtensionHandler {
       chains: new ChainsHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
-      assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
