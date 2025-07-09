@@ -45,6 +45,6 @@ export const walletBalances$ = combineLatest({
   ),
   firstThenDebounce(200),
   distinctUntilChanged<BalancesResult>(isEqual),
-  keepAlive(2_000), // keeps obs alive while switching from popup to dashboard
+  keepAlive(2_000), // keeps inner subscriptions alive while switching from popup to dashboard
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
