@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useMemo } from "react"
 
 import { allAddressesAtom } from "../atoms/allAddresses"
-import { allBalancesAtom } from "../atoms/balances"
+import { balancesAtom } from "../atoms/balances"
 
 export const useSetBalancesAddresses = (addresses: string[]) => {
   const setAllAddresses = useSetAtom(allAddressesAtom)
@@ -20,7 +20,7 @@ export const useSetBalancesAddresses = (addresses: string[]) => {
  */
 
 export const useBalances = () => {
-  return useAtomValue(allBalancesAtom)
+  return useAtomValue(balancesAtom)
 }
 
 // TODO: Extract to shared definition between extension and @talismn/balances-react

@@ -4,12 +4,13 @@ import {
   DotNetworkId,
   isNetworkDot,
   MINIMETADATA_VERSION,
+  Network,
   NetworkId,
   parseTokenId,
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { getSharedObservable, isNotNil } from "@talismn/util"
+import { getSharedObservable, isEthereumAddress, isNotNil } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash"
 import {
   BehaviorSubject,
@@ -90,31 +91,36 @@ export class BalancesProvider {
     // TODO move the getSharedObservable caching down to this.getNetworkBalances$ to prevent network-level subscriptions to restart when enabling/disabling other networks
     // this will require addressesByTokenId arg to be normalized/sorted so the cache key can be compared properly, seems a bit random atm
     return getSharedObservable("BalancesProvider.getBalances$", addressesByTokenId, () => {
-      // split by network
-      const addressesByTokenIdByNetworkId: Record<NetworkId, Record<TokenId, Address[]>> = toPairs(
-        addressesByTokenId,
-      ).reduce(
-        (acc, [tokenId, addresses]) => {
-          const networkId = parseTokenId(tokenId).networkId
-          if (!acc[networkId]) acc[networkId] = {}
-          acc[networkId][tokenId] = addresses
-          return acc
-        },
-        {} as Record<NetworkId, Record<TokenId, Address[]>>,
-      )
-
-      return combineLatest({
-        isStale: timer(30_000).pipe(
-          map(() => true),
-          startWith(false),
-        ),
-        results: combineLatest(
-          toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
-            this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
-          ),
-        ),
-      }).pipe(
+      return this.cleanupAddressesByTokenId(addressesByTokenId).pipe(
         map(
+          // split by network
+          (addressesByTokenId): Record<NetworkId, Record<TokenId, Address[]>> =>
+            toPairs(addressesByTokenId).reduce(
+              (acc, [tokenId, addresses]) => {
+                const networkId = parseTokenId(tokenId).networkId
+                if (!acc[networkId]) acc[networkId] = {}
+                acc[networkId][tokenId] = addresses
+                return acc
+              },
+              {} as Record<NetworkId, Record<TokenId, Address[]>>,
+            ),
+        ),
+        switchMap((addressesByTokenIdByNetworkId) =>
+          // fetch balances and start a 30s timer to mark the whole subscription live after 30s
+          combineLatest({
+            isStale: timer(30_000).pipe(
+              map(() => true),
+              startWith(false),
+            ),
+            results: combineLatest(
+              toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
+                this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+              ),
+            ),
+          }),
+        ),
+        map(
+          // combine
           ({ isStale, results }): BalancesResult => ({
             status:
               !isStale && results.some(({ status }) => status === "initialising")
@@ -253,6 +259,10 @@ export class BalancesProvider {
           balances: results.flatMap((result) => result.balances),
         } as BalancesResult
       }),
+      startWith({
+        status: "initialising" as BalancesStatus,
+        balances: this.getStoredBalances(addressesByTokenId),
+      } as BalancesResult),
     )
   }
 
@@ -351,5 +361,40 @@ export class BalancesProvider {
       .map(([tokenId, address]) => this.#storage.value.balances[getBalanceId({ address, tokenId })])
       .filter(isNotNil)
       .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b)))
+  }
+
+  private cleanupAddressesByTokenId(addressesByTokenId: Record<TokenId, Address[]>) {
+    return this.#chaindataProvider.getNetworksMapById$().pipe(
+      map((networksById): Record<TokenId, Address[]> => {
+        return fromPairs(
+          toPairs(addressesByTokenId)
+            .map(([tokenId, addresses]) => {
+              const networkId = parseTokenId(tokenId).networkId
+              const network = networksById[networkId]
+              return [
+                tokenId,
+                addresses.filter(
+                  (address) => network && isAddressCompatibleWithNetwork(network, address),
+                ),
+              ] as [TokenId, Address[]]
+            })
+            .filter(([, addresses]) => addresses.length > 0),
+        )
+      }),
+    )
+  }
+}
+
+export const isAddressCompatibleWithNetwork = (network: Network, address: Address) => {
+  switch (network.platform) {
+    case "ethereum":
+      return isEthereumAddress(address)
+    case "polkadot":
+      return isEthereumAddress(address)
+        ? network.account === "secp256k1"
+        : network.account !== "secp256k1"
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
   }
 }
