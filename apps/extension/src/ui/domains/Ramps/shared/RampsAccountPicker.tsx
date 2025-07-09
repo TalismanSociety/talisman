@@ -1,15 +1,10 @@
+import { BalanceFormatter, Balances, BalancesResult } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
 import { classNames, isAddressEqual } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import {
-  Account,
-  BalanceFormatter,
-  BalanceLoadingStatus,
-  Balances,
-  getAccountGenesisHash,
-} from "extension-core"
+import { Account, getAccountGenesisHash } from "extension-core"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenCloseStatus } from "talisman-ui"
@@ -34,7 +29,7 @@ export const RampsAccountPicker: FC<{
   balances: Balances | null | undefined
   tokenRates: TokenRatesList | null | undefined
   balancesDisplayMode?: RampAccountPickerBalancesDisplayMode
-  balancesLoadingStatus: BalanceLoadingStatus
+  balancesLoadingStatus: BalancesResult["status"]
 
   /** Used to format addresses */
   genesisHash: `0x${string}` | null | undefined
@@ -114,7 +109,7 @@ const AccountsList: FC<{
   balances: Balances | null | undefined
   tokenRates: TokenRatesList | null | undefined
   balancesDisplayMode: RampAccountPickerBalancesDisplayMode
-  balancesLoadingStatus: BalanceLoadingStatus
+  balancesLoadingStatus: BalancesResult["status"]
   /** Used to format addresses */
   genesisHash: `0x${string}` | null | undefined
   selected: string | undefined
@@ -194,7 +189,7 @@ const AccountButtonRow: FC<{
   balances: Balances | null | undefined
   tokenRates: TokenRatesList | null | undefined
   balancesDisplayMode: RampAccountPickerBalancesDisplayMode
-  balancesLoadingStatus: BalanceLoadingStatus
+  balancesLoadingStatus: BalancesResult["status"]
   /** Used to format addresses */
   genesisHash: `0x${string}` | null | undefined
   isSelected: boolean
@@ -262,7 +257,7 @@ const AccountTokenBalance: FC<{
   tokenRates: TokenRatesList | null | undefined
   balances: Balances | null | undefined
   displayMode: RampAccountPickerBalancesDisplayMode
-  loadingStatus: BalanceLoadingStatus
+  loadingStatus: BalancesResult["status"]
 }> = ({ address, token, tokenRates, balances, displayMode, loadingStatus }) => {
   const currency = useSelectedCurrency()
 

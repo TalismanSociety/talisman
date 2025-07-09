@@ -1,4 +1,4 @@
-import { IBalance } from "@talismn/balances"
+import { Balances, IBalance } from "@talismn/balances"
 import { isAccountNotContact } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
@@ -12,7 +12,8 @@ import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
 import { balancesStore$ } from "./store.balances"
 import { balanceTotalsStore } from "./store.BalanceTotals"
-import { Balances } from "./types"
+
+import "./types"
 
 const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
 

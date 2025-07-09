@@ -1,8 +1,8 @@
 import { TypeRegistry } from "@polkadot/types"
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
-  BalanceFormatter,
   isJsonPayload,
   SignerPayloadJSON,
   SignerPayloadRaw,

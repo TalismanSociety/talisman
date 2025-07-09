@@ -1,5 +1,5 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
 
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useSortedGroupedStakes } from "@ui/domains/Staking/hooks/bittensor/dTao/useSortedGroupedStakes"

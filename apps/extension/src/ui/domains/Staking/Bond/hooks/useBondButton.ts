@@ -1,5 +1,5 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
 import { log } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 

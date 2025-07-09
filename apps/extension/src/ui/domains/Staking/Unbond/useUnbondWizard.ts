@@ -1,6 +1,7 @@
 import { bind } from "@react-rxjs/core"
+import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Address, BalanceFormatter } from "extension-core"
+import { Address } from "extension-core"
 import { SetStateAction, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"

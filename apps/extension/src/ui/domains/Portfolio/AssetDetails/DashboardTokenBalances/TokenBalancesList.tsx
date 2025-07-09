@@ -1,6 +1,6 @@
+import { Balances } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { Balances } from "extension-core"
 import { ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 

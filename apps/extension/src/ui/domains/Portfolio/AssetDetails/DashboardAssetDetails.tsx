@@ -1,4 +1,4 @@
-import { Balances } from "extension-core"
+import { Balances } from "@talismn/balances"
 
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 

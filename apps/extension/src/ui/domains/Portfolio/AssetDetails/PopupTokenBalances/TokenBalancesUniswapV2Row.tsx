@@ -1,5 +1,5 @@
+import { Balance } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { Balance } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"

@@ -1,7 +1,7 @@
+import { Balances } from "@talismn/balances"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Balances } from "extension-core"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

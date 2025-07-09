@@ -1,7 +1,6 @@
-import { ONE_ALPHA_TOKEN } from "@talismn/balances"
+import { BalanceFormatter, Balances, ONE_ALPHA_TOKEN } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { type TokenRates } from "@talismn/token-rates"
-import { BalanceFormatter, Balances } from "extension-core"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { type TokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"

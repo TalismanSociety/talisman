@@ -1,5 +1,6 @@
+import { Balances } from "@talismn/balances"
 import md5 from "blueimp-md5"
-import { AddressesAndTokens, Balances, BalanceSubscriptionResponse } from "extension-core"
+import { AddressesAndTokens, BalanceSubscriptionResponse } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"

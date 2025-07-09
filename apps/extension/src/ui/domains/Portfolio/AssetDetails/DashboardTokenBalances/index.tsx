@@ -1,5 +1,5 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
 
 import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 

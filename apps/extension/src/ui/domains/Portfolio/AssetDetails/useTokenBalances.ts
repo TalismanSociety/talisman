@@ -1,7 +1,7 @@
-import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances"
+import { BalanceLockType, Balances, filterBaseLocks, getLockTitle } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
-import { Address, Balances } from "extension-core"
+import { Address } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

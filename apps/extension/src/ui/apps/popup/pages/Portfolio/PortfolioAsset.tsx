@@ -1,7 +1,7 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
-import { Balances } from "extension-core"
 import { uniq } from "lodash"
 import { useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"

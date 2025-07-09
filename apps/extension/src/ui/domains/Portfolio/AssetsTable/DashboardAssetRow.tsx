@@ -1,6 +1,6 @@
+import { Balances } from "@talismn/balances"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Balances } from "extension-core"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 

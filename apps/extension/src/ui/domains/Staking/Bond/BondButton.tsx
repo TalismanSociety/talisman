@@ -1,6 +1,6 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ZapIcon, ZapPlusIcon } from "@talismn/icons"
-import { Balances } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

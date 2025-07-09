@@ -1,7 +1,7 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Balances } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 

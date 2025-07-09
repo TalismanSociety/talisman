@@ -1,3 +1,4 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { NetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowRightIcon,
@@ -10,7 +11,6 @@ import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
-  BalanceFormatter,
   db,
   EvmWalletTransaction,
   SubWalletTransaction,
