@@ -12,7 +12,7 @@ export const useChaindata = () => useAtomValue(chaindataAtom)
 export const useNetworks = () => useChaindata().networks
 export const useNetworksById = () => {
   const { networks } = useChaindata()
-  return useMemo(() => keyBy(networks, "id"), [networks])
+  return useMemo(() => keyBy(networks, (n) => n.id), [networks])
 }
 export const useNetwork = (networkId?: NetworkId) => {
   const networksById = useNetworksById()
@@ -22,7 +22,7 @@ export const useNetwork = (networkId?: NetworkId) => {
 export const useTokens = () => useChaindata().tokens
 export const useTokensById = () => {
   const { tokens } = useChaindata()
-  return useMemo(() => keyBy(tokens, "id"), [tokens])
+  return useMemo(() => keyBy(tokens, (t) => t.id), [tokens])
 }
 export const useToken = (tokenId?: TokenId) => {
   const tokensById = useTokensById()
