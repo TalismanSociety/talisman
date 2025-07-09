@@ -1,7 +1,7 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
-import { BalanceJson } from "@talismn/balances"
+import { IBalance } from "@talismn/balances"
 import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
@@ -157,7 +157,7 @@ export default interface MessageTypes {
   getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({ tokenId, address }: RequestBalance) => Promise<BalanceJson | undefined>
+  getBalance: ({ tokenId, address }: RequestBalance) => Promise<IBalance | null>
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesAndTokens: AddressesAndTokens,

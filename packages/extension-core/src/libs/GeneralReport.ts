@@ -1,8 +1,9 @@
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountOwned } from "@talismn/keyring"
-import { sleep } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import groupBy from "lodash/groupBy"
+import { filter, firstValueFrom, map } from "rxjs"
 
 import { sentry } from "../config/sentry"
 import { db } from "../db"
@@ -10,10 +11,11 @@ import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
-import { balancePool } from "../domains/balances/pool"
+import { balancesStore$ } from "../domains/balances/store.balances"
 import { Balances } from "../domains/balances/types"
+import { walletBalances$ } from "../domains/balances/walletBalances"
 import { keyringStore } from "../domains/keyring/store"
-import { getNftCollectionFloorUsd, subscribeNfts } from "../domains/nfts"
+import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
@@ -135,47 +137,49 @@ async function getGeneralReport({
   const watchedAccountsCount = watchedAccounts.length
 
   if (refreshBalances) {
-    let disconnect!: () => void
-    try {
-      // create token balances / nft subscriptions, and wait for the pool to settle
-      // this ensures that we have up-to-date information for the report
-      const onDisconnected = new Promise<void>((resolve) => {
-        let hasDisconnected = false
-        disconnect = () => {
-          if (hasDisconnected) return
-          hasDisconnected = true
-          resolve()
-        }
-      })
+    await firstValueFrom(walletBalances$.pipe(filter(({ status }) => status === "live")))
+    // await firstValueFrom(walletBalances$.pipe(filter(({status})=> status === "live")))
+    // let disconnect!: () => void
+    // try {
+    //   // create token balances / nft subscriptions, and wait for the pool to settle
+    //   // this ensures that we have up-to-date information for the report
+    //   const onDisconnected = new Promise<void>((resolve) => {
+    //     let hasDisconnected = false
+    //     disconnect = () => {
+    //       if (hasDisconnected) return
+    //       hasDisconnected = true
+    //       resolve()
+    //     }
+    //   })
 
-      let balancesLive = false
-      let nftsLive = false
+    //   let balancesLive = false
+    //   let nftsLive = false
 
-      // token balances
-      const subscriptionId = "ANALYTICS-GENERAL-REPORT"
-      balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
-        if (response.status !== "live") return
-        balancesLive = true
-        if (!nftsLive) return
-        disconnect()
-      })
-      // nfts
-      const unsubNfts = subscribeNfts((data) => {
-        if (data.status !== "loaded") return
-        nftsLive = true
-        if (!balancesLive) return
-        disconnect()
-      })
-      onDisconnected.then(() => unsubNfts())
-      // timeout (don't wait forever for all token balances and nfts to be live)
-      await sleep(30_000).then(disconnect)
+    //   // token balances
+    //   const subscriptionId = "ANALYTICS-GENERAL-REPORT"
+    //   balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
+    //     if (response.status !== "live") return
+    //     balancesLive = true
+    //     if (!nftsLive) return
+    //     disconnect()
+    //   })
+    //   // nfts
+    //   const unsubNfts = subscribeNfts((data) => {
+    //     if (data.status !== "loaded") return
+    //     nftsLive = true
+    //     if (!balancesLive) return
+    //     disconnect()
+    //   })
+    //   onDisconnected.then(() => unsubNfts())
+    //   // timeout (don't wait forever for all token balances and nfts to be live)
+    //   await sleep(30_000).then(disconnect)
 
-      // wait for live token balances & nfts, or timeout to complete
-      await onDisconnected
-    } finally {
-      // if anything throws, make sure we shut down all the subscriptions we opened
-      disconnect()
-    }
+    //   // wait for live token balances & nfts, or timeout to complete
+    //   await onDisconnected
+    // } finally {
+    //   // if anything throws, make sure we shut down all the subscriptions we opened
+    //   disconnect()
+    // }
   }
 
   // account type breakdown
@@ -200,7 +204,7 @@ async function getGeneralReport({
   // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
   try {
     /* eslint-disable-next-line no-var */
-    var [networks, tokens, tokenRates] = await Promise.all([
+    var [networks, tokens, tokenRates, allBalances] = await Promise.all([
       chaindataProvider.getNetworksMapById(),
       chaindataProvider.getTokensMapById(),
       db.tokenRates
@@ -208,11 +212,13 @@ async function getGeneralReport({
         .then((dbTokenRates) =>
           Object.fromEntries((dbTokenRates ?? []).map(({ tokenId, rates }) => [tokenId, rates])),
         ),
+      firstValueFrom(balancesStore$.pipe(map((store) => store.balances))),
     ])
 
-    const balanceJsons = Object.values(balancePool.balances).filter((balance) =>
-      ownedAddresses.includes(balance.address),
+    const balanceJsons = allBalances.filter((b) =>
+      ownedAddresses.some((address) => isAddressEqual(address, b.address)),
     )
+
     /* eslint-disable-next-line no-var */
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {

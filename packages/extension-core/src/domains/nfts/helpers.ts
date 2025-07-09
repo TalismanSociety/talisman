@@ -1,7 +1,8 @@
 import { isAccountAddressEthereum } from "@talismn/keyring"
-import { firstValueFrom } from "rxjs"
+import { combineLatest, firstValueFrom, map } from "rxjs"
 
-import { activeNetworksObservable } from "../balances/pool"
+import { chaindataProvider } from "../../rpcs/chaindata"
+import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { keyringStore } from "../keyring/store"
 import { NftCollection } from "./types"
 
@@ -14,7 +15,14 @@ export const getNftsAccountsList = async () => {
 }
 
 export const getNftsNetworkIdsList = async () => {
-  return (await firstValueFrom(activeNetworksObservable)).map((n) => n.id).sort()
+  const activeNetworks = await firstValueFrom(
+    combineLatest([chaindataProvider.networks$, activeNetworksStore.observable]).pipe(
+      map(([networks, activeNetworks]) =>
+        networks.filter((n) => isNetworkActive(n, activeNetworks)),
+      ),
+    ),
+  )
+  return activeNetworks.map((n) => n.id).sort()
 }
 
 export const getNftCollectionFloorUsd = (collection: NftCollection): number | null => {

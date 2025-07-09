@@ -1,7 +1,8 @@
+import { IBalance } from "@talismn/balances"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash"
-import { combineLatest, map, Observable, of, switchMap } from "rxjs"
+import { combineLatest, filter, firstValueFrom, map, Observable, of, switchMap } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -10,7 +11,6 @@ import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
 import { balancesProvider$ } from "./balancesProvider"
-import { balancePool } from "./pool"
 import {
   BalanceSubscriptionResponse,
   RequestBalance,
@@ -30,7 +30,7 @@ export class BalancesHandler extends ExtensionHandler {
       // balances handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(balances.get)":
-        return balancePool.getBalance(request as RequestBalance)
+        return getBalance(request as RequestBalance)
 
       case "pri(balances.subscribe)":
         return genericSubscription(id, port, walletBalances$)
@@ -42,7 +42,7 @@ export class BalancesHandler extends ExtensionHandler {
         return genericSubscription(
           id,
           port,
-          getExternalBalances$(request as RequestBalancesByParamsSubscribe),
+          getBalancesByParams$(request as RequestBalancesByParamsSubscribe),
         )
 
       default:
@@ -51,11 +51,21 @@ export class BalancesHandler extends ExtensionHandler {
   }
 }
 
-const getExternalBalances$ = (
+const getBalance = ({ address, tokenId }: RequestBalance) => {
+  return firstValueFrom(
+    balancesProvider$.pipe(
+      switchMap((provider) => provider.getBalances$({ [tokenId]: [address] })),
+      filter((res) => res.status === "live"),
+      map((res): IBalance | null => res.balances[0] ?? null),
+    ),
+  )
+}
+
+const getBalancesByParams$ = (
   params: RequestBalancesByParamsSubscribe,
 ): Observable<BalanceSubscriptionResponse> => {
   return getSharedObservable(
-    "getExternalBalances$",
+    "getBalancesByParams$",
     params,
     (): Observable<BalanceSubscriptionResponse> => {
       const { addressesAndTokens } = params

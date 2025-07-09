@@ -1,4 +1,4 @@
-import { BalanceJson, BalancesResult } from "@talismn/balances"
+import { BalancesResult, IBalance } from "@talismn/balances"
 import { DotNetworkId, EthNetwork, TokenId } from "@talismn/chaindata-provider"
 import { TokenRateCurrency } from "@talismn/token-rates"
 
@@ -50,7 +50,7 @@ export type BalanceTotal = {
 
 export interface BalancesMessages {
   // balance message signatures
-  "pri(balances.get)": [RequestBalance, BalanceJson]
+  "pri(balances.get)": [RequestBalance, IBalance | null]
   "pri(balances.subscribe)": [null, boolean, BalanceSubscriptionResponse]
   "pri(balances.byparams.subscribe)": [
     RequestBalancesByParamsSubscribe,
