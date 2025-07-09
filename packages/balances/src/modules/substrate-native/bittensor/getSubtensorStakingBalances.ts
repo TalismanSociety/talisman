@@ -4,8 +4,7 @@ import { fromPairs, toPairs, uniq, values } from "lodash"
 import { from, Observable, of, switchMap, timer } from "rxjs"
 import { withRetry } from "viem"
 
-import { AmountWithLabel } from "../../../types"
-import { MiniMetadata } from "../../IBalanceModule"
+import { AmountWithLabel, MiniMetadata } from "../../../types"
 import { BalanceDef, fetchRuntimeCallResult } from "../../shared"
 import { MiniMetadataExtra } from "../config"
 import {

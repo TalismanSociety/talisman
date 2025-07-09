@@ -1,8 +1,7 @@
 import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
-import { IBalance } from "../../../types"
-import { MiniMetadata } from "../../IBalanceModule"
+import { IBalance, MiniMetadata } from "../../../types"
 import { buildNetworkStorageCoders } from "../../shared"
 import { RpcQueryPack } from "../../shared/rpcQueryPack"
 import { MiniMetadataExtra } from "../config"

@@ -1,8 +1,6 @@
-import type { Address, IBalance } from "@talismn/balances"
 import type { ChainConnector } from "@talismn/chain-connector"
 import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import {
-  AnyMiniMetadata,
   DotNetworkId,
   EthNetworkId,
   Token,
@@ -11,6 +9,8 @@ import {
   TokenType,
 } from "@talismn/chaindata-provider"
 import { Observable } from "rxjs"
+
+import type { Address, IBalance, MiniMetadata } from "../types"
 
 /**
  * Changes:
@@ -70,8 +70,6 @@ export type FetchBalanceResults = {
 // type MetadataRpcOfPlatform<P extends PlatformOfToken<TokenType>> = P extends "polkadot"
 //   ? `0x${string}`
 //   : null
-
-export type MiniMetadata<Extra = unknown> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }
 
 export interface IBalanceModule<
   Type extends TokenType,

@@ -1,13 +1,5 @@
-import { u8aToHex } from "@polkadot/util"
-import { xxhashAsU8a } from "@polkadot/util-crypto"
-import {
-  AnyMiniMetadata,
-  AnyMiniMetadataSchema,
-  MINIMETADATA_VERSION,
-} from "@talismn/chaindata-provider"
-import z from "zod/v4"
-
-// import { AnyNewBalanceModule, InferChainMeta } from "../modules"
+import { AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
+import { toHex, Twox64Concat } from "@talismn/scale"
 
 /** For fast db access, you can calculate the primary key for a miniMetadata using this method */
 export const deriveMiniMetadataId = ({
@@ -15,23 +7,10 @@ export const deriveMiniMetadataId = ({
   chainId,
   specVersion,
 }: Pick<AnyMiniMetadata, "source" | "chainId" | "specVersion">): string =>
-  u8aToHex(
-    xxhashAsU8a(
+  toHex(
+    Twox64Concat(
       new TextEncoder().encode(`${source}${chainId}${specVersion}${MINIMETADATA_VERSION}`),
-      64,
     ),
-    undefined,
-    false,
-  )
+  ).slice(-64)
 
-// export type MiniMetadataStatus =
-//   /** Metadata is up to date */
-//   | "good"
-//   /** Metadata exists, but needs to be updated */
-//   | "outdated"
-//   /** Metadata doesn't exist */
-//   | "none"
-
-export type MiniMetadata<Extra = unknown> = Omit<z.infer<typeof AnyMiniMetadataSchema>, "extra"> & {
-  extra: Extra
-}
+export type MiniMetadata<Extra = unknown> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }
