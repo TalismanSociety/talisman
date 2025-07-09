@@ -1,6 +1,6 @@
 import { BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { firstThenDebounce } from "@talismn/util"
+import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { fromPairs, isEqual } from "lodash"
 import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap } from "rxjs"
 import { Address } from "viem"
@@ -45,5 +45,6 @@ export const walletBalances$ = combineLatest({
   ),
   firstThenDebounce(200),
   distinctUntilChanged<BalancesResult>(isEqual),
+  keepAlive(2_000), // keeps obs alive while switching from popup to dashboard
   shareReplay({ refCount: true, bufferSize: 1 }),
 )

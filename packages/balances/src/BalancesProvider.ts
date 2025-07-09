@@ -9,7 +9,7 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { isNotNil } from "@talismn/util"
+import { getSharedObservable, isNotNil } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash"
 import {
   BehaviorSubject,
@@ -87,47 +87,51 @@ export class BalancesProvider {
 
   // this is the only public method
   public getBalances$(addressesByTokenId: Record<TokenId, Address[]>): Observable<BalancesResult> {
-    // split by network
-    const addressesByTokenIdByNetworkId: Record<NetworkId, Record<TokenId, Address[]>> = toPairs(
-      addressesByTokenId,
-    ).reduce(
-      (acc, [tokenId, addresses]) => {
-        const networkId = parseTokenId(tokenId).networkId
-        if (!acc[networkId]) acc[networkId] = {}
-        acc[networkId][tokenId] = addresses
-        return acc
-      },
-      {} as Record<NetworkId, Record<TokenId, Address[]>>,
-    )
+    // TODO move the getSharedObservable caching down to this.getNetworkBalances$ to prevent network-level subscriptions to restart when enabling/disabling other networks
+    // this will require addressesByTokenId arg to be normalized/sorted so the cache key can be compared properly, seems a bit random atm
+    return getSharedObservable("BalancesProvider.getBalances$", addressesByTokenId, () => {
+      // split by network
+      const addressesByTokenIdByNetworkId: Record<NetworkId, Record<TokenId, Address[]>> = toPairs(
+        addressesByTokenId,
+      ).reduce(
+        (acc, [tokenId, addresses]) => {
+          const networkId = parseTokenId(tokenId).networkId
+          if (!acc[networkId]) acc[networkId] = {}
+          acc[networkId][tokenId] = addresses
+          return acc
+        },
+        {} as Record<NetworkId, Record<TokenId, Address[]>>,
+      )
 
-    return combineLatest({
-      isStale: timer(30_000).pipe(
-        map(() => true),
-        startWith(false),
-      ),
-      results: combineLatest(
-        toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
-          this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+      return combineLatest({
+        isStale: timer(30_000).pipe(
+          map(() => true),
+          startWith(false),
         ),
-      ),
-    }).pipe(
-      map(
-        ({ isStale, results }): BalancesResult => ({
-          status:
-            !isStale && results.some(({ status }) => status === "initialising")
-              ? "initialising"
-              : "live",
-          balances: results
-            .flatMap((result) => result.balances)
-            .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b))),
-        }),
-      ),
-      startWith({
-        status: "initialising",
-        balances: this.getStoredBalances(addressesByTokenId),
-      } as BalancesResult),
-      distinctUntilChanged<BalancesResult>(isEqual),
-    )
+        results: combineLatest(
+          toPairs(addressesByTokenIdByNetworkId).map(([networkId]) =>
+            this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
+          ),
+        ),
+      }).pipe(
+        map(
+          ({ isStale, results }): BalancesResult => ({
+            status:
+              !isStale && results.some(({ status }) => status === "initialising")
+                ? "initialising"
+                : "live",
+            balances: results
+              .flatMap((result) => result.balances)
+              .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b))),
+          }),
+        ),
+        startWith({
+          status: "initialising",
+          balances: this.getStoredBalances(addressesByTokenId),
+        } as BalancesResult),
+        distinctUntilChanged<BalancesResult>(isEqual),
+      )
+    })
   }
 
   public fetchBalances(addressesByTokenId: Record<TokenId, Address[]>): Promise<IBalance[]> {
