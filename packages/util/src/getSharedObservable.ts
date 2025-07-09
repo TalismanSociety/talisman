@@ -1,4 +1,3 @@
-import md5 from "blueimp-md5"
 import { Observable, shareReplay } from "rxjs"
 
 const CACHE = new Map<string, unknown>()
@@ -20,7 +19,7 @@ export const getSharedObservable = <Args, Output, ObsOutput = Observable<Output>
   createObservable: (args: Args) => ObsOutput,
   serializer = (args: Args): string => JSON.stringify(args),
 ): ObsOutput => {
-  const cacheKey = md5(`${namespace}:${serializer(args)}`)
+  const cacheKey = `${namespace}:${serializer(args)}`
 
   if (CACHE.has(cacheKey)) return CACHE.get(cacheKey) as ObsOutput
 

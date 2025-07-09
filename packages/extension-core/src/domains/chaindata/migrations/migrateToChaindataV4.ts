@@ -25,7 +25,6 @@ import { activeTokensStore } from "../../balances/store.activeTokens"
 import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
-import { isTxInfoSwap } from "../../transactions"
 import { customChaindataStore } from "../store"
 
 const MIGRATION_LABEL = "Updating Balances System"
@@ -133,11 +132,13 @@ const migrateTransactions = async (oldToNewTokenId: Dictionary<string | null>) =
     const newTx = structuredClone(tx)
     newTx.tokenId = (tx.tokenId && oldToNewTokenId[tx.tokenId]) ?? undefined
 
-    if (isTxInfoSwap(newTx.txInfo)) {
-      if (newTx.txInfo.fromTokenId && oldToNewTokenId[newTx.txInfo.fromTokenId])
-        newTx.txInfo.fromTokenId = oldToNewTokenId[newTx.txInfo.fromTokenId]!
-      if (newTx.txInfo.toTokenId && oldToNewTokenId[newTx.txInfo.toTokenId])
-        newTx.txInfo.toTokenId = oldToNewTokenId[newTx.txInfo.toTokenId]!
+    const txInfo = newTx.txInfo
+    // note: using isTxInfoSwap here would cause a circular dependency
+    if (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") {
+      if (txInfo.fromTokenId && oldToNewTokenId[txInfo.fromTokenId])
+        txInfo.fromTokenId = oldToNewTokenId[txInfo.fromTokenId]!
+      if (txInfo.toTokenId && oldToNewTokenId[txInfo.toTokenId])
+        txInfo.toTokenId = oldToNewTokenId[txInfo.toTokenId]!
     }
 
     return newTx

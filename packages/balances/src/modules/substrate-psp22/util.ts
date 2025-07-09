@@ -1,4 +1,5 @@
 import { TypeRegistry } from "@polkadot/types"
+import { ContractExecResult } from "@polkadot/types/interfaces"
 import { u8aConcatStrict, u8aToHex } from "@polkadot/util"
 import { ChainConnector } from "@talismn/chain-connector"
 
@@ -38,4 +39,4 @@ export const makeContractCaller =
           ]),
         ),
       ]),
-    )
+    ) as ContractExecResult

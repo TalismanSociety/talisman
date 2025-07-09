@@ -1,9 +1,7 @@
-import { AnyBalanceModule, Hydrate } from "@talismn/balances"
 import { useSetAtom } from "jotai"
 import { ReactNode, useEffect } from "react"
 
 import {
-  balanceModuleCreatorsAtom,
   coinsApiConfigAtom,
   enabledChainsAtom,
   enabledTokensAtom,
@@ -13,8 +11,8 @@ import {
 export {
   evmErc20TokenId,
   evmNativeTokenId,
-  subNativeTokenId,
   subAssetTokenId,
+  subNativeTokenId,
   subPsp22TokenId,
   subTokensTokenId,
 } from "@talismn/chaindata-provider"
@@ -25,7 +23,7 @@ export * from "./hooks/useChaindata"
 export * from "./hooks/useTokenRates"
 
 export * from "./atoms/allAddresses"
-export * from "./atoms/balanceModules"
+// export * from "./atoms/balanceModules"
 export * from "./atoms/balances"
 export * from "./atoms/chainConnectors"
 export * from "./atoms/chaindata"
@@ -35,11 +33,6 @@ export * from "./atoms/cryptoWaitReady"
 export * from "./atoms/tokenRates"
 
 export type BalancesConfig = {
-  /**
-   * Optionally provide your own array of BalanceModules, when you don't want to use the defaults.
-   */
-  balanceModules?: Array<(hydrate: Hydrate) => AnyBalanceModule>
-
   coinsApiUrl?: string
 
   /** Enables balances fetching for tokens on testnet chains. */
@@ -98,7 +91,6 @@ export type BalancesConfig = {
 }
 
 export const BalancesProvider = ({
-  balanceModules,
   coinsApiUrl,
 
   withTestnets,
@@ -107,11 +99,6 @@ export const BalancesProvider = ({
 
   children,
 }: BalancesConfig) => {
-  const setBalanceModules = useSetAtom(balanceModuleCreatorsAtom)
-  useEffect(() => {
-    if (balanceModules !== undefined) setBalanceModules(balanceModules)
-  }, [balanceModules, setBalanceModules])
-
   const setCoinsApiConfig = useSetAtom(coinsApiConfigAtom)
   useEffect(() => {
     setCoinsApiConfig({ apiUrl: coinsApiUrl })

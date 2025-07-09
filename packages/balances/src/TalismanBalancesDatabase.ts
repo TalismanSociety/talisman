@@ -1,11 +1,11 @@
+import { AnyMiniMetadata } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
 
-import { MiniMetadata } from "./types"
 import { upgradeBalancesDataBlob, upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 
 export class TalismanBalancesDatabase extends Dexie {
   balancesBlob!: Dexie.Table<{ data: Uint8Array; id: string }, string>
-  miniMetadatas!: Dexie.Table<MiniMetadata, string>
+  miniMetadatas!: Dexie.Table<AnyMiniMetadata, string>
 
   constructor() {
     super("TalismanBalances")

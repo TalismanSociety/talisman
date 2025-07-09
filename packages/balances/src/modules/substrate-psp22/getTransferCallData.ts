@@ -7,8 +7,8 @@ import { Binary, Enum } from "polkadot-api"
 
 import psp22Abi from "../abis/psp22.json"
 import { IBalanceModule } from "../IBalanceModule"
-import { makeContractCaller } from "../util"
 import { MODULE_TYPE } from "./config"
+import { makeContractCaller } from "./util"
 
 export const getTransferCallData: IBalanceModule<
   typeof MODULE_TYPE

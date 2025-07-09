@@ -2,7 +2,7 @@ import { map, of } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared"
-import { getRpcQueryPack$ } from "../util/rpcQueryPack"
+import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
 import { buildQueries } from "./buildQueries"
 import { MODULE_TYPE } from "./config"
 

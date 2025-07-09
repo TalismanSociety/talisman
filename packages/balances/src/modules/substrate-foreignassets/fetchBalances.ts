@@ -1,7 +1,7 @@
 import log from "../../log"
 import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
+import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import { fetchRpcQueryPack } from "../util/rpcQueryPack"
 import { buildQueries } from "./buildQueries"
 import { MODULE_TYPE } from "./config"
 

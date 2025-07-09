@@ -4,9 +4,9 @@ import { isNotNil } from "@talismn/util"
 import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
 import { MiniMetadata } from "../IBalanceModule"
+import { buildNetworkStorageCoders } from "../shared"
+import { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
 import { BalanceDef } from "../shared/types"
-import { buildNetworkStorageCoders } from "../util"
-import { MaybeStateKey, RpcQueryPack } from "../util/rpcQueryPack"
 import { MiniMetadataExtra, MODULE_TYPE } from "./config"
 
 export const buildQueries = (

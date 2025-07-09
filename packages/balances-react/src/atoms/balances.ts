@@ -1,24 +1,22 @@
 import {
-  AddressesByToken,
+  Address,
+  // AddressesByToken,
   Balance,
   BalanceJson,
   Balances,
-  balances as balancesFn,
-  getBalanceId,
   HydrateDb,
 } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { Token, TokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
-import { isEqual } from "lodash"
-import { BehaviorSubject, debounceTime, firstValueFrom, map } from "rxjs"
+import { fromPairs, isEqual } from "lodash"
+import { BehaviorSubject, firstValueFrom, map } from "rxjs"
 
-import log from "../log"
-import { BalancesPersistBackend, localStorageBalancesPersistBackend } from "../util/balancesPersist"
+// import { BalancesPersistBackend, localStorageBalancesPersistBackend } from "../util/balancesPersist"
 import { allAddressesAtom } from "./allAddresses"
-import { balanceModulesAtom } from "./balanceModules"
+import { balancesProviderAtom } from "./balancesProvider"
 import {
   chaindataAtom,
   chainsAtom,
@@ -54,18 +52,19 @@ const balancesObservableAtom = atomWithObservable<Record<string, BalanceJson>>(
   () => balancesObservable,
 )
 
-export const balancesPersistBackendAtom = atom<BalancesPersistBackend>(
-  localStorageBalancesPersistBackend,
-)
+// export const balancesPersistBackendAtom = atom<BalancesPersistBackend>(
+//   localStorageBalancesPersistBackend,
+// )
 
-const hydrateBalancesObservableAtom = atom(async (get) => {
-  const persistBackend = get(balancesPersistBackendAtom)
-  const balances = await persistBackend.retrieve()
+const hydrateBalancesObservableAtom = atom(async () => {
+  // const persistBackend = get(balancesPersistBackendAtom)
+  // const balances = await persistBackend.retrieve()
 
   balancesObservable.next(
-    Object.fromEntries(
-      balances.map((b) => [getBalanceId(b), { ...b, status: "cache" } as BalanceJson]),
-    ),
+    {},
+    // Object.fromEntries(
+    //   balances.map((b) => [getBalanceId(b), { ...b, status: "cache" } as BalanceJson]),
+    // ),
   )
 })
 
@@ -87,7 +86,8 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
   const atomDependencies = Promise.all([
     get(cryptoWaitReadyAtom),
 
-    get(balanceModulesAtom),
+    // get(balanceModulesAtom), // TODO yeet
+    get(balancesProviderAtom),
 
     get(allAddressesAtom),
     get(chainsAtom),
@@ -103,13 +103,13 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     get(hydrateBalancesObservableAtom),
   ])
 
-  const persistBackend = get(balancesPersistBackendAtom)
+  // const persistBackend = get(balancesPersistBackendAtom)
 
   const unsubsPromise = (async () => {
     const [
       _cryptoReady,
 
-      balanceModules,
+      balancesProvider,
 
       allAddresses,
       chains,
@@ -127,9 +127,9 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
     if (abort.signal.aborted) return
 
     // persist data every thirty seconds
-    balancesObservable.pipe(debounceTime(10000)).subscribe((balancesUpdate) => {
-      persistBackend.persist(Object.values(balancesUpdate))
-    })
+    // balancesObservable.pipe(debounceTime(10000)).subscribe((balancesUpdate) => {
+    //   persistBackend.persist(Object.values(balancesUpdate))
+    // })
 
     const updateBalances = async (balancesUpdates: BalanceJson[]) => {
       if (abort.signal.aborted) return
@@ -203,7 +203,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
 
     if (enabledTokenIds.length < 1 || allAddresses.length < 1) return
 
-    const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
+    const addressesByTokenByModule: Record<string, Record<TokenId, Address[]>> = {}
     enabledTokenIds
       .flatMap((tokenId) => tokensById[tokenId])
       .forEach((token) => {
@@ -222,6 +222,10 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
         })
       })
 
+    const addressesByTokenId: Record<TokenId, Address[]> = fromPairs(
+      enabledTokenIds.map((tokenId) => [tokenId, allAddresses]),
+    )
+
     // Delete invalid cached balances
     const chainIds = new Set(chains.map((chain) => chain.id))
     const evmNetworkIds = new Set(evmNetworks.map((evmNetwork) => evmNetwork.id))
@@ -236,7 +240,7 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       if (!enabledTokenIds.includes(balance.tokenId)) return true
 
       // delete cached balance when module doesn't exist
-      if (!balanceModules.find((module) => module.type === balance.source)) return true
+      // if (!balanceModules.find((module) => module.type === balance.source)) return true
 
       // delete cached balance for accounts on incompatible chains
       // (substrate accounts shouldn't have evm balances)
@@ -275,80 +279,95 @@ const balancesSubscriptionAtomEffect = atomEffect((get) => {
       })
     }, 30_000)
 
-    return balanceModules.map((balanceModule) => {
-      const unsub = balancesFn(
-        balanceModule,
-        addressesByTokenByModule[balanceModule.type] ?? {},
-        (error, balances) => {
-          // log errors
-          if (error) {
-            if (
-              error?.type === "STALE_RPC_ERROR" ||
-              error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
-            ) {
-              const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
-
-              const staleObservable = balancesObservable.pipe(
-                map((val) =>
-                  Object.values(val)
-                    .filter((balance) => {
-                      const { tokenId, address, source } = balance
-                      const chainComparison = error.chainId
-                        ? "chainId" in balance && error.chainId === balance.chainId
-                        : error.evmNetworkId
-                          ? "evmNetworkId" in balance && error.evmNetworkId === balance.evmNetworkId
-                          : true
-                      return (
-                        chainComparison &&
-                        addressesByModuleToken[tokenId]?.includes(address) &&
-                        source === balanceModule.type
-                      )
-                    })
-                    .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson),
-                ),
-              )
-
-              firstValueFrom(staleObservable).then((v) => {
-                if (v.length) updateBalances(v)
-              })
-            }
-
-            return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
-          }
-
-          // ignore empty balance responses
-          if (!balances) return
-          // ignore balances from old subscriptions which are still in the process of unsubscribing
-          if (abort.signal.aborted) return
-
-          // good balances
-          if (balances) {
-            if ("status" in balances) {
-              // For modules using the new SubscriptionResultWithStatus pattern
-              //TODO fix initialisin
-              // if (result.status === "initialising") this.#initialising.add(balanceModule.type)
-              // else this.#initialising.delete(balanceModule.type)
-              updateBalances(balances.data)
-            } else {
-              // add good ones to initialisedBalances
-              updateBalances(Object.values(balances.toJSON()))
-            }
-          }
-        },
-      )
-
-      return () => unsub.then((unsubscribe) => unsubscribe())
+    const sub = balancesProvider.getBalances$(addressesByTokenId).subscribe((balances) => {
+      updateBalances(balances.balances)
     })
+
+    return () => {
+      sub.unsubscribe()
+    }
+
+    // return balanceModules.map((balanceModule) => {
+    //   const unsub = balancesFn(
+    //     balanceModule,
+    //     addressesByTokenByModule[balanceModule.type] ?? {},
+    //     (error, balances) => {
+    //       // log errors
+    //       if (error) {
+    //         if (
+    //           error?.type === "STALE_RPC_ERROR" ||
+    //           error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+    //         ) {
+    //           const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
+
+    //           const staleObservable = balancesObservable.pipe(
+    //             map((val) =>
+    //               Object.values(val)
+    //                 .filter((balance) => {
+    //                   const { tokenId, address, source } = balance
+    //                   const chainComparison = error.chainId
+    //                     ? "chainId" in balance && error.chainId === balance.chainId
+    //                     : error.evmNetworkId
+    //                       ? "evmNetworkId" in balance && error.evmNetworkId === balance.evmNetworkId
+    //                       : true
+    //                   return (
+    //                     chainComparison &&
+    //                     addressesByModuleToken[tokenId]?.includes(address) &&
+    //                     source === balanceModule.type
+    //                   )
+    //                 })
+    //                 .map((balance) => ({ ...balance, status: "stale" }) as BalanceJson),
+    //             ),
+    //           )
+
+    //           firstValueFrom(staleObservable).then((v) => {
+    //             if (v.length) updateBalances(v)
+    //           })
+    //         }
+
+    //         return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
+    //       }
+
+    //       // ignore empty balance responses
+    //       if (!balances) return
+    //       // ignore balances from old subscriptions which are still in the process of unsubscribing
+    //       if (abort.signal.aborted) return
+
+    //       // good balances
+    //       if (balances) {
+    //         if ("status" in balances) {
+    //           // For modules using the new SubscriptionResultWithStatus pattern
+    //           //TODO fix initialisin
+    //           // if (result.status === "initialising") this.#initialising.add(balanceModule.type)
+    //           // else this.#initialising.delete(balanceModule.type)
+    //           updateBalances(balances.data)
+    //         } else {
+    //           // add good ones to initialisedBalances
+    //           updateBalances(Object.values(balances.toJSON()))
+    //         }
+    //       }
+    //     },
+    //   )
+
+    //   return () => unsub.then((unsubscribe) => unsubscribe())
+    // })
   })()
 
   // close the existing subscriptions when our effect unmounts
   // (wait 2 seconds before actually unsubscribing, to allow the websocket to be reused in that time)
-  const unsubscribe = () =>
-    unsubsPromise.then((unsubs) => {
-      persistBackend.persist(Object.values(balancesObservable.value))
-      unsubs?.forEach((unsub) => unsub())
-    })
-  abort.signal.addEventListener("abort", () => setTimeout(unsubscribe, 2_000))
+  // const unsubscribe = () =>
+  //   unsubsPromise.then((unsubs) => {
+  //     persistBackend.persist(Object.values(balancesObservable.value))
+  //     unsubs?.forEach((unsub) => unsub())
+  //   })
+  // abort.signal.addEventListener("abort", () => setTimeout(unsubscribe, 2_000))
 
-  return () => abort.abort("Unsubscribed")
+  // return () => abort.abort("Unsubscribed")
+
+  return () => {
+    unsubsPromise.then((unsub) => {
+      unsub?.()
+      //console.log("unsubscribed")
+    })
+  }
 })

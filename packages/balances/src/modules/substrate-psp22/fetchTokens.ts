@@ -7,8 +7,8 @@ import { values } from "lodash"
 import log from "../../log"
 import psp22Abi from "../abis/psp22.json"
 import { IBalanceModule } from "../IBalanceModule"
-import { makeContractCaller } from "../util"
 import { MODULE_TYPE, TokenConfig } from "./config"
+import { makeContractCaller } from "./util"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,

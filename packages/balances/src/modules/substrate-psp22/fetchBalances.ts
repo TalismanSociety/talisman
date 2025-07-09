@@ -6,8 +6,8 @@ import psp22Abi from "../abis/psp22.json"
 import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
 import { BalanceFetchError } from "../shared"
 import { getBalanceDefs } from "../shared/types"
-import { makeContractCaller } from "../util"
 import { MODULE_TYPE } from "./config"
+import { makeContractCaller } from "./util"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,

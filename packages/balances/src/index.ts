@@ -10,7 +10,7 @@
 //     import { PluginBalanceTypes } from '@talismn/balances'
 //
 
-export * from "./BalanceModule"
+// export * from "./BalanceModule"
 export * from "./TalismanBalancesDatabase"
 export * from "./modules"
 export * from "./types"

@@ -1,10 +1,6 @@
-import { AnyBalanceModule, defaultBalanceModules, Hydrate } from "@talismn/balances"
 import { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { CoinsApiConfig, DEFAULT_COINSAPI_CONFIG } from "@talismn/token-rates"
 import { atom } from "jotai"
-
-export const balanceModuleCreatorsAtom =
-  atom<Array<(hydrate: Hydrate) => AnyBalanceModule>>(defaultBalanceModules)
 
 const innerCoinsApiConfigAtom = atom<CoinsApiConfig>(DEFAULT_COINSAPI_CONFIG)
 export const coinsApiConfigAtom = atom<CoinsApiConfig, [Partial<CoinsApiConfig>], void>(

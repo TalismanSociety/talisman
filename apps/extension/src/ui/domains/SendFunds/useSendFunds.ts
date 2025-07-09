@@ -1,5 +1,11 @@
-import { Address, Balance, BALANCE_MODULES, BalanceFormatter } from "@talismn/balances"
-import { BalanceTransferType } from "@talismn/balances/src/modules/IBalanceModule"
+import {
+  Address,
+  Balance,
+  BALANCE_MODULES,
+  BalanceFormatter,
+  BalanceTransferType,
+} from "@talismn/balances"
+import { ChainConnector } from "@talismn/chain-connector"
 import {
   isTokenDot,
   isTokenEth,
@@ -34,7 +40,6 @@ import {
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
-import { ChainConnector } from "../../../../../../packages/chain-connector/src"
 import { useSubstratePayloadMetadata } from "../../hooks/useSubstratePayloadMetadata"
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
@@ -183,7 +188,9 @@ const useSubTransaction = (
         value: amount,
         token,
         metadataRpc: sapi.chain.metadataRpc,
-        connector: { send: api.subSend } as ChainConnector,
+        // ChainConnector is not available on front end.
+        // We know this method will only use the send method so we can mimic it easily
+        connector: { send: api.subSend } as unknown as ChainConnector,
         type: method,
         config: network.balancesConfig?.[mod.type],
       })

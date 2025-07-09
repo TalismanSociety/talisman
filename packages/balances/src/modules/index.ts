@@ -1,31 +1,12 @@
 import { EvmErc20BalanceModule } from "./evm-erc20"
 import { EvmNativeBalanceModule } from "./evm-native"
 import { EvmUniswapV2BalanceModule } from "./evm-uniswapv2"
-import { EvmErc20Module } from "./EvmErc20Module"
-import { EvmNativeModule } from "./EvmNativeModule"
-import { EvmUniswapV2Module } from "./EvmUniswapV2Module"
 import { SubAssetsBalanceModule } from "./substrate-assets"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
 import { SubHydrationBalanceModule } from "./substrate-hydration"
 import { SubNativeBalanceModule } from "./substrate-native"
 import { SubPsp22BalanceModule } from "./substrate-psp22"
 import { SubTokensBalanceModule } from "./substrate-tokens"
-import { SubAssetsModule } from "./SubstrateAssetsModule"
-import { SubForeignAssetsModule } from "./SubstrateForeignAssetsModule"
-import { SubNativeModule } from "./SubstrateNativeModule"
-import { SubPsp22Module } from "./SubstratePsp22Module"
-import { SubTokensModule } from "./SubstrateTokensModule"
-
-export const defaultBalanceModules = [
-  EvmErc20Module,
-  EvmNativeModule,
-  EvmUniswapV2Module,
-  SubAssetsModule,
-  SubForeignAssetsModule,
-  SubNativeModule,
-  SubPsp22Module,
-  SubTokensModule,
-]
 
 export const BALANCE_MODULES = [
   SubNativeBalanceModule,
@@ -38,6 +19,8 @@ export const BALANCE_MODULES = [
   EvmUniswapV2BalanceModule,
   EvmNativeBalanceModule,
 ]
+
+export type AnyBalanceModule = (typeof BALANCE_MODULES)[number] // TODO yeet ? should use IBalance
 
 export * from "./evm-native"
 export * from "./evm-erc20"
@@ -59,5 +42,7 @@ export * from "./substrate-tokens"
 // export * from "./SubstratePsp22Module"
 // export * from "./SubstrateTokensModule"
 
-export * from "./util"
+// export * from "./util"
 export * from "./abis"
+
+export * from "./IBalanceModule"

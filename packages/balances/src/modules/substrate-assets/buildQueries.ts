@@ -1,12 +1,11 @@
 import { decodeScale, MetadataBuilder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 
-import { AmountWithLabel, buildNetworkStorageCoders } from "../.."
 import log from "../../log"
-import { IBalance } from "../../types"
+import { AmountWithLabel, IBalance } from "../../types"
 import { MiniMetadata } from "../IBalanceModule"
-import { BalanceDef } from "../shared"
-import { MaybeStateKey, RpcQueryPack } from "../util/rpcQueryPack"
+import { BalanceDef, buildNetworkStorageCoders } from "../shared"
+import { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
 import { MODULE_TYPE } from "./config"
 
 export const buildQueries = (

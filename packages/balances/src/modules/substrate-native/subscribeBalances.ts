@@ -3,7 +3,7 @@ import { combineLatest, map, of, switchMap } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { getBalanceDefs } from "../shared"
-import { getRpcQueryPack$ } from "../util/rpcQueryPack"
+import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
 import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
