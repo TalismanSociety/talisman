@@ -29,8 +29,7 @@ import {
 } from "rxjs"
 
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
-import { getMiniMetadatas } from "./getMiniMetadata/getMiniMetadatas"
-import { getSpecVersion } from "./getMiniMetadata/getSpecVersion"
+import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { TokensWithAddresses } from "./modules/IBalanceModule"
 import { Address, getBalanceId, IBalance, MiniMetadata } from "./types"
@@ -284,38 +283,55 @@ export class BalancesProvider {
     networkId: DotNetworkId,
     specVersion: number,
   ): Observable<MiniMetadata[]> {
-    return combineLatest({
-      defaultMiniMetadatas: this.getDefaultMiniMetadatas$(networkId, specVersion),
-      storedMiniMetadatas: this.getStoredMiniMetadatas$(networkId, specVersion),
-    }).pipe(
-      switchMap(({ storedMiniMetadatas, defaultMiniMetadatas }) => {
-        if (defaultMiniMetadatas.length) return of(defaultMiniMetadatas)
-        if (storedMiniMetadatas.length) return of(storedMiniMetadatas)
-        if (!this.#chainConnectors.substrate) return of([])
+    return new Observable<MiniMetadata[]>((subscriber) => {
+      const controller = new AbortController()
 
-        return from(
-          // fetch them from the chain
-          getMiniMetadatas(this.#chainConnectors.substrate!, this.#chaindataProvider, networkId),
-        ).pipe(
-          // and persist in storage for later reuse
-          tap((newMiniMetadatas) => {
-            if (!newMiniMetadatas.length) return
-            const storage = this.#storage.getValue()
-            const miniMetadatas = assign(
-              // keep minimetadatas of other networks
-              keyBy(
-                values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
-                (m) => m.id,
+      const subscription = combineLatest({
+        defaultMiniMetadatas: this.getDefaultMiniMetadatas$(networkId, specVersion),
+        storedMiniMetadatas: this.getStoredMiniMetadatas$(networkId, specVersion),
+      })
+        .pipe(
+          switchMap(({ storedMiniMetadatas, defaultMiniMetadatas }) => {
+            if (defaultMiniMetadatas.length) return of(defaultMiniMetadatas)
+            if (storedMiniMetadatas.length) return of(storedMiniMetadatas)
+            if (!this.#chainConnectors.substrate) return of([])
+
+            return from(
+              // fetch them from the chain
+              getMiniMetadatas(
+                this.#chainConnectors.substrate!,
+                this.#chaindataProvider,
+                networkId,
+                specVersion,
+                controller.signal,
               ),
-              // add the ones for our network
-              keyBy(newMiniMetadatas, (m) => m.id),
-            )
+            ).pipe(
+              // and persist in storage for later reuse
+              tap((newMiniMetadatas) => {
+                if (!newMiniMetadatas.length) return
+                const storage = this.#storage.getValue()
+                const miniMetadatas = assign(
+                  // keep minimetadatas of other networks
+                  keyBy(
+                    values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
+                    (m) => m.id,
+                  ),
+                  // add the ones for our network
+                  keyBy(newMiniMetadatas, (m) => m.id),
+                )
 
-            this.#storage.next(assign({}, storage, { miniMetadatas }))
+                this.#storage.next(assign({}, storage, { miniMetadatas }))
+              }),
+            )
           }),
         )
-      }),
-    )
+        .subscribe(subscriber)
+
+      return () => {
+        subscription.unsubscribe()
+        controller.abort()
+      }
+    })
   }
 
   private getStoredMiniMetadatas$(

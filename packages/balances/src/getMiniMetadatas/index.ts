@@ -9,6 +9,8 @@ import { MiniMetadata } from "../types"
 import { getMetadataRpc } from "./getMetadataRpc"
 import { getSpecVersion } from "./getSpecVersion"
 
+export { getSpecVersion } from "./getSpecVersion"
+
 // share requests as all modules will call this at once
 const CACHE = new Map<string, Promise<MiniMetadata[]>>()
 
@@ -27,7 +29,7 @@ export const getMiniMetadatas = async (
   if (!signal)
     log.warn(
       "[miniMetadata] getMiniMetadatas called without signal, this may hang the updates",
-      new Error("No signal provided"), // this will show the stack trace
+      new Error("No signal provided"), // this will show the stack trace so the culprit can fix it
     )
 
   if (specVersion === undefined) specVersion = await getSpecVersion(chainConnector, networkId)

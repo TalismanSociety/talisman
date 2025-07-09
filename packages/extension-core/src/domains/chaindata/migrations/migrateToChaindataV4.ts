@@ -1,4 +1,3 @@
-import { db as balancesDb } from "@talismn/balances"
 import {
   DotNetwork,
   EthNetwork,
@@ -22,7 +21,6 @@ import { appStore } from "../../app/store.app"
 import { assetDiscoveryStore } from "../../assetDiscovery/store"
 import { activeNetworksStore } from "../../balances/store.activeNetworks"
 import { activeTokensStore } from "../../balances/store.activeTokens"
-import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
 import { customChaindataStore } from "../store"
@@ -93,13 +91,14 @@ const executeMigration = async () => {
 
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.9 } })
 
-    // clear balances db
-    await balancesDb.balancesBlob.clear()
-    await balancesDb.miniMetadatas.clear()
-    await balanceTotalsStore.clear()
-
     // clear asset discovery pending queue
     await assetDiscoveryStore.clear()
+
+    try {
+      indexedDB.deleteDatabase("TalismanBalances")
+    } catch {
+      // ignore, this is not critical
+    }
 
     // delete old chaindata v3 db
     await oldChaindataDb?.delete()
