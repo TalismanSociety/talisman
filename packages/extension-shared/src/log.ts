@@ -26,16 +26,10 @@ export const log = {
   timer: (label: string) => {
     if (TEST) return () => {}
 
-    const timeKey = `${label} (${crypto.randomUUID()})`
-    console.time(timeKey)
-
-    let done = false
+    const start = performance.now()
 
     return () => {
-      if (done) return
-
-      console.timeEnd(timeKey)
-      done = true
+      console.debug(`${label} - ${(performance.now() - start).toFixed(2)}ms`)
     }
   },
 }

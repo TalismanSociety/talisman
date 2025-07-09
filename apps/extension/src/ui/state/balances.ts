@@ -4,11 +4,11 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceSubscriptionResponse } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import {
-  BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
   map,
   Observable,
+  ReplaySubject,
   shareReplay,
   throttleTime,
 } from "rxjs"
@@ -31,10 +31,7 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
   }).pipe(debugObservable("balancesHydrate$")),
 )
 
-const rawBalancesCache$ = new BehaviorSubject<BalanceSubscriptionResponse>({
-  status: "initialising",
-  balances: [],
-})
+const rawBalancesCache$ = new ReplaySubject<BalanceSubscriptionResponse>(1)
 
 // Reading this atom triggers the balances backend subscription
 // Unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
@@ -56,7 +53,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
 )
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
-  rawBalances$.pipe(
+  rawBalancesCache$.pipe(
     map((balances) => balances.status === "initialising"),
     distinctUntilChanged(),
   ),

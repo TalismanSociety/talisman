@@ -1,17 +1,18 @@
+import { IBalance } from "@talismn/balances"
 import { isAccountNotContact } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
-import { combineLatest, throttleTime } from "rxjs"
+import { combineLatest, map, throttleTime } from "rxjs"
 
 import { db as extensionDb } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { settingsStore } from "../app/store.settings"
 import { keyringStore } from "../keyring/store"
-import { balancePool } from "./pool"
+import { balancesStore$ } from "./store.balances"
 import { balanceTotalsStore } from "./store.BalanceTotals"
-import { BalanceJson, Balances } from "./types"
+import { Balances } from "./types"
 
 const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
 
@@ -25,7 +26,7 @@ export const trackBalanceTotals = async () => {
     keyringStore.accounts$,
     chaindataProvider.getTokensMapById$(),
     chaindataProvider.getNetworksMapById$(),
-    balancePool.observable,
+    balancesStore$.pipe(map((store) => store.balances)),
     liveQuery(() => extensionDb.tokenRates.toArray()),
   ])
     .pipe(throttleTime(MAX_UPDATE_INTERVAL, undefined, { trailing: true }))
@@ -56,7 +57,7 @@ export const trackBalanceTotals = async () => {
 
             return acc
           },
-          {} as Record<string, BalanceJson[]>,
+          {} as Record<string, IBalance[]>,
         )
 
         const totals = Object.fromEntries(

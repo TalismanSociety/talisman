@@ -31,7 +31,7 @@ import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas } from "./getMiniMetadata/getMiniMetadatas"
 import { getSpecVersion } from "./getMiniMetadata/getSpecVersion"
 import log from "./log"
-import { TokensWithAddresses } from "./modules/IBalanceModule"
+import { MiniMetadata, TokensWithAddresses } from "./modules/IBalanceModule"
 import { Address, getBalanceId, IBalance } from "./types"
 
 type BalancesStatus = "initialising" | "live"
@@ -43,12 +43,12 @@ export type BalancesResult = {
 
 export type BalancesStorage = {
   balances: IBalance[]
-  miniMetadatas: AnyMiniMetadata[]
+  miniMetadatas: MiniMetadata[]
 }
 
 type ProviderBalancesStorage = {
   balances: Record<string, IBalance>
-  miniMetadatas: Record<string, AnyMiniMetadata>
+  miniMetadatas: Record<string, MiniMetadata>
 }
 
 const DEFAULT_STORAGE: BalancesStorage = {
@@ -117,7 +117,9 @@ export class BalancesProvider {
             !isStale && results.some(({ status }) => status === "initialising")
               ? "initialising"
               : "live",
-          balances: results.flatMap((result) => result.balances),
+          balances: results
+            .flatMap((result) => result.balances)
+            .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b))),
         }),
       ),
       startWith({
@@ -172,6 +174,7 @@ export class BalancesProvider {
               balances: this.getStoredBalances(moduleAddressesByTokenId),
             }
 
+            // updating storage has to be done on a per-module basis, so we know which balances can be deleted
             const updateStorage = (results: BalancesResult) => {
               if (results.status !== "live") return
 
@@ -222,7 +225,7 @@ export class BalancesProvider {
                     networkId,
                     tokensWithAddresses,
                     connector: this.#chainConnectors.substrate,
-                    miniMetadata: miniMetadata,
+                    miniMetadata: miniMetadata as AnyMiniMetadata,
                   })
                   .pipe(
                     map(
@@ -249,7 +252,7 @@ export class BalancesProvider {
     )
   }
 
-  private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<AnyMiniMetadata[]> {
+  private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
     return this.#chaindataProvider
       .getNetworkById$(networkId)
       .pipe(
@@ -266,7 +269,7 @@ export class BalancesProvider {
   private getMiniMetadatas$(
     networkId: DotNetworkId,
     specVersion: number,
-  ): Observable<AnyMiniMetadata[]> {
+  ): Observable<MiniMetadata[]> {
     return combineLatest({
       defaultMiniMetadatas: this.getDefaultMiniMetadatas$(networkId, specVersion),
       storedMiniMetadatas: this.getStoredMiniMetadatas$(networkId, specVersion),
@@ -304,7 +307,7 @@ export class BalancesProvider {
   private getStoredMiniMetadatas$(
     networkId: string,
     specVersion: number,
-  ): Observable<AnyMiniMetadata[]> {
+  ): Observable<MiniMetadata[]> {
     return this.storage$.pipe(
       map((storage) =>
         storage.miniMetadatas.filter(
@@ -314,14 +317,14 @@ export class BalancesProvider {
             m.version === MINIMETADATA_VERSION,
         ),
       ),
-      distinctUntilChanged<AnyMiniMetadata[]>(isEqual),
+      distinctUntilChanged<MiniMetadata[]>(isEqual),
     )
   }
 
   private getDefaultMiniMetadatas$(
     networkId: string,
     specVersion: number,
-  ): Observable<AnyMiniMetadata[]> {
+  ): Observable<MiniMetadata[]> {
     return this.#chaindataProvider.miniMetadatas$.pipe(
       map((miniMetadatas) =>
         miniMetadatas.filter(
@@ -331,7 +334,7 @@ export class BalancesProvider {
             m.version === MINIMETADATA_VERSION,
         ),
       ),
-      distinctUntilChanged<AnyMiniMetadata[]>(isEqual),
+      distinctUntilChanged<MiniMetadata[]>(isEqual),
     )
   }
 
@@ -343,5 +346,6 @@ export class BalancesProvider {
     return balanceDefs
       .map(([tokenId, address]) => this.#storage.value.balances[getBalanceId({ address, tokenId })])
       .filter(isNotNil)
+      .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b)))
   }
 }

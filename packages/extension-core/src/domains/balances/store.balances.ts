@@ -32,7 +32,7 @@ const cleanupBalanceForStorage = (balance: IBalance): IBalance => {
   const { networkId, address, tokenId, source, useLegacyTransferableCalculation, values, value } =
     balance
   return {
-    status: "cache", // enforce cache status so it's always good when pulling data from storage
+    status: "cache",
     networkId,
     address,
     tokenId,
@@ -44,7 +44,6 @@ const cleanupBalanceForStorage = (balance: IBalance): IBalance => {
 }
 
 export const updateBalancesStore = (data: BalancesStorage) => {
-  log.debug("[balances] updating store with data", data)
   subjectBalancesStore.next({
     id: BLOB_ID,
     balances: data.balances
@@ -63,8 +62,10 @@ getDbBlob<"balances", BalancesStoreData>(BLOB_ID).then((storage) => {
 // persist to db when store is updated
 balancesStore$
   // skip 2 : one for initial value, one for the provisioning from indexed db
-  .pipe(skip(2), debounceTime(2_000), distinctUntilChanged(isEqual))
+  .pipe(skip(2), debounceTime(2_000), distinctUntilChanged<BalancesStorage>(isEqual))
   .subscribe((storage) => {
-    log.debug("[balances] updating db blob with data", storage)
+    log.debug(
+      `[balances] updating db blob with data (bal:${storage.balances.length}, meta:${storage.miniMetadatas.length})`,
+    )
     updateDbBlob(BLOB_ID, { id: BLOB_ID, ...storage })
   })
