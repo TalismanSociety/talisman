@@ -4,7 +4,7 @@ import { parseMetadataRpc } from "@talismn/scale"
 import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../IBalanceModule"
-import { getConstantValue } from "../shared/getContantValue"
+import { getConstantValue } from "../shared"
 import { MODULE_TYPE } from "./config"
 
 export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadata"] = ({

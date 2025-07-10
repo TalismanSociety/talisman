@@ -12,19 +12,6 @@ import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 
-// const TokenCacheSchema = EvmUniswapV2TokenSchema.pick({
-//   id: true,
-//   symbol: true,
-//   decimals: true,
-//   name: true,
-//   tokenAddress0: true,
-//   tokenAddress1: true,
-//   decimals0: true,
-//   decimals1: true,
-//   symbol0: true,
-//   symbol1: true,
-// })
-
 const TokenCacheSchema = z.discriminatedUnion("isValid", [
   z.strictObject({
     id: EvmUniswapV2TokenSchema.shape.id,

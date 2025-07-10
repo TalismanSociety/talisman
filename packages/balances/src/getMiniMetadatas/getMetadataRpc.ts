@@ -12,7 +12,9 @@ export const getMetadataRpc = async (chainConnector: ChainConnector, networkId: 
   const pResult = fetchBestMetadata(
     (method, params, isCacheable) =>
       chainConnector.send(networkId, method, params, isCacheable, { expectErrors: true }),
-    true, // allow fallback to 14 as modules dont use any v15 or v16 specifics yet
+    // do not allow fallback to v14 unless unavailable.
+    // substrate-native and substrate-hydration need v15 metadata for runtime api calls
+    false,
   )
 
   CACHE.set(networkId, pResult)
