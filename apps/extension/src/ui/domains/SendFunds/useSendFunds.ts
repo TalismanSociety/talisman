@@ -73,29 +73,19 @@ const useIsSendingEnough = (
   return useMemo(() => {
     try {
       if (!token || !recipientBalance || !transfer) return true
-      switch (token.type) {
-        case "evm-uniswapv2":
-        case "evm-erc20":
-        case "evm-native":
-        case "substrate-psp22":
-          return true
-        case "substrate-assets":
-        case "substrate-foreignassets":
-        case "substrate-native":
-        case "substrate-tokens":
-        case "substrate-hydration": {
-          const existentialDeposit = new BalanceFormatter(
-            token.existentialDeposit ?? "0",
-            token.decimals,
-          )
 
-          return (
-            transfer.planck === 0n ||
-            recipientBalance.total.planck > 0n ||
-            transfer.planck >= existentialDeposit.planck
-          )
-        }
-      }
+      if (!isTokenNeedExistentialDeposit(token)) return true
+
+      const existentialDeposit = new BalanceFormatter(
+        token.existentialDeposit ?? "0",
+        token.decimals,
+      )
+
+      return (
+        transfer.planck === 0n ||
+        recipientBalance.total.planck > 0n ||
+        transfer.planck >= existentialDeposit.planck
+      )
     } catch (err) {
       log.error("isSendingEnough", { err })
       return false
@@ -189,7 +179,7 @@ const useSubTransaction = (
         token,
         metadataRpc: sapi.chain.metadataRpc,
         // ChainConnector is not available on front end.
-        // We know this method will only use the send method so we can mimic it easily
+        // getTransferCallData only uses the send method so we can mimic it safely
         connector: { send: api.subSend } as unknown as ChainConnector,
         type: method,
         config: network.balancesConfig?.[mod.type],

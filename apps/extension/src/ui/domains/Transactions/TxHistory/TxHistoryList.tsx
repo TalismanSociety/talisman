@@ -577,16 +577,14 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }) => {
   const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
 
-  const txInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const txInfoSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const txInfo = tx.txInfo
   const { isTransfer, value, tokenId } = useMemo(() => {
+    // legacy entries do not have a type, in that case assume it's a transfer
     const isTransfer =
-      txInfo?.type !== "swap-simpleswap" &&
-      txInfo?.type !== "swap-stealthex" &&
-      !!tx.tokenId &&
-      !!tx.value &&
-      tx.to
+      (!txInfo?.type || isTxInfoTransfer(txInfo)) && !!tx.tokenId && !!tx.value && tx.to
     return isTransfer
-      ? { isTransfer, value: tx.value, tokenId: tx.tokenId, to: tx.to }
+      ? { isTransfer, value: txInfo?.value ?? tx.value, tokenId: tx.tokenId, to: tx.to }
       : {
           isTransfer,
           value: tx.unsigned.value,
@@ -607,8 +605,8 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   const tokenRates = useTokenRates(tokenId)
   const currency = useSelectedCurrency()
 
-  const fromToken = useToken(txInfo?.fromTokenId)
-  const toToken = useToken(txInfo?.toTokenId)
+  const fromToken = useToken(txInfoSwap?.fromTokenId)
+  const toToken = useToken(txInfoSwap?.toTokenId)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -639,7 +637,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
             <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
           </TxIconContainer>
-        ) : ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
+        ) : txInfoSwap ? (
           <div className="flex items-center">
             <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
@@ -679,12 +677,12 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        txInfo && ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type ?? "") ? (
+        txInfoSwap && ["swap-simpleswap", "swap-stealthex"].includes(txInfoSwap?.type ?? "") ? (
           <div className="flex flex-col">
             <div className="flex items-center justify-end gap-1">
               <Tokens
                 className="pointer-events-none"
-                amount={planckToTokens(txInfo.fromAmount, fromToken?.decimals)}
+                amount={planckToTokens(txInfoSwap.fromAmount, fromToken?.decimals)}
                 decimals={fromToken?.decimals}
                 noCountUp
                 noTooltip
@@ -694,7 +692,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
             </div>
             <Tokens
               className="pointer-events-none"
-              amount={planckToTokens(txInfo.toAmount, toToken?.decimals)}
+              amount={planckToTokens(txInfoSwap.toAmount, toToken?.decimals)}
               decimals={toToken?.decimals ?? 0}
               noCountUp
               noTooltip
@@ -715,12 +713,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
           )
         )
       }
-      fiat={
-        txInfo?.type !== "swap-simpleswap" &&
-        txInfo?.type !== "swap-stealthex" &&
-        !!amount &&
-        amount.fiat(currency) && <Fiat amount={amount} noCountUp />
-      }
+      fiat={txInfoSwap && !!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
       actions={
         <EvmTxActions
           tx={tx}
