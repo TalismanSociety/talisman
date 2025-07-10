@@ -5,7 +5,7 @@ import {
   SubHydrationTokenSchema,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
-import { assign, keyBy } from "lodash"
+import { assign, keyBy } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import log from "../../log"

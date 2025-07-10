@@ -1,7 +1,7 @@
 import { IBalance } from "@talismn/balances"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
-import { fromPairs } from "lodash"
+import { fromPairs } from "lodash-es"
 import { combineLatest, filter, firstValueFrom, map, Observable, of, switchMap } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"

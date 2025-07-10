@@ -5,7 +5,7 @@ import { isAddressEqual, isTruthy } from "@talismn/util"
 import { Account } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import { t } from "i18next"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"

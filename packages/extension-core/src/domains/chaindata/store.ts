@@ -9,7 +9,7 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { assign, keyBy, values } from "lodash"
+import { assign, keyBy, values } from "lodash-es"
 
 import { StorageProvider } from "../../libs/Store"
 

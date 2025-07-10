@@ -11,10 +11,10 @@ import {
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
 import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
-import { isEqual, uniq } from "lodash"
-import chunk from "lodash/chunk"
-import groupBy from "lodash/groupBy"
-import sortBy from "lodash/sortBy"
+import { isEqual, uniq } from "lodash-es"
+import chunk from "lodash-es/chunk"
+import groupBy from "lodash-es/groupBy"
+import sortBy from "lodash-es/sortBy"
 import {
   combineLatest,
   debounceTime,

@@ -1,5 +1,5 @@
 import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
-import { assign, omit } from "lodash"
+import { assign, omit } from "lodash-es"
 import { BaseError } from "viem"
 import z from "zod/v4"
 

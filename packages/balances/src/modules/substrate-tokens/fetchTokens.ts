@@ -1,5 +1,5 @@
 import { SubTokensToken, subTokensTokenId } from "@talismn/chaindata-provider"
-import { assign } from "lodash"
+import { assign } from "lodash-es"
 
 import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"

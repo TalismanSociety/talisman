@@ -1,6 +1,6 @@
 import { BalancesStorage, getBalanceId, IBalance } from "@talismn/balances"
 import { log } from "extension-shared"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, skip } from "rxjs"
 
 import { getDbBlob, updateDbBlob } from "../../db"

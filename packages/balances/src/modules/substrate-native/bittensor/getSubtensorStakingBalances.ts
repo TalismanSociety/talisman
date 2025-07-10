@@ -1,6 +1,6 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { DotNetworkId } from "@talismn/chaindata-provider"
-import { fromPairs, toPairs, uniq, values } from "lodash"
+import { fromPairs, toPairs, uniq, values } from "lodash-es"
 import { from, Observable, of, switchMap, timer } from "rxjs"
 import { withRetry } from "viem"
 

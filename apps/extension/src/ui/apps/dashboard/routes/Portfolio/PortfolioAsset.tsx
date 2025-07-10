@@ -1,7 +1,7 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { t } from "i18next"
-import { uniq } from "lodash"
+import { uniq } from "lodash-es"
 import { FC, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"

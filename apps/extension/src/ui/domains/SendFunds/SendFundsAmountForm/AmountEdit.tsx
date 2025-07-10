@@ -2,7 +2,7 @@ import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { log } from "extension-shared"
-import debounce from "lodash/debounce"
+import debounce from "lodash-es/debounce"
 import {
   ChangeEventHandler,
   FC,

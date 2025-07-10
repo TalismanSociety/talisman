@@ -1,5 +1,5 @@
 import { EvmNativeToken, evmNativeTokenId, EvmNativeTokenSchema } from "@talismn/chaindata-provider"
-import { assign } from "lodash"
+import { assign } from "lodash-es"
 
 import log from "../../log"
 import { IBalanceModule } from "../IBalanceModule"

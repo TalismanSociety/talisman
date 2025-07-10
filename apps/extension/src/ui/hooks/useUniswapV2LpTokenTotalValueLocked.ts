@@ -1,7 +1,7 @@
 import { Balance, Balances } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
-import groupBy from "lodash/groupBy"
+import groupBy from "lodash-es/groupBy"
 
 export const useUniswapV2LpTokenTotalValueLocked = (
   token?: Token,

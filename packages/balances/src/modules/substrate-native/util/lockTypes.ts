@@ -1,4 +1,4 @@
-import upperFirst from "lodash/upperFirst"
+import upperFirst from "lodash-es/upperFirst"
 
 import { Balance, BalanceFormatter, LockedAmount } from "../../../types"
 

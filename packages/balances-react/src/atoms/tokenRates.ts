@@ -9,7 +9,7 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { map } from "rxjs"
 
 import log from "../log"

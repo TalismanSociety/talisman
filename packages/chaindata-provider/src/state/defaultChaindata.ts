@@ -1,5 +1,5 @@
 import { liveQuery } from "dexie"
-import { isEqual, isEqualWith, sortBy } from "lodash"
+import { isEqual, isEqualWith, sortBy } from "lodash-es"
 import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { AnyMiniMetadata, Network, Token } from "../chaindata"

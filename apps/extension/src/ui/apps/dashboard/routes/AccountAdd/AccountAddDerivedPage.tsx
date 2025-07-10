@@ -1,5 +1,5 @@
 import { KeypairCurve } from "@talismn/crypto"
-import { capitalize } from "lodash"
+import { capitalize } from "lodash-es"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"

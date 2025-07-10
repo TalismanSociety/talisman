@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js"
 
 import "extension-core"
 
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { useMemo } from "react"
 
 import { usePortfolio, useSelectedCurrency } from "@ui/state"

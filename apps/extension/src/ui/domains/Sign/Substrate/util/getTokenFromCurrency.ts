@@ -1,6 +1,6 @@
 import { DotNetwork, Token } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { Enum } from "polkadot-api"
 
 const normalizeTokenId = (tokenId: unknown) => {

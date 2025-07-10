@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { balanceTotalsStore } from "extension-core"
-import { values } from "lodash"
+import { values } from "lodash-es"
 import { map } from "rxjs"
 
 export const [useBalanceTotals, balanceTotals$] = bind(

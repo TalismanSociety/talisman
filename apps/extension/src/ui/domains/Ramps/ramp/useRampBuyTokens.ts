@@ -1,7 +1,7 @@
 import { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
-import { groupBy } from "lodash"
+import { groupBy } from "lodash-es"
 import { useMemo } from "react"
 
 import { useRemoteConfig, useTokensMap } from "@ui/state"

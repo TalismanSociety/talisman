@@ -3,7 +3,7 @@ import { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/util"
 import { WalletTransaction } from "extension-core"
 import { log } from "extension-shared"
-import uniq from "lodash/uniq"
+import uniq from "lodash-es/uniq"
 import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"

@@ -1,6 +1,6 @@
 import { DbTokenRates, TokenRateCurrency, TokenRates } from "@talismn/token-rates"
 import { Transaction as DbTransaction } from "dexie"
-import { fromPairs, toPairs } from "lodash"
+import { fromPairs, toPairs } from "lodash-es"
 
 type OldDbTokenRates = {
   tokenId: string

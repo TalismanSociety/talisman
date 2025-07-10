@@ -4,7 +4,7 @@ import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Address, isAccountCompatibleWithNetwork } from "extension-core"
-import sortBy from "lodash/sortBy"
+import sortBy from "lodash-es/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 

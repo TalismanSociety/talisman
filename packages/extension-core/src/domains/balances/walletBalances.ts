@@ -2,7 +2,7 @@ import { Address, BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"
-import { fromPairs, isEqual } from "lodash"
+import { fromPairs, isEqual } from "lodash-es"
 import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap } from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"

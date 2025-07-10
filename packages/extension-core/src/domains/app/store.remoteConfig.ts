@@ -1,6 +1,6 @@
 import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { DEBUG, log, TEST } from "extension-shared"
-import merge from "lodash/merge"
+import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
 import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"

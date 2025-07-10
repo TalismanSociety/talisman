@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { uniq } from "lodash"
+import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
 export type BalancesStatus =

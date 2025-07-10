@@ -1,7 +1,7 @@
 import { firstThenDebounce } from "@talismn/util"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { combineLatest } from "rxjs"
 
 import { chaindataProviderAtom } from "./chaindataProvider"

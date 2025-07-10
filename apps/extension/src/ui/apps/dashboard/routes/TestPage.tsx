@@ -1,5 +1,5 @@
 import { log } from "extension-shared"
-import { groupBy } from "lodash"
+import { groupBy } from "lodash-es"
 import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } from "react"
 
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"

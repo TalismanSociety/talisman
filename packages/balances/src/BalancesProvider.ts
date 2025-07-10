@@ -11,7 +11,7 @@ import {
   TokenId,
 } from "@talismn/chaindata-provider"
 import { getSharedObservable, isEthereumAddress, isNotNil } from "@talismn/util"
-import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash"
+import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash-es"
 import {
   BehaviorSubject,
   combineLatest,

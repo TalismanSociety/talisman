@@ -3,7 +3,7 @@ import {
   evmUniswapV2TokenId,
   EvmUniswapV2TokenSchema,
 } from "@talismn/chaindata-provider"
-import { assign, omit } from "lodash"
+import { assign, omit } from "lodash-es"
 import { BaseError } from "viem"
 import z from "zod/v4"
 

@@ -1,4 +1,4 @@
-import { assign, isEqual, keyBy, values } from "lodash"
+import { assign, isEqual, keyBy, values } from "lodash-es"
 import {
   combineLatest,
   distinctUntilChanged,

@@ -5,7 +5,7 @@ import {
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
-import { assign, keyBy, keys } from "lodash"
+import { assign, keyBy, keys } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import log from "../../log"

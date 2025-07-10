@@ -3,7 +3,7 @@ import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountOwned } from "@talismn/keyring"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
-import groupBy from "lodash/groupBy"
+import groupBy from "lodash-es/groupBy"
 import { filter, firstValueFrom, map } from "rxjs"
 
 import { sentry } from "../config/sentry"

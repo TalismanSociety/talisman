@@ -2,7 +2,7 @@ import { Address, BalanceJson, Balances, HydrateDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
-import { fromPairs, keyBy } from "lodash"
+import { fromPairs, keyBy } from "lodash-es"
 
 import { allAddressesAtom } from "./allAddresses"
 import { balancesProviderAtom } from "./balancesProvider"

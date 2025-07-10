@@ -1,4 +1,4 @@
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import z from "zod/v4"
 
 import { AnyMiniMetadataSchema, NetworkSchema, TokenSchema } from "../chaindata"

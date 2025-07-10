@@ -1,7 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
-import { uniq } from "lodash"
+import { uniq } from "lodash-es"
 import { FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"

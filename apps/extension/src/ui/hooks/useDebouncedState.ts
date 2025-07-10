@@ -1,4 +1,4 @@
-import debounce from "lodash/debounce"
+import debounce from "lodash-es/debounce"
 import { useCallback, useState } from "react"
 
 export const useDebouncedState = <S>(initialValue: S | (() => S), delay = 200) => {

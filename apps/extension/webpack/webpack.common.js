@@ -31,7 +31,7 @@ const config = (env) => ({
     // Also, `dependOn` seems to break the build (background script doesn't start) when there's more than one entry in it.
     // So, I've daisy-chained each entry to `dependOn` the next.
     "vendor-background": {
-      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core", "lodash", "dexie"],
+      import: ["@metamask/eth-sig-util", "@substrate/txwrapper-core", "dexie"],
     },
 
     // Wallet injected scripts

@@ -1,4 +1,4 @@
-import { keyBy, uniq } from "lodash"
+import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
 import { IBalance } from "../../types"

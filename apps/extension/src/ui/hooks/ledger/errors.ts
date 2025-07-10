@@ -1,6 +1,6 @@
 import { DEBUG, log } from "extension-shared"
 import { t } from "i18next"
-import { capitalize } from "lodash"
+import { capitalize } from "lodash-es"
 
 export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
   "This transaction cannot be signed via an Ethereum Ledger account."

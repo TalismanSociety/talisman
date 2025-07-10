@@ -1,4 +1,4 @@
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"

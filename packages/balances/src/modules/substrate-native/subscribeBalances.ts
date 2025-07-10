@@ -1,4 +1,4 @@
-import { toPairs } from "lodash"
+import { toPairs } from "lodash-es"
 import { combineLatest, map, of, switchMap } from "rxjs"
 
 import { IBalanceModule } from "../IBalanceModule"

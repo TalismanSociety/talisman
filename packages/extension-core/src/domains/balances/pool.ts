@@ -3,10 +3,10 @@
 // // import { Account, isAccountNotContact } from "@talismn/keyring"
 // // import { Deferred, encodeAnyAddress, firstThenDebounce } from "@talismn/util"
 // // import { log } from "extension-shared"
-// // import { keyBy } from "lodash"
-// // import isEqual from "lodash/isEqual"
-// // import omit from "lodash/omit"
-// // import pick from "lodash/pick"
+// // import { keyBy } from "lodash-es"
+// // import isEqual from "lodash-es/isEqual"
+// // import omit from "lodash-es/omit"
+// // import pick from "lodash-es/pick"
 // // import {
 // //   BehaviorSubject,
 // //   combineLatest,

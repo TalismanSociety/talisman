@@ -19,7 +19,7 @@ import {
   isNetworkActive,
   isTokenActive,
 } from "extension-core"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"
 
 import { api } from "@ui/api"

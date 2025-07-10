@@ -2,7 +2,7 @@ import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { ProviderType } from "extension-core"
-import startCase from "lodash/startCase"
+import { startCase } from "lodash-es"
 import {
   ButtonHTMLAttributes,
   DetailedHTMLProps,

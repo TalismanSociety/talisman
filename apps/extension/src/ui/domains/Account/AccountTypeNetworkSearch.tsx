@@ -9,7 +9,7 @@ import { isNetworkDot } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { isNetworkActive } from "extension-core"
-import startCase from "lodash/startCase"
+import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 

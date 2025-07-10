@@ -7,13 +7,12 @@ const CopyPlugin = require("copy-webpack-plugin")
 // const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const { SourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
-const startCase = require("lodash/startCase.js")
 
 const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
 
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
-console.log(`Building for ${startCase(browser)} with dev config `)
+console.log(`Building for ${browser} with dev config `)
 
 /** @type { import('webpack').Configuration } */
 const config = (env) =>
