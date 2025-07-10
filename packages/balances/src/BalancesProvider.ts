@@ -316,6 +316,7 @@ export class BalancesProvider {
         if (defaultMiniMetadatas) return of(defaultMiniMetadatas)
         if (storedMiniMetadatas) return of(storedMiniMetadatas)
         if (!this.#chainConnectors.substrate) return of([])
+
         return from(
           getMiniMetadatas(
             this.#chainConnectors.substrate!,
@@ -342,6 +343,8 @@ export class BalancesProvider {
           }),
         )
       }),
+      // emit only when mini metadata changes, as a change here would restart all subscriptions for the network
+      distinctUntilChanged<MiniMetadata[]>(isEqual),
     )
   }
 
@@ -351,6 +354,8 @@ export class BalancesProvider {
         const miniMetadatas = miniMetadataIds.map((id) => mapById[id])
         return miniMetadatas.length && miniMetadatas.every(isTruthy) ? miniMetadatas : null
       }),
+      // source changes very often
+      distinctUntilChanged<MiniMetadata[] | null>(isEqual),
     )
   }
 

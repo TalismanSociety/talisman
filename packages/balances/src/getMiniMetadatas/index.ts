@@ -26,6 +26,7 @@ export const getMiniMetadatas = async (
   if (specVersion === undefined) specVersion = await getSpecVersion(chainConnector, networkId)
 
   const cacheKey = getCacheKey(networkId, specVersion)
+  if (CACHE.has(cacheKey)) return CACHE.get(cacheKey)!
 
   const pResult = POOL.add(() =>
     fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
@@ -47,7 +48,6 @@ const fetchMiniMetadatas = async (
   chaindataProvider: ChaindataProvider,
   chainId: DotNetworkId,
   specVersion: number,
-  signal?: AbortSignal,
 ) => {
   const start = performance.now()
   log.info("[miniMetadata] fetching minimetadatas for %s", chainId)
@@ -55,10 +55,8 @@ const fetchMiniMetadatas = async (
   try {
     const network = await chaindataProvider.getNetworkById(chainId, "polkadot")
     if (!network) throw new Error(`Network ${chainId} not found in chaindataProvider`)
-    signal?.throwIfAborted()
 
     const metadataRpc = await getMetadataRpc(chainConnector, chainId)
-    signal?.throwIfAborted()
 
     return Promise.all(
       BALANCE_MODULES.filter((m) => m.platform === "polkadot").map((mod) =>
