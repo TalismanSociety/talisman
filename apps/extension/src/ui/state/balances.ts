@@ -31,10 +31,9 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
   }).pipe(debugObservable("balancesHydrate$")),
 )
 
+// cache balances once fetched so they can be displayed instantly if navigating in and out of portfolio
 const rawBalancesCache$ = new ReplaySubject<BalanceSubscriptionResponse>(1)
 
-// Reading this atom triggers the balances backend subscription
-// Unsubscribing has no effect, the backend subscription will keep polling until the port (window or tab) is closed
 const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) => {
   const unsubscribe = api.balances((balances) => {
     rawBalancesCache$.next(balances)
@@ -53,7 +52,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
 )
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
-  rawBalancesCache$.pipe(
+  rawBalances$.pipe(
     map((balances) => balances.status === "initialising"),
     distinctUntilChanged(),
   ),

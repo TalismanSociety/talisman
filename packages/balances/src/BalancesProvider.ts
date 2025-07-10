@@ -126,7 +126,11 @@ export class BalancesProvider {
                 ? "initialising"
                 : "live",
             balances: results
-              .flatMap((result) => result.balances)
+              .flatMap((result) =>
+                result.balances.map(
+                  (b): IBalance => (isStale && b.status !== "live" ? { ...b, status: "stale" } : b),
+                ),
+              )
               .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b))),
           }),
         ),
@@ -193,7 +197,11 @@ export class BalancesProvider {
                 storage.balances,
                 // delete all balances expected in the result set. because if they are not present it means they are empty.
                 fromPairs(balanceIds.map((balanceId) => [balanceId, undefined])),
-                keyBy(results.balances, (b) => getBalanceId(b)),
+                keyBy(
+                  // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
+                  results.balances.map((b) => ({ ...b, status: "cache" })),
+                  (b) => getBalanceId(b),
+                ),
               )
 
               this.#storage.next(assign({}, storage, { balances }))
