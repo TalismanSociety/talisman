@@ -45,4 +45,4 @@ export * from "./substrate-tokens"
 // export * from "./util"
 export * from "./abis"
 
-export * from "./IBalanceModule"
+export * from "../types/IBalanceModule"

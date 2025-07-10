@@ -3,7 +3,7 @@ import { isTokenOfType, SubTokensToken } from "@talismn/chaindata-provider"
 import { MetadataBuilder, papiParse, parseMetadataRpc } from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
-import { BalanceTransferType, IBalanceModule } from "../IBalanceModule"
+import { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
 export const getTransferCallData: IBalanceModule<

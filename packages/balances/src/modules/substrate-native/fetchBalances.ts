@@ -1,7 +1,7 @@
 import { firstValueFrom } from "rxjs"
 
 import log from "../../log"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
 import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"

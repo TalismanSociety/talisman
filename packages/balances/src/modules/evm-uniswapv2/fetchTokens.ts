@@ -8,7 +8,7 @@ import { BaseError } from "viem"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { getErc20ContractData, getUniswapV2PairContractData } from "./utils"
 

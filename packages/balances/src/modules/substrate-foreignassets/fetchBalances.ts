@@ -1,5 +1,5 @@
 import log from "../../log"
-import { FetchBalanceResults, IBalanceModule } from "../IBalanceModule"
+import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
 import { buildQueries } from "./buildQueries"

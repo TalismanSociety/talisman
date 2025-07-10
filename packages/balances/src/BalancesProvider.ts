@@ -31,8 +31,8 @@ import {
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
-import { TokensWithAddresses } from "./modules/IBalanceModule"
 import { Address, getBalanceId, IBalance, MiniMetadata } from "./types"
+import { TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
 

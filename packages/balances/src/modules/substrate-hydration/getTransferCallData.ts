@@ -3,7 +3,7 @@ import { isTokenOfType } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({

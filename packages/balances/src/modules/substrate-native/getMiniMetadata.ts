@@ -4,7 +4,7 @@ import { Binary } from "polkadot-api"
 
 import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue, tryGetConstantValue } from "../shared"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 

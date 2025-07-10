@@ -1,4 +1,4 @@
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 import { fetchBalances } from "./fetchBalances"
 import { fetchTokens } from "./fetchTokens"

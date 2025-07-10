@@ -3,7 +3,7 @@ import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scal
 
 import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue, hasStorageItems } from "../shared"
 import { MODULE_TYPE } from "./config"
 

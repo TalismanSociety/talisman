@@ -4,7 +4,7 @@ import { assign } from "lodash-es"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<

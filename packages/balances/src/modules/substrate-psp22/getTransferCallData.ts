@@ -5,8 +5,8 @@ import { isTokenOfType, parseTokenId } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
+import { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { makeContractCaller } from "./util"
 

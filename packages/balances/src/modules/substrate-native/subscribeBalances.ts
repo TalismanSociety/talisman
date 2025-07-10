@@ -1,7 +1,7 @@
 import { toPairs } from "lodash-es"
 import { combineLatest, map, of, switchMap } from "rxjs"
 
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
 import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"

@@ -5,8 +5,8 @@ import { SubPsp22Token, subPsp22TokenId, SubPsp22TokenSchema } from "@talismn/ch
 import { values } from "lodash-es"
 
 import log from "../../log"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { IBalanceModule } from "../IBalanceModule"
 import { MODULE_TYPE, TokenConfig } from "./config"
 import { makeContractCaller } from "./util"
 

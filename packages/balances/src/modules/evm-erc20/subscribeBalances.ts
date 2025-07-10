@@ -2,7 +2,7 @@ import { isEqual } from "lodash-es"
 import { distinctUntilChanged, Observable, of } from "rxjs"
 
 import log from "../../log"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 import { fetchBalances } from "./fetchBalances"
 

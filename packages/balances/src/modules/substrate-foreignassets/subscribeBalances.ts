@@ -1,6 +1,6 @@
 import { map, of } from "rxjs"
 
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
 import { buildQueries } from "./buildQueries"

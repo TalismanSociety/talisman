@@ -2,7 +2,7 @@ import { EvmNativeToken, evmNativeTokenId, EvmNativeTokenSchema } from "@talismn
 import { assign } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({

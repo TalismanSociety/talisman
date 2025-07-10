@@ -1,7 +1,7 @@
 import { SubTokensToken, subTokensTokenId } from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({

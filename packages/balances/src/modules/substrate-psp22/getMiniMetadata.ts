@@ -3,7 +3,7 @@ import { parseMetadataRpc } from "@talismn/scale"
 
 import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
-import { IBalanceModule } from "../IBalanceModule"
+import { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue } from "../shared"
 import { MODULE_TYPE } from "./config"
 
