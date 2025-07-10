@@ -10,11 +10,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
+import { EstimateGasExecutionError } from "viem"
 
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
+import { useNetworkById, useToken } from "@ui/state"
 import { useAccountByAddress } from "@ui/state/accounts"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
@@ -232,6 +234,9 @@ export const SwapConfirmEvm = ({
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
 
+  const fromEvmNetwork = useNetworkById(fromAsset?.chainId?.toString(), "ethereum")
+  const gasTokenSymbol = useToken(fromEvmNetwork?.nativeTokenId)?.symbol ?? "ETH"
+
   return (
     <>
       <FeeEstimateEvm
@@ -247,11 +252,16 @@ export const SwapConfirmEvm = ({
         networkUsage={networkUsage}
       />
 
-      {evmTxLoadable?.state === "hasError" && (
-        <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
-          {t("Error loading transaction:")} {String(evmTxLoadable.error)}
-        </div>
-      )}
+      {evmTxLoadable?.state === "hasError" &&
+        (evmTxLoadable.error instanceof EstimateGasExecutionError ? (
+          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+            {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
+          </div>
+        ) : (
+          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+            {t("Error loading transaction:")} {String(evmTxLoadable.error)}
+          </div>
+        ))}
 
       {evmTxLoadable?.state === "loading" || isProcessing ? (
         <Button className="w-full" primary disabled>
