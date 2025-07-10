@@ -1,6 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
-import { isAbortError } from "@talismn/util"
 import PQueue from "p-queue"
 
 import log from "../log"
@@ -11,7 +10,8 @@ import { getSpecVersion } from "./getSpecVersion"
 
 export { getSpecVersion } from "./getSpecVersion"
 
-// share requests as all modules will call this at once
+const getCacheKey = (networkId: string, specVersion: number) => `${networkId}:${specVersion}`
+
 const CACHE = new Map<string, Promise<MiniMetadata[]>>()
 
 // ensures we dont fetch miniMetadatas on more than 4 chains at once
@@ -22,32 +22,23 @@ export const getMiniMetadatas = async (
   chaindataProvider: ChaindataProvider,
   networkId: DotNetworkId,
   specVersion?: number,
-  signal?: AbortSignal,
 ) => {
-  if (CACHE.has(networkId)) return CACHE.get(networkId)!
-
-  if (!signal)
-    log.warn(
-      "[miniMetadata] getMiniMetadatas called without signal, this may hang the updates",
-      new Error("No signal provided"), // this will show the stack trace so the culprit can fix it
-    )
-
   if (specVersion === undefined) specVersion = await getSpecVersion(chainConnector, networkId)
 
-  const pResult = POOL.add(
-    () => fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
-    { signal },
+  const cacheKey = getCacheKey(networkId, specVersion)
+
+  const pResult = POOL.add(() =>
+    fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
   ) as Promise<MiniMetadata[]>
 
-  CACHE.set(networkId, pResult)
+  // keep the results in cache (unless call fails) as observables call this function a lot of times
+  CACHE.set(cacheKey, pResult)
 
   try {
     return await pResult
   } catch (cause) {
-    if (isAbortError(cause)) throw cause
+    CACHE.delete(cacheKey)
     throw new Error(`Failed to fetch metadataRpc for network ${networkId}`, { cause })
-  } finally {
-    CACHE.delete(networkId)
   }
 }
 

@@ -64,18 +64,21 @@ export class ChaindataProvider implements IChaindataProvider {
     return await wrapObservableWithGetter("Failed to get miniMetadatas", this.miniMetadatas$)
   }
 
-  get getMiniMetadatasMapById$() {
-    return this.miniMetadatas$.pipe(map(itemsToMapById))
+  get miniMetadatasMapById$() {
+    return this.miniMetadatas$.pipe(
+      map(itemsToMapById),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    )
   }
   async getMiniMetadatasMapById() {
     return await wrapObservableWithGetter(
       "Failed to get mini metadatas by id",
-      this.getMiniMetadatasMapById$,
+      this.miniMetadatasMapById$,
     )
   }
 
   getMiniMetadataById$(id: string) {
-    return this.getMiniMetadatasMapById$.pipe(map((miniMetadatas) => miniMetadatas[id] ?? null))
+    return this.miniMetadatasMapById$.pipe(map((miniMetadatas) => miniMetadatas[id] ?? null))
   }
 
   async miniMetadataById(id: string) {

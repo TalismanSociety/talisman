@@ -3,14 +3,13 @@ import {
   ChaindataProvider,
   DotNetworkId,
   isNetworkDot,
-  MINIMETADATA_VERSION,
   Network,
   NetworkId,
   parseTokenId,
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { getSharedObservable, isEthereumAddress, isNotNil } from "@talismn/util"
+import { getSharedObservable, isEthereumAddress, isNotNil, isTruthy } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash-es"
 import {
   BehaviorSubject,
@@ -22,6 +21,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   startWith,
   switchMap,
   tap,
@@ -31,7 +31,7 @@ import {
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
-import { Address, getBalanceId, IBalance, MiniMetadata } from "./types"
+import { Address, deriveMiniMetadataId, getBalanceId, IBalance, MiniMetadata } from "./types"
 import { TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
@@ -82,6 +82,14 @@ export class BalancesProvider {
           miniMetadatas: values(miniMetadatas).filter(isNotNil),
         }),
       ),
+    )
+  }
+
+  private get storedMiniMetadataMapById$() {
+    return this.#storage.pipe(
+      map((storage) => keyBy(storage.miniMetadatas, (m) => m.id)),
+      distinctUntilChanged<Record<string, MiniMetadata>>(isEqual),
+      shareReplay(1),
     )
   }
 
@@ -291,88 +299,67 @@ export class BalancesProvider {
     networkId: DotNetworkId,
     specVersion: number,
   ): Observable<MiniMetadata[]> {
-    return new Observable<MiniMetadata[]>((subscriber) => {
-      const controller = new AbortController()
+    const miniMetadataIds = BALANCE_MODULES.filter((mod) => mod.platform === "polkadot").map(
+      (mod) =>
+        deriveMiniMetadataId({
+          chainId: networkId,
+          specVersion,
+          source: mod.type,
+        }),
+    )
 
-      const subscription = combineLatest({
-        defaultMiniMetadatas: this.getDefaultMiniMetadatas$(networkId, specVersion),
-        storedMiniMetadatas: this.getStoredMiniMetadatas$(networkId, specVersion),
-      })
-        .pipe(
-          switchMap(({ storedMiniMetadatas, defaultMiniMetadatas }) => {
-            if (defaultMiniMetadatas.length) return of(defaultMiniMetadatas)
-            if (storedMiniMetadatas.length) return of(storedMiniMetadatas)
-            if (!this.#chainConnectors.substrate) return of([])
-
-            return from(
-              // fetch them from the chain
-              getMiniMetadatas(
-                this.#chainConnectors.substrate!,
-                this.#chaindataProvider,
-                networkId,
-                specVersion,
-                controller.signal,
+    return combineLatest({
+      defaultMiniMetadatas: this.getDefaultMiniMetadatas$(miniMetadataIds),
+      storedMiniMetadatas: this.getStoredMiniMetadatas$(miniMetadataIds),
+    }).pipe(
+      switchMap(({ storedMiniMetadatas, defaultMiniMetadatas }) => {
+        if (defaultMiniMetadatas) return of(defaultMiniMetadatas)
+        if (storedMiniMetadatas) return of(storedMiniMetadatas)
+        if (!this.#chainConnectors.substrate) return of([])
+        return from(
+          getMiniMetadatas(
+            this.#chainConnectors.substrate!,
+            this.#chaindataProvider,
+            networkId,
+            specVersion,
+          ),
+        ).pipe(
+          // and persist in storage for later reuse
+          tap((newMiniMetadatas) => {
+            if (!newMiniMetadatas.length) return
+            const storage = this.#storage.getValue()
+            const miniMetadatas = assign(
+              // keep minimetadatas of other networks
+              keyBy(
+                values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
+                (m) => m.id,
               ),
-            ).pipe(
-              // and persist in storage for later reuse
-              tap((newMiniMetadatas) => {
-                if (!newMiniMetadatas.length) return
-                const storage = this.#storage.getValue()
-                const miniMetadatas = assign(
-                  // keep minimetadatas of other networks
-                  keyBy(
-                    values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
-                    (m) => m.id,
-                  ),
-                  // add the ones for our network
-                  keyBy(newMiniMetadatas, (m) => m.id),
-                )
-
-                this.#storage.next(assign({}, storage, { miniMetadatas }))
-              }),
+              // add the ones for our network
+              keyBy(newMiniMetadatas, (m) => m.id),
             )
+
+            this.#storage.next(assign({}, storage, { miniMetadatas }))
           }),
         )
-        .subscribe(subscriber)
-
-      return () => {
-        subscription.unsubscribe()
-        controller.abort()
-      }
-    })
-  }
-
-  private getStoredMiniMetadatas$(
-    networkId: string,
-    specVersion: number,
-  ): Observable<MiniMetadata[]> {
-    return this.storage$.pipe(
-      map((storage) =>
-        storage.miniMetadatas.filter(
-          (m) =>
-            m.chainId === networkId &&
-            m.specVersion === specVersion &&
-            m.version === MINIMETADATA_VERSION,
-        ),
-      ),
-      distinctUntilChanged<MiniMetadata[]>(isEqual),
+      }),
     )
   }
 
-  private getDefaultMiniMetadatas$(
-    networkId: string,
-    specVersion: number,
-  ): Observable<MiniMetadata[]> {
-    return this.#chaindataProvider.miniMetadatas$.pipe(
-      map((miniMetadatas) =>
-        miniMetadatas.filter(
-          (m) =>
-            m.chainId === networkId &&
-            m.specVersion === specVersion &&
-            m.version === MINIMETADATA_VERSION,
-        ),
-      ),
-      distinctUntilChanged<MiniMetadata[]>(isEqual),
+  private getStoredMiniMetadatas$(miniMetadataIds: string[]): Observable<MiniMetadata[] | null> {
+    return this.storedMiniMetadataMapById$.pipe(
+      map((mapById) => {
+        const miniMetadatas = miniMetadataIds.map((id) => mapById[id])
+        return miniMetadatas.length && miniMetadatas.every(isTruthy) ? miniMetadatas : null
+      }),
+    )
+  }
+
+  private getDefaultMiniMetadatas$(miniMetadataIds: string[]): Observable<MiniMetadata[] | null> {
+    return this.#chaindataProvider.miniMetadatasMapById$.pipe(
+      map((mapById) => {
+        const miniMetadatas = miniMetadataIds.map((id) => mapById[id])
+        return miniMetadatas.length && miniMetadatas.every(isTruthy) ? miniMetadatas : null
+      }),
     )
   }
 
