@@ -1,8 +1,9 @@
 import { Address, BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
+import { log } from "extension-shared"
 import { fromPairs, isEqual } from "lodash"
-import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap } from "rxjs"
+import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap } from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
@@ -44,6 +45,10 @@ export const walletBalances$ = combineLatest({
   ),
   firstThenDebounce(200),
   distinctUntilChanged<BalancesResult>(isEqual),
-  keepAlive(2_000), // keeps inner subscriptions alive while switching from popup to dashboard
+  tap({
+    subscribe: () => log.debug("[balances] starting main subscription"),
+    unsubscribe: () => log.debug("[balances] stopping main subscription"),
+  }),
   shareReplay({ refCount: true, bufferSize: 1 }),
+  keepAlive(3000),
 )

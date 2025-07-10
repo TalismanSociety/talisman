@@ -1,5 +1,5 @@
-import type { MonoTypeOperatorFunction, Subscription } from "rxjs"
-import { Observable } from "rxjs"
+import type { OperatorFunction } from "rxjs"
+import { Observable, shareReplay, tap } from "rxjs"
 
 /**
  * An RxJS operator that keeps the source observable alive for a specified duration
@@ -16,74 +16,24 @@ import { Observable } from "rxjs"
  * );
  * ```
  */
-export const keepAlive = <T>(keepAliveMs: number): MonoTypeOperatorFunction<T> => {
-  return (source: Observable<T>) => {
-    let refCount = 0
-    let sourceSubscription: Subscription | null = null
-    let cleanupTimer: NodeJS.Timeout | null = null
-    let hasCompleted = false
-    let hasErrored = false
-    let error: unknown = null
+export const keepAlive = <T>(timeout: number): OperatorFunction<T, T> => {
+  let release: ReturnType<typeof getKeepAliveSubscription> | null
 
-    const cleanup = () => {
-      if (sourceSubscription) {
-        sourceSubscription.unsubscribe()
-        sourceSubscription = null
-      }
-      cleanupTimer = null
-      hasCompleted = false
-      hasErrored = false
-      error = null
-    }
+  return (source: Observable<T>) =>
+    source.pipe(
+      tap({
+        subscribe: () => {
+          release = getKeepAliveSubscription(source, timeout)
+        },
+        unsubscribe: () => {
+          release!()
+        },
+      }),
+      shareReplay({ refCount: true, bufferSize: 1 }),
+    )
+}
 
-    return new Observable<T>((subscriber) => {
-      // Cancel any pending cleanup
-      if (cleanupTimer) {
-        clearTimeout(cleanupTimer)
-        cleanupTimer = null
-      }
-
-      refCount++
-
-      // Handle already completed/errored states
-      if (hasCompleted) {
-        subscriber.complete()
-        return () => {
-          refCount--
-        }
-      }
-      if (hasErrored) {
-        subscriber.error(error)
-        return () => {
-          refCount--
-        }
-      }
-
-      // Create source subscription if it doesn't exist
-      if (!sourceSubscription) {
-        sourceSubscription = source.subscribe({
-          next: (value: T) => {
-            subscriber.next(value)
-          },
-          error: (err: unknown) => {
-            hasErrored = true
-            error = err
-            subscriber.error(err)
-          },
-          complete: () => {
-            hasCompleted = true
-            subscriber.complete()
-          },
-        })
-      }
-
-      return () => {
-        refCount--
-
-        if (refCount === 0) {
-          cleanupTimer = setTimeout(cleanup, keepAliveMs)
-        }
-      }
-    })
-  }
+const getKeepAliveSubscription = (observable: Observable<unknown>, ms: number) => {
+  const sub = observable.subscribe()
+  return () => setTimeout(() => sub.unsubscribe(), ms)
 }
