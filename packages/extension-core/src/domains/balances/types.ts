@@ -4,8 +4,6 @@ import { TokenRateCurrency } from "@talismn/token-rates"
 
 import { Address } from "../../types/base"
 
-// export { Balance, BalanceFormatter, Balances, filterMirrorTokens } from "@talismn/balances"
-
 export interface RequestBalance {
   tokenId: TokenId
   address: Address

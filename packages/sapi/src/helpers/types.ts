@@ -1,10 +1,7 @@
 import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { getDynamicBuilder, getLookupFn, UnifiedMetadata } from "@talismn/scale"
+import { MetadataBuilder, MetadataLookup, UnifiedMetadata } from "@talismn/scale"
 
 import { SapiConnector } from "./getSapiConnector"
-
-export type ScaleBuilder = ReturnType<typeof getDynamicBuilder>
-export type ScaleLookup = ReturnType<typeof getLookupFn>
 
 export type Chain = {
   connector: SapiConnector
@@ -14,8 +11,8 @@ export type Chain = {
   signedExtensions?: ExtDef
   registryTypes?: unknown
   metadata: UnifiedMetadata
-  lookup: ScaleLookup
-  builder: ScaleBuilder
+  lookup: MetadataLookup
+  builder: MetadataBuilder
   metadataRpc: `0x${string}`
 }
 

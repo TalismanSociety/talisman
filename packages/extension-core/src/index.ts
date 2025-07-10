@@ -58,7 +58,7 @@ export {
 
 export * from "./types"
 export * from "./types/domains"
-export type { AddressesByChain, Address, Port } from "./types/base"
+export type { Address, Port } from "./types/base"
 export { isEthereumRequest } from "./types/requests"
 
 export * from "./libs/requests/types"

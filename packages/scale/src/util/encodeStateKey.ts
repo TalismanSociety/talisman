@@ -1,8 +1,7 @@
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
-
 import log from "../log"
+import { MetadataBuilder } from "../papito"
 
-export type ScaleStorageCoder = ReturnType<ReturnType<typeof getDynamicBuilder>["buildStorage"]>
+export type ScaleStorageCoder = ReturnType<MetadataBuilder["buildStorage"]>
 
 export const encodeStateKey = (
   scaleCoder: ScaleStorageCoder | undefined,

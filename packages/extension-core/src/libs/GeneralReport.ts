@@ -138,48 +138,6 @@ async function getGeneralReport({
 
   if (refreshBalances) {
     await firstValueFrom(walletBalances$.pipe(filter(({ status }) => status === "live")))
-    // await firstValueFrom(walletBalances$.pipe(filter(({status})=> status === "live")))
-    // let disconnect!: () => void
-    // try {
-    //   // create token balances / nft subscriptions, and wait for the pool to settle
-    //   // this ensures that we have up-to-date information for the report
-    //   const onDisconnected = new Promise<void>((resolve) => {
-    //     let hasDisconnected = false
-    //     disconnect = () => {
-    //       if (hasDisconnected) return
-    //       hasDisconnected = true
-    //       resolve()
-    //     }
-    //   })
-
-    //   let balancesLive = false
-    //   let nftsLive = false
-
-    //   // token balances
-    //   const subscriptionId = "ANALYTICS-GENERAL-REPORT"
-    //   balancePool.subscribe(subscriptionId, onDisconnected, (response) => {
-    //     if (response.status !== "live") return
-    //     balancesLive = true
-    //     if (!nftsLive) return
-    //     disconnect()
-    //   })
-    //   // nfts
-    //   const unsubNfts = subscribeNfts((data) => {
-    //     if (data.status !== "loaded") return
-    //     nftsLive = true
-    //     if (!balancesLive) return
-    //     disconnect()
-    //   })
-    //   onDisconnected.then(() => unsubNfts())
-    //   // timeout (don't wait forever for all token balances and nfts to be live)
-    //   await sleep(30_000).then(disconnect)
-
-    //   // wait for live token balances & nfts, or timeout to complete
-    //   await onDisconnected
-    // } finally {
-    //   // if anything throws, make sure we shut down all the subscriptions we opened
-    //   disconnect()
-    // }
   }
 
   // account type breakdown

@@ -44,8 +44,4 @@ export interface Resolver<T> {
 
 export type Address = string
 
-// Addresses is a record where the keys are the address itself, and the values are an array of chain genesis hashes, or null if the address may have
-// balances on any chain
-export type Addresses = Record<Address, Array<string> | null>
-export type AddressesByChain = { [chainId: string]: Address[] } // TODO yeet
 export type AddressList = Address[]

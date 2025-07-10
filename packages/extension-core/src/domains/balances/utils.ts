@@ -13,8 +13,6 @@ import { keyringStore } from "../keyring/store"
 import { balancesStore$ } from "./store.balances"
 import { balanceTotalsStore } from "./store.BalanceTotals"
 
-import "./types"
-
 const MAX_UPDATE_INTERVAL = 1_000 // update every 1 second maximum
 
 /**
