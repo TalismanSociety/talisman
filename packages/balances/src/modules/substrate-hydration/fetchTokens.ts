@@ -61,8 +61,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           existentialDeposit: asset.existential_deposit.toString(),
         }
       })
-      // exclude unsupported asset types
-      .filter(({ assetType }) => ["Erc20", "Token"].includes(assetType))
       // convert asset to a SubHydrationToken
       .map(
         (asset): SubHydrationToken => ({

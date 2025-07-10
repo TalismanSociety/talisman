@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "./common/polyfills"
 
+import { isTokenSubHydration } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 import { DotNetworkConfig, testDotNetwork } from "./common/testPolkadotNetwork"
@@ -22,12 +23,25 @@ const NETWORK_CONFIG: DotNetworkConfig = {
       {
         onChainId: 69, // GIGADOT
       },
+      {
+        onChainId: 1000082, // WIFD - external
+        symbol: "WIFD",
+        name: "dog wif dots",
+        decimals: 10,
+      },
     ],
   },
 }
 
-testDotNetwork(NETWORK_CONFIG)
-  .then(() => {
+testDotNetwork(NETWORK_CONFIG, {
+  modules: ["substrate-hydration"],
+  fetchBalances: false,
+  transfer: false,
+})
+  .then(({ tokens }) => {
+    const wifd = tokens?.filter(isTokenSubHydration).find((t) => t.onChainId === 1000082)
+    log.log("WIFD token:", wifd)
+
     log.log("Balances testbench completed successfully")
     process.exit(0)
   })

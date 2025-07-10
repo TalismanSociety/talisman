@@ -17,13 +17,16 @@ const NETWORK_CONFIG = {
   nativeCurrency: { coingeckoId: "polkadot" },
   tokens: {
     "substrate-assets": [
+      // {
+      //   assetId: "1337", // MYTH
+      //   coingeckoId: "usd-coin",
+      // },
+      // {
+      //   assetId: "31337",
+      //   coingeckoId: "gavun-wud",
+      // },
       {
-        assetId: "1337", // MYTH
-        coingeckoId: "usd-coin",
-      },
-      {
-        assetId: "31337",
-        coingeckoId: "gavun-wud",
+        assetId: "23", // PINK
       },
     ],
     "substrate-foreignassets": [
@@ -41,7 +44,7 @@ const NETWORK_CONFIG = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG, ["substrate-foreignassets"])
+testDotNetwork(NETWORK_CONFIG, { modules: ["substrate-assets"] })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

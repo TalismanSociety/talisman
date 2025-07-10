@@ -4,9 +4,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname } from "path"
 
 import { WsProvider } from "@polkadot/rpc-provider"
-import { BALANCE_MODULES } from "@talismn/balances"
+import { BALANCE_MODULES, FetchBalanceResults, MiniMetadata } from "@talismn/balances"
 import { ChainConnector } from "@talismn/chain-connector"
-import { DotNetwork, TokenType } from "@talismn/chaindata-provider"
+import { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import {
   decAnyMetadata,
@@ -29,12 +29,31 @@ export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   balancesConfig?: Partial<Record<TokenType, any>>
 }
 
-export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenType[]) => {
+type TestOptions = {
+  modules?: TokenType[]
+  fetchBalances?: boolean
+  transfer?: boolean
+}
+
+const DEFAULT_OPTIONS: TestOptions = {
+  modules: BALANCE_MODULES.map((mod) => mod.type as TokenType),
+  fetchBalances: true,
+  transfer: true,
+}
+
+export const testDotNetwork = async (network: DotNetworkConfig, options?: TestOptions) => {
+  const opts = { ...DEFAULT_OPTIONS, ...options }
+
   const rpcUrl = network.rpcs[0]
 
   const stopAll = log.timer("testDotNetwork " + network.id)
   const stop1 = log.timer(`Connected to ${rpcUrl}`)
   const provider = new WsProvider(rpcUrl)
+
+  const miniMetadatas: MiniMetadata[] = []
+  let tokens: Token[] | null = null
+  let balances: FetchBalanceResults | null = null
+  let dryRun: any = null
 
   try {
     await provider.isReady
@@ -71,7 +90,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
 
     for (const mod of BALANCE_MODULES.filter(
       (mod) => mod.platform === "polkadot", // then we can use a ChainConnector
-    ).filter((mod) => !modules || modules.includes(mod.type as TokenType))) {
+    ).filter((mod) => opts.modules?.includes(mod.type as TokenType))) {
       const source = mod.type
       log.log()
       log.log("///////////////////////////////////////////////////////////////////////////////////")
@@ -85,6 +104,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         metadataRpc,
         config: network.balancesConfig?.[mod.type],
       })
+      miniMetadatas.push(miniMetadata)
       log.log("mod.getMiniMetadata() result", {
         ...miniMetadata,
         data: miniMetadata.data ? `<length:${miniMetadata.data.length}>` : null,
@@ -99,7 +119,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
       log.log("Token configs", tokenConfigs)
       log.log()
 
-      const tokens = await mod.fetchTokens({
+      tokens = await mod.fetchTokens({
         networkId,
         tokens: tokenConfigs as any,
         connector,
@@ -107,14 +127,16 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         cache: {},
       })
 
-      log.log("mod.fetchTokens results", tokens) // .slice(0, 3))
+      log.log("mod.fetchTokens results", tokens.slice(0, 3))
 
       if (tokens.length > 3) log.log("+ %s other tokens", tokens.length - 3)
       log.log()
 
+      if (!opts.fetchBalances) continue
+
       const BALANCES_ADDRESSES = [TEST_ADDRESS_SUB, TEST_ADDRESS_SUB2, TEST_ADDRESS_EMPTY]
 
-      const balances = await mod.fetchBalances({
+      balances = await mod.fetchBalances({
         networkId,
         tokensWithAddresses: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
         connector,
@@ -139,6 +161,8 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
         log.log("No positive balance found for the test address")
         continue
       }
+
+      if (!opts.transfer) continue
 
       const xferToken = tokens.find((t) => t.id === anyPositiveBalance.tokenId)!
       log.log("attempting transfer with ", xferToken.id)
@@ -185,7 +209,7 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
 
       log.log("hex", hex)
 
-      const dryRun = call.value.dec(hex)
+      dryRun = call.value.dec(hex)
       log.log("Dry run result")
       log.log(papiStringify(dryRun, 2))
     }
@@ -194,4 +218,6 @@ export const testDotNetwork = async (network: DotNetworkConfig, modules?: TokenT
     log.error(err)
     provider.disconnect()
   }
+
+  return { miniMetadatas, tokens, balances, dryRun }
 }

@@ -10,7 +10,7 @@ export const SubHydrationTokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
   onChainId: z.uint32(),
-  assetType: z.enum(["Token", "Erc20"]),
+  assetType: z.enum(["Token", "Erc20", "External"]),
   isSufficient: z.boolean(),
   existentialDeposit: z.string(),
 })

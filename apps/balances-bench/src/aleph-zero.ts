@@ -26,7 +26,7 @@ const NETWORK_CONFIG = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG, ["substrate-psp22", "substrate-native"])
+testDotNetwork(NETWORK_CONFIG, { modules: ["substrate-psp22", "substrate-native"] })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)
