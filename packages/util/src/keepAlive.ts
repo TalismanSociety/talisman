@@ -17,23 +17,23 @@ import { Observable, shareReplay, tap } from "rxjs"
  * ```
  */
 export const keepAlive = <T>(timeout: number): OperatorFunction<T, T> => {
-  let release: ReturnType<typeof getKeepAliveSubscription> | null
+  let release: ReturnType<typeof keepSourceSubscribed> | null
 
   return (source: Observable<T>) =>
     source.pipe(
       tap({
         subscribe: () => {
-          release = getKeepAliveSubscription(source, timeout)
+          release = keepSourceSubscribed(source, timeout)
         },
         unsubscribe: () => {
-          release!()
+          release?.()
         },
       }),
       shareReplay({ refCount: true, bufferSize: 1 }),
     )
 }
 
-const getKeepAliveSubscription = (observable: Observable<unknown>, ms: number) => {
+const keepSourceSubscribed = (observable: Observable<unknown>, ms: number) => {
   const sub = observable.subscribe()
   return () => setTimeout(() => sub.unsubscribe(), ms)
 }
