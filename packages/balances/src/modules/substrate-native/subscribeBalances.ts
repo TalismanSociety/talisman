@@ -41,7 +41,11 @@ export const subscribeBalances: IBalanceModule<
       // add subtensor balances to base balances
       for (const [address, subtensorBalances] of toPairs(subtensorBalancesByAddress)) {
         const balance = baseBalances.find((b) => b.address === address)
-        if (balance?.values) balance.values.push(...subtensorBalances)
+        if (balance?.values)
+          balance.values = [
+            ...balance.values.filter(({ source }) => source !== "subtensor-staking"),
+            ...subtensorBalances,
+          ]
       }
 
       return { success: baseBalances, errors: [] }

@@ -61,7 +61,7 @@ export const buildNomPoolQueries = (
         return {
           ...balance,
           values: [
-            ...(balance.values ?? []),
+            ...(balance.values?.filter(({ source }) => source !== "nompools-staking") ?? []),
             {
               source: "nompools-staking",
               type: "nompool",

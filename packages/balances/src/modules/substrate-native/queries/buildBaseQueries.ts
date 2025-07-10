@@ -159,40 +159,6 @@ export const buildBaseQueries = (
     .filter(isNotNil)
 }
 
-// AccountInfo is the state_storage data format for nativeToken balances
-// Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
-// But for chains we want to support which aren't on metadata v14, hardcode them here:
-// If the chain upgrades to metadata v14, this override will be ignored :)
-// const RegularAccountInfoFallback = Struct({
-//   nonce: u32,
-//   consumers: u32,
-//   providers: u32,
-//   sufficients: u32,
-//   data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
-// })
-// const NoSufficientsAccountInfoFallback = Struct({
-//   nonce: u32,
-//   consumers: u32,
-//   providers: u32,
-//   data: Struct({ free: u128, reserved: u128, miscFrozen: u128, feeFrozen: u128 }),
-// })
-// const AccountInfoOverrides: Record<
-//   string,
-//   typeof RegularAccountInfoFallback | typeof NoSufficientsAccountInfoFallback | undefined
-// > = {
-//   // crown-sterlin is not yet on metadata v14
-//   "crown-sterling": NoSufficientsAccountInfoFallback,
-
-//   // crust is not yet on metadata v14
-//   "crust": NoSufficientsAccountInfoFallback,
-
-//   // kulupu is not yet on metadata v14
-//   "kulupu": RegularAccountInfoFallback,
-
-//   // nftmart is not yet on metadata v14
-//   "nftmart": RegularAccountInfoFallback,
-// }
-
 const decodeBaseResult = (
   coder: ScaleStorageCoder,
   value: string | null,
@@ -269,15 +235,6 @@ const decodeLocksResult = (
     })) ?? []
 
   return locksQueryLocks
-
-  // // locked values should be replaced entirely, not merged or appended
-  // const nonLockValues = balanceJson.values.filter(
-  //   (v) => v.source !== "substrate-native-locks",
-  // )
-  // balanceJson.values = nonLockValues.concat(locksQueryLocks)
-
-  // // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
-  // balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
 }
 
 const decodeFreezesResult = (
@@ -306,14 +263,6 @@ const decodeFreezesResult = (
     })) ?? []
 
   return freezesValues
-
-  // // freezes values should be replaced entirely, not merged or appended
-  // const nonFreezesValues = balanceJson.values.filter(
-  //   (v) => v.source !== "substrate-native-freezes",
-  // )
-  // balanceJson.values = nonFreezesValues.concat(freezesQueryLocks)
-
-  // return balanceJson
 }
 
 const decodeHoldsResult = (
@@ -347,14 +296,6 @@ const decodeHoldsResult = (
       })) ?? []
 
   return holdsValues
-
-  // // values should be replaced entirely, not merged or appended
-  // const nonHoldsValues = balanceJson.values.filter(
-  //   (v) => v.source !== "substrate-native-holds",
-  // )
-  // balanceJson.values = nonHoldsValues.concat(holdsQueryLocks)
-
-  // return balanceJson
 }
 
 const decodeStakingLedgerResult = (
@@ -397,29 +338,6 @@ const decodeStakingLedgerResult = (
         ]
 
   return stakingLedgerResults
-
-  // if (totalUnlocking <= 0n) unbondingQueryLocks = []
-  // else {
-  //   unbondingQueryLocks = [
-  //     {
-  //       type: "locked",
-  //       source: "substrate-native-unbonding",
-  //       label: "Unbonding",
-  //       amount: totalUnlocking.toString(),
-  //     },
-  //   ]
-  // }
-
-  // // unbonding values should be replaced entirely, not merged or appended
-  // const nonUnbondingValues = balanceJson.values.filter(
-  //   (v) => v.source !== "substrate-native-unbonding",
-  // )
-  // balanceJson.values = nonUnbondingValues.concat(unbondingQueryLocks)
-
-  // // fix any double-counting between Balances.Locks (for staking locks) and Staking.Ledger (for unbonding locks)
-  // balanceJson.values = updateStakingLocksUsingUnbondingLocks(balanceJson.values)
-
-  // return balanceJson
 }
 
 const decodePoolMemberResult = (
@@ -461,106 +379,3 @@ const decodePoolMemberResult = (
 
   return { poolId, points, unbondingEras }
 }
-
-// const getBaseQuery = (
-//   networkId: string,
-//   address: string,
-//   coder: ScaleStorageCoder,
-// ): RpcStateQuery<Array<AmountWithLabel<string>>> | null => {
-//   // For chains which are using metadata < v14
-//   const getFallbackStateKey = () => {
-//     const addressBytes = decodeAnyAddress(address) // TODO replace with modern api, this is slow
-//     const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
-//     const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
-//     const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
-//     const moduleStorageHash = `${moduleHash}${storageHash}` // System.Account is the state_storage key prefix for nativeToken balances
-//     return `0x${moduleStorageHash}${addressHash}`
-//   }
-
-//   // const scaleCoder = chainStorageCoders.get(chainId)?.base
-//   // NOTE: Only use fallback key when `scaleCoder` is not defined
-//   // i.e. when chain doesn't have metadata v14/v15
-//   const stateKey = coder
-//     ? encodeStateKey(coder, `Invalid address in ${networkId} base query ${address}`, address)
-//     : getFallbackStateKey()
-//   if (!stateKey) return null
-
-//   const decodeResult = (change: string | null) => {
-//     // BEGIN: Handle chains which use metadata < v14
-//     let oldChainBalance = null
-//     if (!coder) {
-//       const scaleAccountInfo = AccountInfoOverrides[networkId]
-//       if (scaleAccountInfo === undefined) {
-//         // chain metadata version is < 15 and we also don't have an override hardcoded in
-//         // the best way to handle this case: log a warning and return an empty balance
-//         log.debug(
-//           `Native token on chain ${networkId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`,
-//         )
-//         return []
-//       }
-
-//       try {
-//         // eslint-disable-next-line no-var
-//         oldChainBalance = change === null ? null : scaleAccountInfo.dec(change)
-//       } catch (error) {
-//         log.warn(
-//           `Failed to create pre-metadataV14 balance type for native on chain ${networkId}: ${error?.toString()}`,
-//         )
-//         return []
-//       }
-//     }
-//     // END: Handle chains which use metadata < v14
-
-//     /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-//     type DecodedType = {
-//       data?: {
-//         flags?: bigint
-//         free?: bigint
-//         frozen?: bigint
-//         reserved?: bigint
-
-//         // deprecated fields (they only show up on old chains)
-//         feeFrozen?: bigint
-//         miscFrozen?: bigint
-//       }
-//     }
-//     const decoded =
-//       decodeScale<DecodedType>(
-//         coder,
-//         change,
-//         `Failed to decode base native balance on chain ${networkId}`,
-//       ) ?? oldChainBalance
-
-//     const free = (decoded?.data?.free ?? 0n).toString()
-//     const reserved = (decoded?.data?.reserved ?? 0n).toString()
-//     const miscLock = (
-//       (decoded?.data?.miscFrozen ?? 0n) +
-//       // new chains don't split their `frozen` amount into `feeFrozen` and `miscFrozen`.
-//       // for these chains, we'll use the `frozen` amount as `miscFrozen`.
-//       ((decoded?.data as DecodedType["data"])?.frozen ?? 0n)
-//     ).toString()
-//     const feesLock = (decoded?.data?.feeFrozen ?? 0n).toString()
-
-//     // even if these values are 0, we still need to add them to the balanceJson.values array
-//     // so that the balance pool can handle newly zeroed balances
-//     // const existingValues = Object.fromEntries(
-//     //   balanceJson.values.map((v) => [getValueId(v), v]),
-//     // )
-//     const newValues: AmountWithLabel<string>[] = [
-//       { type: "free", label: "free", amount: free.toString() },
-//       { type: "reserved", label: "reserved", amount: reserved.toString() },
-//       { type: "locked", label: "misc", amount: miscLock.toString() },
-//       { type: "locked", label: "fees", amount: feesLock.toString() },
-//     ]
-
-//     return newValues
-
-//     // const newValuesObj = Object.fromEntries(newValues.map((v) => [getValueId(v), v]))
-
-//     // balanceJson.values = Object.values({ ...existingValues, ...newValuesObj })
-
-//     // return balanceJson
-//   }
-
-//   return { chainId: networkId, stateKey, decodeResult }
-// }

@@ -67,10 +67,7 @@ export const getMiniMetadata: IBalanceModule<
       { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
       { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
       { pallet: "Staking", items: ["Ledger"] },
-      // TotalColdkeyStake is used until v.2.2.1, then it is replaced by StakingHotkeys+Stake
-      // Need to keep TotalColdkeyStake for a while so chaindata keeps including it in miniMetadatas, so it doesnt break old versions of the wallet
-      // TODO: Since chaindata v4 this is safe to now delete
-      { pallet: "SubtensorModule", items: ["TotalColdkeyStake", "StakingHotkeys", "Stake"] },
+      { pallet: "SubtensorModule", items: ["StakingHotkeys", "Stake"] },
     ],
     [
       { runtimeApi: "StakeInfoRuntimeApi", methods: ["get_stake_info_for_coldkey"] },

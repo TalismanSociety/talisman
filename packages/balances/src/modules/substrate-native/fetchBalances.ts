@@ -74,7 +74,11 @@ export const fetchBalances: IBalanceModule<
 
   for (const [address, subtensorBalances] of Object.entries(subtensorBalancesByAddress)) {
     const balance = balances.find((b) => b.address === address)
-    if (balance?.values) balance.values.push(...subtensorBalances)
+    if (balance?.values)
+      balance.values = [
+        ...balance.values.filter(({ source }) => source !== "subtensor-staking"),
+        ...subtensorBalances,
+      ]
   }
 
   return { success: balances, errors: [] }
