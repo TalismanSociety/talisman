@@ -1,5 +1,11 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: "ts-jest",
   testEnvironment: "node",
+  transform: {
+    "^.+\\.tsx?$": ["ts-jest", {}],
+  },
+  transformIgnorePatterns: [],
+  moduleNameMapper: {
+    "^lodash-es$": "lodash",
+  },
 }

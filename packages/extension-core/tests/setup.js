@@ -5,7 +5,7 @@ const { TextEncoder } = require("@polkadot/x-textencoder")
 const { WebSocket } = require("mock-socket")
 
 const { webcrypto } = require("crypto")
-const cloneDeep = require("lodash-es/cloneDeep")
+const cloneDeep = require("lodash/cloneDeep")
 
 global.WebSocket = WebSocket
 Object.defineProperty(globalThis, "crypto", {
