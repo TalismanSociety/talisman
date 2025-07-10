@@ -43,7 +43,7 @@ export const walletBalances$ = combineLatest({
   switchMap(({ balancesProvider, addressesByTokenId }) =>
     balancesProvider.getBalances$(addressesByTokenId),
   ),
-  firstThenDebounce(200),
+  firstThenDebounce(500),
   distinctUntilChanged<BalancesResult>(isEqual),
   tap({
     subscribe: () => log.debug("[balances] starting main subscription"),
