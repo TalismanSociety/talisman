@@ -106,6 +106,8 @@ const mockedApiMethods = {
       status: "initialising",
       balances: [],
     })
+
+    return () => {}
   }),
   networks: jest.fn().mockImplementation((cb: (chains: Network[]) => void) => {
     cb(networks)
