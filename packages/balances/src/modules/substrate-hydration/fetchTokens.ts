@@ -9,6 +9,7 @@ import { assign, keyBy } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
+import { QueryStorageResult } from "../shared"
 import { MODULE_TYPE, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -27,12 +28,13 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     getStorageKeyPrefix("AssetRegistry", "Assets"),
   ])
 
-  const assetStorageResults = await connector.send(networkId, "state_queryStorageAt", [
-    allAssetStorageKeys,
-  ])
+  const assetStorageResults = await connector.send<QueryStorageResult>(
+    networkId,
+    "state_queryStorageAt",
+    [allAssetStorageKeys],
+  )
 
-  const assetStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
-    assetStorageResults[0].changes
+  const assetStorageEntries = assetStorageResults.length ? assetStorageResults[0].changes : []
 
   const configTokenByAssetId = keyBy(tokens, (t) => t.onChainId)
 

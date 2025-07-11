@@ -14,3 +14,9 @@ export const getBalanceDefs = <T extends TokenType = TokenType>(
     addresses.map((address) => ({ token, address })),
   ) as BalanceDef<T>[]
 }
+
+// esponse of getStorageAt queries:
+// if there is at least one storage entry, the results will be an array with a single object
+// if the storage has no entries in it (ex: Assets on ewx or moonbeam), the response will be an empty array
+export type QueryStorageChange = [stateKey: `0x${string}`, value: `0x${string}`]
+export type QueryStorageResult = [{ block: `0x${string}`; changes: QueryStorageChange[] }] | []

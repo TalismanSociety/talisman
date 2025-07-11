@@ -38,10 +38,12 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     connector.send(networkId, "state_queryStorageAt", [allMetadataStorageKeys]),
   ])
 
+  // if there is at least one storage entry, the results will be an array with a single object
+  // some networks avec the pallet with no tokens in it, in which case the response will be an empty array
   const assetStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
-    assetStorageResults[0].changes
+    assetStorageResults[0]?.changes ?? []
   const metadataStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
-    metadataStorageResults[0].changes
+    metadataStorageResults[0]?.changes ?? []
 
   const assetByOnChainId = keyBy(
     assetStorageEntries.map(([key, value]) => {

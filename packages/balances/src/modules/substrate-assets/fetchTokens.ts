@@ -9,6 +9,7 @@ import { assign, keyBy, keys } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
+import { QueryStorageResult } from "../shared"
 import { MODULE_TYPE, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -34,14 +35,14 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   ])
 
   const [assetStorageResults, metadataStorageResults] = await Promise.all([
-    connector.send(networkId, "state_queryStorageAt", [allAssetStorageKeys]),
-    connector.send(networkId, "state_queryStorageAt", [allMetadataStorageKeys]),
+    connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [allAssetStorageKeys]),
+    connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [allMetadataStorageKeys]),
   ])
 
-  const assetStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
-    assetStorageResults[0].changes
-  const metadataStorageEntries: [key: `0x${string}`, value: `0x${string}`][] =
-    metadataStorageResults[0].changes
+  const assetStorageEntries = assetStorageResults.length ? assetStorageResults[0].changes : []
+  const metadataStorageEntries = metadataStorageResults.length
+    ? metadataStorageResults[0].changes
+    : []
 
   const assetByAssetId = keyBy(
     assetStorageEntries.map(([key, value]) => {

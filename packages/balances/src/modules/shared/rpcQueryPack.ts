@@ -3,6 +3,8 @@ import { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { Observable, of } from "rxjs"
 
+import { QueryStorageResult } from "./types"
+
 export type MaybeStateKey = `0x${string}` | null
 
 export type RpcQueryPack<T> = {
@@ -10,10 +12,7 @@ export type RpcQueryPack<T> = {
   decodeResult: (changes: MaybeStateKey[]) => T
 }
 
-type RpcQueryResult = {
-  block: `0x${string}`
-  changes: [stateKey: `0x${string}`, value: `0x${string}` | null][]
-}
+type QueryStorageResultContent = QueryStorageResult[0]
 
 export const fetchRpcQueryPack = async <T>(
   connector: ChainConnector,
@@ -26,7 +25,7 @@ export const fetchRpcQueryPack = async <T>(
   if (!allStateKeys.length)
     return queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null)))
 
-  const [result] = await connector.send<[RpcQueryResult]>(networkId, "state_queryStorageAt", [
+  const [result] = await connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [
     allStateKeys,
   ])
 
@@ -51,7 +50,7 @@ export const getRpcQueryPack$ = <T>(
       "state_subscribeStorage",
       "state_storage",
       [allStateKeys],
-      (error, result: RpcQueryResult) => {
+      (error, result: QueryStorageResultContent) => {
         if (error) subscriber.error(error)
         else subscriber.next(decodeRpcQueryPack(queries, result))
       },
@@ -64,10 +63,13 @@ export const getRpcQueryPack$ = <T>(
   })
 }
 
-const decodeRpcQueryPack = <T>(queries: RpcQueryPack<T>[], result: RpcQueryResult): T[] => {
+const decodeRpcQueryPack = <T>(
+  queries: RpcQueryPack<T>[],
+  result: QueryStorageResultContent,
+): T[] => {
   return queries.reduce((acc, { stateKeys, decodeResult }) => {
     const changes = stateKeys.map((stateKey) => {
-      if (!stateKey) return null
+      if (!stateKey || !result) return null
 
       const change = result.changes.find(([key]) => key === stateKey)
       if (!change) return null
