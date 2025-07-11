@@ -59,7 +59,6 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
     })
 
     await migrationRunner.isComplete
-
     // only do this once
     migrationSub.unsubscribe()
 

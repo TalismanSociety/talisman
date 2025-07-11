@@ -113,7 +113,7 @@ async function getGeneralReport({
   const [allowTracking, onboarded, isWalletReady] = await Promise.all([
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
-    firstValueFrom(isWalletReady$), // general report could be totally wrong if generated before migrations are complete
+    firstValueFrom(isWalletReady$), // general report could be wrong if generated before migrations are complete
   ])
   if (!allowTracking || !onboarded || IS_FIREFOX || !isWalletReady) return
 
@@ -176,7 +176,6 @@ async function getGeneralReport({
     const balanceJsons = allBalances.filter((b) =>
       ownedAddresses.some((address) => isAddressEqual(address, b.address)),
     )
-
     /* eslint-disable-next-line no-var */
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
