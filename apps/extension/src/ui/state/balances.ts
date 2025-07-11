@@ -47,7 +47,7 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
   }
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
-  debugObservable("rawBalances$", true),
+  debugObservable("rawBalances$"),
   shareReplay({ bufferSize: 1, refCount: true }),
 )
 
