@@ -95,6 +95,10 @@ const getTransferEncodedArgs = (to: string, value: string, codec: Codec<unknown>
       dest: Enum("Id", to),
       value: BigInt(value),
     }),
+    () => ({
+      dest: to, // ex: native MYTH on Mythos
+      value: BigInt(value),
+    }),
   ])
 }
 
@@ -102,6 +106,10 @@ const getTransferAllEncodedArgs = (to: string, codec: Codec<unknown>) => {
   return getEncodedValue(codec, [
     () => ({
       dest: Enum("Id", to),
+      keep_alive: false,
+    }),
+    () => ({
+      dest: to,
       keep_alive: false,
     }),
   ])
