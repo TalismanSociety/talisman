@@ -41,7 +41,7 @@ export const fetchTokens: IBalanceModule<
 
   const parsed = SubNativeTokenSchema.safeParse(token)
   if (!parsed.success) {
-    log.warn(`Ignoring invalid token ${MODULE_TYPE}`, token, parsed.error)
+    // log.warn(`Ignoring invalid token ${MODULE_TYPE}`, token, parsed.error)
     return []
   }
 

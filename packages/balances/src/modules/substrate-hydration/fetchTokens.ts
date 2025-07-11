@@ -8,7 +8,6 @@ import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy } from "lodash-es"
 import { Binary } from "polkadot-api"
 
-import log from "../../log"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE, TokenConfig } from "./config"
 
@@ -91,7 +90,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       // validate results
       .filter((t) => {
         const parsed = SubHydrationTokenSchema.safeParse(t)
-        if (!parsed.success) log.warn(`Ignoring invalid token ${MODULE_TYPE}`, t)
+        // if (!parsed.success) log.warn(`Ignoring invalid token ${MODULE_TYPE}`, t)
 
         return parsed.success
       })

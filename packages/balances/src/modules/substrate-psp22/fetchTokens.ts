@@ -101,7 +101,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 
   return values(tokenList).filter((t) => {
     const parsed = SubPsp22TokenSchema.safeParse(t)
-    if (!parsed.success) log.warn(`Ignoring invalid token ${MODULE_TYPE}`, t)
+    // if (!parsed.success) log.warn(`Ignoring invalid token ${MODULE_TYPE}`, t)
 
     return parsed.success
   })
