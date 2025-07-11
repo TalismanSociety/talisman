@@ -14,7 +14,8 @@
     "dev:acala": "tsx watch src/acala.ts",
     "dev:centrifuge": "tsx watch src/centrifuge.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",
-    "dev:ewx": "tsx watch src/ewx.ts"
+    "dev:ewx": "tsx watch src/ewx.ts",
+    "dev:interlay": "tsx watch src/interlay.ts"
   },
   "keywords": [],
   "author": "",
