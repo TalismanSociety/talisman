@@ -1,15 +1,12 @@
 import { IBalance } from "@talismn/balances"
-import { parseTokenId } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { filter, map, Observable, of, switchMap } from "rxjs"
+import { filter, map, Observable, of } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
 import { balancesProvider } from "./balancesProvider"
 import {
   BalanceSubscriptionResponse,
@@ -74,27 +71,13 @@ const getBalancesByParams$ = (
           status: "live",
         })
 
-      const { tokenIds, addresses } = addressesAndTokens
-
-      return chaindataProvider.getNetworksMapById$().pipe(
-        map((networksMap) => {
-          // check which addresses are compatible with which tokens,
-          return fromPairs(
-            tokenIds
-              .map((tokenId) => {
-                const network = networksMap[parseTokenId(tokenId).networkId]
-                return [
-                  tokenId,
-                  addresses.filter(
-                    (address) => !!network && isAddressCompatibleWithNetwork(network, address),
-                  ),
-                ] as [string, string[]]
-              })
-              .filter(([, addresses]) => addresses.length),
-          )
-        }),
-        switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
+      const addressesByTokenId = fromPairs(
+        addressesAndTokens.tokenIds.map(
+          (tokenId) => [tokenId, addressesAndTokens.addresses] as [string, string[]],
+        ),
       )
+
+      return balancesProvider.getBalances$(addressesByTokenId)
     },
   )
 }

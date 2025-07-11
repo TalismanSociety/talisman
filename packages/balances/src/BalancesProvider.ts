@@ -16,7 +16,7 @@ import {
   isTruthy,
   keepAlive,
 } from "@talismn/util"
-import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash-es"
+import { assign, fromPairs, isEqual, keyBy, keys, toPairs, values } from "lodash-es"
 import {
   BehaviorSubject,
   catchError,
@@ -119,9 +119,12 @@ export class BalancesProvider {
             {} as Record<NetworkId, Record<TokenId, Address[]>>,
           ),
       ),
-      switchMap((addressesByTokenIdByNetworkId) =>
+      switchMap((addressesByTokenIdByNetworkId) => {
+        // after cleanup we might end up without entries to fetch, which would break the combineLatest below
+        if (!keys(addressesByTokenIdByNetworkId).length) return of({ isStale: false, results: [] })
+
         // fetch balances and start a 30s timer to mark the whole subscription live after 30s
-        combineLatest({
+        return combineLatest({
           isStale: timer(30_000).pipe(
             map(() => true),
             startWith(false),
@@ -131,8 +134,8 @@ export class BalancesProvider {
               this.getNetworkBalances$(networkId, addressesByTokenIdByNetworkId[networkId]),
             ),
           ),
-        }),
-      ),
+        })
+      }),
       map(
         // combine
         ({ isStale, results }): BalancesResult => ({
