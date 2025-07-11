@@ -2,7 +2,6 @@ import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
 import { Binary } from "polkadot-api"
 
-import log from "../../log"
 import { deriveMiniMetadataId } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue, tryGetConstantValue } from "../shared"
@@ -19,7 +18,9 @@ export const getMiniMetadata: IBalanceModule<
 
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
-    log.warn("specVersion mismatch", { networkId, specVersion, rpc: systemVersion.spec_version })
+    throw new Error(
+      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`,
+    )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
 
