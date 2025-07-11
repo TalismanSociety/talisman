@@ -19,7 +19,7 @@ export const getMiniMetadata: IBalanceModule<
 
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
-    log.warn("specVersion mismatch", { networkId, specVersion, systemVersion })
+    log.warn("specVersion mismatch", { networkId, specVersion, rpc: systemVersion.spec_version })
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
 
