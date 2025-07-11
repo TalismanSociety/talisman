@@ -1,4 +1,3 @@
-import { toPairs } from "lodash-es"
 import { combineLatest, map, of, switchMap } from "rxjs"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
@@ -37,18 +36,17 @@ export const subscribeBalances: IBalanceModule<
   )
 
   return combineLatest([baseBalances$, subtensorBalancesByAddress$]).pipe(
-    map(([baseBalances, subtensorBalancesByAddress]) => {
-      // add subtensor balances to base balances
-      for (const [address, subtensorBalances] of toPairs(subtensorBalancesByAddress)) {
-        const balance = baseBalances.find((b) => b.address === address)
-        if (balance?.values)
-          balance.values = [
-            ...balance.values.filter(({ source }) => source !== "subtensor-staking"),
-            ...subtensorBalances,
-          ]
-      }
-
-      return { success: baseBalances, errors: [] }
-    }),
+    map(([baseBalances, subtensorBalancesByAddress]) => ({
+      success: [
+        ...baseBalances.map((b) => ({
+          ...b,
+          values: [
+            ...(b.values?.filter(({ source }) => source !== "subtensor-staking") ?? []),
+            ...(subtensorBalancesByAddress[b.address] ?? []),
+          ],
+        })),
+      ],
+      errors: [],
+    })),
   )
 }

@@ -284,7 +284,6 @@ export class BalancesProvider {
               }),
             )
           }),
-
           map((results) => {
             return {
               status: results.some(({ status }) => status === "initialising")
