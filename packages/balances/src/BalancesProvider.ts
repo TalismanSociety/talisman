@@ -19,8 +19,10 @@ import {
 import { assign, fromPairs, isEqual, keyBy, toPairs, values } from "lodash-es"
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   distinctUntilChanged,
+  EMPTY,
   filter,
   firstValueFrom,
   from,
@@ -33,6 +35,7 @@ import {
   tap,
   timer,
 } from "rxjs"
+import { withRetry } from "viem"
 
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
@@ -234,6 +237,7 @@ export class BalancesProvider {
                         connector: this.#chainConnectors.evm,
                       })
                       .pipe(
+                        catchError(() => EMPTY), // don't emit, let provider mark balances stale
                         map(
                           (results): BalancesResult => ({
                             status: "live",
@@ -263,6 +267,7 @@ export class BalancesProvider {
                         miniMetadata: miniMetadata as AnyMiniMetadata,
                       })
                       .pipe(
+                        catchError(() => EMPTY), // don't emit, let provider mark balances stale
                         map(
                           (results): BalancesResult => ({
                             status: "live",
@@ -307,13 +312,34 @@ export class BalancesProvider {
       .getNetworkById$(networkId)
       .pipe(
         switchMap((network) =>
-          isNetworkDot(network) && this.#chainConnectors.substrate
-            ? from(getSpecVersion(this.#chainConnectors.substrate, networkId)).pipe(
-                switchMap((specVersion) => this.getMiniMetadatas$(networkId, specVersion)),
+          isNetworkDot(network)
+            ? this.getNetworkSpecVersion$(networkId).pipe(
+                switchMap((specVersion) =>
+                  specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion),
+                ),
               )
             : of([]),
         ),
       )
+  }
+
+  private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {
+    return from(
+      withRetry(
+        async () => {
+          if (!this.#chainConnectors.substrate) return null
+          return await getSpecVersion(this.#chainConnectors.substrate!, networkId)
+        },
+        {
+          delay: 2_000,
+        },
+      ),
+    ).pipe(
+      catchError(() => {
+        log.warn("Failed to fetch spec version for network", { networkId })
+        return of(null)
+      }),
+    )
   }
 
   private getMiniMetadatas$(
