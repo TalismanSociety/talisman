@@ -325,18 +325,16 @@ export class BalancesProvider {
 
   private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {
     return from(
-      withRetry(
-        async () => {
-          if (!this.#chainConnectors.substrate) return null
-          return await getSpecVersion(this.#chainConnectors.substrate!, networkId)
+      withRetry(() => getSpecVersion(this.#chainConnectors.substrate!, networkId), {
+        delay: 2_000,
+        shouldRetry: (err) => {
+          log.warn("Failed to fetch spec version for network, retrying...", networkId, err)
+          return true // don't give up mate!
         },
-        {
-          delay: 2_000,
-        },
-      ),
+      }),
     ).pipe(
       catchError(() => {
-        log.warn("Failed to fetch spec version for network", { networkId })
+        log.warn("Failed to fetch spec version for network", networkId)
         return of(null)
       }),
     )
@@ -365,13 +363,28 @@ export class BalancesProvider {
         if (!this.#chainConnectors.substrate) return of([])
 
         return from(
-          getMiniMetadatas(
-            this.#chainConnectors.substrate!,
-            this.#chaindataProvider,
-            networkId,
-            specVersion,
+          withRetry(
+            () =>
+              // can fail if metadata cant be fetched
+              getMiniMetadatas(
+                this.#chainConnectors.substrate!,
+                this.#chaindataProvider,
+                networkId,
+                specVersion,
+              ),
+            {
+              delay: 2_000,
+              shouldRetry: (err) => {
+                log.warn("Failed to metadata for network, retrying...", networkId, err)
+                return true // don't give up mate!
+              },
+            },
           ),
         ).pipe(
+          catchError(() => {
+            log.warn("Failed to fetch metadata for network", networkId)
+            return of([])
+          }),
           // and persist in storage for later reuse
           tap((newMiniMetadatas) => {
             if (!newMiniMetadatas.length) return
