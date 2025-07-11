@@ -40,6 +40,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
             "peer-checked:after:bg-primary peer-checked:after:translate-x-full",
             "after:bg-grey-800 relative after:absolute after:left-1 after:top-1 after:rounded-full after:transition-all after:content-['']",
           )}
+          data-testid="component-toggle-button"
         ></div>
         {children && <span className="ml-3">{children}</span>}
       </label>

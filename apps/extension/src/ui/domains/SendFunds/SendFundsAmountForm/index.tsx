@@ -60,6 +60,7 @@ const ReviewButton = () => {
         primary
         className="mt-8 w-full"
         disabled={!isValid}
+        data-testid="component-review-button"
         onClick={() => setConfirmed(true)}
       >
         {t("Review")}

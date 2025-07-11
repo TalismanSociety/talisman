@@ -109,6 +109,7 @@ const TokenRows: FC<{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
               }}
+              data-testid={tokenData.token.symbol + "-" + tokenData.chainName}
             >
               <TokenRow
                 key={item.key}

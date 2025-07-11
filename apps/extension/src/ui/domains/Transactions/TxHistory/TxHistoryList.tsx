@@ -134,6 +134,7 @@ const TransactionRows: FC<{
       >
         {virtualizer.getVirtualItems().map((item) => (
           <div
+            data-testid="tx-history-row-transaction"
             key={item.key}
             className="absolute left-0 top-0 w-full"
             style={{

@@ -382,8 +382,8 @@ const Chart: FC<{
               title: function (tooltipItems) {
                 const date = new Date(tooltipItems[0].label)
                 return CHART_TIMESPANS[timespan].time
-                  ? `${date.toLocaleDateString(undefined, { dateStyle: "short" })} ${date.toLocaleTimeString(undefined, { timeStyle: "short" })}`
-                  : date.toLocaleDateString(undefined, { dateStyle: "short" })
+                  ? `${date.toLocaleDateString(window.navigator.language, { dateStyle: "short" })} ${date.toLocaleTimeString(window.navigator.language, { timeStyle: "short" })}`
+                  : date.toLocaleDateString(window.navigator.language, { dateStyle: "short" })
               },
               label: function () {
                 return ""

@@ -188,6 +188,7 @@ const SendButton = () => {
           onSubmit={handleSapiSubmit}
           tx={tx}
           disabled={!isReady}
+          data-testid="send-funds-confirm-button"
         />
       </div>
     </Suspense>

@@ -88,7 +88,7 @@ const UnknownAddressDrawer = ({
         </div>
         <div className="grid w-full grid-cols-2 gap-8">
           <Button onClick={close}>{t("Cancel")}</Button>
-          <Button primary onClick={handleProceedClick}>
+          <Button primary onClick={handleProceedClick} data-testid="send-funds-proceed-button">
             {t("Proceed")}
           </Button>
         </div>
