@@ -15,8 +15,6 @@ export {
   triggerIndexedDbUnavailablePopup,
 } from "./domains/app/store.errors"
 
-export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
-
 export * from "./domains/accounts/helpers.catalog"
 export {
   formatSuri,

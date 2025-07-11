@@ -374,7 +374,7 @@ export class BalancesProvider {
             {
               delay: 2_000,
               shouldRetry: (err) => {
-                log.warn("Failed to metadata for network, retrying...", networkId, err)
+                log.warn("Failed to fetch minimetadata for %s, retrying...", networkId, err)
                 return true // don't give up mate!
               },
             },

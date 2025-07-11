@@ -107,19 +107,14 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
 
 export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className }) => {
   const { selectedAccount, selectedAccounts, selectedFolder } = usePortfolioNavigation()
-  const allBalanceTotals = useBalanceTotals()
+  const balanceTotals = useBalanceTotals()
 
   const currency = useSelectedCurrency()
   const toggleCurrency = useToggleCurrency()
 
-  const totalPerAddress = useMemo(() => {
-    const balanceTotals = allBalanceTotals.filter((b) => b.currency === currency)
-    return Object.fromEntries(balanceTotals.map((t) => [t.address, t.total]))
-  }, [allBalanceTotals, currency])
-
   const selectedTotal = useMemo(() => {
-    return selectedAccounts.reduce((total, acc) => total + (totalPerAddress[acc.address] ?? 0), 0)
-  }, [selectedAccounts, totalPerAddress])
+    return selectedAccounts.reduce((total, acc) => total + (balanceTotals[acc.address] ?? 0), 0)
+  }, [selectedAccounts, balanceTotals])
 
   return (
     <div

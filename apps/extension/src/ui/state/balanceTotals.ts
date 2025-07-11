@@ -1,8 +1,25 @@
 import { bind } from "@react-rxjs/core"
-import { balanceTotalsStore } from "extension-core"
-import { values } from "lodash-es"
-import { map } from "rxjs"
+import { fromPairs } from "lodash-es"
+import { combineLatest, map } from "rxjs"
+
+import { accounts$ } from "./accounts"
+import { getBalances$ } from "./balances"
+import { getSettingValue$ } from "./settings"
 
 export const [useBalanceTotals, balanceTotals$] = bind(
-  balanceTotalsStore.observable.pipe(map((v) => values(v))),
+  combineLatest({
+    accounts: accounts$,
+    balances: getBalances$(),
+    currency: getSettingValue$("selectedCurrency"),
+  }).pipe(
+    map(({ accounts, balances, currency }) =>
+      fromPairs(
+        accounts.map(({ address }) => [
+          address,
+          balances.find({ address }).sum.fiat(currency).total,
+        ]),
+      ),
+    ),
+  ),
+  {},
 )

@@ -2,20 +2,17 @@ import { bind } from "@react-rxjs/core"
 import { FC, PropsWithChildren, useEffect } from "react"
 import { combineLatest } from "rxjs"
 
-import { portfolioAccounts$ } from "@ui/hooks/usePortfolioAccounts"
 import {
   authorisedSites$,
-  balancesHydrate$,
   portfolioSelectedAccounts$,
+  preloadBalances$,
   remoteConfig$,
   usePortfolio,
 } from "@ui/state"
 
 import { PortfolioNavigationProvider, usePortfolioNavigation } from "./usePortfolioNavigation"
 
-const [usePreload] = bind(
-  combineLatest([balancesHydrate$, remoteConfig$, authorisedSites$, portfolioAccounts$]),
-)
+const [usePreload] = bind(combineLatest([preloadBalances$, remoteConfig$, authorisedSites$]))
 
 export const PortfolioContainer: FC<PropsWithChildren<{ renderWhileLoading?: boolean }>> = ({
   children,

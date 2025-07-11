@@ -360,7 +360,7 @@ const BalancesLoader = () => {
 }
 
 export const PortfolioAccounts = () => {
-  const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
+  const { accounts, catalog, balanceTotals } = usePortfolioAccounts()
   const { selectedFolder: folder, treeName } = usePortfolioNavigation()
   const search = usePortfolioAccountsSearch()
   const { popupOpenEvent } = useAnalytics()
@@ -394,7 +394,7 @@ export const PortfolioAccounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: balanceTotalPerAccount?.[item.address] ?? 0,
+              total: balanceTotals[item.address] ?? 0,
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPortfolio(account),
@@ -407,7 +407,7 @@ export const PortfolioAccounts = () => {
               id: item.id,
               name: item.name,
               total: item.tree.reduce(
-                (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+                (sum, account) => sum + (balanceTotals[account.address] ?? 0),
                 0,
               ),
               addresses: item.tree.map((account) => account.address),
@@ -425,7 +425,7 @@ export const PortfolioAccounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")),
       watchedTree.map(treeItemToOption("watched")),
     ]
-  }, [folder, treeName, catalog.portfolio, catalog.watched, accounts, t, balanceTotalPerAccount])
+  }, [folder, treeName, catalog.portfolio, catalog.watched, accounts, t, balanceTotals])
 
   const ls = useMemo(() => search.toLowerCase(), [search])
 
@@ -444,12 +444,9 @@ export const PortfolioAccounts = () => {
   const folderTotal = useMemo(
     () =>
       folder
-        ? folder.tree.reduce(
-            (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
-            0,
-          )
+        ? folder.tree.reduce((sum, account) => sum + (balanceTotals[account.address] ?? 0), 0)
         : undefined,
-    [balanceTotalPerAccount, folder],
+    [balanceTotals, folder],
   )
 
   useEffect(() => {

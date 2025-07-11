@@ -91,7 +91,7 @@ const useBackupBanner = () => {
   )
 
   const hasFundsInNotBackedUpMnemonics = useMemo(
-    () => balanceTotals.some((bt) => notBackedUpAddresses.includes(bt.address) && !!bt.total),
+    () => notBackedUpAddresses.some((address) => !!balanceTotals[address]),
     [balanceTotals, notBackedUpAddresses],
   )
 

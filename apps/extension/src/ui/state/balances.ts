@@ -3,9 +3,11 @@ import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { BalanceSubscriptionResponse } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
+import { log } from "extension-shared"
 import {
   combineLatest,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   Observable,
   ReplaySubject,
@@ -118,4 +120,18 @@ export const [useBalances, getBalances$] = bind(
 export const [useBalancesByAddress] = bind(
   (address: Address | null | undefined) => getBalancesByQuery$({ address }),
   new Balances([]),
+)
+
+// used to force suspense, as useBalances() doesn't
+export const [usePreloadBalances, preloadBalances$] = bind(
+  new Observable<void>((subscriber) => {
+    // Trigger the initial fetch of balances
+    firstValueFrom(rawBalances$)
+      .catch((error) => {
+        log.warn("[balances] preloadBalances$ error", error)
+      })
+      .finally(() => {
+        subscriber.next()
+      })
+  }),
 )
