@@ -102,7 +102,7 @@ const Content = () => {
   return (
     <>
       <Spacer small />
-      <div className="flex justify-end gap-4">
+      <div className="flex justify-end gap-4" data-testid="platform-options-switch">
         <OptionSwitch
           options={platformOptions.map(({ value, label }) => [value, label] as const)}
           className="text-xs [&>div]:h-full"

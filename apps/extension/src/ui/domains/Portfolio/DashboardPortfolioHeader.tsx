@@ -325,7 +325,7 @@ const TopActions: FC = () => {
 
   return (
     <div className="z-[1] flex w-full items-center justify-between gap-8">
-      <div className="flex justify-center gap-4">
+      <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
         {topActions.map((action, index) => (
           <Action key={index} {...action} />
         ))}
