@@ -2,7 +2,7 @@ import { IBalance } from "@talismn/balances"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { combineLatest, filter, firstValueFrom, map, Observable, of, switchMap } from "rxjs"
+import { filter, map, Observable, of, switchMap } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -10,7 +10,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
 import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
-import { balancesProvider$ } from "./balancesProvider"
+import { balancesProvider } from "./balancesProvider"
 import {
   BalanceSubscriptionResponse,
   RequestBalance,
@@ -52,12 +52,9 @@ export class BalancesHandler extends ExtensionHandler {
 }
 
 const getBalance = ({ address, tokenId }: RequestBalance) => {
-  return firstValueFrom(
-    balancesProvider$.pipe(
-      switchMap((provider) => provider.getBalances$({ [tokenId]: [address] })),
-      filter((res) => res.status === "live"),
-      map((res): IBalance | null => res.balances[0] ?? null),
-    ),
+  return balancesProvider.getBalances$({ [tokenId]: [address] }).pipe(
+    filter((res) => res.status === "live"),
+    map((res): IBalance | null => res.balances[0] ?? null),
   )
 }
 
@@ -79,7 +76,7 @@ const getBalancesByParams$ = (
 
       const { tokenIds, addresses } = addressesAndTokens
 
-      const addressesByTokenId$ = chaindataProvider.getNetworksMapById$().pipe(
+      return chaindataProvider.getNetworksMapById$().pipe(
         map((networksMap) => {
           // check which addresses are compatible with which tokens,
           return fromPairs(
@@ -96,10 +93,7 @@ const getBalancesByParams$ = (
               .filter(([, addresses]) => addresses.length),
           )
         }),
-      )
-
-      return combineLatest([balancesProvider$, addressesByTokenId$]).pipe(
-        switchMap(([provider, addressesByTokenId]) => provider.getBalances$(addressesByTokenId)),
+        switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
       )
     },
   )

@@ -1,11 +1,11 @@
 import { BalancesProvider } from "@talismn/balances"
-import { debounceTime, first, Observable, shareReplay, skip, switchMap } from "rxjs"
+import { debounceTime, first, firstValueFrom, Observable, shareReplay, skip, switchMap } from "rxjs"
 
 import { chainConnectors } from "../../rpcs/balance-modules"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { balancesStore$, updateBalancesStore } from "./store.balances"
 
-export const balancesProvider$ = balancesStore$.pipe(
+const balancesProvider$ = balancesStore$.pipe(
   first(),
   switchMap(
     (storage) =>
@@ -22,3 +22,14 @@ export const balancesProvider$ = balancesStore$.pipe(
   ),
   shareReplay(1),
 )
+
+export const balancesProvider = {
+  getBalances$: (...args: Parameters<BalancesProvider["getBalances$"]>) => {
+    return balancesProvider$.pipe(switchMap((provider) => provider.getBalances$(...args)))
+  },
+
+  fetchBalances: async (...args: Parameters<BalancesProvider["fetchBalances"]>) => {
+    const provider = await firstValueFrom(balancesProvider$)
+    return provider.fetchBalances(...args)
+  },
+}

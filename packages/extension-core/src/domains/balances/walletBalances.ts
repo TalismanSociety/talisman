@@ -8,7 +8,7 @@ import { combineLatest, distinctUntilChanged, map, shareReplay, switchMap, tap }
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { keyringStore } from "../keyring/store"
-import { balancesProvider$ } from "./balancesProvider"
+import { balancesProvider } from "./balancesProvider"
 import { activeNetworksStore, isNetworkActive } from "./store.activeNetworks"
 import { activeTokensStore, isTokenActive } from "./store.activeTokens"
 
@@ -36,13 +36,8 @@ const walletAddressesByTokenId$ = combineLatest({
   distinctUntilChanged<Record<TokenId, Address[]>>(isEqual),
 )
 
-export const walletBalances$ = combineLatest({
-  balancesProvider: balancesProvider$,
-  addressesByTokenId: walletAddressesByTokenId$,
-}).pipe(
-  switchMap(({ balancesProvider, addressesByTokenId }) =>
-    balancesProvider.getBalances$(addressesByTokenId),
-  ),
+export const walletBalances$ = walletAddressesByTokenId$.pipe(
+  switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
   firstThenDebounce(500),
   distinctUntilChanged<BalancesResult>(isEqual),
   tap({
