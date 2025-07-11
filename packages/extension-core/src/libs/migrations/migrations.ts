@@ -43,12 +43,6 @@ export const migrations: Migrations = [
   migrateToChaindataV4,
 ]
 
-export const getHasPendingMigrations = async () => {
-  const storage = await chrome.storage.local.get("migrations")
-  const migrationsData = storage.migrations || {}
-  return Object.keys(migrationsData).length < migrations.length
-}
-
 // @dev snippet to use in dev console of background worker to remove a migration:
 // const state = await chrome.storage.local.get("migrations")
 // delete state.migrations["14"] // CHANGE THIS TO YOUR MIGRATION'S INDEX

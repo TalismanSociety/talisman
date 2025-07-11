@@ -7,6 +7,7 @@ import { sessionStore } from "./domains/app/store.session"
 import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
+import { setWalletReady } from "./libs/isWalletReady"
 import { MigrationRunner, migrations } from "./libs/migrations"
 import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
@@ -58,8 +59,11 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
     })
 
     await migrationRunner.isComplete
+
     // only do this once
     migrationSub.unsubscribe()
+
+    setWalletReady() // set the wallet ready state to true, so workers such as asset discovery can start
 
     // start the asset discovery scanner after migrations are complete
     assetDiscoveryScanner.startPendingScan()

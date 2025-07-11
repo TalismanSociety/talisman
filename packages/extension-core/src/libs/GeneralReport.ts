@@ -19,7 +19,7 @@ import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
-import { getHasPendingMigrations } from "./migrations"
+import { isWalletReady$ } from "./isWalletReady"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -110,12 +110,12 @@ async function getGeneralReport({
    */
   refreshBalances?: boolean
 } = {}) {
-  const [allowTracking, onboarded, hasPendingMigrations] = await Promise.all([
+  const [allowTracking, onboarded, isWalletReady] = await Promise.all([
     settingsStore.get("useAnalyticsTracking"),
     appStore.getIsOnboarded(),
-    getHasPendingMigrations(),
+    firstValueFrom(isWalletReady$), // general report could be totally wrong if generated before migrations are complete
   ])
-  if (!allowTracking || !onboarded || hasPendingMigrations || IS_FIREFOX) return
+  if (!allowTracking || !onboarded || IS_FIREFOX || !isWalletReady) return
 
   //
   // accounts
