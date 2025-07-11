@@ -18,6 +18,7 @@ const NETWORKS: Record<string, string> = {
 // Use a global promise queue to comply with subscan rate limit of 5 requests per second
 // In practice it seems limited at 1 request per second, most likely because we are not using an api key
 // The rate limit is global to all of their subdomains
+// TODO maybe implement something based on http headers ? https://support.subscan.io/doc-362600
 const SUBSCAN_QUEUE = new PQueue({
   interval: 1000,
   intervalCap: 1,
