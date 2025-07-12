@@ -81,7 +81,7 @@ export const TokenBalancesList = ({
             {networkType && (
               <div className="flex w-full items-center gap-2 overflow-hidden">
                 <NetworkLogo networkId={chainOrNetworkId} />
-                <span className="truncate">
+                <span className="truncate text-sm">
                   {chainOrNetworkName} ({networkType})
                 </span>
               </div>

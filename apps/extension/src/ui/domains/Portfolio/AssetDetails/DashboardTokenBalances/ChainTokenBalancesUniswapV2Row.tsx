@@ -39,7 +39,7 @@ export const ChainTokenBalancesUniswapV2Row = ({
     >
       {/* only show address when we're viewing balances for all accounts */}
       {!selectedAccount && (
-        <div className="flex items-end justify-between gap-4 text-xs">
+        <div className="flex items-end justify-between gap-4 text-sm">
           <PortfolioAccount address={balance.address} />
         </div>
       )}
