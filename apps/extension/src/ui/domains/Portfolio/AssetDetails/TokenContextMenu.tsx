@@ -137,8 +137,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Stake" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
-      </ContextMenuContent>
-      <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
       </ContextMenuContent>
     </ContextMenu>
