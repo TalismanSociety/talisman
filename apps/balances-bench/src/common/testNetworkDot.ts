@@ -36,12 +36,14 @@ type TestOptions = {
 }
 
 const DEFAULT_OPTIONS: TestOptions = {
-  modules: BALANCE_MODULES.map((mod) => mod.type as TokenType),
+  modules: BALANCE_MODULES.filter((mod) => mod.platform === "polkadot").map(
+    (mod) => mod.type as TokenType,
+  ),
   fetchBalances: true,
   transfer: true,
 }
 
-export const testDotNetwork = async (network: DotNetworkConfig, options?: TestOptions) => {
+export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOptions) => {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   const rpcUrl = network.rpcs[0]

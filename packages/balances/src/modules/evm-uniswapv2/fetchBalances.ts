@@ -1,10 +1,12 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/util"
-import { ChainContract, erc20Abi, PublicClient } from "viem"
+import BigNumber from "bignumber.js"
+import { keyBy, uniq } from "lodash-es"
+import { getContract, PublicClient } from "viem"
 
-import { IBalance } from "../../types"
-import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
-import { erc20BalancesAggregatorAbi } from "../abis"
+import { ExtraAmount } from "../../types"
+import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import { uniswapV2PairAbi } from "../abis"
 import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
 import { BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
@@ -34,109 +36,113 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-  if (client.chain?.contracts?.erc20Aggregator && balanceDefs.length > 1) {
-    const erc20Aggregator = client.chain.contracts.erc20Aggregator as ChainContract
-    return fetchWithAggregator(client, balanceDefs, erc20Aggregator.address)
-  }
-
-  return fetchWithoutAggregator(client, balanceDefs)
+  return fetchPoolBalances(client, balanceDefs)
 }
 
-const fetchWithoutAggregator = async (
+const fetchPoolBalances = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
-  const results = await Promise.allSettled(
-    balanceDefs.map(async ({ token, address }) => {
-      try {
-        const result = await client.readContract({
-          abi: erc20Abi,
+  // fetch pool specific info separately to prevent querying same contract info for multiple account addresses
+  const pools = uniq(balanceDefs.map((def) => def.token.contractAddress))
+
+  const [poolResults, balanceResults] = await Promise.all([
+    // pool supplies and reserves
+    Promise.allSettled(
+      pools.map(async (address) => {
+        const contract = getContract({ address, abi: uniswapV2PairAbi, client })
+
+        const [totalSupply, [reserve0, reserve1]] = await Promise.all([
+          contract.read.totalSupply(),
+          contract.read.getReserves(),
+        ])
+        return { address, totalSupply, reserve0, reserve1 }
+      }),
+    ),
+    // balances for each address
+    Promise.allSettled(
+      balanceDefs.map(async ({ token, address }) => {
+        const balance = await client.readContract({
           address: token.contractAddress,
+          abi: uniswapV2PairAbi,
           functionName: "balanceOf",
           args: [address],
-        })
+        } as const)
 
-        const balance: IBalance = {
-          address,
-          tokenId: token.id,
-          value: result.toString(),
-          source: MODULE_TYPE,
-          networkId: parseTokenId(token.id).networkId,
-          status: "live",
-        }
+        return { pool: token.contractAddress, address, balance }
+      }),
+    ),
+  ])
 
-        return balance
-      } catch (err) {
-        throw new BalanceFetchError(
-          `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
-          token.id,
-          address,
-          err as Error,
-        )
-      }
-    }),
+  const poolInfo = keyBy(
+    poolResults.filter((r) => r.status === "fulfilled").map((r) => r.value),
+    (p) => p.address,
   )
 
-  return results.reduce(
-    (acc, result) => {
-      if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
-      else {
-        const error = result.reason as BalanceFetchError
+  const results = balanceDefs.reduce(
+    (acc, { token, address }, i) => {
+      const pool = poolInfo[token.contractAddress]
+      if (!pool) {
         acc.errors.push({
-          tokenId: error.tokenId,
-          address: error.address,
-          error,
+          tokenId: token.id,
+          address,
+          error: new BalanceFetchNetworkError(
+            `Pool data not found for token ${token.id} at address ${token.contractAddress}`,
+            parseTokenId(token.id).networkId,
+          ),
         })
+        return acc
       }
+
+      const balanceResult = balanceResults[i]
+
+      if (balanceResult.status !== "fulfilled") {
+        acc.errors.push({
+          tokenId: token.id,
+          address,
+          error: new BalanceFetchError(
+            `Failed to fetch balance for token ${token.id} at address ${address}`,
+            token.id,
+            address,
+            balanceResult.reason as Error,
+          ),
+        })
+        return acc
+      }
+
+      const { totalSupply, reserve0, reserve1 } = pool
+      const { balance } = balanceResult.value
+
+      const extraWithLabel = (label: string, amount: string): ExtraAmount<string> => ({
+        type: "extra",
+        label,
+        amount,
+      })
+
+      const ratio = BigNumber(String(balance)).div(totalSupply === 0n ? "1" : String(totalSupply))
+
+      acc.success.push({
+        address,
+        tokenId: token.id,
+        source: MODULE_TYPE,
+        networkId: parseTokenId(token.id).networkId,
+        status: "live",
+        values: [
+          { type: "free", label: "free", amount: String(balance) },
+          extraWithLabel("totalSupply", String(totalSupply)),
+          extraWithLabel("reserve0", String(reserve0)),
+          extraWithLabel("reserve1", String(reserve1)),
+          extraWithLabel("holding0", ratio.times(String(reserve0)).toString(10)),
+          extraWithLabel("holding1", ratio.times(String(reserve1)).toString(10)),
+        ],
+      })
+
       return acc
     },
     { success: [], errors: [] } as FetchBalanceResults,
   )
-}
 
-const fetchWithAggregator = async (
-  client: PublicClient,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  erc20BalancesAggregatorAddress: `0x${string}`,
-): Promise<FetchBalanceResults> => {
-  if (balanceDefs.length === 0) return { success: [], errors: [] }
-
-  try {
-    const erc20Balances = await client.readContract({
-      abi: erc20BalancesAggregatorAbi,
-      address: erc20BalancesAggregatorAddress,
-      functionName: "balances",
-      args: [
-        balanceDefs.map((b) => ({
-          account: b.address,
-          token: b.token.contractAddress,
-        })),
-      ],
-    })
-
-    const success = balanceDefs.map(
-      (balanceDef, index): IBalance => ({
-        address: balanceDef.address,
-        tokenId: balanceDef.token.id,
-        value: erc20Balances[index].toString(),
-        source: MODULE_TYPE,
-        networkId: parseTokenId(balanceDef.token.id).networkId,
-        status: "live",
-      }),
-    )
-    return { success, errors: [] }
-  } catch (err) {
-    const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
-      tokenId: balanceDef.token.id,
-      address: balanceDef.address,
-      error: new BalanceFetchNetworkError(
-        `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
-        String(client.chain?.id),
-        err as Error,
-      ),
-    }))
-    return { success: [], errors }
-  }
+  return results
 }

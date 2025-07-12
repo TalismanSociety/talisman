@@ -5,7 +5,7 @@ import "./common/polyfills"
 import { isTokenSubHydration } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
-import { DotNetworkConfig, testDotNetwork } from "./common/testPolkadotNetwork"
+import { DotNetworkConfig, testNetworkDot } from "./common/testNetworkDot"
 
 const NETWORK_CONFIG: DotNetworkConfig = {
   id: "hydration",
@@ -33,7 +33,7 @@ const NETWORK_CONFIG: DotNetworkConfig = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG, {
+testNetworkDot(NETWORK_CONFIG, {
   modules: ["substrate-hydration"],
   fetchBalances: false,
   transfer: false,

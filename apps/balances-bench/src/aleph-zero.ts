@@ -4,7 +4,7 @@ import { webcrypto } from "crypto"
 
 import { log } from "extension-shared"
 
-import { testDotNetwork } from "./common/testPolkadotNetwork"
+import { testNetworkDot } from "./common/testNetworkDot"
 
 // Ensure globalThis.crypto is available (for Node.js)
 if (typeof globalThis.crypto === "undefined") {
@@ -26,7 +26,7 @@ const NETWORK_CONFIG = {
   },
 }
 
-testDotNetwork(NETWORK_CONFIG, { modules: ["substrate-psp22", "substrate-native"] })
+testNetworkDot(NETWORK_CONFIG, { modules: ["substrate-psp22", "substrate-native"] })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)
