@@ -32,7 +32,7 @@ import { PlatformOption } from "../Networks/usePlatformOptions"
 
 export const TokensList: FC<{
   platform: PlatformOption
-  networkId?: NetworkId
+  networkId: NetworkId | null
   search?: string
   isActiveOnly?: boolean
   isCustomOnly?: boolean
@@ -50,7 +50,7 @@ export const TokensList: FC<{
   const defaultTokens = useMemo(() => {
     const results = tokens
       .filter((t) => !!networksMap[t.networkId])
-      .filter((t) => networkId === "ALL" || t.networkId === networkId)
+      .filter((t) => !networkId || t.networkId === networkId)
 
     return sortBy(
       results,
