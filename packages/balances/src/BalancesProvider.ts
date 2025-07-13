@@ -153,10 +153,6 @@ export class BalancesProvider {
             .sort(sortByBalanceId),
         }),
       ),
-      startWith({
-        status: "initialising",
-        balances: this.getStoredBalances(addressesByTokenId),
-      } as BalancesResult),
       distinctUntilChanged<BalancesResult>(isEqual),
     )
   }
@@ -297,29 +293,33 @@ export class BalancesProvider {
             } as BalancesResult
           }),
           distinctUntilChanged<BalancesResult>(isEqual),
-          // shareReplay + keepAlive allow for subscription to not restart as long as the inputs dont change
-          // for example, if another network is enabled/disabled
+          startWith({
+            status: "initialising",
+            balances: this.getStoredBalances(addressesByTokenId),
+          } as BalancesResult),
+          // shareReplay + keepAlive allow for this network subscription to not restart as long as the inputs don't change
+          // for example if another network is enabled/disabled, we don't want this subscription to be restarted
+          // the unsubscribe/resubscribe is instantaneous when parameters parameters change, so keepAlive 0ms does the job
           shareReplay({ refCount: true, bufferSize: 1 }),
-          keepAlive(2_000),
+          keepAlive(0),
         )
       },
     )
   }
 
   private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
-    return this.#chaindataProvider
-      .getNetworkById$(networkId)
-      .pipe(
-        switchMap((network) =>
-          isNetworkDot(network)
-            ? this.getNetworkSpecVersion$(networkId).pipe(
-                switchMap((specVersion) =>
-                  specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion),
-                ),
-              )
-            : of([]),
-        ),
-      )
+    return this.#chaindataProvider.getNetworkById$(networkId).pipe(
+      switchMap((network) =>
+        isNetworkDot(network)
+          ? this.getNetworkSpecVersion$(networkId).pipe(
+              switchMap((specVersion) =>
+                specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion),
+              ),
+            )
+          : of([]),
+      ),
+      distinctUntilChanged<MiniMetadata[]>(isEqual),
+    )
   }
 
   private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {

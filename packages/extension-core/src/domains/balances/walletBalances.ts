@@ -1,4 +1,4 @@
-import { Address, BalancesResult } from "@talismn/balances"
+import { Address } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
@@ -42,7 +42,6 @@ const walletAddressesByTokenId$ = combineLatest({
 export const walletBalances$ = walletAddressesByTokenId$.pipe(
   switchMap((addressesByTokenId) => balancesProvider.getBalances$(addressesByTokenId)),
   firstThenDebounce(500),
-  distinctUntilChanged<BalancesResult>(isEqual),
   tap({
     subscribe: () => log.debug("[balances] starting main subscription"),
     unsubscribe: () => log.debug("[balances] stopping main subscription"),
