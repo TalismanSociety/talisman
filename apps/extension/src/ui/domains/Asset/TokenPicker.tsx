@@ -23,6 +23,7 @@ import {
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
+import { NetworkName } from "../Networks/NetworkName"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -33,7 +34,6 @@ type TokenRowProps = {
   selected: boolean
   onClick?: () => void
   balances: Balances
-  chainName?: string | null
   hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
@@ -67,7 +67,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  chainName: string
   hasFiatRate: boolean
 }
 
@@ -109,14 +108,13 @@ const TokenRows: FC<{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
               }}
-              data-testid={tokenData.token.symbol + "-" + tokenData.chainName}
+              data-testid={`TokenRowWrapper:${tokenData.token.id}`}
             >
               <TokenRow
                 key={item.key}
                 selected={tokenData.token.id === selectedTokenId}
                 token={tokenData.token}
                 balances={tokenData.balances}
-                chainName={tokenData.chainName}
                 hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
@@ -133,7 +131,6 @@ const TokenRow: FC<TokenRowProps> = ({
   token,
   selected,
   balances,
-  chainName,
   hasFiatRate,
   allowUntransferable,
   onClick,
@@ -203,7 +200,7 @@ const TokenRow: FC<TokenRowProps> = ({
           <div className="flex grow items-center overflow-hidden">
             <div className="truncate">
               <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
-              {chainName}
+              <NetworkName networkId={token.networkId} />
             </div>
           </div>
           <div className={classNames(isLoading && "animate-pulse")}>
