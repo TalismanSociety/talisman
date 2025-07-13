@@ -1,9 +1,11 @@
-import { BalancesStorage, getBalanceId, IBalance } from "@talismn/balances"
+import { BalanceJson, BalancesStorage, getBalanceId } from "@talismn/balances"
+import { isAccountNotContact } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { BehaviorSubject, debounceTime, distinctUntilChanged, map, skip } from "rxjs"
+import { debounceTime, distinctUntilChanged, map, ReplaySubject, skip } from "rxjs"
 
 import { getDbBlob, updateDbBlob } from "../../db"
+import { keyringStore } from "../keyring/store"
 
 const BLOB_ID = "balances"
 
@@ -17,7 +19,33 @@ const DEFAULT_DATA: BalancesStoreData = {
   miniMetadatas: [],
 }
 
-const subjectBalancesStore = new BehaviorSubject(DEFAULT_DATA)
+const subjectBalancesStore = new ReplaySubject<BalancesStoreData>(1)
+
+// load from db and cleanup on startup
+Promise.all([getDbBlob<"balances", BalancesStoreData>(BLOB_ID), keyringStore.getAccounts()])
+  .then(([storage, accounts]) => {
+    if (!storage) return
+
+    const addresses = new Set(accounts.filter(isAccountNotContact).map((a) => a.address))
+    const balances = storage.balances.filter((b) => addresses.has(b.address))
+
+    if (balances.length !== storage.balances.length)
+      log.debug(
+        `[balances] deleting ${storage.balances.length - balances.length} balances that do not match keyring addresses`,
+      )
+
+    subjectBalancesStore.next({
+      ...DEFAULT_DATA,
+      ...storage,
+      // remove all balances that do not match a keyring address
+      balances,
+    })
+  })
+  .catch((error) => {
+    log.error("[balances] failed to cleanup balances store on startup", error)
+    // need at least one emit on startup as it's a replay subject
+    subjectBalancesStore.next(DEFAULT_DATA)
+  })
 
 export const balancesStore$ = subjectBalancesStore.pipe(
   map(
@@ -28,10 +56,11 @@ export const balancesStore$ = subjectBalancesStore.pipe(
   ),
 )
 
-const cleanupBalanceForStorage = (balance: IBalance): IBalance => {
+const cleanupBalanceForStorage = (balance: BalanceJson): BalanceJson => {
   const { networkId, address, tokenId, source, useLegacyTransferableCalculation, values, value } =
     balance
   return {
+    // mark as cache and enforce property ordering for consistency
     status: "cache",
     networkId,
     address,
@@ -40,7 +69,7 @@ const cleanupBalanceForStorage = (balance: IBalance): IBalance => {
     useLegacyTransferableCalculation,
     values,
     value,
-  } as IBalance
+  } as BalanceJson
 }
 
 export const updateBalancesStore = (data: BalancesStorage) => {
@@ -54,14 +83,9 @@ export const updateBalancesStore = (data: BalancesStorage) => {
   })
 }
 
-// load from db and cleanup on startup
-getDbBlob<"balances", BalancesStoreData>(BLOB_ID).then((storage) => {
-  if (storage) subjectBalancesStore.next({ ...DEFAULT_DATA, ...storage })
-})
-
-// persist to db when store is updated
+// persist data to db when store is updated
 balancesStore$
-  // skip 2 : one for initial value, one for the provisioning from indexed db
+  // skip 2 : one for initial value, one for the above provisioning from indexed db
   .pipe(skip(2), debounceTime(2_000), distinctUntilChanged<BalancesStorage>(isEqual))
   .subscribe((storage) => {
     log.debug(
