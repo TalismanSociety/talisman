@@ -106,15 +106,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
 ) {
   const token = useToken(tokenId)
 
-  const showMenu = useMemo(() => {
-    // need at least 1 entry to be displayable, otherwise don't show the menu at all
-    if (token?.coingeckoId) return true
-    if (token?.type === "evm-erc20") return true
-    return false
-  }, [token])
-
-  if (!showMenu) return null
-
   return (
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
