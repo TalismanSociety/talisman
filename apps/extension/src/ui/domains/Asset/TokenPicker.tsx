@@ -165,7 +165,7 @@ const TokenRow: FC<TokenRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary",
       )}
@@ -173,17 +173,20 @@ const TokenRow: FC<TokenRowProps> = ({
       <div className="w-16 shrink-0">
         <TokenLogo tokenId={token.id} className="!text-xl" />
       </div>
-      <div className="grow space-y-[5px]">
+      <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
           className={classNames(
-            "flex w-full justify-between text-sm font-bold",
+            "flex w-full justify-between gap-6 overflow-hidden text-sm font-bold",
             selected ? "text-body-secondary" : "text-body",
           )}
         >
-          <div className="flex items-center">
-            <span>{token.symbol}</span>
-            <TokenTypePill type={token.type} className="rounded-xs ml-3 px-1 py-0.5" />
-            {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
+          <div className="flex grow items-center gap-2 overflow-hidden">
+            <div>{token.symbol}</div>
+            <TokenTypePill type={token.type} className="rounded-xs shrink-0 px-1 py-0.5" />
+            {!!token.name && token.name !== token.symbol && (
+              <div className="text-body-inactive truncate font-normal">{token.name}</div>
+            )}
+            {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
           <div className={classNames(isLoading && "animate-pulse")}>
             <Tokens
@@ -192,17 +195,25 @@ const TokenRow: FC<TokenRowProps> = ({
               symbol={isUniswapV2LpToken ? "" : token.symbol}
               isBalance
               noCountUp
+              className="text-nowrap"
             />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
-          <div className="flex flex-col justify-center">
-            <NetworkLogo networkId={token.networkId} className="inline-block text-sm" />
+        <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-right text-xs font-light">
+          <div className="flex grow items-center overflow-hidden">
+            <div className="truncate">
+              <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
+              {chainName}
+            </div>
           </div>
-          <div>{chainName}</div>
-          <div className={classNames("grow", isLoading && "animate-pulse")}>
+          <div className={classNames(isLoading && "animate-pulse")}>
             {hasFiatRate ? (
-              <Fiat amount={balances.sum.fiat(currency).transferable} isBalance noCountUp />
+              <Fiat
+                amount={balances.sum.fiat(currency).transferable}
+                isBalance
+                noCountUp
+                className="text-nowrap"
+              />
             ) : (
               "-"
             )}
