@@ -28,7 +28,7 @@ export const NetworkCombo: FC<{
 }> = ({ networks, value, placeholder, onChange, className, bgClassName = "bg-field" }) => {
   const { t } = useTranslation()
   const networkNameById = useNetworkDisplayNamesMapById()
-  // copy where we can control order so selection is always at the top
+
   const [search, setSearch] = useState("")
 
   const searchResults = useMemo(() => {
