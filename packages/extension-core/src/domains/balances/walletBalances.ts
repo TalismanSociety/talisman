@@ -1,5 +1,6 @@
 import { Address, BalancesResult } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"
 import { fromPairs, isEqual } from "lodash-es"
@@ -26,7 +27,9 @@ const walletAddressesByTokenId$ = combineLatest({
     return fromPairs(
       arNetworks.flatMap((network) => {
         const networkTokens = arTokens.filter((t) => t.networkId === network.id)
-        const networkAccounts = accounts.filter((a) => isAccountCompatibleWithNetwork(network, a))
+        const networkAccounts = accounts
+          .filter(isAccountNotContact)
+          .filter((a) => isAccountCompatibleWithNetwork(network, a))
         return networkTokens.map(
           (token) => [token.id, networkAccounts.map((a) => a.address)] as [TokenId, Address[]],
         )

@@ -15,8 +15,9 @@ import {
   isNotNil,
   isTruthy,
   keepAlive,
+  normalizeAddress,
 } from "@talismn/util"
-import { assign, fromPairs, isEqual, keyBy, keys, toPairs, values } from "lodash-es"
+import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
   BehaviorSubject,
   catchError,
@@ -295,10 +296,6 @@ export class BalancesProvider {
               balances: results.flatMap((result) => result.balances).sort(sortByBalanceId),
             } as BalancesResult
           }),
-          startWith({
-            status: "initialising" as BalancesStatus,
-            balances: this.getStoredBalances(addressesByTokenId),
-          } as BalancesResult),
           distinctUntilChanged<BalancesResult>(isEqual),
           // shareReplay + keepAlive allow for subscription to not restart as long as the inputs dont change
           // for example, if another network is enabled/disabled
@@ -451,7 +448,7 @@ export class BalancesProvider {
               const network = networksById[networkId]
               return [
                 tokenId,
-                addresses.filter(
+                uniq(addresses.map(normalizeAddress)).filter(
                   (address) => network && isAddressCompatibleWithNetwork(network, address),
                 ),
               ] as [TokenId, Address[]]
