@@ -10,7 +10,6 @@ import { useTranslation } from "react-i18next"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useAccountByAddress,
   useBalances,
@@ -281,18 +280,15 @@ const TokensList: FC<TokensListProps> = ({
       .filter(isTransferableToken)
       .map((token) => {
         const network = networksMap[token.networkId]
-        const networkId = token.networkId
-        const netInfo = getNetworkInfo(t, { networkId, networks: networksMap })
         return {
           id: token.id,
           token,
           chainNameSearch: network?.name,
-          chainName: netInfo.fullName,
           chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
-  }, [allTokens, filterAccountCompatibleTokens, networksMap, t, tokenFilter, tokenRatesMap])
+  }, [allTokens, filterAccountCompatibleTokens, networksMap, tokenFilter, tokenRatesMap])
 
   // sort alphabetically by symbol + chain name
   const sortTokens = useCallback(

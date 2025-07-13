@@ -47,7 +47,7 @@ export const BittensorTokenBalanceList = ({
   const isChainIfo = listKey === CHAIN_INFO
   const isRootStake = Number(listKey) === ROOT_NETUID
   const [fistGroupStake] = groupedStakesByNetuid ?? []
-  const { network: chainOrNetwork, token, detailRows, status, networkType } = tokenBalances
+  const { network: chainOrNetwork, token, detailRows, status } = tokenBalances
   const { subnetData, isError, isLoading, isFetchingNextPage } = combinedSubnetData
   const {
     price_change_1_day,
@@ -101,8 +101,6 @@ export const BittensorTokenBalanceList = ({
     </div>
   )
 
-  const rowNetworkType = isChainIfo ? networkType : isRootStake ? "Root" : ""
-
   return (
     <TokenBalancesList
       stakeType={isRootStake || isChainIfo ? "root" : "subnet"}
@@ -114,7 +112,6 @@ export const BittensorTokenBalanceList = ({
       chainOrNetworkId={chainOrNetwork.id}
       chainOrNetworkName={chainName}
       assetPriceInfo={assetPriceInfo}
-      networkType={rowNetworkType}
       shouldDisplayActionBtns={isChainIfo}
     >
       {groupedStakesByNetuid?.map((row, i, rows) => {

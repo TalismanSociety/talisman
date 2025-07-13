@@ -7,6 +7,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useToken } from "@ui/state"
 
@@ -19,8 +20,6 @@ type TokenBalancesListProps = {
   balances: Balances
   detailRowsLength: number
   chainOrNetworkId: string
-  chainOrNetworkName: string
-  networkType?: string
   children: ReactNode
 }
 
@@ -29,8 +28,6 @@ export const TokenBalancesList = ({
   balances,
   detailRowsLength,
   chainOrNetworkId,
-  chainOrNetworkName,
-  networkType,
   children,
 }: TokenBalancesListProps) => {
   const token = useToken(tokenId)
@@ -59,14 +56,12 @@ export const TokenBalancesList = ({
               </Suspense>
             </div>
           </div>
-          {networkType && (
-            <div className="flex w-full items-center gap-2 overflow-hidden">
-              <NetworkLogo networkId={chainOrNetworkId} />
-              <span className="truncate">
-                {chainOrNetworkName} ({networkType})
-              </span>
-            </div>
-          )}
+          <div className="flex w-full items-center gap-2 overflow-hidden">
+            <NetworkLogo networkId={chainOrNetworkId} />
+            <span className="truncate">
+              <NetworkName networkId={chainOrNetworkId} />
+            </span>
+          </div>
         </div>
         {tokenId && (
           <div className="size-[3.8rem] shrink-0 empty:hidden">

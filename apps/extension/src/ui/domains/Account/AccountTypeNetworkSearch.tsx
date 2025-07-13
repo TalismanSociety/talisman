@@ -14,8 +14,8 @@ import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
+import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
 
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
@@ -34,19 +34,20 @@ export function AccountTypeNetworkSearch({
   const activeNetworkStates = useActiveNetworksState()
   const allNetworksAggregated = useNetworks()
   const allNetworksMap = useNetworksMapById()
+  const networkNameById = useNetworkDisplayNamesMapById()
+  const networkTypeById = useNetworkDisplayTypesMapById()
 
   const allNetworkItems = useMemo(
     () =>
       allNetworksAggregated
         .map((network) => {
-          const { label, type } = getNetworkInfo(t, {
-            networkId: network.id,
-            networks: allNetworksMap,
-          })
+          const name = network.name
+          const label = networkNameById[network.id] ?? network.name
+          const type = networkTypeById[network.id] ?? network.platform
           const symbol = tokensMap[network.nativeTokenId]?.symbol
           const isActive = isNetworkActive(network, activeNetworkStates)
           const account = isNetworkDot(network) ? network.account : undefined
-          return { id: network.id, label, type, symbol, account, isActive }
+          return { id: network.id, name, label, type, symbol, account, isActive }
         })
         .sort((a, b) => {
           // First sort by isActive (true values first)
@@ -57,7 +58,7 @@ export function AccountTypeNetworkSearch({
           return a.label?.localeCompare(b.label ?? "") ?? 0
         }),
 
-    [allNetworksAggregated, t, allNetworksMap, tokensMap, activeNetworkStates],
+    [allNetworksAggregated, networkNameById, networkTypeById, tokensMap, activeNetworkStates],
   )
   type Network = (typeof filteredNetworkItems)[number]
 
@@ -89,6 +90,7 @@ export function AccountTypeNetworkSearch({
     () => [
       {
         id: "combobox-header",
+        name: "",
         label: "",
         type: "",
         symbol: "",
@@ -161,7 +163,7 @@ export function AccountTypeNetworkSearch({
                   value={network}
                 >
                   <NetworkLogo networkId={network.id} className="text-md" />
-                  <span className="text-white">{network.label}</span>
+                  <span className="text-white">{network.name}</span>
                   <span className="text-body-secondary/50 text-base">{network.type}</span>
                   <div className="flex-grow" />
                   <span className="text-white">{startCase(getAccountType(network))}</span>

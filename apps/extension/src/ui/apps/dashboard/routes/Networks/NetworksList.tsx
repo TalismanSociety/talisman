@@ -11,7 +11,8 @@ import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } f
 
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import {
   useActiveNetworksState,
   useBalances,
@@ -211,15 +212,17 @@ const NetworkRow: FC<{
     [network.id],
   )
 
-  const { type } = useNetworkInfo(network.id)
-
   return (
     <div className="relative h-28">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
         <NetworkLogo className="rounded-full text-xl" networkId={network.id} />
         <div className="text-body flex flex-col justify-center gap-1 overflow-hidden">
-          <div className="truncate">{network.name}</div>
-          <div className="text-body-inactive truncate text-xs">{type}</div>
+          <div className="truncate">
+            <NetworkName networkId={network.id} />
+          </div>
+          <div className="text-body-inactive truncate text-xs">
+            <NetworkType networkId={network.id} />
+          </div>
         </div>
         {network.isTestnet && <TestnetPill />}
         {isNetworkCustom(network) && <CustomPill />}

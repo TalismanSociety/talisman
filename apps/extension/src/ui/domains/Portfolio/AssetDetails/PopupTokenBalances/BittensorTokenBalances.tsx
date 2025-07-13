@@ -36,8 +36,6 @@ export const BittensorTokenBalances = ({ balances, tokenId }: TokenBalancesParam
         <TokenBalancesList
           key={key}
           chainOrNetworkId={network.id}
-          chainOrNetworkName={network.name}
-          networkType={tokenBalances.networkType}
           detailRowsLength={tokenBalances.detailRows.length}
           tokenId={tokenId}
           balances={balances}

@@ -10,7 +10,6 @@ import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
-import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -143,10 +142,6 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
   const detailRows = useEnhanceDetailRows(rawDetailRows)
 
-  const { networkId } = useMemo(() => balances.sorted[0], [balances])
-
-  const networkType = useNetworkCategory(networkId)
-
   const status = useBalancesStatus(balances)
 
   return {
@@ -154,7 +149,6 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
     token,
     detailRows,
     status,
-    networkType,
     network,
   }
 }

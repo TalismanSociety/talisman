@@ -2,20 +2,16 @@ import i18next, { TFunction } from "i18next"
 import { Observable, shareReplay } from "rxjs"
 
 export const t$ = new Observable<TFunction>((subscriber) => {
-  const handleUpdate = () => {
-    subscriber.next(i18next.t.bind(i18next))
+  const handleLanguageChanged = (lng: string) => {
+    subscriber.next(i18next.getFixedT(lng))
   }
 
   // init immediately
-  handleUpdate()
+  subscriber.next(i18next.getFixedT(i18next.language))
 
-  i18next.on("languageChanged", handleUpdate)
-  i18next.on("initialized", handleUpdate)
-  i18next.on("loaded", handleUpdate)
+  i18next.on("languageChanged", handleLanguageChanged)
 
   return () => {
-    i18next.off("languageChanged", handleUpdate)
-    i18next.off("initialized", handleUpdate)
-    i18next.off("loaded", handleUpdate)
+    i18next.off("languageChanged", handleLanguageChanged)
   }
 }).pipe(shareReplay(1))

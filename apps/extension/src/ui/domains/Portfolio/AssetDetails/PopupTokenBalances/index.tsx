@@ -21,7 +21,6 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
     token,
     detailRows,
     status,
-    networkType,
   } = useTokenBalances({
     tokenId,
     balances,
@@ -42,8 +41,6 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
       balances={balances}
       detailRowsLength={detailRows.length}
       chainOrNetworkId={chainOrNetwork.id}
-      chainOrNetworkName={chainOrNetwork.name ?? ""}
-      networkType={networkType}
     >
       {isUniswapV2LpToken &&
         balances.sorted

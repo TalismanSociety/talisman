@@ -1,13 +1,12 @@
 import { NetworkId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
+import { classNames, isTruthy } from "@talismn/util"
 import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
-import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useNetworksMapById } from "@ui/state"
+import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }
 
@@ -33,18 +32,18 @@ const prioNetworks = [
 ]
 
 export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
-  const { t } = useTranslation()
   const allNetworksMap = useNetworksMapById()
+  const networkNamesById = useNetworkDisplayNamesMapById()
   const networks = useMemo(
     () =>
-      ids?.flatMap((id) => {
-        const network = allNetworksMap[id]
-        if (!network || network.isTestnet) return []
-        const { label, type } = getNetworkInfo(t, { networkId: id, networks: allNetworksMap })
-
-        return { id, label, type, logo: network?.logo }
-      }),
-    [allNetworksMap, ids, t],
+      ids
+        ?.map((id) => {
+          const network = allNetworksMap[id]
+          if (!network || network.isTestnet || !networkNamesById[id]) return null
+          return { id, name: networkNamesById[id], logo: network?.logo }
+        })
+        .filter(isTruthy) ?? [],
+    [allNetworksMap, ids, networkNamesById],
   )
   const sorted = useMemo(
     () =>
@@ -55,7 +54,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
         if (bIsPrio && !aIsPrio) return 1
         if (aIsPrio && bIsPrio) return prioNetworks.indexOf(a.id) - prioNetworks.indexOf(b.id)
 
-        return a.label?.localeCompare(b.label ?? "") ?? 0
+        return a.name?.localeCompare(b.name) ?? 0
       }),
     [networks],
   )
@@ -79,25 +78,18 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
 }
 
 function AllNetworksLogoStackItem({ network }: { network?: PortfolioNetwork }) {
-  const tooltip = useMemo(
-    () => (
-      <div className="flex items-center gap-2">
-        <NetworkLogo networkId={network?.id} />
-        <div>
-          {network?.label} ({network?.type})
-        </div>
-      </div>
-    ),
-    [network],
-  )
-
   if (!network) return null
 
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
-      <WithTooltip tooltip={tooltip}>
-        <NetworkLogo key={network.id} networkId={network.id} />
-      </WithTooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="size-[1em] shrink-0">
+            <NetworkLogo key={network.id} networkId={network.id} />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{network.name}</TooltipContent>
+      </Tooltip>
     </div>
   )
 }
