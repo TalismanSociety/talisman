@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
@@ -60,7 +59,6 @@ export const TokenBalancesList = ({
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
             <div className="flex items-center gap-3">
               <div className="text-body font-bold">{token.name}</div>
-              <TokenTypePill type={token.type} />
               <div className="text-body flex items-center text-base font-bold">
                 <CopyAddressButton networkId={chainOrNetworkId} />
                 <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
