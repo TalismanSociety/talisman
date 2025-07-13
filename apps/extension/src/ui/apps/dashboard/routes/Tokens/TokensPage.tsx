@@ -114,7 +114,12 @@ const Content = () => {
         onChange={setPlatform}
       />
       <div className="h-4"></div>
-      <NetworkCombo networks={networkOptions} onChange={setNetworkId} value={networkId} />
+      <NetworkCombo
+        networks={networkOptions}
+        onChange={setNetworkId}
+        value={networkId}
+        bgClassName="bg-grey-800"
+      />
       <div className="h-4"></div>
       <div className="flex gap-4">
         <SearchInput

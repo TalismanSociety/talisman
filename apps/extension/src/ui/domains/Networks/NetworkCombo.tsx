@@ -23,8 +23,9 @@ export const NetworkCombo: FC<{
   value: NetworkId | null
   placeholder?: string
   className?: string
+  bgClassName?: string
   onChange: (networkId: NetworkId | null) => void
-}> = ({ networks, value, placeholder, onChange, className }) => {
+}> = ({ networks, value, placeholder, onChange, className, bgClassName = "bg-field" }) => {
   const { t } = useTranslation()
   const networkNameById = useNetworkDisplayNamesMapById()
   // copy where we can control order so selection is always at the top
@@ -53,10 +54,11 @@ export const NetworkCombo: FC<{
           <div
             className={classNames(
               "flex h-24 items-center gap-4 px-8",
-              "bg-grey-800 w-full",
+              "w-full",
               "focus-within:border-grey-600 rounded-sm border border-transparent",
               open && "rounded-b-none border-b-transparent",
               className,
+              bgClassName,
             )}
           >
             <NetworkLogo
@@ -83,8 +85,9 @@ export const NetworkCombo: FC<{
           </div>
           <ComboboxOptions
             className={classNames(
-              "bg-grey-800 overflow-x-none absolute top-24 z-10 max-h-[28rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
+              "overflow-x-none absolute top-24 z-10 max-h-[28rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
               "border-grey-600 border",
+              bgClassName,
             )}
           >
             {({ option }) => (

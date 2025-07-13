@@ -27,7 +27,7 @@ import { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
+import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
 
@@ -137,14 +137,14 @@ const AddCustomTokenForm = () => {
           name="networkId"
           children={(field) => (
             <FormFieldContainer label={t("Network")} error={field.state.meta.errors[0]}>
-              <NetworkSelect
+              <NetworkCombo
                 networks={networkOptions}
-                selectedId={field.state.value ?? ""}
+                value={field.state.value ?? ""}
                 placeholder={t("Select a network")}
                 onChange={(networkId) => {
                   if (form.getFieldValue("contractAddress"))
                     form.setFieldValue("contractAddress", "" as `0x${string}`)
-                  field.handleChange(networkId)
+                  field.handleChange(networkId!)
                 }}
                 className="w-full"
               />
