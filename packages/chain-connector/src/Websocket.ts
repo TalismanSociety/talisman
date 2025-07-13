@@ -419,7 +419,7 @@ export class Websocket implements ProviderInterface {
     )
 
     if (this.#autoConnectBackoff.isActive) {
-      // 1000 is a normal closure, not an erorr
+      // 1000 is a normal closure and should not be logged as an error
       if (event.code !== 1000) log.error(error.message)
     }
 
