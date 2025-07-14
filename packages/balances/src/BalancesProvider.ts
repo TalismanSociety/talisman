@@ -174,7 +174,7 @@ export class BalancesProvider {
     const network$ = this.#chaindataProvider.getNetworkById$(networkId)
     const tokensMapById$ = this.#chaindataProvider.getTokensMapById$()
 
-    const networkBalances$ = combineLatest([network$, tokensMapById$]).pipe(
+    return combineLatest([network$, tokensMapById$]).pipe(
       switchMap(([network, tokensMapById]) => {
         const tokensAndAddresses: TokensWithAddresses = toPairs(addressesByTokenId).map(
           ([tokenId, addresses]) => [tokensMapById[tokenId], addresses] as [Token, Address[]],
@@ -209,16 +209,6 @@ export class BalancesProvider {
         } as BalancesResult
       }),
       distinctUntilChanged<BalancesResult>(isEqual),
-    )
-
-    // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
-    return defer(() =>
-      networkBalances$.pipe(
-        startWith({
-          status: "initialising",
-          balances: this.getStoredBalances(addressesByTokenId),
-        } as BalancesResult),
-      ),
     )
   }
 
@@ -273,6 +263,7 @@ export class BalancesProvider {
           tap((results) => {
             this.updateStorage$(balanceIds, results)
           }),
+          // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
           shareReplay({ refCount: true, bufferSize: 1 }),
           keepAlive(0),
         )
@@ -338,6 +329,7 @@ export class BalancesProvider {
             tap((results) => {
               this.updateStorage$(balanceIds, results)
             }),
+            // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
             shareReplay({ refCount: true, bufferSize: 1 }),
             keepAlive(0),
           )
