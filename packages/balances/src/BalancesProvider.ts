@@ -22,6 +22,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  defer,
   distinctUntilChanged,
   EMPTY,
   filter,
@@ -158,7 +159,6 @@ export class BalancesProvider {
   }
 
   public fetchBalances(addressesByTokenId: Record<TokenId, Address[]>): Promise<IBalance[]> {
-    // TODO: better
     return firstValueFrom(
       this.getBalances$(addressesByTokenId).pipe(
         filter(({ status }) => status === "live"),
@@ -171,155 +171,224 @@ export class BalancesProvider {
     networkId: string,
     addressesByTokenId: Record<TokenId, Address[]>,
   ): Observable<BalancesResult> {
+    const network$ = this.#chaindataProvider.getNetworkById$(networkId)
+    const tokensMapById$ = this.#chaindataProvider.getTokensMapById$()
+
+    const networkBalances$ = combineLatest([network$, tokensMapById$]).pipe(
+      switchMap(([network, tokensMapById]) => {
+        const tokensAndAddresses: TokensWithAddresses = toPairs(addressesByTokenId).map(
+          ([tokenId, addresses]) => [tokensMapById[tokenId], addresses] as [Token, Address[]],
+        )
+
+        return combineLatest(
+          BALANCE_MODULES.filter((mod) => mod.platform === network?.platform).map((mod) => {
+            const tokensWithAddresses = tokensAndAddresses.filter(
+              ([token]) => token.type === mod.type,
+            )
+
+            switch (mod.platform) {
+              case "ethereum": {
+                return this.getEthereumNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
+              }
+              case "polkadot": {
+                return this.getPolkadotNetworkModuleBalances$(
+                  networkId,
+
+                  tokensWithAddresses,
+                  mod,
+                )
+              }
+            }
+          }),
+        )
+      }),
+      map((results) => {
+        return {
+          status: results.some(({ status }) => status === "initialising") ? "initialising" : "live",
+          balances: results.flatMap((result) => result.balances).sort(sortByBalanceId),
+        } as BalancesResult
+      }),
+      distinctUntilChanged<BalancesResult>(isEqual),
+    )
+
+    // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
+    return defer(() =>
+      networkBalances$.pipe(
+        startWith({
+          status: "initialising",
+          balances: this.getStoredBalances(addressesByTokenId),
+        } as BalancesResult),
+      ),
+    )
+  }
+
+  private getPolkadotNetworkModuleBalances$(
+    networkId: DotNetworkId,
+    tokensWithAddresses: TokensWithAddresses,
+    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "polkadot" }>,
+  ): Observable<BalancesResult> {
     return getSharedObservable(
-      `BalancesProvider.getNetorkBalances$`,
-      { networkId, addressesByTokenId },
+      `BalancesProvider.getPolkadotNetworkModuleBalances$`,
+      { networkId, mod, tokensWithAddresses },
       () => {
-        const network$ = this.#chaindataProvider.getNetworkById$(networkId)
-        const tokensMapById$ = this.#chaindataProvider.getTokensMapById$()
-        const miniMetadatas$ = this.getNetworkMiniMetadatas$(networkId)
+        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
 
-        return combineLatest([network$, miniMetadatas$, tokensMapById$]).pipe(
-          switchMap(([network, miniMetadatas, tokensMapById]) => {
-            const tokensAndAddresses: TokensWithAddresses = toPairs(addressesByTokenId).map(
-              ([tokenId, addresses]) => [tokensMapById[tokenId], addresses] as [Token, Address[]],
-            )
+        const moduleAddressesByTokenId = fromPairs(
+          tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
+        )
 
-            return combineLatest(
-              BALANCE_MODULES.filter((mod) => mod.platform === network?.platform).map((mod) => {
-                const tokensWithAddresses = tokensAndAddresses.filter(
-                  ([token]) => token.type === mod.type,
-                )
-                const moduleAddressesByTokenId = fromPairs(
-                  tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
-                )
-                const miniMetadata = miniMetadatas.find((m) => m.source === mod.type)
+        // all balance ids expected in result set
+        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => getBalanceId({ tokenId, address })),
+        )
 
-                // all balance ids expected in result set
-                const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(
-                  ([tokenId, addresses]) =>
-                    addresses.map((address) => getBalanceId({ tokenId, address })),
-                )
+        if (!this.#chainConnectors.substrate) {
+          log.debug("[balances] no substrate connector or miniMetadata for module", mod.type)
+          return defer(() =>
+            of({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          )
+        }
 
-                const initValue: BalancesResult = {
-                  status: "initialising",
-                  balances: this.getStoredBalances(moduleAddressesByTokenId),
-                }
-
-                // updating storage has to be done on a per-module basis, so we know which balances can be deleted
-                const updateStorage = (results: BalancesResult) => {
-                  if (results.status !== "live") return
-
-                  const storage = this.#storage.getValue()
-                  const balances = assign(
-                    {},
-                    storage.balances,
-                    // delete all balances expected in the result set. because if they are not present it means they are empty.
-                    fromPairs(balanceIds.map((balanceId) => [balanceId, undefined])),
-                    keyBy(
-                      // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
-                      results.balances.map((b) => ({ ...b, status: "cache" })),
-                      (b) => getBalanceId(b),
-                    ),
-                  )
-
-                  this.#storage.next(assign({}, storage, { balances }))
-                }
-
-                switch (mod.platform) {
-                  case "ethereum": {
-                    if (!this.#chainConnectors.evm) return of<BalancesResult>(initValue)
-
-                    return mod
-                      .subscribeBalances({
-                        networkId,
-                        tokensWithAddresses,
-                        connector: this.#chainConnectors.evm,
-                      })
-                      .pipe(
-                        catchError(() => EMPTY), // don't emit, let provider mark balances stale
-                        map(
-                          (results): BalancesResult => ({
-                            status: "live",
-                            // exclude zero balances
-                            balances: results.success.filter(
-                              (b) => new Balance(b).total.planck > 0n,
-                            ),
-                          }),
-                        ),
-                        tap(updateStorage),
-                        startWith(initValue),
-                      )
-                  }
-                  case "polkadot":
-                    if (!this.#chainConnectors.substrate || !miniMetadata) {
-                      log.debug(
-                        "[balances] no substrate connector or miniMetadata for polkadot",
-                        mod.type,
-                      )
-                      return of<BalancesResult>(initValue)
-                    }
-                    return mod
-                      .subscribeBalances({
-                        networkId,
-                        tokensWithAddresses,
-                        connector: this.#chainConnectors.substrate,
-                        miniMetadata: miniMetadata as AnyMiniMetadata,
-                      })
-                      .pipe(
-                        catchError(() => EMPTY), // don't emit, let provider mark balances stale
-                        map(
-                          (results): BalancesResult => ({
-                            status: "live",
-                            // exclude zero balances
-                            balances: results.success.filter(
-                              (b) => new Balance(b).total.planck > 0n,
-                            ),
-                          }),
-                        ),
-                        tap(updateStorage),
-                        startWith(initValue),
-                      )
-                }
-              }),
-            )
+        const moduleBalances$ = this.getNetworkMiniMetadatas$(networkId).pipe(
+          map((miniMetadatas) => miniMetadatas.find((m) => m.source === mod.type)),
+          switchMap((miniMetadata) =>
+            mod.subscribeBalances({
+              networkId,
+              tokensWithAddresses,
+              connector: this.#chainConnectors.substrate!,
+              miniMetadata: miniMetadata as AnyMiniMetadata,
+            }),
+          ),
+          catchError(() => EMPTY), // don't emit, let provider mark balances stale
+          map(
+            (results): BalancesResult => ({
+              status: "live",
+              // exclude zero balances
+              balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+            }),
+          ),
+          tap((results) => {
+            this.updateStorage$(balanceIds, results)
           }),
-          map((results) => {
-            return {
-              status: results.some(({ status }) => status === "initialising")
-                ? "initialising"
-                : "live",
-              balances: results.flatMap((result) => result.balances).sort(sortByBalanceId),
-            } as BalancesResult
-          }),
-          distinctUntilChanged<BalancesResult>(isEqual),
-          startWith({
-            status: "initialising",
-            balances: this.getStoredBalances(addressesByTokenId),
-          } as BalancesResult),
-          // shareReplay + keepAlive allow for this network subscription to not restart as long as the inputs don't change
-          // for example if another network is enabled/disabled, we don't want this subscription to be restarted
-          // the unsubscribe/resubscribe is instantaneous when parameters parameters change, so keepAlive 0ms does the job
           shareReplay({ refCount: true, bufferSize: 1 }),
           keepAlive(0),
+        )
+
+        // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
+        return defer(() =>
+          moduleBalances$.pipe(
+            startWith({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          ),
         )
       },
     )
   }
 
-  private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
-    return this.#chaindataProvider.getNetworkById$(networkId).pipe(
-      switchMap((network) =>
-        isNetworkDot(network)
-          ? this.getNetworkSpecVersion$(networkId).pipe(
-              switchMap((specVersion) =>
-                specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion),
-              ),
-            )
-          : of([]),
-      ),
-      distinctUntilChanged<MiniMetadata[]>(isEqual),
+  private getEthereumNetworkModuleBalances$(
+    networkId: DotNetworkId,
+    tokensWithAddresses: TokensWithAddresses,
+    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "ethereum" }>,
+  ): Observable<BalancesResult> {
+    return getSharedObservable(
+      `BalancesProvider.getEthereumNetworkModuleBalances$`,
+      { networkId, mod, tokensWithAddresses },
+      () => {
+        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
+
+        const moduleAddressesByTokenId = fromPairs(
+          tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
+        )
+
+        // all balance ids expected in result set
+        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => getBalanceId({ tokenId, address })),
+        )
+
+        if (!this.#chainConnectors.evm) {
+          log.debug("[balances] no ethereum connector for module", mod.type)
+          return defer(() =>
+            of({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          )
+        }
+
+        const moduleBalances$ = mod
+          .subscribeBalances({
+            networkId,
+            tokensWithAddresses,
+            connector: this.#chainConnectors.evm,
+          })
+          .pipe(
+            catchError(() => EMPTY), // don't emit, let provider mark balances stale
+            map(
+              (results): BalancesResult => ({
+                status: "live",
+                // exclude zero balances
+                balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+              }),
+            ),
+            tap((results) => {
+              this.updateStorage$(balanceIds, results)
+            }),
+            shareReplay({ refCount: true, bufferSize: 1 }),
+            keepAlive(0),
+          )
+
+        // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
+        return defer(() =>
+          moduleBalances$.pipe(
+            startWith({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          ),
+        )
+      },
     )
+  }
+
+  private updateStorage$(balanceIds: string[], balancesResult: BalancesResult) {
+    if (balancesResult.status !== "live") return
+
+    const storage = this.#storage.getValue()
+    const balances = assign(
+      {},
+      storage.balances,
+      // delete all balances expected in the result set. because if they are not present it means they are empty.
+      fromPairs(balanceIds.map((balanceId) => [balanceId, undefined])),
+      keyBy(
+        // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
+        balancesResult.balances.map((b) => ({ ...b, status: "cache" })),
+        (b) => getBalanceId(b),
+      ),
+    )
+
+    this.#storage.next(assign({}, storage, { balances }))
+  }
+
+  private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
+    return getSharedObservable(`BalancesProvider.getNetworkMiniMetadatas$`, { networkId }, () => {
+      return this.#chaindataProvider.getNetworkById$(networkId).pipe(
+        switchMap((network) =>
+          isNetworkDot(network)
+            ? this.getNetworkSpecVersion$(networkId).pipe(
+                switchMap((specVersion) =>
+                  specVersion === null ? of([]) : this.getMiniMetadatas$(networkId, specVersion),
+                ),
+              )
+            : of([]),
+        ),
+        distinctUntilChanged<MiniMetadata[]>(isEqual),
+      )
+    })
   }
 
   private getNetworkSpecVersion$(networkId: NetworkId): Observable<number | null> {
@@ -334,7 +403,7 @@ export class BalancesProvider {
     ).pipe(
       catchError(() => {
         log.warn("Failed to fetch spec version for network", networkId)
-        return of(null)
+        return of(null as number | null)
       }),
     )
   }
@@ -435,7 +504,7 @@ export class BalancesProvider {
     return balanceDefs
       .map(([tokenId, address]) => this.#storage.value.balances[getBalanceId({ address, tokenId })])
       .filter(isNotNil)
-      .sort(sortByBalanceId)
+      .sort(sortByBalanceId) as IBalance[]
   }
 
   private cleanupAddressesByTokenId$(addressesByTokenId: Record<TokenId, Address[]>) {
