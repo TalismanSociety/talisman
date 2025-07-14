@@ -63,7 +63,7 @@ walletReady.then(() => {
   // provision store data from db
   Promise.all([getDbBlob<"balances", BalancesStoreData>(BLOB_ID), keyringStore.getAccounts()])
     .then(([storage, accounts]) => {
-      if (!storage) return
+      if (!storage) return subjectBalancesStore.next(DEFAULT_DATA)
 
       const addresses = new Set(accounts.filter(isAccountNotContact).map((a) => a.address))
       const balances = storage.balances.filter((b) => addresses.has(b.address))
