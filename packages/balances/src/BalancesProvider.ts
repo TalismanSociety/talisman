@@ -521,7 +521,7 @@ export class BalancesProvider {
   }
 }
 
-export const isAddressCompatibleWithNetwork = (network: Network, address: Address) => {
+const isAddressCompatibleWithNetwork = (network: Network, address: Address) => {
   switch (network.platform) {
     case "ethereum":
       return isEthereumAddress(address)
