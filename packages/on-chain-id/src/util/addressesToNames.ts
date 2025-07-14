@@ -89,7 +89,7 @@ export const lookupEnsAddresses = async (
         const domain = await client.getEnsName({ address })
         domain !== null && onChainIds.set(address, domain)
       } catch (cause) {
-        const errorMessage = (cause as { shortMessage?: string }).shortMessage ?? String(cause)
+        const errorMessage = (cause as { shortMessage?: string })?.shortMessage ?? String(cause)
         throw new Error(`Failed to resolve ENS domain for address '${address}': ${errorMessage}`)
       }
     }),
