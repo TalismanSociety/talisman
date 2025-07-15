@@ -1,7 +1,7 @@
 import { IBalance } from "@talismn/balances"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { filter, map, Observable, of } from "rxjs"
+import { filter, firstValueFrom, map, Observable, of } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
@@ -49,9 +49,11 @@ export class BalancesHandler extends ExtensionHandler {
 }
 
 const getBalance = ({ address, tokenId }: RequestBalance) => {
-  return balancesProvider.getBalances$({ [tokenId]: [address] }).pipe(
-    filter((res) => res.status === "live"),
-    map((res): IBalance | null => res.balances[0] ?? null),
+  return firstValueFrom(
+    balancesProvider.getBalances$({ [tokenId]: [address] }).pipe(
+      filter((res) => res.status === "live"),
+      map((res): IBalance | null => res.balances[0] ?? null),
+    ),
   )
 }
 
