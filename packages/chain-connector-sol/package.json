@@ -1,0 +1,51 @@
+{
+  "name": "@talismn/chain-connector-sol",
+  "version": "0.11.1",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/chain-connector-sol",
+    "type": "git",
+    "url": "https://github.com/talismansociety/talisman.git"
+  },
+  "main": "dist/talismn-chain-connector-sol.cjs.js",
+  "module": "dist/talismn-chain-connector-sol.esm.js",
+  "files": [
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src --max-warnings 0",
+    "clean": "rm -rf dist .turbo node_modules"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.2",
+    "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/util": "workspace:*",
+    "anylogger": "^1.0.11",
+    "lodash-es": "4.17.21"
+  },
+  "devDependencies": {
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
+    "@types/jest": "^29.5.14",
+    "@types/lodash-es": "^4.17.12",
+    "eslint": "^8.57.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@talismn/eslint-config/base"
+    ]
+  }
+}
