@@ -26,11 +26,13 @@ const dbChaindata$ = combineLatest({
   // chaindata has the same check so we're sure this won't make the app hang
   filter((data) => {
     const start = performance.now()
-    const isValid = ChaindataFileSchema.safeParse(data).success
+    const parsed = ChaindataFileSchema.safeParse(data)
+    const isValid = parsed.success
     log.debug(
       "[defaultChaindata$] Chaindata schema validation: %sms",
       (performance.now() - start).toFixed(2),
     )
+    if (!isValid) log.warn("[defaultChaindata$] Chaindata schema validation failed", { parsed })
     return isValid
   }),
   shareReplay(1),
@@ -104,6 +106,10 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
           "rw",
           ["networks", "tokens", "miniMetadatas"],
           async (ctx) => {
+            // we may end up here if db data is invalid, so we need to clear the tables first
+            await ctx.tokens.clear()
+            await ctx.miniMetadatas.clear()
+            await ctx.networks.clear()
             await ctx.tokens.bulkAdd(initChaindata.tokens as Token[])
             await ctx.miniMetadatas.bulkAdd(initChaindata.miniMetadatas as AnyMiniMetadata[])
             await ctx.networks.bulkAdd(initChaindata.networks as Network[])

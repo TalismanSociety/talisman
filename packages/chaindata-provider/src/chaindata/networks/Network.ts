@@ -2,8 +2,13 @@ import z from "zod/v4"
 
 import { DotNetworkSchema } from "./DotNetwork"
 import { EthNetworkSchema } from "./EthNetwork"
+import { SolNetworkSchema } from "./SolNetwork"
 
-export const NetworkSchema = z.discriminatedUnion("platform", [DotNetworkSchema, EthNetworkSchema])
+export const NetworkSchema = z.discriminatedUnion("platform", [
+  DotNetworkSchema,
+  EthNetworkSchema,
+  SolNetworkSchema,
+])
 
 export type Network = z.infer<typeof NetworkSchema>
 

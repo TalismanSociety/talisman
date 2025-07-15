@@ -176,6 +176,8 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
       return isAccountPlatformEthereum(account)
     case "polkadot":
       return isAccountCompatibleWithDotNetwork(network, account)
+    case "solana":
+      return false
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")

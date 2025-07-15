@@ -16,6 +16,7 @@ import {
   TokenIdSpecs,
   TokenType,
 } from "./tokens"
+import { parseSolNativeTokenId, SolNativeTokenSchema } from "./tokens/SolNativeToken"
 
 export type NetworkOfPlatform<P extends NetworkPlatform> = Extract<Network, { platform: P }>
 
@@ -147,6 +148,8 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
       return parseSubTokensTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-hydration":
       return parseSubHydrationTokenId(tokenId) as TokenIdSpecs<T>
+    case "sol-native":
+      return parseSolNativeTokenId(tokenId) as TokenIdSpecs<T>
   }
 }
 
@@ -156,6 +159,7 @@ export const networkIdFromTokenId = (tokenId: TokenId): Network["id"] =>
 const PLATFORM_NATIVE_TOKENS = {
   polkadot: SubNativeTokenSchema.shape.type.value,
   ethereum: EvmNativeTokenSchema.shape.type.value,
+  solana: SolNativeTokenSchema.shape.type.value,
 }
 
 export type NativeTokenType<P extends NetworkPlatform = NetworkPlatform> =

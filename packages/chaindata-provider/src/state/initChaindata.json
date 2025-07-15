@@ -1,6 +1,21 @@
 {
   "networks": [
     {
+      "id": "solana-mainnet",
+      "platform": "solana",
+      "isDefault": true,
+      "name": "Solana Mainnet",
+      "rpcs": ["https://api.mainnet-beta.solana.com"],
+      "nativeTokenId": "solana-mainnet:sol-native",
+      "nativeCurrency": {
+        "decimals": 9,
+        "symbol": "SOL",
+        "name": "Solana",
+        "coingeckoId": "solana",
+        "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/new-balance-modules/assets/tokens/sol.svg"
+      }
+    },
+    {
       "id": "1",
       "isDefault": true,
       "name": "Ethereum Mainnet",
@@ -550,6 +565,16 @@
     }
   ],
   "tokens": [
+    {
+      "id": "solana-mainnet:sol-native",
+      "platform": "solana",
+      "networkId": "solana-mainnet",
+      "type": "sol-native",
+      "symbol": "SOL",
+      "name": "Solana",
+      "decimals": 9,
+      "isDefault": true
+    },
     {
       "id": "1:evm-native",
       "platform": "ethereum",
