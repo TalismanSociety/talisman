@@ -1,5 +1,3 @@
-import { Dictionary } from "lodash"
-
 export type RampCurrency = {
   fiatCurrency: string
   name: string
@@ -38,7 +36,7 @@ export interface RampAssetInfo {
   hidden: boolean
 
   // Approximate price of a single whole asset unit (1 ETH/DAI/...) per currency code. Please note that the actual price may vary
-  price: Dictionary<number>
+  price: Record<string, number>
 
   currencyCode: string
   // Asset-specific purchase limits, -1 means unlimited (global limits are used)

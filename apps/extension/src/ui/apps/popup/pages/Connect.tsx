@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
-import capitalize from "lodash/capitalize"
+import capitalize from "lodash-es/capitalize"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"

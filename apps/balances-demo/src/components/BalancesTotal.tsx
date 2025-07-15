@@ -1,5 +1,5 @@
 import { useBalances } from "@talismn/balances-react"
-import { LoaderIcon } from "@talismn/icons"
+import { FiLoader } from "react-icons/fi"
 
 export const BalancesTotal = () => {
   const balances = useBalances()
@@ -44,21 +44,21 @@ export const BalancesTotalFallback = () => (
     <div>
       <div className="text-md text-body-secondary flex items-center gap-2">
         Total
-        <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        <FiLoader className="animate-spin-slow text-body-disabled" />
       </div>
       <div className="text-lg font-bold">$0.00</div>
     </div>
     <div>
       <div className="text-md text-body-secondary flex items-center gap-2">
         Available
-        <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        <FiLoader className="animate-spin-slow text-body-disabled" />
       </div>
       <div className="text-lg font-bold">$0.00</div>
     </div>
     <div>
       <div className="text-md text-body-secondary flex items-center gap-2">
         Locked
-        <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        <FiLoader className="animate-spin-slow text-body-disabled" />
       </div>
       <div className="text-lg font-bold">$0.00</div>
     </div>

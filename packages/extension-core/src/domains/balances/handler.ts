@@ -1,20 +1,19 @@
+import { IBalance } from "@talismn/balances"
 import { getSharedObservable } from "@talismn/util"
-import { Observable, of } from "rxjs"
+import { fromPairs } from "lodash-es"
+import { filter, map, Observable, of } from "rxjs"
 
-import {
-  createSubscription,
-  genericSubscription,
-  portDisconnected,
-} from "../../handlers/subscriptions"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { balancePool, ExternalBalancePool } from "./pool"
+import { balancesProvider } from "./balancesProvider"
 import {
   BalanceSubscriptionResponse,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
 } from "./types"
+import { walletBalances$ } from "./walletBalances"
 
 export class BalancesHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -28,17 +27,10 @@ export class BalancesHandler extends ExtensionHandler {
       // balances handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(balances.get)":
-        return balancePool.getBalance(request as RequestBalance)
+        return getBalance(request as RequestBalance)
 
-      case "pri(balances.subscribe)": {
-        // TODO turn balancePool into a promise, and leverage genericSubscription
-        const onDisconnected = portDisconnected(port)
-        const callback = createSubscription<"pri(balances.subscribe)">(id, port)
-
-        balancePool.subscribe(id, onDisconnected, callback)
-
-        return true
-      }
+      case "pri(balances.subscribe)":
+        return genericSubscription(id, port, walletBalances$)
 
       // TODO: Replace this call with something internal to the balances store
       // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
@@ -47,7 +39,7 @@ export class BalancesHandler extends ExtensionHandler {
         return genericSubscription(
           id,
           port,
-          getExternalBalances$(request as RequestBalancesByParamsSubscribe),
+          getBalancesByParams$(request as RequestBalancesByParamsSubscribe),
         )
 
       default:
@@ -56,59 +48,36 @@ export class BalancesHandler extends ExtensionHandler {
   }
 }
 
-const getExternalBalances$ = (
+const getBalance = ({ address, tokenId }: RequestBalance) => {
+  return balancesProvider.getBalances$({ [tokenId]: [address] }).pipe(
+    filter((res) => res.status === "live"),
+    map((res): IBalance | null => res.balances[0] ?? null),
+  )
+}
+
+const getBalancesByParams$ = (
   params: RequestBalancesByParamsSubscribe,
 ): Observable<BalanceSubscriptionResponse> => {
   return getSharedObservable(
-    "getExternalBalances$",
+    "getBalancesByParams$",
     params,
     (): Observable<BalanceSubscriptionResponse> => {
-      const { addressesAndEvmNetworks, addressesAndTokens, addressesByChain } = params
-      const flatAddressesByChains = Object.values(addressesByChain).flat()
+      const { addressesAndTokens } = params
 
       // if no addresses, return early
-      if (
-        !flatAddressesByChains.length &&
-        !addressesAndTokens.addresses.length &&
-        !addressesAndEvmNetworks.addresses.length
-      )
+      if (!addressesAndTokens.addresses.length || !addressesAndTokens.tokenIds.length)
         return of<BalanceSubscriptionResponse>({
-          data: [],
+          balances: [],
           status: "live",
         })
 
-      let externalBalancePool: ExternalBalancePool
-      return new Observable<BalanceSubscriptionResponse>((subscriber) => {
-        externalBalancePool = new ExternalBalancePool()
+      const addressesByTokenId = fromPairs(
+        addressesAndTokens.tokenIds.map(
+          (tokenId) => [tokenId, addressesAndTokens.addresses] as [string, string[]],
+        ),
+      )
 
-        // init synchronously
-        subscriber.next({
-          data: [],
-          status: "initialising",
-        })
-
-        // TODO refactor pool so it doesnt need an id nor a disconnect function..
-        const id = crypto.randomUUID()
-        let disconnect: () => void
-        const onDisconnected = new Promise<void>((resolve) => {
-          disconnect = () => resolve()
-        })
-
-        externalBalancePool.setSubcriptionParameters({
-          addressesByChain,
-          addressesAndEvmNetworks,
-          addressesAndTokens,
-        })
-
-        externalBalancePool.subscribe(id, onDisconnected, (balances) => {
-          subscriber.next(balances)
-        })
-
-        return () => {
-          disconnect() // this triggers some 5 sec timeout in the pool, then only it will actually unsubscribe
-          externalBalancePool.destroy() // not sure if this plays well with the above, though I havent noticed any issues yet
-        }
-      })
+      return balancesProvider.getBalances$(addressesByTokenId)
     },
   )
 }

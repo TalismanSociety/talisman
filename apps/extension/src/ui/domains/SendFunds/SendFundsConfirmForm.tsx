@@ -1,10 +1,9 @@
-import { isTokenEth } from "@talismn/chaindata-provider"
+import { isNetworkDot, isTokenEth } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { lazy, Suspense, useEffect, useMemo, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -17,13 +16,11 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
+import { TxSubmitButton } from "../Sign/TxSubmitButton.tsx/TxSignButton"
+import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton.tsx/types"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
-import { SendFundsHardwareEthereum } from "./SendFundsHardwareEthereum"
-import { SendFundsHardwareSubstrate } from "./SendFundsHardwareSubstrate"
 import { useSendFunds } from "./useSendFunds"
-
-const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
 
 const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
@@ -132,11 +129,12 @@ export const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
+  const { network, onSubmitted, subTransaction, evmTransaction, txInfo } = useSendFunds()
 
   const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
+    // enable the sign button after 1 second
     const timeout = setTimeout(() => {
       setIsReady(true)
     }, 1_000)
@@ -146,32 +144,52 @@ const SendButton = () => {
     }
   }, [])
 
+  const handleSapiSubmit = useCallback(
+    (hash: `0x${string}`) => {
+      if (!network) return
+      onSubmitted({
+        hash,
+        networkIdOrHash: isNetworkDot(network) ? network.genesisHash : network.id,
+      })
+    },
+    [network, onSubmitted],
+  )
+
+  const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
+    if (!network || !txInfo) return null
+
+    if (network.platform === "polkadot" && subTransaction?.unsigned) {
+      return {
+        platform: "polkadot",
+        payload: subTransaction.unsigned,
+        txMetadata: subTransaction?.shortMetadata,
+        txInfo,
+      }
+    }
+
+    if (network.platform === "ethereum" && evmTransaction?.transaction) {
+      return {
+        platform: "ethereum",
+        networkId: network.id,
+        payload: evmTransaction.transaction,
+        txInfo: txInfo,
+      }
+    }
+
+    return null
+  }, [evmTransaction, network, subTransaction, txInfo])
+
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
       <div className="flex w-full flex-col gap-6">
-        {sendErrorMessage ? (
-          <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
-            <AlertCircleIcon className="shrink-0 text-lg" />
-            <div>{sendErrorMessage}</div>
-          </div>
-        ) : (
-          <ExternalRecipientWarning />
-        )}
-        {signMethod === "normal" && (
-          <Button
-            className="w-full"
-            primary
-            disabled={!isReady}
-            data-testid="send-funds-confirm-button"
-            onClick={send}
-            processing={isProcessing}
-          >
-            {t("Confirm")}
-          </Button>
-        )}
-        {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
-        {signMethod === "hardwareSubstrate" && <SendFundsHardwareSubstrate />}
-        {signMethod === "hardwareEthereum" && <SendFundsHardwareEthereum />}
+        <ExternalRecipientWarning />
+        <TxSubmitButton
+          label={t("Confirm")}
+          onSubmit={handleSapiSubmit}
+          tx={tx}
+          disabled={!isReady}
+          data-testid="send-funds-confirm-button"
+        />
       </div>
     </Suspense>
   )

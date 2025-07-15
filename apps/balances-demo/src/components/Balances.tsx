@@ -37,10 +37,10 @@ export const Balances = () => {
             <span
               className={classNames("rounded-sm bg-[#1a1a1a] px-4 py-2 text-center font-bold")}
               style={{
-                color: balance.chain?.themeColor ?? balance.evmNetwork?.themeColor ?? undefined,
+                color: balance.network?.themeColor ?? undefined,
               }}
             >
-              {balance.chain?.themeColor ?? balance.evmNetwork?.themeColor}
+              {balance.network?.themeColor}
             </span>
           </span>
 
@@ -64,12 +64,12 @@ export const Balances = () => {
                 "overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] px-4 py-2 text-center font-bold",
               )}
               style={{
-                color: balance.chain?.themeColor ?? balance.evmNetwork?.themeColor ?? undefined,
+                color: balance.network?.themeColor ?? undefined,
               }}
             >
-              <span>{balance.chain?.name || balance.evmNetwork?.name}</span>
+              <span>{balance.network?.name}</span>
             </span>
-            {balance.chain?.isTestnet || balance.evmNetwork?.isTestnet ? (
+            {balance.network?.isTestnet ? (
               <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded-sm px-3 py-1 font-light">
                 Testnet
               </span>

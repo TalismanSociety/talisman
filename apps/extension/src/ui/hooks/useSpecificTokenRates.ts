@@ -1,7 +1,7 @@
 import { Token } from "@talismn/chaindata-provider"
 import { fetchTokenRates, TokenRateCurrency } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { useMemo } from "react"
 
 import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"

@@ -21,9 +21,9 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={MODAL_CONTENT_CONTAINER_ID}>
-      <div className="bg-grey-800 flex w-full flex-col items-center gap-8 rounded-t-xl p-12">
+      <div className="bg-grey-850 flex w-full flex-col items-center gap-8 rounded-t-xl p-12">
         <div className="text-body font-bold">{t("Subnet staking warning")}</div>
-        <div className="text-body-secondary text-xs">
+        <p className="text-body-secondary text-sm">
           <Trans
             t={t}
             defaults="DTao subnet staking has variable rewards and alpha tokens have price risk. <Link>Learn more</Link>"
@@ -31,16 +31,14 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
               Link: <LearnMoreButton />,
             }}
           />
-        </div>
-        <div className="text-body-secondary text-center">
-          <Checkbox onChange={(e) => setDontShowThisAgain(e.target.checked)} className="text-xs">
+        </p>
+        <div className="text-body-secondary w-full text-sm">
+          <Checkbox onChange={(e) => setDontShowThisAgain(e.target.checked)}>
             {t("Don't show this again")}
           </Checkbox>
         </div>
-        <div className="flex w-full items-center justify-between">
-          <Button className="text-sm" onClick={close}>
-            {t("Close")}
-          </Button>
+        <div className="grid w-full grid-cols-2 gap-8">
+          <Button onClick={close}>{t("Close")}</Button>
           <Button
             primary
             onClick={() => {

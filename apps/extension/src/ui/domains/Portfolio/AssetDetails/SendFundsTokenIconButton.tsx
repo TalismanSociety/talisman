@@ -36,7 +36,7 @@ export const SendFundsTokenButton = ({
   if (!canSendFunds)
     return (
       <Tooltip>
-        <TooltipTrigger className="text-body-secondary focus:text-body hover:bg-grey-700 inline-flex h-9 w-9 cursor-default items-center justify-center rounded-full text-xs opacity-50">
+        <TooltipTrigger className="text-body-secondary focus:text-body hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 cursor-default items-center justify-center text-xs opacity-50">
           <SendIcon />
         </TooltipTrigger>
         <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -47,7 +47,7 @@ export const SendFundsTokenButton = ({
     <button
       type="button"
       onClick={handleClick}
-      className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs"
+      className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs"
     >
       <SendIcon />
     </button>

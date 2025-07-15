@@ -1,100 +1,44 @@
-import { db as balancesDb } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
 import { firstThenDebounce } from "@talismn/util"
-import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomWithObservable } from "jotai/utils"
-import isEqual from "lodash/isEqual"
-import { combineLatest, distinctUntilChanged, map } from "rxjs"
+import { keyBy } from "lodash-es"
+import { combineLatest } from "rxjs"
 
-import { dexieToRxjs } from "../util/dexieToRxjs"
 import { chaindataProviderAtom } from "./chaindataProvider"
-import { enableTestnetsAtom } from "./config"
-
-export const chainsAtom = atom(async (get) => (await get(chaindataAtom)).chains)
-export const chainsByIdAtom = atom(async (get) => (await get(chaindataAtom)).chainsById)
-export const chainsByGenesisHashAtom = atom(
-  async (get) => (await get(chaindataAtom)).chainsByGenesisHash,
-)
-export const evmNetworksAtom = atom(async (get) => (await get(chaindataAtom)).evmNetworks)
-export const evmNetworksByIdAtom = atom(async (get) => (await get(chaindataAtom)).evmNetworksById)
-export const tokensAtom = atom(async (get) => (await get(chaindataAtom)).tokens)
-export const tokensByIdAtom = atom(async (get) => (await get(chaindataAtom)).tokensById)
-export const miniMetadatasAtom = atom(async (get) => (await get(chaindataAtom)).miniMetadatas)
+import { enabledChainsAtom, enabledTokensAtom, enableTestnetsAtom } from "./config"
 
 export const chaindataAtom = atomWithObservable((get) => {
+  return combineLatest({
+    networks: get(chaindataProviderAtom).networks$,
+    tokens: get(chaindataProviderAtom).tokens$,
+  }).pipe(firstThenDebounce(1_000))
+})
+
+const filteredChaindataAtom = atom(async (get) => {
+  const enabledNetworkIds = get(enabledChainsAtom)
+  const enabledTokenIds = get(enabledTokensAtom)
   const enableTestnets = get(enableTestnetsAtom)
 
-  const filterTestnets = <T extends { isTestnet?: boolean }>(items: T[]) =>
-    enableTestnets ? items : items.filter(({ isTestnet }) => !isTestnet)
-  const filterMapTestnets = <T extends { isTestnet?: boolean }>(items: Record<string, T>) =>
-    enableTestnets
-      ? items
-      : Object.fromEntries(Object.entries(items).filter(([, { isTestnet }]) => !isTestnet))
-
-  const filterEnabledTokens = (tokens: Token[]) =>
-    tokens.filter((token) => token.isDefault || ("isCustom" in token && token.isCustom))
-  const filterMapEnabledTokens = (tokensById: Record<string, Token>) =>
-    Object.fromEntries(
-      Object.entries(tokensById).filter(
-        ([, token]) => token.isDefault || ("isCustom" in token && token.isCustom),
-      ),
-    )
-
-  const distinctUntilIsEqual = distinctUntilChanged(<T>(a: T, b: T) => isEqual(a, b))
-
-  const chains = get(chaindataProviderAtom)
-    .getNetworks$("polkadot")
-    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
-  const chainsById = get(chaindataProviderAtom)
-    .getNetworksMapById$("polkadot")
-    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const chainsByGenesisHash = get(chaindataProviderAtom)
-    .getNetworksMapByGenesisHash$()
-    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const evmNetworks = get(chaindataProviderAtom)
-    .getNetworks$("ethereum")
-    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
-  const networks = get(chaindataProviderAtom)
-    .getNetworks$()
-    .pipe(distinctUntilIsEqual, map(filterTestnets), distinctUntilIsEqual)
-  const evmNetworksById = get(chaindataProviderAtom)
-    .getNetworksMapById$("ethereum")
-    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const networksById = get(chaindataProviderAtom)
-    .getNetworksMapById$()
-    .pipe(distinctUntilIsEqual, map(filterMapTestnets), distinctUntilIsEqual)
-  const tokens = get(chaindataProviderAtom).tokens$.pipe(
-    distinctUntilIsEqual,
-    map(filterEnabledTokens),
-    distinctUntilIsEqual,
-  )
-  const tokensById = get(chaindataProviderAtom)
-    .getTokensMapById$()
-    .pipe(distinctUntilIsEqual, map(filterMapEnabledTokens), distinctUntilIsEqual)
-  const miniMetadatasObservable = dexieToRxjs(liveQuery(() => balancesDb.miniMetadatas.toArray()))
-  const miniMetadatas = combineLatest([
-    miniMetadatasObservable.pipe(distinctUntilIsEqual),
-    chainsById,
-  ]).pipe(
-    map(([miniMetadatas, chainsById]) => miniMetadatas.filter((m) => chainsById[m.chainId])),
-    distinctUntilIsEqual,
+  const chaindata = await get(chaindataAtom)
+  const networks = chaindata.networks.filter(
+    (n) => (enabledNetworkIds?.includes(n.id) || n.isDefault) && (enableTestnets || !n.isTestnet),
   )
 
-  return combineLatest({
-    networks,
-    networksById,
-    chains,
-    chainsById,
-    chainsByGenesisHash,
-    evmNetworks,
-    evmNetworksById,
-    tokens,
-    tokensById,
-    miniMetadatas,
-  }).pipe(
-    // debounce to prevent hammering UI with updates
-    firstThenDebounce(1_000),
-    distinctUntilIsEqual,
+  const networkById = keyBy(networks, (n) => n.id)
+  const tokens = chaindata.tokens.filter(
+    (token) =>
+      (enabledTokenIds?.includes(token.id) || token.isDefault) && networkById[token.networkId],
   )
+
+  return { networks, tokens }
+})
+
+export const tokensAtom = atom(async (get) => {
+  const chaindata = await get(filteredChaindataAtom)
+  return chaindata.tokens
+})
+
+export const networksAtom = atom(async (get) => {
+  const chaindata = await get(filteredChaindataAtom)
+  return chaindata.networks
 })

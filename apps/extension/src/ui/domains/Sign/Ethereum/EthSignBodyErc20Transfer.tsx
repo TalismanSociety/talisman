@@ -1,4 +1,5 @@
-import { BalanceFormatter, EvmAddress } from "extension-core"
+import { BalanceFormatter } from "@talismn/balances"
+import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

@@ -2,7 +2,7 @@ import legacyKeyring from "@polkadot/ui-keyring"
 import { isValidDerivationPath } from "@talismn/crypto"
 import { AddAccountExternalOptions } from "@talismn/keyring"
 import { HexString, log } from "extension-shared"
-import { capitalize } from "lodash"
+import { capitalize } from "lodash-es"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"

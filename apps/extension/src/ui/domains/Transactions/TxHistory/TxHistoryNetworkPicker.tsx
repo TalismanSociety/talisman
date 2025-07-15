@@ -14,7 +14,7 @@ import { IconButton, Modal } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { IS_POPUP } from "@ui/util/constants"
 
 export const TxHistoryNetworkPicker: FC<{
@@ -103,14 +103,12 @@ const NetworkRow: FC<{
 }> = ({ network, selected, onClick }) => {
   const { t } = useTranslation()
 
-  const networkInfo = useNetworkInfo(network?.id)
-
   return (
     <button
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
+        "text-body-secondary hover:text-body hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
         selected && "!bg-grey-700",
       )}
@@ -120,9 +118,13 @@ const NetworkRow: FC<{
       ) : (
         <GlobeIcon className="shrink-0 text-xl" />
       )}
-      <div className="text-body flex grow flex-col truncate text-left">
+      <div className="text-body flex grow flex-col gap-1 truncate text-left">
         <div>{network ? network.name : t("All Networks")}</div>
-        {networkInfo.type && <div className="text-body-disabled text-xs">{networkInfo.type}</div>}
+        {!!network && (
+          <div className="text-body-inactive text-xs">
+            <NetworkType networkId={network.id} />
+          </div>
+        )}
       </div>
       <div className="shrinkk-0 flex size-12 items-center justify-center">
         {selected ? (

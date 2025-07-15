@@ -13,7 +13,7 @@ import {
   UpdateMnemonicOptions,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import {
   distinctUntilChanged,
   firstValueFrom,

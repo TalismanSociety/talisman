@@ -1,5 +1,5 @@
 import PromisePool from "@supercharge/promise-pool"
-import { abiMulticall, erc20Abi, erc20BalancesAggregatorAbi } from "@talismn/balances"
+import { abiMulticall, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
   EthNetworkId,
   EvmErc20Token,
@@ -9,29 +9,26 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
-import { isEthereumAddress, sleep, throwAfter } from "@talismn/util"
+import { isEthereumAddress, isTruthy, sleep, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
-import { isEqual, uniq } from "lodash"
-import chunk from "lodash/chunk"
-import groupBy from "lodash/groupBy"
-import sortBy from "lodash/sortBy"
+import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {
   combineLatest,
   debounceTime,
   distinct,
   distinctUntilKeyChanged,
   filter,
+  firstValueFrom,
   map,
   skip,
 } from "rxjs"
-import { PublicClient } from "viem"
+import { erc20Abi, PublicClient } from "viem"
 
 import { db } from "../../db"
-import { getHasPendingMigrations } from "../../libs/migrations"
+import { isWalletReady$ } from "../../libs/isWalletReady"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { appStore } from "../app/store.app"
-import { passwordStore } from "../app/store.password"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
 import { EvmAddress } from "../ethereum/types"
@@ -84,9 +81,10 @@ class AssetDiscoveryScanner {
     let prevAllAddresses: string[] | null = null
 
     // identify newly added accounts and scan those
-    keyringStore.accounts$
+    combineLatest({ isWalletReady: isWalletReady$, accounts: keyringStore.accounts$ })
       .pipe(
-        map((accounts) =>
+        filter(({ isWalletReady }) => isWalletReady),
+        map(({ accounts }) =>
           accounts
             .filter(isAccountNotContact)
             .map((account) => account.address)
@@ -96,8 +94,6 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allAddresses) => {
         try {
-          if (await getHasPendingMigrations()) return
-
           if (prevAllAddresses && !this.#preventAutoStart) {
             const addresses = allAddresses.filter(
               (k) => !(prevAllAddresses as string[]).includes(k),
@@ -126,12 +122,14 @@ class AssetDiscoveryScanner {
     let prevAllActiveNetworkIds: string[] | null = null
 
     // identify newly enabled networks and scan those
-    combineLatest([
-      chaindataProvider.getNetworksMapById$("ethereum"),
-      activeNetworksStore.observable,
-    ])
+    combineLatest({
+      isWalletReady: isWalletReady$,
+      networksById: chaindataProvider.getNetworksMapById$("ethereum"),
+      activeNetworks: activeNetworksStore.observable,
+    })
       .pipe(
-        map(([networksById, activeNetworks]) =>
+        filter(({ isWalletReady }) => !!isWalletReady),
+        map(({ networksById, activeNetworks }) =>
           Object.keys(activeNetworks)
             .filter((k) => !!activeNetworks[k] && networksById[k])
             .sort(),
@@ -140,8 +138,6 @@ class AssetDiscoveryScanner {
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
-          if (await getHasPendingMigrations()) return
-
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
               (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
@@ -171,15 +167,10 @@ class AssetDiscoveryScanner {
   }
 
   private scanOnUnlock = () => {
-    passwordStore.isLoggedIn
-      .pipe(
-        filter((status) => status === "TRUE"),
-        debounceTime(10_000),
-      )
+    isWalletReady$ // true means user has logged in and migrations are complete (it doesnt mean that they succeded though)
+      .pipe(filter(isTruthy), debounceTime(10_000))
       .subscribe(async () => {
         try {
-          if (await getHasPendingMigrations()) return
-
           const accounts = await keyringStore.getAccounts()
           const addresses = accounts.filter(isAccountNotContact).map((acc) => acc.address)
           const networkIds = await getNetworkIdsToForceScan()
@@ -355,8 +346,6 @@ class AssetDiscoveryScanner {
   private async executeNextScan(): Promise<void> {
     if (this.#isBusy) return
     this.#isBusy = true
-
-    if (await getHasPendingMigrations()) return
 
     const abortController = new AbortController()
 
@@ -567,7 +556,7 @@ class AssetDiscoveryScanner {
 
   /** Used bym migrations */
   public async startPendingScan(): Promise<void> {
-    if (await getHasPendingMigrations()) return
+    if (!(await firstValueFrom(isWalletReady$))) return
 
     const isAssetDiscoveryScanPending = await appStore.get("isAssetDiscoveryScanPending")
     if (!isAssetDiscoveryScanPending) return
@@ -608,7 +597,7 @@ class AssetDiscoveryScanner {
       await activeTokensStore.set(Object.fromEntries(tokens.map((t) => [t.id, true])))
 
       const evmNetworkIds = uniq(tokens.map((token) => token.networkId))
-      await activeTokensStore.set(
+      await activeNetworksStore.set(
         Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true])),
       )
 

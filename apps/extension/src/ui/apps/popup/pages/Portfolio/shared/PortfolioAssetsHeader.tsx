@@ -1,12 +1,7 @@
+import { Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import {
-  Account,
-  Balance,
-  Balances,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-} from "extension-core"
+import { Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

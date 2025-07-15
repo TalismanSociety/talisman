@@ -89,13 +89,12 @@ export const lookupEnsAddresses = async (
         const domain = await client.getEnsName({ address })
         domain !== null && onChainIds.set(address, domain)
       } catch (cause) {
-        throw new Error(`Failed to resolve ENS domain for address '${address}': ${String(cause)}`, {
-          cause,
-        })
+        const errorMessage = (cause as { shortMessage?: string })?.shortMessage ?? String(cause)
+        throw new Error(`Failed to resolve ENS domain for address '${address}': ${errorMessage}`)
       }
     }),
   )
-  results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
+  results.forEach((result) => result.status === "rejected" && log.warn(result.reason.message))
 
   return onChainIds
 }

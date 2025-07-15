@@ -1,4 +1,4 @@
-import { BalanceFormatter } from "extension-core"
+import { BalanceFormatter } from "@talismn/balances"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 

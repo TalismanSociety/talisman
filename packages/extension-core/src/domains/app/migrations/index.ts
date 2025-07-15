@@ -1,17 +1,12 @@
-import legacyKeyring from "@polkadot/ui-keyring"
-import { convertAddress, normalizeAddress } from "@talismn/util"
+import { convertAddress } from "@talismn/util"
 import { log } from "extension-shared"
 
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { StorageProvider } from "../../../libs/Store"
 import { chaindataProvider } from "../../../rpcs/chaindata"
-import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
-import { LegacyAccountOrigin } from "../../accounts/types"
-import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
 import { addressBookStore } from "../store.addressBook"
-import { appStore } from "../store.app"
 import { settingsStore } from "../store.settings"
 
 const normaliseMethods = {
@@ -44,30 +39,7 @@ export const cleanBadContacts: Migration = {
 
 export const hideGetStartedIfFunded: Migration = {
   forward: new MigrationFunction(async (_context) => {
-    const currentValue = await appStore.get("hideGetStarted")
-    if (currentValue) return
-
-    await awaitKeyringLoaded()
-    const ownedAddresses = legacyKeyring
-      .getAccounts()
-      .filter((account) => {
-        const origin = account.meta.origin as LegacyAccountOrigin
-        return isOwnedAccountOrigin(origin)
-      })
-      .map((account) => normalizeAddress(account.address))
-
-    const balanceTotals = await balanceTotalsStore.get()
-    const fundedAddresses = [
-      ...new Set(
-        Object.values(balanceTotals)
-          .filter((b) => !!b.total)
-          .map((b) => normalizeAddress(b.address)),
-      ),
-    ]
-
-    const hasFunds = ownedAddresses.some((address) => fundedAddresses.includes(address))
-
-    await appStore.set({ hideGetStarted: hasFunds })
+    // deprecated
   }),
   // no way back
 }
@@ -86,16 +58,6 @@ export const migrateAutoLockTimeoutToMinutes: Migration = {
     const legacySettingsStore = new StorageProvider<{ autoLockTimeout: number }>("settings")
     await legacySettingsStore.set({ autoLockTimeout: currentValue * 60 })
   }),
-}
-
-const isOwnedAccountOrigin = (origin: LegacyAccountOrigin) => {
-  switch (origin) {
-    case LegacyAccountOrigin.Watched:
-    case LegacyAccountOrigin.Signet:
-      return false
-    default:
-      return true
-  }
 }
 
 export const migrateEnabledTestnets: Migration = {

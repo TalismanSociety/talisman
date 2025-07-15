@@ -6,7 +6,7 @@ import {
   isTokenInTypes,
   isTokenKnown,
   isTokenNeedExistentialDeposit,
-  isTokenSubTokens,
+  isTokenSubForeignAssets,
   Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
@@ -158,9 +158,13 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
               />
             </FormFieldContainer>
           )}
-          {isTokenInTypes(token, ["substrate-tokens", "substrate-foreignassets"]) && (
+          {isTokenInTypes(token, [
+            "substrate-tokens",
+            "substrate-foreignassets",
+            "substrate-hydration",
+          ]) && (
             <FormFieldContainer
-              label={isTokenSubTokens(token) ? t("Token Key") : t("XCM Location")}
+              label={isTokenSubForeignAssets(token) ? t("XCM Location") : t("Token Key")}
             >
               <OnChainIdDisplay onChainId={token.onChainId} />
             </FormFieldContainer>

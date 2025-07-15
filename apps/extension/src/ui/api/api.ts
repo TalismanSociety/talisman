@@ -129,12 +129,10 @@ export const api: MessageTypes = {
   getBalance: ({ tokenId, address }) =>
     messageService.sendMessage("pri(balances.get)", { tokenId, address }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, addressesAndEvmNetworks, addressesAndTokens, cb) =>
+  balancesByParams: (addressesAndTokens, cb) =>
     messageService.subscribe(
       "pri(balances.byparams.subscribe)",
       {
-        addressesByChain,
-        addressesAndEvmNetworks,
         addressesAndTokens,
       },
       cb,
@@ -189,66 +187,18 @@ export const api: MessageTypes = {
   // tokenRates message types
   tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),
 
-  // asset transfer messages
-  assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
-    messageService.sendMessage("pri(assets.transfer)", {
-      chainId,
-      tokenId,
-      fromAddress,
-      toAddress,
-      amount,
-      tip,
-      method,
-    }),
-  assetTransferEth: (evmNetworkId, tokenId, fromAddress, toAddress, amount, gasSettings) =>
-    messageService.sendMessage("pri(assets.transferEth)", {
-      evmNetworkId,
-      tokenId,
-      fromAddress,
-      toAddress,
-      amount,
-      gasSettings,
-    }),
-  assetTransferEthHardware: (evmNetworkId, tokenId, amount, to, unsigned, signedTransaction) =>
-    messageService.sendMessage("pri(assets.transferEthHardware)", {
-      evmNetworkId,
-      tokenId,
-      amount,
-      to,
-      unsigned,
-      signedTransaction,
-    }),
-  assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
-    messageService.sendMessage("pri(assets.transfer.checkFees)", {
-      chainId,
-      tokenId,
-      fromAddress,
-      toAddress,
-      amount,
-      tip,
-      method,
-    }),
-  assetTransferApproveSign: (unsigned, signature, transferInfo) =>
-    messageService.sendMessage("pri(assets.transfer.approveSign)", {
-      unsigned,
-      signature,
-      transferInfo,
-    }),
-
   // eth related messages
-  ethSignAndSend: (evmNetworkId, unsigned, transferInfo, txInfo) =>
+  ethSignAndSend: (evmNetworkId, unsigned, txInfo) =>
     messageService.sendMessage("pri(eth.signing.signAndSend)", {
       evmNetworkId,
       unsigned,
-      transferInfo,
       txInfo,
     }),
-  ethSendSigned: (evmNetworkId, unsigned, signed, transferInfo, txInfo) =>
+  ethSendSigned: (evmNetworkId, unsigned, signed, txInfo) =>
     messageService.sendMessage("pri(eth.signing.sendSigned)", {
       evmNetworkId,
       unsigned,
       signed,
-      transferInfo,
       txInfo,
     }),
   ethApproveSign: (id) =>

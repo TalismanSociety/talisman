@@ -9,7 +9,7 @@ import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { activeTokensStore, isTokenActive } from "extension-core"
-import { sortBy } from "lodash"
+import { sortBy } from "lodash-es"
 import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -25,14 +25,14 @@ import urlJoin from "url-join"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useNetworkInfo } from "@ui/hooks/useNetworkInfo"
+import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
 
 import { PlatformOption } from "../Networks/usePlatformOptions"
 
 export const TokensList: FC<{
   platform: PlatformOption
-  networkId?: NetworkId
+  networkId: NetworkId | null
   search?: string
   isActiveOnly?: boolean
   isCustomOnly?: boolean
@@ -50,7 +50,7 @@ export const TokensList: FC<{
   const defaultTokens = useMemo(() => {
     const results = tokens
       .filter((t) => !!networksMap[t.networkId])
-      .filter((t) => networkId === "ALL" || t.networkId === networkId)
+      .filter((t) => !networkId || t.networkId === networkId)
 
     return sortBy(
       results,
@@ -158,7 +158,8 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
   const network = useAnyNetwork(token.networkId)
   const blockExplorerUrl = useBlockExplorerUrl(token)
   const coingeckoUrl = useCoingeckoUrl(token)
-  const { type } = useNetworkInfo(token.networkId)
+
+  if (!network) return null
 
   return (
     <div className="relative h-28 w-full">
@@ -177,13 +178,12 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
 
         <div className="flex flex-col justify-center gap-2 overflow-hidden">
           <div className="text-body flex items-center gap-3 overflow-hidden">
-            <NetworkLogo
-              networkId={network?.id}
-              className="text-body shrink-0 truncate text-base"
-            />
-            <div>{network?.name}</div>
+            <NetworkLogo networkId={network.id} className="text-body shrink-0 truncate text-base" />
+            <div>{network.name}</div>
           </div>
-          <div className="text-body-inactive truncate text-xs">{type}</div>
+          <div className="text-body-inactive truncate text-xs">
+            <NetworkType networkId={network.id} />
+          </div>
         </div>
 
         <div className="flex w-full items-center justify-end gap-4 text-right">

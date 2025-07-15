@@ -1,10 +1,9 @@
 import { bind } from "@react-rxjs/core"
+import { Balance, Balances } from "@talismn/balances"
 import { getNetworkGenesisHash, Network, NetworkId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/util"
 import {
   Account,
-  Balance,
-  Balances,
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
@@ -84,6 +83,7 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
         }
       }),
     ),
+  new Balances([]),
 )
 
 /**

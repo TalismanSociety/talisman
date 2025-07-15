@@ -16,7 +16,7 @@ import {
 import { NewFolderModal } from "@ui/domains/Account/NewFolderModal"
 import { RenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { accounts$, accountsCatalog$, balancesHydrate$, balanceTotals$ } from "@ui/state"
+import { accounts$, accountsCatalog$, balancesHydrate$ } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -25,9 +25,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Accounts",
 }
 
-const [usePreload] = bind(
-  combineLatest([accounts$, accountsCatalog$, balanceTotals$, balancesHydrate$]),
-)
+const [usePreload] = bind(combineLatest([accounts$, accountsCatalog$, balancesHydrate$]))
 
 const Content = () => {
   const { t } = useTranslation()

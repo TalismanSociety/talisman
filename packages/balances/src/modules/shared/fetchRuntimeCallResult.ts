@@ -1,0 +1,21 @@
+import { ChainConnector } from "@talismn/chain-connector"
+import { parseMetadataRpc, toHex } from "@talismn/scale"
+
+export const fetchRuntimeCallResult = async <T>(
+  connector: ChainConnector,
+  networkId: string,
+  metadataRpc: `0x${string}`,
+  apiName: string,
+  method: string,
+  args: unknown[],
+): Promise<T> => {
+  const { builder } = parseMetadataRpc(metadataRpc)
+  const call = builder.buildRuntimeCall(apiName, method)
+
+  const hex = await connector.send<string>(networkId, "state_call", [
+    `${apiName}_${method}`,
+    toHex(call.args.enc(args)),
+  ])
+
+  return call.value.dec(hex) as T
+}

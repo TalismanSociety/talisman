@@ -4,7 +4,7 @@ import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
 import { EthNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import merge from "lodash/merge"
+import merge from "lodash-es/merge"
 import { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
@@ -201,3 +201,23 @@ export const getExtrinsicHash = (
 }
 
 export const dismissTransaction = (hash: string) => db.transactions.delete(hash)
+
+export const isTxInfoOfType = <T extends WalletTransactionInfo["type"]>(
+  txInfo: WalletTransactionInfo | undefined | null,
+  type: T,
+): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
+  return !!txInfo && txInfo.type === type
+}
+
+export const isTxInfoInTypes = <T extends WalletTransactionInfo["type"]>(
+  txInfo: WalletTransactionInfo | undefined | null,
+  types: T[],
+): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
+  return types.some((type) => isTxInfoOfType(txInfo, type))
+}
+
+export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =>
+  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex"])
+
+export const isTxInfoTransfer = (txInfo: WalletTransactionInfo | undefined | null) =>
+  isTxInfoOfType(txInfo, "transfer")

@@ -1,7 +1,6 @@
-import { ONE_ALPHA_TOKEN, SCALE_FACTOR } from "@talismn/balances"
+import { BalanceFormatter, Balances, ONE_ALPHA_TOKEN, SCALE_FACTOR } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { BalanceFormatter, Balances } from "extension-core"
-import { groupBy } from "lodash"
+import { groupBy } from "lodash-es"
 import { useMemo } from "react"
 
 import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"

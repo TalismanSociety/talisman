@@ -1,6 +1,6 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { CopyIcon, FileSearchIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { BalanceFormatter } from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"

@@ -1,0 +1,45 @@
+{
+  "name": "balances-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:ethereum": "tsx watch src/ethereum.ts",
+    "dev:hydration": "tsx watch src/hydration.ts",
+    "dev:pah": "tsx watch src/pah.ts",
+    "dev:astar": "tsx watch src/astar.ts",
+    "dev:azero": "tsx watch src/aleph-zero.ts",
+    "dev:bittensor": "tsx watch src/bittensor.ts",
+    "dev:polkadot": "tsx watch src/polkadot.ts",
+    "dev:acala": "tsx watch src/acala.ts",
+    "dev:centrifuge": "tsx watch src/centrifuge.ts",
+    "dev:bifrost": "tsx watch src/bifrost.ts",
+    "dev:ewx": "tsx watch src/ewx.ts",
+    "dev:interlay": "tsx watch src/interlay.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.10.0",
+  "dependencies": {
+    "@polkadot-api/utils": "0.2.0",
+    "@polkadot/rpc-provider": "16.1.2",
+    "@polkadot/util": "13.5.1",
+    "@polkadot/util-crypto": "13.5.1",
+    "@talismn/balances": "workspace:^",
+    "@talismn/chain-connector": "workspace:^",
+    "@talismn/chain-connector-evm": "workspace:^",
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/sapi": "workspace:^",
+    "@talismn/scale": "workspace:^",
+    "extension-shared": "workspace:^",
+    "lodash-es": "4.17.21",
+    "rxjs": "^7.8.2",
+    "viem": "^2.27.3",
+    "zod": "^3.25.62"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "tsx": "^4.20.3"
+  }
+}

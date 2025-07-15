@@ -4,6 +4,7 @@ import { HexStringSchema } from "../shared"
 import {
   SubAssetsBalancesConfigSchema,
   SubForeignAssetsBalancesConfigSchema,
+  SubHydrationBalancesConfigSchema,
   SubNativeBalancesConfigSchema,
   SubPsp22BalancesConfigSchema,
   SubTokensBalancesConfigSchema,
@@ -16,6 +17,7 @@ export const DotNetworkBalancesConfigSchema = z.strictObject({
   "substrate-psp22": SubPsp22BalancesConfigSchema.optional(),
   "substrate-tokens": SubTokensBalancesConfigSchema.optional(),
   "substrate-foreignassets": SubForeignAssetsBalancesConfigSchema.optional(),
+  "substrate-hydration": SubHydrationBalancesConfigSchema.optional(),
 })
 
 export type DotNetworkBalancesConfig = z.infer<typeof DotNetworkBalancesConfigSchema>

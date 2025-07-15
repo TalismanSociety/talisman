@@ -1,5 +1,5 @@
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
 
 import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 
@@ -21,7 +21,6 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
     token,
     detailRows,
     status,
-    networkType,
   } = useTokenBalances({
     tokenId,
     balances,
@@ -43,8 +42,6 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
       balances={balances}
       detailRowsLength={detailRows.length}
       chainOrNetworkId={chainOrNetwork.id}
-      chainOrNetworkName={chainOrNetwork.name ?? ""}
-      networkType={networkType}
       summary={summary}
       status={status}
       symbol={token.symbol}

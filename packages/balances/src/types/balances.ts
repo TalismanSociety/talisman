@@ -95,7 +95,7 @@ export class Balances {
   //
 
   constructor(
-    balances: Balances | BalanceJsonList | Balance[] | BalanceJson[] | Balance,
+    balances: Balances | BalanceJsonList | Balance[] | IBalance[] | BalanceJson[] | Balance,
     hydrate?: HydrateDb,
   ) {
     // handle Balances (convert to Balance[])
@@ -293,9 +293,9 @@ export class Balances {
   }
 }
 
-export const getBalanceId = (balance: BalanceJson) => {
-  const { source, address, tokenId } = balance
-  return [source, address, tokenId].join("::")
+export const getBalanceId = (balance: Pick<IBalance, "address" | "tokenId">) => {
+  const { address, tokenId } = balance
+  return [address, tokenId].join("::")
 }
 
 /**
@@ -316,8 +316,8 @@ export class Balance {
   // Methods
   //
 
-  constructor(storage: BalanceJson, hydrate?: HydrateDb) {
-    this.#storage = storage
+  constructor(storage: BalanceJson | IBalance, hydrate?: HydrateDb) {
+    this.#storage = storage as BalanceJson
     this.#valueGetter = new BalanceValueGetter(this.#storage)
     if (hydrate !== undefined) this.hydrate(hydrate)
   }

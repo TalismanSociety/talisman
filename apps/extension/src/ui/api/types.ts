@@ -1,7 +1,7 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
-import { BalanceJson } from "@talismn/balances"
+import { IBalance } from "@talismn/balances"
 import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
@@ -9,13 +9,10 @@ import { DbTokenRates } from "@talismn/token-rates"
 import {
   Account,
   AddEthereumChainRequestId,
-  AddressesAndEvmNetworks,
   AddressesAndTokens,
-  AddressesByChain,
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AssetDiscoveryScanScope,
-  AssetTransferMethod,
   AuthorisedSiteUpdate,
   AuthorizedSite,
   AuthorizedSites,
@@ -25,7 +22,6 @@ import {
   ChangePasswordStatusUpdate,
   DecryptRequestId,
   EncryptRequestId,
-  EthGasSettings,
   EvmAddress,
   LoggedinType,
   MetadataUpdateStatus,
@@ -43,8 +39,6 @@ import {
   RequestMetadataId,
   RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -53,7 +47,6 @@ import {
   UnsubscribeFn,
   ValidRequests,
   WalletTransactionInfo,
-  WalletTransactionTransferInfo,
   WatchAssetRequestId,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
@@ -159,11 +152,9 @@ export default interface MessageTypes {
   getNextDerivationPath: (mnemonicId: string, curve: KeypairCurve) => Promise<string>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({ tokenId, address }: RequestBalance) => Promise<BalanceJson | undefined>
+  getBalance: ({ tokenId, address }: RequestBalance) => Promise<IBalance | null>
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
-    addressesByChain: AddressesByChain,
-    addressesAndEvmNetworks: AddressesAndEvmNetworks,
     addressesAndTokens: AddressesAndTokens,
     cb: (balances: BalanceSubscriptionResponse) => void,
   ) => UnsubscribeFn
@@ -208,59 +199,16 @@ export default interface MessageTypes {
   // tokenRates message types
   tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
 
-  // asset transfer messages
-  assetTransfer: (
-    chainId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
-    amount?: string,
-    tip?: string,
-    method?: AssetTransferMethod,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferEth: (
-    evmNetworkId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: EvmAddress,
-    toAddress: EvmAddress,
-    amount: string,
-    gasSettings: EthGasSettings<string>,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferEthHardware: (
-    evmNetworkId: NetworkId,
-    tokenId: TokenId,
-    amount: string,
-    to: EvmAddress,
-    unsigned: TransactionRequest<string>,
-    signedTransaction: HexString,
-  ) => Promise<ResponseAssetTransfer>
-  assetTransferCheckFees: (
-    chainId: NetworkId,
-    tokenId: TokenId,
-    fromAddress: string,
-    toAddress: string,
-    amount?: string,
-    tip?: string,
-    method?: AssetTransferMethod,
-  ) => Promise<ResponseAssetTransferFeeQuery>
-  assetTransferApproveSign: (
-    unsigned: SignerPayloadJSON,
-    signature: `0x${string}`,
-    transferInfo: WalletTransactionTransferInfo,
-  ) => Promise<ResponseAssetTransfer>
-
   // eth related messages
   ethSignAndSend: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
-    transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethSendSigned: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
-    transferInfo?: WalletTransactionTransferInfo,
     txInfo?: WalletTransactionInfo,
   ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>

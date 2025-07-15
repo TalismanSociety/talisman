@@ -1,5 +1,5 @@
+import { Balances } from "@talismn/balances"
 import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
-import { Balances } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"

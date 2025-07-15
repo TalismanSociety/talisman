@@ -9,11 +9,12 @@ import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
+import { keyBy } from "lodash-es"
 import { map } from "rxjs"
 
 import log from "../log"
 import { dexieToRxjs } from "../util/dexieToRxjs"
-import { tokensByIdAtom } from "./chaindata"
+import { tokensAtom } from "./chaindata"
 import { coinsApiConfigAtom } from "./config"
 
 export const tokenRatesAtom = atom(async (get) => {
@@ -37,10 +38,10 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
 
   // we have to get these synchronously so that jotai knows to restart our timer when they change
   const coinsApiConfig = get(coinsApiConfigAtom)
-  const tokensByIdPromise = get(tokensByIdAtom)
+  const tokensPromise = get(tokensAtom)
 
   ;(async () => {
-    const tokensById = await tokensByIdPromise
+    const tokensById = keyBy(await tokensPromise, "id")
     const tokenIds = Object.keys(tokensById)
 
     const loopMs = 300_000 // 300_000ms = 300s = 5 minutes

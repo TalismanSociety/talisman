@@ -1,15 +1,15 @@
-import { BalanceJson, Balances } from "@talismn/balances"
+import { Balances, IBalance } from "@talismn/balances"
 import { isAccountOwned } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
 import { normalizeAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
-import { combineLatest, throttleTime } from "rxjs"
+import { combineLatest, map, throttleTime } from "rxjs"
 
 import { db } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
-import { balancePool } from "../balances/pool"
+import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
 import { appStore } from "./store.app"
 import { settingsStore } from "./store.settings"
@@ -27,7 +27,7 @@ export const hideGetStartedOnceFunded = async () => {
     keyringStore.accounts$,
     chaindataProvider.getTokensMapById(),
     chaindataProvider.getNetworksMapById$(),
-    balancePool.observable,
+    balancesStore$.pipe(map((store) => store.balances)),
     liveQuery(() => db.tokenRates.toArray()),
   ])
     .pipe(throttleTime(1_000, undefined, { trailing: true }))
@@ -53,7 +53,7 @@ export const hideGetStartedOnceFunded = async () => {
 
             return acc
           },
-          {} as Record<string, BalanceJson[]>,
+          {} as Record<string, IBalance[]>,
         )
 
         const tokenRates: TokenRatesList = Object.fromEntries(

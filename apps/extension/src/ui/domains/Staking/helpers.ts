@@ -1,7 +1,7 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { ScaleApi } from "@talismn/sapi"
 import { isNotNil } from "@talismn/util"
-import { range } from "lodash"
+import { range } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import { type StakeType } from "./Bittensor/hooks/useBittensorBondWizard"

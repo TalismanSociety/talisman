@@ -1,4 +1,4 @@
-import merge from "lodash/merge"
+import merge from "lodash-es/merge"
 import urlJoin from "url-join"
 
 import { remoteConfigStore } from "../../domains/app/store.remoteConfig"

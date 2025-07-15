@@ -1,10 +1,9 @@
 import { Balances } from "@talismn/balances"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useMemo } from "react"
 
 import { allAddressesAtom } from "../atoms/allAddresses"
-import { allBalancesAtom, balancesPersistBackendAtom } from "../atoms/balances"
-import { BalancesPersistBackend } from "../util/balancesPersist"
+import { balancesAtom } from "../atoms/balances"
 
 export const useSetBalancesAddresses = (addresses: string[]) => {
   const setAllAddresses = useSetAtom(allAddressesAtom)
@@ -20,10 +19,8 @@ export const useSetBalancesAddresses = (addresses: string[]) => {
  * @returns a Balances object containing the current balances state.
  */
 
-export const useBalances = (persistBackend?: BalancesPersistBackend) => {
-  const [, setPersistBackend] = useAtom(balancesPersistBackendAtom)
-  if (persistBackend) setPersistBackend(persistBackend)
-  return useAtomValue(allBalancesAtom)
+export const useBalances = () => {
+  return useAtomValue(balancesAtom)
 }
 
 // TODO: Extract to shared definition between extension and @talismn/balances-react

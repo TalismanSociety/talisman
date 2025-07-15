@@ -1,15 +1,14 @@
+import { Balances } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { Balances } from "extension-core"
 import { ReactNode, Suspense } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
-import { type StakeType } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
@@ -21,41 +20,25 @@ import { TokenContextMenu } from "../TokenContextMenu"
 type TokenBalancesListProps = {
   tokenId: TokenId
   token: Token | null
-  tokenLogoUrl?: string
   balances: Balances
   detailRowsLength: number
   chainOrNetworkId: string
-  chainOrNetworkName: string
-  networkType?: string
-  assetPriceInfo?: ReactNode
   summary: BalanceSummary
   status: BalancesStatus
   children: ReactNode
   symbol: string
-  shouldDisplayActionBtns?: boolean
-  shouldDisplayTotalAvailableBalance?: boolean
-  stakeType?: StakeType
-  netuid?: number
 }
 
 export const TokenBalancesList = ({
   tokenId,
   token,
-  tokenLogoUrl,
   balances,
   detailRowsLength,
   chainOrNetworkId,
-  chainOrNetworkName,
-  networkType,
-  assetPriceInfo,
   summary,
   status,
   children,
   symbol,
-  shouldDisplayActionBtns = true,
-  shouldDisplayTotalAvailableBalance = true,
-  stakeType,
-  netuid,
 }: TokenBalancesListProps) => {
   const { t } = useTranslation()
 
@@ -70,31 +53,32 @@ export const TokenBalancesList = ({
         )}
       >
         <div className="flex">
-          <div className="shrink-0 p-8 text-xl">
-            {tokenLogoUrl ? <AssetLogo url={tokenLogoUrl} /> : <TokenLogo tokenId={tokenId} />}
+          <div className="shrink-0 p-8 pr-6 text-xl">
+            <TokenLogo tokenId={tokenId} />
           </div>
           <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
-            <div className="base text-body flex items-center font-bold">
-              <NetworkLogo className="mr-2" networkId={chainOrNetworkId} />
-              <span className="mr-2">{chainOrNetworkName}</span>
-              {shouldDisplayActionBtns && (
-                <>
-                  <CopyAddressButton networkId={chainOrNetworkId} />
-                  <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
-                    <SendFundsTokenButton tokenId={tokenId} />
-                    {tokenId && (
-                      <TokenContextMenu
-                        tokenId={tokenId}
-                        placement="bottom-start"
-                        className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full p-0 text-xs opacity-50"
-                      />
-                    )}
-                  </Suspense>
-                </>
-              )}
+            <div className="flex items-center gap-3">
+              <div className="text-body font-bold">{token.name}</div>
+              <div className="text-body flex items-center text-base font-bold">
+                <CopyAddressButton networkId={chainOrNetworkId} />
+                <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
+                  <SendFundsTokenButton tokenId={tokenId} />
+                  {tokenId && (
+                    <TokenContextMenu
+                      tokenId={tokenId}
+                      placement="bottom-start"
+                      className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center p-0 text-xs opacity-50"
+                    />
+                  )}
+                </Suspense>
+              </div>
             </div>
-            {assetPriceInfo && assetPriceInfo}
-            {networkType && <div>{networkType}</div>}
+            <div className="flex w-full items-center gap-2 overflow-hidden">
+              <NetworkLogo networkId={chainOrNetworkId} />
+              <span className="truncate text-sm">
+                <NetworkName networkId={chainOrNetworkId} />
+              </span>
+            </div>
           </div>
         </div>
         <div>
@@ -113,17 +97,11 @@ export const TokenBalancesList = ({
         </div>
         <div className="flex items-center justify-end">
           {tokenId && (
-            <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
-              <BondButton
-                tokenId={tokenId}
-                balances={balances}
-                stakeType={stakeType}
-                netuid={netuid}
-              />
+            <div>
+              <BondButton tokenId={tokenId} balances={balances} />
             </div>
           )}
           <AssetBalanceCellValue
-            render={shouldDisplayTotalAvailableBalance}
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={symbol}

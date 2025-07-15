@@ -15,7 +15,7 @@ import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
 
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
 import { BaseRequest, BaseRequestId } from "../../types/base"
-import { WalletTransactionInfo, WalletTransactionTransferInfo } from "../transactions"
+import { WalletTransactionInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
 
@@ -102,14 +102,12 @@ export interface EthProviderMessage {
 export type EthTxSignAndSend = {
   evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
-  transferInfo?: WalletTransactionTransferInfo
   txInfo?: WalletTransactionInfo
 }
 export type EthTxSendSigned = {
   evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
   signed: `0x${string}`
-  transferInfo?: WalletTransactionTransferInfo
   txInfo?: WalletTransactionInfo
 }
 

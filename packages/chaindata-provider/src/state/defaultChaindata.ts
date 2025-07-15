@@ -1,5 +1,5 @@
 import { liveQuery } from "dexie"
-import { isEqual, isEqualWith, sortBy } from "lodash"
+import { isEqual, isEqualWith, sortBy } from "lodash-es"
 import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { AnyMiniMetadata, Network, Token } from "../chaindata"
@@ -85,7 +85,7 @@ export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
       const dbData = await Promise.race([
         firstValueFrom(dbChaindata$),
         new Promise<Chaindata>((resolve) =>
-          // db promise might hand indefinitely if schema is invalid, fallback to empty data if this happens
+          // db promise might hang indefinitely if schema is invalid, fallback to empty data if this happens
           setTimeout(() => resolve({ networks: [], tokens: [], miniMetadatas: [] }), 2_000),
         ),
       ])

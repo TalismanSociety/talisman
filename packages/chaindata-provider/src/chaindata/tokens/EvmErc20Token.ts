@@ -12,7 +12,6 @@ export const EvmErc20TokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("ethereum"),
   contractAddress: EthereumAddressSchema,
-  isCustom: z.boolean().optional(),
 })
 export type EvmErc20Token = z.infer<typeof EvmErc20TokenSchema>
 

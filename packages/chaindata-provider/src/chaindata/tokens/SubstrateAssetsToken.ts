@@ -13,6 +13,7 @@ export const SubAssetsTokenSchema = TokenBaseSchema.extend({
   // number when used with papi - uint32 in theory (on asset hubs) but astar implemented it to u128 which makes it incompatible with number type
   assetId: z.union([z.uint32(), z.string()]).transform(String),
   isFrozen: z.boolean().optional(),
+  isSufficient: z.boolean(),
   existentialDeposit: z.string(),
 })
 export type SubAssetsToken = z.infer<typeof SubAssetsTokenSchema>

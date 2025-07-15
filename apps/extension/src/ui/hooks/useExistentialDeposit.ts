@@ -1,5 +1,5 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { isTokenNeedExistentialDeposit, Token, TokenId } from "@talismn/chaindata-provider"
-import { BalanceFormatter } from "extension-core"
 import { useMemo } from "react"
 
 import { useToken } from "@ui/state"

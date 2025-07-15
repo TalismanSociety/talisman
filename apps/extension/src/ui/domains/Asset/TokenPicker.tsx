@@ -4,13 +4,12 @@ import { CheckCircleIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Address, isAccountCompatibleWithNetwork } from "extension-core"
-import sortBy from "lodash/sortBy"
+import sortBy from "lodash-es/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import {
   useAccountByAddress,
   useBalances,
@@ -23,6 +22,7 @@ import {
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
+import { NetworkName } from "../Networks/NetworkName"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -33,7 +33,6 @@ type TokenRowProps = {
   selected: boolean
   onClick?: () => void
   balances: Balances
-  chainName?: string | null
   hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
@@ -67,7 +66,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  chainName: string
   hasFiatRate: boolean
 }
 
@@ -109,14 +107,13 @@ const TokenRows: FC<{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
               }}
-              data-testid={tokenData.token.symbol + "-" + tokenData.chainName}
+              data-testid={`TokenRowWrapper:${tokenData.token.id}`}
             >
               <TokenRow
                 key={item.key}
                 selected={tokenData.token.id === selectedTokenId}
                 token={tokenData.token}
                 balances={tokenData.balances}
-                chainName={tokenData.chainName}
                 hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
@@ -133,7 +130,6 @@ const TokenRow: FC<TokenRowProps> = ({
   token,
   selected,
   balances,
-  chainName,
   hasFiatRate,
   allowUntransferable,
   onClick,
@@ -165,7 +161,7 @@ const TokenRow: FC<TokenRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary",
       )}
@@ -173,17 +169,20 @@ const TokenRow: FC<TokenRowProps> = ({
       <div className="w-16 shrink-0">
         <TokenLogo tokenId={token.id} className="!text-xl" />
       </div>
-      <div className="grow space-y-[5px]">
+      <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
           className={classNames(
-            "flex w-full justify-between text-sm font-bold",
+            "flex w-full justify-between gap-6 overflow-hidden text-sm font-bold",
             selected ? "text-body-secondary" : "text-body",
           )}
         >
-          <div className="flex items-center">
-            <span>{token.symbol}</span>
-            <TokenTypePill type={token.type} className="rounded-xs ml-3 px-1 py-0.5" />
-            {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
+          <div className="flex grow items-center gap-2 overflow-hidden">
+            <div>{token.symbol}</div>
+            <TokenTypePill type={token.type} className="rounded-xs shrink-0 px-1 py-0.5" />
+            {!!token.name && token.name !== token.symbol && (
+              <div className="text-body-inactive truncate font-normal">{token.name}</div>
+            )}
+            {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
           <div className={classNames(isLoading && "animate-pulse")}>
             <Tokens
@@ -192,17 +191,25 @@ const TokenRow: FC<TokenRowProps> = ({
               symbol={isUniswapV2LpToken ? "" : token.symbol}
               isBalance
               noCountUp
+              className="text-nowrap"
             />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
-          <div className="flex flex-col justify-center">
-            <NetworkLogo networkId={token.networkId} className="inline-block text-sm" />
+        <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-right text-xs font-light">
+          <div className="flex grow items-center overflow-hidden">
+            <div className="truncate">
+              <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
+              <NetworkName networkId={token.networkId} />
+            </div>
           </div>
-          <div>{chainName}</div>
-          <div className={classNames("grow", isLoading && "animate-pulse")}>
+          <div className={classNames(isLoading && "animate-pulse")}>
             {hasFiatRate ? (
-              <Fiat amount={balances.sum.fiat(currency).transferable} isBalance noCountUp />
+              <Fiat
+                amount={balances.sum.fiat(currency).transferable}
+                isBalance
+                noCountUp
+                className="text-nowrap"
+              />
             ) : (
               "-"
             )}
@@ -273,18 +280,15 @@ const TokensList: FC<TokensListProps> = ({
       .filter(isTransferableToken)
       .map((token) => {
         const network = networksMap[token.networkId]
-        const networkId = token.networkId
-        const netInfo = getNetworkInfo(t, { networkId, networks: networksMap })
         return {
           id: token.id,
           token,
           chainNameSearch: network?.name,
-          chainName: netInfo.fullName,
           chainLogo: network?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
-  }, [allTokens, filterAccountCompatibleTokens, networksMap, t, tokenFilter, tokenRatesMap])
+  }, [allTokens, filterAccountCompatibleTokens, networksMap, tokenFilter, tokenRatesMap])
 
   // sort alphabetically by symbol + chain name
   const sortTokens = useCallback(

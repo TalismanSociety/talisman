@@ -17,21 +17,9 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
     getSettingValue$("selectedCurrency"),
     balanceTotals$,
   ]).pipe(
-    map(([accounts, ownedAccounts, portfolioAccounts, catalog, currency, allBalanceTotals]) => {
-      const balanceTotals = allBalanceTotals.filter((b) => b.currency === currency)
-
-      const totalPerAddress = Object.fromEntries(balanceTotals.map((t) => [t.address, t.total]))
-      const balanceTotalPerAccount = Object.fromEntries(
-        accounts.map((a) => [a.address, totalPerAddress[a.address] ?? 0]),
-      )
-
+    map(([accounts, ownedAccounts, portfolioAccounts, catalog, currency, balanceTotals]) => {
       const portfolioTotal = portfolioAccounts.reduce(
-        (total, acc) => total + (balanceTotalPerAccount[acc.address] ?? 0),
-        0,
-      )
-
-      const ownedTotal = ownedAccounts.reduce(
-        (total, acc) => total + (balanceTotalPerAccount[acc.address] ?? 0),
+        (total, { address }) => (balanceTotals[address] ?? 0) + total,
         0,
       )
 
@@ -40,12 +28,20 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
         ownedAccounts,
         portfolioAccounts,
         catalog,
-        balanceTotals,
         currency,
-        balanceTotalPerAccount,
+        balanceTotals,
         portfolioTotal,
-        ownedTotal,
       }
     }),
   ),
+  // default value to prevent bind() from keeping a subscription on balances
+  {
+    accounts: [],
+    ownedAccounts: [],
+    portfolioAccounts: [],
+    catalog: { portfolio: [], watched: [] },
+    currency: "usd",
+    balanceTotals: {},
+    portfolioTotal: 0,
+  },
 )

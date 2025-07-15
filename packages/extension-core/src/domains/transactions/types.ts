@@ -10,7 +10,6 @@ export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "r
 export type WatchTransactionOptions = {
   siteUrl?: string
   notifications?: boolean
-  transferInfo?: WalletTransactionTransferInfo
   /**
    * Used to store extra information about this tx.
    * For populating the transaction history.
@@ -19,24 +18,23 @@ export type WatchTransactionOptions = {
   txInfo?: WalletTransactionInfo
 }
 
+/** @deprecated */
 export type WalletTransactionTransferInfo = {
+  /** @deprecated */
   tokenId?: TokenId
+  /** @deprecated */
   value?: string
+  /** @deprecated */
   to?: Address
 }
 
 export type WalletTransactionInfo =
-  // | {
-  //     /**
-  //      * NOTE: Not used yet.
-  //      * We need to migrate existing txs from `transferInfo` to txInfo,
-  //      * where txInfo["type"] === "transfer".
-  //      */
-  //     type: "transfer"
-  //     tokenId: TokenId
-  //     value: string
-  //     to: Address
-  //   } |
+  | {
+      type: "transfer"
+      tokenId: TokenId
+      value: string
+      to: Address
+    }
   | {
       type: "swap-simpleswap"
       exchangeId: string
@@ -70,17 +68,17 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   txInfo?: WalletTransactionInfo
 }
 
-export type EvmWalletTransaction = WalletTransactionBase & {
+export type WalletTransactionEth = WalletTransactionBase & {
   networkType: "evm"
   evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
 }
 
-export type SubWalletTransaction = WalletTransactionBase & {
+export type WalletTransactionDot = WalletTransactionBase & {
   networkType: "substrate"
   genesisHash: `0x${string}`
   unsigned: SignerPayloadJSON
 }
 
 // Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
-export type WalletTransaction = EvmWalletTransaction | SubWalletTransaction
+export type WalletTransaction = WalletTransactionEth | WalletTransactionDot

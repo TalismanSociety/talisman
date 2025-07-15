@@ -1,8 +1,8 @@
 import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
 import { assetDiscoveryStore, db } from "extension-core"
-import groupBy from "lodash/groupBy"
-import sortBy from "lodash/sortBy"
+import groupBy from "lodash-es/groupBy"
+import sortBy from "lodash-es/sortBy"
 import { combineLatest, from, map, shareReplay, throttleTime } from "rxjs"
 
 import { getTokensMap$ } from "./chaindata"

@@ -37,7 +37,7 @@ const Accounts = () => {
   const { t } = useTranslation()
 
   const { currentFolder, treeName } = usePortfolioNavigation()
-  const { accounts, catalog, balanceTotalPerAccount } = usePortfolioAccounts()
+  const { accounts, catalog, balanceTotals } = usePortfolioAccounts()
 
   const [allPortfolioOptions, allWatchedOptions] = useMemo((): [
     AccountOption[],
@@ -66,7 +66,7 @@ const Accounts = () => {
               type: "account",
               name: account?.name ?? t("Unknown Account"),
               address: item.address,
-              total: balanceTotalPerAccount?.[item.address] ?? 0,
+              total: balanceTotals[item.address] ?? 0,
               genesisHash: getAccountGenesisHash(account),
               accountType: account?.type,
               isPortfolio: isAccountPortfolio(account),
@@ -78,7 +78,7 @@ const Accounts = () => {
               id: item.id,
               name: item.name,
               total: item.tree.reduce(
-                (sum, account) => sum + (balanceTotalPerAccount[account.address] ?? 0),
+                (sum, account) => sum + (balanceTotals[account.address] ?? 0),
                 0,
               ),
               addresses: item.tree.map((account) => account.address),
@@ -92,15 +92,7 @@ const Accounts = () => {
       portfolioTree.map(treeItemToOption("portfolio")).filter(filterEmptyFolders),
       watchedTree.map(treeItemToOption("watched")).filter(filterEmptyFolders),
     ]
-  }, [
-    currentFolder,
-    treeName,
-    catalog.portfolio,
-    catalog.watched,
-    accounts,
-    t,
-    balanceTotalPerAccount,
-  ])
+  }, [currentFolder, treeName, catalog, accounts, t, balanceTotals])
 
   const { genericEvent } = useAnalytics()
   const navigate = useNavigate()

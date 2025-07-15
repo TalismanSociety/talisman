@@ -1,4 +1,3 @@
-import { db as balancesDb } from "@talismn/balances"
 import {
   DotNetwork,
   EthNetwork,
@@ -13,7 +12,7 @@ import {
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { assign, Dictionary, fromPairs, keyBy, toPairs } from "lodash"
+import { assign, fromPairs, keyBy, toPairs } from "lodash-es"
 import { filter, firstValueFrom } from "rxjs"
 
 import { db as walletDb } from "../../../db"
@@ -22,7 +21,6 @@ import { appStore } from "../../app/store.app"
 import { assetDiscoveryStore } from "../../assetDiscovery/store"
 import { activeNetworksStore } from "../../balances/store.activeNetworks"
 import { activeTokensStore } from "../../balances/store.activeTokens"
-import { balanceTotalsStore } from "../../balances/store.BalanceTotals"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
 import { customChaindataStore } from "../store"
@@ -93,13 +91,14 @@ const executeMigration = async () => {
 
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.9 } })
 
-    // clear balances db
-    await balancesDb.balancesBlob.clear()
-    await balancesDb.miniMetadatas.clear()
-    await balanceTotalsStore.clear()
-
     // clear asset discovery pending queue
     await assetDiscoveryStore.clear()
+
+    try {
+      indexedDB.deleteDatabase("TalismanBalances")
+    } catch {
+      // ignore, this is not critical
+    }
 
     // delete old chaindata v3 db
     await oldChaindataDb?.delete()
@@ -126,17 +125,19 @@ const executeMigration = async () => {
   }
 }
 
-const migrateTransactions = async (oldToNewTokenId: Dictionary<string | null>) => {
+const migrateTransactions = async (oldToNewTokenId: Record<string, string | null>) => {
   const txs = await walletDb.transactions.toArray()
   const newTxs = txs.map((tx) => {
     const newTx = structuredClone(tx)
     newTx.tokenId = (tx.tokenId && oldToNewTokenId[tx.tokenId]) ?? undefined
 
-    if (newTx.txInfo) {
-      if (newTx.txInfo.fromTokenId && oldToNewTokenId[newTx.txInfo.fromTokenId])
-        newTx.txInfo.fromTokenId = oldToNewTokenId[newTx.txInfo.fromTokenId]!
-      if (newTx.txInfo.toTokenId && oldToNewTokenId[newTx.txInfo.toTokenId])
-        newTx.txInfo.toTokenId = oldToNewTokenId[newTx.txInfo.toTokenId]!
+    const txInfo = newTx.txInfo
+    // note: using isTxInfoSwap here would cause a circular dependency
+    if (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") {
+      if (txInfo.fromTokenId && oldToNewTokenId[txInfo.fromTokenId])
+        txInfo.fromTokenId = oldToNewTokenId[txInfo.fromTokenId]!
+      if (txInfo.toTokenId && oldToNewTokenId[txInfo.toTokenId])
+        txInfo.toTokenId = oldToNewTokenId[txInfo.toTokenId]!
     }
 
     return newTx

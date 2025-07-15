@@ -1,4 +1,4 @@
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
 import { activeTokensStore } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -13,7 +13,7 @@ import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { NetworkSelect } from "@ui/domains/Networks/NetworkSelect"
+import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork, useBalancesHydrate, useNetworks } from "@ui/state"
 
@@ -47,19 +47,17 @@ const Content = () => {
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
     (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption),
   )
-  const [networkId, setNetworkId] = useState<NetworkId>(location.state?.networkId ?? "ALL")
+  const [networkId, setNetworkId] = useState<NetworkId | null>(location.state?.networkId ?? null)
   const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
 
   const toggleIsActiveOnly = useCallback(() => setIsActiveOnly((prev) => !prev), [])
   const toggleIsCustomOnly = useCallback(() => setIsCustomOnly((prev) => !prev), [])
   const toggleIsHidePools = useCallback(() => setIsHidePools((prev) => !prev), [])
 
-  const networkOptions = useMemo(() => {
-    return [
-      { id: "ALL", name: t("All active networks") } as Network,
-      ...networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
-    ]
-  }, [networks, t])
+  const networkOptions = useMemo(
+    () => networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
+    [networks],
+  )
 
   const network = useAnyNetwork(networkId)
 
@@ -116,14 +114,19 @@ const Content = () => {
         onChange={setPlatform}
       />
       <div className="h-4"></div>
-      <NetworkSelect networks={networkOptions} onChange={setNetworkId} selectedId={networkId} />
+      <NetworkCombo
+        networks={networkOptions}
+        onChange={setNetworkId}
+        value={networkId}
+        bgClassName="bg-grey-800"
+      />
       <div className="h-4"></div>
       <div className="flex gap-4">
         <SearchInput
           initialValue={search}
           onChange={setSearch}
           placeholder={t("Search tokens")}
-          containerClassName="rounded-sm"
+          containerClassName="rounded-sm [&>svg]:size-12"
         />
       </div>
       <div className="h-4"></div>

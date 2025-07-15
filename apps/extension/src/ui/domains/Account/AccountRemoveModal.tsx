@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { Account } from "extension-core"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"

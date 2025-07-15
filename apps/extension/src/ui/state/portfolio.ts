@@ -1,11 +1,11 @@
 import { bind } from "@react-rxjs/core"
-import { HydrateDb } from "@talismn/balances"
+import { Balances, HydrateDb } from "@talismn/balances"
 import { isNetworkEth, Network, NetworkId, Token } from "@talismn/chaindata-provider"
 import { isAddressEqual, isTruthy } from "@talismn/util"
-import { Account, Balances } from "extension-core"
+import { Account } from "extension-core"
 import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import { t } from "i18next"
-import { keyBy } from "lodash"
+import { keyBy } from "lodash-es"
 import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
@@ -180,7 +180,7 @@ const portfolioForSelectedNetwork$ = combineLatest([
       }
     },
   ),
-  shareReplay(1),
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
 
 export const [usePortfolio, portfolio$] = bind(
@@ -203,4 +203,19 @@ export const [usePortfolio, portfolio$] = bind(
       }
     }),
   ),
+  {
+    allBalances: new Balances([]),
+    searchBalances: new Balances([]),
+    tokens: [],
+    hydrate: {},
+    networkFilter: undefined,
+    networkBalances: new Balances([]),
+    networks: [],
+    networkOptions: [],
+    isInitialising: false,
+    isProvisioned: false,
+    search: "",
+    setNetworkFilter,
+    setSearch,
+  },
 )

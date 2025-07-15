@@ -13,6 +13,7 @@ export const SubForeignAssetsTokenSchema = TokenBaseSchema.extend({
   platform: z.literal("polkadot"),
   onChainId: z.string(),
   isFrozen: z.boolean().optional(),
+  isSufficient: z.boolean(),
   existentialDeposit: z.string(),
 })
 export type SubForeignAssetsToken = z.infer<typeof SubForeignAssetsTokenSchema>

@@ -1,9 +1,9 @@
 import { assert } from "@polkadot/util"
-import { erc20Abi } from "@talismn/balances"
 import { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isBigInt, isEthereumAddress } from "@talismn/util"
 import {
   encodeFunctionData,
+  erc20Abi,
   getAddress,
   Hex,
   hexToBigInt,

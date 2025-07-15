@@ -1,41 +1,24 @@
-import { Address } from "@talismn/balances"
-import { DotNetworkId, isNetworkDot, isNetworkEth, Network } from "@talismn/chaindata-provider"
-import { Account, isAccountPlatformEthereum } from "extension-core"
-import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
+import { Account } from "extension-core"
 import { useMemo } from "react"
 
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useNetworks } from "@ui/state"
+import { useNetworksMapById, useTokens } from "@ui/state"
 
 export const useAccountImportBalances = (accounts: Account[]) => {
-  const networks = useNetworks({ includeTestnets: false, activeOnly: true })
+  const networks = useNetworksMapById({ includeTestnets: false, activeOnly: true })
+  const tokens = useTokens({ includeTestnets: false, activeOnly: true })
 
   const balanceParams = useMemo((): BalanceByParamsProps => {
-    const addressesByChain: BalanceByParamsProps["addressesByChain"] = networks
-      .filter(isNetworkDot)
-      .reduce(
-        (prev, network) => {
-          const addresses = accounts
-            .filter((acc) => isAccountCompatibleWithNetwork(network as unknown as Network, acc))
-            .map(({ address }) => address)
-          if (addresses.length) prev[network.id] = addresses
-          return prev
-        },
-        {} as Record<DotNetworkId, Address[]>,
-      )
-
-    const evmNetworks = networks.filter(isNetworkEth)
-
-    const addresses = accounts.filter(isAccountPlatformEthereum).map(({ address }) => address)
-
-    const addressesAndEvmNetworks =
-      evmNetworks.length && addresses.length ? { addresses, evmNetworks } : undefined
+    const tokenIds = tokens.filter((t) => networks[t.networkId]).map((t) => t.id)
+    const addresses = accounts.map(({ address }) => address)
 
     return {
-      addressesByChain: Object.keys(addressesByChain).length ? addressesByChain : undefined,
-      addressesAndEvmNetworks,
+      addressesAndTokens: {
+        addresses,
+        tokenIds,
+      },
     }
-  }, [networks, accounts])
+  }, [tokens, accounts, networks])
 
   return useBalancesByParams(balanceParams)
 }

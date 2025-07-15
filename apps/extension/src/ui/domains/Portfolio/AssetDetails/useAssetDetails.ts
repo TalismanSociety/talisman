@@ -1,6 +1,6 @@
+import { Balances } from "@talismn/balances"
 import { subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
-import { Balances } from "extension-core"
-import { uniq } from "lodash"
+import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
 import { usePortfolio, useSelectedCurrency } from "@ui/state"

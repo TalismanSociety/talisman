@@ -10,7 +10,7 @@ export const getDecodedCall = (palletName: string, methodName: string, args: unk
 
 export const getDecodedCallFromPayload = <Res extends DecodedCall>(
   chain: Chain,
-  payload: SignerPayloadJSON,
+  payload: { method: SignerPayloadJSON["method"] },
 ): Res => {
   const def = chain.builder.buildDefinition(chain.lookup.call!)
   const decoded = def.dec(payload.method)

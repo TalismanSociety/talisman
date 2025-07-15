@@ -13,7 +13,7 @@ import { dataTreeToUiTree } from "./util"
 
 export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
-  const { balanceTotalPerAccount, catalog, accounts } = usePortfolioAccounts()
+  const { balanceTotals, catalog, accounts } = usePortfolioAccounts()
 
   const accountsMap = useMemo(
     () => Object.fromEntries(accounts.map((account) => [account.address, account])),
@@ -42,7 +42,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
       {!!watchedUiTree.length && <Separator icon={TalismanHandIcon} label={t("My portfolio")} />}
       <ManageAccountsList
         accounts={accounts}
-        balanceTotalPerAccount={balanceTotalPerAccount}
+        balanceTotalPerAccount={balanceTotals}
         treeName="portfolio"
         tree={portfolioTree}
       />
@@ -52,7 +52,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
           <Separator icon={EyeIcon} label={t("Followed only")} />
           <ManageAccountsList
             accounts={accounts}
-            balanceTotalPerAccount={balanceTotalPerAccount}
+            balanceTotalPerAccount={balanceTotals}
             treeName="watched"
             tree={watchedTree}
           />

@@ -5,7 +5,6 @@ import { db } from "../db"
 import { AccountsHandler } from "../domains/accounts"
 import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
-import { trackPopupSummaryData } from "../domains/app/popupSummaries"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { ChaindataHandler } from "../domains/chaindata/handler"
@@ -21,7 +20,6 @@ import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
-import { AssetTransferHandler } from "../domains/transfers"
 import { talismanAnalytics } from "../libs/Analytics"
 import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
@@ -43,7 +41,6 @@ export default class Extension extends ExtensionHandler {
       chains: new ChainsHandler(stores),
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
-      assets: new AssetTransferHandler(stores),
       balances: new BalancesHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
@@ -101,9 +98,6 @@ export default class Extension extends ExtensionHandler {
 
     // fetch config from github periodically
     this.stores.remoteConfig.init()
-
-    // keeps summary data tables for the popup home screen up to date
-    trackPopupSummaryData()
 
     // hides the get started component has soon as the wallet owns funds
     hideGetStartedOnceFunded()

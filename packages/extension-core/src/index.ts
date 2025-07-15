@@ -15,8 +15,6 @@ export {
   triggerIndexedDbUnavailablePopup,
 } from "./domains/app/store.errors"
 
-export { balanceTotalsStore } from "./domains/balances/store.BalanceTotals"
-
 export * from "./domains/accounts/helpers.catalog"
 export {
   formatSuri,
@@ -58,7 +56,7 @@ export {
 
 export * from "./types"
 export * from "./types/domains"
-export type { AddressesByChain, Address, Port } from "./types/base"
+export type { Address, Port } from "./types/base"
 export { isEthereumRequest } from "./types/requests"
 
 export * from "./libs/requests/types"

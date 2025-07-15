@@ -1,6 +1,6 @@
 import { sleep } from "@talismn/util"
 import { log } from "extension-shared"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import { BehaviorSubject, combineLatest, distinctUntilChanged, map } from "rxjs"
 
 import { fetchNfts } from "./fetchNfts"

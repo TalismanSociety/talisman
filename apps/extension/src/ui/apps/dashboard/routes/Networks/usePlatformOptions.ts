@@ -1,5 +1,5 @@
 import { NetworkSchema } from "@talismn/chaindata-provider"
-import { startCase } from "lodash"
+import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { z } from "zod/v4"
 

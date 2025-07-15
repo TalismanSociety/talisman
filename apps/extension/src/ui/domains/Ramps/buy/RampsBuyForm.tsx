@@ -1,10 +1,10 @@
 /* eslint-disable react/no-children-prop */
+import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { TokenRatesList } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
-import { BalanceFormatter } from "extension-core"
-import { capitalize } from "lodash"
+import { capitalize } from "lodash-es"
 import { FC, useEffect, useMemo, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, useOpenCloseStatus } from "talisman-ui"
