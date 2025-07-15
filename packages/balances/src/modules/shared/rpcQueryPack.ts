@@ -48,7 +48,7 @@ export const getRpcQueryPack$ = <T>(
   return new Observable<T[]>((subscriber) => {
     // first subscription callback includes results for all state keys, but further callbacks will only include the ones that changed
     // => we need to keep all results in memory and update them after each callback, so we can emit the full result set each time
-    const dicChangesCache: Record<`0x${string}`, `0x${string}`> = {}
+    const changesCache: Record<`0x${string}`, `0x${string}`> = {}
 
     const promUnsub = connector.subscribe(
       networkId,
@@ -60,10 +60,10 @@ export const getRpcQueryPack$ = <T>(
         else if (result) {
           // update the cache
           for (const [stateKey, encodedResult] of result.changes)
-            dicChangesCache[stateKey] = encodedResult
+            changesCache[stateKey] = encodedResult
 
           // regenerate the full changes array
-          const changes = toPairs(dicChangesCache) as QueryStorageChange[]
+          const changes = toPairs(changesCache) as QueryStorageChange[]
 
           // decode and emit results for all queries
           subscriber.next(decodeRpcQueryPack(queries, { block: result.block, changes }))
