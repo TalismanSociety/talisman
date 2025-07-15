@@ -105,6 +105,7 @@ export const useCoinbaseSellQuote = (
                 res.data.cashout_total.currency,
                 res.data.sell_amount.value,
                 coinbaseToken.sellCurrency,
+                coinbaseToken.sellSymbol,
                 coinbaseToken.sellNetwork,
                 res.data.quote_id,
                 address,
@@ -116,7 +117,7 @@ export const useCoinbaseSellQuote = (
   })
 }
 
-type CoinbaseTokenSpecs = { sellCurrency: string; sellNetwork: string }
+type CoinbaseTokenSpecs = { sellCurrency: string; sellSymbol: string; sellNetwork: string }
 
 const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
   const { data: coinbaseBuyOptions } = useCoinbaseSellOptions()
@@ -143,7 +144,7 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
         return false
       })
 
-    return item ? { sellCurrency: item.id, sellNetwork: item.name } : null
+    return item ? { sellCurrency: item.id, sellSymbol: item.symbol, sellNetwork: item.name } : null
   }, [coinbaseBuyOptions?.sell_currencies, token])
 }
 
