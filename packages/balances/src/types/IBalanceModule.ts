@@ -1,5 +1,6 @@
 import type { ChainConnector } from "@talismn/chain-connector"
 import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
+import { IChainConnectorSol } from "@talismn/chain-connector-sol/src/IChainConnectorSol"
 import {
   DotNetworkId,
   EthNetworkId,
@@ -8,6 +9,7 @@ import {
   TokenOfType,
   TokenType,
 } from "@talismn/chaindata-provider"
+import { SolNetworkId } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
 import { Observable } from "rxjs"
 
 import type { Address, IBalance, MiniMetadata } from "."
@@ -18,7 +20,9 @@ export type PlatformConnector<P extends TokenPlatform<TokenType>> = P extends "e
   ? ChainConnectorEvm
   : P extends "polkadot"
     ? ChainConnector
-    : never
+    : P extends "solana"
+      ? IChainConnectorSol
+      : never
 
 type DotTransferCallData = {
   address: string
@@ -38,7 +42,9 @@ type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
   ? EthTransferCallData
   : P extends "polkadot"
     ? DotTransferCallData
-    : never
+    : P extends "solana"
+      ? unknown
+      : never
 
 export type TokensWithAddresses = Array<[Token, Address[]]>
 
@@ -83,14 +89,12 @@ export interface IBalanceModule<
           miniMetadata: MiniMetadata<MiniMetadataExtra>
           cache: Record<TokenId, unknown>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokens: TokenConfig[]
-            connector: ChainConnectorEvm
-            cache: Record<TokenId, unknown>
-          }
-        : never,
+      : {
+          networkId: SolNetworkId
+          tokens: TokenConfig[]
+          connector: PlatformConnector<TokenPlatform<Type>>
+          cache: Record<TokenId, unknown>
+        },
   ) => Promise<TokenOfType<Type>[]>
 
   fetchBalances: (
@@ -101,13 +105,11 @@ export interface IBalanceModule<
           connector: ChainConnector
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokensWithAddresses: TokensWithAddresses
-            connector: ChainConnectorEvm
-          }
-        : never,
+      : {
+          networkId: EthNetworkId
+          tokensWithAddresses: TokensWithAddresses
+          connector: PlatformConnector<TokenPlatform<Type>>
+        },
   ) => Promise<FetchBalanceResults>
 
   subscribeBalances: (
@@ -118,13 +120,11 @@ export interface IBalanceModule<
           connector: ChainConnector
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokensWithAddresses: TokensWithAddresses
-            connector: ChainConnectorEvm
-          }
-        : never,
+      : {
+          networkId: EthNetworkId
+          tokensWithAddresses: TokensWithAddresses
+          connector: PlatformConnector<TokenPlatform<Type>>
+        },
   ) => Observable<FetchBalanceResults>
 
   getTransferCallData: (
@@ -146,6 +146,13 @@ export interface IBalanceModule<
             value: string
             token: Token
           }
-        : never,
+        : TokenPlatform<Type> extends "solana"
+          ? {
+              from: string
+              to: string
+              value: string
+              token: Token
+            }
+          : never,
   ) => CallDataOf<TokenPlatform<Type>> | Promise<CallDataOf<TokenPlatform<Type>>> // because of psp22
 }

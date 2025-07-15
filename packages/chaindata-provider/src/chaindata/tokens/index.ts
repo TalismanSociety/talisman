@@ -1,6 +1,7 @@
 export * from "./EvmErc20Token"
 export * from "./EvmNativeToken"
 export * from "./EvmUniswapV2Token"
+export * from "./SolNativeToken"
 export * from "./SubstrateAssetsToken"
 export * from "./SubstrateForeignAssetsToken"
 export * from "./SubstrateNativeToken"

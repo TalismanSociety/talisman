@@ -15,7 +15,8 @@
     "dev:centrifuge": "tsx watch src/centrifuge.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",
     "dev:ewx": "tsx watch src/ewx.ts",
-    "dev:interlay": "tsx watch src/interlay.ts"
+    "dev:interlay": "tsx watch src/interlay.ts",
+    "dev:solana": "tsx watch src/solana.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "@talismn/balances": "workspace:^",
     "@talismn/chain-connector": "workspace:^",
     "@talismn/chain-connector-evm": "workspace:^",
+    "@talismn/chain-connector-sol": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/sapi": "workspace:^",
     "@talismn/scale": "workspace:^",
