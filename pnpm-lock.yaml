@@ -1120,6 +1120,9 @@ importers:
       '@talismn/chain-connector-evm':
         specifier: workspace:*
         version: link:../chain-connector-evm
+      '@talismn/chain-connector-sol':
+        specifier: workspace:*
+        version: link:../chain-connector-sol
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
@@ -1529,6 +1532,9 @@ importers:
       '@talismn/chain-connector-evm':
         specifier: workspace:*
         version: link:../chain-connector-evm
+      '@talismn/chain-connector-sol':
+        specifier: workspace:*
+        version: link:../chain-connector-sol
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
@@ -1785,6 +1791,9 @@ importers:
       '@talismn/balances':
         specifier: workspace:*
         version: link:../balances
+      '@talismn/crypto':
+        specifier: workspace:*
+        version: link:../crypto
       '@talismn/util':
         specifier: workspace:*
         version: link:../util
@@ -2083,15 +2092,6 @@ importers:
         specifier: ^2.5.4
         version: 2.5.4
     devDependencies:
-      '@polkadot/keyring':
-        specifier: 13.5.1
-        version: 13.5.1(@polkadot/util-crypto@13.5.1(@polkadot/util@13.5.1))(@polkadot/util@13.5.1)
-      '@polkadot/util':
-        specifier: 13.5.1
-        version: 13.5.1
-      '@polkadot/util-crypto':
-        specifier: 13.5.1
-        version: 13.5.1(@polkadot/util@13.5.1)
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config

@@ -1,6 +1,7 @@
-import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
+import { AccountPlatform } from "@talismn/crypto"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isAccountPlatformCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
 import { IS_FIREFOX } from "extension-shared"
 import { cloneElement, ReactElement, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -105,14 +106,14 @@ function MethodTypeTab({
 
 function NewAccountMethodButtons() {
   const { t } = useTranslation()
-  const [accountType, setAccountType] = useState<string>()
+  const [platform, setPlatform] = useState<AccountPlatform>()
 
   return (
     <>
       <SelectAccountTypeSectionHeader />
-      <AccountTypeNetworkSearch setAccountType={setAccountType} />
+      <AccountTypeNetworkSearch setAccountPlatform={setPlatform} />
       <AccountTypeMethodButton
-        disabled={accountType === "polkadot"}
+        disabled={platform === "polkadot"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("New Ethereum Account")}
@@ -121,11 +122,11 @@ function NewAccountMethodButtons() {
             )}
           />
         }
-        type="ethereum"
+        platform="ethereum"
         to={`/accounts/add/derived?platform=ethereum`}
       />
       <AccountTypeMethodButton
-        disabled={accountType === "ethereum"}
+        disabled={platform === "ethereum"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("New Polkadot Account")}
@@ -134,7 +135,7 @@ function NewAccountMethodButtons() {
             )}
           />
         }
-        type="polkadot"
+        platform="polkadot"
         to={`/accounts/add/derived?platform=polkadot`}
       />
     </>
@@ -202,14 +203,14 @@ function ConnectAccountMethodButtons() {
 
 function WatchedAccountMethodButtons() {
   const { t } = useTranslation()
-  const [accountType, setAccountType] = useState<string>()
+  const [platform, setPlatform] = useState<AccountPlatform>()
 
   return (
     <>
       <SelectAccountTypeSectionHeader />
-      <AccountTypeNetworkSearch setAccountType={setAccountType} />
+      <AccountTypeNetworkSearch setAccountPlatform={setPlatform} />
       <AccountTypeMethodButton
-        disabled={accountType === "polkadot"}
+        disabled={!!platform && platform !== "ethereum"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("Watch Ethereum Account")}
@@ -218,11 +219,11 @@ function WatchedAccountMethodButtons() {
             )}
           />
         }
-        type="ethereum"
+        platform="ethereum"
         to={`/accounts/add/watched?platform=ethereum`}
       />
       <AccountTypeMethodButton
-        disabled={accountType === "ethereum"}
+        disabled={!!platform && platform !== "polkadot"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("Watch Polkadot Account")}
@@ -231,8 +232,19 @@ function WatchedAccountMethodButtons() {
             )}
           />
         }
-        type="polkadot"
+        platform="polkadot"
         to={`/accounts/add/watched?platform=polkadot`}
+      />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "solana"}
+        title={
+          <SelectAccountTypeButtonHeader
+            title={t("Watch Solana Account")}
+            tooltip={t("Pick this option for Solana.")}
+          />
+        }
+        platform="solana"
+        to={`/accounts/add/watched?platform=solana`}
       />
     </>
   )
@@ -272,32 +284,23 @@ function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tool
 
 function AccountTypeMethodButton({
   title,
-  type,
+  platform,
   disabled,
   to,
 }: {
   title: ReactNode
-  type: "polkadot" | "ethereum"
+  platform: AccountPlatform
   disabled?: boolean
   to?: string
 }) {
   const { t } = useTranslation()
   const networks = useNetworks()
 
-  const supportedChainIds = useMemo(() => {
-    switch (type) {
-      case "polkadot":
-        return networks
-          .filter(isNetworkDot)
-          .filter((n) => n.account === "*25519")
-          .map((n) => n.id)
-      case "ethereum":
-        return [
-          ...networks.filter(isNetworkDot).filter((n) => n.account === "secp256k1"),
-          ...networks.filter(isNetworkEth),
-        ].map((n) => n.id)
-    }
-  }, [networks, type])
+  const supportedChainIds = useMemo(
+    () =>
+      networks.filter((n) => isAccountPlatformCompatibleWithNetwork(n, platform)).map((n) => n.id),
+    [networks, platform],
+  )
 
   return (
     <AccountCreateMethodButton

@@ -1,6 +1,6 @@
-import { isAddressEqual } from "@talismn/crypto"
+import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Account, isAccountLedgerPolkadotGeneric, LedgerPolkadotCurve } from "extension-core"
 import { log } from "extension-shared"
@@ -157,7 +157,9 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                     </div>
                     <div className="text-body-secondary text-sm">
                       <Address
-                        address={encodeAnyAddress(accountDef.address, chain?.prefix ?? undefined)}
+                        address={encodeAnyAddress(accountDef.address, {
+                          ss58Format: chain?.prefix,
+                        })}
                         startCharCount={6}
                         endCharCount={6}
                       />

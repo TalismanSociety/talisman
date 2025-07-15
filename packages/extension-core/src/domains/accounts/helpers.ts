@@ -1,6 +1,11 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { DotNetwork, Network } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress, KeypairCurve } from "@talismn/crypto"
+import {
+  AccountPlatform,
+  getAccountPlatformFromAddress,
+  isAddressEqual,
+  KeypairCurve,
+} from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
@@ -8,6 +13,7 @@ import {
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
   isAccountPlatformEthereum,
+  isAccountPlatformSolana,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
 
@@ -149,6 +155,45 @@ const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) 
     : chain.account !== "secp256k1"
 }
 
+export const isAccountCompatibleWithNetwork = (network: Network, account: Account) => {
+  switch (network.platform) {
+    case "ethereum":
+      return isAccountPlatformEthereum(account)
+    case "polkadot":
+      return isAccountCompatibleWithDotNetwork(network, account)
+    case "solana":
+      return isAccountPlatformSolana(account)
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
+}
+
+export const isAccountPlatformCompatibleWithNetwork = (
+  network: Network,
+  platform: AccountPlatform,
+) => {
+  switch (network.platform) {
+    case "ethereum":
+      return platform === "ethereum"
+    case "solana":
+      return platform === "solana"
+    case "polkadot": {
+      switch (network.account) {
+        case "secp256k1":
+          return platform === "ethereum"
+        case "*25519":
+          return platform === "polkadot"
+        default:
+          throw new Error(`Unsupported polkadot network account type ${network.account}`)
+      }
+    }
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
+}
+
 /**
  * If this is the address of an account, use isAccountCompatibleWithChain instead.
  * Otherwise it could lead to a loss of funds
@@ -157,29 +202,6 @@ const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) 
  * @returns
  */
 export const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
-  switch (network.platform) {
-    case "ethereum":
-      return isEthereumAddress(address)
-    case "polkadot":
-      return isEthereumAddress(address)
-        ? network.account === "secp256k1"
-        : network.account !== "secp256k1"
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
-}
-
-export const isAccountCompatibleWithNetwork = (network: Network, account: Account) => {
-  switch (network.platform) {
-    case "ethereum":
-      return isAccountPlatformEthereum(account)
-    case "polkadot":
-      return isAccountCompatibleWithDotNetwork(network, account)
-    case "solana":
-      return false
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
+  const accountPlatform = getAccountPlatformFromAddress(address)
+  return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }

@@ -1,5 +1,6 @@
+import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
-import { classNames, isEthereumAddress, normalizeAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -7,7 +8,6 @@ import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccounts, useNetworkByGenesisHash } from "@ui/state"
 
@@ -52,7 +52,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   const accountChain = useNetworkByGenesisHash(getAccountGenesisHash(account))
 
   const formatted = useMemo(
-    () => convertAddress(account.address, accountChain?.prefix ?? null),
+    () => encodeAnyAddress(account.address, { ss58Format: accountChain?.prefix }),
     [account.address, accountChain?.prefix],
   )
 

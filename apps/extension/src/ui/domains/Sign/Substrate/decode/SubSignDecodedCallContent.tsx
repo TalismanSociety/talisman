@@ -1,6 +1,7 @@
+import { encodeAddressSs58 } from "@talismn/crypto"
 import { LoaderIcon } from "@talismn/icons"
 import { DecodedCall, ScaleApi } from "@talismn/sapi"
-import { classNames, encodeAnyAddress, isAscii } from "@talismn/util"
+import { classNames, isAscii } from "@talismn/util"
 import DOMPurify from "dompurify"
 import { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
@@ -141,7 +142,7 @@ const formatArgs = (args: unknown): unknown => {
     if (anyArgs.type === "AccountId32" && anyArgs.value.id)
       return {
         type: "AccountId32",
-        value: encodeAnyAddress(anyArgs.value.id.asBytes()),
+        value: encodeAddressSs58(anyArgs.value.id.asBytes()),
       }
 
     // workaround - cant detect type of FixedSizeBinary programmatically

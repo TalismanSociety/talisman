@@ -7,7 +7,8 @@ import {
   EvmNativeToken,
   evmNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { convertAddress, throwAfter } from "@talismn/util"
+import { normalizeAddress } from "@talismn/crypto"
+import { throwAfter } from "@talismn/util"
 import { DEFAULT_ETH_CHAIN_ID, isTalismanUrl, log } from "extension-shared"
 import i18next from "i18next"
 import {
@@ -105,7 +106,7 @@ export class EthTabsHandler extends TabsHandler {
     if (
       !site ||
       !site.ethChainId ||
-      (authorisedAddress && !site.ethAddresses?.includes(convertAddress(authorisedAddress, null)))
+      (authorisedAddress && !site.ethAddresses?.includes(normalizeAddress(authorisedAddress)))
     )
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
     return site as EthAuthorizedSite

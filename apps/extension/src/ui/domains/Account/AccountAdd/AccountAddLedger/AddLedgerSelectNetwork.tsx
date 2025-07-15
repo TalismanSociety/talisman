@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { DotNetwork } from "@talismn/chaindata-provider"
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
@@ -99,7 +99,7 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(["ethereum", "polkadot"]).defined(),
           chainId: yup.string(),
           substrateAppType: yup.mixed(isAddSubstrateLedgerAppType),
         })
@@ -168,7 +168,7 @@ export const AddLedgerSelectNetwork = () => {
   )
 
   const handlePlatformChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       reset({ platform })
     },
     [reset],

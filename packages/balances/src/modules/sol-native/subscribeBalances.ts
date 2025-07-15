@@ -24,7 +24,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 
         const balances = await fetchBalances({
           networkId,
-          tokensWithAddresses: tokensWithAddresses,
+          tokensWithAddresses,
           connector,
         })
 
@@ -37,7 +37,7 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
         log.error("Error", {
           module: MODULE_TYPE,
           networkId,
-          addressesByToken: tokensWithAddresses,
+          tokensWithAddresses,
           error,
         })
         subscriber.error(error)

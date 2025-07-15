@@ -1,6 +1,6 @@
 import { HexString } from "@polkadot/util/types"
 import { EthNetworkId, Network } from "@talismn/chaindata-provider"
-import { normalizeAddress } from "@talismn/util"
+import { normalizeAddress } from "@talismn/crypto"
 import { WalletTransaction } from "extension-core"
 import { log } from "extension-shared"
 import uniq from "lodash-es/uniq"

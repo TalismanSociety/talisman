@@ -13,7 +13,8 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { formatDecimals, isEthereumAddress, isNotNil } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
+import { formatDecimals, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { getEthTransferTransactionBase, WalletTransactionInfo } from "extension-core"
 import { log } from "extension-shared"
@@ -112,6 +113,8 @@ const useEvmTransaction = (
       !token.networkId ||
       !token ||
       !planck ||
+      !from ||
+      !to ||
       !isEthereumAddress(from) ||
       !isEthereumAddress(to)
     )

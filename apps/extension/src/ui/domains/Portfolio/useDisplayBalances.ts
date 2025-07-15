@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { Balance, Balances } from "@talismn/balances"
 import { getNetworkGenesisHash, Network, NetworkId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/util"
+import { isAddressEqual } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,

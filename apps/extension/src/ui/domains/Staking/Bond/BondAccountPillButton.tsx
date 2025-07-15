@@ -15,7 +15,7 @@ import { Address } from "../../Account/Address"
 
 type AccountPillButtonProps = {
   address?: string | null
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   className?: string
   onClick?: () => void
 }

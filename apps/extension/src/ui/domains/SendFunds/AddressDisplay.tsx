@@ -1,6 +1,6 @@
 import { Address as TAddress } from "@talismn/balances"
 import { NetworkId } from "@talismn/chaindata-provider"
-import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
+import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useAnyNetwork, useNetworkById } from "@ui/state"
@@ -86,7 +85,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
   const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
 
   const resolvedAddress = useMemo(() => {
-    return chain && address ? convertAddress(address, chain.prefix) : address
+    return chain && address ? encodeAnyAddress(address, { ss58Format: chain.prefix }) : address
   }, [address, chain])
 
   const [onChainId] = useOnChainId(resolvedAddress ?? undefined)

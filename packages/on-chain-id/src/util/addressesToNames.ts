@@ -1,4 +1,4 @@
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 
 import log from "../log"
 import { resolveAddressToDomain } from "./aznsRouter"

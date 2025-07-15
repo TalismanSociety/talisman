@@ -1,5 +1,5 @@
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"

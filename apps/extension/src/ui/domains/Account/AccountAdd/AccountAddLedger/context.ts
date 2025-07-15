@@ -1,5 +1,5 @@
 import { assert } from "@polkadot/util"
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { AddAccountExternalOptions } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
@@ -25,7 +25,7 @@ export enum AddSubstrateLedgerAppType {
 }
 
 type LedgerCreationInputs = {
-  platform: Platform
+  platform: AccountPlatform
   substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
   chainId?: string
@@ -34,7 +34,7 @@ type LedgerCreationInputs = {
 const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
-    platform: params.get("platform") as Platform | undefined,
+    platform: params.get("platform") as AccountPlatform | undefined,
   }))
   const chain = useNetworkById(data.chainId as string, "polkadot")
 

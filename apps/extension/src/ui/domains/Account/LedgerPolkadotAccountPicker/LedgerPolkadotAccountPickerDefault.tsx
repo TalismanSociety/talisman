@@ -1,5 +1,5 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { convertAddress, isNotNil } from "@talismn/util"
+import { isNotNil } from "@talismn/util"
 import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import { Account, LedgerPolkadotCurve } from "extension-core"
 import { log } from "extension-shared"
@@ -76,7 +76,7 @@ export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccount
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances={withBalances}
-        addressPrefix={chain?.prefix}
+        ss58Format={chain?.prefix}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
@@ -196,15 +196,18 @@ const useLedgerSubstrateGenericAccounts = (
       ledgerAccounts.map((acc) => {
         if (!acc) return null
 
-        const address = convertAddress(acc.address, null)
-        const existingAccount = walletAccounts?.find((wa) => isAddressEqual(wa.address, address))
-        const accountBalances = balances.balances.find((b) => isAddressEqual(b.address, address))
+        const existingAccount = walletAccounts?.find((wa) =>
+          isAddressEqual(wa.address, acc.address),
+        )
+        const accountBalances = balances.balances.find((b) =>
+          isAddressEqual(b.address, acc.address),
+        )
 
         return {
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
-          selected: selectedAccounts.some((sa) => sa.address === acc.address),
+          selected: selectedAccounts.some((sa) => isAddressEqual(sa.address, acc.address)),
           balances: accountBalances,
           isBalanceLoading: withBalances && balances.status === "initialising",
         }

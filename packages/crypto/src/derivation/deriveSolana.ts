@@ -50,7 +50,7 @@ export const deriveSolana = (seed: Uint8Array, derivationPath: string): Keypair 
     type: "solana",
     secretKey,
     publicKey,
-    address: addressFromPublicKey(publicKey, "base58"),
+    address: addressFromPublicKey(publicKey, "base58solana"),
   }
 }
 

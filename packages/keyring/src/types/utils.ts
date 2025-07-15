@@ -1,9 +1,10 @@
 import {
   detectAddressEncoding,
+  getAccountPlatformFromAddress,
+  getAccountPlatformFromCurve,
   isBitcoinAddress,
   isEthereumAddress,
-  platformFromAddress,
-  platformFromCurve,
+  isSolanaAddress,
 } from "@talismn/crypto"
 
 import type { Account, AccountLedgerPolkadot, AccountType } from "./account"
@@ -122,6 +123,16 @@ export const isAccountPlatformEthereum = (
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 
+export const isAccountPlatformSolana = (
+  account: Account | null | undefined,
+): account is Extract<Account, { type: "keypair" | "watch-only" }> => {
+  return (
+    !!account &&
+    isAccountInTypes(account, ["keypair", "watch-only"]) &&
+    isSolanaAddress(account.address)
+  )
+}
+
 type AccountPlatformPolkadot = Extract<
   Account,
   { type: (typeof ACCOUNT_TYPES_PLATFORM_POLKADOT)[number] }
@@ -185,6 +196,6 @@ export const getAccountSignetUrl = (account: Account | null | undefined) => {
 export const getAccountPlatform = (account: Account | null | undefined) => {
   if (!account) return undefined
   return "curve" in account
-    ? platformFromCurve(account.curve)
-    : platformFromAddress(account.address)
+    ? getAccountPlatformFromCurve(account.curve)
+    : getAccountPlatformFromAddress(account.address)
 }

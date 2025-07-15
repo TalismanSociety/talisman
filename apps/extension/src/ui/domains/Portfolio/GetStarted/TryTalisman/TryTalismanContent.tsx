@@ -1,5 +1,6 @@
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import {
   ChangeEventHandler,
   FC,
@@ -50,7 +51,7 @@ export const TryTalismanContent: FC<{
   useEffect(() => {
     const isValidAddress = (() => {
       try {
-        encodeAnyAddress(searchAddress)
+        normalizeAddress(searchAddress)
         return true
       } catch {
         return false
@@ -83,7 +84,7 @@ export const TryTalismanContent: FC<{
 
       try {
         // throws if address is invalid
-        encodeAnyAddress(address)
+        normalizeAddress(address)
 
         const [resultAddress] = await api.accountAddExternal([
           {
@@ -226,7 +227,7 @@ const FollowAccountButton = ({
   }, [address, analytics, description, name])
 
   const isAdded = useMemo(
-    () => allAccounts.some((a) => encodeAnyAddress(a.address) === encodeAnyAddress(address)),
+    () => allAccounts.some((a) => isAddressEqual(a.address, address)),
     [allAccounts, address],
   )
 

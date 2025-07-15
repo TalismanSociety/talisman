@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js"
-import { isBase58Address } from "@talismn/crypto"
+import { isSolanaAddress } from "@talismn/crypto"
 
 import { IBalance } from "../../types"
 import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
@@ -24,7 +24,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       )
 
     for (const address of addresses)
-      if (!isBase58Address(address))
+      if (!isSolanaAddress(address))
         throw new Error(
           `Invalid solana address for balance module: ${address} for token ${token.id}`,
         )

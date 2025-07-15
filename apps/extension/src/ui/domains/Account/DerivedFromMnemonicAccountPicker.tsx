@@ -1,4 +1,4 @@
-import { KeypairCurve } from "@talismn/crypto"
+import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import {
   Account,
@@ -9,7 +9,6 @@ import {
 } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state"
@@ -98,12 +97,12 @@ const useDerivedAccounts = (
 
         const existingAccount = walletAccounts?.find(
           (wa) =>
-            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
+            isAddressEqual(wa.address, acc.address) &&
             acc.genesisHash === getAccountGenesisHash(wa),
         )
 
-        const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
+        const accountBalances = balances.balances.find((b) =>
+          isAddressEqual(b.address, acc.address),
         )
 
         const isBalanceLoading =

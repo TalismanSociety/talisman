@@ -1,5 +1,5 @@
+import { isEthereumAddress } from "@talismn/crypto"
 import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
-import { isEthereumAddress } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"

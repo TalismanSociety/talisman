@@ -9,14 +9,8 @@ import {
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
-import {
-  getSharedObservable,
-  isEthereumAddress,
-  isNotNil,
-  isTruthy,
-  keepAlive,
-  normalizeAddress,
-} from "@talismn/util"
+import { AccountPlatform, getAccountPlatformFromAddress, normalizeAddress } from "@talismn/crypto"
+import { getSharedObservable, isNotNil, isTruthy, keepAlive } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
   BehaviorSubject,
@@ -190,21 +184,14 @@ export class BalancesProvider {
               case "ethereum": {
                 return this.getEthereumNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
               }
+              case "solana": {
+                return this.getSolanaNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
+              }
               case "polkadot": {
-                return this.getPolkadotNetworkModuleBalances$(
-                  networkId,
-
-                  tokensWithAddresses,
-                  mod,
-                )
+                return this.getPolkadotNetworkModuleBalances$(networkId, tokensWithAddresses, mod)
               }
               default: {
-                log.warn(
-                  "[balances] Unsupported network platform for module",
-                  mod.type,
-                  "on network",
-                  networkId,
-                )
+                log.warn("[balances] Unsupported network platform for module", { networkId, mod })
                 return of({ status: "live", balances: [] } as BalancesResult) // no solana modules yet
               }
             }
@@ -242,7 +229,7 @@ export class BalancesProvider {
         )
 
         if (!this.#chainConnectors.substrate) {
-          log.debug("[balances] no substrate connector or miniMetadata for module", mod.type)
+          log.warn("[balances] no substrate connector or miniMetadata for module", mod.type)
           return defer(() =>
             of({
               status: "initialising",
@@ -311,7 +298,7 @@ export class BalancesProvider {
         )
 
         if (!this.#chainConnectors.evm) {
-          log.debug("[balances] no ethereum connector for module", mod.type)
+          log.warn("[balances] no ethereum connector for module", mod.type)
           return defer(() =>
             of({
               status: "initialising",
@@ -325,6 +312,72 @@ export class BalancesProvider {
             networkId,
             tokensWithAddresses,
             connector: this.#chainConnectors.evm,
+          })
+          .pipe(
+            catchError(() => EMPTY), // don't emit, let provider mark balances stale
+            map(
+              (results): BalancesResult => ({
+                status: "live",
+                // exclude zero balances
+                balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+              }),
+            ),
+            tap((results) => {
+              this.updateStorage$(balanceIds, results)
+            }),
+            // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
+            shareReplay({ refCount: true, bufferSize: 1 }),
+            keepAlive(0),
+          )
+
+        // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
+        return defer(() =>
+          moduleBalances$.pipe(
+            startWith({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          ),
+        )
+      },
+    )
+  }
+
+  private getSolanaNetworkModuleBalances$(
+    networkId: DotNetworkId,
+    tokensWithAddresses: TokensWithAddresses,
+    mod: Extract<(typeof BALANCE_MODULES)[number], { platform: "solana" }>,
+  ): Observable<BalancesResult> {
+    return getSharedObservable(
+      `BalancesProvider.getSolanaNetworkModuleBalances$`,
+      { networkId, mod, tokensWithAddresses },
+      () => {
+        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
+
+        const moduleAddressesByTokenId = fromPairs(
+          tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
+        )
+
+        // all balance ids expected in result set
+        const balanceIds = toPairs(moduleAddressesByTokenId).flatMap(([tokenId, addresses]) =>
+          addresses.map((address) => getBalanceId({ tokenId, address })),
+        )
+
+        if (!this.#chainConnectors.solana) {
+          log.warn("[balances] no solana connector for module", mod.type)
+          return defer(() =>
+            of({
+              status: "initialising",
+              balances: this.getStoredBalances(moduleAddressesByTokenId),
+            } as BalancesResult),
+          )
+        }
+
+        const moduleBalances$ = mod
+          .subscribeBalances({
+            networkId,
+            tokensWithAddresses,
+            connector: this.#chainConnectors.solana,
           })
           .pipe(
             catchError(() => EMPTY), // don't emit, let provider mark balances stale
@@ -530,18 +583,39 @@ export class BalancesProvider {
   }
 }
 
-const isAddressCompatibleWithNetwork = (network: Network, address: Address) => {
+const isAccountPlatformCompatibleWithNetwork = (network: Network, platform: AccountPlatform) => {
   switch (network.platform) {
     case "ethereum":
-      return isEthereumAddress(address)
-    case "polkadot":
-      return isEthereumAddress(address)
-        ? network.account === "secp256k1"
-        : network.account !== "secp256k1"
+      return platform === "ethereum"
+    case "solana":
+      return platform === "solana"
+    case "polkadot": {
+      switch (network.account) {
+        case "secp256k1":
+          return platform === "ethereum"
+        case "*25519":
+          return platform === "polkadot"
+        default:
+          throw new Error(`Unsupported polkadot network account type ${network.account}`)
+      }
+    }
     default:
       log.warn("Unsupported network platform", network)
       throw new Error("Unsupported network platform")
   }
+}
+
+/**
+ * If this is the address of an account, use isAccountCompatibleWithChain instead.
+ * Otherwise it could lead to a loss of funds
+ * @param chain
+ * @param address
+ * @returns
+ */
+const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
+  // TODO try with return true to check if wallet filters correctly upfront
+  const accountPlatform = getAccountPlatformFromAddress(address)
+  return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }
 
 const sortByBalanceId = (a: IBalance, b: IBalance) => getBalanceId(a).localeCompare(getBalanceId(b))

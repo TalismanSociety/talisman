@@ -1,5 +1,5 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 import BigNumber from "bignumber.js"
 import { keyBy, uniq } from "lodash-es"
 import { getContract, PublicClient } from "viem"

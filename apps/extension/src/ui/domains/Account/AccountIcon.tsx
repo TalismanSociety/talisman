@@ -1,5 +1,6 @@
+import { isEthereumAddress } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
-import { classNames, isEthereumAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { Address, IdenticonType } from "extension-core"
 import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
 

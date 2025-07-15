@@ -1,11 +1,12 @@
-import { isAddressEqual, isBitcoinAddress } from "@talismn/crypto"
-import { ChevronLeftIcon } from "@talismn/icons"
+import { isValidAddress } from "@ethereumjs/util"
 import {
-  decodeAnyAddress,
+  detectAddressEncoding,
   encodeAnyAddress,
-  isEthereumAddress,
-  isValidSubstrateAddress,
-} from "@talismn/util"
+  isAddressEqual,
+  isBitcoinAddress,
+  normalizeAddress,
+} from "@talismn/crypto"
+import { ChevronLeftIcon } from "@talismn/icons"
 import {
   Account,
   isAccountAddressEthereum,
@@ -85,21 +86,19 @@ export const SeparatedAccountSelector = ({
       createdAt: 0,
     }
 
-    if (accountsType === "substrate" && isValidSubstrateAddress(query)) {
-      // computation will always be done in generic format
-      const address = encodeAnyAddress(decodeAnyAddress(query), 42)
-      return { ...accountCommon, name: shortenAddress(address), address }
+    if (isValidAddress(query)) {
+      const encoding = detectAddressEncoding(query)
+      switch (encoding) {
+        case "ss58": {
+          const address = normalizeAddress(query)
+          return { ...accountCommon, name: shortenAddress(address), address }
+        }
+        default:
+          return { ...accountCommon, name: shortenAddress(query), address: query }
+      }
     }
-    if (
-      (accountsType === "ethereum" && isEthereumAddress(query)) ||
-      (accountsType === "btc" && isBitcoinAddress(query))
-    ) {
-      const address = query
-      return { ...accountCommon, name: shortenAddress(address), address }
-    }
-
     return null
-  }, [accountsType, allowInput, query])
+  }, [allowInput, query])
 
   const evmAccounts = useMemo(() => {
     const filtered = evmAccountsFilter
@@ -141,7 +140,7 @@ export const SeparatedAccountSelector = ({
     return substrateAccounts.filter(
       (account) =>
         account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        encodeAnyAddress(decodeAnyAddress(account.address), substrateAccountPrefix)
+        encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
           .toLowerCase()
           .includes(query.toLowerCase()) ||
         account.name?.toLowerCase().includes(query.toLowerCase()),
@@ -344,7 +343,7 @@ const AccountRow = ({
     )
       return address
 
-    return encodeAnyAddress(decodeAnyAddress(address), substrateAccountPrefix)
+    return encodeAnyAddress(address, { ss58Format: substrateAccountPrefix })
   }, [address, substrateAccountPrefix])
 
   return <div className="truncate">{name ?? shortenAddress(formattedAddress)}</div>

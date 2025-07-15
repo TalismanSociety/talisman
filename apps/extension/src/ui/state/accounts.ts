@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { normalizeAddress } from "@talismn/util"
+import { normalizeAddress } from "@talismn/crypto"
 import {
   Account,
   isAccountNotContact,

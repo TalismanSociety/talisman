@@ -1,8 +1,9 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address as TAddress } from "@talismn/balances"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -30,7 +31,7 @@ const QR_IMAGE_OPTIONS = {
 
 type AddressPillButtonProps = {
   address?: string | null
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   className?: string
   onClick?: () => void
 }
@@ -119,8 +120,7 @@ const ExternalAddressWarning = () => {
 
   const showWarning = useMemo(() => {
     if (!address || !accounts) return false
-    const encoded = encodeAnyAddress(address)
-    return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
+    return !accounts.some((account) => isAddressEqual(account.address, address))
   }, [accounts, address])
 
   if (!showWarning) return null

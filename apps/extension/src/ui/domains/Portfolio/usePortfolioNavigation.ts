@@ -1,4 +1,4 @@
-import { isAddressEqual, normalizeAddress } from "@talismn/util"
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"

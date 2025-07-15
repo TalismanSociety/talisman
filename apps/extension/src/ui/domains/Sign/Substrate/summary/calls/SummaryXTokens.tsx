@@ -1,5 +1,5 @@
 import { AcalaCalls, HydrationCalls } from "@polkadot-api/descriptors"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "@talismn/crypto"
 import { useMemo } from "react"
 
 import { useNetworkById, useNetworks, useTokens } from "@ui/state"
@@ -40,8 +40,8 @@ const Transfer: DecodedCallSummaryComponent<TransferArgs> = ({
       tokenId: token.id,
       fromNetwork: chain.id,
       toNetwork: targetChain.id,
-      fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
-      toAddress: encodeAnyAddress(targetAddress, targetChain.prefix ?? undefined),
+      fromAddress: encodeAnyAddress(payload.address, { ss58Format: chain.prefix }),
+      toAddress: encodeAnyAddress(targetAddress, { ss58Format: targetChain.prefix }),
       mode,
     }
   }, [args, payload, chain, chains, tokens, mode])

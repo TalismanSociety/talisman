@@ -1,7 +1,7 @@
 import { Balances, IBalance } from "@talismn/balances"
+import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"
 import { TokenRatesList } from "@talismn/token-rates"
-import { normalizeAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import { log } from "extension-shared"
 import { combineLatest, map, throttleTime } from "rxjs"

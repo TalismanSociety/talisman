@@ -1,22 +1,25 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import {
+  detectAddressEncoding,
+  encodeAnyAddress,
+  isAddressValid,
+  normalizeAddress,
+} from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
-import { isValidSubstrateAddress } from "@talismn/util"
 import {
   Account,
   isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAccountPortfolio,
 } from "extension-core"
-import { isValidAddress } from "extension-shared"
+//import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
 import { useAccounts, useContacts, useNetworkById, useToken } from "@ui/state"
@@ -104,7 +107,7 @@ export const SendFundsRecipientPicker = () => {
   const { open, close, isOpen } = useOpenClose()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
-  const chain = useNetworkById(token?.networkId)
+  const network = useNetworkById(token?.networkId)
 
   const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 
@@ -112,36 +115,28 @@ export const SendFundsRecipientPicker = () => {
   const allContacts = useContacts()
 
   const isValidAddressInput = useMemo(() => {
-    if (!from) return isValidAddress(search)
+    if (!from) return isAddressValid(search)
 
-    // dont allow using a pasted address of an account that we know cant use target chain
-    const account =
-      isValidAddress(search) && allAccounts.find((acc) => isAddressEqual(acc.address, search))
-    if (account) {
-      if (chain?.platform === "polkadot") return isAccountCompatibleWithNetwork(chain, account)
-      if (isTokenEth(token)) return isAccountPlatformEthereum(account)
-    }
-
-    return isFromEthereum ? isEthereumAddress(search) : isValidSubstrateAddress(search)
-  }, [allAccounts, chain, from, isFromEthereum, search, token])
+    return isAddressValid(search) && detectAddressEncoding(from) === detectAddressEncoding(search)
+  }, [from, search])
 
   /**
    * Check if the search input is a valid Substrate address for the current chain.
    * If not a substrate address (ie, any other string, or an ethereum address), it is also valid for the purpose of this check.
    */
   const isValidSubstrateNetworkAddressInput = useMemo(() => {
-    if (chain?.platform !== "polkadot") return true
+    if (network?.platform !== "polkadot") return true
     if (!search || search.trim() === "" || !isValidAddressInput) return true
-    const isGenericFormat = convertAddress(search, null) === search
+    const isGenericFormat = normalizeAddress(search) === search
     const isChainFormat =
-      convertAddress(search, chain.prefix) === search ||
-      (typeof chain.oldPrefix === "number" && convertAddress(search, chain.oldPrefix) === search)
-    if (isValidSubstrateAddress(search)) return isChainFormat || isGenericFormat
-    return true
-  }, [chain, search, isValidAddressInput])
+      encodeAnyAddress(search, { ss58Format: network.prefix }) === search ||
+      (typeof network.oldPrefix === "number" &&
+        encodeAnyAddress(search, { ss58Format: network.oldPrefix }) === search)
+    return isChainFormat || isGenericFormat
+  }, [network, search, isValidAddressInput])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
-    azns: !!chain,
+    azns: !!network,
     ens: isFromEthereum,
   })
 
@@ -149,7 +144,7 @@ export const SendFundsRecipientPicker = () => {
     (addr = "") => {
       if (!addr) return null
       try {
-        return isFromEthereum ? addr.toLowerCase() : convertAddress(addr, null)
+        return isFromEthereum ? addr.toLowerCase() : normalizeAddress(addr)
       } catch (err) {
         return null
       }
@@ -173,7 +168,8 @@ export const SendFundsRecipientPicker = () => {
             (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address)),
         )
         .filter(
-          (contact) => !contact.genesisHash || contact.genesisHash === getNetworkGenesisHash(chain),
+          (contact) =>
+            !contact.genesisHash || contact.genesisHash === getNetworkGenesisHash(network),
         ),
     [
       allContacts,
@@ -185,7 +181,7 @@ export const SendFundsRecipientPicker = () => {
       isNsLookup,
       nsLookup,
       normalizedNsLookup,
-      chain,
+      network,
     ],
   )
 
@@ -239,7 +235,7 @@ export const SendFundsRecipientPicker = () => {
         .filter((account) => normalize(account.address) !== normalizedFrom)
         .filter((account) => {
           if (isTokenEth(token)) return isAccountPlatformEthereum(account)
-          if (chain) return isAccountCompatibleWithNetwork(chain, account)
+          if (network) return isAccountCompatibleWithNetwork(network, account)
           return false
         })
         .filter(
@@ -253,7 +249,7 @@ export const SendFundsRecipientPicker = () => {
       allAccounts,
       normalize,
       normalizedFrom,
-      chain,
+      network,
       token,
       search,
       isValidAddressInput,
@@ -280,14 +276,14 @@ export const SendFundsRecipientPicker = () => {
     (address: string) => {
       // Azns is the only lookup we use for polkadot addresses. If this changes, we will need to use the NsLookupType here.
       const isAzeroDomainButNotAzero =
-        !address.startsWith("0x") && typeof nsLookup === "string" && chain?.id !== "aleph-zero"
+        !address.startsWith("0x") && typeof nsLookup === "string" && network?.id !== "aleph-zero"
 
       const toWarning: ToWarning = isAzeroDomainButNotAzero ? "AZERO_ID" : undefined
 
       set("to", address, true)
       setRecipientWarning(toWarning)
     },
-    [chain?.id, nsLookup, set, setRecipientWarning],
+    [network?.id, nsLookup, set, setRecipientWarning],
   )
 
   const [unknownAddress, setUnknownAddress] = useState<string>()
@@ -325,8 +321,8 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        {!isValidSubstrateNetworkAddressInput && chain?.platform === "polkadot" && (
-          <AddressFormatError chain={chain ?? undefined} />
+        {!isValidSubstrateNetworkAddressInput && network?.platform === "polkadot" && (
+          <AddressFormatError chain={network ?? undefined} />
         )}
         {isValidSubstrateNetworkAddressInput && (
           <>
@@ -342,7 +338,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={contacts}
-              genesisHash={getNetworkGenesisHash(chain)}
+              genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={handleSelect}
               header={
@@ -355,7 +351,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={myAccounts}
-              genesisHash={getNetworkGenesisHash(chain)}
+              genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={handleSelect}
               header={
@@ -371,7 +367,7 @@ export const SendFundsRecipientPicker = () => {
             <SendFundsAccountsList
               allowZeroBalance
               accounts={watchedAccounts}
-              genesisHash={getNetworkGenesisHash(chain)}
+              genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={handleSelect}
               header={
@@ -392,7 +388,7 @@ export const SendFundsRecipientPicker = () => {
           close={close}
           onProceed={handleSelect}
           address={unknownAddress}
-          chain={chain ?? undefined}
+          chain={network ?? undefined}
         />
       )}
     </div>

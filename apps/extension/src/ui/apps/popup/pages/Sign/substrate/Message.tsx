@@ -1,6 +1,6 @@
 import { isAscii, u8aToString, u8aUnwrapBytes } from "@polkadot/util"
+import { normalizeAddress } from "@talismn/crypto"
 import { SiwsMessage, parseMessage as siwsParseMessage } from "@talismn/siws"
-import { encodeAnyAddress } from "@talismn/util"
 import { SignerPayloadRaw } from "extension-core"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -69,7 +69,7 @@ export const PolkadotSignMessageRequest = () => {
               <h1 className="text-body text-md my-12 font-bold leading-9">{t("Sign Request")}</h1>
               <h2 className="mb-8 text-base leading-[3.2rem]">
                 {t("You are signing a message with account")}{" "}
-                <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
+                <AccountPill account={account} ss58Format={chain?.prefix ?? undefined} />
                 {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
               <Message className="w-full flex-grow" text={messageText} />
@@ -110,22 +110,22 @@ const useSiwsRequest = ({
     // Not a valid SIWS message, fall back to regular raw message signing
     if (siwsMessage === null) return [null, null]
 
-    const encodeAddressOrNull = (...args: Parameters<typeof encodeAnyAddress>) => {
+    const tryNormalizeAddress = (address: string) => {
       try {
-        return encodeAnyAddress(...args)
+        return normalizeAddress(address)
       } catch {
         return null
       }
     }
 
     const truth = {
-      address: encodeAddressOrNull(account.address),
+      address: tryNormalizeAddress(account.address),
       domain: new URL(url).host,
     }
     const check = {
       addresses: [
-        encodeAddressOrNull((request.payload as SignerPayloadRaw).address),
-        encodeAddressOrNull(siwsMessage.address),
+        tryNormalizeAddress((request.payload as SignerPayloadRaw).address),
+        tryNormalizeAddress(siwsMessage.address),
       ],
       domain: siwsMessage.domain,
     }

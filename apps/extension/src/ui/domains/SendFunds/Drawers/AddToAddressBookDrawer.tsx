@@ -1,6 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { detectAddressEncoding } from "@talismn/crypto"
-import { convertAddress } from "@talismn/util"
+import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
 import { HexString } from "extension-shared"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -43,7 +42,7 @@ const AddToAddressBookDrawerForm: FC<{
   const { t } = useTranslation()
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
-    () => addressType === "ss58" && address === convertAddress(address, null),
+    () => addressType === "ss58" && address === normalizeAddress(address),
     [address, addressType],
   )
   const {

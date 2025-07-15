@@ -1,5 +1,5 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { UserPlusIcon } from "@talismn/icons"
-import { isAddressEqual } from "@talismn/util"
 import { HexString } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"

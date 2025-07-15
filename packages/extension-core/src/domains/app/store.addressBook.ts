@@ -1,5 +1,3 @@
-import { AccountAddressType } from "extension-shared"
-
 import { StorageProvider } from "../../libs/Store"
 
 type Address = string
@@ -8,7 +6,7 @@ type Address = string
  * @deprecated use keyring instead
  */
 export type AddressBookContact = {
-  addressType: AccountAddressType
+  addressType: string
   address: Address
   genesisHash?: `0x${string}`
   name: string

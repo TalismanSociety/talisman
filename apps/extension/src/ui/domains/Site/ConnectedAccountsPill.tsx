@@ -1,5 +1,6 @@
+import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames, isAddressEqual, isNotNil, normalizeAddress } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { Account } from "extension-core"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { isValidDerivationPath, KeypairCurve, Platform } from "@talismn/crypto"
+import { AccountPlatform, isValidDerivationPath, KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
@@ -37,7 +37,7 @@ import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
-const platformToCurve = (platform: Platform): KeypairCurve => {
+const platformToCurve = (platform: AccountPlatform): KeypairCurve => {
   switch (platform) {
     case "ethereum":
       return "ethereum"
@@ -110,7 +110,9 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   const [params] = useSearchParams()
   const defaultPlatform = useMemo(() => {
     // type is for legacy compatibility
-    return (params.get("platform") ?? params.get("type") ?? undefined) as Platform | undefined
+    return (params.get("platform") ?? params.get("type") ?? undefined) as
+      | AccountPlatform
+      | undefined
   }, [params])
 
   const mnemonics = useMnemonics()
@@ -122,7 +124,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
       yup
         .object({
           name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(["ethereum", "polkadot"]).defined(),
           derivationPath: yup.string().defined(""),
           isCustomDerivationPath: yup.boolean(),
           mnemonicId: yup.string().defined().nullable(),
@@ -229,7 +231,7 @@ const AccountAddDerivedFormInner: FC<AccountAddPageProps> = ({ onSuccess }) => {
   )
 
   const handlePlatformChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       setValue("platform", platform, { shouldValidate: true })
       setFocus("name")
     },

@@ -1,4 +1,4 @@
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -33,8 +33,8 @@ const AccountTypeButton: FC<{
 )
 
 type AccountPlatformSelectorProps = {
-  defaultValue?: Platform
-  onChange: (value: Platform) => void
+  defaultValue?: AccountPlatform
+  onChange: (value: AccountPlatform) => void
   className?: string
 }
 
@@ -44,9 +44,9 @@ export const AccountPlatformSelector = ({
   className,
 }: AccountPlatformSelectorProps) => {
   const { t } = useTranslation()
-  const [platform, setPlatform] = useState<Platform | undefined>(defaultType)
+  const [platform, setPlatform] = useState<AccountPlatform | undefined>(defaultType)
 
-  const handleClick = (value: Platform) => () => {
+  const handleClick = (value: AccountPlatform) => () => {
     setPlatform(value)
   }
 

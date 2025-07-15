@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { isAddressEqual, isValidMnemonic, KeypairCurve, Platform } from "@talismn/crypto"
+import { AccountPlatform, isAddressEqual, isValidMnemonic, KeypairCurve } from "@talismn/crypto"
 import { classNames, isTruthy } from "@talismn/util"
 import { getEthDerivationPath } from "extension-core"
 import { DEBUG } from "extension-shared"
@@ -30,7 +30,7 @@ import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
-const platformToCurve = (platform: Platform) => {
+const platformToCurve = (platform: AccountPlatform) => {
   switch (platform) {
     case "ethereum":
       return "ethereum"
@@ -61,7 +61,7 @@ const getSuri = (secret: string, curve: KeypairCurve, derivationPath?: string) =
 
 type FormData = {
   name: string
-  platform: Platform
+  platform: AccountPlatform
   mnemonic: string
   mode: AccountAddDerivationMode
   derivationPath: string
@@ -81,7 +81,7 @@ export const AccountAddMnemonicForm = () => {
       yup
         .object({
           name: yup.string().trim().required(" "),
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(["ethereum", "polkadot"]).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
               ["first", "custom", "multi"].includes(v),
@@ -208,7 +208,7 @@ export const AccountAddMnemonicForm = () => {
   )
 
   const handleTypeChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       setValue("platform", platform, { shouldValidate: true })
       setValue("derivationPath", platform === "ethereum" ? getEthDerivationPath() : "", {
         shouldValidate: true,

@@ -24,7 +24,7 @@ const normalizeAnyAddress = (address: string) => {
     case "bech32m":
     case "bech32":
     case "base58check":
-    case "base58":
+    case "base58solana":
       return address
     case "ss58": {
       const [pk] = decodeSs58Address(address)

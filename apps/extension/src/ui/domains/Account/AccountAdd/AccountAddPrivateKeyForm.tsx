@@ -1,7 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
-import { bytesToString, parseSecretKey } from "@talismn/crypto"
-import { encodeAnyAddress } from "@talismn/util"
+import { bytesToString, isAddressEqual, parseSecretKey } from "@talismn/crypto"
 import { isAccountAddressEthereum } from "extension-core"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -91,7 +90,7 @@ const schema = yup
           })
         }
 
-        if (context.accountEthAddresses.some((a) => encodeAnyAddress(a) === address))
+        if (context.accountEthAddresses.some((a) => isAddressEqual(a, address)))
           return ctx.createError({
             path: "privateKey",
             message: i18next.t("Account already exists"),

@@ -5,9 +5,9 @@ import { assert, objectSpread, stringToU8a } from "@polkadot/util"
 import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
   bytesToString,
+  getAccountPlatformFromAddress,
   KeypairCurve,
   parseSuri,
-  platformFromAddress,
   stringToBytes,
 } from "@talismn/crypto"
 import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
@@ -65,7 +65,7 @@ export default class AccountsHandler extends ExtensionHandler {
   ) {
     let type = "unknown"
     try {
-      type = platformFromAddress(address)
+      type = getAccountPlatformFromAddress(address)
 
       // match with legacy naming
       if (type === "polkadot") type = "substrate"
