@@ -17,7 +17,7 @@ import {
   keepAlive,
   normalizeAddress,
 } from "@talismn/util"
-import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
+import { fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
   BehaviorSubject,
   catchError,
@@ -67,10 +67,22 @@ const DEFAULT_STORAGE: BalancesStorage = {
   miniMetadatas: [],
 }
 
+type BalancesStorageUpdate = { type: "balances"; balanceIds: string[]; balances: IBalance[] }
+type MiniMetadataStorageUpdate = {
+  type: "miniMetadatas"
+  networkId: NetworkId
+  miniMetadatas: MiniMetadata[]
+}
+type StorageUpdate = BalancesStorageUpdate | MiniMetadataStorageUpdate
+
 export class BalancesProvider {
   #chaindataProvider: ChaindataProvider
   #chainConnectors: ChainConnectors
   #storage: BehaviorSubject<ProviderBalancesStorage>
+
+  // storage is updated at high frequency, use a queue to avoid race conditions
+  #updateStorageQueue: Array<StorageUpdate> = []
+  #isProcessingStorageUpdates = false
 
   constructor(
     chaindataProvider: ChaindataProvider,
@@ -260,9 +272,7 @@ export class BalancesProvider {
               balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
             }),
           ),
-          tap((results) => {
-            this.updateStorage$(balanceIds, results)
-          }),
+          tap((results) => this.updateStoredBalances(balanceIds, results)),
           // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
           shareReplay({ refCount: true, bufferSize: 1 }),
           keepAlive(0),
@@ -326,9 +336,7 @@ export class BalancesProvider {
                 balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
               }),
             ),
-            tap((results) => {
-              this.updateStorage$(balanceIds, results)
-            }),
+            tap((results) => this.updateStoredBalances(balanceIds, results)),
             // shareReplay + keepAlive(0) keep the subscription alive while root observable is being unsubscribed+resubscribed, in case any input change
             shareReplay({ refCount: true, bufferSize: 1 }),
             keepAlive(0),
@@ -347,23 +355,75 @@ export class BalancesProvider {
     )
   }
 
-  private updateStorage$(balanceIds: string[], balancesResult: BalancesResult) {
+  private updateStoredBalances(balanceIds: string[], balancesResult: BalancesResult) {
     if (balancesResult.status !== "live") return
 
-    const storage = this.#storage.getValue()
-    const balances = assign(
-      {},
-      storage.balances,
-      // delete all balances expected in the result set. because if they are not present it means they are empty.
-      fromPairs(balanceIds.map((balanceId) => [balanceId, undefined])),
-      keyBy(
-        // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
-        balancesResult.balances.map((b) => ({ ...b, status: "cache" })),
-        (b) => getBalanceId(b),
-      ),
-    )
+    this.#updateStorageQueue.push({
+      type: "balances",
+      balanceIds,
+      balances: balancesResult.balances,
+    })
 
-    this.#storage.next(assign({}, storage, { balances }))
+    this.processStorageUpdatesQueue()
+  }
+
+  private updateStoredMiniMetadatas(networkId: string, miniMetadatas: MiniMetadata[]) {
+    this.#updateStorageQueue.push({
+      type: "miniMetadatas",
+      networkId,
+      miniMetadatas,
+    })
+
+    this.processStorageUpdatesQueue()
+  }
+
+  private processStorageUpdatesQueue() {
+    if (this.#updateStorageQueue.length > 1)
+      log.warn(
+        "[balances] this message is the proof that there are sometimes racing conditions, and that we avoided them :)",
+      )
+
+    if (this.#isProcessingStorageUpdates || !this.#updateStorageQueue.length) return
+
+    this.#isProcessingStorageUpdates = true
+
+    const storage = this.#storage.getValue()
+    const balances = { ...storage.balances }
+    const miniMetadatas = { ...storage.miniMetadatas }
+
+    while (this.#updateStorageQueue.length) {
+      const queueItem = this.#updateStorageQueue.shift()
+
+      switch (queueItem?.type) {
+        case "miniMetadatas": {
+          const { networkId, miniMetadatas: newMiniMetadatas } = queueItem
+
+          // remove old miniMetadatas for the network
+          for (const miniMetadata of values(miniMetadatas))
+            if (miniMetadata.chainId === networkId) delete miniMetadatas[miniMetadata.id]
+
+          // add new ones
+          for (const miniMetadata of newMiniMetadatas) miniMetadatas[miniMetadata.id] = miniMetadata
+
+          break
+        }
+        case "balances": {
+          const { balanceIds, balances: newBalances } = queueItem
+
+          // remove all balances expected in the result set
+          for (const balanceId of balanceIds) delete balances[balanceId]
+
+          // add new ones
+          for (const balance of newBalances) balances[getBalanceId(balance)] = balance
+
+          break
+        }
+      }
+
+      this.#storage.next({ balances, miniMetadatas })
+
+      this.#isProcessingStorageUpdates = false
+    }
   }
 
   private getNetworkMiniMetadatas$(networkId: NetworkId): Observable<MiniMetadata[]> {
@@ -448,18 +508,8 @@ export class BalancesProvider {
           // and persist in storage for later reuse
           tap((newMiniMetadatas) => {
             if (!newMiniMetadatas.length) return
-            const storage = this.#storage.getValue()
-            const miniMetadatas = assign(
-              // keep minimetadatas of other networks
-              keyBy(
-                values(storage.miniMetadatas).filter((m) => m.chainId !== networkId),
-                (m) => m.id,
-              ),
-              // add the ones for our network
-              keyBy(newMiniMetadatas, (m) => m.id),
-            )
 
-            this.#storage.next(assign({}, storage, { miniMetadatas }))
+            this.updateStoredMiniMetadatas(networkId, newMiniMetadatas)
           }),
         )
       }),
