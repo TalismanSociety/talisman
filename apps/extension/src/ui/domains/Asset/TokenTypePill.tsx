@@ -36,6 +36,7 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
 
   return (
     <span
+      data-testid="component-token-pill"
       className={classNames(
         "text-body-disabled rounded-xs border px-2 py-1 text-[1rem]",
         className,
