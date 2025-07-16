@@ -107,7 +107,7 @@ const TokenRows: FC<{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
               }}
-              data-testid={`TokenRowWrapper:${tokenData.token.id}`}
+              data-testid="token-picker-row"
             >
               <TokenRow
                 key={item.key}
@@ -177,7 +177,7 @@ const TokenRow: FC<TokenRowProps> = ({
           )}
         >
           <div className="flex grow items-center gap-2 overflow-hidden">
-            <div>{token.symbol}</div>
+            <div data-testid="picker-token-name">{token.symbol}</div>
             <TokenTypePill type={token.type} className="rounded-xs shrink-0 px-1 py-0.5" />
             {!!token.name && token.name !== token.symbol && (
               <div className="text-body-inactive truncate font-normal">{token.name}</div>
@@ -197,7 +197,7 @@ const TokenRow: FC<TokenRowProps> = ({
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-right text-xs font-light">
           <div className="flex grow items-center overflow-hidden">
-            <div className="truncate">
+            <div className="truncate" data-testid="picker-token-network">
               <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
               <NetworkName networkId={token.networkId} />
             </div>

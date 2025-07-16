@@ -213,7 +213,7 @@ const NetworkRow: FC<{
   )
 
   return (
-    <div className="relative h-28">
+    <div className="relative h-28" data-testid="network-list-row">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
         <NetworkLogo className="rounded-full text-xl" networkId={network.id} />
         <div className="text-body flex flex-col justify-center gap-1 overflow-hidden">
@@ -231,7 +231,6 @@ const NetworkRow: FC<{
       </ListButton>
       <Toggle
         className="absolute right-20 top-4 p-4"
-        data-testid={network.id}
         checked={!!isActive}
         onChange={handleEnableChanged}
       />

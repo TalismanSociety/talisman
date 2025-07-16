@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
 
 test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
-  test.setTimeout(90_000)
+  test.setTimeout(100_000)
   await importAccount({ type: "polkadot", name: DOT_ACC_NAME })
   await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
   await onboardedPage.goto(
@@ -16,7 +16,9 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
         await onboardedPage.getByTestId("platform-options-switch").getByText(data.chainType).click()
         const searchParameter = data.chain.replace(/\s*\(.*?\)\s*/g, "").trim()
         await onboardedPage.getByPlaceholder("Search Networks").fill(searchParameter)
-        await onboardedPage.getByTestId("component-toggle-button").first().click()
+        const firstResult = onboardedPage.getByTestId("network-list-row").first()
+        await expect(firstResult).toContainText(data.chain)
+        await firstResult.getByTestId("component-toggle-button").first().click()
         await onboardedPage.getByTestId("platform-options-switch").getByText("all").click()
       })
     }
@@ -36,14 +38,27 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
         await onboardedPage.getByTestId("sidebar-account-list").getByText(ETH_ACC_NAME).click()
       }
       const popup = await walletPopup({ locator: sendButton })
-      await popup.getByTestId(`${data.assetName + "-" + data.chain}`).click()
+      // searches for the specific token by asset name, type and chain.
+      const result = popup
+        .locator('[data-testid="token-picker-row"]')
+        .filter({
+          has: popup.getByTestId("picker-token-name").filter({ hasText: data.assetName }),
+        })
+        .filter({
+          has: popup.getByTestId("component-token-pill").filter({ hasText: data.tokenType }),
+        })
+        .filter({
+          has: popup.getByTestId("picker-token-network").filter({ hasText: data.chain }),
+        })
+      await result.first().click()
       await popup.getByPlaceholder("Enter Address").fill(data.sendTo)
       await popup.keyboard.press("Enter")
       await popup.getByPlaceholder("0").fill(data.amount)
       await expect(popup.getByTestId("component-review-button")).toBeEnabled({ timeout: 10000 })
       await popup.getByTestId("component-review-button").click()
-      await expect(popup.getByTestId("send-funds-confirm-button")).toBeEnabled()
+      await expect(popup.getByTestId("send-funds-confirm-button").getByRole("button")).toBeEnabled()
       await popup.getByTestId("send-funds-confirm-button").click()
+      await expect(popup.getByRole("button", { name: "Close" })).toBeVisible()
       await popup.close()
     })
   }
