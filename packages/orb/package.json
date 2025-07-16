@@ -20,8 +20,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@noble/hashes": "1.8.0",
-    "@scure/base": "1.2.6",
+    "@talismn/crypto": "workspace:*",
     "blueimp-md5": "2.19.0",
     "color": "4.2.3"
   },

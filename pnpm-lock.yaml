@@ -1837,12 +1837,9 @@ importers:
 
   packages/orb:
     dependencies:
-      '@noble/hashes':
-        specifier: 1.8.0
-        version: 1.8.0
-      '@scure/base':
-        specifier: 1.2.6
-        version: 1.2.6
+      '@talismn/crypto':
+        specifier: workspace:*
+        version: link:../crypto
       blueimp-md5:
         specifier: 2.19.0
         version: 2.19.0

@@ -1,22 +1,17 @@
 import { FC } from "react"
 
-import { TalismanOrbLogo } from "./TalismanOrbLogo"
 import { TalismanOrbProps } from "./types"
 import { useTalismanOrb } from "./useTalismanOrb"
 
-export const TalismanOrb: FC<TalismanOrbProps> = ({
-  seed,
-  width = "1em",
-  height = "1em",
-  className,
-}) => {
-  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, platform } = useTalismanOrb(seed)
+export const TalismanOrbRectangle: FC<TalismanOrbProps> = ({ width, height, seed, className }) => {
+  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy } = useTalismanOrb(seed)
 
   return (
     <svg
       width={width}
       height={height}
       viewBox={`0 0 64 64`}
+      preserveAspectRatio="none"
       className={className}
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
@@ -31,15 +26,14 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
         <clipPath id={`${id}-clip`}>
-          <circle cx="32" cy="32" r="32" />
+          <circle cx="32" cy="32" r="48" />
         </clipPath>
       </defs>
       <g clipPath={`url(#${id}-clip)`}>
         <g transform={transform}>
-          <rect fill={`url(#${id}-bg)`} x={0} y={0} width={64} height={64} />
+          <rect fill={`url(#${id}-bg)`} x={-16} y={-16} width={96} height={96} />
           <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={45} opacity={0.7} />
         </g>
-        <TalismanOrbLogo platform={platform} />
       </g>
     </svg>
   )
