@@ -29,7 +29,6 @@ import {
   NftData,
   ProviderType,
   RequestAccountContactUpdate,
-  RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
   RequestAddAccountDerive,
   RequestAddAccountExternal,
@@ -120,12 +119,6 @@ export default interface MessageTypes {
   accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>
   accountAddDerive: (options: RequestAddAccountDerive) => Promise<string[]>
   accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
-  accountCreate: (
-    name: string,
-    curve: KeypairCurve,
-    options: RequestAccountCreateOptions,
-  ) => Promise<string>
-  accountCreateFromSuri: (name: string, suri: string, curve?: KeypairCurve) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn

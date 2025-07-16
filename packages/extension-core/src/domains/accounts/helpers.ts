@@ -21,6 +21,8 @@ import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import { AccountsCatalogStore } from "./store.catalog"
 
+export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]
+
 const sortAccountsByCreationDate = (acc1: Account, acc2: Account) => {
   const acc1Created = acc1.createdAt
   const acc2Created = acc2.createdAt
@@ -115,19 +117,39 @@ export const getPublicAccounts = (
       getPjsInjectedAccount(x, { includePortalOnlyInfo: !!options.includePortalOnlyInfo }),
     )
 
-export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: number) => {
+export const getDefaultCurveForAccountPlatform = (platform: AccountPlatform): KeypairCurve => {
+  switch (platform) {
+    case "ethereum":
+      return "ethereum"
+    case "polkadot":
+      return "sr25519"
+    case "solana":
+      return "solana"
+    default:
+      throw new Error("Unsupported account platform")
+  }
+}
+
+export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex?: number) => {
   switch (curve) {
     case "ecdsa":
     case "ed25519":
     case "sr25519":
-      return `//${accountIndex}`
+      return typeof accountIndex === "number" ? `//${accountIndex}` : ""
 
     case "ethereum":
       return getEthDerivationPath(accountIndex)
 
+    case "solana":
+      return getSolDerivationPath(accountIndex ?? 0)
+
     default:
       throw Error("Not implemented")
   }
+}
+
+const getSolDerivationPath = (accountIndex: number) => {
+  return `m/44'/501'/${accountIndex}'/0'`
 }
 
 export const formatSuri = (mnemonic: string, derivationPath: string) =>

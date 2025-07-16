@@ -1,6 +1,5 @@
 import { stringToBytes } from "@scure/base"
 
-import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
 import { entropyToSeed, getDevSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
 import { KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
@@ -45,16 +44,15 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
   }
 }
 
-export const addressFromSuri = async (suri: string, type: KeypairCurve) => {
-  const { mnemonic, derivationPath, password } = parseSuri(suri)
-
+export const addressFromMnemonic = async (
+  mnemonic: string,
+  derivationPath: string,
+  curve: KeypairCurve,
+) => {
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = await entropyToSeed(entropy, type, password) // ~80ms
-  const { secretKey } = deriveKeypair(seed, derivationPath, type)
-  const publicKey = getPublicKeyFromSecret(secretKey, type)
-  const encoding = addressEncodingFromCurve(type)
-
-  return addressFromPublicKey(publicKey, encoding)
+  const seed = await entropyToSeed(entropy, curve)
+  const { address } = deriveKeypair(seed, derivationPath, curve)
+  return address
 }
 
 /**

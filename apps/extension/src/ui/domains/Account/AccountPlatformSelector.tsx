@@ -3,7 +3,7 @@ import { classNames } from "@talismn/util"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
+import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@talisman/theme/logos"
 
 const AccountTypeButton: FC<{
   className?: string
@@ -83,6 +83,20 @@ export const AccountPlatformSelector = ({
           </div>
         }
         onClick={handleClick("polkadot")}
+      />
+      <AccountTypeButton
+        className={classNames(
+          platform === "solana" ? "border-body" : "border-body-secondary border-opacity-20",
+          "border",
+        )}
+        icon={<SolanaLogo />}
+        title={t("Solana")}
+        subtitle={
+          <div className="line-clamp-2" data-testid="account-platform-selector-polkadot">
+            {t("Solana Mainnet and testnets")}
+          </div>
+        }
+        onClick={handleClick("solana")}
       />
     </div>
   )

@@ -1,6 +1,9 @@
 import { Connection } from "@solana/web3.js"
-import { IChaindataNetworkProvider, IChaindataTokenProvider } from "@talismn/chaindata-provider"
-import { SolNetworkId } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
+import {
+  IChaindataNetworkProvider,
+  IChaindataTokenProvider,
+  SolNetworkId,
+} from "@talismn/chaindata-provider"
 
 import { getSolConnection } from "./getSolConnection"
 import { IChainConnectorSol } from "./IChainConnectorSol"

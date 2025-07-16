@@ -12,12 +12,13 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   db,
+  isTxInfoSwap,
+  isTxInfoTransfer,
   TransactionStatus,
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
 } from "extension-core"
-import { isTxInfoSwap, isTxInfoTransfer } from "extension-core/src/domains/transactions"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
 import {

@@ -1,8 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { BalanceSubscriptionResponse } from "extension-core"
-import { isAccountCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
+import { BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
 import { log } from "extension-shared"
 import {
   combineLatest,

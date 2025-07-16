@@ -1,7 +1,7 @@
 import { AccountPlatform } from "@talismn/crypto"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { isAccountPlatformCompatibleWithNetwork } from "extension-core/src/domains/accounts/helpers"
+import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import { cloneElement, ReactElement, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
@@ -138,6 +139,18 @@ function NewAccountMethodButtons() {
         platform="polkadot"
         to={`/accounts/add/derived?platform=polkadot`}
       />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "solana"}
+        title={<SelectAccountTypeButtonHeader title={t("New Solana Account")} />}
+        platform="solana"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="solana-mainnet" className="text-md" />
+            <div>{t("Solana Mainnet and testnets")}</div>
+          </div>
+        }
+        to={`/accounts/add/derived?platform=solana`}
+      />
     </>
   )
 }
@@ -237,13 +250,14 @@ function WatchedAccountMethodButtons() {
       />
       <AccountTypeMethodButton
         disabled={!!platform && platform !== "solana"}
-        title={
-          <SelectAccountTypeButtonHeader
-            title={t("Watch Solana Account")}
-            tooltip={t("Pick this option for Solana.")}
-          />
-        }
+        title={<SelectAccountTypeButtonHeader title={t("Watch Solana Account")} />}
         platform="solana"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="solana-mainnet" className="text-md" />
+            <div>{t("Solana Mainnet and testnets")}</div>
+          </div>
+        }
         to={`/accounts/add/watched?platform=solana`}
       />
     </>
@@ -264,7 +278,7 @@ function SelectAccountTypeSectionHeader() {
   )
 }
 
-function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tooltip: string }) {
+function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tooltip?: string }) {
   return (
     <div className="flex items-center gap-3">
       {title}
@@ -274,9 +288,11 @@ function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tool
             <InfoIcon className="text-sm" />
           </div>
         </TooltipTrigger>
-        <TooltipContent>
-          <div>{tooltip}</div>
-        </TooltipContent>
+        {!!tooltip && (
+          <TooltipContent>
+            <div>{tooltip}</div>
+          </TooltipContent>
+        )}
       </Tooltip>
     </div>
   )
@@ -287,11 +303,13 @@ function AccountTypeMethodButton({
   platform,
   disabled,
   to,
+  supportedNetworks,
 }: {
   title: ReactNode
   platform: AccountPlatform
   disabled?: boolean
   to?: string
+  supportedNetworks?: ReactNode
 }) {
   const { t } = useTranslation()
   const networks = useNetworks()
@@ -306,10 +324,12 @@ function AccountTypeMethodButton({
     <AccountCreateMethodButton
       title={title}
       subtitle={
-        <div className="flex items-center gap-2">
-          <AllNetworksLogoStack className="text-md" ids={supportedChainIds} max={5} />
-          <div>{t("Networks supported")}</div>
-        </div>
+        supportedNetworks ?? (
+          <div className="flex items-center gap-2">
+            <AllNetworksLogoStack className="text-md" ids={supportedChainIds} max={5} />
+            <div>{t("Networks supported")}</div>
+          </div>
+        )
       }
       to={to}
       disabled={disabled}

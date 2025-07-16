@@ -4,22 +4,20 @@ import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, objectSpread, stringToU8a } from "@polkadot/util"
 import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
+  addressFromMnemonic,
   bytesToString,
   getAccountPlatformFromAddress,
   KeypairCurve,
-  parseSuri,
   stringToBytes,
 } from "@talismn/crypto"
-import { AccountType, AddAccountKeypairOptions, Mnemonic } from "@talismn/keyring"
+import { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import type {
   RequestAccountContactUpdate,
-  RequestAccountCreate,
   RequestAccountCreateFromJson,
-  RequestAccountCreateFromSuri,
   RequestAccountExport,
   RequestAccountExportAll,
   RequestAccountExportPrivateKey,
@@ -38,13 +36,12 @@ import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { Port } from "../../types/base"
-import { addressFromSuri } from "../../util/addressFromSuri"
 import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
 import { keyringStore } from "../keyring/store"
 import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { formatSuri, sortAccounts } from "./helpers"
+import { sortAccounts } from "./helpers"
 import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
 import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
@@ -84,90 +81,6 @@ export default class AccountsHandler extends ExtensionHandler {
       method,
       isOnboarded: await this.stores.app.getIsOnboarded(),
     })
-  }
-
-  private async accountCreate({ name, curve, ...options }: RequestAccountCreate): Promise<string> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "Not logged in")
-
-    const accounts = await keyringStore.getAccounts()
-    const existing = accounts.find((account) => account.name === name)
-    assert(!existing, "An account with this name already exists")
-
-    let mnemonic: Mnemonic
-    if ("mnemonicId" in options) {
-      const result = await keyringStore.getMnemonic(options.mnemonicId)
-      if (!result) throw new Error("Mnemonic not stored locally")
-      mnemonic = result
-    } else {
-      mnemonic = await keyringStore.addMnemonic({
-        name: `${name} Recovery Phrase`,
-        mnemonic: options.mnemonic,
-        confirmed: options.confirmed,
-      })
-    }
-
-    let derivationPath: string
-    if (typeof options.derivationPath === "string") {
-      derivationPath = options.derivationPath
-    } else {
-      const { val, err } = await getNextDerivationPathForMnemonicId(mnemonic.id, curve)
-      if (err) throw new Error(val)
-      else derivationPath = val
-    }
-
-    const account = await keyringStore.addAccountDerive({
-      type: "existing-mnemonic",
-      curve,
-      derivationPath,
-      mnemonicId: mnemonic.id,
-      name,
-    })
-
-    this.captureAccountCreateEvent(account.address, "derived")
-
-    return account.address
-  }
-
-  private async accountCreateSuri({
-    name,
-    suri,
-    curve = "sr25519",
-  }: RequestAccountCreateFromSuri): Promise<string> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "Not logged in")
-
-    // throws if invalid mnemonic
-    const parsedSuri = parseSuri(suri)
-    if (parsedSuri.password) {
-      // TODO: to support this properly, dont store mnemonic and just create it as a keypair that doesnt have a mnemonic
-      throw new Error("Password not supported for suri")
-    }
-
-    // suri includes the derivation path if any
-    const { mnemonic, derivationPath } = parsedSuri
-
-    let mnemonicId = await keyringStore.getExistingMnemonicId(mnemonic)
-    if (!mnemonicId) {
-      const result = await keyringStore.addMnemonic({
-        name: `${name} Recovery Phrase`,
-        mnemonic,
-        confirmed: true,
-      })
-      mnemonicId = result.id
-    }
-
-    const account = await keyringStore.addAccountDerive({
-      type: "existing-mnemonic",
-      curve,
-      derivationPath,
-      mnemonicId,
-      name,
-    })
-
-    this.captureAccountCreateEvent(account.address, "seed")
-
-    return account.address
   }
 
   private async accountCreateJson({
@@ -339,19 +252,21 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async addressLookup(lookup: RequestAddressLookup): Promise<string> {
-    if ("mnemonicId" in lookup) {
-      const { mnemonicId, derivationPath, curve } = lookup
+    switch (lookup.type) {
+      case "mnemonicId": {
+        const { mnemonicId, derivationPath, curve } = lookup
 
-      const password = await this.stores.password.getPassword()
-      assert(password, "Not logged in")
+        const password = await this.stores.password.getPassword()
+        assert(password, "Not logged in")
 
-      const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
+        const mnemonic = await keyringStore.getMnemonicText(mnemonicId, password)
 
-      const suri = formatSuri(mnemonic, derivationPath)
-      return await addressFromSuri(suri, curve)
-    } else {
-      const { suri, curve } = lookup
-      return await addressFromSuri(suri, curve)
+        return addressFromMnemonic(mnemonic, derivationPath, curve)
+      }
+      case "mnemonic": {
+        const { mnemonic, derivationPath, curve } = lookup
+        return addressFromMnemonic(mnemonic, derivationPath, curve)
+      }
     }
   }
 
@@ -425,10 +340,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsAddDerive(request as RequestAddAccountDerive)
       case "pri(accounts.add.keypair)":
         return this.accountsAddKeypair(request as RequestAddAccountKeypair)
-      case "pri(accounts.create)":
-        return this.accountCreate(request as RequestAccountCreate)
-      case "pri(accounts.create.suri)":
-        return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
+      // case "pri(accounts.create)":
+      //   return this.accountCreate(request as RequestAccountCreate)
+      // case "pri(accounts.create.suri)":
+      //   return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
 
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)

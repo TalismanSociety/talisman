@@ -21,6 +21,10 @@ export {
   isCurveCompatibleWithChain,
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
+  getDefaultCurveForAccountPlatform,
+  isAccountPlatformCompatibleWithNetwork,
+  getDerivationPathForCurve,
+  SUPPORTED_ACCOUNT_PLATFORMS,
 } from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 

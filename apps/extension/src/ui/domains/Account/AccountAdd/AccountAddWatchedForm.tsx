@@ -2,6 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { SUPPORTED_ACCOUNT_PLATFORMS } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -36,10 +37,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         .object({
           name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
           searchAddress: yup.string().trim().required(" "),
-          platform: yup
-            .mixed<AccountPlatform>()
-            .oneOf(["ethereum", "polkadot", "solana"])
-            .defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).defined(),
           address: yup.string().trim().required(" "),
           isPortfolio: yup.boolean().defined(),
         })

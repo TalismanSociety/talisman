@@ -93,10 +93,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.add.external)", options),
   accountAddDerive: (options) => messageService.sendMessage("pri(accounts.add.derive)", options),
   accountAddKeypair: (options) => messageService.sendMessage("pri(accounts.add.keypair)", options),
-  accountCreate: (name, curve, options) =>
-    messageService.sendMessage("pri(accounts.create)", { name, curve, ...options }),
-  accountCreateFromSuri: (name, suri, curve) =>
-    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, curve }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),

@@ -1,15 +1,15 @@
 import type { ChainConnector } from "@talismn/chain-connector"
 import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { IChainConnectorSol } from "@talismn/chain-connector-sol/src/IChainConnectorSol"
+import { IChainConnectorSol } from "@talismn/chain-connector-sol"
 import {
   DotNetworkId,
   EthNetworkId,
+  SolNetworkId,
   Token,
   TokenId,
   TokenOfType,
   TokenType,
 } from "@talismn/chaindata-provider"
-import { SolNetworkId } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
 import { Observable } from "rxjs"
 
 import type { Address, IBalance, MiniMetadata } from "."

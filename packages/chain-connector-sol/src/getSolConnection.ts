@@ -1,5 +1,5 @@
 import { Connection } from "@solana/web3.js"
-import { SolNetworkId } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
+import { SolNetworkId } from "@talismn/chaindata-provider"
 
 import log from "./log"
 
