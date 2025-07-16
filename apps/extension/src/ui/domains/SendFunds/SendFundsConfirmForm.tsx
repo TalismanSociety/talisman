@@ -181,14 +181,13 @@ const SendButton = () => {
 
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
-      <div className="flex w-full flex-col gap-6">
+      <div className="flex w-full flex-col gap-6" data-testid="send-funds-confirm-button">
         <ExternalRecipientWarning />
         <TxSubmitButton
           label={t("Confirm")}
           onSubmit={handleSapiSubmit}
           tx={tx}
           disabled={!isReady}
-          data-testid="send-funds-confirm-button"
         />
       </div>
     </Suspense>
