@@ -1,6 +1,6 @@
 import { isAddressEqual, isBitcoinAddress, isEthereumAddress } from "@talismn/crypto"
 import { isAccountOwned, isAccountPlatformEthereum } from "extension-core"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -58,22 +58,27 @@ const FromAccount = () => {
   const allAccounts = useAccounts()
   const fromAsset = useAtomValue(fromAssetAtom)
   const fromAddress = useAtomValue(fromAddressAtom)
-  const [fromEvmAddress, setFromEvmAddress] = useAtom(fromEvmAddressAtom)
-  const [fromSubstrateAddress, setFromSubstrateAddress] = useAtom(fromSubstrateAddressAtom)
-  const [toEvmAddress, setToEvmAddress] = useAtom(toEvmAddressAtom)
-  const [toSubstrateAddress, setToSubstrateAddress] = useAtom(toSubstrateAddressAtom)
+  const setFromEvmAddress = useSetAtom(fromEvmAddressAtom)
+  const setFromSubstrateAddress = useSetAtom(fromSubstrateAddressAtom)
+  const setToEvmAddress = useSetAtom(toEvmAddressAtom)
+  const setToSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
+  const setToBtcAddress = useSetAtom(toBtcAddressAtom)
 
   const onChangeAddress = useCallback(
     (address: string | null) => {
       if (!address) return
 
       const setAsEthereum = () => {
-        if (fromEvmAddress === toEvmAddress) setToEvmAddress(address)
         setFromEvmAddress(address)
+
+        // reset to address to none
+        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       }
       const setAsPolkadot = () => {
-        if (fromSubstrateAddress === toSubstrateAddress) setToSubstrateAddress(address)
         setFromSubstrateAddress(address)
+
+        // reset to address to none
+        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       }
 
       // if address is in keyring, check platform
@@ -89,14 +94,11 @@ const FromAccount = () => {
     },
     [
       allAccounts,
-      fromEvmAddress,
-      fromSubstrateAddress,
       setFromEvmAddress,
       setFromSubstrateAddress,
+      setToBtcAddress,
       setToEvmAddress,
       setToSubstrateAddress,
-      toEvmAddress,
-      toSubstrateAddress,
     ],
   )
 
@@ -139,18 +141,41 @@ const ToAccount = () => {
         return
       }
 
-      if (isBitcoinAddress(address)) return setBtcAddress(address)
+      if (isBitcoinAddress(address)) {
+        setEvmAddress(null)
+        setSubstrateAddress(null)
+        setBtcAddress(address)
+        return
+      }
 
       // if address is in keyring, check platform
       const account = allAccounts.find((account) => isAddressEqual(account.address, address))
       if (account) {
-        if (isAccountPlatformEthereum(account)) return setEvmAddress(address)
-        else return setSubstrateAddress(address)
+        if (isAccountPlatformEthereum(account)) {
+          setEvmAddress(address)
+          setSubstrateAddress(null)
+          setBtcAddress(null)
+          return
+        } else {
+          setEvmAddress(null)
+          setSubstrateAddress(address)
+          setBtcAddress(null)
+          return
+        }
       }
 
       // if address is not in keyring, check address format
-      if (isEthereumAddress(address)) return setEvmAddress(address)
-      else return setSubstrateAddress(address)
+      if (isEthereumAddress(address)) {
+        setEvmAddress(address)
+        setSubstrateAddress(null)
+        setBtcAddress(null)
+        return
+      } else {
+        setEvmAddress(null)
+        setSubstrateAddress(address)
+        setBtcAddress(null)
+        return
+      }
     },
     [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress],
   )
