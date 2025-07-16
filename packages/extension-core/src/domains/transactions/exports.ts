@@ -2,6 +2,8 @@ import { normalizeAddress } from "@talismn/crypto"
 
 import { WalletTransaction } from "./types"
 
+export { isTxInfoSwap, isTxInfoTransfer } from "./helpers"
+
 export const filterIsSameNetworkAndAddressTx =
   (ref: WalletTransaction) => (tx: WalletTransaction) => {
     if (normalizeAddress(ref.account) !== normalizeAddress(tx.account)) return false

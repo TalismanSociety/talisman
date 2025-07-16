@@ -1,11 +1,11 @@
 /* eslint-disable react/no-children-prop */
 import {
+  EthereumAddressSchema,
   EthNetwork,
   getGithubTokenLogoUrlByCoingeckoId,
   Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
-import { EthereumAddressSchema } from "@talismn/chaindata-provider/src/chaindata/shared"
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
