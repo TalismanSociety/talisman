@@ -1,9 +1,10 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
+import { toPairs } from "lodash-es"
 import { Observable, of } from "rxjs"
 
-import { QueryStorageResult } from "./types"
+import { QueryStorageChange, QueryStorageResult } from "./types"
 
 export type MaybeStateKey = `0x${string}` | null
 
@@ -45,6 +46,10 @@ export const getRpcQueryPack$ = <T>(
     return of(queries.map(({ stateKeys, decodeResult }) => decodeResult(stateKeys.map(() => null))))
 
   return new Observable<T[]>((subscriber) => {
+    // first subscription callback includes results for all state keys, but further callbacks will only include the ones that changed
+    // => we need to keep all results in memory and update them after each callback, so we can emit the full result set each time
+    const changesCache: Record<`0x${string}`, `0x${string}`> = {}
+
     const promUnsub = connector.subscribe(
       networkId,
       "state_subscribeStorage",
@@ -52,7 +57,17 @@ export const getRpcQueryPack$ = <T>(
       [allStateKeys],
       (error, result: QueryStorageResultContent) => {
         if (error) subscriber.error(error)
-        else subscriber.next(decodeRpcQueryPack(queries, result))
+        else if (result) {
+          // update the cache
+          for (const [stateKey, encodedResult] of result.changes)
+            changesCache[stateKey] = encodedResult
+
+          // regenerate the full changes array
+          const changes = toPairs(changesCache) as QueryStorageChange[]
+
+          // decode and emit results for all queries
+          subscriber.next(decodeRpcQueryPack(queries, { block: result.block, changes }))
+        }
       },
       timeout,
     )
