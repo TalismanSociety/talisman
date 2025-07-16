@@ -1,7 +1,12 @@
-import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
+import { encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CheckCircleIcon, ChevronRightIcon, CopyIcon, QrIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
+import {
+  Account,
+  getAccountGenesisHash,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+} from "extension-core"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -56,10 +61,9 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
     [account.address, accountChain?.prefix],
   )
 
-  const canCopySpecific = useMemo(
-    () => isEthereumAddress(account.address) || !!accountChain || !!network,
-    [account.address, accountChain, network],
-  )
+  const isCopiable = useMemo(() => {
+    return !isAccountAddressSs58(account) || !!getAccountGenesisHash(account)
+  }, [account])
 
   const handleCopyClick = useCallback(() => {
     copySpecific(formatted, network?.id)
@@ -70,7 +74,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
   }, [account.address, setAddress])
 
   return (
-    <AccountRowContainer onClick={canCopySpecific ? undefined : handleSelectClick}>
+    <AccountRowContainer onClick={isCopiable ? undefined : handleSelectClick}>
       <AccountIcon
         address={account.address}
         genesisHash={getAccountGenesisHash(account)}
@@ -94,7 +98,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
         </Tooltip>
       </div>
       <div className="flex gap-6">
-        {canCopySpecific ? (
+        {isCopiable ? (
           <>
             <Tooltip>
               <TooltipTrigger asChild>

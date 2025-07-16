@@ -31,6 +31,7 @@ export const useCopyAddressModal = () => {
         if (!opts.address) return
 
         const chain = opts.networkId ? chainsMap[opts.networkId] : null
+
         const addressEncoding = detectAddressEncoding(opts.address)
 
         switch (addressEncoding) {
