@@ -38,6 +38,7 @@
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "@talismn/crypto": "workspace:*",
+    "@talismn/solana": "workspace:*",
     "anylogger": "^1.0.11",
     "bignumber.js": "^9.1.2",
     "dexie": "^4.0.9",

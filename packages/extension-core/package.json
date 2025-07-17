@@ -48,6 +48,7 @@
     "@talismn/scale": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
+    "@talismn/solana": "workspace:*",
     "bcryptjs": "^2.4.3",
     "bignumber.js": "^9.1.2",
     "blueimp-md5": "2.19.0",

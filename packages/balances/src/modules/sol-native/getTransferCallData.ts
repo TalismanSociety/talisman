@@ -6,7 +6,7 @@ import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
   from,
-  // to,
+  to,
   value,
   token,
 }) => {
@@ -17,7 +17,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 
   const transferIx = SystemProgram.transfer({
     fromPubkey,
-    toPubkey: new PublicKey(from),
+    toPubkey: new PublicKey(to),
     lamports: Number(value),
   })
 
