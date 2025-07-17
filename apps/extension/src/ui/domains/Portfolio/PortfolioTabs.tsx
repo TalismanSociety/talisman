@@ -1,5 +1,6 @@
 import { isAccountPlatformEthereum } from "extension-core"
 import { FC, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
 import { Tabs } from "@talisman/components/Tabs"
@@ -11,6 +12,7 @@ const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"
 
 export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation()
   const { selectedAccounts } = usePortfolioNavigation()
   const location = useLocation()
   const navigate = useNavigateWithQuery()
@@ -20,11 +22,11 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   }, [selectedAccounts])
 
   const tabs = useMemo(() => {
-    const resTabs = [{ label: "Tokens", value: URL_TAB_TOKENS }]
-    if (withNfts) resTabs.push({ label: "NFTs", value: URL_TAB_NFTS }) // , disabled: !withNfts
+    const resTabs = [{ label: t("Tokens"), value: URL_TAB_TOKENS }]
+    if (withNfts) resTabs.push({ label: t("NFTs"), value: URL_TAB_NFTS }) // , disabled: !withNfts
 
     return resTabs
-  }, [withNfts])
+  }, [t, withNfts])
 
   // if no NFT tab available, if user is at NFT url, redirect out of it
   // ex: user browses nfts of an evm account, then switches to a substrate account
