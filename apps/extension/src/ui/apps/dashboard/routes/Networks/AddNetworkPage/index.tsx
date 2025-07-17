@@ -17,7 +17,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { getNetworkByGenesisHash$ } from "@ui/state"
+import { getNetworkByGenesisHash$, getNetworkById$ } from "@ui/state"
 
 import { NetworkCreateFormData, NetworkCreateFormProvider, useNetworkCreateForm } from "./context"
 
@@ -154,6 +154,9 @@ const NetworkCreateForm: FC = () => {
                     fieldApi.form.resetField("id")
                     return networkInfo
                   }
+
+                  if (await firstValueFrom(getNetworkById$(networkInfo.networkId)))
+                    return t("Network already exists")
 
                   fieldApi.form.setFieldValue("id", networkInfo.networkId)
                   fieldApi.form.setFieldValue("nativeCurrency.decimals", 18)
