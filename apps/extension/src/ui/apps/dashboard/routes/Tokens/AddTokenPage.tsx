@@ -61,6 +61,7 @@ const FormSchema = z.object({
   symbol: TokenBaseSchema.shape.symbol,
   decimals: TokenBaseSchema.shape.decimals,
   coingeckoId: TokenBaseSchema.shape.coingeckoId.optional(),
+  logo: TokenBaseSchema.shape.logo.optional(),
   name: TokenBaseSchema.shape.name.optional(),
 
   // token created based of specs
@@ -84,12 +85,13 @@ const AddCustomTokenForm = () => {
       try {
         if (!value.token) throw new Error("Token not found")
 
-        const { symbol, decimals, coingeckoId, name } = value
+        const { symbol, decimals, coingeckoId, name, logo } = value
         const newToken = Object.assign({}, value.token as Token, {
           symbol,
           decimals,
           coingeckoId,
           name,
+          logo,
         })
 
         await api.tokenUpsert(newToken)
@@ -200,9 +202,14 @@ const AddCustomTokenForm = () => {
                 if (token) {
                   if (await firstValueFrom(getToken$(token.id))) return "Token already exists"
 
+                  const logo = token.coingeckoId?.trim()
+                    ? getGithubTokenLogoUrlByCoingeckoId(token.coingeckoId)
+                    : undefined
+
                   fieldApi.form.setFieldValue("token", token)
                   fieldApi.form.setFieldValue("symbol", token.symbol)
                   fieldApi.form.setFieldValue("decimals", token.decimals)
+                  fieldApi.form.setFieldValue("logo", logo)
                   fieldApi.form.setFieldValue("coingeckoId", token.coingeckoId ?? "")
                   fieldApi.form.setFieldValue("name", token.name ?? token.symbol)
                   fieldApi.form.validate("change")
@@ -288,7 +295,13 @@ const AddCustomTokenForm = () => {
                   name={field.name}
                   type="text"
                   value={field.state.value ?? ""}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) => {
+                    const logo = e.target.value.trim()
+                      ? getGithubTokenLogoUrlByCoingeckoId(e.target.value)
+                      : undefined
+                    field.form.setFieldValue("logo", logo)
+                    field.handleChange(e.target.value)
+                  }}
                   autoComplete="off"
                   placeholder="(optional)"
                   small
@@ -296,11 +309,7 @@ const AddCustomTokenForm = () => {
                   before={
                     <AssetLogo
                       className="mr-2 rounded-full text-[3rem]"
-                      url={
-                        field.state.value
-                          ? getGithubTokenLogoUrlByCoingeckoId(field.state.value)
-                          : null
-                      }
+                      url={field.form.getFieldValue("logo")}
                     />
                   }
                 />
