@@ -1,6 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { isAddressEqual, isValidAddress } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import { isValidSubstrateAddress } from "@talismn/util"
 import {
@@ -9,7 +9,6 @@ import {
   isAccountPlatformEthereum,
   isAccountPortfolio,
 } from "extension-core"
-import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"

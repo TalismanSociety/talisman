@@ -1,7 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { detectAddressEncoding } from "@talismn/crypto"
-import { convertAddress } from "@talismn/util"
-import { HexString } from "extension-shared"
+import { convertAddress, HexString } from "@talismn/util"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"

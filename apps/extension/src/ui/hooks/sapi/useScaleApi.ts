@@ -3,7 +3,7 @@ import { HexString } from "@polkadot/util/types"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { getScaleApi, ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { getMetadataRpcFromDef } from "extension-shared"
+import { getMetadataRpcFromDef } from "extension-core"
 
 import { api } from "@ui/api"
 import { useDotNetwork, useToken } from "@ui/state"

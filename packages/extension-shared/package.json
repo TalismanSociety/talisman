@@ -10,16 +10,6 @@
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules"
   },
-  "dependencies": {
-    "@polkadot/util": "13.5.1",
-    "@polkadot/util-crypto": "13.5.1",
-    "@sentry/browser": "8.35.0",
-    "@sentry/react": "8.35.0",
-    "@talismn/chaindata-provider": "workspace:*",
-    "@talismn/util": "workspace:*",
-    "anylogger-loglevel": "^1.0.0",
-    "rxjs": "^7.8.1"
-  },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",

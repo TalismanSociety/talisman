@@ -1621,31 +1621,6 @@ importers:
         version: 5.8.3
 
   packages/extension-shared:
-    dependencies:
-      '@polkadot/util':
-        specifier: 13.5.1
-        version: 13.5.1
-      '@polkadot/util-crypto':
-        specifier: 13.5.1
-        version: 13.5.1(@polkadot/util@13.5.1)
-      '@sentry/browser':
-        specifier: 8.35.0
-        version: 8.35.0
-      '@sentry/react':
-        specifier: 8.35.0
-        version: 8.35.0(react@18.3.1)
-      '@talismn/chaindata-provider':
-        specifier: workspace:*
-        version: link:../chaindata-provider
-      '@talismn/util':
-        specifier: workspace:*
-        version: link:../util
-      anylogger-loglevel:
-        specifier: ^1.0.0
-        version: 1.0.0(anylogger@1.0.11)(loglevel@1.9.2)
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.2
     devDependencies:
       '@talismn/eslint-config':
         specifier: workspace:*

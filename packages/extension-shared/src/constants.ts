@@ -1,5 +1,3 @@
-import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-
 const PORT_SUFFIX =
   process.env.BUILD !== "production" ? `-${process.env.BUILD}-${process.env.RELEASE}` : ""
 export const PORT_EXTENSION = `talisman-extension${PORT_SUFFIX}`
@@ -9,19 +7,6 @@ export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
 export const IS_FIREFOX = process.env.BROWSER === "firefox"
-
-/**
- * A list of tokens to show by default for empty substrate accounts
- */
-export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
-  subNativeTokenId("polkadot"),
-  subNativeTokenId("kusama"),
-  subNativeTokenId("bittensor"),
-]
-/**
- * A list of tokens to show by default for empty ethereum accounts
- */
-export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
