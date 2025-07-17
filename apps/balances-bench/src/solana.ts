@@ -18,7 +18,7 @@ const NETWORK_CONFIG = {
   tokens: {},
 }
 
-testNetworkSol(NETWORK_CONFIG, { modules: ["sol-native"], transfer: false })
+testNetworkSol(NETWORK_CONFIG, { modules: ["sol-native"], transfer: true })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

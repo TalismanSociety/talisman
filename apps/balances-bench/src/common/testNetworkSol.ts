@@ -12,8 +12,8 @@ export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {
   tokens: Partial<Record<TokenType, unknown[]>>
 }
 
-const TEST_ADDRESS_1 = "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
-const TEST_ADDRESS_2 = "AqynRZwvVqUPRwRJXvm6odUb3t93fDjnWe3p6BeuUFxD"
+const TEST_ADDRESS_1 = "5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"
+const TEST_ADDRESS_2 = "J4Zbo8YswSM6aqSFQkbTito3eiTMCwDn9ei3FaMUinB3"
 
 type TestOptions = {
   modules?: TokenType[]
