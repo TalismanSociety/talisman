@@ -13,6 +13,8 @@ import {
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
+  toEvmAddressAtom,
+  toSubstrateAddressAtom,
 } from "../swap-modules/common.swap-module"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { type useFastBalance } from "../swaps-port/useFastBalance"
@@ -24,8 +26,8 @@ import {
   toAssetsAtom,
   useFromAccount,
   useReverse,
+  useSetToAddress,
   useSwapErc20Approval,
-  useToAccount,
 } from "../swaps.api"
 import { FromToAccountSelector } from "./FromToAccountSelector"
 import { ReverseButton } from "./ReverseButton"
@@ -42,9 +44,9 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
   const fromAddress = useAtomValue(fromAddressAtom)
   const [fromAsset, setFromAsset] = useAtom(fromAssetAtom)
   const [fromAmount, setFromAmount] = useAtom(fromAmountAtom)
-  useToAccount()
   const { fromEvmAccount, fromSubstrateAccount } = useFromAccount()
   const toAddress = useAtomValue(toAddressAtom)
+  useSetToAddress()
   const [toAsset, setToAsset] = useAtom(toAssetAtom)
 
   const toAmount = useAtomValue(loadable(toAmountAtom))
@@ -66,20 +68,30 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
 
   const reverse = useReverse()
 
+  const setToEvmAddress = useSetAtom(toEvmAddressAtom)
+  const setToSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
+  const setToBtcAddress = useSetAtom(toEvmAddressAtom)
+
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
       if (asset && toAsset && asset.id === toAsset.id) reverse()
       else setFromAsset(asset)
+
+      // reset toAddress to none
+      setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
-    [reverse, setFromAsset, toAsset],
+    [reverse, setFromAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress, toAsset],
   )
 
   const handleChangeToAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
       if (asset && fromAsset && asset.id === fromAsset.id) reverse()
       else setToAsset(asset)
+
+      // reset toAddress to none
+      setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
-    [fromAsset, reverse, setToAsset],
+    [fromAsset, reverse, setToAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress],
   )
 
   const insufficientBalance = useMemo(() => {
