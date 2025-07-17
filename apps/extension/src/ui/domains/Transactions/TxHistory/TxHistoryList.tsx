@@ -678,6 +678,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
                 noCountUp
                 noTooltip
                 symbol={fromToken?.symbol}
+                isBalance
               />
               <ArrowRightIcon className="text-body-inactive" />
             </div>
@@ -688,6 +689,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
               noCountUp
               noTooltip
               symbol={toToken?.symbol}
+              isBalance
             />
           </div>
         ) : (
@@ -700,11 +702,16 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
               noCountUp
               noTooltip
               symbol={token.symbol}
+              isBalance
             />
           )
         )
       }
-      fiat={txSwap && !!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      fiat={
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
+      }
       actions={
         <EvmTxActions
           tx={tx}
@@ -947,6 +954,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
                 symbol={fromToken?.symbol}
                 noCountUp
                 noTooltip
+                isBalance
               />
               <ArrowRightIcon className="text-body-inactive" />
             </div>
@@ -957,6 +965,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
               symbol={toToken?.symbol}
               noCountUp
               noTooltip
+              isBalance
             />
           </div>
         ) : (
@@ -969,11 +978,16 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
               noCountUp
               noTooltip
               symbol={token.symbol}
+              isBalance
             />
           )
         )
       }
-      fiat={txSwap && !!amount && amount.fiat(currency) && <Fiat amount={amount} noCountUp />}
+      fiat={
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
+      }
       actions={
         <SubTxActions
           tx={tx}
