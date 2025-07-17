@@ -24,13 +24,17 @@ export const useTalismanOrb = (seed: string) => {
   const id = useId()
 
   return useMemo(() => {
-    const platform = getAccountPlatformFromAddress(seed)
-
     try {
+      // those break if seed is empty or an invalid address
+
+      // eslint-disable-next-line no-var
+      var platform = getAccountPlatformFromAddress(seed)
+
       // seed may be specific to a ss58 prefix, get the base address
       // eslint-disable-next-line no-var
       var address = normalizeAddress(seed)
     } catch (err) {
+      platform = "polkadot"
       address = seed
     }
 
