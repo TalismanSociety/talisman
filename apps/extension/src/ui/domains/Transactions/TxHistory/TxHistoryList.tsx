@@ -590,7 +590,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const { isTransfer, amount } = useMemo(() => {
     // legacy entries do not have a type, in that case assume it's a transfer
-    const isTransfer = token && (txTransfer || (tx.txInfo && tx.value && tx.tokenId && tx.to))
+    const isTransfer = token && (txTransfer || (tx.value && tx.tokenId && tx.to))
 
     return {
       isTransfer,
@@ -862,7 +862,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
 
   const { isTransfer, amount } = useMemo(() => {
     // historically txInfo wasnt a property, transfer params were set on the tx object
-    const isTransfer = token && (txTransfer || (tx.txInfo && tx.value && tx.tokenId && tx.to))
+    const isTransfer = token && (txTransfer || (tx.value && tx.tokenId && tx.to))
 
     return {
       isTransfer,
