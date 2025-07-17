@@ -71,13 +71,13 @@ const FromAccount = () => {
       const setAsEthereum = () => {
         setFromEvmAddress(address)
 
-        // reset to address to none
+        // reset toAddress to none
         setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       }
       const setAsPolkadot = () => {
         setFromSubstrateAddress(address)
 
-        // reset to address to none
+        // reset toAddress to none
         setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       }
 

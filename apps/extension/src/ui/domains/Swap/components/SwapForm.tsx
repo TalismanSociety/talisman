@@ -77,7 +77,7 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
       if (asset && toAsset && asset.id === toAsset.id) reverse()
       else setFromAsset(asset)
 
-      // reset to address to none
+      // reset toAddress to none
       setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
     [reverse, setFromAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress, toAsset],
@@ -88,7 +88,7 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
       if (asset && fromAsset && asset.id === fromAsset.id) reverse()
       else setToAsset(asset)
 
-      // reset to address to none
+      // reset toAddress to none
       setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
     [fromAsset, reverse, setToAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress],
