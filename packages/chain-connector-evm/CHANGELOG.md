@@ -1,5 +1,26 @@
 # @talismn/chain-connector-evm
 
+## 1.0.0
+
+### Minor Changes
+
+- 411726c: new balance modules
+- d2071a1: removed support for onfinality api keys
+
+### Patch Changes
+
+- Updated dependencies [411726c]
+- Updated dependencies [a5a3595]
+- Updated dependencies [d2071a1]
+- Updated dependencies [411726c]
+- Updated dependencies [002af50]
+- Updated dependencies [d2071a1]
+- Updated dependencies [d2071a1]
+- Updated dependencies [4008626]
+- Updated dependencies [0ff2f9d]
+  - @talismn/chaindata-provider@1.0.0
+  - @talismn/util@0.5.0
+
 ## 0.11.1
 
 ### Patch Changes

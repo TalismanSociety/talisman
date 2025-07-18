@@ -6,7 +6,7 @@ type Address = string
  * @deprecated use keyring instead
  */
 export type AddressBookContact = {
-  addressType: string
+  addressType: "ss58" | "ethereum" | "UNKNOWN"
   address: Address
   genesisHash?: `0x${string}`
   name: string

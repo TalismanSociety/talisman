@@ -1,6 +1,6 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { UserPlusIcon } from "@talismn/icons"
-import { HexString } from "extension-shared"
+import { HexString } from "@talismn/util"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"

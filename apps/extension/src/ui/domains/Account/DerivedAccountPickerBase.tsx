@@ -1,8 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { HexString } from "extension-shared"
+import { classNames, HexString } from "@talismn/util"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 

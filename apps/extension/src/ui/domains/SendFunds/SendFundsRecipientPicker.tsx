@@ -13,7 +13,6 @@ import {
   isAccountPlatformEthereum,
   isAccountPortfolio,
 } from "extension-core"
-//import { isValidAddress } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"

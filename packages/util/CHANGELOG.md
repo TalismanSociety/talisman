@@ -1,5 +1,15 @@
 # @talismn/util
 
+## 0.5.0
+
+### Minor Changes
+
+- a5a3595: shared utilities
+
+### Patch Changes
+
+- d2071a1: feat: isAbortError
+
 ## 0.4.2
 
 ### Patch Changes

@@ -265,10 +265,10 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   type="text"
                   value={field.state.value}
                   onChange={(e) => {
-                    field.form.setFieldValue(
-                      "logo",
-                      getGithubTokenLogoUrlByCoingeckoId(e.target.value),
-                    )
+                    const logo = e.target.value.trim()
+                      ? getGithubTokenLogoUrlByCoingeckoId(e.target.value)
+                      : undefined
+                    field.form.setFieldValue("logo", logo)
                     field.handleChange(e.target.value)
                   }}
                   autoComplete="off"
@@ -276,7 +276,7 @@ const TokenForm: FC<{ token: Token }> = ({ token }) => {
                   before={
                     <AssetLogo
                       className="mr-2 rounded-full text-[3rem]"
-                      url={field.form.getFieldValue("logo") ?? null}
+                      url={field.form.getFieldValue("logo")}
                     />
                   }
                 />

@@ -1,6 +1,12 @@
 import { bind } from "@react-rxjs/core"
 import { Balance, Balances } from "@talismn/balances"
-import { getNetworkGenesisHash, Network, NetworkId } from "@talismn/chaindata-provider"
+import {
+  evmNativeTokenId,
+  getNetworkGenesisHash,
+  Network,
+  NetworkId,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import {
   Account,
@@ -9,10 +15,6 @@ import {
   isAccountAddressSs58,
   isAccountCompatibleWithNetwork,
 } from "extension-core"
-import {
-  DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
-  DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
-} from "extension-shared"
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
 
@@ -23,6 +25,14 @@ import {
   useNetworksMapById,
   usePortfolioSelectedAccounts,
 } from "@ui/state"
+
+const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
+  subNativeTokenId("polkadot"),
+  subNativeTokenId("kusama"),
+  subNativeTokenId("bittensor"),
+]
+
+export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 
 // TODO: default tokens should be controlled from chaindata
 const shouldDisplayBalance = (

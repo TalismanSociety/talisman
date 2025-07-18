@@ -108,7 +108,7 @@ const executeMigration = async () => {
         name: MIGRATION_LABEL,
         progress: 1,
         acknowledgeRequest:
-          "We’ve upgraded how balances load. You may notice a short delay while balances are reloaded.",
+          "Your Talisman has been upgraded to improve performance. Your portfolio may briefly show no balances as it is refreshed.",
       },
     })
 

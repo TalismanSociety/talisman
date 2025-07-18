@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.2.0
+
+### Minor Changes
+
+- a5a3595: shared utilities
+
 ## 0.1.5
 
 ### Patch Changes

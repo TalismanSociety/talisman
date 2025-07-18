@@ -14,7 +14,7 @@ import {
   AddAccountKeypairOptions,
 } from "@talismn/keyring"
 import { NsLookupType } from "@talismn/on-chain-id"
-import { HexString } from "extension-shared"
+import { HexString } from "@talismn/util"
 
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 import { Address } from "../../types/base"

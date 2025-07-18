@@ -1,7 +1,7 @@
 import { isValidAddress } from "@ethereumjs/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getAccountPlatformFromAddress, isAddressEqual, isSs58Address } from "@talismn/crypto"
-import { HexString } from "extension-shared"
+import { HexString } from "@talismn/util"
 import { keyBy } from "lodash-es"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"

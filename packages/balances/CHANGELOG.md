@@ -1,5 +1,37 @@
 # @talismn/balances
 
+## 1.0.0
+
+### Major Changes
+
+- d2071a1: BREAKING: chaindata v4
+
+### Minor Changes
+
+- 411726c: new balance modules
+
+### Patch Changes
+
+- 4008626: pin minimetadata version
+- ac5f1e3: fix: cache subscription results
+- Updated dependencies [411726c]
+- Updated dependencies [a5a3595]
+- Updated dependencies [d2071a1]
+- Updated dependencies [411726c]
+- Updated dependencies [002af50]
+- Updated dependencies [d2071a1]
+- Updated dependencies [d2071a1]
+- Updated dependencies [4008626]
+- Updated dependencies [f6e9d24]
+- Updated dependencies [0ff2f9d]
+  - @talismn/chain-connector-evm@1.0.0
+  - @talismn/chaindata-provider@1.0.0
+  - @talismn/scale@0.2.0
+  - @talismn/util@0.5.0
+  - @talismn/token-rates@3.0.0
+  - @talismn/chain-connector@1.0.0
+  - @talismn/sapi@0.0.7
+
 ## 0.9.12
 
 ### Patch Changes

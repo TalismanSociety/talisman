@@ -1,5 +1,13 @@
 # @talismn/keyring
 
+## 1.0.2
+
+### Patch Changes
+
+- d2071a1: allow removing the genesisHash field on a contact
+- Updated dependencies [a5a3595]
+  - @talismn/crypto@0.2.0
+
 ## 1.0.1
 
 ### Patch Changes
