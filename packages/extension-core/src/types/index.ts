@@ -13,6 +13,7 @@ import { MnemonicMessages } from "../domains/mnemonics/types"
 import { NftsMessages } from "../domains/nfts"
 import { SigningMessages } from "../domains/signing/types"
 import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
+import { SolanaMessages } from "../domains/solana"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
@@ -83,6 +84,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TalismanMessages &
   TokenRatesMessages &
   SubstrateMessages &
+  SolanaMessages &
   AssetDiscoveryMessages &
   NftsMessages &
   PingMessages &

@@ -1,5 +1,10 @@
 import { HexString } from "@polkadot/util/types"
-import { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
+import {
+  SignerPayloadJSON,
+  SolRpcRequest,
+  SolRpcResponse,
+  WalletTransactionInfo,
+} from "extension-core"
 
 import PortMessageService from "@common/PortMessageService"
 
@@ -252,6 +257,13 @@ export const api: MessageTypes = {
       genesisHash,
       specVersion,
     }),
+
+  // solana
+  solSend: <T>(networkId: string, request: SolRpcRequest) =>
+    messageService.sendMessage("pri(solana.rpc.send)", {
+      networkId,
+      request,
+    }) as Promise<SolRpcResponse<T>>,
 
   // asset discovery
   assetDiscoveryStartScan: (scope) =>

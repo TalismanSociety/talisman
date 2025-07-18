@@ -42,6 +42,8 @@ import {
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
+  SolRpcRequest,
+  SolRpcResponse,
   Trees,
   UnsubscribeFn,
   ValidRequests,
@@ -240,6 +242,8 @@ export default interface MessageTypes {
     signature?: HexString,
     txInfo?: WalletTransactionInfo,
   ) => Promise<{ hash: HexString }>
+
+  solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
 
   // substrate chain metadata
   subChainMetadata: (
