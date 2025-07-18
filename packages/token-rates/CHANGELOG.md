@@ -1,5 +1,22 @@
 # @talismn/token-rates
 
+## 3.0.0
+
+### Major Changes
+
+- d2071a1: BREAKING: chaindata v4
+
+### Patch Changes
+
+- Updated dependencies [411726c]
+- Updated dependencies [d2071a1]
+- Updated dependencies [411726c]
+- Updated dependencies [002af50]
+- Updated dependencies [d2071a1]
+- Updated dependencies [4008626]
+- Updated dependencies [0ff2f9d]
+  - @talismn/chaindata-provider@1.0.0
+
 ## 2.0.12
 
 ### Patch Changes
