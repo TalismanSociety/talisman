@@ -10,7 +10,7 @@ import { getStorageValue } from "./getStorageValue"
 import { mortal, toPjsHex } from "./papi"
 import { Chain, ChainInfo } from "./types"
 
-const PERIOD = 64 // validity period in blocks, used for mortal era
+const ERA_PERIOD = 64 // validity period in blocks, used for mortal era
 
 export const getSignerPayloadJSON = async (
   chain: Chain,
@@ -25,22 +25,35 @@ export const getSignerPayloadJSON = async (
 
   // on unstable networks with lots of forks (ex: westend asset hub as of june 2025),
   // using a finalized block as reference for mortality is necessary for txs to get through
-  const blockHash = await getSendRequestResult<`0x${string}`>(
+  let blockHash = await getSendRequestResult<`0x${string}`>(
     chain,
     "chain_getFinalizedHead",
     [],
     false,
   )
 
-  const [nonce, genesisHash, blockNumber] = await Promise.all([
+  const [nonce, genesisHash, blockNumberFinalized, blockNumberCurrent] = await Promise.all([
     getSendRequestResult<number>(chain, "system_accountNextIndex", [signerConfig.address], false),
     getStorageValue<Binary>(chain, "System", "BlockHash", [0]),
     getStorageValue<number>(chain, "System", "Number", [], blockHash),
+    getStorageValue<number>(chain, "System", "Number", []),
   ])
   if (!genesisHash) throw new Error("Genesis hash not found")
   if (!blockHash) throw new Error("Block hash not found")
 
-  const era = mortal({ period: PERIOD, phase: blockNumber % PERIOD })
+  let blockNumber = blockNumberFinalized
+
+  // on Autonomys the finalized block hash is wrong (7000 blocks behind),
+  // if we use it to craft a tx it will be invalid
+  // => if finalized block number is more than 32 blocks behind, use current - 16
+  if (blockNumberCurrent - blockNumberFinalized > 32) {
+    blockNumber = blockNumberCurrent - 16
+
+    const binBlockHash = await getStorageValue<Binary>(chain, "System", "BlockHash", [blockNumber])
+    blockHash = binBlockHash.asHex() as `0x${string}`
+  }
+
+  const era = mortal({ period: ERA_PERIOD, phase: blockNumber % ERA_PERIOD })
   const signedExtensions = chain.metadata.extrinsic.signedExtensions.map((ext) => ext.identifier)
 
   const basePayload: SignerPayloadJSON = {
