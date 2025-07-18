@@ -1,8 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Platform } from "@talismn/crypto"
+import { isEthereumAddress, isSs58Address, Platform } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAddressType } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -44,13 +43,13 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         .test("is-valid-address", t("Invalid address"), (val, ctx) => {
           const { platform, address } = val
 
-          if (platform === "polkadot" && getAddressType(address) !== "ss58")
+          if (platform === "polkadot" && !isSs58Address(address))
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
             })
 
-          if (platform === "ethereum" && getAddressType(address) !== "ethereum")
+          if (platform === "ethereum" && !isEthereumAddress(address))
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
