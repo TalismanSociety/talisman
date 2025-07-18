@@ -1,5 +1,23 @@
 # @talismn/chaindata-provider
 
+## 1.0.0
+
+### Major Changes
+
+- d2071a1: BREAKING: chaindata v4
+
+### Minor Changes
+
+- 411726c: new balance modules
+- 411726c: add hydration module
+- d2071a1: removed support for onfinality api keys
+
+### Patch Changes
+
+- 002af50: add missing exports
+- 4008626: pin minimetadata version
+- 0ff2f9d: generate init data
+
 ## 0.11.1
 
 ### Patch Changes

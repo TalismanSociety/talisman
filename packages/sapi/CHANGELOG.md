@@ -1,5 +1,13 @@
 # @talismn/sapi
 
+## 0.0.7
+
+### Patch Changes
+
+- f6e9d24: fix: tx crafting for autonomys
+- Updated dependencies [411726c]
+  - @talismn/scale@0.2.0
+
 ## 0.0.6
 
 ### Patch Changes

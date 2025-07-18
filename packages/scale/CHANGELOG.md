@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 0.2.0
+
+### Minor Changes
+
+- 411726c: new balance modules
+
 ## 0.1.2
 
 ### Patch Changes
