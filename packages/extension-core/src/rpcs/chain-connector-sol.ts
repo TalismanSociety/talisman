@@ -1,4 +1,4 @@
-import { ChainConnectorSol } from "@talismn/chain-connector-sol"
+import { ChainConnectorSol } from "@talismn/chain-connectors"
 
 import { chaindataProvider } from "./chaindata"
 

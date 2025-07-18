@@ -1,4 +1,4 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { isAbortError } from "@talismn/util"
@@ -6,7 +6,10 @@ import { isAbortError } from "@talismn/util"
 // share requests as all modules will call this at once
 const CACHE = new Map<string, Promise<`0x${string}`>>()
 
-export const getMetadataRpc = async (chainConnector: ChainConnector, networkId: DotNetworkId) => {
+export const getMetadataRpc = async (
+  chainConnector: IChainConnectorDot,
+  networkId: DotNetworkId,
+) => {
   if (CACHE.has(networkId)) return CACHE.get(networkId)!
 
   const pResult = fetchBestMetadata(

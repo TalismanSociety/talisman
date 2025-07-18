@@ -4,6 +4,7 @@ import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
 
 import log from "../log"
+import { IChainConnectorDot } from "./IChainConnectorDot"
 import { Websocket } from "./Websocket"
 
 // errors that require an rpc fallback
@@ -77,7 +78,7 @@ type SocketUserId = number
  * connections this class will forward all requests through to the wallet backend - where another instance of this class will
  * handle the websocket connections.
  */
-export class ChainConnectorDot {
+export class ChainConnectorDot implements IChainConnectorDot {
   #chaindataChainProvider: IChaindataNetworkProvider
   #connectionMetaDb?: TalismanConnectionMetaDatabase
 

@@ -4,11 +4,9 @@
 import { existsSync, readFileSync, writeFileSync } from "fs"
 
 import { BALANCE_MODULES } from "@talismn/balances"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
+import { ChainConnectorEthStub } from "@talismn/chain-connectors"
 import { EthNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-
-import { getEvmNetworkPublicClient } from "./utils"
 
 export type EthNetworkConfig = Pick<EthNetwork, "id" | "rpcs" | "contracts"> & {
   nativeCurrency?: Partial<EthNetwork["nativeCurrency"]>
@@ -49,10 +47,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
   }
 
   try {
-    const connector = {
-      getPublicClientForEvmNetwork: () =>
-        getEvmNetworkPublicClient(network as unknown as EthNetwork),
-    } as unknown as ChainConnectorEvm
+    const connector = new ChainConnectorEthStub(network as unknown as EthNetwork)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "ethereum").filter((mod) =>
       opts.modules?.includes(mod.type as TokenType),

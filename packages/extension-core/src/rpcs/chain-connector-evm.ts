@@ -1,5 +1,5 @@
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
+import { ChainConnectorEth } from "@talismn/chain-connectors"
 
 import { chaindataProvider } from "./chaindata"
 
-export const chainConnectorEvm = new ChainConnectorEvm(chaindataProvider)
+export const chainConnectorEvm = new ChainConnectorEth(chaindataProvider)

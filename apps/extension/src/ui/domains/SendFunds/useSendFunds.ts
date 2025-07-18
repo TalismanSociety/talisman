@@ -5,7 +5,7 @@ import {
   BalanceFormatter,
   BalanceTransferType,
 } from "@talismn/balances"
-import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorDot } from "@talismn/chain-connectors"
 import {
   isTokenDot,
   isTokenEth,
@@ -183,7 +183,7 @@ const useSubTransaction = (
         metadataRpc: sapi.chain.metadataRpc,
         // ChainConnector is not available on front end.
         // getTransferCallData only uses the send method so we can mimic it safely
-        connector: { send: api.subSend } as unknown as ChainConnector,
+        connector: { send: api.subSend } as unknown as ChainConnectorDot,
         type: method,
         config: network.balancesConfig?.[mod.type],
       })

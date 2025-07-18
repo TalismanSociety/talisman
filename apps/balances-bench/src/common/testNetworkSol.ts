@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { BALANCE_MODULES } from "@talismn/balances"
-import { ChainConnectorSolStub } from "@talismn/chain-connector-sol"
+import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import { TokenType } from "@talismn/chaindata-provider"
 import { SolNetwork } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
 import { log } from "extension-shared"
@@ -42,7 +42,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
   }
 
   try {
-    const connector = new ChainConnectorSolStub(network.id, network.rpcs)
+    const connector = new ChainConnectorSolStub(network as unknown as SolNetwork)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "solana").filter((mod) =>
       opts.modules?.includes(mod.type as TokenType),

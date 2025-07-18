@@ -176,15 +176,9 @@ importers:
       '@talismn/balances':
         specifier: workspace:^
         version: link:../../packages/balances
-      '@talismn/chain-connector':
+      '@talismn/chain-connectors':
         specifier: workspace:^
-        version: link:../../packages/chain-connector
-      '@talismn/chain-connector-evm':
-        specifier: workspace:^
-        version: link:../../packages/chain-connector-evm
-      '@talismn/chain-connector-sol':
-        specifier: workspace:^
-        version: link:../../packages/chain-connector-sol
+        version: link:../../packages/chain-connectors
       '@talismn/chaindata-provider':
         specifier: workspace:^
         version: link:../../packages/chaindata-provider
@@ -1005,15 +999,9 @@ importers:
       '@supercharge/promise-pool':
         specifier: ^3.2.0
         version: 3.2.0
-      '@talismn/chain-connector':
+      '@talismn/chain-connectors':
         specifier: workspace:*
-        version: link:../chain-connector
-      '@talismn/chain-connector-evm':
-        specifier: workspace:*
-        version: link:../chain-connector-evm
-      '@talismn/chain-connector-sol':
-        specifier: workspace:*
-        version: link:../chain-connector-sol
+        version: link:../chain-connectors
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
@@ -1120,15 +1108,9 @@ importers:
       '@talismn/balances':
         specifier: workspace:*
         version: link:../balances
-      '@talismn/chain-connector':
+      '@talismn/chain-connectors':
         specifier: workspace:*
-        version: link:../chain-connector
-      '@talismn/chain-connector-evm':
-        specifier: workspace:*
-        version: link:../chain-connector-evm
-      '@talismn/chain-connector-sol':
-        specifier: workspace:*
-        version: link:../chain-connector-sol
+        version: link:../chain-connectors
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider
@@ -1199,144 +1181,6 @@ importers:
       react:
         specifier: ^18.3.1
         version: 18.3.1
-      ts-jest:
-        specifier: ^29.2.5
-        version: 29.2.5(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript:
-        specifier: ^5.6.3
-        version: 5.8.3
-
-  packages/chain-connector:
-    dependencies:
-      '@talismn/chaindata-provider':
-        specifier: workspace:*
-        version: link:../chaindata-provider
-      '@talismn/connection-meta':
-        specifier: workspace:*
-        version: link:../connection-meta
-      '@talismn/util':
-        specifier: workspace:*
-        version: link:../util
-      anylogger:
-        specifier: ^1.0.11
-        version: 1.0.11
-      eventemitter3:
-        specifier: ^5.0.0
-        version: 5.0.1
-    devDependencies:
-      '@polkadot/rpc-provider':
-        specifier: 16.1.2
-        version: 16.1.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@polkadot/util':
-        specifier: 13.5.1
-        version: 13.5.1
-      '@polkadot/x-global':
-        specifier: 13.5.1
-        version: 13.5.1
-      '@polkadot/x-ws':
-        specifier: 13.5.1
-        version: 13.5.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-      '@talismn/eslint-config':
-        specifier: workspace:*
-        version: link:../../config/eslint-config
-      '@talismn/tsconfig':
-        specifier: workspace:*
-        version: link:../../config/tsconfig
-      '@types/jest':
-        specifier: ^29.5.14
-        version: 29.5.14
-      eslint:
-        specifier: ^8.57.1
-        version: 8.57.1
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3))
-      ts-jest:
-        specifier: ^29.2.5
-        version: 29.2.5(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript:
-        specifier: ^5.6.3
-        version: 5.8.3
-
-  packages/chain-connector-evm:
-    dependencies:
-      '@talismn/chaindata-provider':
-        specifier: workspace:*
-        version: link:../chaindata-provider
-      '@talismn/util':
-        specifier: workspace:*
-        version: link:../util
-      anylogger:
-        specifier: ^1.0.11
-        version: 1.0.11
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
-      viem:
-        specifier: ^2.27.3
-        version: 2.31.4(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@6.0.4)(zod@3.25.62)
-    devDependencies:
-      '@talismn/eslint-config':
-        specifier: workspace:*
-        version: link:../../config/eslint-config
-      '@talismn/tsconfig':
-        specifier: workspace:*
-        version: link:../../config/tsconfig
-      '@types/jest':
-        specifier: ^29.5.14
-        version: 29.5.14
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
-      eslint:
-        specifier: ^8.57.1
-        version: 8.57.1
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3))
-      ts-jest:
-        specifier: ^29.2.5
-        version: 29.2.5(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3)))(typescript@5.8.3)
-      typescript:
-        specifier: ^5.6.3
-        version: 5.8.3
-
-  packages/chain-connector-sol:
-    dependencies:
-      '@solana/web3.js':
-        specifier: ^1.98.2
-        version: 1.98.2(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
-      '@talismn/chaindata-provider':
-        specifier: workspace:*
-        version: link:../chaindata-provider
-      '@talismn/util':
-        specifier: workspace:*
-        version: link:../util
-      anylogger:
-        specifier: ^1.0.11
-        version: 1.0.11
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
-    devDependencies:
-      '@talismn/eslint-config':
-        specifier: workspace:*
-        version: link:../../config/eslint-config
-      '@talismn/tsconfig':
-        specifier: workspace:*
-        version: link:../../config/tsconfig
-      '@types/jest':
-        specifier: ^29.5.14
-        version: 29.5.14
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
-      eslint:
-        specifier: ^8.57.1
-        version: 8.57.1
-      jest:
-        specifier: ^29.7.0
-        version: 29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3))
       ts-jest:
         specifier: ^29.2.5
         version: 29.2.5(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(jest@29.7.0(@types/node@22.15.32)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.7.39(@swc/helpers@0.5.13))(@types/node@22.15.32)(typescript@5.8.3)))(typescript@5.8.3)
@@ -1593,15 +1437,9 @@ importers:
       '@talismn/balances':
         specifier: workspace:*
         version: link:../balances
-      '@talismn/chain-connector':
+      '@talismn/chain-connectors':
         specifier: workspace:*
-        version: link:../chain-connector
-      '@talismn/chain-connector-evm':
-        specifier: workspace:*
-        version: link:../chain-connector-evm
-      '@talismn/chain-connector-sol':
-        specifier: workspace:*
-        version: link:../chain-connector-sol
+        version: link:../chain-connectors
       '@talismn/chaindata-provider':
         specifier: workspace:*
         version: link:../chaindata-provider

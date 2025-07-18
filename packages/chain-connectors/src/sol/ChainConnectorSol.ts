@@ -15,9 +15,9 @@ export class ChainConnectorSol implements IChainConnectorSol {
     this.#chaindataProvider = chaindataProvider
   }
 
-  async getConnection(networkId: SolNetworkId): Promise<Connection | null> {
+  async getConnection(networkId: SolNetworkId): Promise<Connection> {
     const network = await this.#chaindataProvider.getNetworkById(networkId, "solana")
-    if (!network) return null
+    if (!network) throw new Error(`Network not found: ${networkId}`)
 
     return getSolConnection(networkId, network.rpcs)
   }

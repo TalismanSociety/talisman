@@ -27,9 +27,7 @@
   },
   "dependencies": {
     "@talismn/balances": "workspace:*",
-    "@talismn/chain-connector": "workspace:*",
-    "@talismn/chain-connector-evm": "workspace:*",
-    "@talismn/chain-connector-sol": "workspace:*",
+    "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/connection-meta": "workspace:*",
     "@talismn/scale": "workspace:*",

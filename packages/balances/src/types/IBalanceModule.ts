@@ -1,6 +1,8 @@
-import type { ChainConnector } from "@talismn/chain-connector"
-import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { IChainConnectorSol } from "@talismn/chain-connector-sol"
+import type {
+  IChainConnectorDot,
+  IChainConnectorEth,
+  IChainConnectorSol,
+} from "@talismn/chain-connectors"
 import {
   DotNetworkId,
   EthNetworkId,
@@ -17,9 +19,9 @@ import type { Address, IBalance, MiniMetadata } from "."
 export type TokenPlatform<T extends TokenType> = TokenOfType<T>["platform"]
 
 export type PlatformConnector<P extends TokenPlatform<TokenType>> = P extends "ethereum"
-  ? ChainConnectorEvm
+  ? IChainConnectorEth
   : P extends "polkadot"
-    ? ChainConnector
+    ? IChainConnectorDot
     : P extends "solana"
       ? IChainConnectorSol
       : never
@@ -85,7 +87,7 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokens: TokenConfig[]
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
           cache: Record<TokenId, unknown>
         }
@@ -102,7 +104,7 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokensWithAddresses: TokensWithAddresses
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : {
@@ -117,7 +119,7 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokensWithAddresses: TokensWithAddresses
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
       : {
@@ -136,7 +138,7 @@ export interface IBalanceModule<
           token: Token
           metadataRpc: `0x${string}`
           type: BalanceTransferType
-          connector: ChainConnector // because of psp22
+          connector: PlatformConnector<TokenPlatform<Type>> // because of psp22
           config?: ModuleConfig
         }
       : TokenPlatform<Type> extends "ethereum"

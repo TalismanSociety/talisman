@@ -1,9 +1,11 @@
-import { ChainConnector } from "@talismn/chain-connector"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChainConnectorSol } from "@talismn/chain-connector-sol"
+import {
+  IChainConnectorDot,
+  IChainConnectorEth,
+  IChainConnectorSol,
+} from "@talismn/chain-connectors"
 
 export type ChainConnectors = {
-  substrate?: ChainConnector
-  evm?: ChainConnectorEvm
-  solana?: ChainConnectorSol
+  substrate?: IChainConnectorDot
+  evm?: IChainConnectorEth
+  solana?: IChainConnectorSol
 }
