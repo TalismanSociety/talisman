@@ -1,6 +1,6 @@
 import { BALANCE_MODULES, BalanceTransferType } from "@talismn/balances"
 import { ChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetwork, Token } from "@talismn/chaindata-provider"
+import { DotNetwork, isTokenDot, Token } from "@talismn/chaindata-provider"
 import { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { SignerPayloadJSON } from "extension-core"
@@ -61,7 +61,7 @@ export const useSendFundsTransactionDot = ({
   }, [qDryRun.data, qDryRun.error])
 
   const maxAmount = useMemo(() => {
-    if (!balance || !token || qTip.isLoading) return null
+    if (!balance || !isTokenDot(token) || qTip.isLoading) return null
 
     const tipPlanck = tipToken?.id === token.id ? BigInt(qTip.data ?? "0") : 0n
 
@@ -91,7 +91,7 @@ export const useSendFundsTransactionDot = ({
     return [isLoading, isRefetching, error]
   }, [qTip, qSapi, qPayload, qEstimateFee, qDryRun])
 
-  if (token?.platform !== "polkadot") return null
+  if (!isTokenDot(token)) return null
 
   return {
     platform: "polkadot" as const,

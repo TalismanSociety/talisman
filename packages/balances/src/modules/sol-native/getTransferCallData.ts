@@ -1,4 +1,4 @@
-import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
+import { PublicKey, SystemProgram } from "@solana/web3.js"
 import { isTokenOfType } from "@talismn/chaindata-provider"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
@@ -21,14 +21,5 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     lamports: Number(value),
   })
 
-  const tx = new Transaction().add(transferIx)
-  tx.feePayer = fromPubkey
-
-  return tx
-    .serialize({
-      // its not signed yet so we need to toggle these flags to false
-      requireAllSignatures: false,
-      verifySignatures: false,
-    })
-    .toString("base64")
+  return transferIx
 }

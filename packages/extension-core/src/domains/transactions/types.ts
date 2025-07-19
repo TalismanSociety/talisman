@@ -62,7 +62,7 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   status: TransactionStatus
   isReplacement?: boolean
   label?: string
-  nonce: number
+  nonce?: number
   blockNumber?: string
   confirmed?: boolean
   txInfo?: WalletTransactionInfo
@@ -80,5 +80,14 @@ export type WalletTransactionDot = WalletTransactionBase & {
   unsigned: SignerPayloadJSON
 }
 
+export type WalletTransactionSol = WalletTransactionBase & {
+  networkType: "solana"
+  networkId: string
+  serialized: string // base58 encoded
+  lastValidBlockHeight: number // required for rpc node to detect transaction confirmation
+  // TODO might want to store the SLOT instead of blockNumber, blockNumbers are not a thing because blockHeight and slot are 2 different things
+}
+
 // Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
-export type WalletTransaction = WalletTransactionEth | WalletTransactionDot
+// TODO migrate to a better format, solana doesnt fit with most base properties
+export type WalletTransaction = WalletTransactionEth | WalletTransactionDot | WalletTransactionSol

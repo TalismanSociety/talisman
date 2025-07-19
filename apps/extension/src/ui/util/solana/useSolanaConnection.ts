@@ -37,8 +37,10 @@ const getSolanaConnection = (networkId: string) => {
 
 const CACHE = new Map<string, Connection>()
 
-export const useSolanaConnection = (networkId: string) => {
+export const useSolanaConnection = (networkId: string | null | undefined) => {
   return useMemo(() => {
+    if (!networkId) return null
+
     if (!CACHE.has(networkId)) {
       const connection = getSolanaConnection(networkId)
       CACHE.set(networkId, connection)

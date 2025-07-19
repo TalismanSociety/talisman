@@ -2,7 +2,6 @@ import { bind } from "@react-rxjs/core"
 import { liveQuery } from "dexie"
 import { db } from "extension-core"
 import { from, map } from "rxjs"
-import { Hex } from "viem"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -13,11 +12,11 @@ export const [useTransactions, transactions$] = bind(
   ),
 )
 
-export const [useTransaction, getTransaction$] = bind((hash?: Hex) =>
+export const [useTransaction, getTransaction$] = bind((txIdentifier: string) =>
   from(
     liveQuery(async () => {
-      if (!hash) return undefined
-      return (await db.transactions.get(hash)) ?? null
+      if (!txIdentifier) return undefined
+      return (await db.transactions.get(txIdentifier)) ?? null
     }),
   ),
 )

@@ -17,4 +17,5 @@ export {
   isAccountNotContact,
   getAccountGenesisHash,
   getAccountSignetUrl,
+  isAccountPlatformSolana,
 } from "@talismn/keyring"

@@ -1,8 +1,10 @@
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
+import { Transaction } from "@solana/web3.js"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Address } from "@talismn/balances"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import { base58 } from "@talismn/crypto"
 import { log } from "extension-shared"
 import merge from "lodash-es/merge"
 import { Hex, TransactionRequest } from "viem"
@@ -22,6 +24,42 @@ type AddTransactionOptions = {
 
 const DEFAULT_OPTIONS: AddTransactionOptions = {
   label: "Transaction",
+}
+
+export const addSolTransaction = async (
+  networkId: SolNetworkId,
+  transaction: Transaction,
+  lastValidBlockHeight: number,
+  options: AddTransactionOptions = {},
+) => {
+  const { siteUrl, label, tokenId, value, to, txInfo } = merge(
+    structuredClone(DEFAULT_OPTIONS),
+    options,
+  )
+
+  try {
+    if (!networkId || !transaction.signature) throw new Error("Invalid transaction")
+
+    await db.transactions.add({
+      networkType: "solana",
+      networkId,
+      account: transaction.feePayer?.toBase58() ?? "",
+      // TODO update types, this is not a hash
+      hash: base58.encode(transaction.signature!),
+      serialized: transaction.serialize().toString("base64"),
+      lastValidBlockHeight,
+      status: "pending",
+      siteUrl,
+      label,
+      tokenId,
+      value,
+      to,
+      txInfo,
+      timestamp: Date.now(),
+    })
+  } catch (err) {
+    log.error("addSolTransaction", { err, transaction, options })
+  }
 }
 
 export const addEvmTransaction = async (
@@ -67,8 +105,6 @@ export const addEvmTransaction = async (
       timestamp: Date.now(),
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error("addEvmTransaction", { err })
     log.error("addEvmTransaction", { err, hash, unsigned, options })
   }
 }
@@ -141,7 +177,13 @@ export const updateTransactionStatus = async (
         // mark pending transactions with a lower nonce as unknown
         await db.transactions
           .filter(filterIsSameNetworkAndAddressTx(tx))
-          .filter((row) => row.nonce < tx.nonce && row.status === "pending")
+          .filter(
+            (row) =>
+              typeof row.nonce === "number" &&
+              typeof tx.nonce === "number" &&
+              row.nonce < tx.nonce &&
+              row.status === "pending",
+          )
           .modify({ status: "unknown" })
       }
     }

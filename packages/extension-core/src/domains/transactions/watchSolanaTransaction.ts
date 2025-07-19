@@ -1,0 +1,114 @@
+import { Connection, Transaction } from "@solana/web3.js"
+import { SolNetworkId } from "@talismn/chaindata-provider"
+import { base58 } from "@talismn/crypto"
+import { log } from "extension-shared"
+import urlJoin from "url-join"
+
+import { sentry } from "../../config/sentry"
+import { createNotification } from "../../notifications"
+import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
+import { chaindataProvider } from "../../rpcs/chaindata"
+import { addSolTransaction, updateTransactionStatus } from "./helpers"
+import { WalletTransactionSol, WatchTransactionOptions } from "./types"
+
+export const watchSolanaTransaction = async (
+  networkId: SolNetworkId,
+  transaction: Transaction,
+  lastValidBlockHeight: number,
+  options: WatchTransactionOptions = {},
+) => {
+  try {
+    const { siteUrl, notifications, txInfo } = options
+
+    const network = await chaindataProvider.getNetworkById(networkId, "solana")
+    if (!network) throw new Error(`Could not find ethereum network ${networkId}`)
+
+    const connection = await chainConnectorSol.getConnection(networkId)
+    if (!connection) throw new Error(`No connection for network ${networkId} (${network.name})`)
+
+    if (!transaction.signature) throw new Error("Transaction signature is missing")
+    const signature = base58.encode(transaction.signature!)
+
+    const txUrl = network.blockExplorerUrls[0]
+      ? urlJoin(network.blockExplorerUrls[0], "tx", signature)
+      : chrome.runtime.getURL("dashboard.html#/tx-history")
+
+    await addSolTransaction(networkId, transaction, lastValidBlockHeight, { siteUrl, txInfo })
+
+    watchUntilFinalized(
+      connection,
+      signature,
+      lastValidBlockHeight,
+      notifications ? txUrl : undefined,
+    )
+  } catch (err) {
+    log.error("Failed to watch Solana transaction (outer)", { err, networkId, transaction })
+    sentry.captureException(err, { tags: { networkId } })
+  }
+}
+// Helper function to poll for transaction confirmation
+async function watchUntilFinalized(
+  connection: Connection,
+  signature: string,
+  lastValidBlockHeight: number,
+  notificationTxUrl?: string,
+  maxRetries = 30,
+  intervalMs = 2000,
+) {
+  let txStatus: WalletTransactionSol["status"] = "pending"
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      // Check if transaction is confirmed
+      const status = await connection.getSignatureStatus(signature)
+      const { confirmationStatus, err } = status?.value ?? {}
+
+      if (err) {
+        txStatus = "error"
+        await updateTransactionStatus(signature, txStatus)
+        if (notificationTxUrl)
+          await createNotification("error", "Transaction failed", notificationTxUrl)
+        return // we re done
+      } else if (confirmationStatus === "confirmed" && txStatus !== "success") {
+        txStatus = "success"
+
+        const txDetails = await tryGetTransactionDetails(connection, signature)
+        await updateTransactionStatus(signature, txStatus, txDetails?.slot)
+
+        if (notificationTxUrl)
+          await createNotification("success", "Transaction confirmed", notificationTxUrl)
+
+        // continue polling until finalized
+      } else if (confirmationStatus === "finalized") {
+        const txDetails = await tryGetTransactionDetails(connection, signature)
+        await updateTransactionStatus(signature, txStatus, txDetails?.slot, true)
+        return // we re done
+      }
+
+      // Wait before next poll
+      await new Promise((resolve) => setTimeout(resolve, intervalMs))
+    } catch (error) {
+      if (i === maxRetries - 1) {
+        await updateTransactionStatus(signature, "unknown")
+        return
+      }
+      // Continue polling on transient errors
+      await new Promise((resolve) => setTimeout(resolve, intervalMs))
+    }
+  }
+
+  // timeout
+  await updateTransactionStatus(signature, "unknown")
+}
+
+const tryGetTransactionDetails = async (connection: Connection, signature: string) => {
+  try {
+    return await connection.getTransaction(signature, {
+      commitment: "confirmed",
+      maxSupportedTransactionVersion: 0,
+    })
+  } catch (error) {
+    log.error("Failed to get transaction details", { error, signature })
+    return null
+  }
+}

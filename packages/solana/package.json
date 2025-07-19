@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.2",
+    "@talismn/crypto": "workspace:*",
     "anylogger": "^1.0.11"
   },
   "devDependencies": {

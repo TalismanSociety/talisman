@@ -18,6 +18,7 @@ import {
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
+  WalletTransactionSol,
 } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
@@ -52,6 +53,7 @@ import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
+  useAnyNetwork,
   useNetworkByGenesisHash,
   useNetworkById,
   useSelectedCurrency,
@@ -166,8 +168,9 @@ type TransactionRowProps = {
   onContextMenuClose?: () => void
 }
 
-type TransactionRowEvmProps = TransactionRowProps & { tx: WalletTransactionEth }
-type TransactionRowSubProps = TransactionRowProps & { tx: WalletTransactionDot }
+type TransactionRowEthProps = TransactionRowProps & { tx: WalletTransactionEth }
+type TransactionRowDotProps = TransactionRowProps & { tx: WalletTransactionDot }
+type TransactionRowSolProps = TransactionRowProps & { tx: WalletTransactionSol }
 
 type TransactionAction = "cancel" | "speed-up" | "dismiss"
 
@@ -462,11 +465,7 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
   }
 }
 
-const SwapTransactionStatusLabel = ({
-  tx,
-}: {
-  tx: WalletTransactionDot | WalletTransactionEth
-}) => {
+const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()
   const swapStatus = useSwapStatus(
     tx.txInfo?.type,
@@ -571,7 +570,7 @@ const TransactionRowBase: FC<{
   )
 }
 
-const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
+const TransactionRowEvm: FC<TransactionRowEthProps> = ({
   tx,
   enabled,
   onContextMenuOpen,
@@ -726,8 +725,8 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
-const SubTxActions: FC<{
-  tx: WalletTransactionDot
+const TxActionsDot: FC<{
+  tx: WalletTransactionDot | WalletTransactionSol
   enabled: boolean
   isOpen: boolean
   onContextMenuOpen?: () => void
@@ -757,7 +756,9 @@ const SubTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const chain = useNetworkByGenesisHash(tx.genesisHash)
+  const network = useAnyNetwork(
+    tx.networkType === "solana" ? tx.networkId : tx.unsigned.genesisHash,
+  )
 
   const swapHref = useMemo(() => {
     if (!isTxInfoSwap(txInfo)) return
@@ -775,8 +776,9 @@ const SubTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (chain?.blockExplorerUrls[0] ? urlJoin(chain.blockExplorerUrls[0], "tx", tx.hash) : null),
-    [chain?.blockExplorerUrls, tx.hash],
+    () =>
+      network?.blockExplorerUrls[0] ? urlJoin(network.blockExplorerUrls[0], "tx", tx.hash) : null,
+    [network?.blockExplorerUrls, tx.hash],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -849,7 +851,7 @@ const SubTxActions: FC<{
   )
 }
 
-const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
+const TransactionRowDot: FC<TransactionRowDotProps> = ({
   tx,
   enabled,
   onContextMenuOpen,
@@ -989,7 +991,157 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
       actions={
-        <SubTxActions
+        <TxActionsDot
+          tx={tx}
+          enabled={enabled}
+          isOpen={isCtxMenuOpen}
+          onContextMenuOpen={handleOpenCtxMenu}
+          onContextMenuClose={handleCloseCtxMenu}
+        />
+      }
+    />
+  )
+}
+
+const TransactionRowSol: FC<TransactionRowSolProps> = ({
+  tx,
+  enabled,
+  onContextMenuOpen,
+  onContextMenuClose,
+}) => {
+  const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
+  const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || tx.tokenId
+
+  const chain = useNetworkById(tx.networkId, "solana")
+  const token = useToken(tokenId)
+  const tokenRates = useTokenRates(tokenId)
+  const currency = useSelectedCurrency()
+
+  const { isTransfer, amount } = useMemo(() => {
+    // historically txInfo wasnt a property, transfer params were set on the tx object
+    const isTransfer = token && (txTransfer || (tx.value && tx.tokenId && tx.to))
+
+    return {
+      isTransfer,
+      amount: isTransfer
+        ? new BalanceFormatter(txTransfer?.value ?? tx.value, token.decimals, tokenRates)
+        : null,
+    }
+  }, [token, tokenRates, tx, txTransfer])
+
+  const fromToken = useToken(txSwap?.fromTokenId)
+  const toToken = useToken(txSwap?.toTokenId)
+
+  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
+
+  const handleOpenCtxMenu = useCallback(() => {
+    if (!enabled) return
+    onContextMenuOpen?.()
+    setIsCtxMenuOpen(true)
+  }, [enabled, onContextMenuOpen])
+
+  const handleCloseCtxMenu = useCallback(() => {
+    setIsCtxMenuOpen(false)
+    onContextMenuClose?.()
+  }, [onContextMenuClose])
+
+  const { t } = useTranslation()
+
+  return (
+    <TransactionRowBase
+      isCtxMenuOpen={isCtxMenuOpen}
+      enabled={enabled}
+      logo={
+        tx.siteUrl ? (
+          <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
+            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : txSwap ? (
+          <div className="flex items-center">
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
+              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
+              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+          </div>
+        ) : isTransfer && token ? (
+          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
+            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : (
+          <TxIconContainer tooltip={chain?.name}>
+            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        )
+      }
+      status={
+        <>
+          {txSwap ? (
+            <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+              <SwapTransactionStatusLabel tx={tx} />
+            </Suspense>
+          ) : (
+            <TransactionStatusLabel status={tx.status} />
+          )}
+          {tx.isReplacement && (
+            <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
+              {t("Replacement")}
+            </span>
+          )}
+        </>
+      }
+      wen={<DistanceToNow timestamp={tx.timestamp} />}
+      tokens={
+        txSwap ? (
+          // tx is a swap deposit
+          <div className="flex flex-col">
+            <div className="flex items-center justify-end gap-1">
+              <Tokens
+                className="pointer-events-none"
+                amount={planckToTokens(txSwap.fromAmount, fromToken?.decimals)}
+                decimals={fromToken?.decimals}
+                symbol={fromToken?.symbol}
+                noCountUp
+                noTooltip
+                isBalance
+              />
+              <ArrowRightIcon className="text-body-inactive" />
+            </div>
+            <Tokens
+              className="pointer-events-none"
+              amount={planckToTokens(txSwap.toAmount, toToken?.decimals)}
+              decimals={toToken?.decimals ?? 0}
+              symbol={toToken?.symbol}
+              noCountUp
+              noTooltip
+              isBalance
+            />
+          </div>
+        ) : (
+          !!amount &&
+          !!token && (
+            <Tokens
+              className="pointer-events-none"
+              amount={amount.tokens}
+              decimals={token.decimals}
+              noCountUp
+              noTooltip
+              symbol={token.symbol}
+              isBalance
+            />
+          )
+        )
+      }
+      fiat={
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
+      }
+      actions={
+        <TxActionsDot
           tx={tx}
           enabled={enabled}
           isOpen={isCtxMenuOpen}
@@ -1006,7 +1158,9 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
     case "evm":
       return <TransactionRowEvm tx={tx} {...props} />
     case "substrate":
-      return <TransactionRowSubstrate tx={tx} {...props} />
+      return <TransactionRowDot tx={tx} {...props} />
+    case "solana":
+      return <TransactionRowSol tx={tx} {...props} />
     default:
       return null
   }

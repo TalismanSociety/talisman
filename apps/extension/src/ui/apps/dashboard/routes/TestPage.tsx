@@ -113,6 +113,7 @@ const TestSolanaBalance = () => {
   const [balance, setBalance] = useState("")
 
   useEffect(() => {
+    if (!connection) return
     // Example of fetching a balance, replace with actual logic
     connection
       .getBalance(new PublicKey("5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"))

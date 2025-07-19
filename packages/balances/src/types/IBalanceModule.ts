@@ -3,6 +3,7 @@ import type {
   IChainConnectorEth,
   IChainConnectorSol,
 } from "@talismn/chain-connectors"
+import { TransactionInstruction } from "@solana/web3.js"
 import {
   DotNetworkId,
   EthNetworkId,
@@ -45,7 +46,7 @@ type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
   : P extends "polkadot"
     ? DotTransferCallData
     : P extends "solana"
-      ? unknown
+      ? TransactionInstruction
       : never
 
 export type TokensWithAddresses = Array<[Token, Address[]]>

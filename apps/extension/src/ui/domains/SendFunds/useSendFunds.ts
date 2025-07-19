@@ -32,6 +32,7 @@ import { SendFundsTransactionProps } from "./types"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
+import { useSendFundsTransactionSol } from "./useSendFundsTransactionSol"
 
 const useSendFundsTransaction = () => {
   const { from, to, tokenId, amount, allowReap, sendMax } = useSendFundsWizard()
@@ -43,6 +44,7 @@ const useSendFundsTransaction = () => {
 
   const txEth = useSendFundsTransactionEth(inputs)
   const txDot = useSendFundsTransactionDot(inputs)
+  const txSol = useSendFundsTransactionSol(inputs)
 
   return useMemo(() => {
     switch (token?.platform) {
@@ -50,10 +52,12 @@ const useSendFundsTransaction = () => {
         return txDot
       case "ethereum":
         return txEth
+      case "solana":
+        return txSol
       default:
         return null
     }
-  }, [token?.platform, txDot, txEth])
+  }, [token?.platform, txDot, txEth, txSol])
 }
 
 const useRecipientBalance = (token?: Token | null, address?: Address | null) => {
@@ -376,7 +380,7 @@ const useSendFundsProvider = () => {
   }, [transaction?.maxAmount, set, token])
 
   const onSubmitted = useCallback(
-    (args: { hash: `0x${string}`; networkIdOrHash: string }) => {
+    (args: { networkId: string; txIdentifier: string }) => {
       gotoProgress(args)
     },
     [gotoProgress],

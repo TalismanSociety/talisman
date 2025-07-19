@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { isAccountPlatformEthereum, serializeTransactionRequest } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 import { BaseError } from "viem"
@@ -67,12 +67,6 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
       setIsSubmitting(false)
     }
   }, [onSubmit, tx])
-
-  useEffect(() => {
-    if (!isAccountPlatformEthereum(account)) {
-      log.error("TxSubmitButtonDot: Invalid account type", { account })
-    }
-  }, [account])
 
   if (!isAccountPlatformEthereum(account))
     return <TxSignButtonFallback label={label} className={className} />

@@ -21,23 +21,22 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
-  const evmNetwork = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
+  const network = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
     (newHash?: HexString) => {
       setReplaceType(undefined)
-      if (newHash) {
-        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
-        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+      if (newHash && network) {
+        gotoProgress({ txIdentifier: newHash, networkId: network.id })
       }
     },
-    [gotoProgress, tx],
+    [gotoProgress, network],
   )
 
   if (tx.status !== "pending" || tx.networkType !== "evm") return null
-  if (evmNetwork?.preserveGasEstimate) return null
+  if (network?.preserveGasEstimate) return null
 
   return (
     <>
@@ -244,33 +243,53 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
 }
 
 type SendFundsProgressProps = {
-  hash: HexString
-  networkIdOrHash: string
+  txIdentifier: string
+  networkId: string
   onClose?: () => void
   className?: string
 }
 
 export const SendFundsProgress: FC<SendFundsProgressProps> = ({
-  hash,
-  networkIdOrHash,
+  txIdentifier,
+  networkId,
   onClose,
   className,
 }) => {
-  const tx = useTransaction(hash)
-  const network = useAnyNetwork(networkIdOrHash)
+  const tx = useTransaction(txIdentifier)
+  const network = useAnyNetwork(networkId)
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(network, hash)
+    const href = getBlockExplorerUrl(network, txIdentifier)
     return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 
-  if (tx?.networkType === "substrate")
-    return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
+  switch (tx?.networkType) {
+    case "evm":
+      return (
+        <SendFundsProgressProgressEvm
+          tx={tx as WalletTransactionEth}
+          onClose={onClose}
+          className={className}
+        />
+      )
+    case "substrate":
+      return (
+        <SendFundsProgressSubstrate
+          tx={tx as WalletTransactionDot}
+          onClose={onClose}
+          className={className}
+        />
+      )
+    default:
+      return (
+        <SendFundsProgressBase
+          tx={tx as WalletTransaction}
+          onClose={onClose}
+          className={className}
+        />
+      )
+  }
 
-  if (tx?.networkType === "evm")
-    return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
-
-  // render null while loading
   return null
 }

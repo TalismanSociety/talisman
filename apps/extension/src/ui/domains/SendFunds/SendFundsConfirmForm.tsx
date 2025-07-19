@@ -1,4 +1,4 @@
-import { isNetworkDot, isTokenEth } from "@talismn/chaindata-provider"
+import { isTokenEth } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -144,12 +144,12 @@ const SendButton = () => {
     }
   }, [])
 
-  const handleSapiSubmit = useCallback(
-    (hash: `0x${string}`) => {
+  const handleSubmit = useCallback(
+    (txIdentifier: string) => {
       if (!network) return
       onSubmitted({
-        hash,
-        networkIdOrHash: isNetworkDot(network) ? network.genesisHash : network.id,
+        networkId: network.id,
+        txIdentifier,
       })
     },
     [network, onSubmitted],
@@ -177,6 +177,15 @@ const SendButton = () => {
               txInfo,
             }
           : null
+      case "solana":
+        return transaction.tx
+          ? {
+              platform: "solana",
+              networkId: network.id,
+              payload: transaction.tx,
+              txInfo,
+            }
+          : null
       default:
         throw new Error(`Unsupported transaction platform`)
     }
@@ -186,18 +195,13 @@ const SendButton = () => {
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
       <div className="flex w-full flex-col gap-6" data-testid="send-funds-confirm-button">
         <ExternalRecipientWarning />
-        <TxSubmitButton
-          label={t("Confirm")}
-          onSubmit={handleSapiSubmit}
-          tx={tx}
-          disabled={!isReady}
-        />
+        <TxSubmitButton label={t("Confirm")} onSubmit={handleSubmit} tx={tx} disabled={!isReady} />
       </div>
     </Suspense>
   )
 }
 
-const EvmFeeSummary = () => {
+const EthFeeSummary = () => {
   const { t } = useTranslation()
   const { token, network, transaction } = useSendFunds()
 
@@ -257,11 +261,11 @@ const EvmFeeSummary = () => {
   )
 }
 
-const SubFeeSummary = () => {
+const DefaultFeeSummary = () => {
   const { t } = useTranslation()
   const { transaction, feeToken, tip, tipToken } = useSendFunds()
 
-  if (transaction?.platform !== "polkadot") return null
+  if (!transaction || transaction.platform === "ethereum") return null
 
   const { isRefetching, isLoading, estimatedFee, error } = transaction
 
@@ -309,8 +313,8 @@ const SubFeeSummary = () => {
 const FeeSummary = () => {
   const { token } = useSendFunds()
 
-  if (isTokenEth(token)) return <EvmFeeSummary />
-  return <SubFeeSummary />
+  if (isTokenEth(token)) return <EthFeeSummary />
+  return <DefaultFeeSummary />
 }
 
 export const SendFundsConfirmForm = () => {

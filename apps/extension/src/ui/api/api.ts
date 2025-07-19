@@ -1,5 +1,7 @@
 import { HexString } from "@polkadot/util/types"
+import { SolTransactionJson } from "@talismn/solana"
 import {
+  ResponseSolanaSubmit,
   SignerPayloadJSON,
   SolRpcRequest,
   SolRpcResponse,
@@ -264,6 +266,18 @@ export const api: MessageTypes = {
       networkId,
       request,
     }) as Promise<SolRpcResponse<T>>,
+  solSubmit: (
+    networkId: string,
+    transaction: SolTransactionJson,
+    lastValidBlockHeight?: number,
+    txInfo?: WalletTransactionInfo,
+  ) =>
+    messageService.sendMessage("pri(solana.rpc.submit)", {
+      networkId,
+      transaction,
+      lastValidBlockHeight,
+      txInfo,
+    }) as Promise<ResponseSolanaSubmit>,
 
   // asset discovery
   assetDiscoveryStartScan: (scope) =>

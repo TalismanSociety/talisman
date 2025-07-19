@@ -29,8 +29,14 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     (newHash?: HexString) => {
       setReplaceType(undefined)
       if (newHash) {
-        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
-        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+        // TODO always use network id
+        const networkIdOrHash =
+          tx.networkType === "evm"
+            ? tx.evmNetworkId
+            : tx.networkType === "substrate"
+              ? tx.genesisHash
+              : tx.networkId
+        if (networkIdOrHash) gotoProgress({ txIdentifier: newHash, networkId: networkIdOrHash })
       }
     },
     [gotoProgress, tx],

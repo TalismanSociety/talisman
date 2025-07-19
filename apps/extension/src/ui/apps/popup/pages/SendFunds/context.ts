@@ -1,4 +1,3 @@
-import { HexString } from "@polkadot/util/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { Address } from "extension-core"
 import { useCallback, useMemo } from "react"
@@ -118,10 +117,10 @@ const useSendFundsWizardProvider = () => {
   )
 
   const gotoProgress = useCallback(
-    ({ hash, networkIdOrHash }: { hash: HexString; networkIdOrHash: string }) => {
+    ({ networkId, txIdentifier }: { networkId: string; txIdentifier: string }) => {
       const qs = new URLSearchParams()
-      qs.set("hash", hash)
-      qs.set("networkIdOrHash", networkIdOrHash)
+      qs.set("txIdentifier", txIdentifier)
+      qs.set("networkId", networkId)
       navigate(`/send/submitted?${qs.toString()}`)
     },
     [navigate],

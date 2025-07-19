@@ -5,6 +5,7 @@ import { IBalance } from "@talismn/balances"
 import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
+import { SolTransactionJson } from "@talismn/solana"
 import { DbTokenRates } from "@talismn/token-rates"
 import {
   Account,
@@ -38,6 +39,7 @@ import {
   RequestMetadataId,
   RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
+  ResponseSolanaSubmit,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
@@ -244,6 +246,12 @@ export default interface MessageTypes {
   ) => Promise<{ hash: HexString }>
 
   solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
+  solSubmit: (
+    networkId: string,
+    transaction: SolTransactionJson,
+    lastValidBlockHeight?: number,
+    txInfo?: WalletTransactionInfo,
+  ) => Promise<ResponseSolanaSubmit>
 
   // substrate chain metadata
   subChainMetadata: (

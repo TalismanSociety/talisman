@@ -53,7 +53,7 @@ export const useSendFundsTransactionEth = ({
   })
 
   const maxAmount = useMemo(() => {
-    if (!balance || !token) return null
+    if (!balance || !isTokenEth(token)) return null
 
     switch (token.type) {
       case "evm-native": {
@@ -74,7 +74,7 @@ export const useSendFundsTransactionEth = ({
     return [null, null]
   }, [result.txDetails])
 
-  if (token?.platform !== "ethereum") return null
+  if (isTokenEth(token)) return null
 
   return {
     platform: "ethereum" as const,
