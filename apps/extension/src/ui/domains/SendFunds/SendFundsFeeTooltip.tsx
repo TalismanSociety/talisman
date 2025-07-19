@@ -8,7 +8,7 @@ import { useSendFunds } from "./useSendFunds"
 
 export const SendFundsFeeTooltip = () => {
   const { t } = useTranslation()
-  const { feeToken, feeTokenBalance, estimatedFee, evmTransaction } = useSendFunds()
+  const { feeToken, feeTokenBalance, estimatedFee, transaction } = useSendFunds()
   if (!feeToken || !feeTokenBalance || !estimatedFee) return null
 
   return (
@@ -20,12 +20,12 @@ export const SendFundsFeeTooltip = () => {
           <div className="text-right">
             <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} noCountUp />
           </div>
-          {!!evmTransaction?.txDetails?.maxFee && (
+          {transaction?.platform === "ethereum" && !!transaction.txDetails?.maxFee && (
             <>
               <div>{t("Max. fee:")}</div>
               <div className="text-right">
                 <TokensAndFiat
-                  planck={evmTransaction.txDetails.maxFee}
+                  planck={transaction.txDetails.maxFee}
                   tokenId={feeToken.id}
                   noCountUp
                 />

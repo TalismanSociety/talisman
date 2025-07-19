@@ -44,7 +44,7 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
   return getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS[type])
 }
 
-export const getEthTransferTransactionBase = async (
+export const getEthTransferTransactionBase = (
   evmNetworkId: EthNetworkId,
   from: EvmAddress,
   to: EvmAddress,

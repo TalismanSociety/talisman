@@ -28,9 +28,14 @@ const NetworkRow = () => {
 
 const EvmFeeSettingsRow = () => {
   const { t } = useTranslation()
-  const { token, network, evmTransaction } = useSendFunds()
+  const { token, network, transaction } = useSendFunds()
 
-  if (!token || !evmTransaction || network?.platform !== "ethereum" || !isTokenEth(token))
+  if (
+    !token ||
+    transaction?.platform !== "ethereum" ||
+    network?.platform !== "ethereum" ||
+    !isTokenEth(token)
+  )
     return null
 
   const {
@@ -41,7 +46,7 @@ const EvmFeeSettingsRow = () => {
     setCustomSettings,
     setPriority,
     networkUsage,
-  } = evmTransaction
+  } = transaction
 
   return (
     <div className="flex h-12 w-full items-center justify-between gap-4">
