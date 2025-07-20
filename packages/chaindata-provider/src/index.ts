@@ -2,6 +2,8 @@ export * from "./chaindata"
 export * from "./provider"
 export * from "./util"
 export * from "./legacy"
+export * from "./getBlockExplorerUrls"
+
 export { MINIMETADATA_VERSION } from "./constants"
 
 export {
