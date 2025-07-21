@@ -1,0 +1,89 @@
+/* eslint-disable no-console */
+import EventEmitter from "events"
+
+import { SendRequest } from "@polkadot/extension-base/page/types"
+// import { base58 } from "@talismn/crypto"
+// import { base58 } from "@scure/base"
+import { PublicKey } from "@solana/web3.js"
+import { sleep } from "@talismn/util"
+import bs58 from "bs58" // results in smaller bundle size than with @scure/base
+
+import { TalismanSolWalletAccount } from "./account"
+import { TalismanSol } from "./window"
+
+const MOCK_ADDRESS = "5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"
+
+export const getSolanaProvider = (send: SendRequest): TalismanSol => {
+  console.log("[provider] getSolanaProvider", { send })
+  const eventEmitter = new EventEmitter({ captureRejections: true })
+
+  const provider: TalismanSol = {
+    publicKey: null,
+
+    on: (event, listener, context) => {
+      eventEmitter.on(event, listener.bind(context))
+    },
+    off: (event, listener, context) => {
+      eventEmitter.off(event, listener.bind(context))
+    },
+
+    connect: async (options?: { onlyIfTrusted?: boolean }) => {
+      console.log("[provider] connect", { options })
+      const address = await (async () => {
+        await sleep(200)
+        return MOCK_ADDRESS
+      })()
+
+      const publicKey = new PublicKey(address)
+
+      // TODO register emitter listeners ?
+
+      provider.publicKey = publicKey
+      return { publicKey }
+    },
+    disconnect: async () => {
+      // TODO unregister emitter listeners ?
+
+      await sleep(200)
+      provider.publicKey = null
+    },
+    signAndSendTransaction: async (transaction, options) => {
+      console.log("[provider] signAndSendTransaction", { transaction, options })
+      // const response = await send("solana_signAndSendTransaction", { transaction, options });
+      return { signature: "" }
+    },
+    signTransaction: async (transaction) => {
+      console.log("[provider] signTransaction", { transaction })
+      await sleep(200)
+      return transaction
+    },
+    signAllTransactions: async (transactions) => {
+      console.log("[provider] signAllTransactions", { transactions })
+      await sleep(200)
+      return transactions
+    },
+    signMessage: async (message) => {
+      console.log("[provider] signMessage", { message })
+      await sleep(200)
+      return { signature: new Uint8Array() }
+    },
+    signIn: async (input) => {
+      console.log("[provider] signIn", { input })
+
+      return {
+        account: new TalismanSolWalletAccount({
+          address: MOCK_ADDRESS,
+          publicKey: bs58.decode(MOCK_ADDRESS),
+          label: "Mock Solana Wallet",
+        }),
+        signature: new Uint8Array(),
+        signedMessage: new Uint8Array(),
+        signatureType: "ed25519",
+      }
+    },
+  }
+
+  //  let publicKey: PublicKey | null
+
+  return provider
+}

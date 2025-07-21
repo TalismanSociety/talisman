@@ -4,6 +4,7 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 import { DEBUG, isTalismanHostname } from "extension-shared"
+import { injectSolana } from "inject/solana/injectSolana"
 
 import type { Injected } from "./inject/substrate/types"
 import WindowMessageService from "./common/WindowMessageService"
@@ -45,6 +46,7 @@ function inject() {
   })
 
   injectEthereum(messageService.sendMessage)
+  injectSolana(messageService.sendMessage)
 
   if (isTalismanHostname(window.location.hostname)) injectSubstrate(messageService.sendMessage)
 }
