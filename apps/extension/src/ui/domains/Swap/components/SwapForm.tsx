@@ -15,8 +15,6 @@ import {
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
-  toEvmAddressAtom,
-  toSubstrateAddressAtom,
 } from "../swap-modules/common.swap-module"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { type useFastBalance } from "../swaps-port/useFastBalance"
@@ -86,30 +84,20 @@ export const SwapForm = ({
 
   const reverse = useReverse()
 
-  const setToEvmAddress = useSetAtom(toEvmAddressAtom)
-  const setToSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
-  const setToBtcAddress = useSetAtom(toEvmAddressAtom)
-
   const handleChangeFromAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
       if (asset && toAsset && asset.id === toAsset.id) reverse()
       else setFromAsset(asset)
-
-      // reset toAddress to none
-      setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
-    [reverse, setFromAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress, toAsset],
+    [reverse, setFromAsset, toAsset],
   )
 
   const handleChangeToAsset = useCallback(
     (asset: SwappableAssetWithDecimals | null) => {
       if (asset && fromAsset && asset.id === fromAsset.id) reverse()
       else setToAsset(asset)
-
-      // reset toAddress to none
-      setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     },
-    [fromAsset, reverse, setToAsset, setToBtcAddress, setToEvmAddress, setToSubstrateAddress],
+    [fromAsset, reverse, setToAsset],
   )
 
   const insufficientBalance = useMemo(() => {
