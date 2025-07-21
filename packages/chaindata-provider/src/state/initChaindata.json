@@ -5,7 +5,7 @@
       "platform": "solana",
       "isDefault": true,
       "name": "Solana Mainnet",
-      "rpcs": ["https://solana-mainnet.rpc.triton.one"],
+      "rpcs": ["https://solana-mainnet.g.alchemy.com/v2/FlflUnY6iZ98J9likA0ZdLSMfa6SqMya"],
       "nativeTokenId": "solana-mainnet:sol-native",
       "nativeCurrency": {
         "decimals": 9,
@@ -13,7 +13,22 @@
         "name": "Solana",
         "coingeckoId": "solana",
         "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/new-balance-modules/assets/tokens/sol.svg"
-      }
+      },
+      "blockExplorerUrls": ["https://explorer.solana.com/?cluster=testnet"]
+    },
+    {
+      "id": "solana-devnet",
+      "platform": "solana",
+      "isDefault": true,
+      "name": "Solana Devnet",
+      "rpcs": ["https://solana-devnet.g.alchemy.com/v2/FlflUnY6iZ98J9likA0ZdLSMfa6SqMya"],
+      "nativeTokenId": "solana-devnet:sol-native",
+      "nativeCurrency": {
+        "decimals": 9,
+        "symbol": "SOL",
+        "name": "Solana (Devnet)"
+      },
+      "blockExplorerUrls": ["https://explorer.solana.com/?cluster=devnet"]
     },
     {
       "id": "1",
@@ -571,6 +586,18 @@
       "id": "solana-mainnet:sol-native",
       "platform": "solana",
       "networkId": "solana-mainnet",
+      "type": "sol-native",
+      "symbol": "SOL",
+      "name": "Solana",
+      "decimals": 9,
+      "isDefault": true,
+      "coingeckoId": "solana",
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/new-balance-modules/assets/tokens/sol.svg"
+    },
+    {
+      "id": "solana-devnet:sol-native",
+      "platform": "solana",
+      "networkId": "solana-devnet",
       "type": "sol-native",
       "symbol": "SOL",
       "name": "Solana",

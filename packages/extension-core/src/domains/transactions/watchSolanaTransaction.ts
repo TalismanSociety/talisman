@@ -1,8 +1,7 @@
 import { Connection, Transaction } from "@solana/web3.js"
-import { SolNetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, SolNetworkId } from "@talismn/chaindata-provider"
 import { base58 } from "@talismn/crypto"
 import { log } from "extension-shared"
-import urlJoin from "url-join"
 
 import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
@@ -29,9 +28,8 @@ export const watchSolanaTransaction = async (
     if (!transaction.signature) throw new Error("Transaction signature is missing")
     const signature = base58.encode(transaction.signature!)
 
-    const txUrl = network.blockExplorerUrls[0]
-      ? urlJoin(network.blockExplorerUrls[0], "tx", signature)
-      : chrome.runtime.getURL("dashboard.html#/tx-history")
+    const blockExplorerUrls = getBlockExplorerUrls(network, { type: "transaction", id: signature })
+    const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
 
     await addSolTransaction(networkId, transaction, lastValidBlockHeight, { siteUrl, txInfo })
 
@@ -62,6 +60,9 @@ async function watchUntilFinalized(
       // Check if transaction is confirmed
       const status = await connection.getSignatureStatus(signature)
       const { confirmationStatus, err } = status?.value ?? {}
+
+      // TODO ideally we should check that the current block height (which is not the slot) is still < lastValidBlockHeight
+      // but that would be one additional RPC call per poll
 
       if (err) {
         txStatus = "error"
