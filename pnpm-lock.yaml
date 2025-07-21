@@ -1858,6 +1858,9 @@ importers:
       '@solana/web3.js':
         specifier: ^1.98.2
         version: 1.98.2(bufferutil@4.0.8)(typescript@5.8.3)(utf-8-validate@5.0.10)
+      '@talismn/crypto':
+        specifier: workspace:*
+        version: link:../crypto
       anylogger:
         specifier: ^1.0.11
         version: 1.0.11
