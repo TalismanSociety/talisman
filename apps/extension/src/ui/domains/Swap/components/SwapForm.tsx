@@ -1,9 +1,11 @@
-import { LoaderIcon } from "@talismn/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+
+import { useAccountsMap, useNetworkById } from "@ui/state"
 
 import {
   fromAddressAtom,
@@ -34,7 +36,13 @@ import { ReverseButton } from "./ReverseButton"
 import { SwapDetails } from "./SwapDetails"
 import { TokenAmountInput } from "./TokenAmountInput"
 
-export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFastBalance> }) => {
+export const SwapForm = ({
+  fastBalance,
+  approveRecipient,
+}: {
+  fastBalance: ReturnType<typeof useFastBalance>
+  approveRecipient?: boolean
+}) => {
   const { t } = useTranslation()
   const setSwapView = useSetAtom(swapViewAtom)
 
@@ -55,7 +63,17 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
   const [cachedToAmount, setCachedToAmount] = useState(
     toAmount.state === "hasData" ? toAmount.data : undefined,
   )
+  const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
   const quotes = useAtomValue(swapQuotesAtom)
+
+  const accountsMap = useAccountsMap()
+  const toAccount = toAddress ? accountsMap[toAddress] : null
+  const toIsWatched = toAccount?.type === "watch-only"
+  const toIsExternal = !toAccount || toAccount.type === "contact"
+
+  useEffect(() => {
+    if (approveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
+  }, [approveRecipient, setSwapView, toIsExternal, toIsWatched])
 
   // reset when any of the inputs change
   useEffect(() => {
@@ -184,6 +202,10 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
               if (quote.state !== "hasData" || !quote.data) return
               if (!fastBalance?.balance) return
               if (quote.data.quote.state !== "hasData" || !quote.data.quote.data) return
+
+              // if toAddress isn't an owned account, show a warning to the user
+              if (toIsExternal || toIsWatched) return setSwapView("approve-recipient")
+
               setSwapView("confirm")
             }}
           >
@@ -193,6 +215,38 @@ export const SwapForm = ({ fastBalance }: { fastBalance: ReturnType<typeof useFa
               t("Review")
             )}
           </Button>
+        )}
+
+        {approveRecipient && (
+          <div className="bg-black-tertiary animate-slide-in-up absolute bottom-0 left-0 m-8 flex flex-col gap-8 rounded p-8">
+            <div className="flex items-center gap-3 text-sm text-orange-400">
+              {toIsWatched && (
+                <Trans t={t}>
+                  <AlertCircleIcon /> Sending {toAsset?.symbol} to a watch-only account on{" "}
+                  {toNetwork?.name}.
+                </Trans>
+              )}
+              {toIsExternal && (
+                <Trans t={t}>
+                  <AlertCircleIcon /> Sending {toAsset?.symbol} to an external account on{" "}
+                  {toNetwork?.name}.
+                </Trans>
+              )}
+            </div>
+            <div className="flex gap-8">
+              <Button className="!w-full !rounded" small onClick={() => setSwapView("form")}>
+                {t("Cancel")}
+              </Button>
+              <Button
+                className="!w-full !rounded"
+                small
+                primary
+                onClick={() => setSwapView("confirm")}
+              >
+                {t("Proceed")}
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

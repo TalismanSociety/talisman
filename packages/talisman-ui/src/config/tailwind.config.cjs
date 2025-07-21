@@ -167,6 +167,10 @@ module.exports = {
           "50%": { transform: "scale(1)" },
           "100%": { transform: "scale(0)" },
         },
+        "slide-in-up": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0%)" },
+        },
       },
       animation: {
         "fade-in-fast": "fade-in 0.1s ease-out",
@@ -175,6 +179,7 @@ module.exports = {
         "spin-slow": "spin 2s linear infinite",
         "spin-once": "spin 4s linear forwards",
         "scale-in-out-once": "scale-in-out 1.5s forwards",
+        "slide-in-up": "slide-in-up 300ms ease-out",
       },
       gridTemplateColumns: {
         // 2 columns, 2nd grows
