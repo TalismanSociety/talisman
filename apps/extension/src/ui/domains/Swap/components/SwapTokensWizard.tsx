@@ -47,7 +47,9 @@ export const SwapTokensWizard = () => {
     <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">
       <SwapHeader />
 
-      {swapView === "form" && <SwapForm fastBalance={fastBalance} />}
+      {["form", "approve-recipient"].includes(swapView) && (
+        <SwapForm fastBalance={fastBalance} approveRecipient={swapView === "approve-recipient"} />
+      )}
       {swapView === "approve-erc20" && <SwapApproveErc20 />}
       {swapView === "confirm" && <SwapConfirm fastBalance={fastBalance} />}
     </div>

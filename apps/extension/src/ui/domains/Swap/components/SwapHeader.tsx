@@ -21,14 +21,17 @@ export const SwapHeader = () => {
   }, [swapView, t])
 
   const onBack = useMemo(
-    () => (swapView === "form" ? closeSwapTokensModal : () => void setSwapView("form")),
+    () =>
+      ["form", "approve-recipient"].includes(swapView)
+        ? closeSwapTokensModal
+        : () => void setSwapView("form"),
     [closeSwapTokensModal, setSwapView, swapView],
   )
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex-1">
-        {swapView !== "form" && (
+        {!["form", "approve-recipient"].includes(swapView) && (
           <button className="px-12 py-10" onClick={onBack}>
             <ChevronLeftIcon className="text-body-secondary shrink-0 text-lg hover:text-white" />
           </button>
@@ -38,7 +41,7 @@ export const SwapHeader = () => {
       <h3 className="text-body-secondary text-base">{title}</h3>
 
       <div className="flex flex-1 justify-end">
-        {swapView === "form" && (
+        {["form", "approve-recipient"].includes(swapView) && (
           <button className="px-12 py-10" onClick={onBack}>
             <XIcon className="text-body-secondary shrink-0 text-lg hover:text-white" />
           </button>
