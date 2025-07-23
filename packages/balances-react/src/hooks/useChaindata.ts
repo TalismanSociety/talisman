@@ -1,4 +1,4 @@
-import { NetworkId, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, NetworkList, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { useAtomValue } from "jotai"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
@@ -10,7 +10,7 @@ export const useChaindataProvider = () => useAtomValue(chaindataProviderAtom)
 export const useChaindata = () => useAtomValue(chaindataAtom)
 
 export const useNetworks = () => useChaindata().networks
-export const useNetworksById = () => {
+export const useNetworksById = (): NetworkList => {
   const { networks } = useChaindata()
   return useMemo(() => keyBy(networks, (n) => n.id), [networks])
 }
@@ -20,7 +20,7 @@ export const useNetwork = (networkId?: NetworkId) => {
 }
 
 export const useTokens = () => useChaindata().tokens
-export const useTokensById = () => {
+export const useTokensById = (): TokenList => {
   const { tokens } = useChaindata()
   return useMemo(() => keyBy(tokens, (t) => t.id), [tokens])
 }
