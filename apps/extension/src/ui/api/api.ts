@@ -159,6 +159,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
+  authrequestApproveSolSignIn: (id, result) =>
+    messageService.sendMessage("pri(sites.requests.approveSolSignIn)", { id, result }),
 
   // track metadata updates ----------------------------------------------
   metadataUpdatesSubscribe: (genesisHash, cb) =>
@@ -291,4 +293,10 @@ export const api: MessageTypes = {
   nftsSetFavorite: (id, isFavorite) =>
     messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
   nftsRefreshMetadata: (id) => messageService.sendMessage("pri(nfts.refreshMetadata)", { id }),
+
+  // // generic request handling
+  // requestResolve: (id, result) =>
+  //   messageService.sendMessage("pri(request.internal.resolve)", { id, result }),
+  // requestReject: (id, reason) =>
+  //   messageService.sendMessage("pri(request.internal.reject)", { id, reason }),
 }

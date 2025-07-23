@@ -1,5 +1,8 @@
 import type { RequestAuthorizeTab as PolkadotRequestAuthorizeTab } from "@polkadot/extension-base/background/types"
+import { SolanaSignInInput } from "@solana/wallet-standard-features"
+import { Account } from "@talismn/keyring"
 
+import { KnownRequestId } from "../../libs/requests/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "../../types/base"
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "../ethereum/types"
 
@@ -19,8 +22,20 @@ export interface SiteAuthRequest extends BaseRequest<AUTH_PREFIX> {
   url: string
 }
 
+export const AUTH_SOL_SIGN_IN_PREFIX = "auth-sol-signIn"
+export interface AuthSolanaSignInRequest extends BaseRequest<typeof AUTH_SOL_SIGN_IN_PREFIX> {
+  input?: SolanaSignInInput
+  url: string
+}
+export type AuthSolanaSignInResponse = {
+  account: Account
+  message: string // message to be signed as part of the sign-in process
+  signature: string
+}
+
 export type SitesAuthRequests = {
-  auth: [SiteAuthRequest, AuthRequestResponse]
+  "auth": [SiteAuthRequest, AuthRequestResponse]
+  "auth-sol-signIn": [AuthSolanaSignInRequest, AuthSolanaSignInResponse]
 }
 
 // authorize request types ----------------------------------
@@ -34,6 +49,15 @@ export type AuthRequestApprove = {
 }
 
 export type AuthRequestResponse = { addresses: AuthRequestAddresses }
+
+export type AuthSolanaSignInApprove = {
+  id: KnownRequestId<"auth-sol-signIn">
+  result: {
+    address: string
+    message: string // message to be signed as part of the sign-in process
+    signature?: string // optional hardware signer signature
+  }
+}
 
 // authorized site types ----------------------------------
 
@@ -54,13 +78,15 @@ export type AuthorizedSite = {
   addresses?: AuthorizedSiteAddresses
   ethAddresses?: AuthorizedSiteAddresses
   ethPermissions?: EthWalletPermissions
+  solAddresses?: string[]
+  solActiveAddress?: string // last selected address
   origin: string
   url: string
   ethChainId?: number
   connectAllSubstrate?: boolean
 }
 
-export type ProviderType = "polkadot" | "ethereum"
+export type ProviderType = "polkadot" | "ethereum" | "solana"
 
 export declare type AuthorisedSiteUpdate = Omit<Partial<AuthorizedSite>, "id">
 
@@ -79,6 +105,7 @@ export interface AuthorisedSiteMessages {
   "pri(sites.requests.approve)": [AuthRequestApprove, boolean]
   "pri(sites.requests.reject)": [RequestIdOnly, boolean]
   "pri(sites.requests.ignore)": [RequestIdOnly, boolean]
+  "pri(sites.requests.approveSolSignIn)": [AuthSolanaSignInApprove, boolean]
 
   // authorised sites message signatures
   "pri(sites.list)": [null, AuthUrls]

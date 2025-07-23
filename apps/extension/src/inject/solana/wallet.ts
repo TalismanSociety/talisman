@@ -42,13 +42,13 @@ import { TalismanSolWalletAccount } from "./account"
 import { isSolanaChain, isVersionedTransaction, SOLANA_CHAINS } from "./solana"
 import { bytesEqual } from "./util"
 
-export const TalismanNamespace = "talisman:"
+// export const TalismanNamespace = "talisman:"
 
-export type TalismanSolFeature = {
-  [TalismanNamespace]: {
-    talisman: TalismanSol
-  }
-}
+// export type TalismanSolFeature = {
+//   [TalismanNamespace]: {
+//     talisman: TalismanSol
+//   }
+// }
 
 export class TalismanSolWallet implements Wallet {
   readonly #listeners: { [E in StandardEventsNames]?: StandardEventsListeners[E][] } = {}
@@ -80,8 +80,8 @@ export class TalismanSolWallet implements Wallet {
     SolanaSignAndSendTransactionFeature &
     SolanaSignTransactionFeature &
     SolanaSignMessageFeature &
-    SolanaSignInFeature &
-    TalismanSolFeature {
+    SolanaSignInFeature {
+    // & TalismanSolFeature
     return {
       [StandardConnect]: {
         version: "1.0.0",
@@ -113,9 +113,9 @@ export class TalismanSolWallet implements Wallet {
         version: "1.0.0",
         signIn: this.#signIn,
       },
-      [TalismanNamespace]: {
-        talisman: this.#talisman,
-      },
+      //   [TalismanNamespace]: {
+      //     talisman: this.#talisman,
+      //   },
     }
   }
 

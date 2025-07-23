@@ -1,0 +1,177 @@
+import { createSignInMessageText } from "@solana/wallet-standard-util"
+import { isAccountPlatformSolana, KnownRequestIdOnly } from "extension-core"
+import { FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
+
+import { AppPill } from "@talisman/components/AppPill"
+import { notify } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
+import { Message } from "@ui/domains/Sign/Message"
+import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
+import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
+import { useAccountByAddress, useAccounts, useRequest } from "@ui/state"
+
+import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
+
+// TODO
+// const NoAccountWarning = ({
+//   onIgnoreClick,
+//   onAddAccountClick,
+//   type,
+// }: {
+//   type: ProviderType
+//   onIgnoreClick: () => void
+//   onAddAccountClick: () => void
+// }) => {
+//   const { t } = useTranslation()
+//   return (
+//     <Drawer isOpen anchor="bottom" containerId="main">
+//       <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+//         <div className="w-full text-center">
+//           <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+//         </div>
+//         <p className="text-body-secondary text-center">
+//           <Trans
+//             t={t}
+//             defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"
+//             components={{ strong: <strong className="text-body" />, br: <br /> }}
+//             values={{ type: capitalize(type) }}
+//           />
+//         </p>
+//         <div className="mt-4 grid grid-cols-2 gap-8">
+//           <Button onClick={onIgnoreClick}>{t("No")}</Button>
+//           <Button primary onClick={onAddAccountClick}>
+//             {t("Yes")}
+//           </Button>
+//         </div>
+//       </div>
+//     </Drawer>
+//   )
+// }
+
+export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation()
+  const { id } = useParams<"id">() as KnownRequestIdOnly<"auth-sol-signIn">
+
+  const signInRequest = useRequest(id)
+
+  // const refBottom = useRef<HTMLDivElement>(null)
+
+  const [address, setAddress] = useState<string>()
+  const accounts = useAccounts("owned")
+  const solanaAccounts = useMemo(() => accounts.filter(isAccountPlatformSolana), [accounts])
+
+  const account = useAccountByAddress(address)
+
+  const message = useMemo(() => {
+    if (!address || !signInRequest) return null
+    return createSignInMessageText({
+      ...signInRequest.input,
+      address,
+      domain: new URL(signInRequest.url).host,
+    })
+  }, [address, signInRequest])
+
+  useEffect(() => {
+    if (!signInRequest) window.close()
+  }, [signInRequest])
+
+  const handleAuthoriseClick = useCallback(async () => {
+    if (!signInRequest || !address || !message) return
+    try {
+      await api.authrequestApproveSolSignIn(signInRequest.id, {
+        address,
+        message,
+      })
+    } catch (err) {
+      notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
+    }
+  }, [address, message, signInRequest, t])
+
+  const reject = useCallback(() => {
+    if (!signInRequest) return
+    // TODO ?
+    window.close()
+  }, [signInRequest])
+
+  // TODO ?
+  // const ignore = useCallback(() => {
+  //   if (!signInRequest) return
+  //   // TODO ?
+  //   window.close()
+  // }, [signInRequest])
+
+  // TODO fetch current authorised site object and visually show if we are already connected
+
+  if (!signInRequest) return null
+
+  return (
+    <PopupLayout className={className}>
+      <PopupHeader>
+        <AppPill url={signInRequest.url} />
+      </PopupHeader>
+      <PopupContent>
+        <div className="text-body-secondary flex h-full w-full flex-col items-center gap-8 text-center">
+          <h1 className="text-body text-md font-bold leading-9">{t("Sign In Request")}</h1>
+          <div className="flex w-full flex-col gap-8 px-4 text-left">
+            <ConnectAccountsContainer
+              status="disabled"
+              connectedAddresses={[]}
+              label={t("Solana")}
+              infoText={t(`Account will be connected via the Solana provider`)}
+              isSingleProvider
+            >
+              {solanaAccounts.map((acc, idx) => (
+                <Fragment key={acc.address}>
+                  {!!idx && <AccountSeparator />}
+                  <ConnectAccountToggleButtonRow
+                    account={acc}
+                    showAddress
+                    checked={address === acc.address}
+                    onClick={() => setAddress(acc.address)}
+                  />
+                </Fragment>
+              ))}
+            </ConnectAccountsContainer>
+            {!!message && <MessageContainer text={message} />}
+          </div>
+        </div>
+      </PopupContent>
+      <PopupFooter>
+        <div className="grid w-full grid-cols-2 gap-12">
+          <Button onClick={reject} data-testid="connection-reject-button">
+            {t("Reject")}
+          </Button>
+          <Button
+            primary
+            onClick={handleAuthoriseClick}
+            disabled={!account}
+            data-testid="connection-connect-button"
+          >
+            {t("Sign In")}
+          </Button>
+        </div>
+      </PopupFooter>
+    </PopupLayout>
+  )
+}
+
+const MessageContainer: FC<{ text: string }> = ({ text }) => {
+  const { t } = useTranslation()
+  const refContainer = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    refContainer.current?.scrollIntoView({ behavior: "smooth" })
+  }, [])
+
+  return (
+    <div ref={refContainer} className="flex w-full flex-col gap-4 px-4">
+      <div className="px-4 text-sm">{t("Sign in message:")}</div>
+      <Message className="w-full text-sm" text={text} rows={6} />
+    </div>
+  )
+}
+
+const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>

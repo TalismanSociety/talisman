@@ -1,5 +1,6 @@
 import {
   AUTH_PREFIX,
+  AUTH_SOL_SIGN_IN_PREFIX,
   ENCRYPT_DECRYPT_PREFIX,
   ENCRYPT_ENCRYPT_PREFIX,
   ETH_NETWORK_ADD_PREFIX,
@@ -39,6 +40,7 @@ import { LoginViewManager } from "./pages/Login"
 import { ManageAccountsPage } from "./pages/ManageAccounts"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
+import { SolSignInPage } from "./pages/Requests/Auth/SolSignInPage"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
@@ -70,6 +72,7 @@ const Popup = () => {
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
+          <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />

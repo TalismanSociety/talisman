@@ -73,6 +73,6 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         return { signature: sig }
       }
     }
-    throw new Error(`Unable to handle message of type ${type} (substrate)`)
+    throw new Error(`Unable to handle message of type ${type}`)
   }
 }

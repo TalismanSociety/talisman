@@ -1,14 +1,12 @@
 /* eslint-disable no-console */
 import EventEmitter from "events"
 
-import { SendRequest } from "@polkadot/extension-base/page/types"
-// import { base58 } from "@talismn/crypto"
-// import { base58 } from "@scure/base"
+import type { SendRequest } from "extension-core"
+import { SolanaSignInOutput } from "@solana/wallet-standard-features"
 import { PublicKey } from "@solana/web3.js"
 import { sleep } from "@talismn/util"
-import bs58 from "bs58" // results in smaller bundle size than with @scure/base
+import bs58 from "bs58"
 
-import { TalismanSolWalletAccount } from "./account"
 import { TalismanSol } from "./window"
 
 const MOCK_ADDRESS = "5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"
@@ -70,20 +68,27 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     signIn: async (input) => {
       console.log("[provider] signIn", { input })
 
-      return {
-        account: new TalismanSolWalletAccount({
-          address: MOCK_ADDRESS,
-          publicKey: bs58.decode(MOCK_ADDRESS),
-          label: "Mock Solana Wallet",
-        }),
-        signature: new Uint8Array(),
-        signedMessage: new Uint8Array(),
+      // SolanaSignInOutput contains field that are not serializable
+      // => backend returns a result with some base58 encoded fields
+      const result = await send("pub(solana.provider.signIn)", { input })
+
+      const output: SolanaSignInOutput = {
+        account: {
+          ...result.account,
+          publicKey: bs58.decode(result.account.address),
+        },
+        signature: bs58.decode(result.signature),
+        signedMessage: bs58.decode(result.signedMessage),
         signatureType: "ed25519",
       }
+
+      provider.publicKey = new PublicKey(output.account.publicKey)
+
+      // console.debug("[provider] signIn response", { output })
+
+      return output
     },
   }
-
-  //  let publicKey: PublicKey | null
 
   return provider
 }

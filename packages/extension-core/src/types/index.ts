@@ -1,6 +1,6 @@
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
+import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 import { AccountsMessages } from "../domains/accounts/types"
 import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
@@ -13,10 +13,12 @@ import { MnemonicMessages } from "../domains/mnemonics/types"
 import { NftsMessages } from "../domains/nfts"
 import { SigningMessages } from "../domains/signing/types"
 import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
-import { SolanaMessages } from "../domains/solana"
+import { SolanaExtensionMessages } from "../domains/solana"
+import { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
+import { KnownRequestId, KnownRequestTypes, KnownResponse } from "../libs/requests/types"
 import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
@@ -84,12 +86,14 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TalismanMessages &
   TokenRatesMessages &
   SubstrateMessages &
-  SolanaMessages &
+  SolanaExtensionMessages &
+  SolanaTabsMessages &
   AssetDiscoveryMessages &
   NftsMessages &
   PingMessages &
   ChaindataMessages &
-  UnsubscribeMessages
+  UnsubscribeMessages &
+  InternalRequestMessages
 
 interface PingMessages {
   // keeps the background script alive while the UI is open
@@ -100,6 +104,23 @@ interface PingMessages {
 
 interface UnsubscribeMessages {
   "pri(unsubscribe)": [RequestIdOnly, null]
+}
+
+// use these handlers to process any type of internal request
+// TODO migrate signing, auth, and all other existing requests to this format
+type InternalRequestResolve<T extends KnownRequestTypes = KnownRequestTypes> = {
+  id: KnownRequestId<T>
+  result: KnownResponse<T>
+}
+
+type InternalRequestReject<T extends KnownRequestTypes = KnownRequestTypes> = {
+  id: KnownRequestId<T>
+  reason: string
+}
+
+interface InternalRequestMessages {
+  "pri(request.internal.resolve)": [InternalRequestResolve, void]
+  "pri(request.internal.reject)": [InternalRequestReject, void]
 }
 
 export declare type MessageTypes = keyof AllMessages
@@ -124,11 +145,23 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
   keyof SubscriptionMessageTypes
 >
 
+export declare type TabMessageTypesWithNoSubscriptions = Exclude<
+  MessageTypes,
+  keyof SubscriptionMessageTypes
+> &
+  `pub(${string})`
+
 export type MessageHandler<
   TMessageType extends MessageTypesWithNoSubscriptions,
   Req = RequestType<TMessageType>,
   Res = ResponseType<TMessageType>,
 > = (req: Req) => Res | Promise<Res>
+
+export type TabMessageHandler<
+  TMessageType extends TabMessageTypesWithNoSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>,
+> = (req: Req, url: string, port: Port) => Res | Promise<Res>
 
 export type SubscriptionHandler<
   TMessageType extends MessageTypesWithSubscriptions,

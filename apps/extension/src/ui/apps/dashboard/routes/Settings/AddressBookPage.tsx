@@ -195,6 +195,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 const contactTypeAddressTypeMap: Record<ProviderType, AddressEncoding> = {
   polkadot: "ss58",
   ethereum: "ethereum",
+  solana: "base58solana",
 }
 
 const Content = () => {

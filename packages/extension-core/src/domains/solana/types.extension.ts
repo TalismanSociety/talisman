@@ -34,7 +34,7 @@ export type ResponseSolanaSubmit = {
   signature: string
 }
 
-export type SolanaMessages = {
+export type SolanaExtensionMessages = {
   "pri(solana.rpc.send)": [RequestSolanaRpcSend, ResponseSolanaRpcSend]
   "pri(solana.rpc.submit)": [RequestSolanaSubmit, ResponseSolanaSubmit]
 }
