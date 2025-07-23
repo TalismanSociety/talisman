@@ -14,12 +14,14 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
   const eventEmitter = new EventEmitter({ captureRejections: true })
 
   const provider: TalismanSol = {
-    publicKey: null,
+    publicKey: null, // TODO harden this property to be readonly for consumers ?
 
     on: (event, listener, context) => {
+      console.log("[provider] on", { event, listener, context })
       eventEmitter.on(event, listener.bind(context))
     },
     off: (event, listener, context) => {
+      console.log("[provider] off", { event, listener, context })
       eventEmitter.off(event, listener.bind(context))
     },
 
@@ -31,8 +33,6 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
 
       const publicKey = new PublicKey(address)
 
-      // TODO register emitter listeners ?
-
       provider.publicKey = publicKey
       return { publicKey }
     },
@@ -40,8 +40,9 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
       // TODO unregister emitter listeners ?
       console.log("[provider] disconnect")
 
-      await sleep(200)
       provider.publicKey = null
+
+      await send("pub(solana.provider.disconnect)", undefined)
     },
     signAndSendTransaction: async (transaction, options) => {
       console.log("[provider] signAndSendTransaction", { transaction, options })
@@ -82,11 +83,30 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
 
       provider.publicKey = new PublicKey(output.account.publicKey)
 
-      // console.debug("[provider] signIn response", { output })
-
       return output
     },
   }
+
+  // subscribe to extension events for this site
+  send("pub(solana.provider.subscribe)", null, (ev) => {
+    console.log("[provider] received event", { ev })
+    switch (ev.type) {
+      case "accountChanged": {
+        provider.publicKey = new PublicKey(ev.address)
+        eventEmitter.emit("accountChanged")
+        break
+      }
+      case "connect": {
+        provider.publicKey = new PublicKey(ev.address)
+        eventEmitter.emit("connect")
+        break
+      }
+      case "disconnect": {
+        provider.publicKey = null
+        eventEmitter.emit("disconnect")
+      }
+    }
+  })
 
   return provider
 }

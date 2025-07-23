@@ -19,7 +19,22 @@ export type ResponseSolanaConnect = {
   address: string
 }
 
+export type SolanaTabSubscriptionEvent =
+  | {
+      type: "accountChanged"
+      address: string
+    }
+  | {
+      type: "connect"
+      address: string
+    }
+  | {
+      type: "disconnect"
+    }
+
 export type SolanaTabsMessages = {
+  "pub(solana.provider.subscribe)": [null, boolean, SolanaTabSubscriptionEvent]
   "pub(solana.provider.signIn)": [RequestSolanaSignIn, ResponseSolanaSignIn]
   "pub(solana.provider.connect)": [void, ResponseSolanaConnect]
+  "pub(solana.provider.disconnect)": [void, void]
 }
