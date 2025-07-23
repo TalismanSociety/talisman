@@ -23,22 +23,18 @@ const filteredChaindataAtom = atom(async (get) => {
   const networks = chaindata.networks.filter(
     (n) => (enabledNetworkIds?.includes(n.id) || n.isDefault) && (enableTestnets || !n.isTestnet),
   )
+  const networksById = keyBy(networks, (n) => n.id)
 
-  const networkById = keyBy(networks, (n) => n.id)
   const tokens = chaindata.tokens.filter(
     (token) =>
-      (enabledTokenIds?.includes(token.id) || token.isDefault) && networkById[token.networkId],
+      (enabledTokenIds?.includes(token.id) || token.isDefault) && networksById[token.networkId],
   )
+  const tokensById = keyBy(tokens, (t) => t.id)
 
-  return { networks, tokens }
+  return { networks, networksById, tokens, tokensById }
 })
 
-export const tokensAtom = atom(async (get) => {
-  const chaindata = await get(filteredChaindataAtom)
-  return chaindata.tokens
-})
-
-export const networksAtom = atom(async (get) => {
-  const chaindata = await get(filteredChaindataAtom)
-  return chaindata.networks
-})
+export const networksAtom = atom(async (get) => (await get(filteredChaindataAtom)).networks)
+export const networksByIdAtom = atom(async (get) => (await get(filteredChaindataAtom)).networksById)
+export const tokensAtom = atom(async (get) => (await get(filteredChaindataAtom)).tokens)
+export const tokensByIdAtom = atom(async (get) => (await get(filteredChaindataAtom)).tokensById)
