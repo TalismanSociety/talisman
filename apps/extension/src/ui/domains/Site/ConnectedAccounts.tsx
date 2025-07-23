@@ -79,6 +79,41 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   )
 }
 
+const SolAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
+  const accounts = useInjectableAccounts(site?.url ?? "", "solana")
+  const activeAccounts = useMemo(
+    () =>
+      accounts.map((acc) => [acc, site?.solAddresses?.some(isMatch(acc))] as [Account, boolean]),
+    [accounts, site?.solAddresses],
+  )
+
+  const handleAccountClick = useCallback(
+    (address: string) => async () => {
+      if (!site?.id) return
+      const isConnected = site?.solAddresses?.includes(address)
+      const solAddresses = isConnected ? [] : [address]
+      await api.authorizedSiteUpdate(site?.id, { solAddresses })
+    },
+    [site?.solAddresses, site?.id],
+  )
+
+  return (
+    <>
+      {activeAccounts.map(([acc, isConnected], idx) => (
+        <Fragment key={acc.address}>
+          {!!idx && <AccountSeparator />}
+          <ConnectAccountToggleButtonRow
+            account={acc}
+            showAddress
+            checked={isConnected}
+            onClick={handleAccountClick(acc.address)}
+          />
+        </Fragment>
+      ))}
+    </>
+  )
+}
+
 export const ConnectedAccounts: FC = () => {
   const { t } = useTranslation()
 
@@ -115,6 +150,17 @@ export const ConnectedAccounts: FC = () => {
           infoText={t("Accounts connected via the Polkadot provider")}
         >
           <SubAccounts site={site} />
+        </ConnectAccountsContainer>
+      )}
+      {site?.solAddresses && (
+        <ConnectAccountsContainer
+          label={t("Solana")}
+          status={site.solAddresses.length ? "connected" : "disconnected"}
+          connectedAddresses={site.solAddresses}
+          isSingleProvider
+          infoText={t("Accounts connected via the Solana provider")}
+        >
+          <SolAccounts site={site} />
         </ConnectAccountsContainer>
       )}
     </div>

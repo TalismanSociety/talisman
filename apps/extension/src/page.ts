@@ -30,7 +30,7 @@ const redirectIfPhishing = () => messageService.sendMessage("pub(phishing.redire
 
 // the enable function, called by the dapp to allow access
 const enable = async (origin: string): Promise<Injected> => {
-  await messageService.sendMessage("pub(authorize.tab)", { origin })
+  await messageService.sendMessage("pub(authorize.tab)", { origin, provider: "polkadot" })
 
   // Pretend that the TalismanInjected object is an Injected object (v. similar) to make the injectExtension work
   // Pretty sure there is a bug in Polkadot.js's typings which means this is required

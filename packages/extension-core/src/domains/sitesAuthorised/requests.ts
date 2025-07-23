@@ -1,7 +1,6 @@
 import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
-import { uniq } from "lodash-es"
 
 import type { Port } from "../../types/base"
 import type { AuthorizedSite, AuthSolanaSignInRequest, RequestAuthorizeTab } from "./types"
@@ -27,7 +26,7 @@ export const requestAuthoriseSite = async (
   // Do not enqueue duplicate authorization requests.
   const isDuplicate = requestStore
     .getAllRequests("auth")
-    .some((req) => req.idStr === domain && req.request.ethereum === request.ethereum)
+    .some((req) => req.idStr === domain && req.request.provider === request.provider)
 
   if (isDuplicate) {
     throw new AuthError(ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE)
@@ -46,7 +45,7 @@ export const requestAuthoriseSite = async (
     .then(async (response) => {
       const { addresses = [] } = response
 
-      const { origin, ethereum } = request
+      const { origin, provider } = request
 
       // we have already validated the url here, so no need to try/catch
       const siteAuth = (await sitesAuthorisedStore.getSiteFromUrl(url)) ?? ({} as AuthorizedSite)
@@ -55,13 +54,24 @@ export const requestAuthoriseSite = async (
       siteAuth.origin = origin
       siteAuth.url = url
 
-      if (ethereum) {
-        siteAuth.ethAddresses = addresses
+      switch (provider) {
+        case "polkadot": {
+          siteAuth.addresses = addresses
+          break
+        }
+        case "ethereum": {
+          siteAuth.ethAddresses = addresses
 
-        // set a default value for ethChainId only if empty
-        // some sites switch the network before requesting auth, ex nova.arbiscan.io
-        if (!siteAuth.ethChainId) siteAuth.ethChainId = DEFAULT_ETH_CHAIN_ID
-      } else siteAuth.addresses = addresses
+          // set a default value for ethChainId only if empty
+          // some sites switch the network before requesting auth, ex nova.arbiscan.io
+          if (!siteAuth.ethChainId) siteAuth.ethChainId = DEFAULT_ETH_CHAIN_ID
+          break
+        }
+        case "solana": {
+          siteAuth.solAddresses = addresses
+          break
+        }
+      }
 
       await sitesAuthorisedStore.set({
         [domain]: siteAuth,
@@ -105,8 +115,7 @@ export const requestSolanaSignIn = async (
   siteAuth.id = domain
   siteAuth.origin = ""
   siteAuth.url = url
-  siteAuth.solAddresses = uniq((siteAuth.solAddresses ?? []).concat(account.address))
-  siteAuth.solActiveAddress = account.address
+  siteAuth.solAddresses = [account.address]
 
   await sitesAuthorisedStore.set({
     [domain]: siteAuth,

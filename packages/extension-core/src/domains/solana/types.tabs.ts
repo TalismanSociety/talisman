@@ -15,6 +15,11 @@ export type ResponseSolanaSignIn = {
   signatureType: "ed25519" | undefined
 }
 
+export type ResponseSolanaConnect = {
+  address: string
+}
+
 export type SolanaTabsMessages = {
   "pub(solana.provider.signIn)": [RequestSolanaSignIn, ResponseSolanaSignIn]
+  "pub(solana.provider.connect)": [void, ResponseSolanaConnect]
 }

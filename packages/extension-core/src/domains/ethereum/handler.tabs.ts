@@ -713,7 +713,7 @@ export class EthTabsHandler extends TabsHandler {
     // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
     const grantedPermissions: Partial<EthWalletPermissions> = {}
     if (missingPerms.includes("eth_accounts")) {
-      await this.authoriseEth(url, { origin: "", ethereum: true }, port)
+      await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port)
       grantedPermissions.eth_accounts = { date: new Date().getTime() }
     }
 

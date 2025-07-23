@@ -28,12 +28,15 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const connected = useMemo(() => {
     const connectedPolkadot = sites[id]?.addresses ?? []
     const connectedEthereum = sites[id]?.ethAddresses ?? []
+    const connectedSolana = sites[id]?.solAddresses ?? []
 
     switch (type) {
       case "polkadot":
         return connectedPolkadot.filter(isAddressIn(availableAddresses))
       case "ethereum":
         return connectedEthereum.filter(isAddressIn(availableAddresses))
+      case "solana":
+        return connectedSolana.filter(isAddressIn(availableAddresses))
       default:
         throw new Error("provider type not set")
     }
@@ -48,6 +51,9 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
           break
         case "ethereum":
           update.ethAddresses = newAddresses
+          break
+        case "solana":
+          update.solAddresses = newAddresses
           break
         default:
           throw new Error("provider type not set")
@@ -68,6 +74,9 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
             : [...connected, address]
           break
         case "ethereum":
+          newAddresses = isConnectedAddress(address) ? [] : [address]
+          break
+        case "solana":
           newAddresses = isConnectedAddress(address) ? [] : [address]
           break
         default:

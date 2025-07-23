@@ -8,7 +8,7 @@ import { Web3WalletPermission, Web3WalletPermissionTarget } from "../ethereum/ty
 
 export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
   name?: string
-  ethereum?: boolean
+  provider: ProviderType
 }
 
 // new authorise request types
@@ -79,7 +79,6 @@ export type AuthorizedSite = {
   ethAddresses?: AuthorizedSiteAddresses
   ethPermissions?: EthWalletPermissions
   solAddresses?: string[]
-  solActiveAddress?: string // last selected address
   origin: string
   url: string
   ethChainId?: number

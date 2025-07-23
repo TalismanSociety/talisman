@@ -9,8 +9,6 @@ import bs58 from "bs58"
 
 import { TalismanSol } from "./window"
 
-const MOCK_ADDRESS = "5xJvx7YrqCqgyzxx4PQXt1AVbxioUsGABf2zevmYC8UL"
-
 export const getSolanaProvider = (send: SendRequest): TalismanSol => {
   console.log("[provider] getSolanaProvider", { send })
   const eventEmitter = new EventEmitter({ captureRejections: true })
@@ -27,10 +25,9 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
 
     connect: async (options?: { onlyIfTrusted?: boolean }) => {
       console.log("[provider] connect", { options })
-      const address = await (async () => {
-        await sleep(200)
-        return MOCK_ADDRESS
-      })()
+
+      const { address } = await send("pub(solana.provider.connect)", undefined)
+      console.log("[provider] connect response", { address })
 
       const publicKey = new PublicKey(address)
 
@@ -41,6 +38,7 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     },
     disconnect: async () => {
       // TODO unregister emitter listeners ?
+      console.log("[provider] disconnect")
 
       await sleep(200)
       provider.publicKey = null

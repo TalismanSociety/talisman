@@ -59,8 +59,9 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
     talismanAnalytics.capture("authorised site approve", {
       url: queued.idStr,
-      authType: queued.request.ethereum ? "ethereum" : "substrate",
-      withEthAccounts: queued.request.ethereum ? undefined : addresses.some(isEthereumAddress),
+      authType: queued.request.provider,
+      withEthAccounts:
+        queued.request.provider === "ethereum" ? undefined : addresses.some(isEthereumAddress),
     })
     const { resolve } = queued
     resolve({ addresses })
@@ -75,7 +76,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const { reject } = queued
     talismanAnalytics.capture("authorised site reject", {
       url: queued.idStr,
-      authType: queued.request.ethereum ? "ethereum" : "substrate",
+      authType: queued.request.provider,
     })
     reject(new Error("Rejected"))
 

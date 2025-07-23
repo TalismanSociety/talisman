@@ -4,6 +4,7 @@ import {
   isAccountNotContact,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
+  isAccountPlatformSolana,
   ProviderType,
 } from "extension-core"
 import { isTalismanUrl } from "extension-shared"
@@ -11,7 +12,7 @@ import { useMemo } from "react"
 
 import { useAccounts, useSettingValue } from "@ui/state"
 
-export const useInjectableAccounts = (siteUrl: string, provider?: ProviderType) => {
+export const useInjectableAccounts = (siteUrl: string, provider: ProviderType) => {
   const isTalismanSite = isTalismanUrl(siteUrl)
   const isDevMode = useSettingValue("developerMode")
   const accounts = useAccounts()
@@ -22,8 +23,8 @@ export const useInjectableAccounts = (siteUrl: string, provider?: ProviderType) 
         return accounts.filter(isAccountPlatformPolkadot)
       case "ethereum":
         return accounts.filter(isAccountPlatformEthereum)
-      default:
-        return accounts
+      case "solana":
+        return accounts.filter(isAccountPlatformSolana)
     }
   }, [accounts, provider])
 

@@ -25,25 +25,30 @@ export const AuthorisedSites = () => {
           return !!site.addresses
         case "ethereum":
           return !!site.ethAddresses
+        case "solana":
+          return !!site.solAddresses
         default:
           return false
       }
     })
   }, [providerType, sites])
 
-  const { hasPolkadotSites, hasEthereumSites } = useMemo(
-    () => ({
-      hasPolkadotSites: Object.values(sites).some((site) => !!site.addresses),
-      hasEthereumSites: Object.values(sites).some((site) => !!site.ethAddresses),
-    }),
+  const [hasPolkadotSites, hasEthereumSites, hasSolanaSites] = useMemo(
+    () => [
+      Object.values(sites).some((site) => !!site.addresses),
+      Object.values(sites).some((site) => !!site.ethAddresses),
+      Object.values(sites).some((site) => !!site.solAddresses),
+    ],
     [sites],
   )
 
   const showBatchActions = useMemo(
     () =>
       (providerType === "polkadot" && hasPolkadotSites) ||
-      (providerType === "ethereum" && hasEthereumSites),
-    [hasEthereumSites, hasPolkadotSites, providerType],
+      (providerType === "ethereum" && hasEthereumSites) ||
+      (providerType === "solana" && hasSolanaSites),
+
+    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType],
   )
 
   useEffect(() => {
@@ -65,6 +70,7 @@ export const AuthorisedSites = () => {
               options={[
                 ["ethereum", t("Ethereum")],
                 ["polkadot", t("Polkadot")],
+                ["solana", t("Solana")],
               ]}
               className="text-xs [&>div]:h-full"
               defaultOption="ethereum"
@@ -99,8 +105,14 @@ export const AuthorisedSites = () => {
         )}
         {sites && !hasEthereumSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <div className="bg-grey-850 w-full rounded p-8">
+          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
             {t("You haven't connected to any Ethereum sites yet.")}
+          </div>
+        )}
+        {sites && !hasSolanaSites && providerType === "solana" && (
+          // This should never be displayed unless we decide to display the provider switcher without check
+          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+            {t("You haven't connected to any Solana sites yet.")}
           </div>
         )}
       </div>

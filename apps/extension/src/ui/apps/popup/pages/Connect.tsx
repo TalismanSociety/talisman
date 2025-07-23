@@ -110,9 +110,9 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
 
   if (!authRequest) return null
 
-  const ConnectContentComponent: ConnectComponent = authRequest.request.ethereum
-    ? ConnectEth
-    : ConnectPolkadot
+  const ConnectContentComponent: ConnectComponent = getConnectComponent(
+    authRequest.request.provider,
+  )
 
   return (
     <PopupLayout className={className}>
@@ -143,6 +143,18 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
       </PopupFooter>
     </PopupLayout>
   )
+}
+const getConnectComponent = (provider: ProviderType): ConnectComponent => {
+  switch (provider) {
+    case "polkadot":
+      return ConnectPolkadot
+    case "ethereum":
+      return ConnectEth
+    case "solana":
+      return ConnectSolana
+    default:
+      throw new Error(`Unknown provider type: ${provider}`)
+  }
 }
 
 export const ConnectPolkadot: ConnectComponent = ({
@@ -225,6 +237,50 @@ export const ConnectEth: ConnectComponent = ({
         {!accounts.length && (
           <NoAccountWarning
             type={"ethereum"}
+            onIgnoreClick={onNoAccountClose(false)}
+            onAddAccountClick={onNoAccountClose(true)}
+          />
+        )}
+      </section>
+    </PopupContent>
+  )
+}
+
+export const ConnectSolana: ConnectComponent = ({
+  siteUrl,
+  connected,
+  setConnected,
+  onNoAccountClose,
+}) => {
+  const { t } = useTranslation()
+
+  const accounts = useInjectableAccounts(siteUrl, "solana")
+
+  return (
+    <PopupContent>
+      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+        {t("Choose the account you'd like to connect")}
+      </h3>
+      <section className="flex flex-col gap-4">
+        <ConnectAccountsContainer
+          status="disabled"
+          connectedAddresses={connected}
+          label={t("Solana")}
+          infoText={t(`Accounts will be connected via the Solana provider`)}
+          isSingleProvider
+        >
+          {accounts.map((account) => (
+            <ConnectAccountToggleButtonRow
+              key={account.address}
+              account={account}
+              checked={connected.includes(account?.address)}
+              onClick={() => setConnected([account.address])}
+            />
+          ))}
+        </ConnectAccountsContainer>
+        {!accounts.length && (
+          <NoAccountWarning
+            type={"solana"}
             onIgnoreClick={onNoAccountClose(false)}
             onAddAccountClick={onNoAccountClose(true)}
           />
