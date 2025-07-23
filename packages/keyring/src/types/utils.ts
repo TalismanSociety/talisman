@@ -29,6 +29,7 @@ const ACCOUNT_TYPES_OWNED = [
   "keypair",
   "ledger-ethereum",
   "ledger-polkadot",
+  "ledger-solana",
   "polkadot-vault",
 ] as const
 
@@ -37,6 +38,7 @@ const ACCOUNT_TYPES_EXTERNAL = [
   "watch-only",
   "ledger-ethereum",
   "ledger-polkadot",
+  "ledger-solana",
   "polkadot-vault",
   "signet",
 ] as const
@@ -59,6 +61,16 @@ const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-polkadot",
+  "polkadot-vault",
+  "signet",
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_ADDRESS_SS58 = [
   "contact",
   "watch-only",
@@ -69,14 +81,7 @@ const ACCOUNT_TYPES_ADDRESS_SS58 = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
-  "contact",
-  "watch-only",
-  "keypair",
-  "ledger-polkadot",
-  "polkadot-vault",
-  "signet",
-] as const
+const ACCOUNT_TYPES_PLATFORM_SOLANA = ["contact", "watch-only", "keypair", "ledger-solana"] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_BITCOIN = ["contact", "watch-only"] as const
@@ -123,14 +128,15 @@ export const isAccountPlatformEthereum = (
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
 }
 
+type AccountPlatformSolana = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_SOLANA)[number] }
+>
+
 export const isAccountPlatformSolana = (
   account: Account | null | undefined,
-): account is Extract<Account, { type: "keypair" | "watch-only" }> => {
-  return (
-    !!account &&
-    isAccountInTypes(account, ["keypair", "watch-only"]) &&
-    isSolanaAddress(account.address)
-  )
+): account is AccountPlatformSolana => {
+  return !!account && isSolanaAddress(account.address)
 }
 
 type AccountPlatformPolkadot = Extract<

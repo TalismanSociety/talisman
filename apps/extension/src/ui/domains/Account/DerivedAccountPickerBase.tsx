@@ -68,10 +68,9 @@ const AccountButton: FC<AccountButtonProps> = ({
     [balances, isBalanceLoading],
   )
 
-  const formattedAddress = useMemo(
-    () => encodeAnyAddress(address, { ss58Format }),
-    [address, ss58Format],
-  )
+  const formattedAddress = useMemo(() => {
+    return encodeAnyAddress(address, { ss58Format })
+  }, [address, ss58Format])
 
   return (
     <button

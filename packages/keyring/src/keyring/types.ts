@@ -5,6 +5,7 @@ import type {
   AccountKeypair,
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
+  AccountLedgerSolana,
   AccountPolkadotVault,
   AccountSignet,
   AccountWatchOnly,
@@ -25,5 +26,6 @@ export type AccountStorage =
   | AccountWatchOnly
   | AccountLedgerEthereum
   | AccountLedgerPolkadot
+  | AccountLedgerSolana
   | AccountPolkadotVault
   | AccountSignet

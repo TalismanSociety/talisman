@@ -16,7 +16,12 @@ export type LedgerAccountDefEthereum = Extract<
   AddAccountExternalOptions,
   { type: "ledger-ethereum" }
 >
-export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
+export type LedgerAccountDefSolana = Extract<AddAccountExternalOptions, { type: "ledger-solana" }>
+
+export type LedgerAccountDef =
+  | LedgerAccountDefSubstrate
+  | LedgerAccountDefEthereum
+  | LedgerAccountDefSolana
 
 export enum AddSubstrateLedgerAppType {
   Legacy = "Legacy",
@@ -47,17 +52,18 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const connectAccounts = useCallback(
     (accounts: LedgerAccountDef[]) => {
-      if (data.platform !== "ethereum")
+      if (data.platform === "polkadot") {
         assert(data.substrateAppType, "Substrate app type is required")
 
-      if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
-        assert(
-          accounts.every((acc) => {
-            const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
-            return !!genesisHash && genesisHash === chain?.genesisHash
-          }),
-          "Chain mismatch",
-        )
+        if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
+          assert(
+            accounts.every((acc) => {
+              const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
+              return !!genesisHash && genesisHash === chain?.genesisHash
+            }),
+            "Chain mismatch",
+          )
+      }
 
       setData((prev) => ({ ...prev, accounts }))
 

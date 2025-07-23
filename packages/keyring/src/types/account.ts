@@ -42,6 +42,11 @@ export type AccountLedgerEthereum = AccountBase & {
   derivationPath: string
 }
 
+export type AccountLedgerSolana = AccountBase & {
+  type: "ledger-solana"
+  derivationPath: string
+}
+
 export type AccountPolkadotVault = AccountBase & {
   type: "polkadot-vault"
   genesisHash: `0x${string}` | null
@@ -78,6 +83,7 @@ export type Account =
   | AccountWatchOnly
   | AccountLedgerEthereum
   | AccountLedgerPolkadot
+  | AccountLedgerSolana
   | AccountPolkadotVault
   | AccountSignet
 
