@@ -250,6 +250,7 @@ export default interface MessageTypes {
     signature?: HexString,
     txInfo?: WalletTransactionInfo,
   ) => Promise<{ hash: HexString }>
+  solSignApprove: (id: SigningRequestID<"sol-sign">, signature?: string) => Promise<void>
 
   solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
   solSubmit: (

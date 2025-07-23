@@ -169,12 +169,11 @@ export type SubscriptionHandler<
   Res = ResponseType<TMessageType>,
 > = (id: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
-// TODO cooldown
-// export type SubscriptionByIdHandler<
-//   TMessageType extends MessageTypesWithSubscriptionsById,
-//   Req = RequestTypes<TMessageType>,
-//   Res = ResponseType<TMessageType>
-// > = (req: Req) => Res | Promise<Res>
+export type TabSubscriptionHandler<
+  TMessageType extends MessageTypesWithSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>,
+> = (id: string, url: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
 interface TransportResponseMessageNoSub<TMessageType extends MessageTypesWithNoSubscriptions> {
   error?: string

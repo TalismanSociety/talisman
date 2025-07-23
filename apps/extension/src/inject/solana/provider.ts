@@ -14,7 +14,7 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
   const eventEmitter = new EventEmitter({ captureRejections: true })
 
   const provider: TalismanSol = {
-    publicKey: null, // TODO harden this property to be readonly for consumers ?
+    account: null,
 
     on: (event, listener, context) => {
       console.log("[provider] on", { event, listener, context })
@@ -28,21 +28,24 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     connect: async (options?: { onlyIfTrusted?: boolean }) => {
       console.log("[provider] connect", { options })
 
-      const { address } = await send("pub(solana.provider.connect)", undefined)
-      console.log("[provider] connect response", { address })
+      const { account } = await send("pub(solana.provider.connect)", undefined)
+      console.log("[provider] connect response", { account })
 
-      const publicKey = new PublicKey(address)
+      provider.account = account
 
-      provider.publicKey = publicKey
-      return { publicKey }
+      eventEmitter.emit("connect")
+
+      return { publicKey: new PublicKey(account.address) }
     },
     disconnect: async () => {
       // TODO unregister emitter listeners ?
       console.log("[provider] disconnect")
 
-      provider.publicKey = null
+      provider.account = null
 
       await send("pub(solana.provider.disconnect)", undefined)
+
+      eventEmitter.emit("disconnect")
     },
     signAndSendTransaction: async (transaction, options) => {
       console.log("[provider] signAndSendTransaction", { transaction, options })
@@ -61,8 +64,16 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     },
     signMessage: async (message) => {
       console.log("[provider] signMessage", { message })
-      await sleep(200)
-      return { signature: new Uint8Array() }
+      if (!provider.account) throw new Error("No solana account connected")
+
+      const result = await send("pub(solana.provider.signMessage)", {
+        address: provider.account.address,
+        message: bs58.encode(message),
+      })
+
+      console.log("[provider] signMessage response", { message, result })
+
+      return { signature: bs58.decode(result.signature) }
     },
     signIn: async (input) => {
       console.log("[provider] signIn", { input })
@@ -81,7 +92,9 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
         signatureType: "ed25519",
       }
 
-      provider.publicKey = new PublicKey(output.account.publicKey)
+      provider.account = output.account
+
+      eventEmitter.emit("connect")
 
       return output
     },
@@ -92,17 +105,17 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     console.log("[provider] received event", { ev })
     switch (ev.type) {
       case "accountChanged": {
-        provider.publicKey = new PublicKey(ev.address)
+        provider.account = ev.account
         eventEmitter.emit("accountChanged")
         break
       }
       case "connect": {
-        provider.publicKey = new PublicKey(ev.address)
+        provider.account = ev.account
         eventEmitter.emit("connect")
         break
       }
       case "disconnect": {
-        provider.publicKey = null
+        provider.account = null
         eventEmitter.emit("disconnect")
       }
     }

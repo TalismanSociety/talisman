@@ -64,14 +64,17 @@ export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseS
 
 export type ETH_SIGN = "eth-sign"
 export type ETH_SEND = "eth-send"
+export type SOL_SIGN = "sol-sign"
 
 const ETH_SIGN: ETH_SIGN = "eth-sign"
 const ETH_SEND: ETH_SEND = "eth-send"
+const SOL_SIGN: SOL_SIGN = "sol-sign"
 
 export const SIGNING_TYPES = {
   ETH_SIGN,
   ETH_SEND,
   SUBSTRATE_SIGN,
+  SOL_SIGN,
 }
 
 export type EthSignMessageMethod =
@@ -94,12 +97,46 @@ export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
 }
 
 export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
-export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest
+export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest | SolSigningRequest
+
+export type SolSignRequest =
+  | {
+      type: "message"
+      message: string
+    }
+  | {
+      type: "transaction-sign"
+      transaction: string
+    }
+  | {
+      type: "transaction-send"
+      transaction: string
+    }
+
+export type SolSignResult =
+  | {
+      type: "message"
+      signature: string
+    }
+  | {
+      type: "transaction-sign"
+      transaction: string
+    }
+  | {
+      type: "transaction-send"
+      transaction: string
+    }
+
+export interface SolSigningRequest extends BaseSigningRequest<SOL_SIGN> {
+  request: SolSignRequest
+  account: Account
+}
 
 export type SigningRequests = {
   "eth-sign": [EthSignRequest, string]
   "eth-send": [EthSignAndSendRequest, string]
   "substrate-sign": [SubstrateSigningRequest, SubstrateSignResponse]
+  "sol-sign": [SolSigningRequest, SolSignResult]
 }
 
 export type EthResponseSign = string

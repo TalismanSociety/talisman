@@ -1,6 +1,8 @@
+import { base58, ed25519 } from "@talismn/crypto"
 import { getKeypair, solTransactionFromJson } from "@talismn/solana"
 
 import { ExtensionHandler } from "../../libs/Handler"
+import { requestStore } from "../../libs/requests/store"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
@@ -71,6 +73,50 @@ export class SolanaExtensionHandler extends ExtensionHandler {
         })
 
         return { signature: sig }
+      }
+
+      case "pri(solana.sign.approve)": {
+        const { id, signature } = request as RequestTypes["pri(solana.sign.approve)"]
+        const signRequest = requestStore.getRequest(id)
+        if (!signRequest) throw new Error("Request not found")
+
+        const dappRequest = signRequest.request
+
+        switch (dappRequest.type) {
+          case "message": {
+            if (signature) {
+              if (
+                !ed25519.verify(
+                  base58.decode(signature),
+                  base58.decode(dappRequest.message),
+                  base58.decode(signRequest.account.address),
+                )
+              )
+                throw new Error("Signature verification failed")
+
+              // if signature is supplied, we assume it was signed with a hardware device
+              return signRequest.resolve({
+                type: "message",
+                signature,
+              })
+            }
+
+            const signResult = await withSecretKey(
+              signRequest.account.address,
+              async (secretKey) => {
+                const payload = base58.decode(dappRequest.message)
+                return ed25519.sign(payload, secretKey)
+              },
+            )
+
+            signRequest.resolve({
+              type: "message",
+              signature: base58.encode(signResult.unwrap()),
+            })
+
+            return
+          }
+        }
       }
     }
     throw new Error(`Unable to handle message of type ${type}`)

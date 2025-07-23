@@ -1,17 +1,25 @@
 import { isSolanaAddress } from "@talismn/crypto"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { distinctUntilChanged, map, skip } from "rxjs"
+import { distinctUntilChanged, map, of, switchMap } from "rxjs"
 
 import { TabsHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType, TabMessageHandler } from "../../types"
+import {
+  MessageTypes,
+  RequestTypes,
+  ResponseType,
+  TabMessageHandler,
+  TabSubscriptionHandler,
+} from "../../types"
 import { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { keyringStore } from "../keyring/store"
+import { signSolana } from "../signing/requests"
+import { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
 import { AuthorizedSite } from "../sitesAuthorised/types"
-import { SolanaTabSubscriptionEvent } from "./types.tabs"
+import { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
 
 export class SolanaTabsHandler extends TabsHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -23,61 +31,12 @@ export class SolanaTabsHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(solana.provider.subscribe)": {
-        const resSiteId = urlToDomain(url)
-        const siteId = resSiteId.unwrap()
-
-        const site$ = sitesAuthorisedStore.observable.pipe(
-          map((sites) => sites[siteId]),
-          distinctUntilChanged<AuthorizedSite>(isEqual),
+        return handleSolanaSubscribe(
+          id,
+          url,
+          port,
+          request as RequestTypes["pub(solana.provider.subscribe)"],
         )
-
-        let previousAddresses: string[] = []
-
-        const sub = site$
-          .pipe(
-            map((site) => site?.solAddresses ?? []),
-            skip(1),
-            distinctUntilChanged<string[]>(isEqual),
-          )
-          .subscribe((addresses) => {
-            const ev = ((): SolanaTabSubscriptionEvent | null => {
-              if (!previousAddresses.length && addresses.length)
-                return {
-                  type: "connect",
-                  address: addresses[0],
-                }
-              else if (previousAddresses.length && !addresses.length)
-                return {
-                  type: "disconnect",
-                }
-              else if (
-                previousAddresses.length &&
-                addresses.length &&
-                !isEqual(previousAddresses, addresses)
-              )
-                return {
-                  type: "accountChanged",
-                  address: addresses[0],
-                }
-              return null
-            })()
-
-            previousAddresses = addresses
-
-            if (!ev) return
-
-            try {
-              port.postMessage({
-                id,
-                subscription: ev,
-              })
-            } catch (err) {
-              log.error("Error in SolanaTabsHandler subscription", err)
-              return sub.unsubscribe()
-            }
-          })
-
-        return true
       }
 
       case "pub(solana.provider.signIn)": {
@@ -99,6 +58,14 @@ export class SolanaTabsHandler extends TabsHandler {
       case "pub(solana.provider.disconnect)": {
         return handleSolanaDisconnect(
           request as RequestTypes["pub(solana.provider.disconnect)"],
+          url,
+          port,
+        )
+      }
+
+      case "pub(solana.provider.signMessage)": {
+        return handleSolanaSignMessage(
+          request as RequestTypes["pub(solana.provider.signMessage)"],
           url,
           port,
         )
@@ -131,7 +98,14 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
   if (!updatedSite?.solAddresses?.length) throw new Error("Site has not been")
 
   const account = await keyringStore.getAccount(updatedSite.solAddresses[0])
-  if (account && isSolanaAddress(account.address)) return { address: account.address }
+  if (account && isSolanaAddress(account.address))
+    return {
+      account: {
+        address: account.address,
+        label: account.name,
+        // icon: account.icon,
+      },
+    }
 
   throw new Error("Unauthorized")
 }
@@ -146,4 +120,88 @@ const handleSolanaDisconnect: TabMessageHandler<"pub(solana.provider.disconnect)
     sitesAuthorisedStore.updateSite(site.id, {
       solAddresses: [],
     })
+}
+
+const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessage)"> = async (
+  { address, message },
+  url,
+  port,
+) => {
+  const site = await sitesAuthorisedStore.getSiteFromUrl(url)
+  if (!site?.solAddresses?.includes(address)) throw new Error("Unauthorized")
+
+  const account = await keyringStore.getAccount(address)
+  if (!account) throw new Error("Account not found")
+
+  const request: SolSignRequest = {
+    type: "message",
+    message,
+  }
+
+  const result = (await signSolana(url, port, account, request)) as SolSignResult
+
+  if (result.type !== "message")
+    throw new Error("Unexpected response type from Solana sign request")
+
+  return {
+    signature: result.signature,
+  }
+}
+
+const handleSolanaSubscribe: TabSubscriptionHandler<"pub(solana.provider.subscribe)"> = async (
+  id,
+  url,
+  port,
+) => {
+  const resSiteId = urlToDomain(url)
+  const siteId = resSiteId.unwrap()
+
+  let prevAccount: SolSerializedWalletAccount | null = null
+
+  const sub = getAuthorizedSolanaAccount$(siteId).subscribe((account) => {
+    // event to send to the tab
+    const ev = ((): SolanaTabSubscriptionEvent | null => {
+      if (account) {
+        return prevAccount ? { type: "accountChanged", account } : { type: "connect", account }
+      } else if (prevAccount) {
+        return { type: "disconnect" }
+      } else return null
+    })()
+
+    prevAccount = account
+
+    if (ev) {
+      try {
+        port.postMessage({
+          id,
+          subscription: ev,
+        })
+      } catch (err) {
+        log.error("Error in SolanaTabsHandler subscription", err)
+        return sub.unsubscribe()
+      }
+    }
+  })
+
+  return true
+}
+
+const getAuthorizedSolanaAccount$ = (siteId: string) => {
+  return sitesAuthorisedStore.observable.pipe(
+    map((sites) => sites[siteId]),
+    distinctUntilChanged<AuthorizedSite>(isEqual),
+    map((site) => site?.solAddresses?.[0]),
+    distinctUntilChanged<string | undefined>(isEqual),
+    switchMap((address) => (address ? keyringStore.getAccount(address) : of(null))),
+    map((account): SolSerializedWalletAccount | null =>
+      account
+        ? {
+            address: account.address,
+            label: account.name,
+            // icon: account.icon, // TODO: add icon to SolSerializedWalletAccount
+          }
+        : null,
+    ),
+    distinctUntilChanged<SolSerializedWalletAccount | null>(isEqual),
+  )
 }

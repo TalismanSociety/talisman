@@ -23,8 +23,14 @@ export interface TalismanSolEventEmitter {
   ): void
 }
 
+type SerializedWalletAccount = {
+  address: string
+  label?: string
+  icon?: string
+}
+
 export interface TalismanSol extends TalismanSolEventEmitter {
-  publicKey: PublicKey | null
+  account: SerializedWalletAccount | null
   connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>
   disconnect(): Promise<void>
   signAndSendTransaction<T extends Transaction | VersionedTransaction>(

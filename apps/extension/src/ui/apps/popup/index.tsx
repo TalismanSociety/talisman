@@ -43,6 +43,7 @@ import { Portfolio } from "./pages/Portfolio"
 import { SolSignInPage } from "./pages/Requests/Auth/SolSignInPage"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
+import { SolanaSignRequest } from "./pages/Sign/solana"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
@@ -76,6 +77,7 @@ const Popup = () => {
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />
+          <Route path={`${SIGNING_TYPES.SOL_SIGN}/:id`} element={<SolanaSignRequest />} />
           <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />} />
           <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />} />
           <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />

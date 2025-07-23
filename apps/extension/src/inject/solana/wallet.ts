@@ -40,7 +40,7 @@ import type { SolanaChain } from "./solana"
 import type { TalismanSol } from "./window"
 import { TalismanSolWalletAccount } from "./account"
 import { isSolanaChain, isVersionedTransaction, SOLANA_CHAINS } from "./solana"
-import { bytesEqual } from "./util"
+import { deserializeSolWalletAccount } from "./util"
 
 // export const TalismanNamespace = "talisman:"
 
@@ -71,7 +71,7 @@ export class TalismanSolWallet implements Wallet {
   }
 
   get chains() {
-    return SOLANA_CHAINS.slice()
+    return SOLANA_CHAINS.slice() // TODO should be provided by backend based on chaindata
   }
 
   get features(): StandardConnectFeature &
@@ -131,8 +131,8 @@ export class TalismanSolWallet implements Wallet {
     this.#talisman = talisman
 
     talisman.on("connect", this.#connected, this)
+    talisman.on("accountChanged", this.#connected, this)
     talisman.on("disconnect", this.#disconnected, this)
-    talisman.on("accountChanged", this.#reconnected, this)
 
     this.#connected()
   }
@@ -157,13 +157,10 @@ export class TalismanSolWallet implements Wallet {
   }
 
   #connected = () => {
-    const address = this.#talisman.publicKey?.toBase58()
-    if (address) {
-      const publicKey = this.#talisman.publicKey!.toBytes()
-
-      const account = this.#account
-      if (!account || account.address !== address || !bytesEqual(account.publicKey, publicKey)) {
-        this.#account = new TalismanSolWalletAccount({ address, publicKey })
+    const account = this.#talisman.account
+    if (account) {
+      if (!this.#account || this.#account.address !== account.address) {
+        this.#account = deserializeSolWalletAccount(account)
         this.#emit("change", { accounts: this.accounts })
       }
     }
@@ -176,16 +173,9 @@ export class TalismanSolWallet implements Wallet {
     }
   }
 
-  #reconnected = () => {
-    if (this.#talisman.publicKey) {
-      this.#connected()
-    } else {
-      this.#disconnected()
-    }
-  }
-
   #connect: StandardConnectMethod = async ({ silent } = {}) => {
     if (!this.#account) {
+      // TODO handle that flag in backend
       await this.#talisman.connect(silent ? { onlyIfTrusted: true } : undefined)
     }
 
@@ -299,7 +289,7 @@ export class TalismanSolWallet implements Wallet {
 
     if (inputs.length === 1) {
       const { message, account } = inputs[0]!
-      if (account !== this.#account) throw new Error("invalid account")
+      if (account.address !== this.#account.address) throw new Error("invalid account")
 
       const { signature } = await this.#talisman.signMessage(message)
 
@@ -317,9 +307,7 @@ export class TalismanSolWallet implements Wallet {
     const outputs: SolanaSignInOutput[] = []
 
     if (inputs.length > 1) {
-      for (const input of inputs) {
-        outputs.push(await this.#talisman.signIn(input))
-      }
+      for (const input of inputs) outputs.push(await this.#talisman.signIn(input))
     } else {
       return [await this.#talisman.signIn(inputs[0])]
     }

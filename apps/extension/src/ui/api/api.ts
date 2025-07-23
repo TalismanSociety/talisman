@@ -280,6 +280,8 @@ export const api: MessageTypes = {
       lastValidBlockHeight,
       txInfo,
     }) as Promise<ResponseSolanaSubmit>,
+  solSignApprove: (id, signature) =>
+    messageService.sendMessage("pri(solana.sign.approve)", { id, signature }) as Promise<void>,
 
   // asset discovery
   assetDiscoveryStartScan: (scope) =>
@@ -293,10 +295,4 @@ export const api: MessageTypes = {
   nftsSetFavorite: (id, isFavorite) =>
     messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
   nftsRefreshMetadata: (id) => messageService.sendMessage("pri(nfts.refreshMetadata)", { id }),
-
-  // // generic request handling
-  // requestResolve: (id, result) =>
-  //   messageService.sendMessage("pri(request.internal.resolve)", { id, result }),
-  // requestReject: (id, reason) =>
-  //   messageService.sendMessage("pri(request.internal.reject)", { id, reason }),
 }
