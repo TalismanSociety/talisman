@@ -781,7 +781,7 @@ export const useSetToAddress = () => {
     if (!toAsset) return
     // when fromAddress, fromAsset or toAsset changes, set toAddress to either fromAddress or null, depending on whether it's compatible with the new toAsset
     switch (toAsset?.networkType) {
-      case "evm":
+      case "evm": {
         // toAddress is already evm, don't change anything (if it's still compatible with this network)
         if (
           toEvmAddress &&
@@ -796,7 +796,8 @@ export const useSetToAddress = () => {
 
         // fromAddress is evm, set toAddress to fromAddress
         return setToEvmAddress(fromAddress), setToSubstrateAddress(null), setToBtcAddress(null)
-      case "substrate":
+      }
+      case "substrate": {
         // toAddress is already substrate, don't change anything (if it's still compatible with this network)
         if (
           toSubstrateAddress &&
@@ -811,18 +812,24 @@ export const useSetToAddress = () => {
 
         // fromAddress is substrate, set toAddress to fromAddress
         return setToEvmAddress(null), setToSubstrateAddress(fromAddress), setToBtcAddress(null)
-      case "btc":
+      }
+      case "btc": {
         // toAddress is already btc, don't change anything
         if (toBtcAddress) return
 
         // fromAddress is never btc, always set toAddress to null
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
-      default:
+      }
+      case undefined: {
+        return
+      }
+      default: {
         // eslint-disable-next-line no-console
         console.error(
           `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`,
         )
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
+      }
     }
   }, [
     fromAccount,

@@ -134,48 +134,26 @@ const ToAccount = () => {
 
   const onChangeAddress = useCallback(
     (address: string | null) => {
-      if (!address) {
-        setEvmAddress(null)
-        setSubstrateAddress(null)
-        setBtcAddress(null)
-        return
-      }
+      if (!address) return setEvmAddress(null), setSubstrateAddress(null), setBtcAddress(null)
 
       if (isBitcoinAddress(address)) {
-        setEvmAddress(null)
-        setSubstrateAddress(null)
-        setBtcAddress(address)
-        return
+        return setEvmAddress(null), setSubstrateAddress(null), setBtcAddress(address)
       }
 
       // if address is in keyring, check platform
       const account = allAccounts.find((account) => isAddressEqual(account.address, address))
       if (account) {
         if (isAccountPlatformEthereum(account)) {
-          setEvmAddress(address)
-          setSubstrateAddress(null)
-          setBtcAddress(null)
-          return
-        } else {
-          setEvmAddress(null)
-          setSubstrateAddress(address)
-          setBtcAddress(null)
-          return
+          return setEvmAddress(address), setSubstrateAddress(null), setBtcAddress(null)
         }
+        return setEvmAddress(null), setSubstrateAddress(address), setBtcAddress(null)
       }
 
       // if address is not in keyring, check address format
       if (isEthereumAddress(address)) {
-        setEvmAddress(address)
-        setSubstrateAddress(null)
-        setBtcAddress(null)
-        return
-      } else {
-        setEvmAddress(null)
-        setSubstrateAddress(address)
-        setBtcAddress(null)
-        return
+        return setEvmAddress(address), setSubstrateAddress(null), setBtcAddress(null)
       }
+      return setEvmAddress(null), setSubstrateAddress(address), setBtcAddress(null)
     },
     [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress],
   )
