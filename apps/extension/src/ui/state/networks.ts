@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { DotNetwork, Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
+import { Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
 import { TFunction } from "i18next"
 import { fromPairs, groupBy, toPairs } from "lodash-es"
 import { combineLatest, map, of } from "rxjs"
@@ -7,36 +7,31 @@ import { combineLatest, map, of } from "rxjs"
 import { getNetworks$, getNetworksMapById$ } from "./chaindata"
 import { t$ } from "./i18n"
 
-const getDotNetworkType = (network: DotNetwork, networksById: NetworkList, t: TFunction) => {
-  switch (network.topology.type) {
-    case "standalone":
-      return t("Polkadot-SDK Blockchain")
-    case "relay":
-      return t("Relay Chain")
-    case "parachain": {
+const getNetworkType = (network: Network, networksById: NetworkList, t: TFunction) => {
+  // use name that describes the network type
+  if (network.platform === "ethereum") return t("Ethereum Blockchain")
+
+  if (network.platform === "polkadot") {
+    if (network.topology.type === "relay") return t("Relay Chain")
+
+    if (network.topology.type === "parachain") {
       const relay = networksById[network.topology.relayId]
       return relay?.name ? t("{{name}} Parachain", { name: relay.name }) : t("Parachain")
     }
+
+    return t("Polkadot-SDK Blockchain")
   }
+
+  if (network.platform === "solana") return t("Solana Blockchain")
+
+  return t("Blockchain")
 }
 
 export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind(
   combineLatest([getNetworks$(), getNetworksMapById$(), t$]).pipe(
     map(([networks, networksById, t]): Record<NetworkId, string | null> => {
       return fromPairs(
-        networks.map((network) => {
-          // use name that describes the network type
-          switch (network.platform) {
-            case "ethereum":
-              return [network.id, t("Ethereum Blockchain")]
-            case "polkadot": {
-              const dotNetwork = network as DotNetwork
-              return [network.id, getDotNetworkType(dotNetwork, networksById, t)]
-            }
-            case "solana":
-              return [network.id, t("Solana Blockchain")]
-          }
-        }),
+        networks.map((network) => [network.id, getNetworkType(network, networksById, t)]),
       )
     }),
   ),
