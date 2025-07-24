@@ -11,7 +11,7 @@ import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
-import { TxSignButtonFallback } from "./TxSignButtonFallback"
+import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
@@ -69,7 +69,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   }, [onSubmit, tx])
 
   if (!isAccountPlatformEthereum(account))
-    return <TxSignButtonFallback label={label} className={className} />
+    return <TxSubmitButtonFallback label={label} className={className} />
 
   switch (account.type) {
     case "ledger-ethereum":

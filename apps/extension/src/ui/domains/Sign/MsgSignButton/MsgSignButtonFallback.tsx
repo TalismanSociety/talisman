@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-export const TxSubmitButtonFallback: FC<{ label?: string; className?: string }> = ({
+export const MsgSignButtonFallback: FC<{ label?: string; className?: string }> = ({
   label,
   className,
 }) => {
@@ -11,7 +11,7 @@ export const TxSubmitButtonFallback: FC<{ label?: string; className?: string }> 
 
   return (
     <Button className={classNames("w-full", className)} primary disabled>
-      {label ?? t("Confirm")}
+      {label ?? t("Sign")}
     </Button>
   )
 }

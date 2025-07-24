@@ -12,7 +12,7 @@ import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 
 import { SignLedgerSolana, SolSignPayload } from "../SignLedgerSolana"
-import { TxSignButtonFallback } from "./TxSignButtonFallback"
+import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
@@ -86,7 +86,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   }, [tx.payload])
 
   if (!isAccountPlatformSolana(account) || !isAccountOwned(account))
-    return <TxSignButtonFallback label={label} className={className} />
+    return <TxSubmitButtonFallback label={label} className={className} />
 
   switch (account.type) {
     case "ledger-solana":
@@ -96,7 +96,6 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
           payload={payload}
           className={className}
           containerId={containerId}
-          networkId={tx.networkId}
           onSigned={handleLedgerSignature}
         />
       )

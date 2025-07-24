@@ -7,6 +7,7 @@ import { PublicKey } from "@solana/web3.js"
 import { sleep } from "@talismn/util"
 import bs58 from "bs58"
 
+import { deserializeTransaction, serializeTransaction } from "./util"
 import { TalismanSol } from "./window"
 
 export const getSolanaProvider = (send: SendRequest): TalismanSol => {
@@ -53,9 +54,15 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
       return { signature: "" }
     },
     signTransaction: async (transaction) => {
-      console.log("[provider] signTransaction", { transaction })
-      await sleep(200)
-      return transaction
+      const result = await send("pub(solana.provider.signTransaction)", {
+        transaction: serializeTransaction(transaction),
+        send: false,
+      })
+      console.log("[provider] signTransaction", { transaction, result })
+      const deserialized = deserializeTransaction(result.transaction)
+      console.log("[provider] signTransaction deserialized", { deserialized })
+
+      return deserialized as typeof transaction
     },
     signAllTransactions: async (transactions) => {
       console.log("[provider] signAllTransactions", { transactions })

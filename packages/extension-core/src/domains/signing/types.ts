@@ -105,12 +105,9 @@ export type SolSignRequest =
       message: string
     }
   | {
-      type: "transaction-sign"
+      type: "transaction"
       transaction: string
-    }
-  | {
-      type: "transaction-send"
-      transaction: string
+      send: boolean
     }
 
 export type SolSignResult =
@@ -119,11 +116,7 @@ export type SolSignResult =
       signature: string
     }
   | {
-      type: "transaction-sign"
-      transaction: string
-    }
-  | {
-      type: "transaction-send"
+      type: "transaction"
       transaction: string
     }
 

@@ -44,6 +44,10 @@ export class TalismanSolWalletAccount implements WalletAccount {
     return this.#icon
   }
 
+  // TODO features should be pull from backend: ledger accounts cant sign messages
+  // though:
+  // - we may not provide a hint that an account is a ledger account
+  // - test dapp from wallet-adapter ignores that field
   constructor({ address, publicKey, label, icon }: Omit<WalletAccount, "chains" | "features">) {
     if (new.target === TalismanSolWalletAccount) {
       Object.freeze(this)

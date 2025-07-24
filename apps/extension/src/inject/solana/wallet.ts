@@ -196,8 +196,8 @@ export class TalismanSolWallet implements Wallet {
     if (inputs.length === 1) {
       const { transaction, account, chain, options } = inputs[0]!
       const { minContextSlot, preflightCommitment, skipPreflight, maxRetries } = options || {}
-      if (account !== this.#account) throw new Error("invalid account")
-      if (!isSolanaChain(chain)) throw new Error("invalid chain")
+      if (account.address !== this.#account.address) throw new Error("invalid account")
+      if (chain && !isSolanaChain(chain)) throw new Error("invalid chain")
 
       const { signature } = await this.#talisman.signAndSendTransaction(
         VersionedTransaction.deserialize(transaction),

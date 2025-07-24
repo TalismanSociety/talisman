@@ -1,4 +1,5 @@
 import { isSolanaAddress } from "@talismn/crypto"
+import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, of, switchMap } from "rxjs"
@@ -66,6 +67,14 @@ export class SolanaTabsHandler extends TabsHandler {
       case "pub(solana.provider.signMessage)": {
         return handleSolanaSignMessage(
           request as RequestTypes["pub(solana.provider.signMessage)"],
+          url,
+          port,
+        )
+      }
+
+      case "pub(solana.provider.signTransaction)": {
+        return handleSolanaSignTransaction(
+          request as RequestTypes["pub(solana.provider.signTransaction)"],
           url,
           port,
         )
@@ -145,6 +154,35 @@ const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessag
 
   return {
     signature: result.signature,
+  }
+}
+
+const handleSolanaSignTransaction: TabMessageHandler<
+  "pub(solana.provider.signTransaction)"
+> = async ({ send, transaction, chain, options }, url, port) => {
+  log.debug("handleSolanaSignTransaction", { url, port, transaction, chain, options })
+  const site = await sitesAuthorisedStore.getSiteFromUrl(url)
+  const tx = deserializeTransaction(transaction)
+  const { address = site.solAddresses?.[0] } = parseTransactionInfo(tx)
+
+  if (!address || !site?.solAddresses?.includes(address)) throw new Error("Unauthorized")
+
+  const account = await keyringStore.getAccount(address)
+  if (!account) throw new Error("Account not found")
+
+  const request: SolSignRequest = {
+    type: "transaction",
+    transaction,
+    send,
+  }
+
+  const result = (await signSolana(url, port, account, request)) as SolSignResult
+
+  if (result.type !== "transaction")
+    throw new Error("Unexpected response type from Solana sign request")
+
+  return {
+    transaction: result.transaction,
   }
 }
 

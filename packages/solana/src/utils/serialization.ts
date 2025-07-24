@@ -1,4 +1,12 @@
-import { PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js"
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  VersionedTransaction,
+} from "@solana/web3.js"
+import { base58 } from "@talismn/crypto"
+
+import { isVersionedTransaction } from "./transaction"
 
 // Serialize TransactionInstruction to JSON
 export const solInstructionToJson = (instruction: TransactionInstruction) => {
@@ -59,4 +67,23 @@ export const solTransactionFromJson = (serialized: SolTransactionJson): Transact
 
   const buffer = Buffer.from(serialized.value, "base64")
   return Transaction.from(buffer)
+}
+
+export const serializeTransaction = (transaction: Transaction | VersionedTransaction): string => {
+  if (isVersionedTransaction(transaction)) {
+    return base58.encode(transaction.serialize())
+  } else {
+    return base58.encode(
+      transaction.serialize({ requireAllSignatures: false, verifySignatures: false }),
+    )
+  }
+}
+
+export const deserializeTransaction = (transaction: string): Transaction | VersionedTransaction => {
+  const bytes = base58.decode(transaction)
+  try {
+    return VersionedTransaction.deserialize(bytes)
+  } catch {
+    return Transaction.from(bytes)
+  }
 }

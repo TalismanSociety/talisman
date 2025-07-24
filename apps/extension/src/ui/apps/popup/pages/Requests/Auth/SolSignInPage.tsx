@@ -9,9 +9,11 @@ import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { Message } from "@ui/domains/Sign/Message"
+import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
+import { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
-import { useAccountByAddress, useAccounts, useRequest } from "@ui/state"
+import { useAccounts, useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
 
@@ -61,8 +63,6 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
   const accounts = useAccounts("owned")
   const solanaAccounts = useMemo(() => accounts.filter(isAccountPlatformSolana), [accounts])
 
-  const account = useAccountByAddress(address)
-
   const message = useMemo(() => {
     if (!address || !signInRequest) return null
     return createSignInMessageText({
@@ -76,8 +76,21 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
     if (!signInRequest) window.close()
   }, [signInRequest])
 
-  const handleAuthoriseClick = useCallback(async () => {
+  const signPayload = useMemo(
+    () =>
+      address && message
+        ? ({
+            platform: "solana",
+            address: address ?? "",
+            message: new TextEncoder().encode(message),
+          } as MsgSignButtonPayloadSol)
+        : null,
+    [message, address],
+  )
+
+  const handleSubmit = useCallback(async () => {
     if (!signInRequest || !address || !message) return
+
     try {
       await api.authrequestApproveSolSignIn(signInRequest.id, {
         address,
@@ -88,20 +101,9 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
     }
   }, [address, message, signInRequest, t])
 
-  const reject = useCallback(() => {
-    if (!signInRequest) return
-    // TODO ?
+  const handleReject = useCallback(() => {
     window.close()
-  }, [signInRequest])
-
-  // TODO ?
-  // const ignore = useCallback(() => {
-  //   if (!signInRequest) return
-  //   // TODO ?
-  //   window.close()
-  // }, [signInRequest])
-
-  // TODO fetch current authorised site object and visually show if we are already connected
+  }, [])
 
   if (!signInRequest) return null
 
@@ -139,17 +141,15 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
       </PopupContent>
       <PopupFooter>
         <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={reject} data-testid="connection-reject-button">
+          <Button onClick={handleReject} data-testid="connection-reject-button">
             {t("Reject")}
           </Button>
-          <Button
-            primary
-            onClick={handleAuthoriseClick}
-            disabled={!account}
-            data-testid="connection-connect-button"
-          >
-            {t("Sign In")}
-          </Button>
+          <MsgSignButton
+            onSubmit={handleSubmit}
+            payload={signPayload}
+            containerId="main"
+            label={"Sign In"}
+          />
         </div>
       </PopupFooter>
     </PopupLayout>

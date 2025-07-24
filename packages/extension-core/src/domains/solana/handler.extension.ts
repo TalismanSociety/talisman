@@ -1,3 +1,4 @@
+import { PublicKey, VersionedTransaction } from "@solana/web3.js"
 import { base58, ed25519 } from "@talismn/crypto"
 import { getKeypair, solTransactionFromJson } from "@talismn/solana"
 
@@ -113,6 +114,30 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             })
 
             return
+          }
+          case "transaction": {
+            const tx = VersionedTransaction.deserialize(base58.decode(dappRequest.transaction))
+
+            if (signature) {
+              tx.addSignature(new PublicKey(signRequest.account.address), base58.decode(signature))
+            } else {
+              await withSecretKey(signRequest.account.address, async (secretKey) => {
+                const keypair = getKeypair(secretKey)
+                tx.sign([keypair])
+              })
+            }
+
+            if (dappRequest.send) {
+              const connection = await chainConnectorSol.getConnection("solana-mainnet")
+              await connection.sendTransaction(tx, {
+                skipPreflight: true,
+              })
+            }
+
+            signRequest.resolve({
+              type: "transaction",
+              transaction: base58.encode(tx.serialize()),
+            })
           }
         }
       }

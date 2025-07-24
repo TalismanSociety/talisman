@@ -44,13 +44,13 @@ export const SolSignMessageRequest: FC<{
   }
 
   const handleApprove = async () => {
-    setState({ ...state, processing: true })
+    setState({ error: undefined, processing: true })
     try {
       await api.solSignApprove(id) // will close the window automatically if successful
     } catch (error) {
       setState({
-        ...state,
         processing: false,
+
         error: (error as Error).message || "Failed to approve sign request",
       })
     }

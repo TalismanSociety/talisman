@@ -78,6 +78,13 @@ const signWithLedger = async (
 
   switch (type) {
     case "message": {
+      throw getTalismanLedgerError(t("Solana message signing with Ledger is not supported yet."))
+      // looks like none of the wallets out there support this yet
+      // hints:
+      // - https://github.com/LedgerHQ/app-solana/blob/develop/examples/example-sign.js#L52 (main)
+      // - https://github.com/phantom/sandbox/pull/33
+      // - https://github.dev/anza-xyz/wallet-adapter/pull/1047/files
+      // - https://github.com/LedgerHQ/developer-portal/blob/main/pages/docs/device-interaction/ledgerjs/integration/web-application/web-hid-usb.mdx
       const res = await ledger.signOffchainMessage(account.derivationPath, payload)
       return res.signature
     }

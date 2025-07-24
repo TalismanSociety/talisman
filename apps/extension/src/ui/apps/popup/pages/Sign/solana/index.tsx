@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom"
 import { useRequest } from "@ui/state"
 
 import { SolSignMessageRequest } from "./Message"
+import { SolSignTransactionRequest } from "./Transaction"
 
 export const SolanaSignRequest = () => {
   const { id } = useParams<"id">() as {
@@ -21,6 +22,8 @@ export const SolanaSignRequest = () => {
   switch (signingRequest.request.type) {
     case "message":
       return <SolSignMessageRequest request={signingRequest} />
+    case "transaction":
+      return <SolSignTransactionRequest request={signingRequest} />
     default:
       return null
   }

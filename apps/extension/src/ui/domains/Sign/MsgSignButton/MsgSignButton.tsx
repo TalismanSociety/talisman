@@ -2,14 +2,14 @@ import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
-import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
-import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
-import { TxSubmitButtonSol } from "./TxSubmitButtonSol"
-import { TxSubmitButtonProps } from "./types"
+import { MsgSignButtonDot } from "./MsgSignButtonDot"
+import { MsgSignButtonEth } from "./MsgSignButtonEth"
+import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
+import { MsgSignButtonSol } from "./MsgSignButtonSol"
+import { MsgSignButtonProps } from "./types"
 
-export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
-  tx,
+export const MsgSignButton: FC<MsgSignButtonProps> = ({
+  payload,
   containerId,
   label,
   className,
@@ -18,49 +18,49 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  if (!tx || disabled)
+  if (!payload || disabled)
     return (
-      <TxSubmitButtonFallback
-        label={label ?? t("Confirm")}
+      <MsgSignButtonFallback
+        label={label ?? t("Sign")}
         className={classNames("w-full", className)}
       />
     )
 
-  switch (tx.platform) {
+  switch (payload.platform) {
     case "polkadot":
       return (
-        <TxSubmitButtonDot
+        <MsgSignButtonDot
           containerId={containerId}
           label={label}
-          tx={tx}
+          payload={payload}
           onSubmit={onSubmit}
           className={className}
         />
       )
     case "ethereum":
       return (
-        <TxSubmitButtonEth
+        <MsgSignButtonEth
           containerId={containerId}
           label={label}
-          tx={tx}
+          payload={payload}
           onSubmit={onSubmit}
           className={className}
         />
       )
     case "solana":
       return (
-        <TxSubmitButtonSol
+        <MsgSignButtonSol
           containerId={containerId}
           label={label}
-          tx={tx}
+          payload={payload}
           onSubmit={onSubmit}
           className={className}
         />
       )
     default:
       return (
-        <TxSubmitButtonFallback
-          label="Unsupported transaction type"
+        <MsgSignButtonFallback
+          label="Unsupported message type"
           className={classNames("w-full", className)}
         />
       )

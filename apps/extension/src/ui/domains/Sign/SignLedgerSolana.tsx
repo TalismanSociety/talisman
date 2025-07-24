@@ -1,5 +1,4 @@
 import { Transaction } from "@solana/web3.js"
-import { SolNetworkId } from "@talismn/chaindata-provider"
 import { AccountOfType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback } from "react"
@@ -21,7 +20,6 @@ export type SolSignPayload =
     }
 
 export const SignLedgerSolana: FC<{
-  networkId: SolNetworkId
   account: AccountOfType<"ledger-solana">
   payload: SolSignPayload
   containerId?: string
@@ -32,16 +30,7 @@ export const SignLedgerSolana: FC<{
   }) => void | Promise<void>
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void // triggered when tx is sent
-}> = ({
-  // networkId,
-  account,
-  className = "",
-  payload,
-  containerId,
-  onSentToDevice,
-  onSigned,
-  onCancel,
-}) => {
+}> = ({ account, className = "", payload, containerId, onSentToDevice, onSigned, onCancel }) => {
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const { sign } = useLedgerSolana()
