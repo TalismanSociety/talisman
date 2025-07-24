@@ -123,7 +123,7 @@
       "@polkadot/ui-settings": "3.14.1",
       "@polkadot/ui-shared": "3.14.1",
       "@polkadot/util": "13.5.1",
-      "@polkadot/util-crypto": "13.5.1",
+      "@polkadot/util-crypto": "13.5.3",
       "@polkadot/vue-identicon": "3.14.1",
       "@polkadot/wasm-bridge": "7.4.1",
       "@polkadot/wasm-crypto": "7.4.1",
