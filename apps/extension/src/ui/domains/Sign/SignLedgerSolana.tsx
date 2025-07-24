@@ -1,0 +1,96 @@
+import { Transaction } from "@solana/web3.js"
+import { SolNetworkId } from "@talismn/chaindata-provider"
+import { AccountOfType } from "extension-core"
+import { log } from "extension-shared"
+import { FC, useCallback } from "react"
+
+import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
+
+import { SignLedgerBase } from "./SignLedgerBase"
+import { useSignLedgerBase } from "./useSignLedgerBase"
+
+export type SolSignPayload =
+  | {
+      type: "transaction"
+      transaction: Transaction
+    }
+  | {
+      type: "message"
+      message: Buffer<ArrayBufferLike>
+    }
+
+export const SignLedgerSolana: FC<{
+  networkId: SolNetworkId
+  account: AccountOfType<"ledger-solana">
+  payload: SolSignPayload
+  containerId?: string
+  className?: string
+  onSigned: (arg: {
+    unsigned: Buffer<ArrayBufferLike>
+    signature: Buffer<ArrayBufferLike>
+  }) => void | Promise<void>
+  onCancel?: () => void
+  onSentToDevice?: (sent: boolean) => void // triggered when tx is sent
+}> = ({
+  // networkId,
+  account,
+  className = "",
+  payload,
+  containerId,
+  onSentToDevice,
+  onSigned,
+  onCancel,
+}) => {
+  const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
+
+  const { sign } = useLedgerSolana()
+
+  const signWithLedger = useCallback(async () => {
+    if (!payload || !onSigned || !account) return
+
+    onSentToDevice?.(true)
+    setIsSigning(true)
+
+    try {
+      switch (payload.type) {
+        case "transaction": {
+          const unsigned = payload.transaction.serialize({
+            requireAllSignatures: false,
+            verifySignatures: false,
+          })
+          const signature = await sign(
+            "transaction",
+            payload.transaction.serializeMessage(),
+            account,
+          )
+          await onSigned({ unsigned, signature })
+          break
+        }
+        case "message": {
+          const unsigned = payload.message
+          const signature = await sign("message", unsigned, account)
+          await onSigned({ unsigned, signature })
+        }
+      }
+    } catch (err) {
+      const error = getTalismanLedgerError(err)
+      log.error("signLedger", { error })
+      setError(error)
+    } finally {
+      onSentToDevice?.(false)
+    }
+  }, [account, onSentToDevice, onSigned, payload, setError, setIsSigning, sign])
+
+  return (
+    <SignLedgerBase
+      containerId={containerId}
+      isProcessing={isSigning}
+      error={error}
+      className={className}
+      onSignClick={signWithLedger}
+      onDismissErrorClick={() => setError(null)}
+      onCancel={onCancel}
+    />
+  )
+}

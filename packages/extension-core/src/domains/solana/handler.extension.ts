@@ -32,7 +32,6 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
       case "pri(solana.rpc.submit)": {
         const { networkId, transaction, txInfo } = request as RequestTypes["pri(solana.rpc.submit)"]
-        let { lastValidBlockHeight } = request as RequestTypes["pri(solana.rpc.submit)"]
 
         const tx = solTransactionFromJson(transaction)
         if (!tx.feePayer) throw new Error("Unknown signer")
@@ -42,13 +41,12 @@ export class SolanaExtensionHandler extends ExtensionHandler {
 
         const connection = await chainConnectorSol.getConnection(networkId)
 
-        // if tx is signed the lastValidBlockHeight will be supplied and we cant refresh it
-        if (!lastValidBlockHeight) {
+        if (!tx.signature) {
           // refresh blockhash and lastValidBlockHeight prior to signing
-          const { blockhash, lastValidBlockHeight: lvbh } =
+          const { blockhash, lastValidBlockHeight } =
             await connection.getLatestBlockhash("confirmed")
-          lastValidBlockHeight = lvbh
           tx.recentBlockhash = blockhash
+          tx.lastValidBlockHeight = lastValidBlockHeight
 
           // sign
           await withSecretKey(account.address, async (secretKey) => {
@@ -67,7 +65,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
           skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
         })
 
-        watchSolanaTransaction(networkId, tx, lastValidBlockHeight, {
+        watchSolanaTransaction(networkId, tx, {
           txInfo,
           notifications: false,
         })

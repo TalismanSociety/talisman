@@ -13,7 +13,6 @@ import { WalletTransactionSol, WatchTransactionOptions } from "./types"
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
   transaction: Transaction,
-  lastValidBlockHeight: number,
   options: WatchTransactionOptions = {},
 ) => {
   try {
@@ -31,12 +30,12 @@ export const watchSolanaTransaction = async (
     const blockExplorerUrls = getBlockExplorerUrls(network, { type: "transaction", id: signature })
     const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
 
-    await addSolTransaction(networkId, transaction, lastValidBlockHeight, { siteUrl, txInfo })
+    await addSolTransaction(networkId, transaction, { siteUrl, txInfo })
 
     watchUntilFinalized(
       connection,
       signature,
-      lastValidBlockHeight,
+      transaction.lastValidBlockHeight,
       notifications ? txUrl : undefined,
     )
   } catch (err) {
@@ -48,7 +47,7 @@ export const watchSolanaTransaction = async (
 async function watchUntilFinalized(
   connection: Connection,
   signature: string,
-  lastValidBlockHeight: number,
+  lastValidBlockHeight: number | undefined,
   notificationTxUrl?: string,
   maxRetries = 30,
   intervalMs = 2000,

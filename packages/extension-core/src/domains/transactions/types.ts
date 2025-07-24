@@ -84,7 +84,7 @@ export type WalletTransactionSol = WalletTransactionBase & {
   networkType: "solana"
   networkId: string
   serialized: string // base58 encoded
-  lastValidBlockHeight: number // required for rpc node to detect transaction confirmation
+  lastValidBlockHeight: number | undefined
   // TODO might want to store the SLOT instead of blockNumber, blockNumbers are not a thing because blockHeight and slot are 2 different things
 }
 

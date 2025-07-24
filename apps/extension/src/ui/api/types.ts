@@ -256,7 +256,6 @@ export default interface MessageTypes {
   solSubmit: (
     networkId: string,
     transaction: SolTransactionJson,
-    lastValidBlockHeight?: number,
     txInfo?: WalletTransactionInfo,
   ) => Promise<ResponseSolanaSubmit>
 

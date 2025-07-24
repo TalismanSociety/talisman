@@ -1,5 +1,5 @@
 import LedgerSolanaApp from "@ledgerhq/hw-app-solana"
-import { base58, encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
+import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
 import { AccountLedgerSolana } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
@@ -37,7 +37,11 @@ export const useLedgerSolana = () => {
   )
 
   const sign = useCallback(
-    (type: "message" | "transaction", payload: Uint8Array, account: AccountLedgerSolana) => {
+    (
+      type: "message" | "transaction",
+      payload: Buffer<ArrayBufferLike>,
+      account: AccountLedgerSolana,
+    ) => {
       return withLedger((ledger) => signWithLedger(ledger, type, payload, account))
     },
     [withLedger],
@@ -59,9 +63,9 @@ export const useLedgerSolana = () => {
 const signWithLedger = async (
   ledger: LedgerSolanaApp,
   type: "message" | "transaction",
-  payload: Uint8Array,
+  payload: Buffer<ArrayBufferLike>,
   account: AccountLedgerSolana,
-): Promise<string> => {
+) => {
   const address = encodeAddressSolana(
     (await ledger.getAddress(account.derivationPath, false)).address,
   )
@@ -74,13 +78,12 @@ const signWithLedger = async (
 
   switch (type) {
     case "message": {
-      const res = await ledger.signOffchainMessage(account.derivationPath, Buffer.from(payload))
-      return base58.encode(new Uint8Array(res.signature))
-      break
+      const res = await ledger.signOffchainMessage(account.derivationPath, payload)
+      return res.signature
     }
     case "transaction": {
-      const res = await ledger.signTransaction(account.derivationPath, Buffer.from(payload))
-      return base58.encode(new Uint8Array(res.signature))
+      const res = await ledger.signTransaction(account.derivationPath, payload)
+      return res.signature
     }
   }
 }

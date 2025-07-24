@@ -38,10 +38,15 @@ export const solTransactionToJson = (transaction: Transaction) => {
   return {
     type: "solana-transaction" as const,
     value: transaction
-      .serialize({
-        requireAllSignatures: false,
-        verifySignatures: false,
-      })
+      .serialize(
+        transaction.signature
+          ? undefined
+          : {
+              // if tx is not signed yet, we need this flag or it throws an error
+              requireAllSignatures: false,
+              verifySignatures: false,
+            },
+      )
       .toString("base64"),
   }
 }

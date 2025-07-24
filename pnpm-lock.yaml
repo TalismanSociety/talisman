@@ -325,14 +325,14 @@ importers:
         specifier: ^7.5.1
         version: 7.5.1
       '@ledgerhq/hw-transport':
-        specifier: 6.31.4
-        version: 6.31.4
+        specifier: 6.31.8
+        version: 6.31.8
       '@ledgerhq/hw-transport-webhid':
-        specifier: ^6.30.0
+        specifier: ^6.30.4
         version: 6.30.4
       '@ledgerhq/hw-transport-webusb':
-        specifier: 6.29.4
-        version: 6.29.4
+        specifier: 6.29.8
+        version: 6.29.8
       '@metamask/eth-sig-util':
         specifier: 8.0.0
         version: 8.0.0
@@ -4064,8 +4064,8 @@ packages:
   '@ledgerhq/hw-transport-webhid@6.30.4':
     resolution: {integrity: sha512-A13E89U1wfWx8reA9ciwm/+SsbGM163yl1UXuWUQ521hIDAAwVbpnRhwaQT4XjTmDbWhvtT2RYRCoOWWO7N6GA==}
 
-  '@ledgerhq/hw-transport-webusb@6.29.4':
-    resolution: {integrity: sha512-HoGF1LlBT9HEGBQy2XeCHrFdv/FEOZU0+J+yfKcgAQIAiASr2MLvdzwoJbUS8h6Gn+vc+/BjzBSO3JNn7Loqbg==}
+  '@ledgerhq/hw-transport-webusb@6.29.8':
+    resolution: {integrity: sha512-hAFTnJYB++Ey8qlpGBL2ZHBX4ULQOcBzYzNBcrKUNXqlDaWODtc5uyPCyfGmfUjLnVvZoarDa3h+zDVVQCUHVA==}
 
   '@ledgerhq/hw-transport@6.31.4':
     resolution: {integrity: sha512-6c1ir/cXWJm5dCWdq55NPgCJ3UuKuuxRvf//Xs36Bq9BwkV2YaRQhZITAkads83l07NAdR16hkTWqqpwFMaI6A==}
@@ -15978,7 +15978,7 @@ snapshots:
       '@ledgerhq/domain-service': 1.2.37
       '@ledgerhq/errors': 6.23.0
       '@ledgerhq/evm-tools': 1.7.1
-      '@ledgerhq/hw-transport': 6.31.4
+      '@ledgerhq/hw-transport': 6.31.8
       '@ledgerhq/hw-transport-mocker': 6.29.8
       '@ledgerhq/logs': 6.13.0
       '@ledgerhq/types-live': 6.78.0
@@ -16008,11 +16008,11 @@ snapshots:
       '@ledgerhq/hw-transport': 6.31.8
       '@ledgerhq/logs': 6.13.0
 
-  '@ledgerhq/hw-transport-webusb@6.29.4':
+  '@ledgerhq/hw-transport-webusb@6.29.8':
     dependencies:
       '@ledgerhq/devices': 8.4.8
       '@ledgerhq/errors': 6.23.0
-      '@ledgerhq/hw-transport': 6.31.4
+      '@ledgerhq/hw-transport': 6.31.8
       '@ledgerhq/logs': 6.13.0
 
   '@ledgerhq/hw-transport@6.31.4':

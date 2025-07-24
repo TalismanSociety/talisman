@@ -89,11 +89,12 @@ const useSolPayload = ({
 
       const calldata = await mod.getTransferCallData({ token, from, to, value })
 
-      const { blockhash } = await connection.getLatestBlockhash()
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
 
       const tx = new Transaction().add(calldata)
       tx.feePayer = new PublicKey(from)
       tx.recentBlockhash = blockhash
+      tx.lastValidBlockHeight = lastValidBlockHeight
 
       return tx
     },

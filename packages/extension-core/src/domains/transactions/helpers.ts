@@ -29,7 +29,6 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 export const addSolTransaction = async (
   networkId: SolNetworkId,
   transaction: Transaction,
-  lastValidBlockHeight: number,
   options: AddTransactionOptions = {},
 ) => {
   const { siteUrl, label, tokenId, value, to, txInfo } = merge(
@@ -47,7 +46,7 @@ export const addSolTransaction = async (
       // TODO update types, this is not a hash
       hash: base58.encode(transaction.signature!),
       serialized: transaction.serialize().toString("base64"),
-      lastValidBlockHeight,
+      lastValidBlockHeight: transaction.lastValidBlockHeight,
       status: "pending",
       siteUrl,
       label,

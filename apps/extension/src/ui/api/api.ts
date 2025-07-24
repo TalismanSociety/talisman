@@ -268,16 +268,10 @@ export const api: MessageTypes = {
       networkId,
       request,
     }) as Promise<SolRpcResponse<T>>,
-  solSubmit: (
-    networkId: string,
-    transaction: SolTransactionJson,
-    lastValidBlockHeight?: number,
-    txInfo?: WalletTransactionInfo,
-  ) =>
+  solSubmit: (networkId: string, transaction: SolTransactionJson, txInfo?: WalletTransactionInfo) =>
     messageService.sendMessage("pri(solana.rpc.submit)", {
       networkId,
       transaction,
-      lastValidBlockHeight,
       txInfo,
     }) as Promise<ResponseSolanaSubmit>,
   solSignApprove: (id, signature) =>

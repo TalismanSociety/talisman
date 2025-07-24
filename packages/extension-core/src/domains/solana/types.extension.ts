@@ -26,7 +26,6 @@ export type RequestSolanaRpcSend = {
 export type RequestSolanaSubmit = {
   networkId: SolNetworkId
   transaction: SolTransactionJson
-  lastValidBlockHeight?: number // if tx is signed (ledger), we need the corresponding last valid block height
   txInfo?: WalletTransactionInfo
 }
 
