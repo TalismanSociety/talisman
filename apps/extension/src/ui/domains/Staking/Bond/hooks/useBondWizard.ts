@@ -110,7 +110,6 @@ export const useBondWizard = () => {
     currentPoolId,
     hasJoinedNomPool,
     minJoinBond,
-    isSoloStaking,
     poolState,
   } = useGetStakeInfo({
     sapi,
@@ -208,8 +207,10 @@ export const useBondWizard = () => {
   }, [balance, existentialDeposit, feeEstimate])
 
   const inputErrorMessage = useMemo(() => {
-    if (isSoloStaking)
-      return t("Account has an open validator staking position, please unbond first")
+    // NOTE: We don't have to check for this anymore.
+    //       Users are now able to both solo stake and nompool stake at the same time.
+    // if (isSoloStaking)
+    //   return t("Account has an open validator staking position, please unbond first")
 
     if (!currentPoolId && poolState?.isFull) return t("This nomination pool is full")
     if (!currentPoolId && poolState && !poolState.isOpen)
@@ -256,7 +257,6 @@ export const useBondWizard = () => {
 
     return null
   }, [
-    isSoloStaking,
     t,
     currentPoolId,
     poolState,
