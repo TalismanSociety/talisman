@@ -114,7 +114,6 @@ export const test = base.extend<{
       type: "ethereum" | "polkadot"
       name?: string
     }) => {
-      const page = onboardedPage
       // randomize the name of the account if not provided
       const suffixLength = 3
       const randomBuffer = randomBytes(16)
@@ -124,27 +123,30 @@ export const test = base.extend<{
       )
       const accName = name || constants.NEW_ACC_NAME + " " + `(${getRandomChars})`
 
-      await page.goto(
+      await onboardedPage.goto(
         `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`,
       )
-      await page.getByPlaceholder("Choose a name").fill(accName)
+      await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
 
-      const addAccountButton = page.getByTestId("account-add-new-account-button")
-      const mnemonicDropdown = page.getByTestId("account-add-mnemonic-dropdown")
+      const addAccountButton = onboardedPage.getByTestId("account-add-new-account-button")
+      const mnemonicDropdown = onboardedPage.getByTestId("account-add-mnemonic-dropdown")
 
       if (await mnemonicDropdown.isVisible()) {
         await mnemonicDropdown.click()
-        await page.locator('[role="option"]:has-text("Generate new recovery phrase")').click()
+        await onboardedPage
+          .locator('[role="option"]:has-text("Generate new recovery phrase")')
+          .click()
         await addAccountButton.click()
       } else {
         await addAccountButton.click()
       }
-
-      await page.getByTestId("mnemonic-acknowledge-button").click()
-      await page.waitForTimeout(1000)
-      await page.getByTestId("mnemonic-skip-verification-button").click()
-      await page.waitForTimeout(1000)
-      return page
+      await expect(onboardedPage.getByTestId("mnemonic-acknowledge-button")).toBeEnabled()
+      await onboardedPage.getByTestId("mnemonic-acknowledge-button").click()
+      await expect(onboardedPage.getByTestId("mnemonic-skip-verification-button")).toBeEnabled()
+      await onboardedPage.getByTestId("mnemonic-skip-verification-button").click()
+      await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
+      expect(onboardedPage.url()).toContain("portfolio")
+      return onboardedPage
     }
     await utilize(addNewAccount)
   },
