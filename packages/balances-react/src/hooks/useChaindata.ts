@@ -1,4 +1,12 @@
-import { NetworkId, TokenId } from "@talismn/chaindata-provider"
+import {
+  DotNetwork,
+  Network,
+  NetworkId,
+  NetworkList,
+  Token,
+  TokenId,
+  TokenList,
+} from "@talismn/chaindata-provider"
 import { useAtomValue } from "jotai"
 
 import {
@@ -14,12 +22,14 @@ import { chaindataProviderAtom } from "../atoms/chaindataProvider"
 export const useChaindataProvider = () => useAtomValue(chaindataProviderAtom)
 export const useChaindata = () => useAtomValue(chaindataAtom)
 
-export const useNetworks = () => useAtomValue(networksAtom)
-export const useNetworksById = () => useAtomValue(networksByIdAtom)
-export const useDotNetworksByGenesisHash = () => useAtomValue(dotNetworksByGenesisHashAtom)
-export const useNetwork = (networkId?: NetworkId) =>
+export const useNetworks = (): Network[] => useAtomValue(networksAtom)
+export const useNetworksById = (): NetworkList => useAtomValue(networksByIdAtom)
+export const useDotNetworksByGenesisHash = (): Record<string, DotNetwork> =>
+  useAtomValue(dotNetworksByGenesisHashAtom)
+export const useNetwork = (networkId?: NetworkId): Network | null =>
   useAtomValue(networksByIdAtom)[networkId ?? ""] ?? null
 
-export const useTokens = () => useAtomValue(tokensAtom)
-export const useTokensById = () => useAtomValue(tokensByIdAtom)
-export const useToken = (tokenId?: TokenId) => useAtomValue(tokensByIdAtom)[tokenId ?? ""] ?? null
+export const useTokens = (): Token[] => useAtomValue(tokensAtom)
+export const useTokensById = (): TokenList => useAtomValue(tokensByIdAtom)
+export const useToken = (tokenId?: TokenId): Token | null =>
+  useAtomValue(tokensByIdAtom)[tokenId ?? ""] ?? null
