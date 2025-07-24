@@ -57,8 +57,6 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
 
   const signInRequest = useRequest(id)
 
-  // const refBottom = useRef<HTMLDivElement>(null)
-
   const [address, setAddress] = useState<string>()
   const accounts = useAccounts("owned")
   const solanaAccounts = useMemo(() => accounts.filter(isAccountPlatformSolana), [accounts])
@@ -114,7 +112,7 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
       </PopupHeader>
       <PopupContent>
         <div className="text-body-secondary flex h-full w-full flex-col items-center gap-8 text-center">
-          <h1 className="text-body text-md font-bold leading-9">{t("Sign In Request")}</h1>
+          <h1 className="text-body text-md my-4 font-bold leading-9">{t("Sign In Request")}</h1>
           <div className="flex w-full flex-col gap-8 px-4 text-left">
             <ConnectAccountsContainer
               status="disabled"
@@ -167,7 +165,7 @@ const MessageContainer: FC<{ text: string }> = ({ text }) => {
   }, [])
 
   return (
-    <div ref={refContainer} className="flex w-full flex-col gap-4 px-4">
+    <div ref={refContainer} className="flex w-full flex-col gap-4">
       <div className="px-4 text-sm">{t("Sign in message:")}</div>
       <Message className="w-full text-sm" text={text} rows={6} />
     </div>
