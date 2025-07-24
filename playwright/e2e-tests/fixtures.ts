@@ -84,7 +84,6 @@ export const test = base.extend<{
       name?: string
       mnemonic?: string
     }) => {
-      const page = onboardedPage
       const accName =
         name || (type === "ethereum" ? constants.ETH_ACC_NAME : constants.DOT_ACC_NAME)
       const seed =
@@ -93,16 +92,18 @@ export const test = base.extend<{
           ? process.env.E2E_TESTS_MNEMONIC || constants.ETH_TEST_MNEMONIC
           : process.env.E2E_TESTS_MNEMONIC || constants.DOT_TEST_MNEMONIC)
 
-      await page.goto(`chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`)
-      await page.getByTestId(`account-platform-selector-${type}`).click()
-      await page.getByPlaceholder("Choose a name").fill(accName)
-      await page.getByPlaceholder("Enter your 12 or 24 word recovery phrase").fill(seed)
-      await page.waitForTimeout(1000)
-      await page.getByTestId("account-add-mnemonic-import-button").click()
-      await page.waitForTimeout(1000)
-      return page
+      await onboardedPage.goto(
+        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`,
+      )
+      await onboardedPage.getByTestId(`account-platform-selector-${type}`).click()
+      await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
+      await onboardedPage.getByPlaceholder("Enter your 12 or 24 word recovery phrase").fill(seed)
+      await expect(onboardedPage.getByTestId("account-add-mnemonic-import-button")).toBeEnabled()
+      await onboardedPage.getByTestId("account-add-mnemonic-import-button").click()
+      await expect(onboardedPage.getByTestId("top-actions-buttons")).toBeVisible()
+      expect(onboardedPage.url()).toContain("portfolio")
+      return onboardedPage
     }
-
     await utilize(importAccount)
   },
   addNewAccount: async ({ onboardedPage, extensionId }, utilize) => {
