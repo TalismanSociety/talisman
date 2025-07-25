@@ -30,6 +30,9 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
         return "ORML"
       case "substrate-hydration":
         return "HYDRATION"
+
+      case "sol-spl":
+        return "SPL"
     }
   }, [t, type])
 

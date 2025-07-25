@@ -86,6 +86,7 @@ const useSolPayload = ({
 
       const mod = BALANCE_MODULES.find((mod) => mod.type === token.type)
       if (!mod) throw new Error(`Unsupported token type: ${token.type}`)
+      if (mod.platform !== "solana") throw new Error(`Unsupported module type: ${mod.type}`)
 
       const calldata = await mod.getTransferCallData({ token, from, to, value })
 

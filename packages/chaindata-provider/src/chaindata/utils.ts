@@ -4,6 +4,7 @@ import {
   parseEvmErc20TokenId,
   parseEvmNativeTokenId,
   parseEvmUniswapV2TokenId,
+  parseSolSplTokenId,
   parseSubAssetTokenId,
   parseSubForeignAssetTokenId,
   parseSubHydrationTokenId,
@@ -127,6 +128,10 @@ export const isTokenEvmUniswapV2 = (token: Token | null | undefined) => {
   return isTokenOfType(token, "evm-uniswapv2")
 }
 
+export const isTokenSolSpl = (token: Token | null | undefined) => {
+  return isTokenOfType(token, "sol-spl")
+}
+
 export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpecs<T> => {
   const parts = tokenId.split(":")
   if (parts.length < 2) throw new Error(`Invalid TokenId: ${tokenId}`)
@@ -154,6 +159,8 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
       return parseSubHydrationTokenId(tokenId) as TokenIdSpecs<T>
     case "sol-native":
       return parseSolNativeTokenId(tokenId) as TokenIdSpecs<T>
+    case "sol-spl":
+      return parseSolSplTokenId(tokenId) as TokenIdSpecs<T>
   }
 }
 

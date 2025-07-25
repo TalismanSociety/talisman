@@ -2,6 +2,7 @@ import { EvmErc20BalanceModule } from "./evm-erc20"
 import { EvmNativeBalanceModule } from "./evm-native"
 import { EvmUniswapV2BalanceModule } from "./evm-uniswapv2"
 import { SolNativeBalanceModule } from "./sol-native"
+import { SolSplBalanceModule } from "./sol-spl"
 import { SubAssetsBalanceModule } from "./substrate-assets"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
 import { SubHydrationBalanceModule } from "./substrate-hydration"
@@ -20,6 +21,7 @@ export const BALANCE_MODULES = [
   EvmUniswapV2BalanceModule,
   EvmNativeBalanceModule,
   SolNativeBalanceModule,
+  SolSplBalanceModule,
 ]
 
 export type AnyBalanceModule = (typeof BALANCE_MODULES)[number] // TODO yeet ? should use IBalance
@@ -36,6 +38,7 @@ export * from "./substrate-psp22"
 export * from "./substrate-tokens"
 
 export * from "./sol-native"
+export * from "./sol-spl"
 
 export * from "./abis"
 
