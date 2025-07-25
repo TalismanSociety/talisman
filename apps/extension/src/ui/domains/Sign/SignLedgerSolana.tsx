@@ -1,7 +1,9 @@
-import { Transaction } from "@solana/web3.js"
+import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import { isVersionedTransaction } from "@talismn/solana"
 import { AccountOfType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
@@ -12,7 +14,7 @@ import { useSignLedgerBase } from "./useSignLedgerBase"
 export type SolSignPayload =
   | {
       type: "transaction"
-      transaction: Transaction
+      transaction: Transaction | VersionedTransaction
     }
   | {
       type: "message"
@@ -31,6 +33,7 @@ export const SignLedgerSolana: FC<{
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void // triggered when tx is sent
 }> = ({ account, className = "", payload, containerId, onSentToDevice, onSigned, onCancel }) => {
+  const { t } = useTranslation()
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const { sign } = useLedgerSolana()
@@ -44,15 +47,18 @@ export const SignLedgerSolana: FC<{
     try {
       switch (payload.type) {
         case "transaction": {
-          const unsigned = payload.transaction.serialize({
+          const tx = payload.transaction
+
+          if (isVersionedTransaction(tx))
+            throw getTalismanLedgerError(
+              t("Versioned transactions cannot be signed with Ledger yet."),
+            )
+
+          const unsigned = tx.serialize({
             requireAllSignatures: false,
             verifySignatures: false,
           })
-          const signature = await sign(
-            "transaction",
-            payload.transaction.serializeMessage(),
-            account,
-          )
+          const signature = await sign("transaction", tx.serializeMessage(), account)
           await onSigned({ unsigned, signature })
           break
         }
@@ -69,7 +75,7 @@ export const SignLedgerSolana: FC<{
     } finally {
       onSentToDevice?.(false)
     }
-  }, [account, onSentToDevice, onSigned, payload, setError, setIsSigning, sign])
+  }, [account, onSentToDevice, onSigned, payload, setError, setIsSigning, sign, t])
 
   return (
     <SignLedgerBase

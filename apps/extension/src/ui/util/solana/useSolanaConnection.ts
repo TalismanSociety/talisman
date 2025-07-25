@@ -37,14 +37,16 @@ const getSolanaConnection = (networkId: string) => {
 
 const CACHE = new Map<string, Connection>()
 
-export const useSolanaConnection = (networkId: string | null | undefined) => {
-  return useMemo(() => {
-    if (!networkId) return null
+export const getFrontEndSolanaConnection = (networkId: string | null | undefined) => {
+  if (!networkId) return null
 
-    if (!CACHE.has(networkId)) {
-      const connection = getSolanaConnection(networkId)
-      CACHE.set(networkId, connection)
-    }
-    return CACHE.get(networkId)!
-  }, [networkId])
+  if (!CACHE.has(networkId)) {
+    const connection = getSolanaConnection(networkId)
+    CACHE.set(networkId, connection)
+  }
+  return CACHE.get(networkId)!
+}
+
+export const useSolanaConnection = (networkId: string | null | undefined) => {
+  return useMemo(() => getFrontEndSolanaConnection(networkId), [networkId])
 }

@@ -1,8 +1,15 @@
-import { useNetwork } from "@talismn/balances-react"
-import { SolSigningRequest } from "extension-core"
-import { FC, useState } from "react"
+import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import { solNativeTokenId } from "@talismn/chaindata-provider"
+import { base58 } from "@talismn/crypto"
+import { InfoIcon, LoaderIcon } from "@talismn/icons"
+import { deserializeTransaction } from "@talismn/solana"
+import { cn } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
+import { Account, isAccountOfType, SolSigningRequest } from "extension-core"
+import { isVersionedTransaction } from "inject/solana/solana"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
@@ -13,14 +20,15 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignLedgerSolana, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
+import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useNetworkById } from "@ui/state"
+import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
-
-// const useEvmBalance = (address: EvmAddress, evmNetworkId: EthNetworkId | undefined) => {
-//   const publicClient = usePublicClient(evmNetworkId)
-//   return useEthBalance(publicClient, address)
-// }
 
 export const SolSignTransactionRequest: FC<{
   request: SolSigningRequest
@@ -31,9 +39,14 @@ export const SolSignTransactionRequest: FC<{
   const {
     id,
     account,
-    // request: { transaction },
+    request: { transaction: serializedTx },
     // url,
   } = request
+
+  const transaction = useMemo(() => deserializeTransaction(serializedTx), [serializedTx])
+  const { data: networkId } = useSolanaNetworkIdForTransaction(transaction)
+  const network = useNetworkById(networkId)
+  const [isLocked, setIsLocked] = useState(false)
 
   const { t } = useTranslation()
 
@@ -57,13 +70,46 @@ export const SolSignTransactionRequest: FC<{
     }
   }
 
-  // const handleSubmit = useCallback((signature: string) => {}, [])
+  const handleSigned = useCallback(
+    async ({
+      signature,
+    }: {
+      unsigned: Buffer<ArrayBufferLike>
+      signature: Buffer<ArrayBufferLike>
+    }) => {
+      setState({ error: undefined, processing: true })
+      try {
+        await api.solSignApprove(id, base58.encode(signature)) // will close the window automatically if successful
+      } catch (error) {
+        setState({
+          processing: false,
+          error: (error as Error).message || "Failed to approve sign request",
+        })
+      }
+    },
+    [id],
+  )
 
-  // const isLoading = true
+  const validityError = useMemo(() => {
+    if (!networkId) return t("Transaction is invalid or its validity window has expired")
+    return null
+  }, [networkId, t])
 
-  // console.log({ request })
+  const displayError = useMemo(() => {
+    if (state.error) return state.error
+    if (validityError) return validityError
+    return null
+  }, [state.error, validityError])
 
-  const network = useNetwork("solana-mainnet")
+  const signPayload = useMemo<SolSignPayload>(
+    () => ({
+      type: "transaction",
+      transaction,
+    }),
+    [transaction],
+  )
+
+  // TODO dry run ?
 
   return (
     <PopupLayout>
@@ -78,32 +124,131 @@ export const SolSignTransactionRequest: FC<{
           </h2>
         </div>
       </PopupContent>
-
       <PopupFooter className="flex flex-col gap-8">
-        {!!state.error && (
+        {!!displayError && (
           <SignAlertMessage className="mb-6" type="error">
-            {state.error}
+            {displayError}
           </SignAlertMessage>
         )}
-        <div>fee</div>
+        <FeeEstimateRow
+          transaction={transaction}
+          networkId={networkId}
+          isLocked={isLocked}
+          account={account}
+        />
         <div className="grid w-full grid-cols-2 gap-12">
-          <Button
-            //disabled={processing} onClick={reject}
-            onClick={() => window.close()}
-          >
-            {t("Cancel")}
-          </Button>
-          <Button
-            //   disabled={!transaction || isLoading || !isValid}
-            processing={state.processing}
-            primary
-            onClick={handleApprove}
-          >
-            {t("Approve")}
-          </Button>
-          {/* <TxSubmitButtonSol onSubmit={} */}
+          <Button onClick={() => window.close()}>{t("Cancel")}</Button>
+          {isAccountOfType(account, "ledger-solana") ? (
+            <SignLedgerSolana
+              account={account}
+              payload={signPayload}
+              onSentToDevice={setIsLocked}
+              onSigned={handleSigned}
+            />
+          ) : (
+            <Button
+              //   disabled={!transaction || isLoading || !isValid}
+              processing={state.processing}
+              primary
+              onClick={handleApprove}
+            >
+              {t("Approve")}
+            </Button>
+          )}
         </div>
       </PopupFooter>
     </PopupLayout>
   )
+}
+
+const FeeEstimateRow: FC<{
+  transaction: VersionedTransaction | Transaction
+  networkId: string | null
+  isLocked: boolean
+  account: Account
+}> = ({ transaction, networkId, account, isLocked }) => {
+  const { t } = useTranslation()
+  const tokenId = useMemo(() => (networkId ? solNativeTokenId(networkId) : undefined), [networkId])
+  const {
+    data: estimatedFee,
+    isLoading,
+    error,
+  } = useEstimatedFee({ transaction, networkId, isLocked })
+
+  const balanceParams = useMemo<BalanceByParamsProps>(
+    () =>
+      tokenId ? { addressesAndTokens: { addresses: [account.address], tokenIds: [tokenId] } } : {},
+    [account.address, tokenId],
+  )
+  const { status, balances } = useBalancesByParams(balanceParams)
+
+  return (
+    <div className="text-body-secondary flex w-full items-center justify-between text-sm">
+      <div className="flex items-center gap-2">
+        <Tooltip placement="top-start">
+          <TooltipTrigger asChild>
+            <div>
+              {t("Estimated Fee")} <InfoIcon className="inline-block align-text-top text-[1.1em]" />
+            </div>
+          </TooltipTrigger>
+
+          <TooltipContent>
+            <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
+              <div className="flex w-full justify-between gap-8">
+                <div>{t("Balance")}</div>
+                <div>
+                  <TokensAndFiat
+                    tokenId={tokenId}
+                    planck={balances.sum.planck.transferable}
+                    noTooltip
+                    noCountUp
+                    className={cn(status === "initialising" && "animate-pulse")}
+                  />
+                </div>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <div>
+        {isLoading ? (
+          <LoaderIcon className="animate-spin-slow inline-block" />
+        ) : error || !tokenId || !estimatedFee ? (
+          <Tooltip placement="bottom-end">
+            <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
+            <TooltipContent>{t("Failed to estimate fee")}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <TokensAndFiat planck={estimatedFee} tokenId={tokenId} />
+        )}
+      </div>
+    </div>
+  )
+}
+
+const useEstimatedFee = ({
+  transaction,
+  networkId,
+  isLocked,
+}: {
+  transaction: Transaction | VersionedTransaction
+  networkId: string | null
+  isLocked: boolean
+}) => {
+  return useQuery({
+    queryKey: ["useSolSignTransactionEstimateFee", transaction, networkId],
+    queryFn: async () => {
+      if (!networkId) throw new Error("Target network is unknown")
+
+      const connection = getFrontEndSolanaConnection(networkId)
+      if (!connection) throw new Error("No connection available for network")
+
+      const result = await connection.getFeeForMessage(
+        isVersionedTransaction(transaction) ? transaction.message : transaction.compileMessage(),
+      )
+
+      return result.value ? String(result.value) : null
+    },
+    refetchInterval: !isLocked && 6_000, // refresh fee every 60 seconds
+  })
 }

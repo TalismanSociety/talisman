@@ -112,12 +112,12 @@ const useEstimatedFee = ({
   isLocked: boolean
 }) => {
   return useQuery({
-    queryKey: ["useEstimateFee", transaction, connection?.rpcEndpoint],
+    queryKey: ["useSendFundsSolEstimateFee", transaction, connection?.rpcEndpoint],
     queryFn: async () => {
       if (!transaction || !connection?.rpcEndpoint) return null
 
-      const feeCalculator = await connection.getFeeForMessage(transaction.compileMessage())
-      return feeCalculator.value ? String(feeCalculator.value) : null
+      const result = await connection.getFeeForMessage(transaction.compileMessage())
+      return result.value ? String(result.value) : null
     },
     refetchInterval: !isLocked && 6_000, // refresh fee every 60 seconds
   })
