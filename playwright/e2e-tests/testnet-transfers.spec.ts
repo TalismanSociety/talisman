@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures"
 import { testAssets } from "./transfers"
 
 test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, extensionId }) => {
-  test.setTimeout(100_000)
+  test.setTimeout(120_000)
   await importAccount({ type: "polkadot", name: DOT_ACC_NAME })
   await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
   await onboardedPage.goto(
@@ -50,6 +50,7 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
         .filter({
           has: popup.getByTestId("picker-token-network").filter({ hasText: data.chain }),
         })
+      await expect(result).toBeVisible({ timeout: 30000 })
       await result.first().click()
       await popup.getByPlaceholder("Enter Address").fill(data.sendTo)
       await popup.keyboard.press("Enter")
