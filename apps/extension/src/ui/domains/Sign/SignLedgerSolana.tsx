@@ -51,7 +51,7 @@ export const SignLedgerSolana: FC<{
 
           if (isVersionedTransaction(tx))
             throw getTalismanLedgerError(
-              t("Versioned transactions cannot be signed with Ledger yet."),
+              t("Solana versioned transactions cannot be signed with Ledger yet."),
             )
 
           const unsigned = tx.serialize({
@@ -63,9 +63,10 @@ export const SignLedgerSolana: FC<{
           break
         }
         case "message": {
-          const unsigned = payload.message
-          const signature = await sign("message", unsigned, account)
-          await onSigned({ unsigned, signature })
+          throw getTalismanLedgerError(t("Solana messages cannot be signed with Ledger yet."))
+          // const unsigned = payload.message
+          // const signature = await sign("message", unsigned, account)
+          // await onSigned({ unsigned, signature })
         }
       }
     } catch (err) {
