@@ -18,10 +18,13 @@ const NETWORK_CONFIG = {
   tokens: {
     "sol-spl": [
       {
-        mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", // usdc
       },
       {
-        mintAddress: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+        mintAddress: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump", // fartcoin
+      },
+      {
+        mintAddress: "DnFxs7eCaJBXwMqZD8iZLeiM11cTdvfFp7Qit9usWqY8", // invalid token
       },
     ],
   },

@@ -56,6 +56,7 @@ export type TokenOfType<T extends TokenType> = Extract<Token, { type: T }>
 export type TokenOfPlatform<P extends NetworkPlatform> = Extract<Token, { platform: P }>
 export type DotToken = TokenOfPlatform<"polkadot">
 export type EthToken = TokenOfPlatform<"ethereum">
+export type SolToken = TokenOfPlatform<"solana">
 
 export const isTokenOfPlatform = <P extends NetworkPlatform>(
   token: Token | null | undefined,

@@ -85,7 +85,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 }
 
 const ERROR_NO_MINT = "No mint info available"
-const ERROR_NO_METADATA = "No metadata account found  "
+const ERROR_NO_METADATA = "No metadata account found"
+const ERROR_INVALID_DATA = "Invalid on-chain data"
 
 const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: string) => {
   try {
@@ -119,17 +120,21 @@ const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: str
       data: metadataAccount.data,
     })
 
-    return TokenCacheSchema.parse({
+    const parsed = TokenCacheSchema.safeParse({
       id: tokenId,
       symbol: metadata.symbol.trim(),
       name: metadata.name.trim(),
       decimals: mint.decimals,
       isValid: true,
     })
+
+    if (!parsed.success) throw new Error(ERROR_INVALID_DATA)
+
+    return parsed.success
   } catch (err) {
     const msg = (err as Error).message
 
-    if ([ERROR_NO_MINT, ERROR_NO_METADATA].includes(msg))
+    if ([ERROR_NO_MINT, ERROR_NO_METADATA, ERROR_INVALID_DATA].includes(msg))
       return TokenCacheSchema.parse({
         id: tokenId,
         isValid: false,
