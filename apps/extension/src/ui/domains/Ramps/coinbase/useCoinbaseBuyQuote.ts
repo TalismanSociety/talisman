@@ -92,6 +92,7 @@ export const useCoinbaseBuyQuote = (
                 res.data.payment_total.currency,
                 res.data.payment_total.value,
                 coinbaseToken.purchaseCurrency,
+                coinbaseToken.purchaseSymbol,
                 coinbaseToken.purchaseNetwork,
                 res.data.quote_id,
                 address,
@@ -103,7 +104,11 @@ export const useCoinbaseBuyQuote = (
   })
 }
 
-type CoinbaseTokenSpecs = { purchaseCurrency: string; purchaseNetwork: string }
+type CoinbaseTokenSpecs = {
+  purchaseCurrency: string
+  purchaseSymbol: string
+  purchaseNetwork: string
+}
 
 const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
   const { data: coinbaseBuyOptions } = useCoinbaseBuyOptions()
@@ -130,7 +135,9 @@ const useCoinbaseTokenSpecs = (tokenId: string | undefined) => {
         return false
       })
 
-    return item ? { purchaseCurrency: item.id, purchaseNetwork: item.name } : null
+    return item
+      ? { purchaseCurrency: item.id, purchaseSymbol: item.symbol, purchaseNetwork: item.name }
+      : null
   }, [coinbaseBuyOptions, token])
 }
 

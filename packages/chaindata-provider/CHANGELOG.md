@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 1.0.1
+
+### Patch Changes
+
+- 0ce0a11: generate init data
+
 ## 1.0.0
 
 ### Major Changes

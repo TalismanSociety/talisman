@@ -31,7 +31,7 @@
     "@polkadot/types-known": "16.1.2",
     "@polkadot/ui-keyring": "3.14.1",
     "@polkadot/util": "13.5.1",
-    "@polkadot/util-crypto": "13.5.1",
+    "@polkadot/util-crypto": "13.5.3",
     "@sentry/browser": "8.35.0",
     "@solana/wallet-standard-util": "^1.1.2",
     "@substrate/txwrapper-core": "7.5.3",

@@ -545,36 +545,13 @@ export const useReverse = () => {
 
   const toAmount = useAtomValue(loadable(toAmountAtom))
 
-  const setFromEvmAddress = useSetAtom(fromEvmAddressAtom)
-  const setFromSubstrateAddress = useSetAtom(fromSubstrateAddressAtom)
-  const setToEvmAddress = useSetAtom(toEvmAddressAtom)
-  const setToSubstrateAddress = useSetAtom(toSubstrateAddressAtom)
-  const setToBtcAddress = useSetAtom(toBtcAddressAtom)
-
   return useCallback(() => {
     if (toAmount.state === "hasData" && toAmount.data) {
       setFromAmount(toAmount.data)
     }
     setFromAsset(toAsset)
     setToAsset(fromAsset)
-    setFromEvmAddress(null)
-    setFromSubstrateAddress(null)
-    setToEvmAddress(null)
-    setToSubstrateAddress(null)
-    setToBtcAddress(null)
-  }, [
-    fromAsset,
-    setFromAmount,
-    setFromAsset,
-    setFromEvmAddress,
-    setFromSubstrateAddress,
-    setToAsset,
-    setToBtcAddress,
-    setToEvmAddress,
-    setToSubstrateAddress,
-    toAmount,
-    toAsset,
-  ])
+  }, [fromAsset, setFromAmount, setFromAsset, setToAsset, toAmount, toAsset])
 }
 
 export const useAssetToken = (assetAtom: PrimitiveAtom<SwappableAssetBaseType | null>) => {

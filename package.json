@@ -44,7 +44,7 @@
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "test:e2e:debug": "pnpm exec playwright test --debug",
     "test:e2e:trace": "pnpm exec playwright test --trace on && pnpm exec playwright show-report",
-    "test:e2e:stress": "pnpm exec playwright test --repeat-each=20 --workers 1",
+    "test:e2e:stress": "pnpm exec playwright test --repeat-each=20 --workers 1 --trace on",
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "dependencies": {
@@ -123,7 +123,7 @@
       "@polkadot/ui-settings": "3.14.1",
       "@polkadot/ui-shared": "3.14.1",
       "@polkadot/util": "13.5.1",
-      "@polkadot/util-crypto": "13.5.1",
+      "@polkadot/util-crypto": "13.5.3",
       "@polkadot/vue-identicon": "3.14.1",
       "@polkadot/wasm-bridge": "7.4.1",
       "@polkadot/wasm-crypto": "7.4.1",
@@ -168,7 +168,9 @@
       "axios@>=1.0.0 <1.8.2": ">=1.8.2",
       "@babel/runtime@<7.26.10": ">=7.26.10",
       "@babel/helpers@<7.26.10": ">=7.26.10",
-      "image-size@>=1.1.0 <1.2.1": ">=1.2.1"
+      "image-size@>=1.1.0 <1.2.1": ">=1.2.1",
+      "on-headers@<1.1.0": ">=1.1.0",
+      "form-data@>=4.0.0 <4.0.4": ">=4.0.4"
     }
   },
   "lint-staged": {

@@ -44,7 +44,8 @@ export const fetchBestMetadata = async (
       allowLegacyFallback ||
       message?.includes("is not found") || // ex: crust standalone
       message?.includes("Module doesn't have export Metadata_metadata_versions") || // ex: 3DPass
-      message?.includes("Exported method Metadata_metadata_versions is not found") // ex: sora-polkadot & sora-standalone
+      message?.includes("Exported method Metadata_metadata_versions is not found") || // ex: sora-polkadot & sora-standalone
+      message?.includes("Execution, MethodNotFound, Metadata_metadata_versions") // ex: stafi
     ) {
       return (await rpcSend("state_getMetadata", [], true)) as `0x${string}`
     }

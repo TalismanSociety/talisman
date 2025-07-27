@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "2.12.0",
+  "version": "2.12.1",
   "private": true,
   "license": "GPL-3.0-or-later",
   "dependencies": {
@@ -29,7 +29,7 @@
     "@polkadot/react-qr": "3.14.1",
     "@polkadot/ui-keyring": "3.14.1",
     "@polkadot/util": "13.5.1",
-    "@polkadot/util-crypto": "13.5.1",
+    "@polkadot/util-crypto": "13.5.3",
     "@react-rxjs/core": "^0.10.7",
     "@react-rxjs/utils": "^0.9.7",
     "@scure/bip39": "^1.4.0",
