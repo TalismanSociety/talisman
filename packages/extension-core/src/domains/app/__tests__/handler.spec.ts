@@ -44,12 +44,17 @@ describe("App handler when password is not trimmed", () => {
       passConfirm: password,
     })
 
-    await messageSender("pri(accounts.create)", {
-      name: "Test Polkadot Account",
-      curve: "sr25519",
-      mnemonic: suri,
-      confirmed: false,
-    })
+    await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "new-mnemonic",
+        mnemonic: suri,
+        mnemonicName: "Test Mnemonic",
+        derivationPath: "",
+        name: "Test Polkadot Account",
+        curve: "sr25519",
+        confirmed: false,
+      },
+    ])
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
@@ -203,12 +208,17 @@ describe("App handler when password is trimmed", () => {
 
     await extensionStores.password.set({ isTrimmed: true })
 
-    await messageSender("pri(accounts.create)", {
-      name: "Test Polkadot Account",
-      curve: "sr25519",
-      mnemonic: suri,
-      confirmed: false,
-    })
+    await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "new-mnemonic",
+        mnemonic: suri,
+        mnemonicName: "Test Mnemonic",
+        derivationPath: "",
+        name: "Test Polkadot Account",
+        curve: "sr25519",
+        confirmed: false,
+      },
+    ])
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 

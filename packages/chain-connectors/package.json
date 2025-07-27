@@ -37,9 +37,9 @@
   },
   "devDependencies": {
     "@polkadot/rpc-provider": "16.1.2",
-    "@polkadot/util": "13.5.1",
-    "@polkadot/x-global": "13.5.1",
-    "@polkadot/x-ws": "13.5.1",
+    "@polkadot/util": "13.5.3",
+    "@polkadot/x-global": "13.5.3",
+    "@polkadot/x-ws": "13.5.3",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^29.5.14",

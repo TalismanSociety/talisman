@@ -60,12 +60,17 @@ describe("Extension", () => {
       pass: password,
       passConfirm: password,
     })
-    const address = await messageSender("pri(accounts.create)", {
-      name: "Test Polkadot Account",
-      curve: "sr25519", // ecdsa has determistic signatures
-      mnemonic: suri,
-      confirmed: false,
-    })
+    const [address] = await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "new-mnemonic",
+        mnemonic: suri,
+        mnemonicName: "Test Mnemonic",
+        derivationPath: "",
+        name: "Test Polkadot Account",
+        curve: "sr25519",
+        confirmed: false,
+      },
+    ])
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
 
@@ -409,11 +414,15 @@ describe("Extension", () => {
     expect(talismanSite && talismanSite.addresses)
     expect(talismanSite.addresses?.includes(account.address))
 
-    const newAddress = await messageSender("pri(accounts.create)", {
-      name: "AutoAdd",
-      curve: "sr25519",
-      mnemonicId,
-    })
+    const [newAddress] = await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "existing-mnemonic",
+        name: "AutoAdd",
+        curve: "sr25519",
+        mnemonicId,
+        derivationPath: "//Other",
+      },
+    ])
 
     const sites = await extensionStores.sites.get()
     const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]
