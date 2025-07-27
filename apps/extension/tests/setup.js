@@ -39,3 +39,13 @@ process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
 
 // somehow not available in jest's jsdom
 global.structuredClone = cloneDeep
+
+// remove useless warnings
+const originalWarn = console.warn
+console.warn = (...args) => {
+  const msg = args[0]?.toString?.()
+  // This is a harmless runtime warning coming from the bigint-buffer or similar native addon dependency,
+  // which tries (and fails) to load a native Node.js binding, then falls back to pure JavaScript.
+  if (msg?.includes("bigint: Failed to load bindings")) return
+  originalWarn(...args)
+}
