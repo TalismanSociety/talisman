@@ -592,7 +592,27 @@
       "decimals": 9,
       "isDefault": true,
       "coingeckoId": "solana",
-      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/new-balance-modules/assets/tokens/sol.svg"
+      "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/solana.webp"
+    },
+    {
+      "id": "solana-mainnet:sol-spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "networkId": "solana-mainnet",
+      "decimals": 6,
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "type": "sol-spl",
+      "platform": "solana",
+      "mintAddress": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+    },
+    {
+      "id": "solana-mainnet:sol-spl:9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "networkId": "solana-mainnet",
+      "decimals": 6,
+      "symbol": "Fartcoin",
+      "name": "Fartcoin",
+      "type": "sol-spl",
+      "platform": "solana",
+      "mintAddress": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump"
     },
     {
       "id": "solana-devnet:sol-native",

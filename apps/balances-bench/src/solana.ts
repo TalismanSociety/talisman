@@ -15,10 +15,19 @@ const NETWORK_CONFIG = {
     symbol: "SOL",
     decimals: 9,
   },
-  tokens: {},
+  tokens: {
+    "sol-spl": [
+      {
+        mintAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      },
+      {
+        mintAddress: "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      },
+    ],
+  },
 }
 
-testNetworkSol(NETWORK_CONFIG, { modules: ["sol-native"], transfer: true })
+testNetworkSol(NETWORK_CONFIG, { modules: ["sol-spl"], transfer: true })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

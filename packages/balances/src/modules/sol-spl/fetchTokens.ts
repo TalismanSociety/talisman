@@ -1,106 +1,142 @@
+import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata"
+import { publicKey, sol } from "@metaplex-foundation/umi"
+import { MintLayout } from "@solana/spl-token"
+import { PublicKey } from "@solana/web3.js"
+import { IChainConnectorSol } from "@talismn/chain-connectors"
+import {
+  parseSolSplTokenId,
+  SolSplToken,
+  solSplTokenId,
+  SolSplTokenSchema,
+} from "@talismn/chaindata-provider"
+import { assign, omit } from "lodash-es"
+import z from "zod/v4"
+
+import log from "../../log"
 import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
-// const TokenCacheSchema = z.discriminatedUnion("isValid", [
-//   z.strictObject({
-//     id: EvmErc20TokenSchema.shape.id,
-//     isValid: z.literal(true),
-//     ...EvmErc20TokenSchema.pick({ symbol: true, decimals: true, name: true }).shape,
-//   }),
-//   z.strictObject({
-//     id: EvmErc20TokenSchema.shape.id,
-//     isValid: z.literal(false),
-//   }),
-// ])
+const TokenCacheSchema = z.discriminatedUnion("isValid", [
+  z.strictObject({
+    id: SolSplTokenSchema.shape.id,
+    isValid: z.literal(true),
+    ...SolSplTokenSchema.pick({ symbol: true, decimals: true, name: true, logo: true }).shape,
+  }),
+  z.strictObject({
+    id: SolSplTokenSchema.shape.id,
+    isValid: z.literal(false),
+  }),
+])
 
-// type CachedToken = z.infer<typeof TokenCacheSchema>
+type CachedToken = z.infer<typeof TokenCacheSchema>
 
-export const fetchTokens: IBalanceModule<
-  typeof MODULE_TYPE,
-  TokenConfig
->["fetchTokens"] = async () =>
-  //   {
-  //   networkId,
-  //   tokens,
-  //   connector,
-  //   cache,
-  // }
-  {
-    throw new Error("Not implemented")
-    // const result: EvmErc20Token[] = []
+const METAPLEX_PROGRAM_ID = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
 
-    // for (const tokenConfig of tokens) {
-    //   const tokenId = evmErc20TokenId(networkId, tokenConfig.contractAddress)
-    //   const cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
-    //     | CachedToken
-    //     | undefined
+export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
+  networkId,
+  tokens,
+  connector,
+  cache,
+}) => {
+  const result: SolSplToken[] = []
 
-    //   if (!cached) {
-    //     const client = await connector.getPublicClientForEvmNetwork(networkId)
-    //     if (!client) {
-    //       log.warn(`No client found for network ${networkId} while fetching EVM ERC20 tokens`)
-    //       continue
-    //     }
+  for (const tokenConfig of tokens) {
+    const tokenId = solSplTokenId(networkId, tokenConfig.mintAddress)
+    let cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
+      | CachedToken
+      | undefined
 
-    //     try {
-    //       const { name, decimals, symbol } = await getErc20ContractData(
-    //         client,
-    //         tokenConfig.contractAddress,
-    //       )
+    if (!cached) {
+      const tokenInfo = await fetchOnChainTokenData(connector, tokenId)
+      if (tokenInfo) cache[tokenId] = tokenInfo
+    }
 
-    //       cache[tokenId] = TokenCacheSchema.parse({
-    //         id: tokenId,
-    //         symbol,
-    //         decimals,
-    //         name,
-    //         isValid: true,
-    //       })
-    //     } catch (err) {
-    //       const msg = (err as BaseError).shortMessage
-    //       if (
-    //         msg.includes("returned no data") ||
-    //         msg.includes("is out of bounds") ||
-    //         msg.includes("reverted")
-    //       )
-    //         cache[tokenId] = { id: tokenId, isValid: false }
-    //       else
-    //         log.warn(
-    //           `Failed to fetch ERC20 token data for ${networkId}:${tokenConfig.contractAddress}`,
-    //           (err as BaseError).shortMessage,
-    //         )
-    //       continue
-    //     }
-    //   }
+    cached = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
+      | CachedToken
+      | undefined
 
-    //   const base: Pick<EvmErc20Token, "id" | "type" | "networkId" | "platform"> = {
-    //     id: tokenId,
-    //     type: MODULE_TYPE,
-    //     platform: PLATFORM,
-    //     networkId,
-    //   }
+    if (cached?.isValid === false) continue
 
-    //   const cached2 = (cache[tokenId] && TokenCacheSchema.safeParse(cache[tokenId]).data) as
-    //     | CachedToken
-    //     | undefined
+    const base: Pick<SolSplToken, "id" | "type" | "networkId" | "platform"> = {
+      id: tokenId,
+      type: MODULE_TYPE,
+      platform: PLATFORM,
+      networkId,
+    }
 
-    //   if (cached2?.isValid === false) continue
+    const token = assign(
+      base,
+      cached?.isValid ? omit(cached, ["isValid"]) : {},
+      tokenConfig,
+    ) as SolSplToken
 
-    //   const token = assign(
-    //     base,
-    //     cached2?.isValid ? omit(cached2, ["isValid"]) : {},
-    //     tokenConfig,
-    //   ) as EvmErc20Token
+    const parsed = SolSplTokenSchema.safeParse(token)
+    if (!parsed.success) {
+      log.warn("Ignoring token with invalid SolSplTokenSchema", {
+        token,
+      })
+      continue
+    }
 
-    //   const parsed = EvmErc20TokenSchema.safeParse(token)
-    //   if (!parsed.success) {
-    //     log.warn("Ignoring token with invalid EvmErc20TokenSchema", {
-    //       token,
-    //     })
-    //     continue
-    //   }
-
-    //   result.push(parsed.data)
-    // }
-
-    // return result
+    result.push(parsed.data)
   }
+
+  return result
+}
+
+const ERROR_NO_MINT = "No mint info available"
+const ERROR_NO_METADATA = "No metadata account found  "
+
+const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: string) => {
+  try {
+    const { networkId, mintAddress } = parseSolSplTokenId(tokenId)
+
+    const connection = await connector.getConnection(networkId)
+    if (!connection) {
+      log.warn(`No connection found for network ${networkId}`)
+      return null
+    }
+
+    const mintPubKey = new PublicKey(mintAddress)
+    const mintInfo = await connection.getAccountInfo(mintPubKey) // connection.getParsedAccountInfo(mint)
+    if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
+    const mint = MintLayout.decode(mintInfo.data)
+
+    const [metadataPDA] = PublicKey.findProgramAddressSync(
+      [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
+      METAPLEX_PROGRAM_ID,
+    )
+
+    // 3. Fetch metadata account directly (traditional way)
+    const metadataAccount = await connection.getAccountInfo(new PublicKey(metadataPDA))
+    if (!metadataAccount) throw new Error(ERROR_NO_METADATA)
+
+    const metadata = deserializeMetadata({
+      publicKey: publicKey(metadataPDA),
+      executable: metadataAccount.executable,
+      owner: publicKey(metadataAccount.owner),
+      lamports: sol(metadataAccount.lamports),
+      data: metadataAccount.data,
+    })
+
+    return TokenCacheSchema.parse({
+      id: tokenId,
+      symbol: metadata.symbol.trim(),
+      name: metadata.name.trim(),
+      decimals: mint.decimals,
+      isValid: true,
+    })
+  } catch (err) {
+    const msg = (err as Error).message
+
+    if ([ERROR_NO_MINT, ERROR_NO_METADATA].includes(msg))
+      return TokenCacheSchema.parse({
+        id: tokenId,
+        isValid: false,
+      })
+
+    log.warn("Failed to fetch sol-spl token data for %s", tokenId, { err })
+  }
+
+  return null
+}

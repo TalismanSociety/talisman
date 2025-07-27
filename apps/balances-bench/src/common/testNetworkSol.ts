@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { existsSync, readFileSync, writeFileSync } from "fs"
+
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import { TokenType } from "@talismn/chaindata-provider"
@@ -37,8 +39,9 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
   const networkId = network.id
 
   const cache = {
-    // "sol-spl": existsSync(`./cache/sol-spl.json`)
-    //   ? JSON.parse(readFileSync(`./cache/sol-spl.json`, "utf-8"))
+    "sol-spl": existsSync(`./cache/sol-spl.json`)
+      ? JSON.parse(readFileSync(`./cache/sol-spl.json`, "utf-8"))
+      : {},
   }
 
   try {
@@ -68,6 +71,8 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
       })
 
       log.log("mod.fetchTokens results", tokens)
+      writeFileSync(`./cache/sol-spl.json`, JSON.stringify(cache["sol-spl"], null, 2))
+
       if (!opts.fetchBalances) continue
 
       const balances = await mod.fetchBalances({
@@ -92,9 +97,6 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
       log.log("Transfer call data", transfer)
     }
     stopAll()
-
-    // writeFileSync(`./cache/evm-erc20.json`, JSON.stringify(cache["evm-erc20"], null, 2))
-    // writeFileSync(`./cache/evm-uniswapv2.json`, JSON.stringify(cache["evm-uniswapv2"], null, 2))
   } catch (err) {
     log.error(err)
   }

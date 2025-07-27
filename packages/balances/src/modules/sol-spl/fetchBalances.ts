@@ -1,137 +1,88 @@
+import { PublicKey } from "@solana/web3.js"
+import { solSplTokenId } from "@talismn/chaindata-provider"
+import { isNotNil } from "@talismn/util"
+import { keyBy, uniq } from "lodash-es"
+
+import log from "../../log"
+import { IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
+import { getBalanceDefs } from "../shared"
 import { MODULE_TYPE } from "./config"
 
-export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async () =>
-  //   {
-  //   networkId,
-  //   tokensWithAddresses,
-  //   connector,
-  // }
-  {
-    throw new Error("Not implemented")
-    // if (!tokensWithAddresses.length) return { success: [], errors: [] }
+export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
+  networkId,
+  tokensWithAddresses,
+  connector,
+}) => {
+  if (!tokensWithAddresses.length) return { success: [], errors: [] }
 
-    // const client = await connector.getPublicClientForEvmNetwork(networkId)
-    // if (!client) throw new Error(`Could not get rpc provider for evm network ${networkId}`)
+  const connection = await connector.getConnection(networkId)
+  if (!connection) throw new Error(`Could not get connection for Solana network ${networkId}`)
 
-    // for (const [token, addresses] of tokensWithAddresses) {
-    //   if (token.type !== MODULE_TYPE || token.networkId !== networkId)
-    //     throw new Error(
-    //       `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`,
-    //     )
+  // fetch balances for each address and output the ones for which we have a token
 
-    //   for (const address of addresses)
-    //     if (!isEthereumAddress(address))
-    //       throw new Error(
-    //         `Invalid ethereum address for EVM ERC20 balance module: ${address} for token ${token.id}`,
-    //       )
-    // }
+  const accountAddresses = uniq(tokensWithAddresses.flatMap(([, addresses]) => addresses))
 
-    // const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
+  // TODO look for a way to fetch balances for all accounts in one request
+  // hint: connection.getProgramAccounts
 
-    // if (client.chain?.contracts?.erc20Aggregator && balanceDefs.length > 1) {
-    //   const erc20Aggregator = client.chain.contracts.erc20Aggregator as ChainContract
-    //   return fetchWithAggregator(client, balanceDefs, erc20Aggregator.address)
-    // }
+  const balancesPerAddress = await Promise.all(
+    accountAddresses.map(async (address) => {
+      const tokenAccounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
+        programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), // SPL Token Program ID
+      })
 
-    // return fetchWithoutAggregator(client, balanceDefs)
-  }
+      const balances = tokenAccounts.value
+        .map((d): IBalance | null => {
+          try {
+            const mintAddress = d.account.data.parsed.info.mint
+            const value = d.account.data.parsed.info.tokenAmount.amount ?? "0"
+            return {
+              tokenId: solSplTokenId(networkId, mintAddress),
+              networkId,
+              address,
+              source: MODULE_TYPE,
+              status: "live",
+              value,
+            }
+          } catch (err) {
+            log.warn("Failed to parse token amount", {
+              address,
+              d,
+            })
+            return null
+          }
+        })
+        .filter(isNotNil)
 
-// const fetchWithoutAggregator = async (
-//   client: PublicClient,
-//   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-// ): Promise<FetchBalanceResults> => {
-//   if (balanceDefs.length === 0) return { success: [], errors: [] }
+      return [address, balances] as const
+    }),
+  )
 
-//   const results = await Promise.allSettled(
-//     balanceDefs.map(async ({ token, address }) => {
-//       try {
-//         const result = await client.readContract({
-//           abi: erc20Abi,
-//           address: token.contractAddress,
-//           functionName: "balanceOf",
-//           args: [address],
-//         })
+  const allBalancesByKey = keyBy(
+    balancesPerAddress.flatMap(([, addressBalances]) => addressBalances),
+    (b) => getBalanceKey(b.tokenId, b.address),
+  )
 
-//         const balance: IBalance = {
-//           address,
-//           tokenId: token.id,
-//           value: result.toString(),
-//           source: MODULE_TYPE,
-//           networkId: parseEvmErc20TokenId(token.id).networkId,
-//           status: "live",
-//         }
+  const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)
 
-//         return balance
-//       } catch (err) {
-//         throw new BalanceFetchError(
-//           `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
-//           token.id,
-//           address,
-//           err as Error,
-//         )
-//       }
-//     }),
-//   )
+  // return a balance entry for all token/address pairs that were requested
+  const success = balanceDefs.map((bd): IBalance => {
+    const found = allBalancesByKey[getBalanceKey(bd.token.id, bd.address)]
+    return (
+      found ?? {
+        tokenId: bd.token.id,
+        networkId: bd.token.networkId,
+        address: bd.address,
+        source: MODULE_TYPE,
+        status: "live",
+        value: "0",
+      }
+    )
+  })
 
-//   return results.reduce(
-//     (acc, result) => {
-//       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
-//       else {
-//         const error = result.reason as BalanceFetchError
-//         acc.errors.push({
-//           tokenId: error.tokenId,
-//           address: error.address,
-//           error,
-//         })
-//       }
-//       return acc
-//     },
-//     { success: [], errors: [] } as FetchBalanceResults,
-//   )
-// }
+  // return only the balances that match the tokens we are interested in
+  return { success, errors: [] } // TODO output errors if any
+}
 
-// const fetchWithAggregator = async (
-//   client: PublicClient,
-//   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-//   erc20BalancesAggregatorAddress: `0x${string}`,
-// ): Promise<FetchBalanceResults> => {
-//   if (balanceDefs.length === 0) return { success: [], errors: [] }
-
-//   try {
-//     const erc20Balances = await client.readContract({
-//       abi: erc20BalancesAggregatorAbi,
-//       address: erc20BalancesAggregatorAddress,
-//       functionName: "balances",
-//       args: [
-//         balanceDefs.map((b) => ({
-//           account: b.address,
-//           token: b.token.contractAddress,
-//         })),
-//       ],
-//     })
-
-//     const success = balanceDefs.map(
-//       (balanceDef, index): IBalance => ({
-//         address: balanceDef.address,
-//         tokenId: balanceDef.token.id,
-//         value: erc20Balances[index].toString(),
-//         source: MODULE_TYPE,
-//         networkId: parseTokenId(balanceDef.token.id).networkId,
-//         status: "live",
-//       }),
-//     )
-//     return { success, errors: [] }
-//   } catch (err) {
-//     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
-//       tokenId: balanceDef.token.id,
-//       address: balanceDef.address,
-//       error: new BalanceFetchNetworkError(
-//         `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
-//         String(client.chain?.id),
-//         err as Error,
-//       ),
-//     }))
-//     return { success: [], errors }
-//   }
-// }
+const getBalanceKey = (tokenId: string, address: string) => `${tokenId}:${address}`
