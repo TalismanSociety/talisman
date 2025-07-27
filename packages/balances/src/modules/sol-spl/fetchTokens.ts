@@ -130,7 +130,7 @@ const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: str
 
     if (!parsed.success) throw new Error(ERROR_INVALID_DATA)
 
-    return parsed.success
+    return parsed.data
   } catch (err) {
     const msg = (err as Error).message
 
