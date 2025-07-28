@@ -5,11 +5,13 @@ import { assert, objectSpread, stringToU8a } from "@polkadot/util"
 import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
   addressFromMnemonic,
-  bytesToString,
+  base58,
+  base64,
   getAccountPlatformFromAddress,
+  hex,
   KeypairCurve,
-  stringToBytes,
 } from "@talismn/crypto"
+import { getPublicKeySolana } from "@talismn/crypto/src/derivation/deriveSolana"
 import { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
@@ -197,9 +199,10 @@ export default class AccountsHandler extends ExtensionHandler {
 
       switch (curve) {
         case "ethereum":
-          return bytesToString("hex", secretKey)
+          return hex.encode(secretKey)
         case "solana":
-          return bytesToString("base58", secretKey)
+          // TODO test
+          return base58.encode(new Uint8Array([...secretKey, ...getPublicKeySolana(secretKey)]))
         default:
           throw new Error("Unsupported curve")
       }
@@ -308,7 +311,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     const deserializedOptions = options.map((o) => ({
       ...o,
-      secretKey: stringToBytes("base64", o.secretKey),
+      secretKey: base64.decode(o.secretKey),
     }))
 
     const accounts = await keyringStore.addAccountKeypairMulti(deserializedOptions)

@@ -1,8 +1,8 @@
 import {
   addressEncodingFromCurve,
   addressFromPublicKey,
+  base58,
   blake3,
-  bytesToString,
   deriveKeypair,
   entropyToMnemonic,
   entropyToSeed,
@@ -12,7 +12,7 @@ import {
   KeypairCurve,
   mnemonicToEntropy,
   normalizeAddress,
-  stringToBytes,
+  utf8,
 } from "@talismn/crypto"
 
 import type { Account, Mnemonic } from "../types"
@@ -71,12 +71,12 @@ export class Keyring {
 
     // run through same complexity as for other secrets, to make it so it s not easier to brute force passwordCheck than other secrets
     if (!this.#data.passwordCheck || reset) {
-      const bytes = stringToBytes("utf8", PASSWORD_CHECK_PHRASE)
+      const bytes = utf8.decode(PASSWORD_CHECK_PHRASE)
       this.#data.passwordCheck = await encryptData(bytes, passwordHash)
     } else {
       try {
         const bytes = await decryptData(this.#data.passwordCheck, passwordHash)
-        const text = bytesToString("utf8", bytes)
+        const text = utf8.encode(bytes)
         if (text !== PASSWORD_CHECK_PHRASE) throw new Error("Invalid password")
       } catch {
         throw new Error("Invalid password")
@@ -374,11 +374,11 @@ export class Keyring {
 }
 
 const oneWayHash = (bytes: Uint8Array | string) => {
-  if (typeof bytes === "string") bytes = stringToBytes("utf8", bytes)
+  if (typeof bytes === "string") bytes = utf8.decode(bytes)
 
   // cryptographically secure one way hash
   // outputs 44 characters without special characters
-  return bytesToString("base58", blake3(bytes))
+  return base58.encode(blake3(bytes))
 }
 
 const mnemonicFromStorage = (data: MnemonicStorage): Mnemonic => {

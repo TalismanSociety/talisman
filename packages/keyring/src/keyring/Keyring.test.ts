@@ -1,5 +1,5 @@
 import {
-  bytesToString,
+  base58,
   deriveKeypair,
   entropyToSeed,
   KeypairCurve,
@@ -157,7 +157,7 @@ describe("keyring", () => {
     const originalSecret = await keyring.getAccountSecretKey(derived.address, VALID_PASSWORD)
     const restoredSecret = await restored.getAccountSecretKey(derived.address, VALID_PASSWORD)
 
-    expect(bytesToString("base58", originalSecret)).toEqual(bytesToString("base58", restoredSecret))
+    expect(base58.encode(originalSecret)).toEqual(base58.encode(restoredSecret))
   })
 })
 
