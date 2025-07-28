@@ -4,7 +4,6 @@ import EventEmitter from "events"
 import type { SendRequest } from "extension-core"
 import { SolanaSignInOutput } from "@solana/wallet-standard-features"
 import { PublicKey } from "@solana/web3.js"
-import { sleep } from "@talismn/util"
 import bs58 from "bs58"
 
 import { deserializeTransaction, serializeTransaction } from "./util"
@@ -18,11 +17,9 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     account: null,
 
     on: (event, listener, context) => {
-      console.log("[provider] on", { event, listener, context })
       eventEmitter.on(event, listener.bind(context))
     },
     off: (event, listener, context) => {
-      console.log("[provider] off", { event, listener, context })
       eventEmitter.off(event, listener.bind(context))
     },
 
@@ -50,6 +47,7 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
     },
     signAndSendTransaction: async (transaction, options) => {
       console.log("[provider] signAndSendTransaction", { transaction, options })
+      throw new Error("Not implemented")
       // const response = await send("solana_signAndSendTransaction", { transaction, options });
       return { signature: "" }
     },
@@ -58,16 +56,22 @@ export const getSolanaProvider = (send: SendRequest): TalismanSol => {
         transaction: serializeTransaction(transaction),
         send: false,
       })
-      console.log("[provider] signTransaction", { transaction, result })
-      const deserialized = deserializeTransaction(result.transaction)
-      console.log("[provider] signTransaction deserialized", { deserialized })
-
-      return deserialized as typeof transaction
+      return deserializeTransaction(result.transaction) as typeof transaction
     },
     signAllTransactions: async (transactions) => {
       console.log("[provider] signAllTransactions", { transactions })
-      await sleep(200)
-      return transactions
+
+      const results: typeof transactions = []
+
+      // sign each tx sequentially
+      for (const tx of transactions) {
+        const result = await send("pub(solana.provider.signTransaction)", {
+          transaction: serializeTransaction(tx),
+          send: false,
+        })
+        results.push(deserializeTransaction(result.transaction) as typeof tx)
+      }
+      return results
     },
     signMessage: async (message) => {
       console.log("[provider] signMessage", { message })
