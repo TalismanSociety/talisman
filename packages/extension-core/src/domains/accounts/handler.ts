@@ -340,11 +340,6 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsAddDerive(request as RequestAddAccountDerive)
       case "pri(accounts.add.keypair)":
         return this.accountsAddKeypair(request as RequestAddAccountKeypair)
-      // case "pri(accounts.create)":
-      //   return this.accountCreate(request as RequestAccountCreate)
-      // case "pri(accounts.create.suri)":
-      //   return this.accountCreateSuri(request as RequestAccountCreateFromSuri)
-
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.external.setIsPortfolio)":
