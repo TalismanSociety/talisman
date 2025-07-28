@@ -1,6 +1,11 @@
 import { bind } from "@react-rxjs/core"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
-import { Account, isAccountAddressEthereum, isAccountOfType } from "extension-core"
+import {
+  Account,
+  isAccountOfType,
+  isAccountPlatformEthereum,
+  isAccountPlatformSolana,
+} from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
@@ -38,7 +43,8 @@ export const useAccountExportPrivateKeyModal = () => {
   )
 
   const canExportAccountFunc = (account?: Account | null) =>
-    isAccountAddressEthereum(account) && isAccountOfType(account, "keypair")
+    isAccountOfType(account, "keypair") &&
+    (isAccountPlatformEthereum(account) || isAccountPlatformSolana(account))
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
