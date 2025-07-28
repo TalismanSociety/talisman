@@ -40,13 +40,17 @@ export const SolSignTransactionRequest: FC<{
     id,
     account,
     request: { transaction: serializedTx },
-    // url,
   } = request
 
   const transaction = useMemo(() => deserializeTransaction(serializedTx), [serializedTx])
   const { data: networkId } = useSolanaNetworkIdForTransaction(transaction)
   const network = useNetworkById(networkId)
   const [isLocked, setIsLocked] = useState(false)
+
+  const { data: validity } = useTransactionValidity({
+    transaction,
+    networkId,
+  })
 
   const { t } = useTranslation()
 
@@ -90,16 +94,9 @@ export const SolSignTransactionRequest: FC<{
     [id],
   )
 
-  const validityError = useMemo(() => {
-    if (!networkId) return t("Transaction is invalid or its validity window has expired")
-    return null
-  }, [networkId, t])
-
   const displayError = useMemo(() => {
-    if (state.error) return state.error
-    if (validityError) return validityError
-    return null
-  }, [state.error, validityError])
+    return state.error ?? validity?.reason ?? null
+  }, [state.error, validity?.reason])
 
   const signPayload = useMemo<SolSignPayload>(
     () => ({
@@ -109,15 +106,13 @@ export const SolSignTransactionRequest: FC<{
     [transaction],
   )
 
-  // TODO dry run ?
-
   return (
     <PopupLayout>
       <PopupHeader right={<SignNetworkLogo network={network} />}>
         <AppPill url={request.url} />
       </PopupHeader>
       <PopupContent>
-        <div className="text-body-secondary flex h-full w-full flex-col items-center text-center">
+        <div className="text-body-secondary flex w-full flex-col items-center text-center">
           <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
           <h2 className="mb-8 text-base leading-[3.2rem]">
             {t("You are signing a transaction with account")} <AccountPill account={account} />
@@ -140,6 +135,7 @@ export const SolSignTransactionRequest: FC<{
           <Button onClick={() => window.close()}>{t("Cancel")}</Button>
           {isAccountOfType(account, "ledger-solana") ? (
             <SignLedgerSolana
+              disabled={!validity?.isValid}
               account={account}
               payload={signPayload}
               onSentToDevice={setIsLocked}
@@ -147,7 +143,7 @@ export const SolSignTransactionRequest: FC<{
             />
           ) : (
             <Button
-              //   disabled={!transaction || isLoading || !isValid}
+              disabled={!validity?.isValid}
               processing={state.processing}
               primary
               onClick={handleApprove}
@@ -211,9 +207,9 @@ const FeeEstimateRow: FC<{
         </Tooltip>
       </div>
       <div>
-        {isLoading ? (
+        {isLoading || !tokenId ? (
           <LoaderIcon className="animate-spin-slow inline-block" />
-        ) : error || !tokenId || !estimatedFee ? (
+        ) : error || !estimatedFee ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>
             <TooltipContent>{t("Failed to estimate fee")}</TooltipContent>
@@ -238,10 +234,10 @@ const useEstimatedFee = ({
   return useQuery({
     queryKey: ["useSolSignTransactionEstimateFee", transaction, networkId],
     queryFn: async () => {
-      if (!networkId) throw new Error("Target network is unknown")
+      if (!networkId) return null
 
       const connection = getFrontEndSolanaConnection(networkId)
-      if (!connection) throw new Error("No connection available for network")
+      if (!connection) return null
 
       const result = await connection.getFeeForMessage(
         isVersionedTransaction(transaction) ? transaction.message : transaction.compileMessage(),
@@ -249,6 +245,45 @@ const useEstimatedFee = ({
 
       return result.value ? String(result.value) : null
     },
-    refetchInterval: !isLocked && 6_000, // refresh fee every 60 seconds
+    refetchInterval: !isLocked && 5_000, // refresh fee every 5 seconds
+  })
+}
+
+const useTransactionValidity = ({
+  transaction,
+  networkId,
+}: {
+  transaction: Transaction | VersionedTransaction
+  networkId: string | null
+}) => {
+  const { t } = useTranslation()
+
+  return useQuery({
+    queryKey: ["useSolSignTransactionValidity", transaction, networkId],
+    queryFn: async () => {
+      if (!networkId) return { isValid: false, reason: t("Unknown network") }
+
+      const connection = getFrontEndSolanaConnection(networkId)
+      if (!connection) return { isValid: false, reason: t("No connection available") }
+
+      try {
+        const recentBlockhash = isVersionedTransaction(transaction)
+          ? transaction.message.recentBlockhash
+          : transaction.recentBlockhash
+
+        if (!recentBlockhash) return { isValid: false, reason: t("No blockhash found") }
+
+        // Check if the blockhash is still valid
+        const isValid = await connection.isBlockhashValid(recentBlockhash)
+
+        return {
+          isValid: isValid.value,
+          reason: isValid.value ? null : t("Transaction has expired"),
+        }
+      } catch (error) {
+        return { isValid: false, reason: t("Failed to validate transaction") }
+      }
+    },
+    refetchInterval: 5_000, // Check every 5 seconds
   })
 }

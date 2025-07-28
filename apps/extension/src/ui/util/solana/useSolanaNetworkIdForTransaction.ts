@@ -3,6 +3,7 @@ import { parseTransactionInfo } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
+import { useTranslation } from "react-i18next"
 
 import { useNetworks } from "@ui/state"
 
@@ -17,6 +18,7 @@ import { getFrontEndSolanaConnection } from "./useSolanaConnection"
 export const useSolanaNetworkIdForTransaction = (
   transaction: VersionedTransaction | Transaction,
 ) => {
+  const { t } = useTranslation()
   // find on which network the tx is for, based on the transaction data
   const networks = useNetworks({ platform: "solana" })
 
@@ -44,9 +46,7 @@ export const useSolanaNetworkIdForTransaction = (
           throwAfter(5_000, "Timeout"),
         ])
 
-        if (!networkId) {
-          throw new Error("No valid network found for the transaction")
-        }
+        if (!networkId) throw new Error("No valid network found for the transaction")
 
         return networkId
       } catch (err) {
@@ -54,7 +54,8 @@ export const useSolanaNetworkIdForTransaction = (
           transaction,
           error: err,
         })
-        return null
+        // this is a suspense hook so we dont want to throw an error here
+        throw new Error(t("Failed to identify network for this transaction"))
       }
     },
   })

@@ -26,13 +26,23 @@ export const SignLedgerSolana: FC<{
   payload: SolSignPayload
   containerId?: string
   className?: string
+  disabled?: boolean
   onSigned: (arg: {
     unsigned: Buffer<ArrayBufferLike>
     signature: Buffer<ArrayBufferLike>
   }) => void | Promise<void>
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void // triggered when tx is sent
-}> = ({ account, className = "", payload, containerId, onSentToDevice, onSigned, onCancel }) => {
+}> = ({
+  account,
+  className = "",
+  payload,
+  containerId,
+  disabled,
+  onSentToDevice,
+  onSigned,
+  onCancel,
+}) => {
   const { t } = useTranslation()
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
@@ -81,6 +91,7 @@ export const SignLedgerSolana: FC<{
   return (
     <SignLedgerBase
       containerId={containerId}
+      disabled={disabled}
       isProcessing={isSigning}
       error={error}
       className={className}
