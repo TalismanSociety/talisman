@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { secp256k1 } from "@noble/curves/secp256k1"
-import { bytesToString, isAddressEqual, parseSecretKey } from "@talismn/crypto"
+import { AccountPlatform, bytesToString, isAddressEqual, parseSecretKey } from "@talismn/crypto"
 import { isAccountAddressEthereum } from "extension-core"
 import i18next from "i18next"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -26,8 +26,11 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
 
+import { AccountPlatformDropdown } from "../AccountPlatformDropdown"
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
 import { AccountAddPageProps } from "./types"
+
+const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "solana"]
 
 /**
  * A minimal version of viem's privateKeyToAccount that only returns an address
@@ -58,6 +61,7 @@ const transformToHex = (privateKey: string): `0x${string}` =>
   privateKey?.startsWith("0x") ? (privateKey as `0x${string}`) : `0x${privateKey}`
 
 type FormData = {
+  platform: AccountPlatform
   name: string
   privateKey: string
 }
@@ -69,6 +73,7 @@ type ValidationContext = {
 const schema = yup
   .object({
     name: yup.string().trim().required(" "),
+    platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).required(" "),
     privateKey: yup
       .string()
       .required(" ")
@@ -122,6 +127,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   })
 
   const privateKey = watch("privateKey")
+  const platform = watch("platform")
 
   const [targetAddress, setTargetAddress] = useState<string>()
 
@@ -184,7 +190,14 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <HeaderBlock title={t("Import Ethereum Private Key")} />
+      <HeaderBlock title={t("Import via Private Key")} />
+
+      <AccountPlatformDropdown
+        value={platform}
+        platforms={SUPPORTED_ACCOUNT_PLATFORMS}
+        onChange={(platform) => setValue("platform", platform)}
+        className="h-28"
+      />
 
       <form onSubmit={handleSubmit(submit)}>
         <FormFieldContainer error={errors.name?.message}>
