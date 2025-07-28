@@ -28,7 +28,7 @@ const fetchJsonFromGithubUrl = async <T>(
   const req = await fetch(url, { signal })
 
   // uncomment the line below to test initChaindata provisioning
-  if (Date.now()) throw new Error("OMG HE GOT A KNIFE!")
+  // if (Date.now()) throw new Error("OMG SHE GOT A KNIFE!")
 
   if (!req.ok) {
     const fallbackUrl = getFallbackUrl(url)

@@ -5,7 +5,10 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 
 import { useBalance, useNetworkById, useToken } from "@ui/state"
-import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import {
+  getFrontEndSolanaConnector,
+  useSolanaConnection,
+} from "@ui/util/solana/useSolanaConnection"
 
 import { SendFundsTransactionProps } from "./types"
 
@@ -88,11 +91,13 @@ const useSolPayload = ({
       if (!mod) throw new Error(`Unsupported token type: ${token.type}`)
       if (mod.platform !== "solana") throw new Error(`Unsupported module type: ${mod.type}`)
 
-      const calldata = await mod.getTransferCallData({ token, from, to, value })
+      const connector = getFrontEndSolanaConnector(token.networkId)
+
+      const instructions = await mod.getTransferCallData({ token, from, to, value, connector })
 
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
 
-      const tx = new Transaction().add(calldata)
+      const tx = new Transaction().add(...instructions)
       tx.feePayer = new PublicKey(from)
       tx.recentBlockhash = blockhash
       tx.lastValidBlockHeight = lastValidBlockHeight

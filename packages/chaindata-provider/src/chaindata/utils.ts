@@ -43,6 +43,10 @@ export const isNetworkEth = (network: Network | null | undefined) => {
   return isNetworkOfPlatform(network, "ethereum")
 }
 
+export const isNetworkSol = (network: Network | null | undefined) => {
+  return isNetworkOfPlatform(network, "solana")
+}
+
 export const getNetworkGenesisHash = <
   Net extends Network,
   Res = Net extends DotNetwork ? DotNetwork["genesisHash"] : undefined,

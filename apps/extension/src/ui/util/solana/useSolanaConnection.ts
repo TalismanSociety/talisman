@@ -1,4 +1,6 @@
 import { Connection, ConnectionConfig } from "@solana/web3.js"
+import { ChainConnectorSolStub } from "@talismn/chain-connectors"
+import { SolNetworkId } from "@talismn/chaindata-provider"
 import { SolRpcRequest } from "extension-core"
 import { useMemo } from "react"
 
@@ -49,4 +51,10 @@ export const getFrontEndSolanaConnection = (networkId: string | null | undefined
 
 export const useSolanaConnection = (networkId: string | null | undefined) => {
   return useMemo(() => getFrontEndSolanaConnection(networkId), [networkId])
+}
+
+export const getFrontEndSolanaConnector = (networkId: SolNetworkId) => {
+  const connection = getFrontEndSolanaConnection(networkId)
+  if (!connection) throw new Error(`No Solana connection found for network ID: ${networkId}`)
+  return new ChainConnectorSolStub(connection)
 }

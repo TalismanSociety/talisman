@@ -1,5 +1,5 @@
 import { Connection } from "@solana/web3.js"
-import { SolNetwork } from "@talismn/chaindata-provider"
+import { isNetworkSol, SolNetwork } from "@talismn/chaindata-provider"
 
 import { getSolConnection } from "./getSolConnection"
 import { IChainConnectorSol } from "./IChainConnectorSol"
@@ -7,8 +7,11 @@ import { IChainConnectorSol } from "./IChainConnectorSol"
 export class ChainConnectorSolStub implements IChainConnectorSol {
   #connection: Connection
 
-  constructor(network: SolNetwork) {
-    this.#connection = getSolConnection(network.id, network.rpcs)
+  constructor(networkOrConnection: SolNetwork | Connection) {
+    this.#connection =
+      "platform" in networkOrConnection && isNetworkSol(networkOrConnection)
+        ? getSolConnection(networkOrConnection.id, networkOrConnection.rpcs)
+        : networkOrConnection
   }
 
   async getConnection(): Promise<Connection> {

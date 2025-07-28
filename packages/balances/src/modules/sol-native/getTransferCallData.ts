@@ -21,5 +21,5 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
     lamports: Number(value),
   })
 
-  return transferIx
+  return [transferIx]
 }

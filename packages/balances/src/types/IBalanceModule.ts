@@ -39,6 +39,8 @@ type EthTransferCallData = {
   value?: string // optional, for native transfers only
 }
 
+type SolTransferCallData = TransactionInstruction[]
+
 export type BalanceTransferType = "keep-alive" | "all" | "allow-death"
 
 type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
@@ -46,7 +48,7 @@ type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
   : P extends "polkadot"
     ? DotTransferCallData
     : P extends "solana"
-      ? TransactionInstruction
+      ? SolTransferCallData
       : never
 
 export type TokensWithAddresses = Array<[Token, Address[]]>
@@ -139,7 +141,7 @@ export interface IBalanceModule<
           token: Token
           metadataRpc: `0x${string}`
           type: BalanceTransferType
-          connector: PlatformConnector<TokenPlatform<Type>> // because of psp22
+          connector: PlatformConnector<TokenPlatform<Type>>
           config?: ModuleConfig
         }
       : TokenPlatform<Type> extends "ethereum"
@@ -155,6 +157,7 @@ export interface IBalanceModule<
               to: string
               value: string
               token: Token
+              connector: PlatformConnector<TokenPlatform<Type>>
             }
           : never,
   ) => CallDataOf<TokenPlatform<Type>> | Promise<CallDataOf<TokenPlatform<Type>>> // because of psp22
