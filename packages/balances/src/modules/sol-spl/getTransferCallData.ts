@@ -31,7 +31,7 @@ export const getTransferCallData: IBalanceModule<
   const toTokenAccount = await getAssociatedTokenAddress(mint, toWallet)
 
   // Create the target token account if it doesn't exist
-  if (!(await getAccountExists(connection, toTokenAccount))) {
+  if (!(await tokenAccountExists(connection, toTokenAccount))) {
     instructions.push(
       createAssociatedTokenAccountInstruction(
         fromWallet, // funder
@@ -57,7 +57,7 @@ export const getTransferCallData: IBalanceModule<
   return instructions
 }
 
-const getAccountExists = async (connection: Connection, address: PublicKey) => {
+const tokenAccountExists = async (connection: Connection, address: PublicKey) => {
   try {
     await getAccount(connection, address)
     return true
