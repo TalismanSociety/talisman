@@ -3,6 +3,7 @@ import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn
 import {
   detectAddressEncoding,
   encodeAnyAddress,
+  getAccountPlatformFromAddress,
   isAddressValid,
   normalizeAddress,
 } from "@talismn/crypto"
@@ -288,10 +289,17 @@ export const SendFundsRecipientPicker = () => {
   const [unknownAddress, setUnknownAddress] = useState<string>()
   const handleSelectUnknownAddress = useCallback(
     (address: string) => {
-      if (isEthereumAddress(address)) return handleSelect(address)
-
-      setUnknownAddress(address)
-      open()
+      switch (getAccountPlatformFromAddress(address)) {
+        case "polkadot": {
+          setUnknownAddress(address)
+          open()
+          break
+        }
+        default: {
+          handleSelect(address)
+          break
+        }
+      }
     },
     [handleSelect, open],
   )
