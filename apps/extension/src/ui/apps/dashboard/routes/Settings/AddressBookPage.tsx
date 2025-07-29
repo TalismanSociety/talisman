@@ -1,8 +1,6 @@
-import { AddressEncoding, detectAddressEncoding } from "@talismn/crypto"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ProviderType } from "extension-core"
-import { startCase } from "lodash-es"
 import {
   ButtonHTMLAttributes,
   DetailedHTMLProps,
@@ -26,7 +24,6 @@ import {
 } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -192,12 +189,6 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   )
 }
 
-const contactTypeAddressTypeMap: Record<ProviderType, AddressEncoding> = {
-  polkadot: "ss58",
-  ethereum: "ethereum",
-  solana: "base58solana",
-}
-
 const Content = () => {
   const { t } = useTranslation()
   // preload balances because of the send button
@@ -211,17 +202,10 @@ const Content = () => {
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
-  const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
+  // const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
-    () =>
-      contacts
-        .filter(
-          (contact) =>
-            addressType === "all" ||
-            detectAddressEncoding(contact.address) === contactTypeAddressTypeMap[addressType],
-        )
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [contacts, addressType],
+    () => contacts.concat().sort((a, b) => a.name.localeCompare(b.name)),
+    [contacts],
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
@@ -230,17 +214,7 @@ const Content = () => {
     <>
       <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
       <Spacer large />
-      <div className="flex justify-between align-middle">
-        <OptionSwitch
-          options={[
-            ["all", t("All")],
-            ["ethereum", t("Ethereum")],
-            ["polkadot", t("Polkadot")],
-          ]}
-          className="text-xs [&>div]:h-full"
-          defaultOption="all"
-          onChange={setAddressType}
-        />
+      <div className="flex justify-end align-middle">
         {contactsToDisplay.length > 0 && (
           <PillButton onClick={open} icon={UserPlusIcon}>
             {t("Add new contact")}
@@ -259,13 +233,7 @@ const Content = () => {
         ))}
         {contactsToDisplay.length === 0 && (
           <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
-            <span>
-              {addressType === "all"
-                ? t("You have no saved contacts yet.")
-                : t("You have no saved {{addressType}} contacts yet.", {
-                    addressType: startCase(addressType),
-                  })}
-            </span>
+            <span>{t("You have no saved contacts yet.")}</span>
             <Button primary onClick={open} iconLeft={PlusIcon}>
               {t("Add a contact")}
             </Button>

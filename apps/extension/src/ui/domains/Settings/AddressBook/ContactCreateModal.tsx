@@ -1,6 +1,10 @@
-import { isValidAddress } from "@ethereumjs/util"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { getAccountPlatformFromAddress, isAddressEqual, isSs58Address } from "@talismn/crypto"
+import {
+  getAccountPlatformFromAddress,
+  isAddressEqual,
+  isAddressValid,
+  isSs58Address,
+} from "@talismn/crypto"
 import { HexString } from "@talismn/util"
 import { keyBy } from "lodash-es"
 import { useCallback, useEffect, useMemo } from "react"
@@ -50,7 +54,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           .transform((value) => value.trim())
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
             if (!value) return false
-            if (!isValidAddress(value))
+            if (!isAddressValid(value))
               return ctx.createError({ message: t("Address is not valid") })
 
             const encoding = getAccountPlatformFromAddress(value)
