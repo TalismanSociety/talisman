@@ -31,7 +31,7 @@ export const getTransferCallData: IBalanceModule<
   const toTokenAccount = await getAssociatedTokenAddress(mint, toWallet)
 
   // Create the target token account if it doesn't exist
-  if (!(await getAccountExists(connection, toWallet))) {
+  if (!(await getAccountExists(connection, toTokenAccount))) {
     instructions.push(
       createAssociatedTokenAccountInstruction(
         fromWallet, // funder
