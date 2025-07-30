@@ -1,4 +1,5 @@
 import { isNotNil } from "@talismn/util"
+import { log } from "extension-shared"
 
 import { db } from "../../../db"
 import { Migration, MigrationFunction } from "../../../libs/migrations/types"
@@ -7,15 +8,20 @@ import { LegacyWalletTransaction, WalletTransaction, WalletTransactionInfo } fro
 // For DB version 11, Wallet version 2.13.0
 export const migrateTransactionsV2: Migration = {
   forward: new MigrationFunction(async () => {
-    await db.transaction("readwrite", ["transactions", "transactionsV2"], async (tx) => {
-      // migrate legacy data to new table with new typing
-      const legacyTransactions = await tx.table<LegacyWalletTransaction>("transactions").toArray()
-      const newTransactions = legacyTransactions.map(migrateLegacyTransaction).filter(isNotNil)
-      await tx.table<WalletTransaction>("transactionsV2").bulkPut(newTransactions)
+    try {
+      await db.transaction("readwrite", ["transactions", "transactionsV2"], async (tx) => {
+        // migrate legacy data to new table with new typing
+        const legacyTransactions = await tx.table<LegacyWalletTransaction>("transactions").toArray()
+        const newTransactions = legacyTransactions.map(migrateLegacyTransaction).filter(isNotNil)
+        await tx.table<WalletTransaction>("transactionsV2").bulkPut(newTransactions)
 
-      // clear legacy transactions table
-      await tx.table("transactions").clear()
-    })
+        // clear legacy transactions table
+        await tx.table("transactions").clear()
+      })
+    } catch (err) {
+      // not a blocker
+      log.error("Error migrating transactions", err)
+    }
   }),
 }
 
