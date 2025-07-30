@@ -58,9 +58,13 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
 const getSplTokenIdsForOwner = async (connection: Connection, address: string) => {
   try {
     // fetch SPL balances for the address
-    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
-      programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
-    })
+    const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+      new PublicKey(address),
+      {
+        programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
+      },
+      "confirmed",
+    )
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
