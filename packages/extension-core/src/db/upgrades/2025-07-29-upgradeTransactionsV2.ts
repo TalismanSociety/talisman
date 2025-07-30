@@ -2,12 +2,17 @@ import { isNotNil } from "@talismn/util"
 import { Transaction as DbTransaction } from "dexie"
 import { log } from "extension-shared"
 
-import { LegacyWalletTransaction, WalletTransaction } from "../../types/domains"
+import {
+  LegacyWalletTransaction,
+  WalletTransaction,
+  WalletTransactionInfo,
+} from "../../types/domains"
 
 // For DB version 11, Wallet version 2.13.0
 export const upgradeTransactionsV2 = async (tx: DbTransaction) => {
   try {
     const legacyTransactions = await tx.table<LegacyWalletTransaction>("transactions").toArray()
+    log.log("upgradeTransactionsV2: migrating", legacyTransactions.length, "legacy transactions")
 
     const newTransactions = legacyTransactions.map(migrateLegacyTransaction).filter(isNotNil)
 
@@ -18,6 +23,17 @@ export const upgradeTransactionsV2 = async (tx: DbTransaction) => {
 }
 
 const migrateLegacyTransaction = (tx: LegacyWalletTransaction): WalletTransaction | null => {
+  const txInfo: WalletTransactionInfo | undefined =
+    tx.txInfo ??
+    (tx.to && tx.tokenId && tx.value
+      ? {
+          type: "transfer",
+          tokenId: tx.tokenId,
+          value: tx.value,
+          to: tx.to,
+        }
+      : undefined)
+
   if (tx.networkType === "substrate" && GENESIS_HASH_TO_NETWORK_ID[tx.genesisHash])
     return {
       id: tx.hash,
@@ -33,7 +49,7 @@ const migrateLegacyTransaction = (tx: LegacyWalletTransaction): WalletTransactio
       confirmed: !!tx.confirmed,
       label: tx.label,
       siteUrl: tx.siteUrl,
-      txInfo: tx.txInfo,
+      txInfo,
     }
 
   if (tx.networkType === "evm") {
@@ -50,8 +66,8 @@ const migrateLegacyTransaction = (tx: LegacyWalletTransaction): WalletTransactio
       confirmed: !!tx.confirmed,
       label: tx.label,
       siteUrl: tx.siteUrl,
-      txInfo: tx.txInfo,
       isReplacement: !!tx.isReplacement,
+      txInfo,
     }
   }
 

@@ -31,9 +31,7 @@ class TalismanDatabase extends Dexie {
     // https://dexie.org/docs/Tutorial/Design#database-versioning
     this.version(8).upgrade(upgradeRemoveSymbolFromNativeTokenId)
 
-    this.version(10).upgrade(upgradeTokenRatesToObjects)
-
-    this.version(11)
+    this.version(10)
       .stores({
         // You only need to specify properties that you wish to index.
         // The object store will allow any properties on your stored objects but you can only query them by indexed properties
@@ -46,7 +44,6 @@ class TalismanDatabase extends Dexie {
         phishing: "source, commitSha",
         tokenRates: "tokenId",
         transactions: "hash, status, timestamp",
-        transactionsV2: "id, status, timestamp",
         blobs: "id",
 
         // delete legacy tables
@@ -56,6 +53,12 @@ class TalismanDatabase extends Dexie {
         evmNetworks: null,
         metadataRpc: null,
         tokens: null,
+      })
+      .upgrade(upgradeTokenRatesToObjects)
+
+    this.version(11)
+      .stores({
+        transactionsV2: "id, status, timestamp",
       })
       .upgrade(upgradeTransactionsV2)
   }
