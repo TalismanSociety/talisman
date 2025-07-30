@@ -84,6 +84,6 @@ const getTransactions = (
       ?.filter(
         (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
       )
-      .filter((tx) => tx.networkId === networkId) ?? []
+      .filter((tx) => !networkId || tx.networkId === networkId) ?? []
   )
 }
