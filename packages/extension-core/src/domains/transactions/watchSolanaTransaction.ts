@@ -8,7 +8,7 @@ import { createNotification } from "../../notifications"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { addSolTransaction, updateTransactionStatus } from "./helpers"
-import { WalletTransactionSol, WatchTransactionOptions } from "./types"
+import { TransactionStatus, WatchTransactionOptions } from "./types"
 
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
@@ -52,7 +52,7 @@ async function watchUntilFinalized(
   maxRetries = 30,
   intervalMs = 2000,
 ) {
-  let txStatus: WalletTransactionSol["status"] = "pending"
+  let txStatus: TransactionStatus = "pending"
 
   for (let i = 0; i < maxRetries; i++) {
     try {

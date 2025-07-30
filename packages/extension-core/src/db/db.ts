@@ -4,9 +4,10 @@ import { Dexie } from "dexie"
 import { ProtectorSources, ProtectorStorage } from "../domains/app/protector/ParaverseProtector"
 import { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import { TalismanMetadataDef } from "../domains/substrate/types"
-import { WalletTransaction } from "../domains/transactions/types"
+import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 import { upgradeTokenRatesToObjects } from "./upgrades/2024-12-16-upgradeTokenRatesToObjects"
+import { upgradeTransactionsV2 } from "./upgrades/2025-07-29-upgradeTransactionsV2"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
@@ -18,7 +19,10 @@ class TalismanDatabase extends Dexie {
   metadata!: Dexie.Table<TalismanMetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
   tokenRates!: Dexie.Table<DbTokenRates, string>
-  transactions!: Dexie.Table<WalletTransaction, string>
+  transactions!: Dexie.Table<LegacyWalletTransaction, string>
+  // having existing runner-type migrations make it that adding a dexie-based migration may not be executed before the runner one
+  // => use a new table for transactions
+  transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
 
   constructor() {
@@ -27,7 +31,9 @@ class TalismanDatabase extends Dexie {
     // https://dexie.org/docs/Tutorial/Design#database-versioning
     this.version(8).upgrade(upgradeRemoveSymbolFromNativeTokenId)
 
-    this.version(10)
+    this.version(10).upgrade(upgradeTokenRatesToObjects)
+
+    this.version(11)
       .stores({
         // You only need to specify properties that you wish to index.
         // The object store will allow any properties on your stored objects but you can only query them by indexed properties
@@ -40,6 +46,7 @@ class TalismanDatabase extends Dexie {
         phishing: "source, commitSha",
         tokenRates: "tokenId",
         transactions: "hash, status, timestamp",
+        transactionsV2: "id, status, timestamp",
         blobs: "id",
 
         // delete legacy tables
@@ -50,7 +57,7 @@ class TalismanDatabase extends Dexie {
         metadataRpc: null,
         tokens: null,
       })
-      .upgrade(upgradeTokenRatesToObjects)
+      .upgrade(upgradeTransactionsV2)
   }
 }
 

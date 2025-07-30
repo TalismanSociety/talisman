@@ -263,7 +263,7 @@ export const watchSubstrateTransaction = async (
   try {
     const hash = getExtrinsicHash(registry, payload, signature)
 
-    await addSubstrateTransaction(hash, payload, { siteUrl, txInfo })
+    await addSubstrateTransaction(chain.id, hash, payload, { siteUrl, txInfo })
 
     await watchExtrinsicStatus(
       chain.id,

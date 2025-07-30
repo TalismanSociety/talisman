@@ -2,7 +2,6 @@ import { HexString } from "@polkadot/util/types"
 import { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { WalletTransaction } from "extension-core"
-import { log } from "extension-shared"
 import uniq from "lodash-es/uniq"
 import { useCallback, useMemo, useState } from "react"
 
@@ -26,31 +25,9 @@ const useTxHistoryProvider = () => {
   const encodedAddresses = useMemo(() => addresses?.map(normalizeAddress) ?? [], [addresses])
 
   const networks = useMemo(() => {
-    const accountTransactions = allTransactions?.filter(
-      (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
-    )
-
-    const networkIds = uniq(
-      accountTransactions.filter((tx) => tx.networkType === "evm").map((tx) => tx.evmNetworkId),
-    )
-    const genesisHashes = uniq(
-      accountTransactions
-        .filter((tx) => tx.networkType === "substrate")
-        .map((tx) => tx.genesisHash),
-    )
-
-    return allNetworks.filter((network) => {
-      switch (network.platform) {
-        case "ethereum":
-          return networkIds.includes(network.id)
-        case "polkadot":
-          return genesisHashes.includes(network.genesisHash)
-        default:
-          log.warn("Unsupported network platform")
-          return false
-      }
-    })
-  }, [allTransactions, allNetworks, encodedAddresses])
+    const networkIds = uniq(allTransactions.map((tx) => tx.networkId))
+    return allNetworks.filter((n) => networkIds.includes(n.id))
+  }, [allTransactions, allNetworks])
 
   const network = useMemo<Network | null>(
     () => networks.find((n) => n.id === networkId) ?? null,
@@ -107,11 +84,6 @@ const getTransactions = (
       ?.filter(
         (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
       )
-      .filter(
-        (tx) =>
-          !networkId ||
-          (tx.networkType === "evm" && tx.evmNetworkId === networkId) ||
-          (tx.networkType === "substrate" && tx.genesisHash === networkId),
-      ) ?? []
+      .filter((tx) => tx.networkId === networkId) ?? []
   )
 }

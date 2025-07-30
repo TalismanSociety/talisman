@@ -1,5 +1,5 @@
 import { Address } from "@talismn/balances"
-import { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { TransactionRequest } from "viem"
 
 import { SignerPayloadJSON } from "../signing/types"
@@ -54,7 +54,8 @@ export type WalletTransactionInfo =
       to: Address
     }
 
-export type WalletTransactionBase = WalletTransactionTransferInfo & {
+/** @deprecated */
+export type LegacyWalletTransactionBase = WalletTransactionTransferInfo & {
   account: Address
   siteUrl?: string
   timestamp: number
@@ -68,26 +69,73 @@ export type WalletTransactionBase = WalletTransactionTransferInfo & {
   txInfo?: WalletTransactionInfo
 }
 
-export type WalletTransactionEth = WalletTransactionBase & {
+/** @deprecated */
+export type LegacyWalletTransactionEth = LegacyWalletTransactionBase & {
   networkType: "evm"
   evmNetworkId: EthNetworkId
   unsigned: TransactionRequest<string>
 }
 
-export type WalletTransactionDot = WalletTransactionBase & {
+/** @deprecated */
+export type LegacyWalletTransactionDot = LegacyWalletTransactionBase & {
   networkType: "substrate"
   genesisHash: `0x${string}`
   unsigned: SignerPayloadJSON
 }
 
-export type WalletTransactionSol = WalletTransactionBase & {
-  networkType: "solana"
-  networkId: string
-  serialized: string // base58 encoded
-  lastValidBlockHeight: number | undefined
-  // TODO might want to store the SLOT instead of blockNumber, blockNumbers are not a thing because blockHeight and slot are 2 different things
+// Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
+/** @deprecated */
+export type LegacyWalletTransaction = LegacyWalletTransactionEth | LegacyWalletTransactionDot
+
+export type WalletTransactionDot = {
+  id: string
+  platform: "polkadot"
+  networkId: DotNetworkId
+  account: Address
+  hash: `0x${string}`
+  payload: SignerPayloadJSON
+  status: TransactionStatus
+  confirmed: boolean
+  siteUrl?: string
+  label?: string
+  nonce: number
+  timestamp: number
+  txInfo?: WalletTransactionInfo
+  blockNumber?: string
+  extrinsicIndex?: number
 }
 
-// Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
-// TODO migrate to a better format, solana doesnt fit with most base properties
-export type WalletTransaction = WalletTransactionEth | WalletTransactionDot | WalletTransactionSol
+export type WalletTransactionEth = {
+  id: string
+  platform: "ethereum"
+  networkId: EthNetworkId
+  account: `0x${string}`
+  status: TransactionStatus
+  confirmed: boolean
+  payload: TransactionRequest<string>
+  hash: `0x${string}`
+  siteUrl?: string
+  label?: string
+  nonce: number
+  timestamp: number
+  txInfo?: WalletTransactionInfo
+  blockNumber?: string
+  isReplacement?: boolean
+}
+
+export type WalletTransactionSol = {
+  id: string
+  platform: "solana"
+  networkId: SolNetworkId
+  account: string
+  status: TransactionStatus
+  confirmed: boolean
+  payload: string // base58 encoded Transaction (legacy) or VersionedTransaction (new)
+  signature: string // base58 encoded signature, serves as tx hash for crafting block explorer links
+  siteUrl?: string
+  label?: string
+  timestamp: number
+  txInfo?: WalletTransactionInfo
+}
+
+export type WalletTransaction = WalletTransactionDot | WalletTransactionEth | WalletTransactionSol

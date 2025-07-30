@@ -32,7 +32,7 @@ export const SignLedgerSolana: FC<{
     signature: Buffer<ArrayBufferLike>
   }) => void | Promise<void>
   onCancel?: () => void
-  onSentToDevice?: (sent: boolean) => void // triggered when tx is sent
+  onSentToDevice?: (sent: boolean) => void
 }> = ({
   account,
   className = "",

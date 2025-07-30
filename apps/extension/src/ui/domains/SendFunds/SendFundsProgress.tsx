@@ -13,7 +13,7 @@ import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "ta
 import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAnyNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
+import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -26,7 +26,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
-  const network = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
+  const network = useNetworkById(tx.networkId, "ethereum")
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
@@ -40,7 +40,8 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     [gotoProgress, network],
   )
 
-  if (tx.status !== "pending" || tx.networkType !== "evm") return null
+  if (!network) return null
+  if (tx.status !== "pending") return null
   if (network?.preserveGasEstimate) return null
 
   return (
@@ -84,10 +85,10 @@ const useStatusDetails = (tx?: WalletTransaction) => {
       }
 
     const isReplacementCancel =
-      tx.networkType === "evm" &&
+      tx.platform === "ethereum" &&
       tx.isReplacement &&
-      tx.unsigned.value &&
-      BigInt(tx.unsigned.value) === 0n
+      tx.payload.value &&
+      BigInt(tx.payload.value) === 0n
 
     switch (tx.status) {
       case "unknown":
@@ -208,7 +209,7 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   onClose,
   className,
 }) => {
-  const chain = useNetworkByGenesisHash(tx.genesisHash as `0x${string}`)
+  const chain = useNetworkById(tx.networkId)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
@@ -235,21 +236,13 @@ const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose
       network
         ? getBlockExplorerUrls(network, {
             type: "transaction",
-            id: tx.hash, // signature, pending refactor,
+            id: tx.signature,
           })[0]
         : undefined,
-    [network, tx.hash],
+    [network, tx.signature],
   )
 
-  return (
-    <SendFundsProgressBase
-      tx={tx}
-      className={className}
-      onClose={onClose}
-      blockNumber={tx.blockNumber}
-      href={href}
-    />
-  )
+  return <SendFundsProgressBase tx={tx} className={className} onClose={onClose} href={href} />
 }
 
 type SendFundsProgressEvmProps = {
@@ -263,7 +256,7 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   className,
   onClose,
 }) => {
-  const network = useNetworkById(tx.evmNetworkId, "ethereum")
+  const network = useNetworkById(tx.networkId, "ethereum")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
   return (
@@ -299,31 +292,13 @@ export const SendFundsProgress: FC<SendFundsProgressProps> = ({
     return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 
-  switch (tx?.networkType) {
-    case "evm":
-      return (
-        <SendFundsProgressProgressEvm
-          tx={tx as WalletTransactionEth}
-          onClose={onClose}
-          className={className}
-        />
-      )
-    case "substrate":
-      return (
-        <SendFundsProgressSubstrate
-          tx={tx as WalletTransactionDot}
-          onClose={onClose}
-          className={className}
-        />
-      )
+  switch (tx?.platform) {
+    case "ethereum":
+      return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
+    case "polkadot":
+      return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
     case "solana":
-      return (
-        <SendFundsProgressSolana
-          tx={tx as WalletTransactionSol}
-          onClose={onClose}
-          className={className}
-        />
-      )
+      return <SendFundsProgressSolana tx={tx} onClose={onClose} className={className} />
   }
 
   return null
