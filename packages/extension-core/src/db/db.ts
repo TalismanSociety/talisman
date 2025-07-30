@@ -7,7 +7,6 @@ import { TalismanMetadataDef } from "../domains/substrate/types"
 import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
 import { upgradeTokenRatesToObjects } from "./upgrades/2024-12-16-upgradeTokenRatesToObjects"
-import { upgradeTransactionsV2 } from "./upgrades/2025-07-29-upgradeTransactionsV2"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
@@ -20,8 +19,6 @@ class TalismanDatabase extends Dexie {
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
   tokenRates!: Dexie.Table<DbTokenRates, string>
   transactions!: Dexie.Table<LegacyWalletTransaction, string>
-  // having existing runner-type migrations make it that adding a dexie-based migration may not be executed before the runner one
-  // => use a new table for transactions
   transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
 
@@ -56,11 +53,10 @@ class TalismanDatabase extends Dexie {
       })
       .upgrade(upgradeTokenRatesToObjects)
 
-    this.version(11)
-      .stores({
-        transactionsV2: "id, status, timestamp",
-      })
-      .upgrade(upgradeTransactionsV2)
+    this.version(11).stores({
+      // migration is handled by the MigrationRunner, to ensure it's executed after other migrations
+      transactionsV2: "id, status, timestamp",
+    })
   }
 }
 

@@ -1,25 +1,22 @@
 import { isNotNil } from "@talismn/util"
-import { Transaction as DbTransaction } from "dexie"
-import { log } from "extension-shared"
 
-import {
-  LegacyWalletTransaction,
-  WalletTransaction,
-  WalletTransactionInfo,
-} from "../../types/domains"
+import { db } from "../../../db"
+import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { LegacyWalletTransaction, WalletTransaction, WalletTransactionInfo } from "../types"
 
 // For DB version 11, Wallet version 2.13.0
-export const upgradeTransactionsV2 = async (tx: DbTransaction) => {
-  try {
-    const legacyTransactions = await tx.table<LegacyWalletTransaction>("transactions").toArray()
-    log.log("upgradeTransactionsV2: migrating", legacyTransactions.length, "legacy transactions")
+export const migrateTransactionsV2: Migration = {
+  forward: new MigrationFunction(async () => {
+    await db.transaction("readwrite", ["transactions", "transactionsV2"], async (tx) => {
+      // migrate legacy data to new table with new typing
+      const legacyTransactions = await tx.table<LegacyWalletTransaction>("transactions").toArray()
+      const newTransactions = legacyTransactions.map(migrateLegacyTransaction).filter(isNotNil)
+      await tx.table<WalletTransaction>("transactionsV2").bulkPut(newTransactions)
 
-    const newTransactions = legacyTransactions.map(migrateLegacyTransaction).filter(isNotNil)
-
-    await tx.table<WalletTransaction>("transactionsV2").bulkPut(newTransactions)
-  } catch (err) {
-    log.warn("Failed to migrate transactions to transactionsV2 table", { err })
-  }
+      // clear legacy transactions table
+      await tx.table("transactions").clear()
+    })
+  }),
 }
 
 const migrateLegacyTransaction = (tx: LegacyWalletTransaction): WalletTransaction | null => {

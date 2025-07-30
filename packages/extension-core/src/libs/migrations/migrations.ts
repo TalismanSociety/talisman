@@ -20,7 +20,10 @@ import { migrateToChaindataV4 } from "../../domains/chaindata/migrations/migrate
 import { migrateToNewDefaultEvmNetworks } from "../../domains/ethereum/migrations"
 import { migrateFromPjsKeyring, migrateLedgerPolkadotCurve } from "../../domains/keyring/migrations"
 import { migrateSeedStoreToMultiple } from "../../domains/mnemonics/migrations"
-import { migrateSubstrateTokensIds } from "../../domains/transactions/migrations"
+import {
+  migrateSubstrateTokensIds,
+  migrateTransactionsV2,
+} from "../../domains/transactions/migrations"
 import { Migrations } from "./types"
 
 // The order of these migrations can never be changed after they have been released.
@@ -41,6 +44,7 @@ export const migrations: Migrations = [
   migrateSubstrateTokensIds,
   migrateLedgerPolkadotCurve,
   migrateToChaindataV4,
+  migrateTransactionsV2,
 ]
 
 // @dev snippet to use in dev console of background worker to remove a migration:
