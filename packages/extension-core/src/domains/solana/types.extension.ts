@@ -38,6 +38,7 @@ export type ResponseSolanaSubmit = {
 export type RequestSolanaSignApprove = {
   id: SigningRequestID<"sol-sign">
   signature?: string // supplied if signed with hardware device from frontend
+  networkId?: SolNetworkId
 }
 
 export type SolanaExtensionMessages = {

@@ -3,7 +3,7 @@ import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
 } from "@polkadot/extension-base/background/types"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { Account } from "@talismn/keyring"
 import { RpcTransactionRequest } from "viem"
 
@@ -118,6 +118,7 @@ export type SolSignResult =
   | {
       type: "transaction"
       transaction: string
+      networkId?: SolNetworkId
     }
 
 export interface SolSigningRequest extends BaseSigningRequest<SOL_SIGN> {

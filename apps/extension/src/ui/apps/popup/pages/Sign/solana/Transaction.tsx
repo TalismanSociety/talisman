@@ -62,17 +62,17 @@ export const SolSignTransactionRequest: FC<{
     error: undefined,
   })
 
-  const handleApprove = async () => {
+  const handleApprove = useCallback(async () => {
     setState({ error: undefined, processing: true })
     try {
-      await api.solSignApprove(id) // will close the window automatically if successful
+      await api.solSignApprove(id, network?.id) // will close the window automatically if successful
     } catch (error) {
       setState({
         processing: false,
         error: (error as Error).message || "Failed to approve sign request",
       })
     }
-  }
+  }, [id, network?.id])
 
   const handleSigned = useCallback(
     async ({
@@ -83,7 +83,7 @@ export const SolSignTransactionRequest: FC<{
     }) => {
       setState({ error: undefined, processing: true })
       try {
-        await api.solSignApprove(id, base58.encode(signature)) // will close the window automatically if successful
+        await api.solSignApprove(id, network?.id, base58.encode(signature)) // will close the window automatically if successful
       } catch (error) {
         setState({
           processing: false,
@@ -91,7 +91,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id],
+    [id, network?.id],
   )
 
   const displayError = useMemo(() => {

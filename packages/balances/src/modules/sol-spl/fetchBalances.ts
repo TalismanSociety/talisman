@@ -9,6 +9,8 @@ import { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { MODULE_TYPE } from "./config"
 
+const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
   tokensWithAddresses,
@@ -29,7 +31,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const balancesPerAddress = await Promise.all(
     accountAddresses.map(async (address) => {
       const tokenAccounts = await connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
-        programId: new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"), // SPL Token Program ID
+        programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
       })
 
       const balances = tokenAccounts.value

@@ -274,8 +274,12 @@ export const api: MessageTypes = {
       transaction,
       txInfo,
     }) as Promise<ResponseSolanaSubmit>,
-  solSignApprove: (id, signature) =>
-    messageService.sendMessage("pri(solana.sign.approve)", { id, signature }) as Promise<void>,
+  solSignApprove: (id, networkId, signature) =>
+    messageService.sendMessage("pri(solana.sign.approve)", {
+      id,
+      networkId,
+      signature,
+    }) as Promise<void>,
 
   // asset discovery
   assetDiscoveryStartScan: (scope) =>

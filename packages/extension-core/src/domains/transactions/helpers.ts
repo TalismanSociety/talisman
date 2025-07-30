@@ -1,9 +1,9 @@
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
-import { Transaction } from "@solana/web3.js"
+import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
-import { base58 } from "@talismn/crypto"
+import { parseTransactionInfo } from "@talismn/solana"
 import { log } from "extension-shared"
 import merge from "lodash-es/merge"
 import { Hex, TransactionRequest } from "viem"
@@ -24,22 +24,21 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 
 export const addSolTransaction = async (
   networkId: SolNetworkId,
-  transaction: Transaction,
+  transaction: Transaction | VersionedTransaction,
   options: AddTransactionOptions = {},
 ) => {
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
-    if (!networkId || !transaction.signature) throw new Error("Invalid transaction")
-
-    const signature = base58.encode(transaction.signature!)
+    const { signature, address: account } = parseTransactionInfo(transaction)
+    if (!networkId || !signature || !account) throw new Error("Invalid transaction")
 
     await db.transactionsV2.add({
       id: signature,
       platform: "solana",
       networkId,
-      account: transaction.feePayer?.toBase58() ?? "",
-      signature: base58.encode(transaction.signature!),
+      account,
+      signature,
       payload: transaction.serialize().toString("base64"),
       status: "pending",
       confirmed: false,

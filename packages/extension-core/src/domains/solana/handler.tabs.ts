@@ -20,6 +20,7 @@ import { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
 import { AuthorizedSite } from "../sitesAuthorised/types"
+import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
 import { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
 
 export class SolanaTabsHandler extends TabsHandler {
@@ -180,6 +181,12 @@ const handleSolanaSignTransaction: TabMessageHandler<
 
   if (result.type !== "transaction")
     throw new Error("Unexpected response type from Solana sign request")
+
+  if (result.networkId)
+    watchSolanaTransaction(result.networkId, deserializeTransaction(result.transaction), {
+      siteUrl: url,
+      notifications: true,
+    })
 
   return {
     transaction: result.transaction,

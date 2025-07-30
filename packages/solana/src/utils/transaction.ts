@@ -1,4 +1,5 @@
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import { base58 } from "@talismn/crypto"
 
 export const isVersionedTransaction = (
   transaction: Transaction | VersionedTransaction,
@@ -13,12 +14,14 @@ export const parseTransactionInfo = (tx: Transaction | VersionedTransaction) => 
       tx.message.isAccountSigner(index),
     )
     const address = requiredSigners.length === 1 ? requiredSigners[0].toBase58() : undefined
+    const signature = tx.signatures.length ? base58.encode(tx.signatures[0]) : null
 
-    return { recentBlockhash, address }
+    return { recentBlockhash, address, signature }
   } else {
     const recentBlockhash = tx.recentBlockhash
     const address = tx.feePayer ? tx.feePayer.toBase58() : undefined
+    const signature = tx.signature ? base58.encode(tx.signature) : null
 
-    return { recentBlockhash, address }
+    return { recentBlockhash, address, signature }
   }
 }

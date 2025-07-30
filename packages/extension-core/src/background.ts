@@ -5,6 +5,7 @@ import { sentry } from "./config/sentry"
 import { passwordStore } from "./domains/app/store.password"
 import { sessionStore } from "./domains/app/store.session"
 import { assetDiscoveryScanner } from "./domains/assetDiscovery/scanner"
+import { initialiseSolanaAssetDiscovery } from "./domains/assetDiscovery/solana"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
 import { setWalletReady } from "./libs/isWalletReady"
@@ -66,6 +67,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
 
     // start the asset discovery scanner after migrations are complete
     assetDiscoveryScanner.startPendingScan()
+    initialiseSolanaAssetDiscovery()
   }
 })
 

@@ -1,6 +1,6 @@
-import { Connection, Transaction } from "@solana/web3.js"
+import { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
 import { getBlockExplorerUrls, SolNetworkId } from "@talismn/chaindata-provider"
-import { base58 } from "@talismn/crypto"
+import { parseTransactionInfo } from "@talismn/solana"
 import { log } from "extension-shared"
 
 import { sentry } from "../../config/sentry"
@@ -12,7 +12,7 @@ import { TransactionStatus, WatchTransactionOptions } from "./types"
 
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
-  transaction: Transaction,
+  transaction: Transaction | VersionedTransaction,
   options: WatchTransactionOptions = {},
 ) => {
   try {
@@ -24,20 +24,15 @@ export const watchSolanaTransaction = async (
     const connection = await chainConnectorSol.getConnection(networkId)
     if (!connection) throw new Error(`No connection for network ${networkId} (${network.name})`)
 
-    if (!transaction.signature) throw new Error("Transaction signature is missing")
-    const signature = base58.encode(transaction.signature!)
+    const { signature } = parseTransactionInfo(transaction)
+    if (!signature) throw new Error("Transaction does not have a signature")
 
     const blockExplorerUrls = getBlockExplorerUrls(network, { type: "transaction", id: signature })
     const txUrl = blockExplorerUrls[0] ?? chrome.runtime.getURL("dashboard.html#/tx-history")
 
     await addSolTransaction(networkId, transaction, { siteUrl, txInfo })
 
-    watchUntilFinalized(
-      connection,
-      signature,
-      transaction.lastValidBlockHeight,
-      notifications ? txUrl : undefined,
-    )
+    watchUntilFinalized(connection, signature, network.name, notifications ? txUrl : undefined)
   } catch (err) {
     log.error("Failed to watch Solana transaction (outer)", { err, networkId, transaction })
     sentry.captureException(err, { tags: { networkId } })
@@ -47,7 +42,7 @@ export const watchSolanaTransaction = async (
 async function watchUntilFinalized(
   connection: Connection,
   signature: string,
-  lastValidBlockHeight: number | undefined,
+  networkName: string,
   notificationTxUrl?: string,
   maxRetries = 30,
   intervalMs = 2000,
@@ -66,8 +61,7 @@ async function watchUntilFinalized(
       if (err) {
         txStatus = "error"
         await updateTransactionStatus(signature, txStatus)
-        if (notificationTxUrl)
-          await createNotification("error", "Transaction failed", notificationTxUrl)
+        if (notificationTxUrl) await createNotification("error", networkName, notificationTxUrl)
         return // we re done
       } else if (confirmationStatus === "confirmed" && txStatus !== "success") {
         txStatus = "success"
@@ -75,8 +69,7 @@ async function watchUntilFinalized(
         const txDetails = await tryGetTransactionDetails(connection, signature)
         await updateTransactionStatus(signature, txStatus, txDetails?.slot)
 
-        if (notificationTxUrl)
-          await createNotification("success", "Transaction confirmed", notificationTxUrl)
+        if (notificationTxUrl) await createNotification("success", networkName, notificationTxUrl)
 
         // continue polling until finalized
       } else if (confirmationStatus === "finalized") {

@@ -1,6 +1,11 @@
-import { PublicKey, VersionedTransaction } from "@solana/web3.js"
+import { PublicKey } from "@solana/web3.js"
 import { base58, ed25519 } from "@talismn/crypto"
-import { getKeypair, solTransactionFromJson } from "@talismn/solana"
+import {
+  deserializeTransaction,
+  getKeypair,
+  isVersionedTransaction,
+  solTransactionFromJson,
+} from "@talismn/solana"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
@@ -75,7 +80,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
       }
 
       case "pri(solana.sign.approve)": {
-        const { id, signature } = request as RequestTypes["pri(solana.sign.approve)"]
+        const { id, signature, networkId } = request as RequestTypes["pri(solana.sign.approve)"]
         const signRequest = requestStore.getRequest(id)
         if (!signRequest) throw new Error("Request not found")
 
@@ -108,40 +113,43 @@ export class SolanaExtensionHandler extends ExtensionHandler {
               },
             )
 
-            signRequest.resolve({
+            return signRequest.resolve({
               type: "message",
               signature: base58.encode(signResult.unwrap()),
             })
-
-            return
           }
           case "transaction": {
-            const tx = VersionedTransaction.deserialize(base58.decode(dappRequest.transaction))
+            const tx = deserializeTransaction(dappRequest.transaction)
 
             if (signature) {
-              tx.addSignature(new PublicKey(signRequest.account.address), base58.decode(signature))
+              tx.addSignature(
+                new PublicKey(signRequest.account.address),
+                Buffer.from(base58.decode(signature)),
+              )
             } else {
               await withSecretKey(signRequest.account.address, async (secretKey) => {
                 const keypair = getKeypair(secretKey)
-                tx.sign([keypair])
+                if (isVersionedTransaction(tx)) tx.sign([keypair])
+                else tx.sign(keypair)
               })
             }
 
             if (dappRequest.send) {
-              const connection = await chainConnectorSol.getConnection("solana-mainnet")
-              await connection.sendTransaction(tx, {
-                skipPreflight: true,
-              })
+              if (!networkId) throw new Error("Network ID is required for sending transactions")
+              const connection = await chainConnectorSol.getConnection(networkId)
+              await connection.sendRawTransaction(tx.serialize())
             }
 
-            signRequest.resolve({
+            return signRequest.resolve({
               type: "transaction",
               transaction: base58.encode(tx.serialize()),
+              networkId,
             })
           }
         }
       }
     }
+
     throw new Error(`Unable to handle message of type ${type}`)
   }
 }
