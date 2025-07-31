@@ -1,5 +1,5 @@
 {
-  "extends": "@talismn/tsconfig/es6-node.json",
+  "extends": "@talismn/tsconfig/es6-react.json",
   "include": ["src"],
   "compilerOptions": {
     "outDir": "dist"

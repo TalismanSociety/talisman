@@ -1490,6 +1490,9 @@ importers:
       '@talismn/on-chain-id':
         specifier: workspace:*
         version: link:../on-chain-id
+      '@talismn/orb':
+        specifier: workspace:*
+        version: link:../orb
       '@talismn/sapi':
         specifier: workspace:*
         version: link:../sapi

@@ -1,4 +1,5 @@
 import { isSolanaAddress } from "@talismn/crypto"
+import { getTalismanOrbDataUrl } from "@talismn/orb"
 import { deserializeTransaction, parseTransactionInfo } from "@talismn/solana"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
@@ -113,7 +114,7 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
       account: {
         address: account.address,
         label: account.name,
-        // icon: account.icon,
+        icon: getTalismanOrbDataUrl(account.address),
       },
     }
 
@@ -243,7 +244,7 @@ const getAuthorizedSolanaAccount$ = (siteId: string) => {
         ? {
             address: account.address,
             label: account.name,
-            // icon: account.icon, // TODO: add icon to SolSerializedWalletAccount
+            icon: getTalismanOrbDataUrl(account.address),
           }
         : null,
     ),
