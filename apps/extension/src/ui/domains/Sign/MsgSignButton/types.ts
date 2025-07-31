@@ -39,10 +39,5 @@ export type MsgSignButtonProps<
   label?: string
   className?: string
   disabled?: boolean
-  /**
-   *
-   * @param txIdentifier hash for polkadot and ethereum, signature for solana
-   * @returns
-   */
   onSubmit: (signature?: string) => void
 }

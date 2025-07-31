@@ -34,7 +34,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     (newHash?: HexString) => {
       setReplaceType(undefined)
       if (newHash && network) {
-        gotoProgress({ txIdentifier: newHash, networkId: network.id })
+        gotoProgress({ txId: newHash, networkId: network.id })
       }
     },
     [gotoProgress, network],
@@ -271,24 +271,24 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
 }
 
 type SendFundsProgressProps = {
-  txIdentifier: string
+  txId: string
   networkId: string
   onClose?: () => void
   className?: string
 }
 
 export const SendFundsProgress: FC<SendFundsProgressProps> = ({
-  txIdentifier,
+  txId,
   networkId,
   onClose,
   className,
 }) => {
-  const tx = useTransaction(txIdentifier)
+  const tx = useTransaction(txId)
   const network = useAnyNetwork(networkId)
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(network, txIdentifier)
+    const href = getBlockExplorerUrl(network, txId)
     return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 

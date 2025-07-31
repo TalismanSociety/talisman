@@ -22,7 +22,7 @@ jest.setTimeout(10_000)
 describe("Extension", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+  const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let mnemonicId: string
 
@@ -63,7 +63,7 @@ describe("Extension", () => {
     const [address] = await messageSender("pri(accounts.add.derive)", [
       {
         type: "new-mnemonic",
-        mnemonic: suri,
+        mnemonic: mnemonic,
         mnemonicName: "Test Mnemonic",
         derivationPath: "",
         name: "Test Polkadot Account",
@@ -72,7 +72,7 @@ describe("Extension", () => {
       },
     ])
 
-    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+    mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })

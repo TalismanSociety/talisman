@@ -42,14 +42,6 @@ import { TalismanSolWalletAccount } from "./account"
 import { isSolanaChain, isVersionedTransaction, SOLANA_CHAINS } from "./solana"
 import { deserializeSolWalletAccount } from "./util"
 
-// export const TalismanNamespace = "talisman:"
-
-// export type TalismanSolFeature = {
-//   [TalismanNamespace]: {
-//     talisman: TalismanSol
-//   }
-// }
-
 export class TalismanSolWallet implements Wallet {
   readonly #listeners: { [E in StandardEventsNames]?: StandardEventsListeners[E][] } = {}
   readonly #version = "1.0.0" as const
@@ -113,9 +105,6 @@ export class TalismanSolWallet implements Wallet {
         version: "1.0.0",
         signIn: this.#signIn,
       },
-      //   [TalismanNamespace]: {
-      //     talisman: this.#talisman,
-      //   },
     }
   }
 
@@ -175,7 +164,6 @@ export class TalismanSolWallet implements Wallet {
 
   #connect: StandardConnectMethod = async ({ silent } = {}) => {
     if (!this.#account) {
-      // TODO handle that flag in backend
       await this.#talisman.connect(silent ? { onlyIfTrusted: true } : undefined)
     }
 

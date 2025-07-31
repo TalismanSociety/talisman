@@ -17,7 +17,7 @@ jest.setTimeout(20_000)
 describe("App handler when password is not trimmed", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+  const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let keyringBackupJson: KeyringStorage
@@ -47,7 +47,7 @@ describe("App handler when password is not trimmed", () => {
     await messageSender("pri(accounts.add.derive)", [
       {
         type: "new-mnemonic",
-        mnemonic: suri,
+        mnemonic: mnemonic,
         mnemonicName: "Test Mnemonic",
         derivationPath: "",
         name: "Test Polkadot Account",
@@ -56,7 +56,7 @@ describe("App handler when password is not trimmed", () => {
       },
     ])
 
-    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+    mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
     initialStoreData = await getLocalStorage()
 
@@ -142,7 +142,7 @@ describe("App handler when password is not trimmed", () => {
     expect(secretKey).toBeTruthy()
 
     const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(suri)
+    expect(mnemonic).toEqual(mnemonic)
   })
 
   test("can change password to one with spaces (not trimmed)", async () => {
@@ -172,14 +172,14 @@ describe("App handler when password is not trimmed", () => {
     expect(exported).toBeTruthy()
 
     const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(suri)
+    expect(mnemonic).toEqual(mnemonic)
   })
 })
 
 describe("App handler when password is trimmed", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+  const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let keyringBackupJson: KeyringStorage
@@ -211,7 +211,7 @@ describe("App handler when password is trimmed", () => {
     await messageSender("pri(accounts.add.derive)", [
       {
         type: "new-mnemonic",
-        mnemonic: suri,
+        mnemonic: mnemonic,
         mnemonicName: "Test Mnemonic",
         derivationPath: "",
         name: "Test Polkadot Account",
@@ -220,7 +220,7 @@ describe("App handler when password is trimmed", () => {
       },
     ])
 
-    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+    mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
     await extensionStores.app.setOnboarded()
 
@@ -301,7 +301,7 @@ describe("App handler when password is trimmed", () => {
     expect(secretKey).toBeTruthy()
 
     const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(suri)
+    expect(mnemonic).toEqual(mnemonic)
   })
 
   test("can change password to one with spaces (trimmed)", async () => {
@@ -332,6 +332,6 @@ describe("App handler when password is trimmed", () => {
     expect(secretKey).toBeTruthy()
 
     const mnemonic = await keyringStore.getMnemonicText(mnemonicId, hashedPw)
-    expect(mnemonic).toEqual(suri)
+    expect(mnemonic).toEqual(mnemonic)
   })
 })

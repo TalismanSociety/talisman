@@ -93,6 +93,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
         to: TEST_ADDRESS_2,
         token: tokens[0],
         value: "1000000000000000", // 0.001 ETH
+        connector,
       })
       log.log("Transfer call data", transfer)
     }

@@ -17,7 +17,7 @@ keyring.loadAll({ store: new AccountsStore() })
 describe("Sites Authorised Handler", () => {
   let handler: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+  const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd"
   let sitesStore: AuthorizedSites
   let mnemonicId: string
@@ -47,7 +47,7 @@ describe("Sites Authorised Handler", () => {
     await messageSender("pri(accounts.add.derive)", [
       {
         type: "new-mnemonic",
-        mnemonic: suri,
+        mnemonic: mnemonic,
         mnemonicName: "Test Mnemonic",
         derivationPath: "",
         name: "Test Polkadot Account",
@@ -56,7 +56,7 @@ describe("Sites Authorised Handler", () => {
       },
     ])
 
-    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+    mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
     sitesStore = await extensionStores.sites.get()
   })

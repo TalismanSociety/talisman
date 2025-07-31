@@ -380,7 +380,7 @@ const useSendFundsProvider = () => {
   }, [transaction?.maxAmount, set, token])
 
   const onSubmitted = useCallback(
-    (args: { networkId: string; txIdentifier: string }) => {
+    (args: { networkId: string; txId: string }) => {
       gotoProgress(args)
     },
     [gotoProgress],

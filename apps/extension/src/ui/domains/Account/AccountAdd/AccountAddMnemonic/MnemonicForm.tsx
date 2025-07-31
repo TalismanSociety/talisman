@@ -1,5 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountPlatform, isAddressEqual, isValidMnemonic, KeypairCurve } from "@talismn/crypto"
+import { AccountPlatform, isAddressEqual } from "@talismn/crypto"
 import { classNames, isTruthy } from "@talismn/util"
 import {
   getDefaultCurveForAccountPlatform,
@@ -42,23 +42,6 @@ const cleanupMnemonic = (input = "") =>
     .split(/[\s\r\n]+/g) //split on whitespace or carriage return
     .filter(isTruthy) //remove empty strings
     .join(" ")
-
-const getSuri = (secret: string, curve: KeypairCurve, derivationPath?: string) => {
-  if (!secret || !curve) return null
-
-  if (!isValidMnemonic(secret)) return null
-
-  switch (curve) {
-    case "sr25519":
-    case "ed25519":
-    case "ecdsa":
-      return derivationPath && !derivationPath.startsWith("/")
-        ? `${secret}/${derivationPath}`
-        : `${secret}${derivationPath}`
-    default:
-      return `${secret}/${derivationPath}`
-  }
-}
 
 type FormData = {
   name: string
@@ -106,9 +89,6 @@ export const AccountAddMnemonicForm = () => {
 
           const curve = getDefaultCurveForAccountPlatform(platform)
           if (!curve) return false
-
-          const suri = getSuri(mnemonic, curve, derivationPath)
-          if (!suri) return true
 
           let address: string
           try {
@@ -187,9 +167,6 @@ export const AccountAddMnemonicForm = () => {
 
       if (mode === "multi") navigate("multiple")
       else {
-        const suri = getSuri(mnemonic, curve, derivationPath)
-        if (!suri) return
-
         const notificationId = notify(
           {
             type: "processing",

@@ -275,7 +275,9 @@ const useTransactionValidity = ({
         if (!recentBlockhash) return { isValid: false, reason: t("No blockhash found") }
 
         // Check if the blockhash is still valid
-        const isValid = await connection.isBlockhashValid(recentBlockhash)
+        const isValid = await connection.isBlockhashValid(recentBlockhash, {
+          commitment: "confirmed",
+        })
 
         return {
           isValid: isValid.value,

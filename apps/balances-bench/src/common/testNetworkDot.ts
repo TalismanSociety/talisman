@@ -46,7 +46,6 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   const connector: IChainConnectorDot = new ChainConnectorDotStub(network as unknown as DotNetwork)
-  // const provider = connector.asProvider()
 
   const stopAll = log.timer("testDotNetwork " + network.id)
 

@@ -152,11 +152,6 @@ const getSolDerivationPath = (accountIndex: number) => {
   return `m/44'/501'/${accountIndex}'/0'`
 }
 
-export const formatSuri = (mnemonic: string, derivationPath: string) =>
-  derivationPath && !derivationPath.startsWith("/")
-    ? `${mnemonic}/${derivationPath}`
-    : `${mnemonic}${derivationPath}`
-
 export const isCurveCompatibleWithChain = (
   chain: DotNetwork,
   curve: KeypairCurve,

@@ -145,11 +145,11 @@ const SendButton = () => {
   }, [])
 
   const handleSubmit = useCallback(
-    (txIdentifier: string) => {
+    (txId: string) => {
       if (!network) return
       onSubmitted({
         networkId: network.id,
-        txIdentifier,
+        txId,
       })
     },
     [network, onSubmitted],

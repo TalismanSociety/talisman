@@ -117,9 +117,9 @@ const useSendFundsWizardProvider = () => {
   )
 
   const gotoProgress = useCallback(
-    ({ networkId, txIdentifier }: { networkId: string; txIdentifier: string }) => {
+    ({ networkId, txId }: { networkId: string; txId: string }) => {
       const qs = new URLSearchParams()
-      qs.set("txIdentifier", txIdentifier)
+      qs.set("txId", txId)
       qs.set("networkId", networkId)
       navigate(`/send/submitted?${qs.toString()}`)
     },

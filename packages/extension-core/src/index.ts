@@ -17,7 +17,6 @@ export {
 
 export * from "./domains/accounts/helpers.catalog"
 export {
-  formatSuri,
   isCurveCompatibleWithChain,
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,

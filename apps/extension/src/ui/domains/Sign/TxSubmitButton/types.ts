@@ -48,8 +48,8 @@ export type TxSubmitButtonProps<
   disabled?: boolean
   /**
    *
-   * @param txIdentifier hash for polkadot and ethereum, signature for solana
+   * @param txId hash for polkadot and ethereum, signature for solana
    * @returns
    */
-  onSubmit: (txIdentifier: string) => void
+  onSubmit: (txId: string) => void
 }

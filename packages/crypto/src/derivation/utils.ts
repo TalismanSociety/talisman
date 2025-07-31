@@ -1,6 +1,6 @@
 import { base58, hex } from "@scure/base"
 
-import { entropyToSeed, getDevSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
+import { entropyToSeed, getDevSeed, mnemonicToEntropy } from "../mnemonic"
 import { AccountPlatform, KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
@@ -53,29 +53,6 @@ export const addressFromMnemonic = async (
   const seed = await entropyToSeed(entropy, curve)
   const { address } = deriveKeypair(seed, derivationPath, curve)
   return address
-}
-
-/**
- * @dev we only expect suri to contain a mnemonic and derivation path.
- * for other cases see https://polkadot.js.org/docs/keyring/start/suri/
- */
-export const parseSuri = (suri: string) => {
-  // extract password if any
-  const indexOfPassword = suri.indexOf("///")
-  const password = indexOfPassword === -1 ? undefined : suri.slice(indexOfPassword + 3)
-  if (password) suri = suri.slice(0, indexOfPassword)
-
-  // split mnemonic and derivation path
-  const indexOfSlash = suri.indexOf("/")
-  const mnemonic = indexOfSlash === -1 ? suri : suri.slice(0, indexOfSlash)
-  let derivationPath = indexOfSlash === -1 ? "" : suri.slice(indexOfSlash)
-
-  // if BIP44, leading slash must be removed
-  if (derivationPath.startsWith("/m/")) derivationPath = derivationPath.slice(1)
-
-  if (!isValidMnemonic(mnemonic)) throw new Error("Invalid mnemonic")
-
-  return { mnemonic, derivationPath, password }
 }
 
 export const removeHexPrefix = (secretKey: string) => {

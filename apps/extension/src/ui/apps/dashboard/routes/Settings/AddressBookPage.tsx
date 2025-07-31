@@ -202,7 +202,6 @@ const Content = () => {
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
-  // const [addressType, setAddressType] = useState<"all" | "polkadot" | "ethereum">("all")
   const contactsToDisplay = useMemo(
     () => contacts.concat().sort((a, b) => a.name.localeCompare(b.name)),
     [contacts],

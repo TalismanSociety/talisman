@@ -17,9 +17,9 @@ export const SendFundsSubmitted = () => {
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const [txIdentifier, networkId] = useMemo(
+  const [txId, networkId] = useMemo(
     () => [
-      (searchParams.get("txIdentifier") as string) ?? undefined,
+      (searchParams.get("txId") as string) ?? undefined,
       (searchParams.get("networkId") as string) ?? undefined,
     ],
     [searchParams],
@@ -31,7 +31,7 @@ export const SendFundsSubmitted = () => {
 
   return (
     <div id="main" className="relative h-full w-full px-12 py-8">
-      <SendFundsProgress txIdentifier={txIdentifier} networkId={networkId} onClose={handleClose} />
+      <SendFundsProgress txId={txId} networkId={networkId} onClose={handleClose} />
     </div>
   )
 }

@@ -135,13 +135,6 @@ export enum SubstrateLedgerAppType {
   Generic = "substrate-generic",
 }
 
-// export interface RequestAccountCreateFromSuri {
-//   name: string
-//   mnemonic: string
-//   derivationPath: string
-//   curve: KeypairCurve
-// }
-
 export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }

@@ -29,7 +29,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     (newHash?: HexString) => {
       setReplaceType(undefined)
       if (newHash) {
-        gotoProgress({ txIdentifier: newHash, networkId: tx.networkId })
+        gotoProgress({ txId: newHash, networkId: tx.networkId })
       }
     },
     [gotoProgress, tx],

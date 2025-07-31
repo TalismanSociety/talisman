@@ -1,6 +1,6 @@
+import type { SolSerializedWalletAccount } from "extension-core/src/domains/solana/types.tabs"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import bs58 from "bs58"
-import { SolSerializedWalletAccount } from "extension-core/src/domains/solana/types.tabs"
 
 import { TalismanSolWalletAccount } from "./account"
 import { isVersionedTransaction } from "./solana"
