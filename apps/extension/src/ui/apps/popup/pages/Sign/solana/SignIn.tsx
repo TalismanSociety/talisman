@@ -1,9 +1,11 @@
 import { createSignInMessageText } from "@solana/wallet-standard-util"
-import { isAccountPlatformSolana, KnownRequestIdOnly } from "extension-core"
+import { InfoIcon } from "@talismn/icons"
+import { isAccountPlatformSolana, KnownRequestIdOnly, ProviderType } from "extension-core"
+import { capitalize } from "lodash-es"
 import { FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
+import { Button, Drawer } from "talisman-ui"
 
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
@@ -16,42 +18,6 @@ import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountTo
 import { useAccounts, useRequest } from "@ui/state"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
-
-// TODO
-// const NoAccountWarning = ({
-//   onIgnoreClick,
-//   onAddAccountClick,
-//   type,
-// }: {
-//   type: ProviderType
-//   onIgnoreClick: () => void
-//   onAddAccountClick: () => void
-// }) => {
-//   const { t } = useTranslation()
-//   return (
-//     <Drawer isOpen anchor="bottom" containerId="main">
-//       <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
-//         <div className="w-full text-center">
-//           <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
-//         </div>
-//         <p className="text-body-secondary text-center">
-//           <Trans
-//             t={t}
-//             defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"
-//             components={{ strong: <strong className="text-body" />, br: <br /> }}
-//             values={{ type: capitalize(type) }}
-//           />
-//         </p>
-//         <div className="mt-4 grid grid-cols-2 gap-8">
-//           <Button onClick={onIgnoreClick}>{t("No")}</Button>
-//           <Button primary onClick={onAddAccountClick}>
-//             {t("Yes")}
-//           </Button>
-//         </div>
-//       </div>
-//     </Drawer>
-//   )
-// }
 
 export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
@@ -140,6 +106,16 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
               ))}
             </ConnectAccountsContainer>
             {!!message && <MessageContainer text={message} />}
+            {!accounts.length && (
+              <NoAccountWarning
+                type={"polkadot"}
+                onIgnoreClick={() => window.close()}
+                onAddAccountClick={async () => {
+                  await api.dashboardOpen("/accounts/add")
+                  window.close()
+                }}
+              />
+            )}
           </div>
         </div>
       </PopupContent>
@@ -177,3 +153,38 @@ const MessageContainer: FC<{ text: string }> = ({ text }) => {
 }
 
 const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+
+const NoAccountWarning = ({
+  onIgnoreClick,
+  onAddAccountClick,
+  type,
+}: {
+  type: ProviderType
+  onIgnoreClick: () => void
+  onAddAccountClick: () => void
+}) => {
+  const { t } = useTranslation()
+  return (
+    <Drawer isOpen anchor="bottom" containerId="main">
+      <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+        <div className="w-full text-center">
+          <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+        </div>
+        <p className="text-body-secondary text-center">
+          <Trans
+            t={t}
+            defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"
+            components={{ strong: <strong className="text-body" />, br: <br /> }}
+            values={{ type: capitalize(type) }}
+          />
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-8">
+          <Button onClick={onIgnoreClick}>{t("No")}</Button>
+          <Button primary onClick={onAddAccountClick}>
+            {t("Yes")}
+          </Button>
+        </div>
+      </div>
+    </Drawer>
+  )
+}
