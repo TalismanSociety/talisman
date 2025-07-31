@@ -1,8 +1,8 @@
 import { Dexie } from "dexie"
 
 import { Token, TokenId } from "../chaindata"
-import { upgradeRemoveSymbolFromNativeTokenId } from "../upgrades"
 import { upgradeAddIsDefaultToExistingChains } from "../upgrades/2024-01-25-upgradeAddIsDefaultToExistingChains"
+import { upgradeRemoveSymbolFromNativeTokenId } from "../upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 import { LegacyChain, LegacyChainId, LegacyCustomChain } from "./Chain"
 import { LegacyCustomEvmNetwork, LegacyEvmNetwork, LegacyEvmNetworkId } from "./EvmNetwork"
 

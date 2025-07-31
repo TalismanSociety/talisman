@@ -10,7 +10,7 @@ import { upgradeTokenRatesToObjects } from "./upgrades/2024-12-16-upgradeTokenRa
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
-export type DbBlobId = "nfts" | "balances" //  | "networks" .. etc, add more as needed
+export type DbBlobId = "nfts" | "balances" | "chaindata" //  | "networks" .. etc, add more as needed
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 class TalismanDatabase extends Dexie {

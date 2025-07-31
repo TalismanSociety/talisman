@@ -60,11 +60,6 @@ export function includeInTotalExtraAmount(
     .reduce((a, b) => a + b, 0n)
 }
 
-/**
- * Have the importing library define its Token and BalanceJson enums (as a sum type of all plugins) and pass them into some
- * internal global typescript context, which is then picked up on by this module.
- */
-
 /** A utility type used to extract the underlying `BalanceType` of a specific source from a generalised `BalanceJson` */
 export type NarrowBalanceType<S extends IBalance, P> = S extends { source: P } ? S : never
 export type BalanceSource = BalanceJson["source"]

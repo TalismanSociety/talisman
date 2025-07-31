@@ -15,8 +15,7 @@
   "main": "dist/talismn-crypto.cjs.js",
   "module": "dist/talismn-crypto.esm.js",
   "files": [
-    "/dist",
-    "/plugins"
+    "/dist"
   ],
   "engines": {
     "node": ">=18"
@@ -24,7 +23,7 @@
   "scripts": {
     "test": "jest --detectOpenHandles",
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist plugins/dist .turbo node_modules"
+    "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
     "@noble/curves": "1.9.2",
