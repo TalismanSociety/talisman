@@ -1,5 +1,6 @@
 import { SolNetworkId } from "@talismn/chaindata-provider"
-import { SolTransactionJson } from "@talismn/solana"
+
+// import { SolTransactionJson } from "@talismn/solana"
 
 import { SigningRequestID } from "../signing/types"
 import { WalletTransactionInfo } from "../transactions"
@@ -25,7 +26,7 @@ export type RequestSolanaRpcSend = {
 
 export type RequestSolanaSubmit = {
   networkId: SolNetworkId
-  transaction: SolTransactionJson
+  transaction: string
   txInfo?: WalletTransactionInfo
 }
 
@@ -34,12 +35,21 @@ export type ResponseSolanaSubmit = {
   signature: string
 }
 
+export type SolanaSignApproveResponse =
+  | {
+      type: "transaction"
+      transaction?: string // supplied if signed with hardware device from frontend
+      networkId?: SolNetworkId
+    }
+  | {
+      type: "message"
+      signature?: string // base58 encoded
+    }
+
 // this message works for all sign requests (msg sign, tx sign, tx sign & send)
 export type RequestSolanaSignApprove = {
   id: SigningRequestID<"sol-sign">
-  signature?: string // supplied if signed with hardware device from frontend
-  networkId?: SolNetworkId
-}
+} & SolanaSignApproveResponse
 
 export type SolanaExtensionMessages = {
   "pri(solana.rpc.send)": [RequestSolanaRpcSend, ResponseSolanaRpcSend]

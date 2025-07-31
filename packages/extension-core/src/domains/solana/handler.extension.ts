@@ -1,10 +1,9 @@
-import { PublicKey } from "@solana/web3.js"
 import { base58, ed25519 } from "@talismn/crypto"
 import {
   deserializeTransaction,
   getKeypair,
   isVersionedTransaction,
-  solTransactionFromJson,
+  parseTransactionInfo,
 } from "@talismn/solana"
 
 import { ExtensionHandler } from "../../libs/Handler"
@@ -14,6 +13,7 @@ import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
+import { RequestSolanaSignApprove } from "./types.extension"
 
 export class SolanaExtensionHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -39,33 +39,25 @@ export class SolanaExtensionHandler extends ExtensionHandler {
       case "pri(solana.rpc.submit)": {
         const { networkId, transaction, txInfo } = request as RequestTypes["pri(solana.rpc.submit)"]
 
-        const tx = solTransactionFromJson(transaction)
-        if (!tx.feePayer) throw new Error("Unknown signer")
+        const tx = deserializeTransaction(transaction)
+        const { address, signature } = parseTransactionInfo(tx)
+        if (!address) throw new Error("Unknown signer")
 
-        const account = await keyringStore.getAccount(tx.feePayer.toBase58())
+        const account = await keyringStore.getAccount(address)
         if (!account) throw new Error("Account not found")
 
         const connection = await chainConnectorSol.getConnection(networkId)
 
-        if (!tx.signature) {
-          // refresh blockhash and lastValidBlockHeight prior to signing
-          const { blockhash, lastValidBlockHeight } =
-            await connection.getLatestBlockhash("confirmed")
-          tx.recentBlockhash = blockhash
-          tx.lastValidBlockHeight = lastValidBlockHeight
-
-          // sign
+        if (!signature) {
           await withSecretKey(account.address, async (secretKey) => {
             const keypair = getKeypair(secretKey)
 
-            if (keypair.publicKey.toBase58() !== tx.feePayer?.toBase58())
-              throw new Error("Address mismatch")
+            if (keypair.publicKey.toBase58() !== address) throw new Error("Address mismatch")
 
-            tx.sign(keypair)
+            if (isVersionedTransaction(tx)) tx.sign([keypair])
+            else tx.sign(keypair)
           })
         }
-
-        if (!tx.verifySignatures(true)) throw new Error("Transaction signature verification failed")
 
         const sig = await connection.sendRawTransaction(tx.serialize(), {
           skipPreflight: true, // as we use public nodes, preflighting signed transactions is not recommended
@@ -80,14 +72,15 @@ export class SolanaExtensionHandler extends ExtensionHandler {
       }
 
       case "pri(solana.sign.approve)": {
-        const { id, signature, networkId } = request as RequestTypes["pri(solana.sign.approve)"]
-        const signRequest = requestStore.getRequest(id)
+        const req = request as RequestSolanaSignApprove
+        const signRequest = requestStore.getRequest(req.id)
         if (!signRequest) throw new Error("Request not found")
 
         const dappRequest = signRequest.request
 
         switch (dappRequest.type) {
           case "message": {
+            const { signature } = request as Extract<RequestSolanaSignApprove, { type: "message" }>
             if (signature) {
               if (
                 !ed25519.verify(
@@ -119,14 +112,16 @@ export class SolanaExtensionHandler extends ExtensionHandler {
             })
           }
           case "transaction": {
-            const tx = deserializeTransaction(dappRequest.transaction)
+            const { transaction, networkId } = request as Extract<
+              RequestSolanaSignApprove,
+              { type: "transaction" }
+            >
 
-            if (signature) {
-              tx.addSignature(
-                new PublicKey(signRequest.account.address),
-                Buffer.from(base58.decode(signature)),
-              )
-            } else {
+            // if frontend sent a transaction, it might be already signed by ledger
+            const tx = deserializeTransaction(transaction ?? dappRequest.transaction)
+            const { signature } = parseTransactionInfo(tx)
+
+            if (!signature) {
               await withSecretKey(signRequest.account.address, async (secretKey) => {
                 const keypair = getKeypair(secretKey)
                 if (isVersionedTransaction(tx)) tx.sign([keypair])

@@ -1,5 +1,4 @@
-import { PublicKey, Transaction } from "@solana/web3.js"
-import { solTransactionToJson } from "@talismn/solana"
+import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
 import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
 import { log } from "extension-shared"
@@ -11,7 +10,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 
-import { SignLedgerSolana, SolSignPayload } from "../SignLedgerSolana"
+import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonProps } from "./types"
 
@@ -23,27 +22,26 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation()
-  const address = useMemo(() => tx.payload.feePayer?.toBase58(), [tx.payload])
+  const address = useMemo(() => {
+    const transaction = tx.payload
+    if (isVersionedTransaction(transaction))
+      return transaction.message.staticAccountKeys
+        .find((key, idx) => transaction.message.isAccountSigner(idx))
+        ?.toBase58()
+    else return transaction.feePayer?.toBase58()
+  }, [tx.payload])
   const account = useAccountByAddress(address)
 
   const handleLedgerSignature = useCallback(
-    async ({
-      unsigned,
-      signature,
-    }: {
-      unsigned: Buffer<ArrayBufferLike>
-      signature: Buffer<ArrayBufferLike>
-    }) => {
+    async (output: SolSignOutput) => {
       try {
-        if (!account) return
+        if (output.type !== "transaction") throw new Error("Unexpected output from Ledger signing")
 
-        const transaction = Transaction.from(unsigned)
-        transaction.addSignature(new PublicKey(account.address), signature)
-
-        const serialized = solTransactionToJson(transaction)
-        if (!serialized) throw new Error("Failed to serialize transaction request")
-
-        const submitted = await api.solSubmit(tx.networkId, serialized, tx.txInfo)
+        const submitted = await api.solSubmit(
+          tx.networkId,
+          serializeTransaction(output.transaction),
+          tx.txInfo,
+        )
 
         onSubmit(submitted.signature)
       } catch (cause) {
@@ -55,7 +53,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         })
       }
     },
-    [account, onSubmit, tx],
+    [onSubmit, tx],
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -63,7 +61,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   const handleSubmitClick = useCallback(async () => {
     setIsSubmitting(true)
     try {
-      const serialized = solTransactionToJson(tx.payload)
+      const serialized = serializeTransaction(tx.payload)
       if (!serialized) throw new Error("Failed to serialize transaction request")
 
       const { signature } = await api.solSubmit(tx.networkId, serialized, tx.txInfo)

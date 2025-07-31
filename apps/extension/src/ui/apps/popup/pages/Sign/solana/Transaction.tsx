@@ -1,8 +1,7 @@
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { solNativeTokenId } from "@talismn/chaindata-provider"
-import { base58 } from "@talismn/crypto"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
-import { deserializeTransaction } from "@talismn/solana"
+import { deserializeTransaction, serializeTransaction } from "@talismn/solana"
 import { cn } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { Account, isAccountOfType, SolSigningRequest } from "extension-core"
@@ -22,7 +21,7 @@ import {
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
-import { SignLedgerSolana, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
+import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
@@ -65,7 +64,7 @@ export const SolSignTransactionRequest: FC<{
   const handleApprove = useCallback(async () => {
     setState({ error: undefined, processing: true })
     try {
-      await api.solSignApprove(id, network?.id) // will close the window automatically if successful
+      await api.solSignApprove({ id, type: "transaction", networkId: network?.id }) // will close the window automatically if successful
     } catch (error) {
       setState({
         processing: false,
@@ -75,15 +74,17 @@ export const SolSignTransactionRequest: FC<{
   }, [id, network?.id])
 
   const handleSigned = useCallback(
-    async ({
-      signature,
-    }: {
-      unsigned: Buffer<ArrayBufferLike>
-      signature: Buffer<ArrayBufferLike>
-    }) => {
+    async (output: SolSignOutput) => {
+      if (output.type !== "transaction") throw new Error("Unexpected output from Ledger signing")
+
       setState({ error: undefined, processing: true })
       try {
-        await api.solSignApprove(id, network?.id, base58.encode(signature)) // will close the window automatically if successful
+        await api.solSignApprove({
+          id,
+          type: "transaction",
+          networkId: network?.id,
+          transaction: serializeTransaction(transaction),
+        })
       } catch (error) {
         setState({
           processing: false,
@@ -91,7 +92,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id, network?.id],
+    [id, network?.id, transaction],
   )
 
   const displayError = useMemo(() => {

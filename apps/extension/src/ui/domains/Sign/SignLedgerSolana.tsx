@@ -1,9 +1,8 @@
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"
 import { AccountOfType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
 
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
@@ -21,16 +20,23 @@ export type SolSignPayload =
       message: Buffer<ArrayBufferLike>
     }
 
+export type SolSignOutput =
+  | {
+      type: "transaction"
+      transaction: Transaction | VersionedTransaction
+    }
+  | {
+      type: "message"
+      signature: Buffer<ArrayBufferLike>
+    }
+
 export const SignLedgerSolana: FC<{
   account: AccountOfType<"ledger-solana">
   payload: SolSignPayload
   containerId?: string
   className?: string
   disabled?: boolean
-  onSigned: (arg: {
-    unsigned: Buffer<ArrayBufferLike>
-    signature: Buffer<ArrayBufferLike>
-  }) => void | Promise<void>
+  onSigned: (arg: SolSignOutput) => void | Promise<void>
   onCancel?: () => void
   onSentToDevice?: (sent: boolean) => void
 }> = ({
@@ -43,7 +49,6 @@ export const SignLedgerSolana: FC<{
   onSigned,
   onCancel,
 }) => {
-  const { t } = useTranslation()
   const { isSigning, error, setIsSigning, setError } = useSignLedgerBase()
 
   const { sign } = useLedgerSolana()
@@ -57,26 +62,32 @@ export const SignLedgerSolana: FC<{
     try {
       switch (payload.type) {
         case "transaction": {
-          const tx = payload.transaction
+          const transaction = payload.transaction
 
-          if (isVersionedTransaction(tx))
-            throw getTalismanLedgerError(
-              t("Solana versioned transactions cannot be signed with Ledger yet."),
+          if (isVersionedTransaction(transaction)) {
+            const signature = await sign(
+              "transaction",
+              Buffer.from(transaction.message.serialize()),
+              account,
             )
 
-          const unsigned = tx.serialize({
-            requireAllSignatures: false,
-            verifySignatures: false,
+            // attach the signature, must be done at the correct index (same as in tx.message.staticAccountKeys)
+            transaction.signatures[0] = signature
+          } else {
+            const signature = await sign("transaction", transaction.serializeMessage(), account)
+            transaction.addSignature(new PublicKey(account.address), signature)
+          }
+
+          await onSigned({
+            type: "transaction",
+            transaction,
           })
-          const signature = await sign("transaction", tx.serializeMessage(), account)
-          await onSigned({ unsigned, signature })
+
           break
         }
         case "message": {
-          throw getTalismanLedgerError(t("Solana messages cannot be signed with Ledger yet."))
-          // const unsigned = payload.message
-          // const signature = await sign("message", unsigned, account)
-          // await onSigned({ unsigned, signature })
+          const signature = await sign("message", payload.message, account)
+          await onSigned({ type: "message", signature })
         }
       }
     } catch (err) {
@@ -86,7 +97,7 @@ export const SignLedgerSolana: FC<{
     } finally {
       onSentToDevice?.(false)
     }
-  }, [account, onSentToDevice, onSigned, payload, setError, setIsSigning, sign, t])
+  }, [account, onSentToDevice, onSigned, payload, setError, setIsSigning, sign])
 
   return (
     <SignLedgerBase

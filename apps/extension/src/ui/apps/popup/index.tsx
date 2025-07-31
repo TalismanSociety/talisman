@@ -40,10 +40,10 @@ import { LoginViewManager } from "./pages/Login"
 import { ManageAccountsPage } from "./pages/ManageAccounts"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
-import { SolSignInPage } from "./pages/Requests/Auth/SolSignInPage"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SolanaSignRequest } from "./pages/Sign/solana"
+import { SolanaSignInPage } from "./pages/Sign/solana/SignIn"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
@@ -73,7 +73,7 @@ const Popup = () => {
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
-          <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolSignInPage />} />
+          <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolanaSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />

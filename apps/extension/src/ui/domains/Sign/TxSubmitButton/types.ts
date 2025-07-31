@@ -1,4 +1,4 @@
-import { Transaction } from "@solana/web3.js"
+import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
 import { TransactionRequest } from "viem"
@@ -20,7 +20,7 @@ export type TxSubmitButtonTransactionEth = {
 export type TxSubmitButtonTransactionSol = {
   platform: "solana"
   networkId: SolNetworkId
-  payload: Transaction
+  payload: Transaction | VersionedTransaction
   txInfo?: WalletTransactionInfo
 }
 

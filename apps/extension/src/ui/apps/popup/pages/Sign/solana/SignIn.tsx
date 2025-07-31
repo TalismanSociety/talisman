@@ -53,7 +53,7 @@ import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../La
 //   )
 // }
 
-export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
+export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation()
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth-sol-signIn">
 
@@ -88,18 +88,22 @@ export const SolSignInPage: FC<{ className?: string }> = ({ className }) => {
     [message, address],
   )
 
-  const handleSubmit = useCallback(async () => {
-    if (!signInRequest || !address || !message) return
+  const handleSubmit = useCallback(
+    async (signature?: string) => {
+      if (!signInRequest || !address || !message) return
 
-    try {
-      await api.authrequestApproveSolSignIn(signInRequest.id, {
-        address,
-        message,
-      })
-    } catch (err) {
-      notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
-    }
-  }, [address, message, signInRequest, t])
+      try {
+        await api.authrequestApproveSolSignIn(signInRequest.id, {
+          address,
+          message,
+          signature,
+        })
+      } catch (err) {
+        notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
+      }
+    },
+    [address, message, signInRequest, t],
+  )
 
   const handleReject = useCallback(() => {
     window.close()

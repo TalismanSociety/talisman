@@ -7,7 +7,7 @@ import { Button } from "talisman-ui"
 
 import { useAccountByAddress } from "@ui/state"
 
-import { SignLedgerSolana, SolSignPayload } from "../SignLedgerSolana"
+import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "../SignLedgerSolana"
 import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
 import { MsgSignButtonProps } from "./types"
 
@@ -22,13 +22,10 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
   const account = useAccountByAddress(payload.address)
 
   const handleLedgerSignature = useCallback(
-    async ({
-      signature,
-    }: {
-      unsigned: Buffer<ArrayBufferLike>
-      signature: Buffer<ArrayBufferLike>
-    }) => {
-      onSubmit(base58.encode(signature))
+    async (output: SolSignOutput) => {
+      if (output.type !== "message") throw new Error("Unexpected output from Ledger signing")
+
+      onSubmit(base58.encode(output.signature))
     },
     [onSubmit],
   )

@@ -42,33 +42,6 @@ export const solInstructionFromJson = (serialized: SolInstructionJson): Transact
   }
 }
 
-export const solTransactionToJson = (transaction: Transaction) => {
-  return {
-    type: "solana-transaction" as const,
-    value: transaction
-      .serialize(
-        transaction.signature
-          ? undefined
-          : {
-              // if tx is not signed yet, we need this flag or it throws an error
-              requireAllSignatures: false,
-              verifySignatures: false,
-            },
-      )
-      .toString("base64"),
-  }
-}
-
-export type SolTransactionJson = ReturnType<typeof solTransactionToJson>
-
-export const solTransactionFromJson = (serialized: SolTransactionJson): Transaction => {
-  if (serialized.type !== "solana-transaction")
-    throw new Error("Invalid serialized transaction type")
-
-  const buffer = Buffer.from(serialized.value, "base64")
-  return Transaction.from(buffer)
-}
-
 export const serializeTransaction = (transaction: Transaction | VersionedTransaction): string => {
   if (isVersionedTransaction(transaction)) {
     return base58.encode(transaction.serialize())
@@ -81,6 +54,7 @@ export const serializeTransaction = (transaction: Transaction | VersionedTransac
 
 export const deserializeTransaction = (transaction: string): Transaction | VersionedTransaction => {
   const bytes = base58.decode(transaction)
+
   try {
     return VersionedTransaction.deserialize(bytes)
   } catch {
