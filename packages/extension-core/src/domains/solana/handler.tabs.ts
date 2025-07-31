@@ -94,19 +94,23 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
 ) => {
   const site = await sitesAuthorisedStore.getSiteFromUrl(url)
 
-  if (!site?.solAddresses?.length || !(await keyringStore.getAccount(site.solAddresses[0]))) {
-    await requestAuthoriseSite(
-      url,
-      {
-        origin: "",
-        provider: "solana",
-      },
-      port,
-    )
-  }
+  // onlyIfTrusted is used for dapps that want to auto-reconnect after first connection
+  // if that flag is set, then it should not trigger an authorisation request
+
+  if (!request.onlyIfTrusted)
+    if (!site?.solAddresses?.length || !(await keyringStore.getAccount(site.solAddresses[0]))) {
+      await requestAuthoriseSite(
+        url,
+        {
+          origin: "",
+          provider: "solana",
+        },
+        port,
+      )
+    }
 
   const updatedSite = await sitesAuthorisedStore.getSiteFromUrl(url)
-  if (!updatedSite?.solAddresses?.length) throw new Error("Site has not been")
+  if (!updatedSite?.solAddresses?.length) throw new Error("Unauthorized")
 
   const account = await keyringStore.getAccount(updatedSite.solAddresses[0])
   if (account && isSolanaAddress(account.address))

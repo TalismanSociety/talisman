@@ -2,7 +2,6 @@ import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import type { HexString } from "@polkadot/util/types"
 import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
 import type { ResponseType, SendRequest } from "extension-core"
-import { log } from "extension-shared"
 
 type TalismanWindow = typeof globalThis & {
   talismanSub?: ReturnType<typeof rpcProvider> & ReturnType<typeof tokensProvider>
@@ -60,8 +59,6 @@ const tokensProvider = (sendRequest: SendRequest) => ({
 export const injectSubstrate = (sendRequest: SendRequest) => {
   // small helper with the typescript types, just cast window
   const windowInject = window as TalismanWindow
-
-  log.debug("Injecting talismanSub")
 
   windowInject.talismanSub = { ...rpcProvider(sendRequest), ...tokensProvider(sendRequest) }
 }

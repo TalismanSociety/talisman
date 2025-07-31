@@ -22,6 +22,8 @@ export type SolSerializedWalletAccount = {
   icon?: string
 }
 
+export type RequestSolanaConnect = { onlyIfTrusted?: boolean }
+
 export type ResponseSolanaConnect = {
   account: SolSerializedWalletAccount
 }
@@ -66,7 +68,7 @@ export type ResponseSolanaSignTransaction = {
 export type SolanaTabsMessages = {
   "pub(solana.provider.subscribe)": [null, boolean, SolanaTabSubscriptionEvent]
   "pub(solana.provider.signIn)": [RequestSolanaSignIn, ResponseSolanaSignIn]
-  "pub(solana.provider.connect)": [void, ResponseSolanaConnect]
+  "pub(solana.provider.connect)": [RequestSolanaConnect, ResponseSolanaConnect]
   "pub(solana.provider.disconnect)": [void, void]
   "pub(solana.provider.signMessage)": [RequestSolanaSignMessage, ResponseSolanaSignMessage]
   "pub(solana.provider.signTransaction)": [

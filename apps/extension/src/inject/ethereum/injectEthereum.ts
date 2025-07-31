@@ -26,7 +26,6 @@ export const injectEthereum = (sendRequest: SendRequest) => {
 
   const talismanEth = WITH_LOG_PROXY ? logProxy(provider) : provider
 
-  log.debug("Injecting talismanEth")
   windowInject.talismanEth = talismanEth
 
   // eip-6963 wallet announcement
@@ -35,8 +34,6 @@ export const injectEthereum = (sendRequest: SendRequest) => {
   // also inject on window.ethereum if it is not defined
   // this allows users to just disable metamask if they want to use Talisman instead
   if (windowInject.ethereum === undefined) {
-    log.debug("Injecting talismanEth in window.ethereum")
-
     try {
       // Protect window.ethereum property to workaround Phantom abuse bug
       let currentWindowEthereum = talismanEth
@@ -55,11 +52,9 @@ export const injectEthereum = (sendRequest: SendRequest) => {
 
           // allow all other wallets to override window.ethereum
           currentWindowEthereum = newValue
-          log.debug("window.ethereum overriden with", { newValue })
         },
         configurable: false,
       })
-      log.debug("window.ethereum protected")
     } catch (err) {
       log.error("Failed to define window.ethereum", { err })
       windowInject.ethereum = talismanEth

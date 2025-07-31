@@ -75,8 +75,6 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const initialize = async () => {
-    log.debug("Talisman provider initializing")
-
     const [resChainId, resAccounts] = await Promise.all([
       sendRequest("pub(eth.request)", { method: "eth_chainId" }),
       sendRequest("pub(eth.request)", { method: "eth_accounts" }),
@@ -131,23 +129,17 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
     state.initialized = true
     provider._state.initialized = true
-
-    log.debug("Talisman provider initialized")
   }
 
   const waitReady = initialize()
 
   const request = async (args: RequestArguments): Promise<unknown> => {
     try {
-      log.debug("[talismanEth.request] request %s", args.method, args.params)
       await waitReady
 
       const result = await sendRequest("pub(eth.request)", args)
-      log.debug("[talismanEth.request] response for %s", args.method, { args, result })
       return result
     } catch (err) {
-      log.debug("[talismanEth.request] error on %s", args.method, { err })
-
       const { code, message, rpcData } = err as WrappedEthProviderRpcError
 
       if (code > 0) {
@@ -169,8 +161,6 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const send = (methodOrPayload: any, paramsOrCallback: any) => {
-    log.debug("[talismanEth.send]", { methodOrPayload, paramsOrCallback })
-
     if (typeof methodOrPayload === "string")
       return request({
         method: methodOrPayload,
@@ -182,8 +172,6 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const sendAsync = async (payload: JsonRpcRequest, callback: JsonRpcCallback) => {
-    log.debug("[talismanEth.sendAsync]", payload)
-
     const { method, params, ...rest } = payload
     try {
       const result = await request({ method, params })
@@ -196,8 +184,6 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const enable = () => {
-    log.debug("[talismanEth.enable]")
-
     // some frameworks such as web3modal requires this method to exist
     return request({ method: "eth_requestAccounts" })
   }
