@@ -80,12 +80,12 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
 
           // update local db if chaindata is found different from Github
           log.debug(
-            `[defaultChaindata$] Updating chaindata in DB (networks:${initChaindata.networks.length}, tokens:${initChaindata.tokens.length}, meta:${initChaindata.miniMetadatas.length})`,
+            `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`,
           )
           storage$.next({
-            networks: initChaindata.networks as Chaindata["networks"],
-            tokens: initChaindata.tokens as Chaindata["tokens"],
-            miniMetadatas: initChaindata.miniMetadatas as Chaindata["miniMetadatas"],
+            networks: githubData.networks,
+            tokens: githubData.tokens,
+            miniMetadatas: githubData.miniMetadatas,
           })
 
           log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
