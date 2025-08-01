@@ -19,7 +19,6 @@ export const getTransferCallData: IBalanceModule<
 
   const connection = await connector.getConnection(token.networkId)
 
-  // we use legacy type transaction to ensure Ledger compatibility
   const instructions: TransactionInstruction[] = []
 
   const mint = new PublicKey(token.mintAddress)

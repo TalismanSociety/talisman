@@ -175,29 +175,6 @@ export interface RequestAccountContactUpdate {
   genesisHash?: HexString
 }
 
-// export type RequestAccountCreateOptionsNewMnemonic = {
-//   type: "new-mnemonic"
-//   name: string
-//   curve: KeypairCurve
-//   mnemonic: string
-//   confirmed: boolean
-//   derivationPath: string
-// }
-
-// export type RequestAccountCreateOptionsExistingMnemonic = {
-//   type: "existing-mnemonic"
-//   name: string
-//   curve: KeypairCurve
-//   mnemonicId: string
-//   derivationPath: string
-// }
-
-// export type RequestAccountCreateOptions =
-//   | RequestAccountCreateOptionsExistingMnemonic
-//   | RequestAccountCreateOptionsNewMnemonic
-
-// export type RequestAccountCreate = RequestAccountCreateOptions[]
-
 export type RequestAddressLookupByMnemonic = {
   type: "mnemonic"
   mnemonic: string

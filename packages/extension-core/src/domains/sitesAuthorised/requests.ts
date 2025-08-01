@@ -1,5 +1,6 @@
 import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
+import { getTalismanOrbDataUrl } from "@talismn/orb"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 
 import type { Port } from "../../types/base"
@@ -127,7 +128,7 @@ export const requestSolanaSignIn = async (
       label: account.name,
       chains: SOLANA_WALLET_CHAINS, // TODO extract from chaindata
       features: SOLANA_WALLET_STANDARD_FEATURES,
-      // TODO icon: TODO
+      icon: getTalismanOrbDataUrl(account.address),
     },
     signature,
     signedMessage: base58.encode(new TextEncoder().encode(message)), // plaintext to base58

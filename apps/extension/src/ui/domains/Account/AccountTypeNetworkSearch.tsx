@@ -81,8 +81,7 @@ export function AccountTypeNetworkSearch({
 
       if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountPlatform()
 
-      const network = allNetworksMap[option.id] // ?? evmNetworksMap[option.id] ?? undefined
-      setAccountPlatform(getAccountPlatform(network))
+      setAccountPlatform(getAccountPlatform(allNetworksMap[option.id]))
     },
     [allNetworksMap, setAccountPlatform],
   )

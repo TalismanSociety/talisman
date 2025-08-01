@@ -243,7 +243,6 @@ const useSendFundsProvider = () => {
 
   const isSendingEnough = useIsSendingEnough(recipientBalance, token, transfer)
 
-  // TODO move to individual transaction hooks ?
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
       if (fromAccount?.type === "watch-only")

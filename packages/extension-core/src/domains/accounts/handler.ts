@@ -201,7 +201,6 @@ export default class AccountsHandler extends ExtensionHandler {
         case "ethereum":
           return hex.encode(secretKey)
         case "solana":
-          // TODO test
           return base58.encode(new Uint8Array([...secretKey, ...getPublicKeySolana(secretKey)]))
         default:
           throw new Error("Unsupported curve")

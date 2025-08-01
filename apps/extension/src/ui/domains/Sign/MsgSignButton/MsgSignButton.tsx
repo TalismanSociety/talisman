@@ -8,6 +8,12 @@ import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
 import { MsgSignButtonSol } from "./MsgSignButtonSol"
 import { MsgSignButtonProps } from "./types"
 
+/**
+ * Works only for Solana for now
+ *
+ * @param param0
+ * @returns
+ */
 export const MsgSignButton: FC<MsgSignButtonProps> = ({
   payload,
   containerId,

@@ -13,15 +13,4 @@ export const MsgSignButtonDot: FC<MsgSignButtonProps<"polkadot">> = () =>
   {
     // TODO
     throw new Error("Not implemented")
-    // return (
-    //   <SapiSendButton
-    //     containerId={containerId}
-    //     label={label}
-    //     onSubmitted={onSubmit}
-    //     payload={tx.payload}
-    //     txInfo={tx.txInfo}
-    //     txMetadata={tx.txMetadata}
-    //     className={className}
-    //   />
-    // )
   }

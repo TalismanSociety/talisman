@@ -21,12 +21,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const connection = await connector.getConnection(networkId)
   if (!connection) throw new Error(`Could not get connection for Solana network ${networkId}`)
 
-  // fetch balances for each address and output the ones for which we have a token
-
   const accountAddresses = uniq(tokensWithAddresses.flatMap(([, addresses]) => addresses))
-
-  // TODO look for a way to fetch balances for all accounts in one request
-  // hint: connection.getProgramAccounts
 
   const balancesPerAddress = await Promise.all(
     accountAddresses.map(async (address) => {

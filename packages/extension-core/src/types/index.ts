@@ -18,7 +18,6 @@ import { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { KnownRequestId, KnownRequestTypes, KnownResponse } from "../libs/requests/types"
 import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
@@ -92,8 +91,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   NftsMessages &
   PingMessages &
   ChaindataMessages &
-  UnsubscribeMessages &
-  InternalRequestMessages
+  UnsubscribeMessages
 
 interface PingMessages {
   // keeps the background script alive while the UI is open
@@ -104,23 +102,6 @@ interface PingMessages {
 
 interface UnsubscribeMessages {
   "pri(unsubscribe)": [RequestIdOnly, null]
-}
-
-// use these handlers to process any type of internal request
-// TODO migrate signing, auth, and all other existing requests to this format
-type InternalRequestResolve<T extends KnownRequestTypes = KnownRequestTypes> = {
-  id: KnownRequestId<T>
-  result: KnownResponse<T>
-}
-
-type InternalRequestReject<T extends KnownRequestTypes = KnownRequestTypes> = {
-  id: KnownRequestId<T>
-  reason: string
-}
-
-interface InternalRequestMessages {
-  "pri(request.internal.resolve)": [InternalRequestResolve, void]
-  "pri(request.internal.reject)": [InternalRequestReject, void]
 }
 
 export declare type MessageTypes = keyof AllMessages
@@ -145,7 +126,7 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
   keyof SubscriptionMessageTypes
 >
 
-export declare type TabMessageTypesWithNoSubscriptions = Exclude<
+declare type TabMessageTypesWithNoSubscriptions = Exclude<
   MessageTypes,
   keyof SubscriptionMessageTypes
 > &

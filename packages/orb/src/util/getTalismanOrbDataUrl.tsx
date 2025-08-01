@@ -5,7 +5,7 @@ import { TalismanOrb } from "../components"
 /**
  * Returns a base64 encoded data url for the Talisman Orb svg
  */
-export const getTalismanOrbDataUrl = (address: string): string => {
+export const getTalismanOrbDataUrl = (address: string): `data:image/svg+xml;base64,${string}` => {
   // render the TalismanOrb component and output the SVG as text
   const svg = ReactDOMServer.renderToStaticMarkup(<TalismanOrb seed={address} />)
 

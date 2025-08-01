@@ -134,6 +134,13 @@ const useDerivedAccounts = (
     loadPage()
   }, [loadPage])
 
+  useEffect(() => {
+    // memory cleanup on unmount
+    return () => {
+      setDerivedAccounts([])
+    }
+  }, [])
+
   return {
     accounts,
     withBalances,

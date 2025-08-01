@@ -192,7 +192,7 @@ export class BalancesProvider {
               }
               default: {
                 log.warn("[balances] Unsupported network platform for module", { networkId, mod })
-                return of({ status: "live", balances: [] } as BalancesResult) // no solana modules yet
+                return of({ status: "live", balances: [] } as BalancesResult)
               }
             }
           }),
