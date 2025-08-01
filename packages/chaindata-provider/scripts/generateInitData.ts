@@ -14,6 +14,7 @@ const NETWORK_IDS = [
   "hydradx",
   "aleph-zero",
   "bifrost-polkadot",
+  "solana-mainnet",
 
   "1",
   "8453", // base

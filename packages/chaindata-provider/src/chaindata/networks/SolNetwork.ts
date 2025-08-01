@@ -12,7 +12,7 @@ export type SolNetworkBalancesConfig = z.infer<typeof SolNetworkBalancesConfigSc
 
 export const SolNetworkSchema = NetworkBaseSchema.extend({
   platform: z.literal("solana"),
-  genesisHash: z.string().optional(),
+  genesisHash: z.string(),
   rpcs: z.array(z.url({ protocol: /^https?$/ })),
   balancesConfig: SolNetworkBalancesConfigSchema.optional(),
 })
