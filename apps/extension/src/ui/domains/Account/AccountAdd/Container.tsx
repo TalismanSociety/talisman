@@ -8,7 +8,11 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
+import {
+  EthereumCircleBorderedLogo,
+  PolkadotCircleBorderedLogo,
+  SolanaCircleLogo,
+} from "@talisman/theme/logos"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -162,14 +166,14 @@ function ImportAccountMethodButtons() {
     <>
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
-        subtitle={t("Polkadot or Ethereum account")}
-        networks={["polkadot", "ethereum"]}
+        subtitle={t("Ethereum, Polkadot, and Solana accounts")}
+        networks={["ethereum", "polkadot", "solana"]}
         to={`/accounts/add/mnemonic`}
       />
       <AccountCreateMethodButton
         title={t("Import via Private Key")}
-        subtitle={t("Ethereum account")}
-        networks={["ethereum"]}
+        subtitle={t("Ethereum and Solana accounts")}
+        networks={["ethereum", "solana"]}
         to={`/accounts/add/pk`}
       />
       <AccountCreateMethodButton
@@ -191,9 +195,11 @@ function ConnectAccountMethodButtons() {
       <AccountCreateMethodButton
         title={t("Connect Ledger")}
         subtitle={
-          isLedgerCapable ? t("Polkadot or Ethereum account") : t("Not supported on this browser")
+          isLedgerCapable
+            ? t("Ethereum, Polkadot or Ethereum accounts")
+            : t("Not supported on this browser")
         }
-        networks={isLedgerCapable ? ["polkadot", "ethereum"] : []}
+        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana"] : []}
         disabled={!isLedgerCapable}
         to={`/accounts/add/ledger`}
       />
@@ -340,6 +346,7 @@ function AccountTypeMethodButton({
 const networkChoices = {
   polkadot: <PolkadotCircleBorderedLogo />,
   ethereum: <EthereumCircleBorderedLogo />,
+  solana: <SolanaCircleLogo />,
 }
 function AccountCreateMethodButton({
   title,
@@ -350,7 +357,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks?: Array<"ethereum" | "polkadot">
+  networks?: Array<"ethereum" | "polkadot" | "solana">
   disabled?: boolean
   to?: string
 }) {
