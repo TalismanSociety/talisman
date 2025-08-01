@@ -26,11 +26,14 @@ const NETWORK_CONFIG = {
       {
         mintAddress: "DnFxs7eCaJBXwMqZD8iZLeiM11cTdvfFp7Qit9usWqY8", // invalid token
       },
+      {
+        mintAddress: "vooz4rKUS7PJ2a1r1T3q81E7b5NpGYjsT5YxciCJ4rF", // vooz
+      },
     ],
   },
 }
 
-testNetworkSol(NETWORK_CONFIG, { modules: ["sol-spl"], transfer: true })
+testNetworkSol(NETWORK_CONFIG, { modules: ["sol-spl"], transfer: false })
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)

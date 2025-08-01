@@ -99,7 +99,7 @@ const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: str
     }
 
     const mintPubKey = new PublicKey(mintAddress)
-    const mintInfo = await connection.getAccountInfo(mintPubKey) // connection.getParsedAccountInfo(mint)
+    const mintInfo = await connection.getAccountInfo(mintPubKey)
     if (!mintInfo?.data) throw new Error(ERROR_NO_MINT)
     const mint = MintLayout.decode(mintInfo.data)
 
