@@ -92,7 +92,7 @@ export const AccountPlatformSelector = ({
         icon={<SolanaLogo />}
         title={t("Solana")}
         subtitle={
-          <div className="line-clamp-2" data-testid="account-platform-selector-polkadot">
+          <div className="line-clamp-2" data-testid="account-platform-selector-solana">
             {t("Solana Mainnet and testnets")}
           </div>
         }
