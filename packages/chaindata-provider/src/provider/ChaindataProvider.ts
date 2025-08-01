@@ -1,4 +1,4 @@
-import { isSubject } from "@talismn/util"
+import { isPromise, replaySubjectFrom } from "@talismn/util"
 import { isEqual } from "lodash-es"
 import {
   distinctUntilKeyChanged,
@@ -7,7 +7,6 @@ import {
   Observable,
   ReplaySubject,
   shareReplay,
-  Subject,
 } from "rxjs"
 
 import {
@@ -50,19 +49,35 @@ const DEFAULT_STORAGE: ChaindataStorage = {
 }
 
 export type ChaindataProviderOptions = {
-  storage$?: Subject<ChaindataStorage> | ChaindataStorage
+  persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
 }
 
 export class ChaindataProvider implements IChaindataProvider {
+  #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
 
-  constructor({ storage$: storage, customChaindata$ }: ChaindataProviderOptions = {}) {
+  constructor({ persistedStorage, customChaindata$ }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
-    const storage$ = isSubject(storage) ? storage : replaySubjectFrom(storage ?? DEFAULT_STORAGE)
-    const defaultChaindata$ = getDefaultChaindata$(storage$)
+    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
+    const mergedStorage = isPromise(persistedStorage)
+      ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
+      : { ...DEFAULT_STORAGE, ...persistedStorage }
+
+    this.#storage$ = replaySubjectFrom(mergedStorage)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
     this.#chaindata$ = getCombinedChaindata$(defaultChaindata$, customChaindata$)
+  }
+
+  /**
+   * Subscribe to this observable and save its contents somewhere persistent.
+   *
+   * Instantiate `new ChaindataProvider({ persistedStorage })` with the saved contents
+   * to prevent the need to wait for them to download on every startup.
+   */
+  get storage$() {
+    return this.#storage$.asObservable()
   }
 
   /**
@@ -316,12 +331,4 @@ const withErrorReason = async <T>(reason: string, task: () => Promise<T> | T): P
   } catch (cause) {
     throw new Error(reason, { cause })
   }
-}
-
-const replaySubjectFrom = <T>(initialValue: T): ReplaySubject<T> => {
-  if (initialValue instanceof ReplaySubject) return initialValue
-
-  const subject = new ReplaySubject<T>(1)
-  subject.next(initialValue)
-  return subject
 }
