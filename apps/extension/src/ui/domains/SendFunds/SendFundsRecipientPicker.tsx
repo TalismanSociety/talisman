@@ -1,18 +1,21 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
-import { DotNetwork, getNetworkGenesisHash, isTokenEth, Network } from "@talismn/chaindata-provider"
 import {
-  detectAddressEncoding,
-  encodeAnyAddress,
+  DotNetwork,
+  getNetworkGenesisHash,
+  isNetworkDot,
+  isNetworkEth,
+  Network,
+} from "@talismn/chaindata-provider"
+import {
+  decodeSs58Address,
   getAccountPlatformFromAddress,
+  isAddressEqual,
   isAddressValid,
-  normalizeAddress,
 } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import {
-  Account,
   isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAccountPortfolio,
+  isAccountOwned,
+  isAddressCompatibleWithNetwork,
 } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -22,10 +25,10 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useContacts, useNetworkById, useToken } from "@ui/state"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
-import { SendFundsAccount, SendFundsAccountsList } from "./SendFundsAccountsList"
+import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { ToWarning, useSendFunds } from "./useSendFunds"
 
 const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
@@ -109,168 +112,78 @@ export const SendFundsRecipientPicker = () => {
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
 
-  const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
+  // includes contacts
+  const allAccounts = useAccounts("all")
 
-  const allAccounts = useAccounts()
-  const allContacts = useContacts()
+  // consider only accounts that are compatible with the token's network
+  const compatibleRecipients = useMemo(() => {
+    if (!network) return []
+    return allAccounts.filter(
+      (account) =>
+        isAccountCompatibleWithNetwork(network, account) &&
+        !isAddressEqual(account.address, from ?? ""),
+    )
+  }, [allAccounts, from, network])
 
-  const isValidAddressInput = useMemo(() => {
-    if (!from) return isAddressValid(search)
+  // resolve search
+  const matchingAccounts = useMemo(() => {
+    const lowerSearch = search.trim().toLowerCase()
+    if (!lowerSearch) return compatibleRecipients
 
-    return isAddressValid(search) && detectAddressEncoding(from) === detectAddressEncoding(search)
-  }, [from, search])
+    return compatibleRecipients.filter(
+      (account) =>
+        account.name?.toLowerCase().includes(lowerSearch) ||
+        account.address.toLowerCase().includes(lowerSearch),
+    )
+  }, [compatibleRecipients, search])
 
-  /**
-   * Check if the search input is a valid Substrate address for the current chain.
-   * If not a substrate address (ie, any other string, or an ethereum address), it is also valid for the purpose of this check.
-   */
-  const isValidSubstrateNetworkAddressInput = useMemo(() => {
-    if (network?.platform !== "polkadot") return true
-    if (!search || search.trim() === "" || !isValidAddressInput) return true
-    const isGenericFormat = normalizeAddress(search) === search
-    const isChainFormat =
-      encodeAnyAddress(search, { ss58Format: network.prefix }) === search ||
-      (typeof network.oldPrefix === "number" &&
-        encodeAnyAddress(search, { ss58Format: network.oldPrefix }) === search)
-    return isChainFormat || isGenericFormat
-  }, [network, search, isValidAddressInput])
+  // group results by category
+  const [ownedAccounts, watchedAccounts, contacts] = useMemo(() => {
+    return [
+      matchingAccounts.filter(isAccountOwned),
+      matchingAccounts.filter((a) => a.type === "watch-only"),
+      matchingAccounts.filter((a) => a.type === "contact"),
+    ]
+  }, [matchingAccounts])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
-    azns: !!network,
-    ens: isFromEthereum,
+    azns: isNetworkDot(network),
+    ens: isNetworkEth(network),
   })
 
-  const normalize = useCallback(
-    (addr = "") => {
-      if (!addr) return null
-      try {
-        return isFromEthereum ? addr.toLowerCase() : normalizeAddress(addr)
-      } catch (err) {
-        return null
+  const newAddress = useMemo<{
+    address: string
+    name?: string
+    ss58FormatError?: boolean
+  } | null>(() => {
+    if (!search || !network) return null
+
+    // if we have a result in wallet accounts, then address is the one of our accounts
+    // => no need to add an entry
+    if (matchingAccounts.length) return null
+
+    if (isAddressValid(search) && isAddressCompatibleWithNetwork(network, search)) {
+      if (network.platform === "polkadot") {
+        const [, ss58Format] = decodeSs58Address(search)
+        return {
+          address: search,
+          ss58FormatError: ![42, network.prefix, network.oldPrefix].includes(ss58Format),
+        }
       }
-    },
-    [isFromEthereum],
-  )
-  const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
-  const normalizedTo = useMemo(() => normalize(to), [to, normalize])
-  const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
-  const normalizedNsLookup = useMemo(() => normalize(nsLookup ?? undefined), [nsLookup, normalize])
-
-  const contacts = useMemo(
-    () =>
-      allContacts
-        .filter((contact) => isEthereumAddress(contact.address) === isFromEthereum)
-        .filter(
-          (contact) =>
-            !search ||
-            contact.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalizedSearch === normalize(contact.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(contact.address)),
-        )
-        .filter(
-          (contact) =>
-            !contact.genesisHash || contact.genesisHash === getNetworkGenesisHash(network),
-        ),
-    [
-      allContacts,
-      isFromEthereum,
-      search,
-      isValidAddressInput,
-      normalizedSearch,
-      normalize,
-      isNsLookup,
-      nsLookup,
-      normalizedNsLookup,
-      network,
-    ],
-  )
-
-  const newAddresses = useMemo(() => {
-    const addresses: SendFundsAccount[] = []
-
-    if (
-      to &&
-      allAccounts.every((account) => normalizedTo !== normalize(account.address)) &&
-      contacts.every((contact) => normalizedTo !== normalize(contact.address))
-    )
-      addresses.push({ address: to })
-
-    if (
-      isValidAddressInput &&
-      isValidSubstrateNetworkAddressInput &&
-      (!to || normalizedSearch !== normalizedTo) &&
-      allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
-      contacts.every((contact) => normalizedSearch !== normalize(contact.address))
-    )
-      addresses.push({ address: search })
+      return { address: search }
+    }
 
     if (
       isNsLookup &&
       nsLookup &&
-      (!to || normalizedNsLookup !== normalizedTo) &&
-      allAccounts.every((account) => normalizedNsLookup !== normalize(account.address)) &&
-      contacts.every((contact) => normalizedNsLookup !== normalize(contact.address))
-    )
-      addresses.push({ name: search, address: nsLookup })
+      isAddressValid(nsLookup) &&
+      isAddressCompatibleWithNetwork(network, nsLookup)
+    ) {
+      return { name: search, address: nsLookup }
+    }
 
-    return addresses
-  }, [
-    to,
-    allAccounts,
-    contacts,
-    isValidAddressInput,
-    isValidSubstrateNetworkAddressInput,
-    normalizedSearch,
-    normalizedTo,
-    search,
-    isNsLookup,
-    nsLookup,
-    normalizedNsLookup,
-    normalize,
-  ])
-
-  const accounts = useMemo(
-    () =>
-      allAccounts
-        .filter((account) => normalize(account.address) !== normalizedFrom)
-        .filter((account) => {
-          if (isTokenEth(token)) return isAccountPlatformEthereum(account)
-          if (network) return isAccountCompatibleWithNetwork(network, account)
-          return false
-        })
-        .filter(
-          (account) =>
-            !search ||
-            account.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalizedSearch === normalize(account.address)) ||
-            (isNsLookup && nsLookup && normalizedNsLookup === normalize(account.address)),
-        ),
-    [
-      allAccounts,
-      normalize,
-      normalizedFrom,
-      network,
-      token,
-      search,
-      isValidAddressInput,
-      normalizedSearch,
-      isNsLookup,
-      nsLookup,
-      normalizedNsLookup,
-    ],
-  )
-
-  const { myAccounts, watchedAccounts } = useMemo(() => {
-    return accounts.reduce<{ myAccounts: Account[]; watchedAccounts: Account[] }>(
-      (acc, curr) => {
-        if (curr.type === "contact") return acc
-        if (isAccountPortfolio(curr)) acc.myAccounts.push(curr)
-        else acc.watchedAccounts.push(curr)
-        return acc
-      },
-      { myAccounts: [], watchedAccounts: [] },
-    )
-  }, [accounts])
+    return null
+  }, [isNsLookup, matchingAccounts.length, network, nsLookup, search])
 
   const handleSelect = useCallback(
     (address: string) => {
@@ -305,8 +218,8 @@ export const SendFundsRecipientPicker = () => {
   )
 
   const handleSubmitSearch = useCallback(() => {
-    if (isValidAddressInput && isValidSubstrateNetworkAddressInput) set("to", search, true)
-  }, [isValidAddressInput, isValidSubstrateNetworkAddressInput, search, set])
+    if (newAddress && !newAddress.ss58FormatError) set("to", newAddress.address, true)
+  }, [newAddress, set])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -328,15 +241,14 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        {!isValidSubstrateNetworkAddressInput && network?.platform === "polkadot" && (
+        {isNetworkDot(network) && newAddress?.ss58FormatError ? (
           <AddressFormatError chain={network ?? undefined} />
-        )}
-        {isValidSubstrateNetworkAddressInput && (
+        ) : (
           <>
-            {newAddresses.length > 0 && (
+            {newAddress && (
               <SendFundsAccountsList
                 allowZeroBalance
-                accounts={newAddresses}
+                accounts={[newAddress]}
                 noFormat // preserve user input chain format
                 selected={to}
                 onSelect={handleSelectUnknownAddress}
@@ -357,7 +269,7 @@ export const SendFundsRecipientPicker = () => {
             />
             <SendFundsAccountsList
               allowZeroBalance
-              accounts={myAccounts}
+              accounts={ownedAccounts}
               genesisHash={getNetworkGenesisHash(network)}
               selected={to}
               onSelect={handleSelect}
@@ -369,7 +281,6 @@ export const SendFundsRecipientPicker = () => {
               }
               showBalances
               tokenId={tokenId}
-              showIfEmpty={!newAddresses.length}
             />
             <SendFundsAccountsList
               allowZeroBalance

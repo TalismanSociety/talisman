@@ -13,6 +13,7 @@ import {
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
   isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
   isAccountPlatformSolana,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
@@ -162,8 +163,12 @@ export const isCurveCompatibleWithChain = (
 }
 
 const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) => {
+  // consider only substrate and ethereum accounts
+  if (!isAccountPlatformPolkadot(account) && !isAccountPlatformEthereum(account)) return false
+  // except ethereum ledger accounts which can't sign substrate payloads
   if (account.type === "ledger-ethereum") return false
 
+  // check if account is compatible with chain specifics
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
