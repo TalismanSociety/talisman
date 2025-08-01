@@ -45,7 +45,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
   }
 
   try {
-    const connector = new ChainConnectorSolStub(network as unknown as SolNetwork)
+    const connector = new ChainConnectorSolStub(network)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "solana").filter((mod) =>
       opts.modules?.includes(mod.type as TokenType),

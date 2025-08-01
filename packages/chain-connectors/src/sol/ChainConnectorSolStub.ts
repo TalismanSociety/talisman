@@ -7,7 +7,7 @@ import { IChainConnectorSol } from "./IChainConnectorSol"
 export class ChainConnectorSolStub implements IChainConnectorSol {
   #connection: Connection
 
-  constructor(networkOrConnection: SolNetwork | Connection) {
+  constructor(networkOrConnection: Pick<SolNetwork, "id" | "rpcs"> | Connection) {
     this.#connection =
       networkOrConnection instanceof Connection
         ? networkOrConnection
