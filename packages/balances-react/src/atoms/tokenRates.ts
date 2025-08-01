@@ -1,19 +1,17 @@
 import {
   ALL_CURRENCY_IDS,
-  DbTokenRates,
   fetchTokenRates,
-  db as tokenRatesDb,
+  TokenRatesStorage,
+  tryToDeleteOldTokenRatesDb,
 } from "@talismn/token-rates"
 import { isAbortError, isTruthy } from "@talismn/util"
-import { liveQuery } from "dexie"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
 import { keyBy } from "lodash-es"
-import { map } from "rxjs"
+import { ReplaySubject } from "rxjs"
 
 import log from "../log"
-import { dexieToRxjs } from "../util/dexieToRxjs"
 import { tokensAtom } from "./chaindata"
 import { coinsApiConfigAtom } from "./config"
 
@@ -21,15 +19,15 @@ export const tokenRatesAtom = atom(async (get) => {
   // runs a timer to keep tokenRates up to date
   get(tokenRatesFetcherAtomEffect)
 
-  return await get(tokenRatesDbAtom)
+  return (await get(tokenRatesDbAtom)).tokenRates
 })
 
-const tokenRatesDbAtom = atomWithObservable(() => {
-  const dbRatesToMap = (dbRates: DbTokenRates[]) =>
-    Object.fromEntries(dbRates.map(({ tokenId, rates }) => [tokenId, rates]))
+// TODO: Persist to storage
+const tokenRates$ = new ReplaySubject<TokenRatesStorage>(1)
 
-  // retrieve fetched tokenRates from the db
-  return dexieToRxjs(liveQuery(() => tokenRatesDb.tokenRates.toArray())).pipe(map(dbRatesToMap))
+const tokenRatesDbAtom = atomWithObservable(() => {
+  tryToDeleteOldTokenRatesDb()
+  return tokenRates$.asObservable()
 })
 
 const tokenRatesFetcherAtomEffect = atomEffect((get) => {
@@ -42,7 +40,6 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
 
   ;(async () => {
     const tokensById = keyBy(await tokensPromise, "id")
-    const tokenIds = Object.keys(tokensById)
 
     const loopMs = 300_000 // 300_000ms = 300s = 5 minutes
     const retryTimeout = 5_000 // 5_000ms = 5 seconds
@@ -51,22 +48,10 @@ const tokenRatesFetcherAtomEffect = atomEffect((get) => {
       try {
         if (abort.signal.aborted) return // don't fetch if aborted
         const tokenRates = await fetchTokenRates(tokensById, ALL_CURRENCY_IDS, coinsApiConfig)
-        const putTokenRates = Object.entries(tokenRates).map(([tokenId, rates]) => ({
-          tokenId,
-          rates,
-        }))
+        const putTokenRates: TokenRatesStorage = { tokenRates }
 
         if (abort.signal.aborted) return // don't insert into db if aborted
-        await tokenRatesDb.transaction("rw", tokenRatesDb.tokenRates, async () => {
-          // override all tokenRates
-          await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
-
-          // delete tokenRates for tokens which no longer exist
-          const validTokenIds = new Set(tokenIds)
-          const tokenRatesIds = await tokenRatesDb.tokenRates.toCollection().primaryKeys()
-          const deleteIds = tokenRatesIds.filter((id) => !validTokenIds.has(id))
-          if (deleteIds.length > 0) await tokenRatesDb.tokenRates.bulkDelete(deleteIds)
-        })
+        tokenRates$.next(putTokenRates)
 
         if (abort.signal.aborted) return // don't schedule next loop if aborted
         setTimeout(hydrate, loopMs)

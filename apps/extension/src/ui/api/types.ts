@@ -5,7 +5,7 @@ import { IBalance } from "@talismn/balances"
 import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
-import { DbTokenRates } from "@talismn/token-rates"
+import { TokenRatesStorage } from "@talismn/token-rates"
 import {
   Account,
   AddEthereumChainRequestId,
@@ -197,7 +197,7 @@ export default interface MessageTypes {
   tokenRemove: (id: TokenId) => Promise<boolean>
 
   // tokenRates message types
-  tokenRates: (cb: (rates: DbTokenRates[]) => void) => UnsubscribeFn
+  tokenRates: (cb: (rates: TokenRatesStorage) => void) => UnsubscribeFn
 
   // eth related messages
   ethSignAndSend: (

@@ -1,12 +1,20 @@
 import { TokenList } from "@talismn/chaindata-provider"
-import { DbTokenRates, fetchTokenRates, TokenRateCurrency } from "@talismn/token-rates"
+import { fetchTokenRates, TokenRateCurrency, TokenRatesStorage } from "@talismn/token-rates"
 import { Subscription } from "dexie"
 import { log } from "extension-shared"
-import { uniq } from "lodash-es"
+import { isEqual, uniq } from "lodash-es"
 import debounce from "lodash-es/debounce"
-import { BehaviorSubject, combineLatest, map } from "rxjs"
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  ReplaySubject,
+} from "rxjs"
 
-import { db } from "../../db"
+import { getDbBlob, updateDbBlob } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
@@ -14,22 +22,60 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 
+const BLOB_ID = "tokenRates" as const
+type TokenRatesBlobData = TokenRatesStorage & { id: typeof BLOB_ID }
+const getTokenRatesDbBlob = () => getDbBlob<typeof BLOB_ID, TokenRatesBlobData>(BLOB_ID)
+
+const DEFAULT_TOKEN_RATES: TokenRatesStorage = { tokenRates: {} }
+const tokenRates$ = new ReplaySubject<TokenRatesStorage>(1)
+// persist changes to disk
+tokenRates$
+  .pipe(debounceTime(2_000), distinctUntilChanged<TokenRatesStorage>(isEqual))
+  .subscribe((storage) => {
+    log.debug(
+      `[tokenRates] updating db blob with data (tokenRates:${Object.values(storage.tokenRates).length})`,
+    )
+    updateDbBlob(BLOB_ID, { id: BLOB_ID, ...storage })
+  })
+// load from disk on startup
+getTokenRatesDbBlob().then(
+  (blobData) => {
+    if (!blobData) return tokenRates$.next(DEFAULT_TOKEN_RATES)
+
+    const { id: _, ...storage } = blobData
+    tokenRates$.next({ ...DEFAULT_TOKEN_RATES, ...storage })
+  },
+  (error) => {
+    log.error("[tokenRates] failed to load tokenRates store on startup", error)
+    tokenRates$.next(DEFAULT_TOKEN_RATES)
+  },
+)
+
 // refresh token rates on subscription start if older than 1 minute
 const MIN_REFRESH_INTERVAL = 1 * 60_000
 
 // refresh token rates while sub is active every 2 minutes
 const REFRESH_INTERVAL = 2 * 60_000
 
-type TokenRatesSubscriptionCallback = (rates: DbTokenRates[]) => void
+type TokenRatesSubscriptionCallback = (rates: TokenRatesStorage) => void
 
+// TODO: Refactor this class to remove all the manual subscription handling, and instead just leverage the wonderful ReplaySubject to magically manage it all for us.
 export class TokenRatesStore {
+  #storage$: ReplaySubject<TokenRatesStorage>
+
   #lastUpdateKey = ""
   #lastUpdateAt = Date.now() // will prevent a first empty call if tokens aren't loaded yet
   #subscriptions = new BehaviorSubject<Record<string, TokenRatesSubscriptionCallback>>({})
   #isWatching = false
 
   constructor() {
+    this.#storage$ = tokenRates$
+
     this.watchSubscriptions()
+  }
+
+  get storage$() {
+    return this.#storage$.asObservable()
   }
 
   /**
@@ -127,24 +173,12 @@ export class TokenRatesStore {
       const effectiveCurrencyIds = uniq<TokenRateCurrency>([...currencies, "usd"])
 
       const tokenRates = await fetchTokenRates(tokens, effectiveCurrencyIds, coinsApiConfig)
-      const putTokenRates: DbTokenRates[] = Object.entries(tokenRates).map(([tokenId, rates]) => ({
-        tokenId,
-        rates,
-      }))
+      const putTokenRates: TokenRatesStorage = { tokenRates }
 
       // update external subscriptions
       Object.values(this.#subscriptions.value).map((cb) => cb(putTokenRates))
 
-      await db.transaction("rw", db.tokenRates, async () => {
-        // override all tokenRates
-        await db.tokenRates.bulkPut(putTokenRates)
-
-        // delete tokenRates for tokens which no longer exist
-        const tokenIds = await db.tokenRates.toCollection().primaryKeys()
-        const validTokenIds = new Set(Object.keys(tokenRates))
-        const deleteTokenIds = tokenIds.filter((tokenId) => !validTokenIds.has(tokenId))
-        if (deleteTokenIds.length > 0) await db.tokenRates.bulkDelete(deleteTokenIds)
-      })
+      this.#storage$.next(putTokenRates)
     } catch (err) {
       // reset lastUpdateTokenIds to retry on next call
       this.#lastUpdateKey = ""
@@ -154,7 +188,7 @@ export class TokenRatesStore {
 
   public async subscribe(id: string, port: Port, unsubscribeCallback?: () => void) {
     const cb = createSubscription<"pri(tokenRates.subscribe)">(id, port)
-    const currentTokenRates = await db.tokenRates.toArray()
+    const currentTokenRates = await firstValueFrom(this.#storage$)
     cb(currentTokenRates)
 
     const currentSubscriptions = this.#subscriptions.value

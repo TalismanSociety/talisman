@@ -7,11 +7,11 @@ import { getDbBlob, updateDbBlob } from "../../db"
 
 const BLOB_ID = "chaindata" as const
 type ChaindataBlobData = ChaindataStorage & { id: typeof BLOB_ID }
-const getChaindataDbBlob = getDbBlob<typeof BLOB_ID, ChaindataBlobData>(BLOB_ID)
+const getChaindataDbBlob = () => getDbBlob<typeof BLOB_ID, ChaindataBlobData>(BLOB_ID)
 
 export const loadChaindataPersistedStorage = async (): Promise<ChaindataStorage | undefined> => {
   try {
-    const blobData = await getChaindataDbBlob
+    const blobData = await getChaindataDbBlob()
     if (!blobData) return
 
     const { id: _, ...storage } = blobData

@@ -11,7 +11,7 @@ import { keyringStore } from "../keyring/store"
 
 const BLOB_ID = "balances" as const
 type BalancesBlobData = BalancesStorage & { id: typeof BLOB_ID }
-const getBalancesDbBlob = getDbBlob<typeof BLOB_ID, BalancesBlobData>(BLOB_ID)
+const getBalancesDbBlob = () => getDbBlob<typeof BLOB_ID, BalancesBlobData>(BLOB_ID)
 
 const DEFAULT_DATA: BalancesStorage = {
   balances: [],
@@ -60,7 +60,7 @@ export const updateBalancesStore = (data: BalancesStorage) => {
 // once wallet is ready, initialize the balances store
 walletReady.then(() => {
   // provision store data from db
-  Promise.all([getBalancesDbBlob, keyringStore.getAccounts()])
+  Promise.all([getBalancesDbBlob(), keyringStore.getAccounts()])
     .then(([blobData, accounts]) => {
       if (!blobData) return setBalances(DEFAULT_DATA)
 
