@@ -7,10 +7,14 @@ import {
   FlagIcon,
   RefreshCwIcon,
   ToolIcon,
+  UsbIcon,
   UserIcon,
 } from "@talismn/icons"
+import { isNotNil } from "@talismn/util"
+import { LedgerTransportType } from "extension-core"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, CtaButton, Toggle } from "talisman-ui"
+import { Button, CtaButton, Dropdown, Toggle } from "talisman-ui"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Setting } from "@talisman/components/Setting"
@@ -19,6 +23,7 @@ import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -26,6 +31,12 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 1,
   page: "General",
 }
+
+export const GeneralPage = () => (
+  <DashboardLayout sidebar="settings">
+    <Content />
+  </DashboardLayout>
+)
 
 const Content = () => {
   const { t } = useTranslation()
@@ -103,13 +114,48 @@ const Content = () => {
         >
           <Toggle checked={developerMode} onChange={(e) => setDeveloperMode(e.target.checked)} />
         </Setting>
+        <Setting
+          iconLeft={UsbIcon}
+          title={t("Ledger interface")}
+          subtitle={t("Select which connection type to use with Ledger hardware wallets")}
+        >
+          <LedgerTransportTypeSelect />
+        </Setting>
       </div>
     </>
   )
 }
 
-export const GeneralPage = () => (
-  <DashboardLayout sidebar="settings">
-    <Content />
-  </DashboardLayout>
-)
+export const LedgerTransportTypeSelect = () => {
+  const { t } = useTranslation()
+  const [ledgerTransportType, setLedgerTransportType] = useSetting("ledgerTransportType")
+
+  const ledgerTransportTypeItems = useMemo(
+    () =>
+      [
+        getIsLedgerCapable("hid") ? { value: "hid", label: t("HID") } : null,
+        getIsLedgerCapable("usb") ? { value: "usb", label: t("USB") } : null,
+      ].filter(isNotNil) as { value: LedgerTransportType; label: string }[],
+    [t],
+  )
+
+  const ledgerTransportTypeValue = useMemo(() => {
+    return (
+      ledgerTransportTypeItems.find((item) => item.value === ledgerTransportType) ||
+      ledgerTransportTypeItems[0]
+    )
+  }, [ledgerTransportType, ledgerTransportTypeItems])
+
+  if (ledgerTransportTypeItems.length === 0)
+    return <div className="text-body-disabled text-right">{t("Unavailable")}</div>
+
+  return (
+    <Dropdown
+      items={ledgerTransportTypeItems}
+      propertyKey="value"
+      value={ledgerTransportTypeValue}
+      onChange={(v) => setLedgerTransportType(v!.value)}
+      renderItem={(item) => item.label}
+    />
+  )
+}

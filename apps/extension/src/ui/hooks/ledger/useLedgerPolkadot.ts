@@ -45,7 +45,9 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
         return await request(ledger)
       } catch (err) {
         await closeTransport()
-        throw getTalismanLedgerError(err, legacyApp ? "Polkadot Migration" : "Polkadot")
+        const appName =
+          !legacyApp || legacyApp?.name === "Polkadot" ? "Polkadot" : "Polkadot Migration"
+        throw getTalismanLedgerError(err, appName)
       } finally {
         refIsBusy.current = false
       }

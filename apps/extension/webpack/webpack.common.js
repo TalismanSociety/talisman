@@ -186,6 +186,11 @@ const config = (env) => ({
       "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : "",
       ),
+      "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
+        env.build === "dev" || ["canary", "ci", "qa"].includes(env.build)
+          ? process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
+          : "",
+      ),
       // prod build doesn't need an api key
       // dev builds need one that should not change often
       // canary/ci/qa builds need one that can be rotated easily and without impacting developers
