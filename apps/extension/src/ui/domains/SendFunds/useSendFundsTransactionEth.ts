@@ -74,7 +74,7 @@ export const useSendFundsTransactionEth = ({
     return [null, null]
   }, [result.txDetails])
 
-  if (isTokenEth(token)) return null
+  if (!isTokenEth(token)) return null
 
   return {
     platform: "ethereum" as const,
