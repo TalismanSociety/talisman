@@ -26,7 +26,7 @@ export const useScaleApi = (
       if (!chain?.genesisHash || !token) return null
 
       const metadataDef = await api.subChainMetadata(chain.genesisHash, specVersion)
-      assert(metadataDef?.metadataRpc, `Metadata unavailable for chain ${chain.id}`)
+      assert(metadataDef?.metadataRpc, `Failed to fetch metadata`)
 
       const metadataRpc = getMetadataRpcFromDef(metadataDef)
       if (!metadataRpc) return null
