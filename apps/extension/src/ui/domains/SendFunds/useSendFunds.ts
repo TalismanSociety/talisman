@@ -131,14 +131,20 @@ const useSendFundsProvider = () => {
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
 
-  const transfer = useMemo(
-    () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
-    [amount, token, tokenRates],
-  )
-
   const method: BalanceTransferType = sendMax ? "all" : allowReap ? "allow-death" : "keep-alive"
 
   const transaction = useSendFundsTransaction()
+
+  const transfer = useMemo(() => {
+    if (!token) return null
+    if (sendMax && isTokenDot(token))
+      // substrate send max is dynamic
+      return transaction?.maxAmount
+        ? new BalanceFormatter(transaction.maxAmount, token.decimals, tokenRates)
+        : null
+    else if (amount) return new BalanceFormatter(amount, token.decimals, tokenRates)
+    return null
+  }, [amount, sendMax, token, tokenRates, transaction])
 
   const maxAmount = useMemo(
     () =>
@@ -260,8 +266,7 @@ const useSendFundsProvider = () => {
       if (transaction?.error) {
         return {
           isValid: false,
-          error: t("Invalid input"),
-          errorDetails:
+          error:
             typeof transaction.error === "string" ? transaction.error : transaction.error.message,
         }
       }

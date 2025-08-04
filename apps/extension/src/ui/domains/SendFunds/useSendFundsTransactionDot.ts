@@ -82,7 +82,7 @@ export const useSendFundsTransactionDot = ({
   )
 
   const [isLoading, isRefetching, error] = useMemo(() => {
-    const queries = [qTip, qSapi, qPayload, qEstimateFee, qDryRun]
+    const queries = [qSapi, qTip, qPayload, qEstimateFee, qDryRun]
 
     const isLoading = queries.some((q) => q.isLoading)
     const isRefetching = queries.some((q) => q.isRefetching)
