@@ -28,7 +28,7 @@ export const ConnectLedgerSubstrateGeneric: FC<{
 
   return (
     <ConnectLedgerBase
-      appName={legacyAppName ? "Polkadot Migration" : "Polkadot"}
+      appName={!legacyAppName || legacyAppName === "Polkadot" ? "Polkadot" : "Polkadot Migration"}
       className={className}
       isReadyCheck={isReadyCheck}
       onReadyChanged={onReadyChanged}
