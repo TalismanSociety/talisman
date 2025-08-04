@@ -77,7 +77,7 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
   return (data): void => {
     if (subscriptions[id]) {
       try {
-        port.postMessage({ id, subscription: data })
+        port.postMessage({ id, subscription: data, timestamp: Date.now() })
       } catch (error) {
         DEBUG &&
           // eslint-disable-next-line no-console

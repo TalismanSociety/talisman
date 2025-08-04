@@ -25,6 +25,7 @@ import {
 } from "../inject/ethereum/EthProviderRpcError"
 
 export interface Handler {
+  message: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolve: (data?: any) => void
   reject: (error: Error) => void
@@ -116,6 +117,7 @@ export default class PortMessageService {
       const id = crypto.randomUUID()
 
       this.handlers[id] = {
+        message,
         reject,
         resolve,
         subscriber,
@@ -143,6 +145,7 @@ export default class PortMessageService {
 
     // mock the promise resolve/reject methods
     this.handlers[id] = {
+      message,
       reject: (error) => {
         log.error("subscription failed", { message, error })
       },
@@ -177,6 +180,20 @@ export default class PortMessageService {
       log.error("No handler for message: ", { id, error })
 
       return
+    }
+
+    if (
+      process.env.LOG_SUBSCRIPTION_CALLBACKS &&
+      "timestamp" in data &&
+      typeof data.timestamp === "number"
+    ) {
+      // this measure the time it takes to transfer the message from background to frontend
+      const xferMs = data.timestamp ? Date.now() - data.timestamp : undefined
+      log.debug("[sub callback]", {
+        message: handler.message,
+        data,
+        duration: xferMs,
+      })
     }
 
     if (!handler.subscriber) {

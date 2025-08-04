@@ -152,6 +152,7 @@ interface TransportResponseMessageSub<TMessageType extends MessageTypesWithSubsc
   id: string
   response?: ResponseTypes[TMessageType]
   subscription?: SubscriptionMessageTypes[TMessageType]
+  timestamp?: number
 }
 
 export declare type TransportResponseMessage<TMessageType extends MessageTypes> =
