@@ -2,10 +2,12 @@ import Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { sleep } from "@talismn/util"
+import { LedgerTransportType } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
 
-import { getIsLedgerCapable, LedgerTransportType } from "@ui/util/getIsLedgerCapable"
+import { useSettingValue } from "@ui/state"
+import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
 import { getTalismanLedgerError } from "./errors"
 
@@ -34,17 +36,14 @@ const safelyCreateTransport = async (type: LedgerTransportType, attempt = 1) => 
   }
 }
 
-const createTransport = async (): Promise<Transport> => {
+const createTransport = async (type: LedgerTransportType): Promise<Transport> => {
   try {
-    if (IS_USB_SUPPORTED) {
-      try {
-        return await safelyCreateTransport("usb")
-      } catch (err) {
-        if (!IS_HID_SUPPORTED) throw err
-        return await safelyCreateTransport("hid")
-      }
+    if (IS_USB_SUPPORTED && IS_HID_SUPPORTED) {
+      return await safelyCreateTransport(type)
     } else if (IS_HID_SUPPORTED) {
       return await safelyCreateTransport("hid")
+    } else if (IS_USB_SUPPORTED) {
+      return await safelyCreateTransport("usb")
     }
 
     throw getTalismanLedgerError("Ledger is not supported on your browser.")
@@ -54,18 +53,19 @@ const createTransport = async (): Promise<Transport> => {
 }
 
 export const useLedgerTransport = () => {
+  const transportType = useSettingValue("ledgerTransportType")
   const refTransport = useRef<Transport | null>(null)
 
   const ensureTransport = useCallback(async () => {
     if (!refTransport.current) {
-      refTransport.current = await createTransport()
+      refTransport.current = await createTransport(transportType)
       refTransport.current.on("disconnect", () => {
         refTransport.current = null
       })
     }
 
     return refTransport.current!
-  }, [])
+  }, [transportType])
 
   const closeTransport = useCallback(async () => {
     if (!refTransport.current) return
