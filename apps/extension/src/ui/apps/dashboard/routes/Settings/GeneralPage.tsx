@@ -147,7 +147,7 @@ export const LedgerTransportTypeSelect = () => {
   }, [ledgerTransportType, ledgerTransportTypeItems])
 
   if (ledgerTransportTypeItems.length === 0)
-    return <div className="text-body-disabled w-[12rem] text-right">{t("Unavailable")}</div>
+    return <div className="text-body-disabled text-right">{t("Unavailable")}</div>
 
   return (
     <Dropdown
