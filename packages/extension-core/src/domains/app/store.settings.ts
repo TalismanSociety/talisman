@@ -4,6 +4,8 @@ import { IS_FIREFOX } from "extension-shared"
 import { StorageProvider } from "../../libs/Store"
 import { IdenticonType } from "../accounts/types"
 
+export type LedgerTransportType = "usb" | "hid"
+
 export interface SettingsStoreData {
   useErrorTracking: boolean
   identiconType: IdenticonType
@@ -23,6 +25,7 @@ export interface SettingsStoreData {
   tokensSortBy: "name" | "total" | "locked" | "available"
   developerMode: boolean
   polkadotVaultSignWithProof: boolean
+  ledgerTransportType: LedgerTransportType
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -43,6 +46,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
   nftsSortBy: "date",
   developerMode: false,
   polkadotVaultSignWithProof: true,
+  ledgerTransportType: "hid",
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
