@@ -213,7 +213,7 @@
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "clean": "rm -rf dist .turbo node_modules public/locales"
+    "clean": "rm -rf dist .turbo node_modules public/locales coverage"
   },
   "browserslist": {
     "production": [

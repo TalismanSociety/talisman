@@ -15,7 +15,8 @@
     "dev:centrifuge": "tsx watch src/centrifuge.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",
     "dev:ewx": "tsx watch src/ewx.ts",
-    "dev:interlay": "tsx watch src/interlay.ts"
+    "dev:interlay": "tsx watch src/interlay.ts",
+    "clean": "rm -rf node_modules"
   },
   "keywords": [],
   "author": "",
