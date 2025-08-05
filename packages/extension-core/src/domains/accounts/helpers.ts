@@ -86,6 +86,7 @@ export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
   (accounts: Account[]) => {
     return accounts
+      .filter((acc) => isAccountPlatformEthereum(acc) || isAccountPlatformPolkadot(acc))
       .filter(({ address }) => addresses.some((a) => isAddressEqual(a, address)))
       .filter((acc) => {
         if (anyType) return true
@@ -99,6 +100,7 @@ type GetPublicAccountsOptions = {
   includePortalOnlyInfo?: boolean
 }
 
+// should only be used for polkadot & ethereum accounts
 export const getPublicAccounts = (
   accounts: Account[],
   filterFn: (accounts: Account[]) => Account[] = (accounts) => accounts,
@@ -108,6 +110,7 @@ export const getPublicAccounts = (
   },
 ) =>
   filterFn(accounts)
+    .filter((a) => isAccountPlatformEthereum(a) || isAccountPlatformPolkadot(a))
     .filter((a) => {
       if (options.developerMode) return true
       if (options.includePortalOnlyInfo) return a.type !== "contact"
