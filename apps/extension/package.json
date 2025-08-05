@@ -111,7 +111,7 @@
     "url-join": "^5.0.0",
     "viem": "^2.27.3",
     "yup": "1.4.0",
-    "zod": "^3.25.62"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",

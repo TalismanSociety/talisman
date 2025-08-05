@@ -16,7 +16,10 @@ export const EthNetworkBalancesConfigSchema = z.strictObject({
 
 export type EthNetworkBalancesConfig = z.infer<typeof EthNetworkBalancesConfigSchema>
 
-const ContractName = z.enum(["Erc20Aggregator", "Multicall3"])
+const ContractsSchema = z.strictObject({
+  Erc20Aggregator: EthereumAddressSchema.optional(),
+  Multicall3: EthereumAddressSchema.optional(),
+})
 
 const L2FeeSchema = z.discriminatedUnion("type", [
   z.strictObject({
@@ -35,7 +38,7 @@ export const EthNetworkSchema = NetworkBaseSchema.extend({
   rpcs: z.array(z.url({ protocol: /^https?$/ })),
   feeType: z.enum(["legacy", "eip-1559"]).optional(),
   l2FeeType: L2FeeSchema.optional(),
-  contracts: z.partialRecord(ContractName, EthereumAddressSchema).optional(),
+  contracts: ContractsSchema.optional(),
   balancesConfig: EthNetworkBalancesConfigSchema.optional(),
 })
 
