@@ -31,10 +31,10 @@
   "dependencies": {
     "anylogger": "^1.0.11",
     "dexie": "^4.0.9",
+    "lodash-es": "4.17.21",
     "lz-string": "^1.5.0",
     "rxjs": "^7.8.1",
-    "zod": "^3.25.62",
-    "lodash-es": "4.17.21"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
