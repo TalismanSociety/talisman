@@ -1,6 +1,6 @@
 import { ProviderType } from "extension-core"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -51,11 +51,6 @@ export const AuthorisedSites = () => {
     [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType],
   )
 
-  useEffect(() => {
-    //when forgetting last ethereum site, force switch to polkadot
-    if (providerType === "ethereum" && !hasEthereumSites) setProviderType("polkadot")
-  }, [hasEthereumSites, providerType])
-
   return (
     <>
       <HeaderBlock
@@ -65,18 +60,16 @@ export const AuthorisedSites = () => {
       <Spacer large />
       <div className="flex items-center justify-between">
         <div>
-          {hasEthereumSites ? (
-            <OptionSwitch
-              options={[
-                ["ethereum", t("Ethereum")],
-                ["polkadot", t("Polkadot")],
-                ["solana", t("Solana")],
-              ]}
-              className="text-xs [&>div]:h-full"
-              defaultOption="ethereum"
-              onChange={setProviderType}
-            />
-          ) : null}
+          <OptionSwitch
+            options={[
+              ["ethereum", t("Ethereum")],
+              ["polkadot", t("Polkadot")],
+              ["solana", t("Solana")],
+            ]}
+            className="text-xs [&>div]:h-full"
+            defaultOption="ethereum"
+            onChange={setProviderType}
+          />
         </div>
         {showBatchActions && <AuthorisedSitesBatchActions providerType={providerType} />}
       </div>
