@@ -40,6 +40,7 @@ type TalismanLedgerErrorName =
   | "InvalidRequest"
   | "UserRejected"
   | "GenericAppRequired"
+  | "Unauthorized"
 
 export class TalismanLedgerError extends Error {
   constructor(name: TalismanLedgerErrorName, message: string, options?: ErrorOptions) {
@@ -100,7 +101,9 @@ export const getTalismanLedgerError = (
         return getErrorFromCode(cause.statusCode, appName, cause)
 
       case "TransportOpenUserCancelled": // occurs when user doesn't select a device in the browser popup (also noticed it when device is turned off or sleeping)
-        return new TalismanLedgerError("Unknown", t("Failed to connect to your Ledger"), { cause })
+        return new TalismanLedgerError("Unauthorized", t("Failed to connect to your Ledger"), {
+          cause,
+        })
 
       case "TransportWebUSBGestureRequired":
       case "TransportInterfaceNotAvailable": // occurs after unlock, or if browser requires a click to connect usb (only on MacOS w/chrome)
