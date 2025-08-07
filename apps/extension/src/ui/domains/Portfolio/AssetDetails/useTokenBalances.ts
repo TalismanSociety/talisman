@@ -164,8 +164,8 @@ const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
           return {
             ...row,
             description:
-              combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name ||
-              row.meta.hotkey,
+              combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name ??
+              "Managed delegation",
             isLoading: isLoadingCombinedValidators,
           } as BalanceDetailRow
 
