@@ -4,6 +4,7 @@ import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } 
 
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, usePortfolio, useTokens } from "@ui/state"
+import { useDefiPositions } from "@ui/state/defi"
 
 // At time time used to test the observables & hooks from ./ui/state, how often they suspense and emit
 // But can be used to test virtually anything in the app
@@ -14,6 +15,7 @@ export const TestPage = () => {
   const [showEthNetworks, setShowEthNetworks] = useState(false)
 
   const [showPortfolio, setShowPortfolio] = useState(false)
+  const [showDefi, setShowDefi] = useState(false)
 
   return (
     <div className="container mx-auto my-12">
@@ -25,6 +27,7 @@ export const TestPage = () => {
           <ToggleButton label="eth networks" show={showEthNetworks} dispatch={setShowEthNetworks} />
           <ToggleButton label="dot networks" show={showDotNetworks} dispatch={setShowDotNetworks} />
           <ToggleButton label="portfolio" show={showPortfolio} dispatch={setShowPortfolio} />
+          <ToggleButton label="defi" show={showDefi} dispatch={setShowDefi} />
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           {showTokens && <TestTokens />}
@@ -32,6 +35,7 @@ export const TestPage = () => {
           {showEthNetworks && <TestEthNetworks />}
           {showDotNetworks && <TestDotNetworks />}
           {showPortfolio && <TestPortfolio />}
+          {showDefi && <TestDefi />}
         </Suspense>
       </div>
     </div>
@@ -108,6 +112,21 @@ const TestPortfolio = () => {
         <PortfolioContent />
       </div>
     </PortfolioContainer>
+  )
+}
+
+const TestDefi = () => {
+  const defiPositions = useDefiPositions()
+
+  log.log("[Defi] positions", { defiPositions })
+
+  return (
+    <div>
+      <div>Test Defi</div>
+      <div>Loading status: {defiPositions.status}</div>
+      <div>Positions: {defiPositions.data?.length ?? "[empty]"}</div>
+      {!!defiPositions.error && <div>Error: {defiPositions.error.message}</div>}
+    </div>
   )
 }
 

@@ -269,4 +269,7 @@ export const api: MessageTypes = {
   nftsSetFavorite: (id, isFavorite) =>
     messageService.sendMessage("pri(nfts.setFavorite)", { id, isFavorite }),
   nftsRefreshMetadata: (id) => messageService.sendMessage("pri(nfts.refreshMetadata)", { id }),
+
+  defiPositionsSubscribe: (cb) =>
+    messageService.subscribe("pri(defi.positions.subscribe)", null, cb),
 }

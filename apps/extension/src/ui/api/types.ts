@@ -6,6 +6,7 @@ import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
 import { KeypairCurve } from "@talismn/crypto"
 import { NsLookupType } from "@talismn/on-chain-id"
 import { DbTokenRates } from "@talismn/token-rates"
+import { Loadable } from "@talismn/util"
 import {
   Account,
   AddEthereumChainRequestId,
@@ -21,6 +22,7 @@ import {
   BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
   DecryptRequestId,
+  DefiPosition,
   EncryptRequestId,
   EvmAddress,
   LoggedinType,
@@ -261,4 +263,6 @@ export default interface MessageTypes {
   nftsSetHidden: (id: string, isHidden: boolean) => Promise<boolean>
   nftsSetFavorite: (id: string, isFavorite: boolean) => Promise<boolean>
   nftsRefreshMetadata: (id: string) => Promise<boolean>
+
+  defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
 }

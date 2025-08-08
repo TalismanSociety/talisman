@@ -9,6 +9,7 @@ import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
 import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
+import { DefiHandler } from "../domains/defi/handler"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
@@ -42,6 +43,7 @@ export default class Extension extends ExtensionHandler {
       chaindata: new ChaindataHandler(stores),
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),
+      defi: new DefiHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),
