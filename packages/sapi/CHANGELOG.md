@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.0.9
+
+### Patch Changes
+
+- 045fc70: remove unnecessary log
+
 ## 0.0.8
 
 ### Patch Changes
