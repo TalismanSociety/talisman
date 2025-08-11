@@ -47,7 +47,9 @@ export const AssetState = ({
       )}
       {description && !address && (
         <Tooltip>
-          <TooltipTrigger className="max-w-full truncate text-sm">{description}</TooltipTrigger>
+          <TooltipTrigger className="max-w-full truncate text-left text-sm">
+            {description}
+          </TooltipTrigger>
           <TooltipContent>{description}</TooltipContent>
         </Tooltip>
       )}
