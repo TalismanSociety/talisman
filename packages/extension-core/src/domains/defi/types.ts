@@ -1,5 +1,16 @@
 import { Loadable } from "@talismn/util"
 
+// copy of LambdaAssetType (except `token`)
+export type DefiPositionType =
+  | "deposit"
+  | "loan"
+  | "reward"
+  | "lp"
+  | "staking"
+  | "stream"
+  | "unknown"
+
+// copy of UserPositionBalanceLockType
 export type DefiPositionItemType =
   | "deposit"
   | "loan"
@@ -22,16 +33,23 @@ export type DefiPositionItem = {
 }
 
 export type DefiPosition = {
+  id: string
+  name: string
+  type: DefiPositionType
   address: string
   networkId: string
+
   defiId: string
   defiName: string
   defiLogoUrl: string | null
   defiUrl: string | null
+
   poolAddress: string | null
   symbol: string | null
+
   rewardsUsd: number
   rewardsUsdChange1d: number
+
   breakdown: DefiPositionItem[]
 }
 

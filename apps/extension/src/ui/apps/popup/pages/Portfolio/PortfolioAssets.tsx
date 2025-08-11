@@ -8,6 +8,7 @@ import { Button } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { PopupDefiPositions } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
 import { PopupNfts } from "@ui/domains/Portfolio/Nfts/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
@@ -55,6 +56,7 @@ const MainContent: FC = () => {
 
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
+  const matchDefi = useMatch("/portfolio/defi")
 
   const [chains, evmNetworks] = useMemo(() => {
     const chains = networks.filter(isNetworkDot)
@@ -62,6 +64,7 @@ const MainContent: FC = () => {
     return [chains, evmNetworks]
   }, [networks])
 
+  // TODO check if the below still works with multichain
   if (!account?.type && !networks.length) return <EnableNetworkMessage />
   if (isAccountAddressSs58(account) && !chains.length)
     return <EnableNetworkMessage type="substrate" />
@@ -86,24 +89,40 @@ const MainContent: FC = () => {
         <PopupAnalyticsEvent name="portfolio NFTs" />
       </>
     )
+  if (matchDefi)
+    return (
+      <>
+        <PopupDefiPositions />
+        <PopupAnalyticsEvent name="portfolio DeFi" />
+      </>
+    )
 
   return null
 }
 
 export const PortfolioAssets = () => {
-  const showNfts = useFeatureFlag("NFTS")
-  const matchTokens = useMatch("/portfolio/tokens")
-  const matchNfts = useMatch("/portfolio/nfts")
-
   return (
     <>
       <PortfolioAssetsHeader />
       <PortfolioTabs className="mt-4" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
-        {!!matchTokens && <PortfolioToolbarTokens />}
-        {!!matchNfts && !!showNfts && <PortfolioToolbarNfts />}
+        <PortfolioAssetsToolbat />
         <MainContent />
       </Suspense>
+    </>
+  )
+}
+
+export const PortfolioAssetsToolbat = () => {
+  const showNfts = useFeatureFlag("NFTS")
+  const matchTokens = useMatch("/portfolio/tokens")
+  const matchNfts = useMatch("/portfolio/nfts")
+  const matchDefi = useMatch("/portfolio/defi")
+
+  return (
+    <>
+      {(!!matchTokens || !!matchDefi) && <PortfolioToolbarTokens />}
+      {!!matchNfts && !!showNfts && <PortfolioToolbarNfts />}
     </>
   )
 }

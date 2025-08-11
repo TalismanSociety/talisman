@@ -24,6 +24,7 @@ export const PortfolioRoutes = () => (
           <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
           <Route path="tokens" element={<PortfolioAssets />} />
           <Route path="nfts" element={<PortfolioNfts />} />
+          <Route path="defi" element={<PortfolioAssets />} />
           <Route path="*" element={<NavigateWithQuery url="tokens" />} />
         </Routes>
       </PortfolioLayout>
@@ -37,6 +38,7 @@ const PortfolioToolbar = () => {
   return (
     <Routes>
       <Route path="tokens" element={<PortfolioToolbarTokens />} />
+      <Route path="defi" element={<PortfolioToolbarTokens />} />
       <Route path="nfts" element={!!showNfts && <PortfolioToolbarNfts />} />
     </Routes>
   )

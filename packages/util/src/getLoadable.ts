@@ -6,10 +6,12 @@ type LoadableError = {
   message: string // display message
 }
 
-export type Loadable<T> =
+export type Loadable<T = unknown> =
   | { status: "loading"; data?: T; error?: undefined }
   | { status: "success"; data: T; error?: undefined }
   | { status: "error"; data?: T; error: LoadableError }
+
+export type LoadableStatus = Loadable["status"]
 
 export type LoadableOptions = {
   getError?: (error: unknown) => LoadableError
