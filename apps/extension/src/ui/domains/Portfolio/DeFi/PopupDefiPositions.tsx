@@ -1,35 +1,27 @@
 import { classNames, Loadable, LoadableStatus } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { DefiPosition, DefiPositionType } from "extension-core"
-import { log } from "extension-shared"
-import { uniq } from "lodash-es"
+import { DefiPosition } from "extension-core"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import {
-  useAccountByAddress,
-  useDefiPositionsDisplay,
-  usePortfolioSelectedAccounts,
-} from "@ui/state"
+import { useDefiPositionsDisplay, usePortfolioSelectedAccounts } from "@ui/state"
 
+import { PortfolioAccount } from "../AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
+import { PositionSymbol } from "./PositionSymbol"
+import { PositionTotal } from "./PositionTotal"
+import { PositionType } from "./PositionType"
 
 export const PopupDefiPositions = () => {
   const positions = useDefiPositionsDisplay()
 
-  // TODO remove
-  useEffect(() => {
-    log.debug("[DeFi] positions", positions)
-  }, [positions])
-
-  // not good, wont see shimmer while loading
+  // TODO not good, wont see shimmer while loading
   return <FadeIn>{!positions?.data?.length ? <NoDefiPositionFound /> : <DefiPositions />}</FadeIn>
 }
 
@@ -172,17 +164,14 @@ const DefiPositionRow: FC<{
           </div>
           <div className="max-w-[50%] shrink-0 truncate">
             <PositionSymbol position={position} />
-
-            {/* {position.symbol} */}
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between text-xs font-normal">
+        <div className="text-body-secondary flex w-full items-center justify-between gap-6 text-xs font-normal">
           <div className="truncate">
-            {/* <PositionType type={position.type} /> */}
             {selectedAccounts?.length === 1 ? (
               <PositionType type={position.type} />
             ) : (
-              <PositionAccount position={position} />
+              <PortfolioAccount address={position.address} />
             )}
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
@@ -210,72 +199,4 @@ const NoDefiPositionFound = () => {
   }, [selectedAccount, selectedFolder, status, t])
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
-}
-
-const PositionType: FC<{ type: DefiPositionType }> = ({ type }) => {
-  const { t } = useTranslation()
-
-  return useMemo(() => {
-    switch (type) {
-      case "deposit":
-        return t("Deposit")
-      case "loan":
-        return t("Loan")
-      case "reward":
-        return t("Reward")
-      case "lp":
-        return t("Liquidity Provider")
-      case "staking":
-        return t("Staking")
-      case "stream":
-        return t("Streaming")
-      case "unknown":
-      default:
-        return t("Unknown")
-    }
-  }, [type, t])
-}
-
-const PositionTotal: FC<{ position: DefiPosition; noCountUp: boolean }> = ({
-  position,
-  noCountUp,
-}) => {
-  const totalValue = useMemo(
-    () => position.breakdown.reduce((acc, item) => acc + item.valueUsd, 0),
-    [position.breakdown],
-  )
-
-  return <FiatFromUsd amount={totalValue} isBalance noCountUp={noCountUp} />
-}
-
-const PositionSymbol: FC<{ position: DefiPosition }> = ({ position }) => {
-  return useMemo(() => {
-    return uniq(
-      position.breakdown
-        .filter((item) => {
-          switch (item.type) {
-            case "staked":
-            case "deposit":
-            case "loan":
-              return true
-            default:
-              return false
-          }
-        })
-        .map((item) => item.symbol.trim()),
-    ).join("/")
-  }, [position.breakdown])
-}
-
-const PositionAccount: FC<{ position: DefiPosition }> = ({ position }) => {
-  const account = useAccountByAddress(position.address)
-
-  if (!account) return null
-
-  return (
-    <div className="flex max-w-full items-center gap-2 overflow-hidden">
-      <AccountIcon address={account.address} />
-      <div className="truncate">{account.name}</div>
-    </div>
-  )
 }

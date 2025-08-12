@@ -79,3 +79,11 @@ export const defiPositionsDisplay$ = combineLatest({
 )
 
 export const [useDefiPositionsDisplay] = bind(defiPositionsDisplay$, DEFAULT_DEFI_POSITIONS)
+
+export const [useDefiPosition] = bind(
+  (id: string | null | undefined) =>
+    defiPositions$.pipe(
+      map((loadable) => loadable.data?.find((position) => position.id === id) ?? null),
+    ),
+  null,
+)
