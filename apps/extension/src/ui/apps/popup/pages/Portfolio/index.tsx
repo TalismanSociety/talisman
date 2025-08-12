@@ -13,6 +13,7 @@ import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioDefiPosition } from "./PortfolioDefiPosition"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 
 const PortfolioRoutes = () => (
@@ -23,6 +24,7 @@ const PortfolioRoutes = () => (
       <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
       <Route path="nfts" element={<PortfolioAssets />} />
       <Route path="defi" element={<PortfolioAssets />} />
+      <Route path="defi/:positionId" element={<PortfolioDefiPosition />} />
       <Route path="*" element={<PortfolioAccounts />} />
     </Routes>
     <Suspense fallback={<SuspenseTracker name="HasAccountsPortfolioContent" />}>

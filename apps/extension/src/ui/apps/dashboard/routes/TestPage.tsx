@@ -118,7 +118,7 @@ const TestPortfolio = () => {
 const TestDefi = () => {
   const defiPositions = useDefiPositions()
 
-  log.log("[Defi] positions", { defiPositions })
+  log.log("[DeFi] positions", { defiPositions })
 
   return (
     <div>

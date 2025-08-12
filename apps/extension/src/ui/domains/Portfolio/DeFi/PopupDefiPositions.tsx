@@ -5,6 +5,7 @@ import { log } from "extension-shared"
 import { uniq } from "lodash-es"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
@@ -25,7 +26,7 @@ export const PopupDefiPositions = () => {
 
   // TODO remove
   useEffect(() => {
-    log.debug("[defi] positions", positions)
+    log.debug("[DeFi] positions", positions)
   }, [positions])
 
   // not good, wont see shimmer while loading
@@ -134,6 +135,7 @@ const DefiPositionRow: FC<{
   noCountUp: boolean
 }> = ({ position, status, noCountUp }) => {
   const selectedAccounts = usePortfolioSelectedAccounts()
+  const navigate = useNavigate()
 
   if (position.id === "SHIMMER")
     return (
@@ -158,6 +160,7 @@ const DefiPositionRow: FC<{
       className={classNames(
         "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6",
       )}
+      onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >
       {/* AssetLogo can be used with any image and fallbacks to an unknown "Talisman hand" logo */}
       <AssetLogo url={position.defiLogoUrl} className="size-16" />
@@ -247,7 +250,20 @@ const PositionTotal: FC<{ position: DefiPosition; noCountUp: boolean }> = ({
 
 const PositionSymbol: FC<{ position: DefiPosition }> = ({ position }) => {
   return useMemo(() => {
-    return uniq(position.breakdown.map((item) => item.symbol.trim())).join("/")
+    return uniq(
+      position.breakdown
+        .filter((item) => {
+          switch (item.type) {
+            case "staked":
+            case "deposit":
+            case "loan":
+              return true
+            default:
+              return false
+          }
+        })
+        .map((item) => item.symbol.trim()),
+    ).join("/")
   }, [position.breakdown])
 }
 

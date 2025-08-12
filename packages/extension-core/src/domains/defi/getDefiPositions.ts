@@ -22,10 +22,10 @@ export const defiPositions$ = walletReady$.pipe(
     )
   }),
   tap({
-    subscribe: () => log.debug("[Defi] starting main subscription"),
-    unsubscribe: () => log.debug("[Defi] stopping main subscription"),
+    subscribe: () => log.debug("[DeFi] starting main subscription"),
+    unsubscribe: () => log.debug("[DeFi] stopping main subscription"),
     next: (loadable) => {
-      log.debug("[Defi] subscription emit", loadable)
+      log.debug("[DeFi] subscription emit", loadable)
       if (loadable.status === "success") updateDefiPositionsStore(loadable.data)
     },
   }),
@@ -46,7 +46,7 @@ const filterDefiPositions = (addresses: string[], positions: DefiPosition[]) => 
 
 const fetchDefiPositions = async (addresses: string[]) => {
   const url = urlJoin(ASSET_DISCOVERY_API_URL, "defi")
-  log.debug("[Defi] Fetching defi positions for addresses", { addresses, url })
+  log.debug("[DeFi] Fetching defi positions for addresses", { addresses, url })
 
   const response = await fetch(url, { method: "POST", body: JSON.stringify({ addresses }) })
   if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`)
