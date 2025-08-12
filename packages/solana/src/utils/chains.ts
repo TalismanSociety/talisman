@@ -3,7 +3,7 @@ export const SOLANA_CHAINS = [
   "solana:devnet",
   "solana:testnet",
   "solana:localnet",
-]
+] as const
 
 export type SolanaChainId = (typeof SOLANA_CHAINS)[number]
 
