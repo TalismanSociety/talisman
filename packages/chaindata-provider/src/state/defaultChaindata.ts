@@ -1,5 +1,5 @@
 import { isEqual } from "lodash-es"
-import { filter, firstValueFrom, Observable, shareReplay, Subject } from "rxjs"
+import { firstValueFrom, map, Observable, shareReplay, Subject } from "rxjs"
 
 import log from "../log"
 import { ChaindataStorage } from "../provider/ChaindataProvider"
@@ -7,29 +7,27 @@ import { githubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
 import { Chaindata, ChaindataFileSchema } from "./schema"
 
+const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
+
 export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
   const storageValidated$ = storage$.pipe(
-    filter((data) => {
+    map((data) => {
       const start = performance.now()
-      const isValid = ChaindataFileSchema.safeParse(data).success
+      const validation = ChaindataFileSchema.safeParse(data)
       log.debug(
-        "[defaultChaindata$] Chaindata schema validation: %sms",
+        "[storageValidated$] Chaindata schema validation: %sms",
         (performance.now() - start).toFixed(2),
       )
-      return isValid
+
+      // schema is invalid, fallback to empty data
+      return validation.success ? validation.data : EMPTY_DATA
     }),
   )
 
   return new Observable<Chaindata>((subscriber) => {
     const githubToStorageSubscription = githubChaindata$.subscribe({
       error: async () => {
-        const storageData = await Promise.race([
-          firstValueFrom(storageValidated$),
-          new Promise<Chaindata>((resolve) =>
-            // db promise might hang indefinitely if schema is invalid, fallback to empty data if this happens
-            setTimeout(() => resolve({ networks: [], tokens: [], miniMetadatas: [] }), 2_000),
-          ),
-        ])
+        const storageData = await firstValueFrom(storageValidated$)
 
         if (
           storageData.networks.length ||
@@ -54,15 +52,9 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
       next: async (githubData) => {
         const now = performance.now()
         try {
-          const dbData = await Promise.race([
-            firstValueFrom(storageValidated$),
-            new Promise<Chaindata>((resolve) =>
-              // db promise might hand indefinitely if schema is invalid, fallback to init data if this happens
-              setTimeout(() => resolve(initChaindata as Chaindata), 2_000),
-            ),
-          ])
+          const storageData = await firstValueFrom(storageValidated$)
 
-          const shouldUpdate = !isEqual(dbData, githubData)
+          const shouldUpdate = !isEqual(storageData, githubData)
           if (!shouldUpdate)
             return log.debug(
               `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`,
