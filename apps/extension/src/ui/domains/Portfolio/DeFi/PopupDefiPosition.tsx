@@ -1,10 +1,19 @@
+import { classNames } from "@talismn/util"
+import { DefiPosition, DefiPositionItem } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { formatUnits } from "viem"
 
-import { useDefiPositionsDisplay } from "@ui/state"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import { useDefiPositions } from "@ui/state"
 
 export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
-  const positions = useDefiPositionsDisplay()
+  const positions = useDefiPositions()
   const position = useMemo(
     () => positions.data?.find((p) => p.id === positionId),
     [positions.data, positionId],
@@ -17,29 +26,139 @@ export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ posi
 
   // TODO message if empty
 
-  return (
-    <div>
-      <div>
-        position {positionId} {position?.name}
-      </div>
-      {position?.breakdown.map((item, idx) => <div key={idx}>{item.name}</div>)}
-    </div>
-  )
+  if (!position) return null
+
+  return <DefiPositionContainer position={position} />
 
   // TODO not good, wont see shimmer while loading
   // return <FadeIn>{!positions?.data?.length ? <NoDefiPositionFound /> : <DefiPositions />}</FadeIn>
 }
 
-// const DefiPositionContainer: FC<{ item: DefiPositionItem }> = ({ item }) => {
-//   const positions = useDefiPositionsDisplay()
+const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => {
+  // const positions = useDefiPositionsDisplay()
 
-//   return (
-//     <div className="flex w-full flex-col gap-4 overflow-hidden">
-//       {!!positions.data && <TotalRow positions={positions.data} />}
-//       <VirtualizedRows positions={positions} />
-//     </div>
-//   )
-// }
+  return (
+    <div className="">
+      <div
+        className={classNames(
+          "bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden border-transparent px-6",
+          position.breakdown.length ? "rounded-t-sm" : "rounded",
+        )}
+      >
+        <div className="text-xl">
+          <AssetLogo url={position.defiLogoUrl} />
+        </div>
+        <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
+          <div className="flex grow items-center gap-3">
+            <div className="text-body truncate text-sm font-bold">{position.name}</div>
+          </div>
+          <div className="flex w-full items-center gap-2 overflow-hidden text-xs">
+            <NetworkLogo networkId={position.networkId} />
+            <span className="text-body-secondary truncate">
+              <NetworkName networkId={position.networkId} />
+            </span>
+          </div>
+        </div>
+        {/* {tokenId && (
+          <div className="size-[3.8rem] shrink-0 empty:hidden">
+            <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
+              <BondButton tokenId={tokenId} balances={balances} />
+            </Suspense>
+          </div>
+        )}
+        {tokenId && (
+          <div className="size-[3.8rem] shrink-0">
+            <TokenContextMenu
+              tokenId={tokenId}
+              className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
+            />
+          </div>
+        )} */}
+        <div className="size-[3.8rem] shrink-0">
+          <PositionContextMenu position={position} />
+        </div>
+      </div>
+
+      {position.breakdown.map((item: DefiPositionItem, idx, arr) => (
+        <DefiPositionItemRow key={idx} item={item} roundedBottom={idx === arr.length - 1} />
+      ))}
+    </div>
+  )
+}
+
+const DefiPositionItemRow: FC<{ item: DefiPositionItem; roundedBottom: boolean }> = ({
+  item,
+  roundedBottom,
+}) => {
+  // const { t } = useTranslation()
+
+  return (
+    <div
+      className={classNames(
+        "bg-grey-850 flex h-28 w-full items-center gap-4 overflow-hidden px-6",
+        roundedBottom && "rounded-b-sm",
+      )}
+    >
+      <div className="text-xl">
+        <AssetLogo url={item.logo} />
+      </div>
+      <div className="flex w-full grow flex-col gap-2 overflow-hidden">
+        <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
+          <div>{item.name}</div>
+          <div>
+            <PositionItemTokens item={item} />
+          </div>
+        </div>
+        <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-xs font-normal">
+          <div>
+            <PositionItemTypeDisplay type={item.type} />
+          </div>
+          <div>
+            <FiatFromUsd amount={item.valueUsd} isBalance />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const PositionItemTokens: FC<{ item: DefiPositionItem }> = ({ item }) => {
+  const tokens = useMemo(() => {
+    try {
+      return formatUnits(BigInt(item.amount), item.decimals)
+    } catch (err) {
+      log.error("[DefiPositionItemTokens] Error formatting units", { item, err })
+      return null
+    }
+  }, [item])
+
+  return <Tokens amount={tokens} decimals={item.decimals} symbol={item.symbol} isBalance />
+}
+
+const PositionItemTypeDisplay: FC<{ type: DefiPositionItem["type"] }> = ({ type }) => {
+  const { t } = useTranslation()
+
+  return useMemo(() => {
+    switch (type) {
+      case "airdrop":
+        return t("Airdrop")
+      case "deposit":
+        return t("Deposit")
+      case "loan":
+        return t("Loan")
+      case "locked":
+        return t("Locked")
+      case "reward":
+        return t("Reward")
+      case "margin":
+        return t("Margin")
+      case "staked":
+        return t("Staked")
+      default:
+        return t("Unknown")
+    }
+  }, [t, type])
+}
 
 // const VirtualizedRows: FC<{ positions: Loadable<DefiPosition[]> }> = ({ positions }) => {
 //   const { ref: refContainer } = useScrollContainer()
@@ -262,3 +381,7 @@ export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ posi
 //     </div>
 //   )
 // }
+
+const PositionContextMenu: FC<{ position: DefiPosition }> = () => {
+  return null
+}
