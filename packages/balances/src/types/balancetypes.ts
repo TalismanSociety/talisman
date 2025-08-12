@@ -114,12 +114,3 @@ export type ExtraAmount<TLabel extends string> = BaseAmountWithLabel<TLabel> & {
   /** If set to true, this extra amount will be included in the calculation of the total amount of this balance. */
   includeInTotal?: boolean
 }
-
-/** Used by plugins to help define their custom `BalanceType` */
-export type NewBalanceType<
-  TModuleType extends string,
-  TBalanceValueType extends "simple" | "complex",
-> = IBalanceBase &
-  (TBalanceValueType extends "simple" ? IBalanceSimpleValues : IBalanceComplexValues) & {
-    source: TModuleType
-  }

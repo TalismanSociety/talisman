@@ -1,16 +1,14 @@
 import { Balances, IBalance } from "@talismn/balances"
 import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"
-import { TokenRatesList } from "@talismn/token-rates"
-import { liveQuery } from "dexie"
 import { log } from "extension-shared"
 import { combineLatest, map, throttleTime } from "rxjs"
 
-import { db } from "../../db"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
+import { tokenRatesStore } from "../tokenRates"
 import { appStore } from "./store.app"
 import { settingsStore } from "./store.settings"
 
@@ -28,10 +26,10 @@ export const hideGetStartedOnceFunded = async () => {
     chaindataProvider.getTokensMapById(),
     chaindataProvider.getNetworksMapById$(),
     balancesStore$.pipe(map((store) => store.balances)),
-    liveQuery(() => db.tokenRates.toArray()),
+    tokenRatesStore.storage$.pipe(map((storage) => storage.tokenRates)),
   ])
     .pipe(throttleTime(1_000, undefined, { trailing: true }))
-    .subscribe(async ([settings, accounts, tokens, networksById, balances, allTokenRates]) => {
+    .subscribe(async ([settings, accounts, tokens, networksById, balances, tokenRates]) => {
       try {
         const mapOwnedAccounts = Object.fromEntries(
           accounts.filter(isAccountOwned).map((account) => [account.address, account]),
@@ -54,10 +52,6 @@ export const hideGetStartedOnceFunded = async () => {
             return acc
           },
           {} as Record<string, IBalance[]>,
-        )
-
-        const tokenRates: TokenRatesList = Object.fromEntries(
-          allTokenRates.map(({ tokenId, rates }) => [tokenId, rates]),
         )
 
         for (const address of Object.keys(mapOwnedAccounts)) {

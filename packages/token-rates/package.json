@@ -1,6 +1,6 @@
 {
   "name": "@talismn/token-rates",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -26,8 +26,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@talismn/chaindata-provider": "workspace:*",
-    "dexie": "^4.0.9"
+    "@talismn/chaindata-provider": "workspace:*"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

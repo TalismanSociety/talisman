@@ -31,7 +31,6 @@ export const getDryRunCall = async <T>(
       errorMessage: string | null
     }
 > => {
-  log.log(`[sapi] getDryRun begin: ${Date.now()}`)
   try {
     if (!isApiAvailable(chain, "DryRunApi", "dry_run_call"))
       return {
@@ -71,7 +70,5 @@ export const getDryRunCall = async <T>(
       available: false,
       data: null,
     }
-  } finally {
-    log.log(`[sapi] getDryRun end: ${Date.now()}`)
   }
 }

@@ -1,5 +1,19 @@
 # @talismn/balances
 
+## 1.0.2
+
+### Patch Changes
+
+- b2d069a: chore: zod compat with latest version
+- Updated dependencies [045fc70]
+- Updated dependencies [b2d069a]
+- Updated dependencies [8b4d4ac]
+  - @talismn/sapi@0.0.9
+  - @talismn/chaindata-provider@1.0.2
+  - @talismn/chain-connector@1.0.2
+  - @talismn/chain-connector-evm@1.0.2
+  - @talismn/token-rates@3.0.2
+
 ## 1.0.1
 
 ### Patch Changes

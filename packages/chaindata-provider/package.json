@@ -1,6 +1,6 @@
 {
   "name": "@talismn/chaindata-provider",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -15,9 +15,7 @@
   "main": "dist/talismn-chaindata-provider.cjs.js",
   "module": "dist/talismn-chaindata-provider.esm.js",
   "files": [
-    "/dist",
-    "/init",
-    "/net"
+    "/dist"
   ],
   "engines": {
     "node": ">=18"
@@ -30,6 +28,7 @@
     "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules"
   },
   "dependencies": {
+    "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "dexie": "^4.0.9",
     "lodash-es": "4.17.21",

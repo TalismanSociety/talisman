@@ -4,6 +4,8 @@ import { FC, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
+import { api } from "@ui/api"
+
 export const ErrorMessageDrawer: FC<{
   message: string | undefined
   name?: string // identifies specific errors, some require specific UI
@@ -31,6 +33,29 @@ export const ErrorMessageDrawer: FC<{
         <p className="text-body-secondary mt-4">
           {name === "GenericAppRequired" ? <LedgerGenericRequired /> : wrapStrong(content)}
         </p>
+        {name === "Unauthorized" && (
+          <p className="text-body-secondary mt-4">
+            <Trans
+              t={t}
+              defaults="Please ensure that Ledger is authorized in your browser, using the Check tool in <Link>Talisman settings</Link>"
+              components={{
+                Link: (
+                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  <button
+                    type="button"
+                    onClick={() =>
+                      api.dashboardOpen("/settings/general").then(() => {
+                        // assuming user authorizes the Ledger from the settings, window still needs to be reopened for it to take effect
+                        window.close()
+                      })
+                    }
+                    className="text-body cursor-pointer"
+                  ></button>
+                ),
+              }}
+            />
+          </p>
+        )}
         <Button className="mt-8 w-full" primary onClick={onDismiss}>
           {t("Close")}
         </Button>

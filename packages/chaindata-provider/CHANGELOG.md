@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 1.0.2
+
+### Patch Changes
+
+- b2d069a: chore: zod compat with latest version
+- 8b4d4ac: generate init data
+
 ## 1.0.1
 
 ### Patch Changes

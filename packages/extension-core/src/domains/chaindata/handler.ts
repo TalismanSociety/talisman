@@ -5,7 +5,7 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { customChaindataStore } from "./store"
+import { customChaindataStore } from "./store.customChaindata"
 
 export class ChaindataHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(

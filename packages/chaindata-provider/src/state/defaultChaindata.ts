@@ -1,180 +1,84 @@
-import { liveQuery } from "dexie"
-import { isEqual, isEqualWith, sortBy } from "lodash-es"
-import { combineLatest, filter, firstValueFrom, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { isEqual } from "lodash-es"
+import { firstValueFrom, map, Observable, shareReplay, Subject } from "rxjs"
 
-import { AnyMiniMetadata, Network, Token } from "../chaindata"
 import log from "../log"
-import { chaindataDb } from "./db"
+import { ChaindataStorage } from "../provider/ChaindataProvider"
+import { githubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
-import { fetchChaindata } from "./net"
 import { Chaindata, ChaindataFileSchema } from "./schema"
 
-const REFRESH_INTERVAL = 300_000 // 5 mins
+const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 
-const subjectGhChaindata$ = new ReplaySubject<Chaindata>(1)
+export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
+  const storageValidated$ = storage$.pipe(
+    map((data) => {
+      const start = performance.now()
+      const validation = ChaindataFileSchema.safeParse(data)
+      log.debug(
+        "[storageValidated$] Chaindata schema validation: %sms",
+        (performance.now() - start).toFixed(2),
+      )
+      if (!validation.success)
+        log.warn("[storageValidated$] Chaindata schema validation failed", {
+          parsed: validation.data,
+        })
 
-let lastUpdatedAt = 0
+      // schema is invalid, fallback to empty data
+      return validation.success ? validation.data : EMPTY_DATA
+    }),
+  )
 
-const dbChaindata$ = combineLatest({
-  networks: liveQuery(() => chaindataDb.networks.toArray()),
-  tokens: liveQuery(() => chaindataDb.tokens.toArray()),
-  miniMetadatas: liveQuery(() => chaindataDb.miniMetadatas.toArray()),
-}).pipe(
-  // tables are not coming all at once, even if provisionned by the same transaction
-  // tokens are coming after networks, because they are larger
-  // the schema will verify that there is a native token for each network
-  // chaindata has the same check so we're sure this won't make the app hang
-  filter((data) => {
-    const start = performance.now()
-    const parsed = ChaindataFileSchema.safeParse(data)
-    const isValid = parsed.success
-    log.debug(
-      "[defaultChaindata$] Chaindata schema validation: %sms",
-      (performance.now() - start).toFixed(2),
-    )
-    if (!isValid) log.warn("[defaultChaindata$] Chaindata schema validation failed", { parsed })
-    return isValid
-  }),
-  shareReplay(1),
-)
+  return new Observable<Chaindata>((subscriber) => {
+    const githubToStorageSubscription = githubChaindata$.subscribe({
+      error: async () => {
+        const storageData = await firstValueFrom(storageValidated$)
 
-const ghChaindata$ = new Observable<Chaindata>((subscriber) => {
-  const controller = new AbortController()
+        if (
+          storageData.networks.length ||
+          storageData.tokens.length ||
+          storageData.miniMetadatas.length
+        )
+          return log.info(
+            "[defaultChaindata$] DB is not empty, skipping initial data provision",
+            storageData,
+          )
 
-  const subscription = subjectGhChaindata$.subscribe(subscriber)
+        try {
+          // if fetching from github fails, and if DB is empty, provision it with initial data
+          log.info("[defaultChaindata$] Importing initial chaindata file", initChaindata)
+          storage$.next(initChaindata as Chaindata)
+          log.info("[defaultChaindata$] Initial chaindata file imported successfully")
+        } catch (cause) {
+          log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })
+          return
+        }
+      },
+      next: async (githubData) => {
+        const now = performance.now()
+        try {
+          const storageData = await firstValueFrom(storageValidated$)
 
-  let timeout: ReturnType<typeof setTimeout> | null = null
+          const shouldUpdate = !isEqual(storageData, githubData)
+          if (!shouldUpdate)
+            return log.debug(
+              `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`,
+            )
 
-  const refresh = async () => {
-    try {
-      const delay = Math.max(0, lastUpdatedAt + 60_000 - Date.now())
-      if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
-      if (controller.signal.aborted) return
+          // update local chaindata if github chaindata is different
+          log.debug(
+            `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`,
+          )
+          storage$.next(githubData)
 
-      log.debug("[defaultChaindata$] Refreshing chaindata from GitHub")
-      const data = await fetchChaindata(controller.signal)
-      lastUpdatedAt = Date.now()
+          log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
+        } catch (cause) {
+          log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
+        }
+      },
+    })
+    subscriber.add(githubToStorageSubscription)
 
-      subjectGhChaindata$.next(data)
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") return
-
-      log.error("Failed to fetch chaindata", error)
-      if (!subscriber.closed) subjectGhChaindata$.error(error)
-    } finally {
-      if (!controller.signal.aborted) timeout = setTimeout(refresh, REFRESH_INTERVAL)
-    }
-  }
-
-  refresh()
-
-  return () => {
-    if (timeout) clearTimeout(timeout)
-    subscription.unsubscribe()
-    controller.abort()
-  }
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
-
-const shouldUpdateGhEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chaindata) => {
-  const sorted1 = sortBy(cd1[key], "id")
-  const sorted2 = sortBy(cd2[key], "id")
-  return !isEqualWith(sorted1, sorted2, isEqual)
+    const outputFromStorageSubscription = storageValidated$.subscribe(subscriber)
+    subscriber.add(outputFromStorageSubscription)
+  }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 }
-
-export const defaultChaindata$ = new Observable<Chaindata>((subscriber) => {
-  const subUpdateFromGithub = ghChaindata$.subscribe({
-    error: async () => {
-      const dbData = await Promise.race([
-        firstValueFrom(dbChaindata$),
-        new Promise<Chaindata>((resolve) =>
-          // db promise might hang indefinitely if schema is invalid, fallback to empty data if this happens
-          setTimeout(() => resolve({ networks: [], tokens: [], miniMetadatas: [] }), 2_000),
-        ),
-      ])
-
-      if (dbData.networks.length || dbData.tokens.length || dbData.miniMetadatas.length)
-        return log.info(
-          "[defaultChaindata$] DB is not empty, skipping initial data provision",
-          dbData,
-        )
-
-      try {
-        // if fetching from github fails, and if DB is empty, provision it with initial data
-        log.info("[defaultChaindata$] Importing initial chaindata file", initChaindata)
-
-        await chaindataDb.transaction(
-          "rw",
-          ["networks", "tokens", "miniMetadatas"],
-          async (ctx) => {
-            // we may end up here if db data is invalid, so we need to clear the tables first
-            await ctx.tokens.clear()
-            await ctx.miniMetadatas.clear()
-            await ctx.networks.clear()
-            await ctx.tokens.bulkAdd(initChaindata.tokens as Token[])
-            await ctx.miniMetadatas.bulkAdd(initChaindata.miniMetadatas as AnyMiniMetadata[])
-            await ctx.networks.bulkAdd(initChaindata.networks as Network[])
-          },
-        )
-
-        log.info("[defaultChaindata$] Initial chaindata file imported successfully")
-      } catch (cause) {
-        log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })
-        return
-      }
-    },
-    next: async (ghData) => {
-      const now = performance.now()
-      try {
-        const dbData = await Promise.race([
-          firstValueFrom(dbChaindata$),
-          new Promise<Chaindata>((resolve) =>
-            // db promise might hand indefinitely if schema is invalid, fallback to init data if this happens
-            setTimeout(() => resolve(initChaindata as Chaindata), 2_000),
-          ),
-        ])
-
-        // TODO consider adding a hash in chaindata.json and compare just that ?
-        const updateNetworks = shouldUpdateGhEntity(ghData, dbData, "networks")
-        const updateTokens = shouldUpdateGhEntity(ghData, dbData, "tokens")
-        const updateMiniMetadata = shouldUpdateGhEntity(ghData, dbData, "miniMetadatas")
-
-        if (!updateNetworks && !updateTokens && !updateMiniMetadata)
-          return log.debug(`[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`)
-
-        // update local db if chaindata is found different from GH
-        await chaindataDb.transaction(
-          "rw",
-          ["networks", "tokens", "miniMetadatas"],
-          async (ctx) => {
-            if (updateMiniMetadata) {
-              log.debug("[defaultChaindata$] Updating miniMetadatas in DB")
-              await ctx.miniMetadatas.clear()
-              await ctx.miniMetadatas.bulkAdd(ghData.miniMetadatas)
-            }
-            if (updateTokens) {
-              log.debug("[defaultChaindata$] Updating tokens in DB")
-              await ctx.tokens.clear()
-              await ctx.tokens.bulkAdd(ghData.tokens)
-            }
-            if (updateNetworks) {
-              log.debug("[defaultChaindata$] Updating networks in DB")
-              await ctx.networks.clear()
-              await ctx.networks.bulkAdd(ghData.networks)
-            }
-          },
-        )
-
-        log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
-      } catch (cause) {
-        log.error("[defaultChaindata$] Failed to sync chaindata", { cause })
-      }
-    },
-  })
-
-  const subOutput = dbChaindata$.subscribe(subscriber)
-
-  return () => {
-    subUpdateFromGithub.unsubscribe()
-    subOutput.unsubscribe()
-  }
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))

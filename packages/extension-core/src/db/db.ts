@@ -1,23 +1,20 @@
-import { DbTokenRates } from "@talismn/token-rates"
 import { Dexie } from "dexie"
 
 import { ProtectorSources, ProtectorStorage } from "../domains/app/protector/ParaverseProtector"
 import { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import { TalismanMetadataDef } from "../domains/substrate/types"
 import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
-import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades"
-import { upgradeTokenRatesToObjects } from "./upgrades/2024-12-16-upgradeTokenRatesToObjects"
+import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
 
-export type DbBlobId = "nfts" | "balances" //  | "networks" .. etc, add more as needed
+export type DbBlobId = "nfts" | "balances" | "chaindata" | "tokenRates" //  | "networks" .. etc, add more as needed
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 class TalismanDatabase extends Dexie {
   assetDiscovery!: Dexie.Table<DiscoveredBalance, string>
   metadata!: Dexie.Table<TalismanMetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
-  tokenRates!: Dexie.Table<DbTokenRates, string>
   transactions!: Dexie.Table<LegacyWalletTransaction, string>
   transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
@@ -51,11 +48,12 @@ class TalismanDatabase extends Dexie {
         metadataRpc: null,
         tokens: null,
       })
-      .upgrade(upgradeTokenRatesToObjects)
+      .upgrade(function upgradeTokenRatesToObjects() {})
 
     this.version(11).stores({
       // migration is handled by the MigrationRunner, to ensure it's executed after other migrations
       transactionsV2: "id, status, timestamp",
+      tokenRates: null,
     })
   }
 }

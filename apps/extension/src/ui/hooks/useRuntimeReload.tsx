@@ -18,7 +18,7 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       assetDiscoveryStore.reset(),
       connectionMetaDb.delete(),
       talismanDb.metadata.clear(),
-      talismanDb.blobs.clear(), // atm it contains 2 entries: balances (+minimetadatas) and nfts
+      talismanDb.blobs.bulkDelete(["nfts", "balances"]), // atm it contains 4 entries: nfts, balances (+minimetadatas), chaindata and tokenRates
       tryDeleteDatabase("TalismanChaindata"), // old chaindata db
       tryDeleteDatabase("TalismanChaindataV4"), // current chaindata db, it will be recreated on next startup
     ])

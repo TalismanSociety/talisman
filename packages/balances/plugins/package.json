@@ -1,4 +1,0 @@
-{
-  "main": "dist/talismn-balances-plugins.cjs.js",
-  "module": "dist/talismn-balances-plugins.esm.js"
-}

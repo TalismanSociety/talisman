@@ -23,7 +23,7 @@ export const BittensorSelectStakeDrawer = ({
         <div className="text-body font-bold">{t("Select the staking type")}</div>
         <p className="text-body-secondary text-sm">
           {t(
-            "Subnet DTAO is a new way of staking your assets through Bittensor’s Dynamic TAO model where you get Alpha tokens as part of staking. You still can safely stake your assets directly to Root (Subnet 0).",
+            "Choose either to stake on root or on a subnet. Root staking lets you earn rewards in TAO. Subnet staking converts your TAO into subnet alpha tokens, and your rewards are also paid in these tokens.",
           )}
         </p>
         <div className="grid w-full grid-cols-2 gap-8">
