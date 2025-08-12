@@ -23,6 +23,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
         refPrice = usd
       }
     }
+
     return refTokenRates
   }),
   shareReplay({ bufferSize: 1, refCount: true }),
@@ -32,6 +33,7 @@ export const [useFiatFromUsd, getFiatFromUsd$] = bind(
   (usd: number | null | undefined) =>
     combineLatest([refTokenRates$, selectedCurrency$]).pipe(
       map(([refTokenRates, selectedCurrency]) => {
+        if (usd === 0) return 0
         if (selectedCurrency === "usd") return usd
         if (!refTokenRates || !usd) return null
         const usdRate = refTokenRates["usd"]?.price

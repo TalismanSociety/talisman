@@ -21,8 +21,15 @@ import { PositionType } from "./PositionType"
 export const PopupDefiPositions = () => {
   const positions = useDefiPositionsDisplay()
 
-  // TODO not good, wont see shimmer while loading
-  return <FadeIn>{!positions?.data?.length ? <NoDefiPositionFound /> : <DefiPositions />}</FadeIn>
+  return (
+    <FadeIn>
+      {!positions.data?.length && positions.status !== "loading" ? (
+        <NoDefiPositionFound />
+      ) : (
+        <DefiPositions />
+      )}
+    </FadeIn>
+  )
 }
 
 const DefiPositions = () => {
