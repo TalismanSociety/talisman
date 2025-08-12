@@ -1,4 +1,4 @@
-import { isEqual, isEqualWith, sortBy } from "lodash-es"
+import { isEqual } from "lodash-es"
 import { filter, firstValueFrom, Observable, shareReplay, Subject } from "rxjs"
 
 import log from "../log"
@@ -44,13 +44,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
         try {
           // if fetching from github fails, and if DB is empty, provision it with initial data
           log.info("[defaultChaindata$] Importing initial chaindata file", initChaindata)
-
-          storage$.next({
-            networks: initChaindata.networks as Chaindata["networks"],
-            tokens: initChaindata.tokens as Chaindata["tokens"],
-            miniMetadatas: initChaindata.miniMetadatas as Chaindata["miniMetadatas"],
-          })
-
+          storage$.next(initChaindata as Chaindata)
           log.info("[defaultChaindata$] Initial chaindata file imported successfully")
         } catch (cause) {
           log.error("[defaultChaindata$] Failed to import initial chaindata file", { cause })
@@ -68,25 +62,17 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
             ),
           ])
 
-          // TODO consider adding a hash in chaindata.json and compare just that ?
-          const updateNetworks = shouldUpdateGithubEntity(githubData, dbData, "networks")
-          const updateTokens = shouldUpdateGithubEntity(githubData, dbData, "tokens")
-          const updateMiniMetadata = shouldUpdateGithubEntity(githubData, dbData, "miniMetadatas")
-
-          if (!updateNetworks && !updateTokens && !updateMiniMetadata)
+          const shouldUpdate = !isEqual(dbData, githubData)
+          if (!shouldUpdate)
             return log.debug(
               `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`,
             )
 
-          // update local db if chaindata is found different from Github
+          // update local chaindata if github chaindata is different
           log.debug(
             `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`,
           )
-          storage$.next({
-            networks: githubData.networks,
-            tokens: githubData.tokens,
-            miniMetadatas: githubData.miniMetadatas,
-          })
+          storage$.next(githubData)
 
           log.info(`[defaultChaindata$] Db synchronized with GitHub :${performance.now() - now}ms`)
         } catch (cause) {
@@ -99,10 +85,4 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
     const outputFromStorageSubscription = storageValidated$.subscribe(subscriber)
     subscriber.add(outputFromStorageSubscription)
   }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
-}
-
-const shouldUpdateGithubEntity = (cd1: Chaindata, cd2: Chaindata, key: keyof Chaindata) => {
-  const sorted1 = sortBy(cd1[key], "id")
-  const sorted2 = sortBy(cd2[key], "id")
-  return !isEqualWith(sorted1, sorted2, isEqual)
 }
