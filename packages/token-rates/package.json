@@ -26,8 +26,7 @@
     "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
-    "@talismn/chaindata-provider": "workspace:*",
-    "dexie": "^4.0.9"
+    "@talismn/chaindata-provider": "workspace:*"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

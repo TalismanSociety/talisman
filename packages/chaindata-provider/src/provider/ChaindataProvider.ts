@@ -1,19 +1,16 @@
-import { assign, isEqual, keyBy, values } from "lodash-es"
+import { isPromise, replaySubjectFrom } from "@talismn/util"
+import { isEqual } from "lodash-es"
 import {
-  combineLatest,
-  distinctUntilChanged,
   distinctUntilKeyChanged,
   firstValueFrom,
-  isObservable,
   map,
   Observable,
-  of,
+  ReplaySubject,
   shareReplay,
 } from "rxjs"
-import z from "zod/v4"
 
-import { IChaindataProvider } from "."
 import {
+  AnyMiniMetadata,
   DotNetwork,
   isNetworkOfPlatform,
   isTokenOfType,
@@ -21,31 +18,66 @@ import {
   NetworkId,
   NetworkOfPlatform,
   NetworkPlatform,
-  NetworkSchema,
   Token,
   TokenId,
   TokenOfType,
-  TokenSchema,
   TokenType,
 } from "../chaindata"
-import log from "../log"
-import {
-  Chaindata,
-  ChaindataFileSchema,
-  CustomChaindata,
-  CustomChaindataSchema,
-  defaultChaindata$,
-} from "../state"
+import { getCombinedChaindata$ } from "../state/combinedChaindata"
+import { getDefaultChaindata$ } from "../state/defaultChaindata"
+import { tryToDeleteOldChaindataDb } from "../state/oldDb"
+import { Chaindata, CustomChaindata } from "../state/schema"
+import { IChaindataProvider } from "./ChaindataProviderInterface"
+
+/**
+ * This type will be used for in-memory storage of chaindata.
+ *
+ * Provide a Subject<ChaindataStorage> and subscribe to changes to persist the data to disk.
+ * Instantiate ChaindataProvider with this subject to restore persisted data from disk.
+ */
+export type ChaindataStorage = {
+  networks: Network[]
+  tokens: Token[]
+  miniMetadatas: AnyMiniMetadata[]
+}
+
+/** By default, chaindata will be stored in memory and not persisted. */
+const DEFAULT_STORAGE: ChaindataStorage = {
+  networks: [],
+  tokens: [],
+  miniMetadatas: [],
+}
 
 export type ChaindataProviderOptions = {
+  persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
 }
 
 export class ChaindataProvider implements IChaindataProvider {
+  #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
 
-  constructor(options?: ChaindataProviderOptions) {
-    this.#chaindata$ = getCombinedChaindata(defaultChaindata$, options?.customChaindata$)
+  constructor({ persistedStorage, customChaindata$ }: ChaindataProviderOptions = {}) {
+    tryToDeleteOldChaindataDb()
+
+    // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
+    const mergedStorage = isPromise(persistedStorage)
+      ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
+      : { ...DEFAULT_STORAGE, ...persistedStorage }
+
+    this.#storage$ = replaySubjectFrom(mergedStorage)
+    const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
+    this.#chaindata$ = getCombinedChaindata$(defaultChaindata$, customChaindata$)
+  }
+
+  /**
+   * Subscribe to this observable and save its contents somewhere persistent.
+   *
+   * Instantiate `new ChaindataProvider({ persistedStorage })` with the saved contents
+   * to prevent the need to wait for them to download on every startup.
+   */
+  get storage$() {
+    return this.#storage$.asObservable()
   }
 
   /**
@@ -246,146 +278,6 @@ export class ChaindataProvider implements IChaindataProvider {
       this.getNetworkByGenesisHash$(genesisHash),
     )
   }
-}
-
-const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
-
-const getCombinedChaindata = (
-  default$: Observable<Chaindata>,
-  custom$: Observable<CustomChaindata> | CustomChaindata | undefined,
-): Observable<Chaindata> => {
-  // ensure custom$ is an observable
-  if (!custom$) custom$ = of(DEFAULT_CUSTOM_CHAINDATA)
-  if (!isObservable(custom$)) custom$ = of(custom$)
-
-  // check custom one against schema
-  const customChaindata$ = (custom$ ?? of(DEFAULT_CUSTOM_CHAINDATA)).pipe(
-    distinctUntilChanged(isEqual),
-    map((data) => {
-      const result = CustomChaindataSchema.safeParse(data)
-      if (!result.success) log.error("Invalid custom chaindata provided", result.error)
-      return result.success ? result.data : DEFAULT_CUSTOM_CHAINDATA
-    }),
-  )
-
-  // merge custom into default
-  return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
-    map((data) => {
-      const start = performance.now()
-      const parsed = ChaindataProviderDataSchema.safeParse(data)
-      log.debug(
-        "[ChaindataProvider] Combined chaindata schema validation: %sms",
-        (performance.now() - start).toFixed(2),
-      )
-      if (!parsed.success) {
-        log.error("Failed to parse chaindata provider data", { parsed, data })
-        throw new Error("Failed to parse chaindata provider data")
-      }
-      return parsed.data as Chaindata
-    }),
-    shareReplay({ bufferSize: 1, refCount: true }),
-  )
-}
-
-/**
- * ⚠️ Hack ⚠️
- * Because Token and Network schemas are unions, zod doesn't allow extending them
- * ChaindataProvider needs to merge default and custom entities, and it turns out that doing it via a zod schema generates the correct output types.
- * So let's take the opportunity and generate the helpper functions we need to leverage those properties
- *
- * Note: ChaindataProvider's consolidated output is the only context where we can safely derive isCustom and isTestnet properties.
- * So these properties should not be declared on the main Token & Network schemas.
- */
-const ChaindataProviderDataSchema = z
-  .strictObject({
-    defaultData: ChaindataFileSchema,
-    customData: CustomChaindataSchema,
-  })
-  .transform(({ defaultData, customData }) => {
-    const defaultNetworksById = keyBy(
-      defaultData.networks.map((n) => ({ ...n, __isKnown: true, __isCustom: false })),
-      (n) => n.id,
-    )
-    const customNetworksById = keyBy(
-      customData.networks?.map((t) => ({
-        ...t,
-        __isKnown: !!defaultNetworksById[t.id],
-        __isCustom: true,
-      })),
-      (n) => n.id,
-    )
-    const networksById = assign({}, defaultNetworksById, customNetworksById)
-
-    const defaultTokensById = keyBy(
-      defaultData.tokens.map((n) => ({
-        ...n,
-        __isCustom: false,
-        __isKnown: true,
-        __isTestnet: !!networksById[n.networkId]?.isTestnet,
-      })),
-      (n) => n.id,
-    )
-    const customTokensById = keyBy(
-      customData.tokens.map((t) => ({
-        ...t,
-        __isCustom: true,
-        __isKnown: !!defaultTokensById[t.id],
-        __isTestnet: !!networksById[t.networkId]?.isTestnet,
-      })),
-      (n) => n.id,
-    )
-    const tokensById = assign({}, defaultTokensById, customTokensById)
-
-    return {
-      networks: values(networksById),
-      tokens: values(tokensById),
-      miniMetadatas: defaultData.miniMetadatas,
-    }
-  })
-
-// these types shouldnt be exported, we only leverage them to generate the helper functions
-type ChaindataProviderData = z.infer<typeof ChaindataProviderDataSchema>
-type ChaindataProviderNetwork = ChaindataProviderData["networks"][number]
-type ChaindataProviderToken = ChaindataProviderData["tokens"][number]
-
-export const isNetworkCustom = (network: Network): boolean => {
-  if (typeof network !== "object") return false
-  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
-  return __isCustom && NetworkSchema.safeParse(rest).success
-}
-
-export const isNetworkKnown = (network: Network): boolean => {
-  if (typeof network !== "object") return false
-  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
-  return __isKnown && NetworkSchema.safeParse(rest).success
-}
-
-export const isTokenCustom = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isCustom && TokenSchema.safeParse(rest).success
-}
-
-export const isTokenKnown = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isKnown && TokenSchema.safeParse(rest).success
-}
-
-export const isTokenTestnet = (token: Token): boolean => {
-  if (typeof token !== "object") return false
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return __isTestnet && TokenSchema.safeParse(rest).success
-}
-
-export const getCleanNetwork = (network: Network): Network => {
-  const { __isCustom, __isKnown, ...rest } = network as ChaindataProviderNetwork
-  return rest as Network
-}
-
-export const getCleanToken = (token: Token): Token => {
-  const { __isCustom, __isKnown, __isTestnet, ...rest } = token as ChaindataProviderToken
-  return rest as Token
 }
 
 //

@@ -15,9 +15,9 @@ const balancesProvider$ = balancesStore$.pipe(
         subscriber.next(provider)
 
         // store state in extension's db so it can be reused on next startup
-        return provider.storage$.pipe(skip(1), debounceTime(200)).subscribe((data) => {
-          updateBalancesStore(data)
-        })
+        return provider.storage$
+          .pipe(skip(1), debounceTime(200))
+          .subscribe((data) => updateBalancesStore(data))
       }),
   ),
   shareReplay(1),
