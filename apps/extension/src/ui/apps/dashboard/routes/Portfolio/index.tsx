@@ -10,6 +10,8 @@ import { useFeatureFlag } from "@ui/state"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+import { PortfolioDefiPosition } from "./PortfolioDefiPosition"
+import { PortfolioDefiPositions } from "./PortfolioDefiPositions"
 import { PortfolioNftCollection } from "./PortfolioNftCollection"
 import { PortfolioNfts } from "./PortfolioNfts"
 import { PortfolioLayout } from "./Shared/PortfolioLayout"
@@ -24,7 +26,8 @@ export const PortfolioRoutes = () => (
           <Route path="nfts/:collectionId" element={<PortfolioNftCollection />} />
           <Route path="tokens" element={<PortfolioAssets />} />
           <Route path="nfts" element={<PortfolioNfts />} />
-          <Route path="defi" element={<PortfolioAssets />} />
+          <Route path="defi" element={<PortfolioDefiPositions />} />
+          <Route path="defi/:positionId" element={<PortfolioDefiPosition />} />
           <Route path="*" element={<NavigateWithQuery url="tokens" />} />
         </Routes>
       </PortfolioLayout>

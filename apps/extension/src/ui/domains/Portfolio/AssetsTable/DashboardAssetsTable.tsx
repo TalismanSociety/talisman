@@ -57,29 +57,27 @@ const HeaderRow = () => {
   if (!balances.count) return null
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-4 rounded p-8 text-left text-base">
-      <div className="grid grid-cols-[40%_30%_30%]">
-        <Statistics
-          className="h-auto w-auto p-0"
-          title={t("Total Value")}
-          fiat={portfolio}
-          showCurrencyToggle
-          align="left"
-        />
-        <Statistics
-          className="h-auto w-auto items-end p-0 pr-8"
-          title={t("Locked")}
-          fiat={locked}
-          locked
-          align="right"
-        />
-        <Statistics
-          className="h-auto w-auto items-end p-0"
-          title={t("Available")}
-          fiat={available}
-          align="right"
-        />
-      </div>
+    <div className="text-body-secondary bg-grey-850 mb-4 grid h-40 grid-cols-[40%_30%_30%] items-center rounded px-8 text-left text-base">
+      <Statistics
+        className="h-auto w-auto p-0"
+        title={t("Total Value")}
+        fiat={portfolio}
+        showCurrencyToggle
+        align="left"
+      />
+      <Statistics
+        className="h-auto w-auto items-end p-0 pr-8"
+        title={t("Locked")}
+        fiat={locked}
+        locked
+        align="right"
+      />
+      <Statistics
+        className="h-auto w-auto items-end p-0"
+        title={t("Available")}
+        fiat={available}
+        align="right"
+      />
     </div>
   )
 }
