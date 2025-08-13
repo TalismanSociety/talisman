@@ -1,8 +1,8 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address as TAddress } from "@talismn/balances"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
+import { getAccountPlatformFromAddress, isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { classNames } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -30,7 +30,7 @@ const QR_IMAGE_OPTIONS = {
 
 type AddressPillButtonProps = {
   address?: string | null
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   className?: string
   onClick?: () => void
 }
@@ -119,8 +119,7 @@ const ExternalAddressWarning = () => {
 
   const showWarning = useMemo(() => {
     if (!address || !accounts) return false
-    const encoded = encodeAnyAddress(address)
-    return !accounts.some((account) => encodeAnyAddress(account.address) === encoded)
+    return !accounts.some((account) => isAddressEqual(account.address, address))
   }, [accounts, address])
 
   if (!showWarning) return null
@@ -177,10 +176,9 @@ export const CopyAddressCopyForm = () => {
     goToNetworkPage,
   } = useCopyAddressWizard()
 
-  const isEthereum = useMemo(
-    () => !network && formattedAddress && isEthereumAddress(formattedAddress),
-    [formattedAddress, network],
-  )
+  const platform = useMemo(() => {
+    return formattedAddress ? getAccountPlatformFromAddress(formattedAddress) : null
+  }, [formattedAddress])
 
   const isMigratedChain = useMemo(() => {
     if (network?.platform !== "polkadot") return false
@@ -235,13 +233,13 @@ export const CopyAddressCopyForm = () => {
               </FadeIn>
             )}
           </div>
-          {network?.platform === "polkadot" && (
+          {platform === "polkadot" && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 <Trans
                   t={t}
                   defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
-                  values={{ name: network.name }}
+                  values={{ name: network ? network.name : `Substrate (${t("Generic")})` }}
                   components={{
                     Highlight: <span className="text-body" />,
                     Tooltip: (
@@ -250,12 +248,14 @@ export const CopyAddressCopyForm = () => {
                           <InfoIcon className="hover:text-body inline align-middle text-xs" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          {t(
-                            "Only use this address for receiving assets on the {{name}} network.",
-                            {
-                              name: network.name,
-                            },
-                          )}
+                          {network
+                            ? t(
+                                "Only use this address for receiving assets on the {{name}} network.",
+                                {
+                                  name: network.name,
+                                },
+                              )
+                            : t("This address is not specific to a network. Use at your own risk.")}
                         </TooltipContent>
                       </Tooltip>
                     ),
@@ -263,7 +263,15 @@ export const CopyAddressCopyForm = () => {
                 />
               </div>
               <div className="flex items-center gap-4">
-                <NetworkLogo className="text-lg" networkId={network?.id} />
+                {network ? (
+                  <NetworkLogo className="text-lg" networkId={network.id} />
+                ) : (
+                  <AccountIcon
+                    type="polkadot-identicon"
+                    className="!text-lg [&>div]:block"
+                    address={formattedAddress}
+                  />
+                )}
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
@@ -273,44 +281,7 @@ export const CopyAddressCopyForm = () => {
               </div>
             </div>
           )}
-          {!isEthereum && networkId === null && (
-            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
-              <div>
-                <Trans
-                  t={t}
-                  defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
-                  values={{ name: `Substrate (${t("Generic")})` }}
-                  components={{
-                    Highlight: <span className="text-body" />,
-                    Tooltip: (
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {t("This address is not specific to a network. Use at your own risk.")}
-                        </TooltipContent>
-                      </Tooltip>
-                    ),
-                  }}
-                />
-              </div>
-              <div className="flex items-center gap-4">
-                <AccountIcon
-                  type="polkadot-identicon"
-                  className="!text-lg [&>div]:block"
-                  address={formattedAddress}
-                />
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
-                  </TooltipTrigger>
-                  <TooltipContent>{formattedAddress}</TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-          )}
-          {isEthereum && (
+          {platform === "ethereum" && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 <Trans
@@ -334,6 +305,39 @@ export const CopyAddressCopyForm = () => {
               </div>
               <div className="flex items-center gap-4">
                 <NetworkLogo className="text-lg" networkId="1" />
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{formattedAddress}</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+          )}
+          {platform === "solana" && (
+            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
+              <div>
+                <Trans
+                  t={t}
+                  defaults="Your Solana <Tooltip /> address"
+                  components={{
+                    Tooltip: (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t(
+                            "Use this address for receiving assets on Solana and compatible networks",
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ),
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <NetworkLogo className="text-lg" networkId="solana-mainnet" />
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>

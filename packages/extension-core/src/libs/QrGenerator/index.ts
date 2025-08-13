@@ -134,7 +134,6 @@ export const generateQrUpdateNetworkMetadata = async (
     chain,
     genesisHash,
     runtimeSpecVersion,
-    undefined,
     getLegacyMetadataRpc,
   )
   assert(metadataDef, "Failed to fetch metadata")

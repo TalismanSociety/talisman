@@ -1,15 +1,8 @@
-import { KeypairCurve } from "@talismn/crypto"
+import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import {
-  Account,
-  formatSuri,
-  getAccountGenesisHash,
-  getEthDerivationPath,
-  RequestAccountCreateFromSuri,
-} from "extension-core"
+import { Account, AddAccountDeriveOptions, getDerivationPathForCurve } from "extension-core"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state"
@@ -18,11 +11,15 @@ import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPi
 
 const getDerivationPath = (curve: KeypairCurve, index: number) => {
   switch (curve) {
-    case "ethereum":
-      return getEthDerivationPath(index)
-    default:
+    case "sr25519":
+    case "ed25519":
+    case "ecdsa": {
+      // for substrate, first account should have an empty derivation path
       // preserve backwards compatibility : since beta we import mnemonics as-is, without derivationPath
       return index === 0 ? "" : `//${index - 1}`
+    }
+    default:
+      return getDerivationPathForCurve(curve, index)
   }
 }
 
@@ -30,14 +27,14 @@ const useDerivedAccounts = (
   name: string,
   mnemonic: string,
   curve: KeypairCurve,
-  selectedAccounts: RequestAccountCreateFromSuri[],
+  selectedAccounts: AddAccountDeriveOptions[],
   pageIndex: number,
   itemsPerPage: number,
 ) => {
   const walletAccounts = useAccounts()
-  const [derivedAccounts, setDerivedAccounts] = useState<
-    (DerivedFromMnemonicAccount | undefined)[]
-  >([...Array(itemsPerPage)])
+  const [derivedAccounts, setDerivedAccounts] = useState<DerivedFromMnemonicAccount[]>([
+    ...Array(itemsPerPage),
+  ])
   const [error, setError] = useState<string>()
 
   const loadPage = useCallback(async () => {
@@ -50,15 +47,27 @@ const useDerivedAccounts = (
         // maps [0, 1, 2, ..., itemsPerPage - 1] dynamically
         Array.from(Array(itemsPerPage).keys()).map(async (i) => {
           const accountIndex = skip + i
-          const suri = formatSuri(mnemonic, getDerivationPath(curve, accountIndex))
-          const address = await api.addressLookup({ suri, curve })
+          const address = await api.addressLookup({
+            type: "mnemonic",
+            mnemonic,
+            derivationPath: getDerivationPath(curve, accountIndex),
+            curve,
+          })
 
           return {
             accountIndex,
             name: `${name}${accountIndex === 0 ? "" : ` ${accountIndex}`}`,
-            suri,
             curve,
             address,
+            options: {
+              type: "new-mnemonic",
+              mnemonic,
+              mnemonicName: `${name} Recovery Phrase`,
+              derivationPath: getDerivationPath(curve, accountIndex),
+              name: `${name}${accountIndex === 0 ? "" : ` ${accountIndex}`}`,
+              confirmed: true,
+              curve,
+            },
           } as DerivedFromMnemonicAccount
         }),
       )
@@ -76,12 +85,12 @@ const useDerivedAccounts = (
     () =>
       derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts
-            .filter((acc): acc is DerivedFromMnemonicAccount & { curve: string } => !!acc?.curve)
+            // .filter((acc): acc is DerivedFromMnemonicAccount => !!acc?.c)
             .map(
               (acc): Account => ({
                 type: "keypair",
                 address: acc.address,
-                curve: acc.curve,
+                curve: acc.options.curve,
                 name: "",
                 createdAt: Date.now(),
               }),
@@ -96,14 +105,12 @@ const useDerivedAccounts = (
       derivedAccounts.map((acc) => {
         if (!acc) return null
 
-        const existingAccount = walletAccounts?.find(
-          (wa) =>
-            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
-            acc.genesisHash === getAccountGenesisHash(wa),
+        const existingAccount = walletAccounts?.find((wa) =>
+          isAddressEqual(wa.address, acc.address),
         )
 
-        const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
+        const accountBalances = balances.balances.find((b) =>
+          isAddressEqual(b.address, acc.address),
         )
 
         const isBalanceLoading =
@@ -114,7 +121,7 @@ const useDerivedAccounts = (
           ...acc,
           name: existingAccount?.name ?? acc.name,
           connected: !!existingAccount,
-          selected: selectedAccounts.some((sa) => sa.suri === acc.suri),
+          selected: selectedAccounts.some((sa) => sa.derivationPath === acc.options.derivationPath),
           balances: accountBalances,
           isBalanceLoading,
         }
@@ -127,6 +134,13 @@ const useDerivedAccounts = (
     loadPage()
   }, [loadPage])
 
+  useEffect(() => {
+    // memory cleanup on unmount
+    return () => {
+      setDerivedAccounts([])
+    }
+  }, [])
+
   return {
     accounts,
     withBalances,
@@ -138,10 +152,10 @@ type DerivedAccountPickerProps = {
   name: string
   mnemonic: string
   curve: KeypairCurve
-  onChange?: (accounts: RequestAccountCreateFromSuri[]) => void
+  onChange?: (accounts: AddAccountDeriveOptions[]) => void
 }
 
-type DerivedFromMnemonicAccount = DerivedAccountBase & RequestAccountCreateFromSuri
+type DerivedFromMnemonicAccount = DerivedAccountBase & { options: AddAccountDeriveOptions }
 
 export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = ({
   name,
@@ -151,28 +165,28 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
 }) => {
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
-  const [selectedAccounts, setSelectedAccounts] = useState<RequestAccountCreateFromSuri[]>([])
+  const [selectedOptions, setSelectedOptions] = useState<AddAccountDeriveOptions[]>([])
   const { accounts, withBalances, error } = useDerivedAccounts(
     name,
     mnemonic,
     curve,
-    selectedAccounts,
+    selectedOptions,
     pageIndex,
     itemsPerPage,
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
-    const { name, suri, curve } = acc as DerivedFromMnemonicAccount
-    setSelectedAccounts((prev) =>
-      prev.some((pa) => pa.suri === suri)
-        ? prev.filter((pa) => pa.suri !== suri)
-        : prev.concat({ name, suri, curve }),
+    const derivedAccount = acc as DerivedFromMnemonicAccount
+    setSelectedOptions((prev) =>
+      prev.some((po) => po.derivationPath === derivedAccount.options.derivationPath)
+        ? prev.filter((pa) => pa.derivationPath !== derivedAccount.options.derivationPath)
+        : prev.concat(derivedAccount.options),
     )
   }, [])
 
   useEffect(() => {
-    if (onChange) onChange(selectedAccounts)
-  }, [onChange, selectedAccounts])
+    if (onChange) onChange(selectedOptions)
+  }, [onChange, selectedOptions])
 
   const handlePageFirst = useCallback(() => setPageIndex(0), [])
   const handlePagePrev = useCallback(() => setPageIndex((prev) => prev - 1), [])

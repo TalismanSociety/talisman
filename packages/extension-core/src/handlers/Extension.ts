@@ -17,6 +17,7 @@ import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
 import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
+import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
@@ -50,6 +51,7 @@ export default class Extension extends ExtensionHandler {
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
       substrate: new SubHandler(stores),
+      solana: new SolanaExtensionHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
     }

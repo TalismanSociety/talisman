@@ -1,4 +1,5 @@
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
 import { Account } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 
@@ -8,17 +9,17 @@ import { FormattedAddress } from "./FormattedAddress"
 
 type AccountPillProps = {
   account: Account
-  prefix?: number
+  ss58Format?: number
   className?: string
 }
 
-export const AccountPill: FC<AccountPillProps> = ({ account, prefix, className }) => {
+export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, className }) => {
   const encodedAddress = useMemo(
     () =>
-      !!account && prefix !== undefined
-        ? encodeAnyAddress(account.address, prefix)
+      !!account && ss58Format !== undefined
+        ? encodeAnyAddress(account.address, { ss58Format })
         : account?.address,
-    [account, prefix],
+    [account, ss58Format],
   )
 
   const handleClick = useCallback(() => {

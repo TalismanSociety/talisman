@@ -33,7 +33,7 @@ export type AddressEncoding =
   | "bech32m" // bitcoin (taproot, bc1p...)
   | "bech32" // bitcoin (native segwit, bc1...)
   | "base58check" // bitcoin (legacy p2pkh (original format, 1...) and p2sh (wrapped segwit, 3...))
-  | "base58" // solana
+  | "base58solana" // base58 with 32 bytes
 
 export type Keypair = {
   type: KeypairCurve
@@ -42,4 +42,4 @@ export type Keypair = {
   address: string
 }
 
-export type Platform = "ethereum" | "polkadot" | "bitcoin" | "solana"
+export type AccountPlatform = "ethereum" | "polkadot" | "bitcoin" | "solana"

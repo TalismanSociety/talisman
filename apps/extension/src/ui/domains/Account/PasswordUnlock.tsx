@@ -3,7 +3,7 @@ import { KeyIcon } from "@talismn/icons"
 import { ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, useOpenCloseStatus } from "talisman-ui"
 import * as yup from "yup"
 
 import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
@@ -82,9 +82,10 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
     [checkPassword, setError],
   )
 
+  const status = useOpenCloseStatus()
   useEffect(() => {
-    if (!password) setFocus("password")
-  }, [password, setFocus])
+    if (status === "open") setFocus("password")
+  }, [setFocus, status])
 
   useEffect(() => {
     return () => {

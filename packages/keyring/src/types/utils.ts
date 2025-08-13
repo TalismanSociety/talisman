@@ -1,9 +1,10 @@
 import {
   detectAddressEncoding,
+  getAccountPlatformFromAddress,
+  getAccountPlatformFromCurve,
   isBitcoinAddress,
   isEthereumAddress,
-  platformFromAddress,
-  platformFromCurve,
+  isSolanaAddress,
 } from "@talismn/crypto"
 
 import type { Account, AccountLedgerPolkadot, AccountType } from "./account"
@@ -28,6 +29,7 @@ const ACCOUNT_TYPES_OWNED = [
   "keypair",
   "ledger-ethereum",
   "ledger-polkadot",
+  "ledger-solana",
   "polkadot-vault",
 ] as const
 
@@ -36,6 +38,7 @@ const ACCOUNT_TYPES_EXTERNAL = [
   "watch-only",
   "ledger-ethereum",
   "ledger-polkadot",
+  "ledger-solana",
   "polkadot-vault",
   "signet",
 ] as const
@@ -58,6 +61,16 @@ const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
+  "contact",
+  "watch-only",
+  "keypair",
+  "ledger-polkadot",
+  "polkadot-vault",
+  "signet",
+] as const
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_ADDRESS_SS58 = [
   "contact",
   "watch-only",
@@ -68,14 +81,7 @@ const ACCOUNT_TYPES_ADDRESS_SS58 = [
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
-  "contact",
-  "watch-only",
-  "keypair",
-  "ledger-polkadot",
-  "polkadot-vault",
-  "signet",
-] as const
+const ACCOUNT_TYPES_PLATFORM_SOLANA = ["contact", "watch-only", "keypair", "ledger-solana"] as const
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ACCOUNT_TYPES_BITCOIN = ["contact", "watch-only"] as const
@@ -120,6 +126,17 @@ export const isAccountPlatformEthereum = (
   account: Account | null | undefined,
 ): account is AccountPlatformEthereum => {
   return !!account && account.type !== "ledger-polkadot" && isEthereumAddress(account.address)
+}
+
+type AccountPlatformSolana = Extract<
+  Account,
+  { type: (typeof ACCOUNT_TYPES_PLATFORM_SOLANA)[number] }
+>
+
+export const isAccountPlatformSolana = (
+  account: Account | null | undefined,
+): account is AccountPlatformSolana => {
+  return !!account && isSolanaAddress(account.address)
 }
 
 type AccountPlatformPolkadot = Extract<
@@ -185,6 +202,6 @@ export const getAccountSignetUrl = (account: Account | null | undefined) => {
 export const getAccountPlatform = (account: Account | null | undefined) => {
   if (!account) return undefined
   return "curve" in account
-    ? platformFromCurve(account.curve)
-    : platformFromAddress(account.address)
+    ? getAccountPlatformFromCurve(account.curve)
+    : getAccountPlatformFromAddress(account.address)
 }

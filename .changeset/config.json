@@ -3,8 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [
-    ["@talismn/balances", "@talismn/balances-*"],
-    ["@talismn/chain-connector", "@talismn/chain-connector-evm", "@talismn/chaindata-*"]
+    ["@talismn/balances", "@talismn/balances-*"]
   ],
   "linked": [],
   "access": "restricted",

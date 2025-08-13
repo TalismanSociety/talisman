@@ -1,6 +1,11 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { DotNetwork, Network } from "@talismn/chaindata-provider"
-import { isAddressEqual, isEthereumAddress, KeypairCurve } from "@talismn/crypto"
+import {
+  AccountPlatform,
+  getAccountPlatformFromAddress,
+  isAddressEqual,
+  KeypairCurve,
+} from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,
@@ -8,12 +13,16 @@ import {
   isAccountAddressSs58,
   isAccountLedgerPolkadotGeneric,
   isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+  isAccountPlatformSolana,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
 import { AccountsCatalogStore } from "./store.catalog"
+
+export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]
 
 const sortAccountsByCreationDate = (acc1: Account, acc2: Account) => {
   const acc1Created = acc1.createdAt
@@ -77,6 +86,7 @@ export const filterAccountsByAddresses =
   (addresses: string[] = [], anyType = false) =>
   (accounts: Account[]) => {
     return accounts
+      .filter((acc) => isAccountPlatformEthereum(acc) || isAccountPlatformPolkadot(acc))
       .filter(({ address }) => addresses.some((a) => isAddressEqual(a, address)))
       .filter((acc) => {
         if (anyType) return true
@@ -90,6 +100,7 @@ type GetPublicAccountsOptions = {
   includePortalOnlyInfo?: boolean
 }
 
+// should only be used for polkadot & ethereum accounts
 export const getPublicAccounts = (
   accounts: Account[],
   filterFn: (accounts: Account[]) => Account[] = (accounts) => accounts,
@@ -99,6 +110,7 @@ export const getPublicAccounts = (
   },
 ) =>
   filterFn(accounts)
+    .filter((a) => isAccountPlatformEthereum(a) || isAccountPlatformPolkadot(a))
     .filter((a) => {
       if (options.developerMode) return true
       if (options.includePortalOnlyInfo) return a.type !== "contact"
@@ -109,25 +121,40 @@ export const getPublicAccounts = (
       getPjsInjectedAccount(x, { includePortalOnlyInfo: !!options.includePortalOnlyInfo }),
     )
 
-export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex: number) => {
+export const getDefaultCurveForAccountPlatform = (platform: AccountPlatform): KeypairCurve => {
+  switch (platform) {
+    case "ethereum":
+      return "ethereum"
+    case "polkadot":
+      return "sr25519"
+    case "solana":
+      return "solana"
+    default:
+      throw new Error("Unsupported account platform")
+  }
+}
+
+export const getDerivationPathForCurve = (curve: KeypairCurve, accountIndex?: number) => {
   switch (curve) {
     case "ecdsa":
     case "ed25519":
     case "sr25519":
-      return `//${accountIndex}`
+      return typeof accountIndex === "number" ? `//${accountIndex}` : ""
 
     case "ethereum":
       return getEthDerivationPath(accountIndex)
+
+    case "solana":
+      return getSolDerivationPath(accountIndex ?? 0)
 
     default:
       throw Error("Not implemented")
   }
 }
 
-export const formatSuri = (mnemonic: string, derivationPath: string) =>
-  derivationPath && !derivationPath.startsWith("/")
-    ? `${mnemonic}/${derivationPath}`
-    : `${mnemonic}${derivationPath}`
+const getSolDerivationPath = (accountIndex: number) => {
+  return `m/44'/501'/${accountIndex}'/0'`
+}
 
 export const isCurveCompatibleWithChain = (
   chain: DotNetwork,
@@ -139,14 +166,57 @@ export const isCurveCompatibleWithChain = (
 }
 
 const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) => {
+  // consider only substrate and ethereum accounts
+  if (!isAccountPlatformPolkadot(account) && !isAccountPlatformEthereum(account)) return false
+  // except ethereum ledger accounts which can't sign substrate payloads
   if (account.type === "ledger-ethereum") return false
 
+  // check if account is compatible with chain specifics
   const genesisHash = getAccountGenesisHash(account)
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   if (isAccountLedgerPolkadotGeneric(account) && !chain.hasCheckMetadataHash) return false
   return isAccountAddressEthereum(account)
     ? chain.account === "secp256k1"
     : chain.account !== "secp256k1"
+}
+
+export const isAccountCompatibleWithNetwork = (network: Network, account: Account) => {
+  switch (network.platform) {
+    case "ethereum":
+      return isAccountPlatformEthereum(account)
+    case "polkadot":
+      return isAccountCompatibleWithDotNetwork(network, account)
+    case "solana":
+      return isAccountPlatformSolana(account)
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
+}
+
+export const isAccountPlatformCompatibleWithNetwork = (
+  network: Network,
+  platform: AccountPlatform,
+) => {
+  switch (network.platform) {
+    case "ethereum":
+      return platform === "ethereum"
+    case "solana":
+      return platform === "solana"
+    case "polkadot": {
+      switch (network.account) {
+        case "secp256k1":
+          return platform === "ethereum"
+        case "*25519":
+          return platform === "polkadot"
+        default:
+          throw new Error(`Unsupported polkadot network account type ${network.account}`)
+      }
+    }
+    default:
+      log.warn("Unsupported network platform", network)
+      throw new Error("Unsupported network platform")
+  }
 }
 
 /**
@@ -157,27 +227,6 @@ const isAccountCompatibleWithDotNetwork = (chain: DotNetwork, account: Account) 
  * @returns
  */
 export const isAddressCompatibleWithNetwork = (network: Network, address: string) => {
-  switch (network.platform) {
-    case "ethereum":
-      return isEthereumAddress(address)
-    case "polkadot":
-      return isEthereumAddress(address)
-        ? network.account === "secp256k1"
-        : network.account !== "secp256k1"
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
-}
-
-export const isAccountCompatibleWithNetwork = (network: Network, account: Account) => {
-  switch (network.platform) {
-    case "ethereum":
-      return isAccountPlatformEthereum(account)
-    case "polkadot":
-      return isAccountCompatibleWithDotNetwork(network, account)
-    default:
-      log.warn("Unsupported network platform", network)
-      throw new Error("Unsupported network platform")
-  }
+  const accountPlatform = getAccountPlatformFromAddress(address)
+  return isAccountPlatformCompatibleWithNetwork(network, accountPlatform)
 }

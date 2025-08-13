@@ -1,5 +1,5 @@
 import { HexString } from "@polkadot/util/types"
-import { decodeAnyAddress } from "@talismn/util"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { useCallback, useReducer } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -81,12 +81,9 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       const { content: address, genesisHash } = scanned
 
-      const SUBSTRATE_ADDRESS_BYTE_LENGTH = 32
-      const ETHEREUM_ADDRESS_BYTE_LENGTH = 20
-      const isSubstrateAddress =
-        decodeAnyAddress(address).byteLength === SUBSTRATE_ADDRESS_BYTE_LENGTH
-      const isEthereumAddress =
-        decodeAnyAddress(address).byteLength === ETHEREUM_ADDRESS_BYTE_LENGTH
+      const encoding = detectAddressEncoding(address)
+      const isSubstrateAddress = encoding === "ss58"
+      const isEthereumAddress = encoding === "ethereum"
 
       if (!isSubstrateAddress && !isEthereumAddress)
         return { type: "SCAN", enable: true, scanError: "QR code contains an invalid address" }

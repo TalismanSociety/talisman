@@ -1,8 +1,7 @@
-import { stringToBytes } from "@scure/base"
+import { base58, hex } from "@scure/base"
 
-import { addressEncodingFromCurve, addressFromPublicKey } from "../address"
-import { entropyToSeed, getDevSeed, isValidMnemonic, mnemonicToEntropy } from "../mnemonic"
-import { KeypairCurve } from "../types"
+import { entropyToSeed, getDevSeed, mnemonicToEntropy } from "../mnemonic"
+import { AccountPlatform, KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
 import { deriveEthereum, getPublicKeyEthereum } from "./deriveEthereum"
@@ -45,39 +44,15 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
   }
 }
 
-export const addressFromSuri = async (suri: string, type: KeypairCurve) => {
-  const { mnemonic, derivationPath, password } = parseSuri(suri)
-
+export const addressFromMnemonic = async (
+  mnemonic: string,
+  derivationPath: string,
+  curve: KeypairCurve,
+) => {
   const entropy = mnemonicToEntropy(mnemonic)
-  const seed = await entropyToSeed(entropy, type, password) // ~80ms
-  const { secretKey } = deriveKeypair(seed, derivationPath, type)
-  const publicKey = getPublicKeyFromSecret(secretKey, type)
-  const encoding = addressEncodingFromCurve(type)
-
-  return addressFromPublicKey(publicKey, encoding)
-}
-
-/**
- * @dev we only expect suri to contain a mnemonic and derivation path.
- * for other cases see https://polkadot.js.org/docs/keyring/start/suri/
- */
-export const parseSuri = (suri: string) => {
-  // extract password if any
-  const indexOfPassword = suri.indexOf("///")
-  const password = indexOfPassword === -1 ? undefined : suri.slice(indexOfPassword + 3)
-  if (password) suri = suri.slice(0, indexOfPassword)
-
-  // split mnemonic and derivation path
-  const indexOfSlash = suri.indexOf("/")
-  const mnemonic = indexOfSlash === -1 ? suri : suri.slice(0, indexOfSlash)
-  let derivationPath = indexOfSlash === -1 ? "" : suri.slice(indexOfSlash)
-
-  // if BIP44, leading slash must be removed
-  if (derivationPath.startsWith("/m/")) derivationPath = derivationPath.slice(1)
-
-  if (!isValidMnemonic(mnemonic)) throw new Error("Invalid mnemonic")
-
-  return { mnemonic, derivationPath, password }
+  const seed = await entropyToSeed(entropy, curve)
+  const { address } = deriveKeypair(seed, derivationPath, curve)
+  return address
 }
 
 export const removeHexPrefix = (secretKey: string) => {
@@ -85,16 +60,32 @@ export const removeHexPrefix = (secretKey: string) => {
   return secretKey
 }
 
-export const parseSecretKey = (secretKey: string, curve: KeypairCurve) => {
-  switch (curve) {
-    case "ethereum":
-      return stringToBytes("hex", removeHexPrefix(secretKey))
-    case "ed25519":
-    case "sr25519":
-    case "ecdsa":
-    case "bitcoin-ecdsa":
-    case "bitcoin-ed25519":
-    case "solana":
+export const parseSecretKey = (secretKey: string, platform: AccountPlatform) => {
+  switch (platform) {
+    case "ethereum": {
+      const privateKey = removeHexPrefix(secretKey)
+      return hex.decode(privateKey)
+    }
+    case "solana": {
+      const bytes = secretKey.startsWith("[")
+        ? // JSON bytes array (ex: solflare)
+          Uint8Array.from(JSON.parse(secretKey))
+        : // base58 encoded string (ex: phantom)
+          base58.decode(secretKey)
+
+      if (bytes.length === 64) {
+        const privateKey = bytes.slice(0, 32)
+        const publicKey = bytes.slice(32, 64)
+        const computedPublicKey = getPublicKeySolana(privateKey)
+        if (!publicKey.every((b, i) => b === computedPublicKey[i]))
+          throw new Error("Invalid Solana secret key: public key does not match")
+        return privateKey
+      } else if (bytes.length === 32) return bytes
+
+      throw new Error("Invalid Solana secret key length")
+    }
+
+    default:
       throw new Error("Not implemented")
   }
 }

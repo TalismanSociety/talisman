@@ -1,7 +1,7 @@
 import { detectAddressEncoding } from "../address"
-import { AddressEncoding, KeypairCurve, Platform } from "../types"
+import { AccountPlatform, AddressEncoding, KeypairCurve } from "../types"
 
-export const platformFromCurve = (curve: KeypairCurve): Platform => {
+export const getAccountPlatformFromCurve = (curve: KeypairCurve): AccountPlatform => {
   switch (curve) {
     case "sr25519":
     case "ed25519":
@@ -17,7 +17,7 @@ export const platformFromCurve = (curve: KeypairCurve): Platform => {
   }
 }
 
-export const platformFromEncoding = (encoding: AddressEncoding): Platform => {
+export const getAccountPlatformFromEncoding = (encoding: AddressEncoding): AccountPlatform => {
   switch (encoding) {
     case "ss58":
       return "polkadot"
@@ -27,12 +27,12 @@ export const platformFromEncoding = (encoding: AddressEncoding): Platform => {
     case "bech32":
     case "base58check":
       return "bitcoin"
-    case "base58":
+    case "base58solana":
       return "solana"
   }
 }
 
-export const platformFromAddress = (address: string): Platform => {
+export const getAccountPlatformFromAddress = (address: string): AccountPlatform => {
   const encoding = detectAddressEncoding(address)
-  return platformFromEncoding(encoding)
+  return getAccountPlatformFromEncoding(encoding)
 }

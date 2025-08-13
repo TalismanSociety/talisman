@@ -1,4 +1,4 @@
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

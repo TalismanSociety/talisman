@@ -10,7 +10,7 @@ import {
 } from "@dnd-kit/core"
 import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { DotNetworkSchema, isNetworkDot } from "@talismn/chaindata-provider"
+import { DotNetworkSchema, isNetworkDot, SolNetworkSchema } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
 import { TFunction } from "i18next"
 import { FC } from "react"
@@ -18,7 +18,11 @@ import { useTranslation } from "react-i18next"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
 
-import { fetchEthChainId, getDotGenesisHashFromRpc } from "@ui/domains/Networks/helpers"
+import {
+  fetchEthChainId,
+  getDotGenesisHashFromRpc,
+  getSolGenesisHashFromRpc,
+} from "@ui/domains/Networks/helpers"
 
 import { RpcFormData, useNetworkForm } from "./context"
 
@@ -172,6 +176,12 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
                   if (chainId !== network.id) return t("RPC doesn't match chain's chain ID")
                   return undefined
                 }
+                case "solana": {
+                  const genesisHash = await fetchSolGenesisHash(t, value)
+                  if (genesisHash !== network.genesisHash)
+                    return t("RPC doesn't match chain's genesis hash")
+                  return undefined
+                }
               }
             } catch (err) {
               return err instanceof Error ? err.message : String("Invalid RPC url")
@@ -191,6 +201,19 @@ const fetchDotGenesisHash = async (t: TFunction, rpcUrl: string) => {
   if (!genesisHash) throw new Error(t("Failed to query RPC"))
 
   const parsedGenesisHash = DotNetworkSchema.shape.genesisHash.safeParse(genesisHash)
+  if (!parsedGenesisHash.success) throw new Error(parsedGenesisHash.error.issues[0].message)
+
+  return parsedGenesisHash.data
+}
+
+const fetchSolGenesisHash = async (t: TFunction, rpcUrl: string) => {
+  const parsedRpcUrl = z.url({ protocol: /^https?$/ }).safeParse(rpcUrl) // validate URL
+  if (!parsedRpcUrl.success) throw new Error(parsedRpcUrl.error.issues[0].message)
+
+  const genesisHash = await getSolGenesisHashFromRpc(parsedRpcUrl.data)
+  if (!genesisHash) throw new Error(t("Failed to query RPC"))
+
+  const parsedGenesisHash = SolNetworkSchema.shape.genesisHash.safeParse(genesisHash)
   if (!parsedGenesisHash.success) throw new Error(parsedGenesisHash.error.issues[0].message)
 
   return parsedGenesisHash.data

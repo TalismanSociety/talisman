@@ -13,7 +13,7 @@ import { Address } from "../../Account/Address"
 
 type AddressPillButtonProps = {
   address?: string | null
-  genesisHash?: string | null
+  genesisHash?: `0x${string}` | null
   className?: string
   onClick?: () => void
 }

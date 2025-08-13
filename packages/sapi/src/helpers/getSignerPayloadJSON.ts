@@ -1,5 +1,6 @@
 import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { SignerPayloadJSON } from "@polkadot/types/types"
+import { u8aToHex } from "@polkadot/util"
 import { Binary } from "polkadot-api"
 
 import log from "../log"
@@ -19,7 +20,11 @@ export const getSignerPayloadJSON = async (
   args: unknown,
   signerConfig: PayloadSignerConfig,
   chainInfo: ChainInfo,
-): Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array }> => {
+): Promise<{
+  payload: SignerPayloadJSON
+  txMetadata: Uint8Array | undefined
+  shortMetadata: `0x${string}` | undefined
+}> => {
   const { codec, location } = chain.builder.buildCall(palletName, methodName)
   const method = Binary.fromBytes(mergeUint8([new Uint8Array(location), codec.enc(args)]))
 
@@ -73,6 +78,7 @@ export const getSignerPayloadJSON = async (
   }
 
   const { payload, txMetadata } = getPayloadWithMetadataHash(chain, chainInfo, basePayload)
+  const shortMetadata = txMetadata ? u8aToHex(txMetadata) : undefined
 
   // Avail support
   if (payload.signedExtensions.includes("CheckAppId"))
@@ -80,5 +86,9 @@ export const getSignerPayloadJSON = async (
 
   log.log("[sapi] payload", { newPayload: payload, txMetadata })
 
-  return { payload, txMetadata }
+  return {
+    payload,
+    txMetadata, // TODO remove
+    shortMetadata,
+  }
 }

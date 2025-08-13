@@ -1,0 +1,44 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { SolanaSignInInput, SolanaSignInOutput } from "@solana/wallet-standard-features"
+import type {
+  PublicKey,
+  SendOptions,
+  Transaction,
+  TransactionSignature,
+  VersionedTransaction,
+} from "@solana/web3.js"
+
+export interface TalismanSolEvent {
+  connect(...args: unknown[]): unknown
+  disconnect(...args: unknown[]): unknown
+  accountChanged(...args: unknown[]): unknown
+}
+
+export interface TalismanSolEventEmitter {
+  on<E extends keyof TalismanSolEvent>(event: E, listener: TalismanSolEvent[E], context?: any): void
+  off<E extends keyof TalismanSolEvent>(
+    event: E,
+    listener: TalismanSolEvent[E],
+    context?: any,
+  ): void
+}
+
+type SerializedWalletAccount = {
+  address: string
+  label?: string
+  icon?: string
+}
+
+export interface TalismanSol extends TalismanSolEventEmitter {
+  account: SerializedWalletAccount | null
+  connect(options?: { onlyIfTrusted?: boolean }): Promise<{ publicKey: PublicKey }>
+  disconnect(): Promise<void>
+  signAndSendTransaction<T extends Transaction | VersionedTransaction>(
+    transaction: T,
+    options?: SendOptions,
+  ): Promise<{ signature: TransactionSignature }>
+  signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T>
+  signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]>
+  signMessage(message: Uint8Array): Promise<{ signature: Uint8Array }>
+  signIn(input?: SolanaSignInInput): Promise<SolanaSignInOutput>
+}

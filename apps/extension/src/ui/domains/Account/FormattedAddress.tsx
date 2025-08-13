@@ -11,7 +11,7 @@ import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"
 import { Address } from "./Address"
 
-const FormattedAddressTooltip: FC<{ address: string; genesisHash?: string | null }> = ({
+const FormattedAddressTooltip: FC<{ address: string; genesisHash?: `0x${string}` | null }> = ({
   address,
   genesisHash,
 }) => {

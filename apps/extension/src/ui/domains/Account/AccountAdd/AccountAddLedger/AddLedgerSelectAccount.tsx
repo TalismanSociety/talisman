@@ -15,6 +15,7 @@ import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrate
 
 import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
 import { LedgerPolkadotLegacyAccountPicker } from "../../LedgerPolkadotLegacyAccountPicker"
+import { LedgerSolanaAccountPicker } from "../../LedgerSolanaAccountPicker"
 import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const options: Record<LedgerEthDerivationPathType, string> = {
@@ -203,6 +204,9 @@ export const AddLedgerSelectAccount = () => {
             derivationPathType={derivationPathType}
             onChange={handleAccountsChange}
           />
+        )}
+        {data.platform === "solana" && (
+          <LedgerSolanaAccountPicker name={t("Ledger Solana")} onChange={handleAccountsChange} />
         )}
       </div>
       <div className="flex justify-end">

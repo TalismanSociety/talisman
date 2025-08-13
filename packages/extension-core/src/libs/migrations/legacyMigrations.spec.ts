@@ -3,7 +3,6 @@ import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { KeypairType } from "@polkadot/util-crypto/types"
 
-import { formatSuri } from "../../domains/accounts/helpers"
 import {
   LegacyAccountType as AccountType,
   LegacyAccountTypes as AccountTypes,
@@ -40,6 +39,11 @@ const createPair = (
   )
   return pair
 }
+
+export const formatSuri = (mnemonic: string, derivationPath: string) =>
+  derivationPath && !derivationPath.startsWith("/")
+    ? `${mnemonic}/${derivationPath}`
+    : `${mnemonic}${derivationPath}`
 
 describe("App migrations", () => {
   beforeAll(async () => {

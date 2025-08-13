@@ -18,6 +18,10 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
         "[storageValidated$] Chaindata schema validation: %sms",
         (performance.now() - start).toFixed(2),
       )
+      if (!validation.success)
+        log.warn("[storageValidated$] Chaindata schema validation failed", {
+          parsed: validation.data,
+        })
 
       // schema is invalid, fallback to empty data
       return validation.success ? validation.data : EMPTY_DATA

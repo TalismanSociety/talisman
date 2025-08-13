@@ -26,7 +26,7 @@ export const SubSignBody: FC = () => {
           t={t}
           components={{
             RequestType: <>{isBatch ? t("batch request") : t("request")}</>,
-            Account: <AccountPill account={account} prefix={chain?.prefix ?? undefined} />,
+            Account: <AccountPill account={account} ss58Format={chain?.prefix ?? undefined} />,
             Extra: <ChainLabel chain={chain} />,
           }}
           defaults="You are approving a <RequestType /> with account <Account /><Extra />"

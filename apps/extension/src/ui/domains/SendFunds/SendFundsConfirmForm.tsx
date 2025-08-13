@@ -1,4 +1,4 @@
-import { isNetworkDot, isTokenEth } from "@talismn/chaindata-provider"
+import { isTokenEth } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -16,8 +16,8 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
-import { TxSubmitButton } from "../Sign/TxSubmitButton.tsx/TxSignButton"
-import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton.tsx/types"
+import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
+import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
@@ -129,7 +129,7 @@ export const ExternalRecipientWarning = () => {
 
 const SendButton = () => {
   const { t } = useTranslation()
-  const { network, onSubmitted, subTransaction, evmTransaction, txInfo } = useSendFunds()
+  const { network, onSubmitted, transaction, txInfo } = useSendFunds()
 
   const [isReady, setIsReady] = useState(false)
 
@@ -144,40 +144,52 @@ const SendButton = () => {
     }
   }, [])
 
-  const handleSapiSubmit = useCallback(
-    (hash: `0x${string}`) => {
+  const handleSubmit = useCallback(
+    (txId: string) => {
       if (!network) return
       onSubmitted({
-        hash,
-        networkIdOrHash: isNetworkDot(network) ? network.genesisHash : network.id,
+        networkId: network.id,
+        txId,
       })
     },
     [network, onSubmitted],
   )
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
-    if (!network || !txInfo) return null
+    if (!network || !txInfo || !transaction) return null
 
-    if (network.platform === "polkadot" && subTransaction?.unsigned) {
-      return {
-        platform: "polkadot",
-        payload: subTransaction.unsigned,
-        txMetadata: subTransaction?.shortMetadata,
-        txInfo,
-      }
+    switch (transaction.platform) {
+      case "polkadot":
+        return transaction.payload
+          ? {
+              platform: "polkadot",
+              payload: transaction.payload,
+              txMetadata: transaction.shortMetadata,
+              txInfo,
+            }
+          : null
+      case "ethereum":
+        return transaction.tx
+          ? {
+              platform: "ethereum",
+              networkId: network.id,
+              payload: transaction.tx,
+              txInfo,
+            }
+          : null
+      case "solana":
+        return transaction.tx
+          ? {
+              platform: "solana",
+              networkId: network.id,
+              payload: transaction.tx,
+              txInfo,
+            }
+          : null
+      default:
+        throw new Error(`Unsupported transaction platform`)
     }
-
-    if (network.platform === "ethereum" && evmTransaction?.transaction) {
-      return {
-        platform: "ethereum",
-        networkId: network.id,
-        payload: evmTransaction.transaction,
-        txInfo: txInfo,
-      }
-    }
-
-    return null
-  }, [evmTransaction, network, subTransaction, txInfo])
+  }, [transaction, network, txInfo])
 
   return (
     <Suspense fallback={<SuspenseTracker name="SendButton" />}>
@@ -185,20 +197,22 @@ const SendButton = () => {
         <ExternalRecipientWarning />
         <TxSubmitButton
           label={t("Confirm")}
-          onSubmit={handleSapiSubmit}
+          onSubmit={handleSubmit}
           tx={tx}
           disabled={!isReady}
+          containerId="main"
         />
       </div>
     </Suspense>
   )
 }
 
-const EvmFeeSummary = () => {
+const EthFeeSummary = () => {
   const { t } = useTranslation()
-  const { token, network, evmTransaction } = useSendFunds()
+  const { token, network, transaction } = useSendFunds()
 
-  if (!token || !evmTransaction || network?.platform !== "ethereum") return null
+  if (!token || transaction?.platform !== "ethereum" || network?.platform !== "ethereum")
+    return null
 
   const {
     tx,
@@ -209,7 +223,7 @@ const EvmFeeSummary = () => {
     setPriority,
     networkUsage,
     isLoading,
-  } = evmTransaction
+  } = transaction
 
   return (
     <>
@@ -253,13 +267,13 @@ const EvmFeeSummary = () => {
   )
 }
 
-const SubFeeSummary = () => {
+const DefaultFeeSummary = () => {
   const { t } = useTranslation()
-  const { subTransaction, feeToken, tip, tipToken } = useSendFunds()
+  const { transaction, feeToken, tip, tipToken } = useSendFunds()
 
-  if (!subTransaction) return null
+  if (!transaction || transaction.platform === "ethereum") return null
 
-  const { isRefetching, isLoading, partialFee, error } = subTransaction
+  const { isRefetching, isLoading, estimatedFee, error } = transaction
 
   return (
     <>
@@ -286,8 +300,8 @@ const SubFeeSummary = () => {
           >
             <>
               {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-              {partialFee && feeToken && (
-                <TokensAndFiat planck={partialFee} tokenId={feeToken.id} />
+              {estimatedFee && feeToken && (
+                <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
               )}
               {error && (
                 <WithTooltip tooltip={(error as Error).message}>
@@ -305,16 +319,18 @@ const SubFeeSummary = () => {
 const FeeSummary = () => {
   const { token } = useSendFunds()
 
-  if (isTokenEth(token)) return <EvmFeeSummary />
-  return <SubFeeSummary />
+  if (isTokenEth(token)) return <EthFeeSummary />
+  return <DefaultFeeSummary />
 }
 
 export const SendFundsConfirmForm = () => {
   const { t } = useTranslation()
-  const { from, to, network, evmTransaction } = useSendFunds()
+  const { from, to, network, transaction } = useSendFunds()
 
   return (
-    <RiskAnalysisProvider riskAnalysis={evmTransaction?.riskAnalysis}>
+    <RiskAnalysisProvider
+      riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
+    >
       <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
         <ScrollContainer
           className="w-full grow"
@@ -347,7 +363,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
         </ScrollContainer>
-        {evmTransaction && <RiskAnalysisPillButton />}
+        {transaction?.platform === "ethereum" && <RiskAnalysisPillButton />}
         <SendButton />
       </div>
     </RiskAnalysisProvider>

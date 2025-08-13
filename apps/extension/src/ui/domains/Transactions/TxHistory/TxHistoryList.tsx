@@ -18,6 +18,7 @@ import {
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
+  WalletTransactionSol,
 } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
@@ -93,7 +94,7 @@ export const TxHistoryList = () => {
     <div className="pb-4">
       <TransactionRows
         transactions={transactions}
-        activeTxHash={activeTxHash}
+        activeTxId={activeTxHash}
         onContextMenuOpen={handleContextMenuOpen}
         onContextMenuClose={handleContextMenuClose}
       />
@@ -110,10 +111,10 @@ export const TxHistoryList = () => {
 
 const TransactionRows: FC<{
   transactions: WalletTransaction[]
-  activeTxHash?: string
-  onContextMenuOpen: (hash: string) => void
-  onContextMenuClose: (hash: string) => void
-}> = ({ transactions, activeTxHash, onContextMenuOpen, onContextMenuClose }) => {
+  activeTxId?: string
+  onContextMenuOpen: (id: string) => void
+  onContextMenuClose: (id: string) => void
+}> = ({ transactions, activeTxId: activeTxId, onContextMenuOpen, onContextMenuClose }) => {
   const { ref: refContainer } = useScrollContainer() // used/defined in popup only
   const ref = useRef<HTMLDivElement>(null)
 
@@ -146,9 +147,9 @@ const TransactionRows: FC<{
             {!!transactions[item.index] && (
               <TransactionRow
                 tx={transactions[item.index]}
-                enabled={!activeTxHash || activeTxHash === transactions[item.index].hash}
-                onContextMenuOpen={() => onContextMenuOpen(transactions[item.index].hash)}
-                onContextMenuClose={() => onContextMenuClose(transactions[item.index].hash)}
+                enabled={!activeTxId || activeTxId === transactions[item.index].id}
+                onContextMenuOpen={() => onContextMenuOpen(transactions[item.index].id)}
+                onContextMenuClose={() => onContextMenuClose(transactions[item.index].id)}
               />
             )}
           </div>
@@ -166,8 +167,9 @@ type TransactionRowProps = {
   onContextMenuClose?: () => void
 }
 
-type TransactionRowEvmProps = TransactionRowProps & { tx: WalletTransactionEth }
-type TransactionRowSubProps = TransactionRowProps & { tx: WalletTransactionDot }
+type TransactionRowEthProps = TransactionRowProps & { tx: WalletTransactionEth }
+type TransactionRowDotProps = TransactionRowProps & { tx: WalletTransactionDot }
+type TransactionRowSolProps = TransactionRowProps & { tx: WalletTransactionSol }
 
 type TransactionAction = "cancel" | "speed-up" | "dismiss"
 
@@ -283,9 +285,9 @@ const EvmTxActions: FC<{
       onContextMenuClose?.()
       if (action === "speed-up") setReplaceType("speed-up")
       if (action === "cancel") setReplaceType("cancel")
-      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
+      if (action === "dismiss") db.transactionsV2.delete(tx.id) // TODO via backend
     },
-    [onContextMenuClose, tx.hash],
+    [onContextMenuClose, tx.id],
   )
 
   const handleOpenChange = useCallback(
@@ -296,7 +298,7 @@ const EvmTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
+  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   const swapHref = useMemo(() => {
     if (!isTxInfoSwap(txInfo)) return
@@ -462,11 +464,7 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
   }
 }
 
-const SwapTransactionStatusLabel = ({
-  tx,
-}: {
-  tx: WalletTransactionDot | WalletTransactionEth
-}) => {
+const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()
   const swapStatus = useSwapStatus(
     tx.txInfo?.type,
@@ -571,18 +569,18 @@ const TransactionRowBase: FC<{
   )
 }
 
-const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
+const TransactionRowEvm: FC<TransactionRowEthProps> = ({
   tx,
   enabled,
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
+  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
 
-  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || tx.tokenId
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId
 
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -590,15 +588,15 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 
   const { isTransfer, amount } = useMemo(() => {
     // legacy entries do not have a type, in that case assume it's a transfer
-    const isTransfer = token && (txTransfer || (tx.value && tx.tokenId && tx.to))
+    const isTransfer = token && txTransfer
 
     return {
       isTransfer,
       amount: isTransfer
-        ? new BalanceFormatter(txTransfer?.value ?? tx.value, token.decimals, tokenRates)
+        ? new BalanceFormatter(txTransfer?.value, token.decimals, tokenRates)
         : null,
     }
-  }, [token, tokenRates, tx, txTransfer])
+  }, [token, tokenRates, txTransfer])
 
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
@@ -726,8 +724,8 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
-const SubTxActions: FC<{
-  tx: WalletTransactionDot
+const TxActionsDefault: FC<{
+  tx: WalletTransactionDot | WalletTransactionSol
   enabled: boolean
   isOpen: boolean
   onContextMenuOpen?: () => void
@@ -744,9 +742,9 @@ const SubTxActions: FC<{
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "dismiss") db.transactions.delete(tx.hash) // TODO via backend
+      if (action === "dismiss") db.transactionsV2.delete(tx.id) // TODO via backend
     },
-    [onContextMenuClose, tx.hash],
+    [onContextMenuClose, tx.id],
   )
 
   const handleOpenChange = useCallback(
@@ -757,7 +755,7 @@ const SubTxActions: FC<{
     [onContextMenuClose, onContextMenuOpen],
   )
 
-  const chain = useNetworkByGenesisHash(tx.genesisHash)
+  const network = useNetworkById(tx.networkId)
 
   const swapHref = useMemo(() => {
     if (!isTxInfoSwap(txInfo)) return
@@ -775,8 +773,9 @@ const SubTxActions: FC<{
   }, [swapHref])
 
   const hrefBlockExplorer = useMemo(
-    () => (chain?.blockExplorerUrls[0] ? urlJoin(chain.blockExplorerUrls[0], "tx", tx.hash) : null),
-    [chain?.blockExplorerUrls, tx.hash],
+    () =>
+      network?.blockExplorerUrls[0] ? urlJoin(network.blockExplorerUrls[0], "tx", tx.id) : null,
+    [network?.blockExplorerUrls, tx.id],
   )
   const handleBlockExplorerClick = useCallback(() => {
     if (!hrefBlockExplorer) return
@@ -849,18 +848,18 @@ const SubTxActions: FC<{
   )
 }
 
-const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
+const TransactionRowDot: FC<TransactionRowDotProps> = ({
   tx,
   enabled,
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const { genesisHash } = tx.unsigned
+  const { genesisHash } = tx.payload
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
 
-  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || tx.tokenId
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId
 
   const chain = useNetworkByGenesisHash(genesisHash)
   const token = useToken(tokenId)
@@ -869,15 +868,15 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
 
   const { isTransfer, amount } = useMemo(() => {
     // historically txInfo wasnt a property, transfer params were set on the tx object
-    const isTransfer = token && (txTransfer || (tx.value && tx.tokenId && tx.to))
+    const isTransfer = token && txTransfer
 
     return {
       isTransfer,
       amount: isTransfer
-        ? new BalanceFormatter(txTransfer?.value ?? tx.value, token.decimals, tokenRates)
+        ? new BalanceFormatter(txTransfer?.value, token.decimals, tokenRates)
         : null,
     }
-  }, [token, tokenRates, tx, txTransfer])
+  }, [token, tokenRates, txTransfer])
 
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
@@ -894,8 +893,6 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     setIsCtxMenuOpen(false)
     onContextMenuClose?.()
   }, [onContextMenuClose])
-
-  const { t } = useTranslation()
 
   return (
     <TransactionRowBase
@@ -933,11 +930,6 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
             </Suspense>
           ) : (
             <TransactionStatusLabel status={tx.status} />
-          )}
-          {tx.isReplacement && (
-            <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
-              {t("Replacement")}
-            </span>
           )}
         </>
       }
@@ -989,7 +981,148 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
       actions={
-        <SubTxActions
+        <TxActionsDefault
+          tx={tx}
+          enabled={enabled}
+          isOpen={isCtxMenuOpen}
+          onContextMenuOpen={handleOpenCtxMenu}
+          onContextMenuClose={handleCloseCtxMenu}
+        />
+      }
+    />
+  )
+}
+
+const TransactionRowSol: FC<TransactionRowSolProps> = ({
+  tx,
+  enabled,
+  onContextMenuOpen,
+  onContextMenuClose,
+}) => {
+  const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
+  const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId
+
+  const chain = useNetworkById(tx.networkId, "solana")
+  const token = useToken(tokenId)
+  const tokenRates = useTokenRates(tokenId)
+  const currency = useSelectedCurrency()
+
+  const { isTransfer, amount } = useMemo(() => {
+    // historically txInfo wasnt a property, transfer params were set on the tx object
+    const isTransfer = token && txTransfer
+
+    return {
+      isTransfer,
+      amount: isTransfer
+        ? new BalanceFormatter(txTransfer?.value, token.decimals, tokenRates)
+        : null,
+    }
+  }, [token, tokenRates, txTransfer])
+
+  const fromToken = useToken(txSwap?.fromTokenId)
+  const toToken = useToken(txSwap?.toTokenId)
+
+  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
+
+  const handleOpenCtxMenu = useCallback(() => {
+    if (!enabled) return
+    onContextMenuOpen?.()
+    setIsCtxMenuOpen(true)
+  }, [enabled, onContextMenuOpen])
+
+  const handleCloseCtxMenu = useCallback(() => {
+    setIsCtxMenuOpen(false)
+    onContextMenuClose?.()
+  }, [onContextMenuClose])
+
+  return (
+    <TransactionRowBase
+      isCtxMenuOpen={isCtxMenuOpen}
+      enabled={enabled}
+      logo={
+        tx.siteUrl ? (
+          <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
+            <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : txSwap ? (
+          <div className="flex items-center">
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
+              <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
+              <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+          </div>
+        ) : isTransfer && token ? (
+          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
+            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        ) : (
+          <TxIconContainer tooltip={chain?.name}>
+            <NetworkLogo networkId={chain?.id} className="!h-16 !w-16" />
+          </TxIconContainer>
+        )
+      }
+      status={
+        txSwap ? (
+          <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+            <SwapTransactionStatusLabel tx={tx} />
+          </Suspense>
+        ) : (
+          <TransactionStatusLabel status={tx.status} />
+        )
+      }
+      wen={<DistanceToNow timestamp={tx.timestamp} />}
+      tokens={
+        txSwap ? (
+          // tx is a swap deposit
+          <div className="flex flex-col">
+            <div className="flex items-center justify-end gap-1">
+              <Tokens
+                className="pointer-events-none"
+                amount={planckToTokens(txSwap.fromAmount, fromToken?.decimals)}
+                decimals={fromToken?.decimals}
+                symbol={fromToken?.symbol}
+                noCountUp
+                noTooltip
+                isBalance
+              />
+              <ArrowRightIcon className="text-body-inactive" />
+            </div>
+            <Tokens
+              className="pointer-events-none"
+              amount={planckToTokens(txSwap.toAmount, toToken?.decimals)}
+              decimals={toToken?.decimals ?? 0}
+              symbol={toToken?.symbol}
+              noCountUp
+              noTooltip
+              isBalance
+            />
+          </div>
+        ) : (
+          !!amount &&
+          !!token && (
+            <Tokens
+              className="pointer-events-none"
+              amount={amount.tokens}
+              decimals={token.decimals}
+              noCountUp
+              noTooltip
+              symbol={token.symbol}
+              isBalance
+            />
+          )
+        )
+      }
+      fiat={
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
+      }
+      actions={
+        <TxActionsDefault
           tx={tx}
           enabled={enabled}
           isOpen={isCtxMenuOpen}
@@ -1002,11 +1135,13 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
 }
 
 const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
-  switch (tx.networkType) {
-    case "evm":
+  switch (tx.platform) {
+    case "ethereum":
       return <TransactionRowEvm tx={tx} {...props} />
-    case "substrate":
-      return <TransactionRowSubstrate tx={tx} {...props} />
+    case "polkadot":
+      return <TransactionRowDot tx={tx} {...props} />
+    case "solana":
+      return <TransactionRowSol tx={tx} {...props} />
     default:
       return null
   }

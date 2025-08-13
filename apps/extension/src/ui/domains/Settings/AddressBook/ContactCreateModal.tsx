@@ -1,7 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { isEthereumAddress } from "@polkadot/util-crypto"
-import { isAddressEqual, isSs58Address } from "@talismn/crypto"
-import { HexString, isValidSubstrateAddress } from "@talismn/util"
+import {
+  getAccountPlatformFromAddress,
+  isAddressEqual,
+  isAddressValid,
+  isSs58Address,
+} from "@talismn/crypto"
+import { HexString } from "@talismn/util"
 import { keyBy } from "lodash-es"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -50,9 +54,18 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           .transform((value) => value.trim())
           .test("is-valid", t("Address is not valid"), (value, ctx) => {
             if (!value) return false
-            const isEthAddress = isEthereumAddress(value)
-            const isValidAddress = isEthAddress || isValidSubstrateAddress(value)
-            if (!isValidAddress) return ctx.createError({ message: t("Invalid Address") })
+            if (!isAddressValid(value))
+              return ctx.createError({ message: t("Address is not valid") })
+
+            const encoding = getAccountPlatformFromAddress(value)
+            switch (encoding) {
+              case "polkadot":
+              case "ethereum":
+              case "solana":
+                break
+              default:
+                return ctx.createError({ message: t("Unsupported address type") })
+            }
 
             const existing = accounts.find((c) => isAddressEqual(c.address, value))
             if (existing)

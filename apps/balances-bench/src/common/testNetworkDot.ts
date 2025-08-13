@@ -3,9 +3,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname } from "path"
 
-import { WsProvider } from "@polkadot/rpc-provider"
 import { BALANCE_MODULES, FetchBalanceResults, MiniMetadata } from "@talismn/balances"
-import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorDotStub, IChainConnectorDot } from "@talismn/chain-connectors"
 import { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import {
@@ -46,11 +45,9 @@ const DEFAULT_OPTIONS: TestOptions = {
 export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOptions) => {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
-  const rpcUrl = network.rpcs[0]
+  const connector: IChainConnectorDot = new ChainConnectorDotStub(network as unknown as DotNetwork)
 
   const stopAll = log.timer("testDotNetwork " + network.id)
-  const stop1 = log.timer(`Connected to ${rpcUrl}`)
-  const provider = new WsProvider(rpcUrl)
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null
@@ -58,17 +55,12 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
   let dryRun: any = null
 
   try {
-    await provider.isReady
-    stop1()
-
-    const connector = {
-      send: (_chainId: string, method: string, params: string[], isCacheable: boolean) => {
-        return provider.send(method, params, isCacheable)
-      },
-    } as ChainConnector
-
     const stop2 = log.timer("Fetched runtime version")
-    const { specVersion } = await provider.send("state_getRuntimeVersion", [])
+    const { specVersion } = await connector.send<{ specVersion: number }>(
+      network.id,
+      "state_getRuntimeVersion",
+      [],
+    )
     stop2()
     log.log("RuntimeVersion", { specVersion })
 
@@ -80,7 +72,10 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
       if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
 
       const stop = log.timer("Fetched metadata")
-      const metadataRpc = await fetchBestMetadata((...args) => provider.send(...args), false)
+      const metadataRpc = await fetchBestMetadata(
+        (...args) => connector.send(networkId, ...args),
+        false,
+      )
       stop()
       writeFileSync(metadataFilePath, metadataRpc)
     }
@@ -218,7 +213,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     stopAll()
   } catch (err) {
     log.error(err)
-    provider.disconnect()
+    connector.asProvider(network.id).disconnect()
   }
 
   return { miniMetadatas, tokens, balances, dryRun }

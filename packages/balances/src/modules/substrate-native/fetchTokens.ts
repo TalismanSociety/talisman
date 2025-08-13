@@ -1,4 +1,4 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { SubNativeToken, subNativeTokenId, SubNativeTokenSchema } from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 import z from "zod/v4"
@@ -65,7 +65,7 @@ const DotNetworkPropertiesSchema = z
     tokenSymbol: Array.isArray(val.tokenSymbol) ? val.tokenSymbol[0] : val.tokenSymbol,
   }))
 
-export const getChainProperties = async (connector: ChainConnector, networkId: string) => {
+export const getChainProperties = async (connector: IChainConnectorDot, networkId: string) => {
   const properties = await connector.send(networkId, "system_properties", [], true)
   return DotNetworkPropertiesSchema.parse(properties)
 }

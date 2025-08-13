@@ -1,12 +1,22 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { base58, ed25519 } from "@talismn/crypto"
+import { Account } from "@talismn/keyring"
 
-import type { MessageTypes, RequestType, ResponseType } from "../../types"
+import type {
+  MessageTypes,
+  RequestType,
+  RequestTypes,
+  ResponseType,
+  ResponseTypes,
+} from "../../types"
 import type { Port, RequestIdOnly } from "../../types/base"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { KnownRequestIdOnly } from "../../libs/requests/types"
+import { keyringStore } from "../keyring/store"
+import { withSecretKey } from "../keyring/withSecretKey"
 import { ignoreRequest } from "./requests"
 import {
   AuthorizedSite,
@@ -49,8 +59,9 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
     talismanAnalytics.capture("authorised site approve", {
       url: queued.idStr,
-      authType: queued.request.ethereum ? "ethereum" : "substrate",
-      withEthAccounts: queued.request.ethereum ? undefined : addresses.some(isEthereumAddress),
+      authType: queued.request.provider,
+      withEthAccounts:
+        queued.request.provider === "ethereum" ? undefined : addresses.some(isEthereumAddress),
     })
     const { resolve } = queued
     resolve({ addresses })
@@ -65,9 +76,32 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const { reject } = queued
     talismanAnalytics.capture("authorised site reject", {
       url: queued.idStr,
-      authType: queued.request.ethereum ? "ethereum" : "substrate",
+      authType: queued.request.provider,
     })
     reject(new Error("Rejected"))
+
+    return true
+  }
+
+  private async authorizeApproveSolSignIn({
+    id,
+    result,
+  }: RequestTypes["pri(sites.requests.approveSolSignIn)"]): Promise<
+    ResponseTypes["pri(sites.requests.approveSolSignIn)"]
+  > {
+    const queued = requestStore.getRequest(id)
+    assert(queued, "Unable to find request")
+
+    // if this throws, front end will catch it and display an error
+    // => all inputs must be validated here
+    const { account, signature } = await getSolSignInSignature(result)
+
+    // resolve handler cannot send error back to the frontend
+    queued.resolve({
+      account,
+      message: result.message,
+      signature,
+    })
 
     return true
   }
@@ -118,8 +152,41 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
       case "pri(sites.requests.ignore)":
         return ignoreRequest(request as KnownRequestIdOnly<"auth">)
 
+      case "pri(sites.requests.approveSolSignIn)":
+        return this.authorizeApproveSolSignIn(
+          request as RequestTypes["pri(sites.requests.approveSolSignIn)"],
+        )
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
   }
+}
+
+const getSolSignInSignature = async (
+  result: RequestTypes["pri(sites.requests.approveSolSignIn)"]["result"],
+): Promise<{
+  account: Account
+  signature: string
+}> => {
+  const { address, message, signature } = result
+
+  const account = await keyringStore.getAccount(address)
+  if (!account) throw new Error("Account not found")
+
+  const signedMessage = new TextEncoder().encode(message)
+
+  if (!signature) {
+    const signResult = await withSecretKey(address, async (secretKey) => {
+      return ed25519.sign(signedMessage, secretKey)
+    })
+
+    return { account, signature: base58.encode(signResult.unwrap()) }
+  }
+
+  // verify that the signature supplied by the frontend is valid
+  if (!ed25519.verify(base58.decode(signature), signedMessage, base58.decode(address)))
+    throw new Error("Signature verification failed")
+
+  return { account, signature }
 }

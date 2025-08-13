@@ -1,6 +1,7 @@
 import { assert } from "@polkadot/util"
 import { EthNetworkId, Token } from "@talismn/chaindata-provider"
-import { isBigInt, isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
+import { isBigInt } from "@talismn/util"
 import {
   encodeFunctionData,
   erc20Abi,
@@ -43,7 +44,7 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
   return getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS[type])
 }
 
-export const getEthTransferTransactionBase = async (
+export const getEthTransferTransactionBase = (
   evmNetworkId: EthNetworkId,
   from: EvmAddress,
   to: EvmAddress,

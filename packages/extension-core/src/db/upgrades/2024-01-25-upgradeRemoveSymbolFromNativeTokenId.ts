@@ -1,11 +1,11 @@
 import { Transaction as DbTransaction } from "dexie"
 
-import { WalletTransaction } from "../../domains/transactions"
+import { LegacyWalletTransaction } from "../../domains/transactions"
 
 // For DB version 8, Wallet version 1.21.0
 export const upgradeRemoveSymbolFromNativeTokenId = async (tx: DbTransaction) => {
   await tx
-    .table<WalletTransaction, string>("transactions")
+    .table<LegacyWalletTransaction, string>("transactions")
     .toCollection()
     .modify((wtx) => {
       if (wtx?.tokenId?.includes?.("-substrate-native-"))

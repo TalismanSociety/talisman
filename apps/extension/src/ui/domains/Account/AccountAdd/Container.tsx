@@ -1,15 +1,21 @@
-import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
+import { AccountPlatform } from "@talismn/crypto"
 import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import { cloneElement, ReactElement, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { EthereumCircleBorderedLogo, PolkadotCircleBorderedLogo } from "@talisman/theme/logos"
+import {
+  EthereumCircleBorderedLogo,
+  PolkadotCircleBorderedLogo,
+  SolanaCircleLogo,
+} from "@talisman/theme/logos"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
 
@@ -105,14 +111,14 @@ function MethodTypeTab({
 
 function NewAccountMethodButtons() {
   const { t } = useTranslation()
-  const [accountType, setAccountType] = useState<string>()
+  const [platform, setPlatform] = useState<AccountPlatform>()
 
   return (
     <>
       <SelectAccountTypeSectionHeader />
-      <AccountTypeNetworkSearch setAccountType={setAccountType} />
+      <AccountTypeNetworkSearch setAccountPlatform={setPlatform} />
       <AccountTypeMethodButton
-        disabled={accountType === "polkadot"}
+        disabled={platform === "polkadot"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("New Ethereum Account")}
@@ -121,11 +127,11 @@ function NewAccountMethodButtons() {
             )}
           />
         }
-        type="ethereum"
+        platform="ethereum"
         to={`/accounts/add/derived?platform=ethereum`}
       />
       <AccountTypeMethodButton
-        disabled={accountType === "ethereum"}
+        disabled={platform === "ethereum"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("New Polkadot Account")}
@@ -134,8 +140,20 @@ function NewAccountMethodButtons() {
             )}
           />
         }
-        type="polkadot"
+        platform="polkadot"
         to={`/accounts/add/derived?platform=polkadot`}
+      />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "solana"}
+        title={<SelectAccountTypeButtonHeader title={t("New Solana Account")} />}
+        platform="solana"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="solana-mainnet" className="text-md" />
+            <div>{t("Solana Mainnet and testnets")}</div>
+          </div>
+        }
+        to={`/accounts/add/derived?platform=solana`}
       />
     </>
   )
@@ -148,14 +166,14 @@ function ImportAccountMethodButtons() {
     <>
       <AccountCreateMethodButton
         title={t("Import via Recovery Phrase")}
-        subtitle={t("Polkadot or Ethereum account")}
-        networks={["polkadot", "ethereum"]}
+        subtitle={t("Ethereum, Polkadot, and Solana accounts")}
+        networks={["ethereum", "polkadot", "solana"]}
         to={`/accounts/add/mnemonic`}
       />
       <AccountCreateMethodButton
         title={t("Import via Private Key")}
-        subtitle={t("Ethereum account")}
-        networks={["ethereum"]}
+        subtitle={t("Ethereum and Solana accounts")}
+        networks={["ethereum", "solana"]}
         to={`/accounts/add/pk`}
       />
       <AccountCreateMethodButton
@@ -177,9 +195,11 @@ function ConnectAccountMethodButtons() {
       <AccountCreateMethodButton
         title={t("Connect Ledger")}
         subtitle={
-          isLedgerCapable ? t("Polkadot or Ethereum account") : t("Not supported on this browser")
+          isLedgerCapable
+            ? t("Ethereum, Polkadot or Ethereum accounts")
+            : t("Not supported on this browser")
         }
-        networks={isLedgerCapable ? ["polkadot", "ethereum"] : []}
+        networks={isLedgerCapable ? ["ethereum", "polkadot", "solana"] : []}
         disabled={!isLedgerCapable}
         to={`/accounts/add/ledger`}
       />
@@ -202,14 +222,14 @@ function ConnectAccountMethodButtons() {
 
 function WatchedAccountMethodButtons() {
   const { t } = useTranslation()
-  const [accountType, setAccountType] = useState<string>()
+  const [platform, setPlatform] = useState<AccountPlatform>()
 
   return (
     <>
       <SelectAccountTypeSectionHeader />
-      <AccountTypeNetworkSearch setAccountType={setAccountType} />
+      <AccountTypeNetworkSearch setAccountPlatform={setPlatform} />
       <AccountTypeMethodButton
-        disabled={accountType === "polkadot"}
+        disabled={!!platform && platform !== "ethereum"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("Watch Ethereum Account")}
@@ -218,11 +238,11 @@ function WatchedAccountMethodButtons() {
             )}
           />
         }
-        type="ethereum"
+        platform="ethereum"
         to={`/accounts/add/watched?platform=ethereum`}
       />
       <AccountTypeMethodButton
-        disabled={accountType === "ethereum"}
+        disabled={!!platform && platform !== "polkadot"}
         title={
           <SelectAccountTypeButtonHeader
             title={t("Watch Polkadot Account")}
@@ -231,8 +251,20 @@ function WatchedAccountMethodButtons() {
             )}
           />
         }
-        type="polkadot"
+        platform="polkadot"
         to={`/accounts/add/watched?platform=polkadot`}
+      />
+      <AccountTypeMethodButton
+        disabled={!!platform && platform !== "solana"}
+        title={<SelectAccountTypeButtonHeader title={t("Watch Solana Account")} />}
+        platform="solana"
+        supportedNetworks={
+          <div className="flex items-center gap-2">
+            <NetworkLogo networkId="solana-mainnet" className="text-md" />
+            <div>{t("Solana Mainnet and testnets")}</div>
+          </div>
+        }
+        to={`/accounts/add/watched?platform=solana`}
       />
     </>
   )
@@ -252,7 +284,7 @@ function SelectAccountTypeSectionHeader() {
   )
 }
 
-function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tooltip: string }) {
+function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tooltip?: string }) {
   return (
     <div className="flex items-center gap-3">
       {title}
@@ -262,9 +294,11 @@ function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tool
             <InfoIcon className="text-sm" />
           </div>
         </TooltipTrigger>
-        <TooltipContent>
-          <div>{tooltip}</div>
-        </TooltipContent>
+        {!!tooltip && (
+          <TooltipContent>
+            <div>{tooltip}</div>
+          </TooltipContent>
+        )}
       </Tooltip>
     </div>
   )
@@ -272,41 +306,36 @@ function SelectAccountTypeButtonHeader({ title, tooltip }: { title: string; tool
 
 function AccountTypeMethodButton({
   title,
-  type,
+  platform,
   disabled,
   to,
+  supportedNetworks,
 }: {
   title: ReactNode
-  type: "polkadot" | "ethereum"
+  platform: AccountPlatform
   disabled?: boolean
   to?: string
+  supportedNetworks?: ReactNode
 }) {
   const { t } = useTranslation()
   const networks = useNetworks()
 
-  const supportedChainIds = useMemo(() => {
-    switch (type) {
-      case "polkadot":
-        return networks
-          .filter(isNetworkDot)
-          .filter((n) => n.account === "*25519")
-          .map((n) => n.id)
-      case "ethereum":
-        return [
-          ...networks.filter(isNetworkDot).filter((n) => n.account === "secp256k1"),
-          ...networks.filter(isNetworkEth),
-        ].map((n) => n.id)
-    }
-  }, [networks, type])
+  const supportedChainIds = useMemo(
+    () =>
+      networks.filter((n) => isAccountPlatformCompatibleWithNetwork(n, platform)).map((n) => n.id),
+    [networks, platform],
+  )
 
   return (
     <AccountCreateMethodButton
       title={title}
       subtitle={
-        <div className="flex items-center gap-2">
-          <AllNetworksLogoStack className="text-md" ids={supportedChainIds} max={5} />
-          <div>{t("Networks supported")}</div>
-        </div>
+        supportedNetworks ?? (
+          <div className="flex items-center gap-2">
+            <AllNetworksLogoStack className="text-md" ids={supportedChainIds} max={5} />
+            <div>{t("Networks supported")}</div>
+          </div>
+        )
       }
       to={to}
       disabled={disabled}
@@ -317,6 +346,7 @@ function AccountTypeMethodButton({
 const networkChoices = {
   polkadot: <PolkadotCircleBorderedLogo />,
   ethereum: <EthereumCircleBorderedLogo />,
+  solana: <SolanaCircleLogo />,
 }
 function AccountCreateMethodButton({
   title,
@@ -327,7 +357,7 @@ function AccountCreateMethodButton({
 }: {
   title: ReactNode
   subtitle: ReactNode
-  networks?: Array<"ethereum" | "polkadot">
+  networks?: Array<"ethereum" | "polkadot" | "solana">
   disabled?: boolean
   to?: string
 }) {

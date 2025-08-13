@@ -3,7 +3,7 @@ import { Dexie } from "dexie"
 import { ProtectorSources, ProtectorStorage } from "../domains/app/protector/ParaverseProtector"
 import { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import { TalismanMetadataDef } from "../domains/substrate/types"
-import { WalletTransaction } from "../domains/transactions/types"
+import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
@@ -15,7 +15,8 @@ class TalismanDatabase extends Dexie {
   assetDiscovery!: Dexie.Table<DiscoveredBalance, string>
   metadata!: Dexie.Table<TalismanMetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
-  transactions!: Dexie.Table<WalletTransaction, string>
+  transactions!: Dexie.Table<LegacyWalletTransaction, string>
+  transactionsV2!: Dexie.Table<WalletTransaction, string>
   blobs!: Dexie.Table<DbBlobItem, DbBlobId>
 
   constructor() {
@@ -50,6 +51,8 @@ class TalismanDatabase extends Dexie {
       .upgrade(function upgradeTokenRatesToObjects() {})
 
     this.version(11).stores({
+      // migration is handled by the MigrationRunner, to ensure it's executed after other migrations
+      transactionsV2: "id, status, timestamp",
       tokenRates: null,
     })
   }

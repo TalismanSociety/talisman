@@ -1,4 +1,4 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
 import PQueue from "p-queue"
 
@@ -18,7 +18,7 @@ const CACHE = new Map<string, Promise<MiniMetadata[]>>()
 const POOL = new PQueue({ concurrency: 4 })
 
 export const getMiniMetadatas = async (
-  chainConnector: ChainConnector,
+  chainConnector: IChainConnectorDot,
   chaindataProvider: ChaindataProvider,
   networkId: DotNetworkId,
   specVersion?: number,
@@ -44,7 +44,7 @@ export const getMiniMetadatas = async (
 }
 
 const fetchMiniMetadatas = async (
-  chainConnector: ChainConnector,
+  chainConnector: IChainConnectorDot,
   chaindataProvider: ChaindataProvider,
   chainId: DotNetworkId,
   specVersion: number,

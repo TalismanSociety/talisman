@@ -1,5 +1,5 @@
+import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { isEthereumAddress } from "@talismn/util"
 import { Account, getAccountGenesisHash } from "extension-core"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -128,7 +128,7 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
   )
 
   const networkIds = useActiveAssetDiscoveryNetworkIds()
-  const canScanTokens = useMemo(() => isEthereumAddress(account?.address), [account])
+  const canScanTokens = useMemo(() => account && isEthereumAddress(account.address), [account])
   const scanTokensClick = useCallback(() => {
     if (!account) return
     api.assetDiscoveryStartScan({ networkIds, addresses: [account.address], withApi: true })

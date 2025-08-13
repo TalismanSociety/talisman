@@ -1,5 +1,6 @@
 import {
   AUTH_PREFIX,
+  AUTH_SOL_SIGN_IN_PREFIX,
   ENCRYPT_DECRYPT_PREFIX,
   ENCRYPT_ENCRYPT_PREFIX,
   ETH_NETWORK_ADD_PREFIX,
@@ -41,6 +42,8 @@ import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
 import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
+import { SolanaSignRequest } from "./pages/Sign/solana"
+import { SolanaSignInPage } from "./pages/Sign/solana/SignIn"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
@@ -70,9 +73,11 @@ const Popup = () => {
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
+          <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolanaSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.ETH_SEND}/:id`} element={<EthereumSignRequest />} />
           <Route path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`} element={<SubstrateSignRequest />} />
+          <Route path={`${SIGNING_TYPES.SOL_SIGN}/:id`} element={<SolanaSignRequest />} />
           <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />} />
           <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />} />
           <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />} />

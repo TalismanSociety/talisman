@@ -1,12 +1,12 @@
 import { Address as TAddress } from "@talismn/balances"
 import { DotNetworkId } from "@talismn/chaindata-provider"
+import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
@@ -60,7 +60,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
   const account = useAccountByAddress(address)
 
   const resolvedAddress = useMemo(() => {
-    return chain && address ? convertAddress(address, chain.prefix) : address
+    return chain && address ? encodeAnyAddress(address, { ss58Format: chain.prefix }) : address
   }, [address, chain])
 
   const [onChainId] = useOnChainId(resolvedAddress ?? undefined)

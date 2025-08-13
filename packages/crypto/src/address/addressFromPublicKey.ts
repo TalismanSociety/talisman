@@ -1,5 +1,5 @@
 import type { AddressEncoding } from "../types"
-import { encodeAddressBase58, encodeAddressEthereum, encodeAddressSs58 } from "./encoding"
+import { encodeAddressEthereum, encodeAddressSolana, encodeAddressSs58 } from "./encoding"
 
 export type EncodeAddressOptions = {
   ss58Prefix?: number
@@ -15,11 +15,11 @@ export const addressFromPublicKey = (
       return encodeAddressSs58(publicKey, options?.ss58Prefix)
     case "ethereum":
       return encodeAddressEthereum(publicKey)
+    case "base58solana":
+      return encodeAddressSolana(publicKey)
     case "bech32m":
     case "bech32":
     case "base58check":
       throw new Error("addressFromPublicKey is not implemented for Bitcoin")
-    case "base58":
-      return encodeAddressBase58(publicKey)
   }
 }

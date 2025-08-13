@@ -18,18 +18,19 @@ import {
   AuthorizedSites,
   AuthRequestAddresses,
   AuthRequestId,
+  AuthSolanaSignInApprove,
   BalanceSubscriptionResponse,
   ChangePasswordStatusUpdate,
   DecryptRequestId,
   EncryptRequestId,
   EvmAddress,
+  KnownRequestId,
   LoggedinType,
   MetadataUpdateStatus,
   Mnemonic,
   NftData,
   ProviderType,
   RequestAccountContactUpdate,
-  RequestAccountCreateOptions,
   RequestAccountsCatalogAction,
   RequestAddAccountDerive,
   RequestAddAccountExternal,
@@ -39,10 +40,14 @@ import {
   RequestMetadataId,
   RequestNetworkUpsert,
   RequestSetVerifierCertificateMnemonic,
+  RequestSolanaSignApprove,
+  ResponseSolanaSubmit,
   SendFundsOpenRequest,
   SignerPayloadGenesisHash,
   SignerPayloadJSON,
   SigningRequestID,
+  SolRpcRequest,
+  SolRpcResponse,
   Trees,
   UnsubscribeFn,
   ValidRequests,
@@ -120,12 +125,6 @@ export default interface MessageTypes {
   accountAddExternal: (options: RequestAddAccountExternal) => Promise<string[]>
   accountAddDerive: (options: RequestAddAccountDerive) => Promise<string[]>
   accountAddKeypair: (options: RequestAddAccountKeypair) => Promise<string[]>
-  accountCreate: (
-    name: string,
-    curve: KeypairCurve,
-    options: RequestAccountCreateOptions,
-  ) => Promise<string>
-  accountCreateFromSuri: (name: string, suri: string, curve?: KeypairCurve) => Promise<string>
   accountCreateFromJson: (unlockedPairs: KeyringPair$Json[]) => Promise<string[]>
   accountExternalSetIsPortfolio: (address: string, isPortfolio: boolean) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: Account[]) => void) => UnsubscribeFn
@@ -173,6 +172,10 @@ export default interface MessageTypes {
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
+  authrequestApproveSolSignIn: (
+    id: KnownRequestId<"auth-sol-signIn">,
+    result: AuthSolanaSignInApprove["result"],
+  ) => Promise<boolean>
 
   metadataUpdatesSubscribe: (
     genesisHash: HexString,
@@ -247,6 +250,14 @@ export default interface MessageTypes {
     signature?: HexString,
     txInfo?: WalletTransactionInfo,
   ) => Promise<{ hash: HexString }>
+
+  solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
+  solSubmit: (
+    networkId: string,
+    transaction: string,
+    txInfo?: WalletTransactionInfo,
+  ) => Promise<ResponseSolanaSubmit>
+  solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
 
   // substrate chain metadata
   subChainMetadata: (

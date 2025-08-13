@@ -1,5 +1,11 @@
 import { HexString } from "@polkadot/util/types"
-import { SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
+import {
+  ResponseSolanaSubmit,
+  SignerPayloadJSON,
+  SolRpcRequest,
+  SolRpcResponse,
+  WalletTransactionInfo,
+} from "extension-core"
 
 import PortMessageService from "@common/PortMessageService"
 
@@ -93,10 +99,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.add.external)", options),
   accountAddDerive: (options) => messageService.sendMessage("pri(accounts.add.derive)", options),
   accountAddKeypair: (options) => messageService.sendMessage("pri(accounts.add.keypair)", options),
-  accountCreate: (name, curve, options) =>
-    messageService.sendMessage("pri(accounts.create)", { name, curve, ...options }),
-  accountCreateFromSuri: (name, suri, curve) =>
-    messageService.sendMessage("pri(accounts.create.suri)", { name, suri, curve }),
   accountCreateFromJson: (unlockedPairs) =>
     messageService.sendMessage("pri(accounts.create.json)", { unlockedPairs }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
@@ -156,6 +158,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
+  authrequestApproveSolSignIn: (id, result) =>
+    messageService.sendMessage("pri(sites.requests.approveSolSignIn)", { id, result }),
 
   // track metadata updates ----------------------------------------------
   metadataUpdatesSubscribe: (genesisHash, cb) =>
@@ -256,6 +260,21 @@ export const api: MessageTypes = {
       genesisHash,
       specVersion,
     }),
+
+  // solana
+  solSend: <T>(networkId: string, request: SolRpcRequest) =>
+    messageService.sendMessage("pri(solana.rpc.send)", {
+      networkId,
+      request,
+    }) as Promise<SolRpcResponse<T>>,
+  solSubmit: (networkId: string, transaction: string, txInfo?: WalletTransactionInfo) =>
+    messageService.sendMessage("pri(solana.rpc.submit)", {
+      networkId,
+      transaction,
+      txInfo,
+    }) as Promise<ResponseSolanaSubmit>,
+  solSignApprove: (req) =>
+    messageService.sendMessage("pri(solana.sign.approve)", req) as Promise<void>,
 
   // asset discovery
   assetDiscoveryStartScan: (scope) =>

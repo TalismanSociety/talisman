@@ -1,8 +1,13 @@
-import type { ChainConnector } from "@talismn/chain-connector"
-import type { ChainConnectorEvm } from "@talismn/chain-connector-evm"
+import type {
+  IChainConnectorDot,
+  IChainConnectorEth,
+  IChainConnectorSol,
+} from "@talismn/chain-connectors"
+import { TransactionInstruction } from "@solana/web3.js"
 import {
   DotNetworkId,
   EthNetworkId,
+  SolNetworkId,
   Token,
   TokenId,
   TokenOfType,
@@ -15,10 +20,12 @@ import type { Address, IBalance, MiniMetadata } from "."
 export type TokenPlatform<T extends TokenType> = TokenOfType<T>["platform"]
 
 export type PlatformConnector<P extends TokenPlatform<TokenType>> = P extends "ethereum"
-  ? ChainConnectorEvm
+  ? IChainConnectorEth
   : P extends "polkadot"
-    ? ChainConnector
-    : never
+    ? IChainConnectorDot
+    : P extends "solana"
+      ? IChainConnectorSol
+      : never
 
 type DotTransferCallData = {
   address: string
@@ -32,13 +39,17 @@ type EthTransferCallData = {
   value?: string // optional, for native transfers only
 }
 
+type SolTransferCallData = TransactionInstruction[]
+
 export type BalanceTransferType = "keep-alive" | "all" | "allow-death"
 
 type CallDataOf<P extends TokenPlatform<TokenType>> = P extends "ethereum"
   ? EthTransferCallData
   : P extends "polkadot"
     ? DotTransferCallData
-    : never
+    : P extends "solana"
+      ? SolTransferCallData
+      : never
 
 export type TokensWithAddresses = Array<[Token, Address[]]>
 
@@ -79,18 +90,16 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokens: TokenConfig[]
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
           cache: Record<TokenId, unknown>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokens: TokenConfig[]
-            connector: ChainConnectorEvm
-            cache: Record<TokenId, unknown>
-          }
-        : never,
+      : {
+          networkId: SolNetworkId
+          tokens: TokenConfig[]
+          connector: PlatformConnector<TokenPlatform<Type>>
+          cache: Record<TokenId, unknown>
+        },
   ) => Promise<TokenOfType<Type>[]>
 
   fetchBalances: (
@@ -98,16 +107,14 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokensWithAddresses: TokensWithAddresses
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokensWithAddresses: TokensWithAddresses
-            connector: ChainConnectorEvm
-          }
-        : never,
+      : {
+          networkId: EthNetworkId
+          tokensWithAddresses: TokensWithAddresses
+          connector: PlatformConnector<TokenPlatform<Type>>
+        },
   ) => Promise<FetchBalanceResults>
 
   subscribeBalances: (
@@ -115,16 +122,14 @@ export interface IBalanceModule<
       ? {
           networkId: DotNetworkId
           tokensWithAddresses: TokensWithAddresses
-          connector: ChainConnector
+          connector: PlatformConnector<TokenPlatform<Type>>
           miniMetadata: MiniMetadata<MiniMetadataExtra>
         }
-      : TokenPlatform<Type> extends "ethereum"
-        ? {
-            networkId: EthNetworkId
-            tokensWithAddresses: TokensWithAddresses
-            connector: ChainConnectorEvm
-          }
-        : never,
+      : {
+          networkId: EthNetworkId
+          tokensWithAddresses: TokensWithAddresses
+          connector: PlatformConnector<TokenPlatform<Type>>
+        },
   ) => Observable<FetchBalanceResults>
 
   getTransferCallData: (
@@ -136,7 +141,7 @@ export interface IBalanceModule<
           token: Token
           metadataRpc: `0x${string}`
           type: BalanceTransferType
-          connector: ChainConnector // because of psp22
+          connector: PlatformConnector<TokenPlatform<Type>>
           config?: ModuleConfig
         }
       : TokenPlatform<Type> extends "ethereum"
@@ -146,6 +151,14 @@ export interface IBalanceModule<
             value: string
             token: Token
           }
-        : never,
+        : TokenPlatform<Type> extends "solana"
+          ? {
+              from: string
+              to: string
+              value: string
+              token: Token
+              connector: PlatformConnector<TokenPlatform<Type>>
+            }
+          : never,
   ) => CallDataOf<TokenPlatform<Type>> | Promise<CallDataOf<TokenPlatform<Type>>> // because of psp22
 }

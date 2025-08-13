@@ -104,14 +104,14 @@ const EvmDrawerContent: FC<{
   const { t } = useTranslation()
   const analyticsProps = useMemo(
     () => ({
-      evmNetworkId: tx.evmNetworkId,
+      evmNetworkId: tx.networkId,
       networkType: "ethereum",
     }),
-    [tx.evmNetworkId],
+    [tx.networkId],
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
-  const evmNetwork = useNetworkById(tx.evmNetworkId, "ethereum")
+  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
   const [isLocked, setIsLocked] = useState(false)
   const {
     transaction,
@@ -123,7 +123,7 @@ const EvmDrawerContent: FC<{
     networkUsage,
     isLoading,
     isValid,
-  } = useEthReplaceTransaction(tx.unsigned, tx.evmNetworkId, type, isLocked)
+  } = useEthReplaceTransaction(tx.payload, tx.networkId, type, isLocked)
 
   const account = useAccountByAddress(tx.account)
 
@@ -134,11 +134,11 @@ const EvmDrawerContent: FC<{
     setIsProcessing(true)
     try {
       const serialized = serializeTransactionRequest(transaction)
-      const newHash = await api.ethSignAndSend(tx.evmNetworkId, serialized, tx.txInfo)
+      const newHash = await api.ethSignAndSend(tx.networkId, serialized, tx.txInfo)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
-          chainId: Number(tx.evmNetworkId),
+          chainId: Number(tx.networkId),
           networkType: "ethereum",
         },
       })
@@ -163,11 +163,11 @@ const EvmDrawerContent: FC<{
       setIsProcessing(true)
       try {
         const serialized = serializeTransactionRequest(transaction)
-        const newHash = await api.ethSendSigned(tx.evmNetworkId, serialized, signature, tx.txInfo)
+        const newHash = await api.ethSendSigned(tx.networkId, serialized, signature, tx.txInfo)
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {
-            chainId: Number(tx.evmNetworkId),
+            chainId: Number(tx.networkId),
             networkType: "ethereum",
           },
         })
@@ -331,7 +331,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
           id="tx-main"
           className="border-grey-850 flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border bg-black p-12"
         >
-          {data?.type && data?.tx?.networkType === "evm" ? (
+          {data?.type && data?.tx?.platform === "ethereum" ? (
             <EvmDrawerContent
               fullHeight
               containerId="tx-main"
@@ -353,7 +353,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       onDismiss={onClose}
       className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12"
     >
-      {data?.type && data?.tx?.networkType === "evm" ? (
+      {data?.type && data?.tx?.platform === "ethereum" ? (
         <EvmDrawerContent tx={data.tx} type={data.type} onClose={onClose} />
       ) : null}
     </Drawer>

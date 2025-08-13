@@ -19,10 +19,21 @@ export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
       connectionMetaDb.delete(),
       talismanDb.metadata.clear(),
       talismanDb.blobs.bulkDelete(["nfts", "balances"]), // atm it contains 4 entries: nfts, balances (+minimetadatas), chaindata and tokenRates
+      tryDeleteDatabase("TalismanChaindata"), // old chaindata db
+      tryDeleteDatabase("TalismanChaindataV4"), // current chaindata db, it will be recreated on next startup
     ])
 
     chrome.runtime.reload()
   }, [analyticsPage])
 
   return [hasRuntimeReloadFn, runtimeReload] as const
+}
+
+const tryDeleteDatabase = (name: string) => {
+  return new Promise<void>((resolve) => {
+    const req = indexedDB.deleteDatabase(name)
+    req.onsuccess = () => resolve()
+    req.onerror = () => resolve()
+    req.onblocked = () => resolve()
+  })
 }

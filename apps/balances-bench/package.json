@@ -16,6 +16,7 @@
     "dev:bifrost": "tsx watch src/bifrost.ts",
     "dev:ewx": "tsx watch src/ewx.ts",
     "dev:interlay": "tsx watch src/interlay.ts",
+    "dev:solana": "tsx watch src/solana.ts",
     "clean": "rm -rf node_modules"
   },
   "keywords": [],
@@ -25,11 +26,10 @@
   "dependencies": {
     "@polkadot-api/utils": "0.2.0",
     "@polkadot/rpc-provider": "16.1.2",
-    "@polkadot/util": "13.5.1",
+    "@polkadot/util": "13.5.3",
     "@polkadot/util-crypto": "13.5.3",
     "@talismn/balances": "workspace:^",
-    "@talismn/chain-connector": "workspace:^",
-    "@talismn/chain-connector-evm": "workspace:^",
+    "@talismn/chain-connectors": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/sapi": "workspace:^",
     "@talismn/scale": "workspace:^",

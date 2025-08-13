@@ -5,6 +5,8 @@ export * from "./util"
 export * from "./legacy/Chain"
 export * from "./legacy/EvmNetwork"
 export * from "./legacy/TalismanChaindataDatabase"
+export * from "./getBlockExplorerUrls"
+
 export { MINIMETADATA_VERSION } from "./constants"
 
 // make sure to export the strict minimum

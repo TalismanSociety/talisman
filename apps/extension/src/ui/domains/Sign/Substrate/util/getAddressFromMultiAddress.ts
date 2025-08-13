@@ -1,18 +1,18 @@
 import { MultiAddress } from "@polkadot-api/descriptors"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
 
 export const getAddressFromMultiAddress = (multiAddress: MultiAddress | string) => {
   if (typeof multiAddress === "string") return multiAddress
 
   switch (multiAddress.type) {
     case "Id":
-      return encodeAnyAddress(multiAddress.value)
+      return normalizeAddress(multiAddress.value)
     case "Raw":
-      return encodeAnyAddress(multiAddress.value.asText())
+      return normalizeAddress(multiAddress.value.asText())
     case "Address32":
-      return encodeAnyAddress(multiAddress.value.asBytes())
+      return encodeAddressSs58(multiAddress.value.asBytes())
     case "Address20":
-      return encodeAnyAddress(multiAddress.value.asHex())
+      return normalizeAddress(multiAddress.value.asHex())
     case "Index":
     default:
       throw new Error("Invalid MultiAddress type")
