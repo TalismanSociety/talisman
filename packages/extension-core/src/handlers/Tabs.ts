@@ -45,6 +45,7 @@ import {
   AuthorizedSites,
   RequestAuthorizeTab,
 } from "../domains/sitesAuthorised/types"
+import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
 import { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
@@ -66,6 +67,8 @@ export default class Tabs extends TabsHandler {
     // routing to sub-handlers
     this.#routes = {
       eth: new EthTabsHandler(stores),
+      solana: new SolanaTabsHandler(stores),
+      // TODO rename eth => ethereum (requires changing prefix in all requests)
       talisman: new TalismanHandler(stores),
     }
   }

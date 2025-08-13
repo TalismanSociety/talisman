@@ -8,8 +8,9 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
+import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
-import { isEthereumAddress, isTruthy, sleep, throwAfter } from "@talismn/util"
+import { isTruthy, sleep, throwAfter } from "@talismn/util"
 import { log } from "extension-shared"
 import { chunk, groupBy, isEqual, sortBy, uniq } from "lodash-es"
 import {

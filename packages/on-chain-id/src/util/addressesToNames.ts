@@ -1,4 +1,4 @@
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
 
 import log from "../log"
 import { resolveAddressToDomain } from "./aznsRouter"
@@ -47,8 +47,7 @@ export const lookupAznsAddresses = async (
 
   const results = await Promise.allSettled(
     addresses.map(async (address) => {
-      // no need to do AZNS lookup for ethereum addresses
-      if (isEthereumAddress(address)) return
+      if (!isSs58Address(address)) return
 
       const domain = await resolveAddressToDomain(address, {
         chainId: config.aznsSupportedChainIdAlephZero,

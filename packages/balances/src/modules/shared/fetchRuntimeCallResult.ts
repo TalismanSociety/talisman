@@ -1,8 +1,8 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { parseMetadataRpc, toHex } from "@talismn/scale"
 
 export const fetchRuntimeCallResult = async <T>(
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
   apiName: string,

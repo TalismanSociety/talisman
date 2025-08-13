@@ -12,6 +12,7 @@ export const SignLedgerBase: FC<{
   error: TalismanLedgerError | null
   containerId?: string
   className?: string
+  disabled?: boolean
   onSignClick: () => void
   onDismissErrorClick: () => void
   onCancel?: () => void
@@ -20,6 +21,7 @@ export const SignLedgerBase: FC<{
   error,
   containerId,
   className,
+  disabled,
   onSignClick,
   onDismissErrorClick,
   onCancel,
@@ -35,7 +37,13 @@ export const SignLedgerBase: FC<{
       )}
     >
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
-      <Button primary processing={isProcessing} onClick={onSignClick} className="px-4">
+      <Button
+        primary
+        processing={isProcessing}
+        disabled={disabled}
+        onClick={onSignClick}
+        className="px-4"
+      >
         {t("Sign on Ledger")}
       </Button>
       <ErrorMessageDrawer

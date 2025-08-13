@@ -13,7 +13,7 @@ import {
   subNativeTokenId,
   Token,
 } from "@talismn/chaindata-provider"
-import { DbTokenRates } from "@talismn/token-rates"
+import { TokenRatesStorage } from "@talismn/token-rates"
 import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
@@ -132,11 +132,10 @@ export const mockedApi = new Proxy(jest.requireActual("@ui/api"), {
   },
 })
 
-function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
-  cb([
-    {
-      tokenId: evmErc20TokenId("1284", "0xffffffffa922fef94566104a6e5a35a4fcddaa9f"),
-      rates: {
+function getMockTokenRates(cb: (rates: TokenRatesStorage) => void) {
+  cb({
+    tokenRates: {
+      [evmErc20TokenId("1284", "0xffffffffa922fef94566104a6e5a35a4fcddaa9f")]: {
         btc: {
           price: 9.8376e-7,
           marketCap: 1120.291917858449,
@@ -239,10 +238,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           change24h: 1.2578376244311116,
         },
       },
-    },
-    {
-      tokenId: evmErc20TokenId("137", "0xd6df932a45c0f255f85145f286ea0b292b21c90b"),
-      rates: {
+      [evmErc20TokenId("137", "0xd6df932a45c0f255f85145f286ea0b292b21c90b")]: {
         btc: {
           price: 0.00212008,
           marketCap: 31775.19704539381,
@@ -345,10 +341,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           change24h: 5.10231574100985,
         },
       },
-    },
-    {
-      tokenId: evmErc20TokenId("592", "0xfcde4a87b8b6fa58326bb462882f1778158b02f1"),
-      rates: {
+      [evmErc20TokenId("592", "0xfcde4a87b8b6fa58326bb462882f1778158b02f1")]: {
         btc: {
           price: 0.00212008,
           marketCap: 31775.19704539381,
@@ -451,10 +444,213 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
           change24h: 5.10231574100985,
         },
       },
-    },
-    {
-      tokenId: evmNativeTokenId("787"),
-      rates: {
+      [evmNativeTokenId("787")]: {
+        btc: {
+          price: 9.8376e-7,
+          marketCap: 1120.291917858449,
+          change24h: -0.6995739004825059,
+        },
+        eth: {
+          price: 0.00002615,
+          marketCap: 29771.48035827377,
+          change24h: -3.309408176133055,
+        },
+        tao: null,
+        dot: {
+          price: 0.01146351,
+          marketCap: 13053350.4089089,
+          change24h: 1.7226176666370996,
+        },
+        usd: {
+          price: 0.093924,
+          marketCap: 106977510.82556757,
+          change24h: 1.2827026300241688,
+        },
+        cny: {
+          price: 0.681135,
+          marketCap: 775800908.5070157,
+          change24h: 1.3700665180188427,
+        },
+        eur: {
+          price: 0.089166,
+          marketCap: 101558351.05967677,
+          change24h: 0.9894178793142621,
+        },
+        gbp: {
+          price: 0.074262,
+          marketCap: 84583480.57440819,
+          change24h: 0.8703754861087402,
+        },
+        cad: {
+          price: 0.131739,
+          marketCap: 150048796.23415765,
+          change24h: 1.0912043411544499,
+        },
+        aud: {
+          price: 0.144875,
+          marketCap: 165009815.0781347,
+          change24h: 1.4041268258911828,
+        },
+        nzd: {
+          price: 0.159614,
+          marketCap: 181797260.96443695,
+          change24h: 1.3370862865171955,
+        },
+        jpy: {
+          price: 14.25,
+          marketCap: 16232553537.649935,
+          change24h: 1.1933386777987982,
+        },
+        rub: {
+          price: 10.4,
+          marketCap: 11847593615.767365,
+          change24h: 6.321813624674142,
+        },
+        krw: {
+          price: 131.09,
+          marketCap: 149308654567.2437,
+          change24h: 1.2979167540541081,
+        },
+        idr: {
+          price: 1490.26,
+          marketCap: 1697383312755.538,
+          change24h: 1.2339330636094297,
+        },
+        php: {
+          price: 5.52,
+          marketCap: 6281612993.054057,
+          change24h: 5.710493732541172,
+        },
+        thb: {
+          price: 3.24,
+          marketCap: 3688584573.265565,
+          change24h: 0.819249871767915,
+        },
+        vnd: {
+          price: 2380.53,
+          marketCap: 2711380719469.433,
+          change24h: 1.0516686450883532,
+        },
+        inr: {
+          price: 7.94,
+          marketCap: 9039499319.855299,
+          change24h: 1.3648414521559307,
+        },
+        try: {
+          price: 3.25,
+          marketCap: 3706321658.5154734,
+          change24h: 1.231727082952439,
+        },
+        sgd: {
+          price: 0.12622,
+          marketCap: 143762797.6980469,
+          change24h: 1.2578376244311116,
+        },
+      },
+      [subNativeTokenId("acala")]: {
+        btc: {
+          price: 9.8376e-7,
+          marketCap: 1120.291917858449,
+          change24h: -0.6995739004825059,
+        },
+        eth: {
+          price: 0.00002615,
+          marketCap: 29771.48035827377,
+          change24h: -3.309408176133055,
+        },
+        tao: null,
+        dot: {
+          price: 0.01146351,
+          marketCap: 13053350.4089089,
+          change24h: 1.7226176666370996,
+        },
+        usd: {
+          price: 0.093924,
+          marketCap: 106977510.82556757,
+          change24h: 1.2827026300241688,
+        },
+        cny: {
+          price: 0.681135,
+          marketCap: 775800908.5070157,
+          change24h: 1.3700665180188427,
+        },
+        eur: {
+          price: 0.089166,
+          marketCap: 101558351.05967677,
+          change24h: 0.9894178793142621,
+        },
+        gbp: {
+          price: 0.074262,
+          marketCap: 84583480.57440819,
+          change24h: 0.8703754861087402,
+        },
+        cad: {
+          price: 0.131739,
+          marketCap: 150048796.23415765,
+          change24h: 1.0912043411544499,
+        },
+        aud: {
+          price: 0.144875,
+          marketCap: 165009815.0781347,
+          change24h: 1.4041268258911828,
+        },
+        nzd: {
+          price: 0.159614,
+          marketCap: 181797260.96443695,
+          change24h: 1.3370862865171955,
+        },
+        jpy: {
+          price: 14.25,
+          marketCap: 16232553537.649935,
+          change24h: 1.1933386777987982,
+        },
+        rub: {
+          price: 10.4,
+          marketCap: 11847593615.767365,
+          change24h: 6.321813624674142,
+        },
+        krw: {
+          price: 131.09,
+          marketCap: 149308654567.2437,
+          change24h: 1.2979167540541081,
+        },
+        idr: {
+          price: 1490.26,
+          marketCap: 1697383312755.538,
+          change24h: 1.2339330636094297,
+        },
+        php: {
+          price: 5.52,
+          marketCap: 6281612993.054057,
+          change24h: 5.710493732541172,
+        },
+        thb: {
+          price: 3.24,
+          marketCap: 3688584573.265565,
+          change24h: 0.819249871767915,
+        },
+        vnd: {
+          price: 2380.53,
+          marketCap: 2711380719469.433,
+          change24h: 1.0516686450883532,
+        },
+        inr: {
+          price: 7.94,
+          marketCap: 9039499319.855299,
+          change24h: 1.3648414521559307,
+        },
+        try: {
+          price: 3.25,
+          marketCap: 3706321658.5154734,
+          change24h: 1.231727082952439,
+        },
+        sgd: {
+          price: 0.12622,
+          marketCap: 143762797.6980469,
+          change24h: 1.2578376244311116,
+        },
+      },
+      [subAssetTokenId("astar", "18446744073709551616")]: {
         btc: {
           price: 9.8376e-7,
           marketCap: 1120.291917858449,
@@ -558,219 +754,7 @@ function getMockTokenRates(cb: (rates: DbTokenRates[]) => void) {
         },
       },
     },
-    {
-      tokenId: subNativeTokenId("acala"),
-      rates: {
-        btc: {
-          price: 9.8376e-7,
-          marketCap: 1120.291917858449,
-          change24h: -0.6995739004825059,
-        },
-        eth: {
-          price: 0.00002615,
-          marketCap: 29771.48035827377,
-          change24h: -3.309408176133055,
-        },
-        tao: null,
-        dot: {
-          price: 0.01146351,
-          marketCap: 13053350.4089089,
-          change24h: 1.7226176666370996,
-        },
-        usd: {
-          price: 0.093924,
-          marketCap: 106977510.82556757,
-          change24h: 1.2827026300241688,
-        },
-        cny: {
-          price: 0.681135,
-          marketCap: 775800908.5070157,
-          change24h: 1.3700665180188427,
-        },
-        eur: {
-          price: 0.089166,
-          marketCap: 101558351.05967677,
-          change24h: 0.9894178793142621,
-        },
-        gbp: {
-          price: 0.074262,
-          marketCap: 84583480.57440819,
-          change24h: 0.8703754861087402,
-        },
-        cad: {
-          price: 0.131739,
-          marketCap: 150048796.23415765,
-          change24h: 1.0912043411544499,
-        },
-        aud: {
-          price: 0.144875,
-          marketCap: 165009815.0781347,
-          change24h: 1.4041268258911828,
-        },
-        nzd: {
-          price: 0.159614,
-          marketCap: 181797260.96443695,
-          change24h: 1.3370862865171955,
-        },
-        jpy: {
-          price: 14.25,
-          marketCap: 16232553537.649935,
-          change24h: 1.1933386777987982,
-        },
-        rub: {
-          price: 10.4,
-          marketCap: 11847593615.767365,
-          change24h: 6.321813624674142,
-        },
-        krw: {
-          price: 131.09,
-          marketCap: 149308654567.2437,
-          change24h: 1.2979167540541081,
-        },
-        idr: {
-          price: 1490.26,
-          marketCap: 1697383312755.538,
-          change24h: 1.2339330636094297,
-        },
-        php: {
-          price: 5.52,
-          marketCap: 6281612993.054057,
-          change24h: 5.710493732541172,
-        },
-        thb: {
-          price: 3.24,
-          marketCap: 3688584573.265565,
-          change24h: 0.819249871767915,
-        },
-        vnd: {
-          price: 2380.53,
-          marketCap: 2711380719469.433,
-          change24h: 1.0516686450883532,
-        },
-        inr: {
-          price: 7.94,
-          marketCap: 9039499319.855299,
-          change24h: 1.3648414521559307,
-        },
-        try: {
-          price: 3.25,
-          marketCap: 3706321658.5154734,
-          change24h: 1.231727082952439,
-        },
-        sgd: {
-          price: 0.12622,
-          marketCap: 143762797.6980469,
-          change24h: 1.2578376244311116,
-        },
-      },
-    },
-    {
-      tokenId: subAssetTokenId("astar", "18446744073709551616"),
-      rates: {
-        btc: {
-          price: 9.8376e-7,
-          marketCap: 1120.291917858449,
-          change24h: -0.6995739004825059,
-        },
-        eth: {
-          price: 0.00002615,
-          marketCap: 29771.48035827377,
-          change24h: -3.309408176133055,
-        },
-        tao: null,
-        dot: {
-          price: 0.01146351,
-          marketCap: 13053350.4089089,
-          change24h: 1.7226176666370996,
-        },
-        usd: {
-          price: 0.093924,
-          marketCap: 106977510.82556757,
-          change24h: 1.2827026300241688,
-        },
-        cny: {
-          price: 0.681135,
-          marketCap: 775800908.5070157,
-          change24h: 1.3700665180188427,
-        },
-        eur: {
-          price: 0.089166,
-          marketCap: 101558351.05967677,
-          change24h: 0.9894178793142621,
-        },
-        gbp: {
-          price: 0.074262,
-          marketCap: 84583480.57440819,
-          change24h: 0.8703754861087402,
-        },
-        cad: {
-          price: 0.131739,
-          marketCap: 150048796.23415765,
-          change24h: 1.0912043411544499,
-        },
-        aud: {
-          price: 0.144875,
-          marketCap: 165009815.0781347,
-          change24h: 1.4041268258911828,
-        },
-        nzd: {
-          price: 0.159614,
-          marketCap: 181797260.96443695,
-          change24h: 1.3370862865171955,
-        },
-        jpy: {
-          price: 14.25,
-          marketCap: 16232553537.649935,
-          change24h: 1.1933386777987982,
-        },
-        rub: {
-          price: 10.4,
-          marketCap: 11847593615.767365,
-          change24h: 6.321813624674142,
-        },
-        krw: {
-          price: 131.09,
-          marketCap: 149308654567.2437,
-          change24h: 1.2979167540541081,
-        },
-        idr: {
-          price: 1490.26,
-          marketCap: 1697383312755.538,
-          change24h: 1.2339330636094297,
-        },
-        php: {
-          price: 5.52,
-          marketCap: 6281612993.054057,
-          change24h: 5.710493732541172,
-        },
-        thb: {
-          price: 3.24,
-          marketCap: 3688584573.265565,
-          change24h: 0.819249871767915,
-        },
-        vnd: {
-          price: 2380.53,
-          marketCap: 2711380719469.433,
-          change24h: 1.0516686450883532,
-        },
-        inr: {
-          price: 7.94,
-          marketCap: 9039499319.855299,
-          change24h: 1.3648414521559307,
-        },
-        try: {
-          price: 3.25,
-          marketCap: 3706321658.5154734,
-          change24h: 1.231727082952439,
-        },
-        sgd: {
-          price: 0.12622,
-          marketCap: 143762797.6980469,
-          change24h: 1.2578376244311116,
-        },
-      },
-    },
-  ])
+  })
   return () => undefined
 }
 

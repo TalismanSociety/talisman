@@ -19,8 +19,8 @@ import { HexString } from "@talismn/util"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
 import { Address } from "../../types/base"
 
-export type { ResponseAccountExport, AccountJson }
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
+export type { AccountJson, ResponseAccountExport }
 
 export type { RequestAccountList } from "@polkadot/extension-base/background/types"
 
@@ -135,12 +135,6 @@ export enum SubstrateLedgerAppType {
   Generic = "substrate-generic",
 }
 
-export interface RequestAccountCreateFromSuri {
-  name: string
-  suri: string
-  curve?: KeypairCurve
-}
-
 export interface RequestAccountCreateFromJson {
   unlockedPairs: KeyringPair$Json[]
 }
@@ -181,36 +175,19 @@ export interface RequestAccountContactUpdate {
   genesisHash?: HexString
 }
 
-export type RequestAccountCreateOptionsNewMnemonic = {
-  mnemonic: string
-  confirmed: boolean
-  derivationPath?: string
-}
-
-export type RequestAccountCreateOptionsExistingMnemonic = {
-  mnemonicId: string
-  derivationPath?: string
-}
-
-export type RequestAccountCreateOptions =
-  | RequestAccountCreateOptionsExistingMnemonic
-  | RequestAccountCreateOptionsNewMnemonic
-
-export type RequestAccountCreate = {
-  name: string
-  curve: KeypairCurve
-} & RequestAccountCreateOptions
-
-export type RequestAddressLookupBySuri = {
-  suri: string
-  curve: KeypairCurve
-}
 export type RequestAddressLookupByMnemonic = {
+  type: "mnemonic"
+  mnemonic: string
+  derivationPath: string
+  curve: KeypairCurve
+}
+export type RequestAddressLookupByMnemonicId = {
+  type: "mnemonicId"
   mnemonicId: string
   derivationPath: string
   curve: KeypairCurve
 }
-export type RequestAddressLookup = RequestAddressLookupBySuri | RequestAddressLookupByMnemonic
+export type RequestAddressLookup = RequestAddressLookupByMnemonic | RequestAddressLookupByMnemonicId
 
 export type RequestNextDerivationPath = {
   mnemonicId: string
@@ -230,8 +207,6 @@ export interface AccountsMessages {
   "pri(accounts.add.external)": [RequestAddAccountExternal, string[]]
   "pri(accounts.add.derive)": [RequestAddAccountDerive, string[]]
   "pri(accounts.add.keypair)": [RequestAddAccountKeypair, string[]]
-  "pri(accounts.create)": [RequestAccountCreate, string] // TODO use add.derive instead
-  "pri(accounts.create.suri)": [RequestAccountCreateFromSuri, string] // TODO use add.derive instead
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, string[]] // TODO use add.keypair instead
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]

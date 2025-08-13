@@ -1,14 +1,19 @@
 import { HexString } from "@polkadot/util/types"
-import { Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { WalletTransaction, WalletTransactionDot, WalletTransactionEth } from "extension-core"
+import {
+  WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
+  WalletTransactionSol,
+} from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAnyNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
+import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
@@ -21,23 +26,23 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
-  const evmNetwork = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
+  const network = useNetworkById(tx.networkId, "ethereum")
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
   const handleClose = useCallback(
     (newHash?: HexString) => {
       setReplaceType(undefined)
-      if (newHash) {
-        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
-        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+      if (newHash && network) {
+        gotoProgress({ txId: newHash, networkId: network.id })
       }
     },
-    [gotoProgress, tx],
+    [gotoProgress, network],
   )
 
-  if (tx.status !== "pending" || tx.networkType !== "evm") return null
-  if (evmNetwork?.preserveGasEstimate) return null
+  if (!network) return null
+  if (tx.status !== "pending") return null
+  if (network?.preserveGasEstimate) return null
 
   return (
     <>
@@ -80,10 +85,10 @@ const useStatusDetails = (tx?: WalletTransaction) => {
       }
 
     const isReplacementCancel =
-      tx.networkType === "evm" &&
+      tx.platform === "ethereum" &&
       tx.isReplacement &&
-      tx.unsigned.value &&
-      BigInt(tx.unsigned.value) === 0n
+      tx.payload.value &&
+      BigInt(tx.payload.value) === 0n
 
     switch (tx.status) {
       case "unknown":
@@ -204,7 +209,7 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   onClose,
   className,
 }) => {
-  const chain = useNetworkByGenesisHash(tx.genesisHash as `0x${string}`)
+  const chain = useNetworkById(tx.networkId)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
@@ -218,6 +223,28 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   )
 }
 
+type SendFundsProgressSolanaProps = {
+  tx: WalletTransactionSol
+  onClose?: () => void
+  className?: string
+}
+
+const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose, className }) => {
+  const network = useNetworkById(tx.networkId, "solana")
+  const href = useMemo(
+    () =>
+      network
+        ? getBlockExplorerUrls(network, {
+            type: "transaction",
+            id: tx.signature,
+          })[0]
+        : undefined,
+    [network, tx.signature],
+  )
+
+  return <SendFundsProgressBase tx={tx} className={className} onClose={onClose} href={href} />
+}
+
 type SendFundsProgressEvmProps = {
   tx: WalletTransactionEth
   onClose?: () => void
@@ -229,7 +256,7 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   className,
   onClose,
 }) => {
-  const network = useNetworkById(tx.evmNetworkId, "ethereum")
+  const network = useNetworkById(tx.networkId, "ethereum")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
   return (
@@ -244,33 +271,35 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
 }
 
 type SendFundsProgressProps = {
-  hash: HexString
-  networkIdOrHash: string
+  txId: string
+  networkId: string
   onClose?: () => void
   className?: string
 }
 
 export const SendFundsProgress: FC<SendFundsProgressProps> = ({
-  hash,
-  networkIdOrHash,
+  txId,
+  networkId,
   onClose,
   className,
 }) => {
-  const tx = useTransaction(hash)
-  const network = useAnyNetwork(networkIdOrHash)
+  const tx = useTransaction(txId)
+  const network = useAnyNetwork(networkId)
 
   // tx is null if not found in db
   if (tx === null) {
-    const href = getBlockExplorerUrl(network, hash)
+    const href = getBlockExplorerUrl(network, txId)
     return <SendFundsProgressBase href={href} className={className} onClose={onClose} />
   }
 
-  if (tx?.networkType === "substrate")
-    return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
+  switch (tx?.platform) {
+    case "ethereum":
+      return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
+    case "polkadot":
+      return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
+    case "solana":
+      return <SendFundsProgressSolana tx={tx} onClose={onClose} className={className} />
+  }
 
-  if (tx?.networkType === "evm")
-    return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
-
-  // render null while loading
   return null
 }

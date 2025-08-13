@@ -1,4 +1,4 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { fromPairs, toPairs, uniq, values } from "lodash-es"
 import { from, Observable, of, switchMap, timer } from "rxjs"
@@ -20,7 +20,7 @@ import {
 type StakingValuesByAddress = Record<string, Array<AmountWithLabel<string>>>
 
 export const getSubtensorStakingBalances$ = (
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   balanceDefs: BalanceDef<"substrate-native">[],
   miniMetadata: MiniMetadata<MiniMetadataExtra>,
@@ -50,7 +50,7 @@ export const getSubtensorStakingBalances$ = (
 }
 
 const fetchStakingBalanceValuesByAddress = async (
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   miniMetadata: MiniMetadata<MiniMetadataExtra>,
   stakeInfoByAddress: Record<string, GetStakeInfoForColdkeyResult>,
@@ -135,7 +135,7 @@ const fetchStakingBalanceValuesByAddress = async (
 }
 
 const fetchStakeInfoByAddress = async (
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   miniMetadata: MiniMetadata<MiniMetadataExtra>,
   addresses: string[],
@@ -169,7 +169,7 @@ const dynamicInfoCache = new Map<string, GetDynamicInfoResult>()
 const getCacheKey = (networkId: DotNetworkId, netuid: number) => `${networkId}:${netuid}`
 
 const fetchDynamicInfoByNetuid = async (
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   miniMetadata: MiniMetadata<MiniMetadataExtra>,
   uniqueNetuids: number[],

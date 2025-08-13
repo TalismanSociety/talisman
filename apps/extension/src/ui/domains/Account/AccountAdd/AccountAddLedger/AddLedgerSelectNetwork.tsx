@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { DotNetwork } from "@talismn/chaindata-provider"
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
@@ -24,6 +24,7 @@ import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
+import { ConnectLedgerSolana } from "./Shared/ConnectLedgerSolana"
 import { ConnectLedgerSubstrateGeneric } from "./Shared/ConnectLedgerSubstrateGeneric"
 import { ConnectLedgerSubstrateLegacy } from "./Shared/ConnectLedgerSubstrateLegacy"
 
@@ -99,7 +100,10 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup
+            .mixed<AccountPlatform>()
+            .oneOf(["ethereum", "polkadot", "solana"])
+            .defined(),
           chainId: yup.string(),
           substrateAppType: yup.mixed(isAddSubstrateLedgerAppType),
         })
@@ -168,7 +172,7 @@ export const AddLedgerSelectNetwork = () => {
   )
 
   const handlePlatformChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       reset({ platform })
     },
     [reset],
@@ -185,7 +189,10 @@ export const AddLedgerSelectNetwork = () => {
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
 
-  const showConnect = platform === "ethereum" || (platform === "polkadot" && substrateAppType)
+  const showConnect =
+    platform === "solana" ||
+    platform === "ethereum" ||
+    (platform === "polkadot" && substrateAppType)
 
   return (
     <form className="flex flex-col" onSubmit={handleSubmit(submit)}>
@@ -309,9 +316,11 @@ export const AddLedgerSelectNetwork = () => {
               )}
             </>
           )}
-
           {platform === "ethereum" && (
             <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
+          )}
+          {platform === "solana" && (
+            <ConnectLedgerSolana className="mt-14" onReadyChanged={setIsLedgerReady} />
           )}
         </div>
       </div>

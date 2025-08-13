@@ -1,5 +1,5 @@
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "@talismn/crypto"
 import { isAccountCompatibleWithNetwork } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"

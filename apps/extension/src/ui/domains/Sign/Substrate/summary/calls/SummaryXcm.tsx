@@ -1,5 +1,5 @@
 import { PolkadotAssetHubCalls, PolkadotCalls } from "@polkadot-api/descriptors"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "@talismn/crypto"
 import { useMemo } from "react"
 
 import { useNetworkById, useNetworks, useTokensMap } from "@ui/state"
@@ -46,8 +46,8 @@ const TransferAssets: DecodedCallSummaryComponent<TransferAssetArgs> = ({
       value,
       fromNetwork: chain.id,
       toNetwork: toNetwork.id,
-      fromAddress: encodeAnyAddress(payload.address, chain.prefix ?? undefined),
-      toAddress: encodeAnyAddress(toAddress, toNetwork.prefix ?? undefined),
+      fromAddress: encodeAnyAddress(payload.address, { ss58Format: chain.prefix }),
+      toAddress: encodeAnyAddress(toAddress, { ss58Format: toNetwork.prefix }),
       mode,
     }
   }, [args, payload, chain, chains, tokensMap, mode])

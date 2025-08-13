@@ -212,9 +212,14 @@ class KeyringStore {
   }
 
   public addAccountDeriveMulti(options: AddAccountDeriveOptions[]) {
-    return this.updateWithPassword((keyring, password) =>
-      Promise.all(options.map((acc) => keyring.addAccountDerive(acc, password))),
-    )
+    return this.updateWithPassword(async (keyring, password) => {
+      // create accounts sequentially to prevent adding the same mnemonic multiple times
+      const results: Account[] = []
+      for (const option of options) {
+        results.push(await keyring.addAccountDerive(option, password))
+      }
+      return results
+    })
   }
 
   public addAccountKeypair(options: AddAccountKeypairOptions) {

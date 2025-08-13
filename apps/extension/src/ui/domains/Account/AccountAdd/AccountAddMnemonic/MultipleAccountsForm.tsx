@@ -1,101 +1,69 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import { RequestAccountCreateFromSuri } from "extension-core"
-import { useCallback, useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
+import { AddAccountDeriveOptions } from "extension-core"
+import { startCase } from "lodash-es"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
-import * as yup from "yup"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
-import { useAccountAddSecret } from "./context"
-
-type FormData = {
-  accounts: RequestAccountCreateFromSuri[]
-}
+import { useAccountAddMnemonic } from "./context"
 
 export const AccountAddMnemonicAccountsForm = () => {
   const { t } = useTranslation()
-  const { data, importAccounts, onSuccess } = useAccountAddSecret()
+  const { data } = useAccountAddMnemonic()
+  const [accountsToImport, setAccountsToImport] = useState<AddAccountDeriveOptions[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const name = useMemo(
-    () => data.name ?? (data.curve === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
+    () => data.name ?? t("{{curve}} Account", { curve: startCase(data.curve) }),
     [data.name, data.curve, t],
   )
 
-  const schema = useMemo(
-    () =>
-      yup
-        .object({
-          accounts: yup
-            .array()
-            .of(yup.mixed<RequestAccountCreateFromSuri>().defined())
-            .min(1)
-            .defined(),
-        })
-        .required(),
-    [],
-  )
+  const onSubmit = useCallback(async () => {
+    setIsSubmitting(true)
+    const notificationId = notify(
+      {
+        type: "processing",
+        title: t("Importing {{count}} accounts", { count: accountsToImport.length }),
+        subtitle: "Please wait",
+      },
+      { autoClose: false },
+    )
+    try {
+      const addresses = await api.accountAddDerive(accountsToImport)
 
-  const {
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { isValid, isSubmitting },
-  } = useForm<FormData>({
-    mode: "onChange",
-    defaultValues: data,
-    resolver: yupResolver(schema),
-  })
+      notifyUpdate(notificationId, {
+        type: "success",
+        title: t("{{count}} accounts imported", { count: accountsToImport.length }),
+        subtitle: null,
+      })
 
-  const submit = useCallback(
-    async ({ accounts }: FormData) => {
-      const notificationId = notify(
-        {
-          type: "processing",
-          title: t("Importing {{count}} accounts", { count: accounts.length }),
-          subtitle: "Please wait",
-        },
-        { autoClose: false },
-      )
-      try {
-        const addresses = await importAccounts(accounts)
+      setAddress(addresses[0])
+    } catch (err) {
+      notifyUpdate(notificationId, {
+        type: "error",
+        title: t("Failed to import", { count: accountsToImport.length }),
+        subtitle: (err as Error).message,
+      })
+      setIsSubmitting(false)
+    }
+  }, [accountsToImport, setAddress, t])
 
-        notifyUpdate(notificationId, {
-          type: "success",
-          title: t("{{count}} accounts imported", { count: accounts.length }),
-          subtitle: null,
-        })
-
-        onSuccess(addresses[0])
-      } catch (err) {
-        notifyUpdate(notificationId, {
-          type: "error",
-          title: t("Failed to import", { count: accounts.length }),
-          subtitle: (err as Error).message,
-        })
-      }
-    },
-    [importAccounts, onSuccess, t],
-  )
-
-  const handleAccountsChange = useCallback(
-    (accounts: RequestAccountCreateFromSuri[]) => {
-      setValue("accounts", accounts, { shouldValidate: true })
-    },
-    [setValue],
-  )
+  const handleAccountsChange = useCallback((accounts: AddAccountDeriveOptions[]) => {
+    setAccountsToImport(accounts)
+  }, [])
 
   useEffect(() => {
     if (!data.mnemonic || !data.curve) return navigate("/accounts/add/mnemonic")
   }, [data.mnemonic, data.curve, navigate])
 
-  const accounts = watch("accounts")
-  // invalid state, useEffect above will redirect to previous form
   if (!data.mnemonic || !data.curve) return <Navigate to="/accounts/add/mnemonic" replace />
 
   return (
@@ -104,7 +72,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         title={t("Import account(s)")}
         text={t("Please select which account(s) you'd like to import.")}
       />
-      <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8">
         <div className="h-[42rem]">
           <DerivedFromMnemonicAccountPicker
             name={name}
@@ -116,15 +84,15 @@ export const AccountAddMnemonicAccountsForm = () => {
         <div className="flex w-full justify-end">
           <Button
             className="w-[24rem]"
-            type="submit"
             primary
-            disabled={!isValid}
+            disabled={!accountsToImport.length}
             processing={isSubmitting}
+            onClick={onSubmit}
           >
-            {t("Import")} {accounts?.length || ""}
+            {t("Import")} {accountsToImport?.length || ""}
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   )
 }

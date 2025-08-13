@@ -1,7 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { isAddressEqual, isValidMnemonic, KeypairCurve, Platform } from "@talismn/crypto"
+import { AccountPlatform, isAddressEqual } from "@talismn/crypto"
 import { classNames, isTruthy } from "@talismn/util"
-import { getEthDerivationPath } from "extension-core"
+import {
+  getDefaultCurveForAccountPlatform,
+  getDerivationPathForCurve,
+  getEthDerivationPath,
+  SUPPORTED_ACCOUNT_PLATFORMS,
+} from "extension-core"
 import { DEBUG } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm, UseFormSetValue } from "react-hook-form"
@@ -27,19 +32,8 @@ import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSele
 import { useAccounts } from "@ui/state"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
-import { AccountAddDerivationMode, useAccountAddSecret } from "./context"
+import { AccountAddDerivationMode, useAccountAddMnemonic } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
-
-const platformToCurve = (platform: Platform) => {
-  switch (platform) {
-    case "ethereum":
-      return "ethereum"
-    case "polkadot":
-      return "sr25519"
-    default:
-      return undefined
-  }
-}
 
 const cleanupMnemonic = (input = "") =>
   input
@@ -49,19 +43,9 @@ const cleanupMnemonic = (input = "") =>
     .filter(isTruthy) //remove empty strings
     .join(" ")
 
-const getSuri = (secret: string, curve: KeypairCurve, derivationPath?: string) => {
-  if (!secret || !curve) return null
-
-  if (!isValidMnemonic(secret)) return null
-
-  return derivationPath && !derivationPath.startsWith("/")
-    ? `${secret}/${derivationPath}`
-    : `${secret}${derivationPath}`
-}
-
 type FormData = {
   name: string
-  platform: Platform
+  platform: AccountPlatform
   mnemonic: string
   mode: AccountAddDerivationMode
   derivationPath: string
@@ -70,7 +54,7 @@ type FormData = {
 export const AccountAddMnemonicForm = () => {
   const { t } = useTranslation()
 
-  const { data, updateData, onSuccess } = useAccountAddSecret()
+  const { data, updateData, onSuccess } = useAccountAddMnemonic()
   const navigate = useNavigate()
 
   const allAccounts = useAccounts()
@@ -81,7 +65,7 @@ export const AccountAddMnemonicForm = () => {
       yup
         .object({
           name: yup.string().trim().required(" "),
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
               ["first", "custom", "multi"].includes(v),
@@ -100,17 +84,15 @@ export const AccountAddMnemonicForm = () => {
         .required()
         .test("account-exists", t("Account exists"), async (val, ctx) => {
           const { mnemonic, platform, derivationPath, mode } = val as FormData
+          if (!platform || !mnemonic) return false
           if (mode === "multi") return true
 
-          const curve = platformToCurve(platform)
+          const curve = getDefaultCurveForAccountPlatform(platform)
           if (!curve) return false
-
-          const suri = getSuri(mnemonic, curve, derivationPath)
-          if (!suri) return true
 
           let address: string
           try {
-            address = await api.addressLookup({ suri, curve })
+            address = await api.addressLookup({ type: "mnemonic", mnemonic, curve, derivationPath })
           } catch (err) {
             return ctx.createError({
               path: "derivationPath",
@@ -143,7 +125,10 @@ export const AccountAddMnemonicForm = () => {
   })
 
   const { platform, mnemonic, mode, derivationPath } = watch()
-  const curve = useMemo(() => platformToCurve(platform), [platform])
+  const curve = useMemo(
+    () => (platform ? getDefaultCurveForAccountPlatform(platform) : null),
+    [platform],
+  )
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(isTruthy).length ?? 0,
@@ -156,9 +141,15 @@ export const AccountAddMnemonicForm = () => {
     const refreshTargetAddress = async () => {
       try {
         if (!curve) return setTargetAddress(undefined)
-        const suri = getSuri(cleanupMnemonic(mnemonic), curve, derivationPath)
-        if (!suri) return setTargetAddress(undefined)
-        setTargetAddress(await api.addressLookup({ suri, curve }))
+
+        setTargetAddress(
+          await api.addressLookup({
+            type: "mnemonic",
+            mnemonic: cleanupMnemonic(mnemonic),
+            derivationPath,
+            curve,
+          }),
+        )
       } catch (err) {
         setTargetAddress(undefined)
       }
@@ -169,15 +160,13 @@ export const AccountAddMnemonicForm = () => {
 
   const submit = useCallback(
     async ({ platform, name, mnemonic, mode, derivationPath }: FormData) => {
-      const curve = platformToCurve(platform)
+      const curve = getDefaultCurveForAccountPlatform(platform)
       if (!curve) return
 
       updateData({ name, mnemonic, mode, derivationPath, curve })
+
       if (mode === "multi") navigate("multiple")
       else {
-        const suri = getSuri(mnemonic, curve, derivationPath)
-        if (!suri) return
-
         const notificationId = notify(
           {
             type: "processing",
@@ -187,7 +176,17 @@ export const AccountAddMnemonicForm = () => {
           { autoClose: false },
         )
         try {
-          const address = await api.accountCreateFromSuri(name, suri, curve)
+          const [address] = await api.accountAddDerive([
+            {
+              type: "new-mnemonic",
+              mnemonic,
+              mnemonicName: `${name} Recovery Phrase`,
+              confirmed: true,
+              curve,
+              derivationPath,
+              name,
+            },
+          ])
 
           onSuccess(address)
           notifyUpdate(notificationId, {
@@ -208,11 +207,17 @@ export const AccountAddMnemonicForm = () => {
   )
 
   const handleTypeChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       setValue("platform", platform, { shouldValidate: true })
-      setValue("derivationPath", platform === "ethereum" ? getEthDerivationPath() : "", {
-        shouldValidate: true,
-      })
+      setValue(
+        "derivationPath",
+        platform === "ethereum"
+          ? getEthDerivationPath()
+          : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
+        {
+          shouldValidate: true,
+        },
+      )
     },
     [setValue],
   )
@@ -221,9 +226,15 @@ export const AccountAddMnemonicForm = () => {
     (mode: AccountAddDerivationMode) => {
       setValue("mode", mode, { shouldValidate: true })
       if (mode === "first")
-        setValue("derivationPath", platform === "ethereum" ? getEthDerivationPath() : "", {
-          shouldValidate: true,
-        })
+        setValue(
+          "derivationPath",
+          platform === "ethereum"
+            ? getEthDerivationPath()
+            : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
+          {
+            shouldValidate: true,
+          },
+        )
     },
     [setValue, platform],
   )
@@ -251,8 +262,6 @@ export const AccountAddMnemonicForm = () => {
               placeholder={t("Choose a name")}
               spellCheck={false}
               autoComplete="off"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
               data-lpignore
               after={
                 targetAddress ? (

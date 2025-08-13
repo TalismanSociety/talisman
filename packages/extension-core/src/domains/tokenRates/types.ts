@@ -1,6 +1,6 @@
-import { DbTokenRates } from "@talismn/token-rates"
+import { TokenRatesStorage } from "@talismn/token-rates"
 
 export interface TokenRatesMessages {
   // tokenRates message signatures
-  "pri(tokenRates.subscribe)": [null, boolean, DbTokenRates[]]
+  "pri(tokenRates.subscribe)": [null, boolean, TokenRatesStorage]
 }

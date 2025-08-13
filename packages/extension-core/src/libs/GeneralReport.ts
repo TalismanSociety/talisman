@@ -7,7 +7,6 @@ import groupBy from "lodash-es/groupBy"
 import { filter, firstValueFrom, map } from "rxjs"
 
 import { sentry } from "../config/sentry"
-import { db } from "../db"
 import { LegacyAccountOrigin } from "../domains/accounts/types"
 import { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
@@ -17,6 +16,7 @@ import { walletBalances$ } from "../domains/balances/walletBalances"
 import { keyringStore } from "../domains/keyring/store"
 import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
+import { tokenRatesStore } from "../domains/tokenRates"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { privacyRoundCurrency } from "../util/privacyRoundCurrency"
 import { isWalletReady$ } from "./isWalletReady"
@@ -165,11 +165,7 @@ async function getGeneralReport({
     var [networks, tokens, tokenRates, allBalances] = await Promise.all([
       chaindataProvider.getNetworksMapById(),
       chaindataProvider.getTokensMapById(),
-      db.tokenRates
-        .toArray()
-        .then((dbTokenRates) =>
-          Object.fromEntries((dbTokenRates ?? []).map(({ tokenId, rates }) => [tokenId, rates])),
-        ),
+      firstValueFrom(tokenRatesStore.storage$.pipe(map((storage) => storage.tokenRates))),
       firstValueFrom(balancesStore$.pipe(map((store) => store.balances))),
     ])
 

@@ -1,6 +1,6 @@
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
-import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
+import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
 import { AccountsMessages } from "../domains/accounts/types"
 import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
@@ -14,6 +14,8 @@ import { MnemonicMessages } from "../domains/mnemonics/types"
 import { NftsMessages } from "../domains/nfts"
 import { SigningMessages } from "../domains/signing/types"
 import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
+import { SolanaExtensionMessages } from "../domains/solana"
+import { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
@@ -84,6 +86,8 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TalismanMessages &
   TokenRatesMessages &
   SubstrateMessages &
+  SolanaExtensionMessages &
+  SolanaTabsMessages &
   AssetDiscoveryMessages &
   NftsMessages &
   DefiMessages &
@@ -124,11 +128,23 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
   keyof SubscriptionMessageTypes
 >
 
+declare type TabMessageTypesWithNoSubscriptions = Exclude<
+  MessageTypes,
+  keyof SubscriptionMessageTypes
+> &
+  `pub(${string})`
+
 export type MessageHandler<
   TMessageType extends MessageTypesWithNoSubscriptions,
   Req = RequestType<TMessageType>,
   Res = ResponseType<TMessageType>,
 > = (req: Req) => Res | Promise<Res>
+
+export type TabMessageHandler<
+  TMessageType extends TabMessageTypesWithNoSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>,
+> = (req: Req, url: string, port: Port) => Res | Promise<Res>
 
 export type SubscriptionHandler<
   TMessageType extends MessageTypesWithSubscriptions,
@@ -136,12 +152,11 @@ export type SubscriptionHandler<
   Res = ResponseType<TMessageType>,
 > = (id: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
-// TODO cooldown
-// export type SubscriptionByIdHandler<
-//   TMessageType extends MessageTypesWithSubscriptionsById,
-//   Req = RequestTypes<TMessageType>,
-//   Res = ResponseType<TMessageType>
-// > = (req: Req) => Res | Promise<Res>
+export type TabSubscriptionHandler<
+  TMessageType extends MessageTypesWithSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>,
+> = (id: string, url: string, port: chrome.runtime.Port, req: Req) => Res | Promise<Res>
 
 interface TransportResponseMessageNoSub<TMessageType extends MessageTypesWithNoSubscriptions> {
   error?: string

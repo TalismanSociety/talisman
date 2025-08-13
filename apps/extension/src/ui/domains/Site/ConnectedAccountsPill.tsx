@@ -1,6 +1,8 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
-import { classNames, isAddressEqual, isNotNil, normalizeAddress } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { Account } from "extension-core"
+import { uniq } from "lodash-es"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -23,10 +25,8 @@ export const ConnectedAccountsPill: FC = () => {
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false)
 
   const { count, label } = useMemo(() => {
-    const { addresses = [], ethAddresses = [] } = site || {}
-    const connected: Account[] = [
-      ...new Set([...addresses.map(normalizeAddress), ...ethAddresses.map(normalizeAddress)]),
-    ]
+    const { addresses = [], ethAddresses = [], solAddresses = [] } = site || {}
+    const connected: Account[] = uniq([...addresses, ...ethAddresses, ...solAddresses])
       .map((a) => accounts.find(({ address }) => isAddressEqual(address, a)))
       .filter(isNotNil)
 
@@ -59,7 +59,7 @@ export const ConnectedAccountsPill: FC = () => {
     }
   }, [currentSite.url])
 
-  if (!site?.addresses && !site?.ethAddresses) return null
+  if (!site?.addresses && !site?.ethAddresses && !site?.solAddresses) return null
 
   return (
     <>

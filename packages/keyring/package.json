@@ -15,8 +15,7 @@
   "main": "dist/talismn-keyring.cjs.js",
   "module": "dist/talismn-keyring.esm.js",
   "files": [
-    "/dist",
-    "/plugins"
+    "/dist"
   ],
   "engines": {
     "node": ">=18"
@@ -24,7 +23,7 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist plugins/dist .turbo node_modules"
+    "clean": "rm -rf dist .turbo node_modules"
   },
   "dependencies": {
     "@talismn/crypto": "workspace:*"

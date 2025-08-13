@@ -1,6 +1,7 @@
 import { Balances } from "@talismn/balances"
+import { encodeAnyAddress } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames, encodeAnyAddress, HexString } from "@talismn/util"
+import { classNames, HexString } from "@talismn/util"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
@@ -53,7 +54,7 @@ const AccountButton: FC<AccountButtonProps> = ({
   onClick,
   withBalances,
   isBalanceLoading,
-  addressPrefix,
+  ss58Format,
 }) => {
   const totalFiat = useBalancesFiatTotal(balances)
 
@@ -67,10 +68,9 @@ const AccountButton: FC<AccountButtonProps> = ({
     [balances, isBalanceLoading],
   )
 
-  const formattedAddress = useMemo(
-    () => encodeAnyAddress(address, addressPrefix ?? undefined),
-    [address, addressPrefix],
-  )
+  const formattedAddress = useMemo(() => {
+    return encodeAnyAddress(address, { ss58Format })
+  }, [address, ss58Format])
 
   return (
     <button
@@ -127,7 +127,7 @@ export type DerivedAccountBase = {
 
 type AccountButtonProps = DerivedAccountBase & {
   withBalances: boolean
-  addressPrefix?: number | null
+  ss58Format?: number
   onClick: () => void
 }
 
@@ -136,7 +136,7 @@ type DerivedAccountPickerBaseProps = {
   withBalances: boolean
   canPageBack?: boolean
   disablePaging?: boolean
-  addressPrefix?: number | null
+  ss58Format?: number
   onPagerFirstClick?: () => void
   onPagerPrevClick?: () => void
   onPagerNextClick?: () => void
@@ -147,7 +147,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   accounts = [],
   disablePaging,
   canPageBack,
-  addressPrefix,
+  ss58Format,
   onPagerFirstClick,
   onPagerPrevClick,
   onPagerNextClick,
@@ -180,7 +180,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
               key={`${keyPrefix}::${account.address}`}
               withBalances={withBalances}
               isBalanceLoading={account.isBalanceLoading}
-              addressPrefix={addressPrefix}
+              ss58Format={ss58Format}
               {...account}
               onClick={handleToggleAccount(account)}
             />

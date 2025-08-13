@@ -1,10 +1,10 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import { Account, getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
@@ -136,12 +136,12 @@ const useLedgerEthereumAccounts = (
       derivedAccounts.map((acc) => {
         if (!acc) return null
 
-        const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null),
+        const existingAccount = walletAccounts?.find((wa) =>
+          isAddressEqual(wa.address, acc.address),
         )
 
-        const accountBalances = balances.balances.find(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null),
+        const accountBalances = balances.balances.find((b) =>
+          isAddressEqual(b.address, acc.address),
         )
         const isBalanceLoading =
           withBalances &&

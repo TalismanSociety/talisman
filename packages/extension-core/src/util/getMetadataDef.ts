@@ -2,7 +2,9 @@ import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
+import { getConstantValueFromMetadata } from "@talismn/scale"
 import { DEBUG, log } from "extension-shared"
+import { withRetry } from "viem"
 
 import { sentry } from "../config/sentry"
 import { db } from "../db"
@@ -94,7 +96,9 @@ const getMetadataDefInner = async (
     // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
 
     // fetch the metadataDef from the chain
-    const newData = await fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion)
+    const newData = await withRetry(() =>
+      fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion),
+    )
     if (!newData) return // unable to get data from rpc, return nothing
 
     // save in cache
@@ -150,16 +154,12 @@ export const fetchMetadataDefFromChain = async (
   chain: DotNetwork,
   genesisHash: `0x${string}`,
   runtimeSpecVersion?: number,
-  blockHash?: string,
 
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
-  fetchMethod: (
-    chainId: NetworkId,
-    blockHash?: string,
-  ) => Promise<`0x${string}`> = getLatestMetadataRpc,
+  fetchMethod: (chainId: NetworkId) => Promise<`0x${string}`> = getLatestMetadataRpc,
 ): Promise<TalismanMetadataDef | undefined> => {
   const [metadataRpc, chainProperties] = await Promise.all([
-    fetchMethod(chain.id, blockHash),
+    fetchMethod(chain.id),
     chainConnector.send(chain.id, "system_properties", [], true),
   ]).catch((rpcError) => {
     // not a useful error, do not log to sentry
@@ -175,10 +175,20 @@ export const fetchMetadataDefFromChain = async (
   // unable to get data from rpc, return nothing
   if (!metadataRpc || !chainProperties) return
 
+  const { spec_version } = getConstantValueFromMetadata<{ spec_version: number }>(
+    metadataRpc,
+    "System",
+    "Version",
+  )
+  if (runtimeSpecVersion !== undefined && spec_version !== runtimeSpecVersion)
+    throw new Error(
+      `specVersion mismatch: expected ${runtimeSpecVersion}, metadata got ${spec_version}`,
+    )
+
   return {
     genesisHash,
     chain: chain.name,
-    specVersion: runtimeSpecVersion,
+    specVersion: spec_version,
     ss58Format: chainProperties.ss58Format,
     tokenSymbol: Array.isArray(chainProperties.tokenSymbol)
       ? chainProperties.tokenSymbol[0]

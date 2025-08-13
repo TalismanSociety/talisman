@@ -33,6 +33,8 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
               const dotNetwork = network as DotNetwork
               return [network.id, getDotNetworkType(dotNetwork, networksById, t)]
             }
+            case "solana":
+              return [network.id, t("Solana Blockchain")]
           }
         }),
       )

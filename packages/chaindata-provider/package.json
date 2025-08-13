@@ -15,20 +15,20 @@
   "main": "dist/talismn-chaindata-provider.cjs.js",
   "module": "dist/talismn-chaindata-provider.esm.js",
   "files": [
-    "/dist",
-    "/init",
-    "/net"
+    "/dist"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "eslint src --max-warnings 0",
     "chore:generate-init-data": "tsx scripts/generateInitData.ts",
     "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules"
   },
   "dependencies": {
+    "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "dexie": "^4.0.9",
     "lodash-es": "4.17.21",

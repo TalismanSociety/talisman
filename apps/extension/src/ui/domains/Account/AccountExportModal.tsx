@@ -1,6 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
-import { Account, isAccountOfType } from "extension-core"
+import {
+  Account,
+  isAccountOfType,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+} from "extension-core"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -39,7 +44,9 @@ export const useAccountExportModal = () => {
     [innerOpen],
   )
 
-  const canExportAccountFunc = (account?: Account | null) => isAccountOfType(account, "keypair")
+  const canExportAccountFunc = (account?: Account | null) =>
+    isAccountOfType(account, "keypair") &&
+    (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 

@@ -1,4 +1,5 @@
 import { WsProvider } from "@polkadot/rpc-provider"
+import { Connection } from "@solana/web3.js"
 import { fetchBestMetadata, getScaleApi } from "@talismn/sapi"
 import {
   decAnyMetadata,
@@ -15,16 +16,17 @@ import { z } from "zod/v4"
 
 // because of validation the same query is done 3 times minimum per url, make all await same promise
 const rpcInfoCache = new Map<string, Promise<SubstrateRpcInfo | null>>()
-const genesisHashCache = new Map<string, Promise<`0x${string}` | null>>()
+const genesisHashCache = new Map<string, Promise<string | null>>()
 
 export const wsRegEx = /^wss?:\/\/.+$/
+export const httpRegEx = /^https?:\/\/.+$/
 
 export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` | null> => {
   // check if valid url
   if (!rpcUrl || !wsRegEx.test(rpcUrl)) return Promise.resolve(null)
 
   const cached = genesisHashCache.get(rpcUrl)
-  if (cached) return cached
+  if (cached) return cached as Promise<`0x${string}` | null>
 
   const request = (async () => {
     const ws = new WsProvider(rpcUrl, 3000, undefined, 3000)
@@ -36,6 +38,29 @@ export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` 
       return null
     } finally {
       ws.disconnect()
+      genesisHashCache.delete(rpcUrl)
+    }
+  })()
+
+  genesisHashCache.set(rpcUrl, request)
+
+  return request
+}
+
+export const getSolGenesisHashFromRpc = (rpcUrl: string): Promise<string | null> => {
+  // check if valid url
+  if (!rpcUrl || !httpRegEx.test(rpcUrl)) return Promise.resolve(null)
+
+  const cached = genesisHashCache.get(rpcUrl)
+  if (cached) return cached
+
+  const request = (async () => {
+    const connection = new Connection(rpcUrl, "confirmed")
+    try {
+      return await Promise.race([connection.getGenesisHash(), throwAfter(3000, "timeout")])
+    } catch (error) {
+      return null
+    } finally {
       genesisHashCache.delete(rpcUrl)
     }
   })()

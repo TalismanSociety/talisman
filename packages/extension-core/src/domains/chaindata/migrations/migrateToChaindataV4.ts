@@ -23,7 +23,7 @@ import { activeNetworksStore } from "../../balances/store.activeNetworks"
 import { activeTokensStore } from "../../balances/store.activeTokens"
 import { activeChainsStore } from "../../chains/store.activeChains"
 import { activeEvmNetworksStore } from "../../ethereum/store.activeEvmNetworks"
-import { customChaindataStore } from "../store"
+import { customChaindataStore } from "../store.customChaindata"
 
 const MIGRATION_LABEL = "Updating Balances System"
 

@@ -1,7 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { isEthereumAddress, isSs58Address, Platform } from "@talismn/crypto"
+import { AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { SUPPORTED_ACCOUNT_PLATFORMS } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -24,7 +25,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   // get type paramter from url
   const [params] = useSearchParams()
   const defaultPlatform = useMemo(() => {
-    return (params.get("platform") ?? undefined) as Platform | undefined
+    return (params.get("platform") ?? undefined) as AccountPlatform | undefined
   }, [params])
 
   const allAccounts = useAccounts()
@@ -36,20 +37,14 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
         .object({
           name: yup.string().required(" ").notOneOf(accountNames, t("Name already in use")),
           searchAddress: yup.string().trim().required(" "),
-          platform: yup.mixed<Platform>().oneOf(["ethereum", "polkadot"]).defined(),
+          platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).defined(),
           address: yup.string().trim().required(" "),
           isPortfolio: yup.boolean().defined(),
         })
         .test("is-valid-address", t("Invalid address"), (val, ctx) => {
           const { platform, address } = val
 
-          if (platform === "polkadot" && !isSs58Address(address))
-            return ctx.createError({
-              path: "address",
-              message: t("Invalid address"),
-            })
-
-          if (platform === "ethereum" && !isEthereumAddress(address))
+          if (platform !== getAccountPlatformFromAddress(address))
             return ctx.createError({
               path: "address",
               message: t("Invalid address"),
@@ -136,7 +131,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
   )
 
   const handlePlatformChange = useCallback(
-    (platform: Platform) => {
+    (platform: AccountPlatform) => {
       setValue("platform", platform, { shouldValidate: true })
       trigger()
     },

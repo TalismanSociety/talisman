@@ -63,7 +63,7 @@ export const LedgerPolkadotLegacyAccountPickerDefault: FC<
       <DerivedAccountPickerBase
         accounts={accounts}
         withBalances={withBalances}
-        addressPrefix={chain?.prefix}
+        ss58Format={chain?.prefix}
         canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}

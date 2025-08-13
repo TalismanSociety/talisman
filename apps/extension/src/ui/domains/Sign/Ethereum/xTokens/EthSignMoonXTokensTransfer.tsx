@@ -1,6 +1,6 @@
 import { hexToU8a } from "@polkadot/util"
 import { Address } from "@talismn/balances"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAddressSs58, encodeAnyAddress } from "@talismn/crypto"
 import { EvmAddress } from "extension-core"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -38,9 +38,9 @@ const decodeInterior = (interior: string): Interior => {
     case "0x01": {
       // AccountId32	bytes32
       const networkPrefixHex = main.slice(main.length - 2)
-      const networkPrefix = networkPrefixHex === "00" ? undefined : parseInt(networkPrefixHex, 16)
+      const prefix = networkPrefixHex === "00" ? undefined : parseInt(networkPrefixHex, 16)
       const address = hexToU8a(main.slice(0, main.length - 2))
-      return { type: "account" as const, address: encodeAnyAddress(address, networkPrefix) }
+      return { type: "account" as const, address: encodeAddressSs58(address, prefix) }
     }
     default:
       throw new Error("Unimplemented prelude " + prelude)
@@ -129,7 +129,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   const targetAddress = useMemo(
     () =>
       targetChain && target?.address
-        ? encodeAnyAddress(target.address, targetChain?.prefix ?? undefined)
+        ? encodeAnyAddress(target.address, { ss58Format: targetChain?.prefix })
         : undefined,
     [target, targetChain],
   )

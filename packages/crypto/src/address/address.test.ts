@@ -1,5 +1,5 @@
-import { platformFromAddress } from "../platform"
-import { encodeAddressBase58 } from "./encoding/base58"
+import { getAccountPlatformFromAddress } from "../platform"
+import { encodeAddressSolana } from "./encoding"
 import { detectAddressEncoding } from "./encoding/detectAddressEncoding"
 import { encodeAddressEthereum } from "./encoding/ethereum"
 import { encodeAddressSs58 } from "./encoding/ss58"
@@ -13,7 +13,7 @@ describe("address encoding", () => {
     const ADDRESS = "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
 
     const publicKey = new Uint8Array(PUBLIC_KEY)
-    const address = encodeAddressBase58(publicKey)
+    const address = encodeAddressSolana(publicKey)
 
     expect(address).toEqual(ADDRESS)
   })
@@ -115,16 +115,16 @@ describe("detect address encoding", () => {
     expect(detectAddressEncoding(ADDRESS_BECH32_P2WPKH_OR_P2WSH)).toEqual("bech32")
     expect(detectAddressEncoding(ADDRESS_BECH32M_P2TR)).toEqual("bech32m")
 
-    expect(platformFromAddress(ADDRESS_BASE58_P2PKH_COMPRESSED)).toEqual("bitcoin")
-    expect(platformFromAddress(ADDRESS_BASE58_P2PKH_UNCOMPRESSED)).toEqual("bitcoin")
-    expect(platformFromAddress(ADDRESS_BASE58_P2SH)).toEqual("bitcoin")
-    expect(platformFromAddress(ADDRESS_BECH32_P2WPKH_OR_P2WSH)).toEqual("bitcoin")
-    expect(platformFromAddress(ADDRESS_BECH32M_P2TR)).toEqual("bitcoin")
+    expect(getAccountPlatformFromAddress(ADDRESS_BASE58_P2PKH_COMPRESSED)).toEqual("bitcoin")
+    expect(getAccountPlatformFromAddress(ADDRESS_BASE58_P2PKH_UNCOMPRESSED)).toEqual("bitcoin")
+    expect(getAccountPlatformFromAddress(ADDRESS_BASE58_P2SH)).toEqual("bitcoin")
+    expect(getAccountPlatformFromAddress(ADDRESS_BECH32_P2WPKH_OR_P2WSH)).toEqual("bitcoin")
+    expect(getAccountPlatformFromAddress(ADDRESS_BECH32M_P2TR)).toEqual("bitcoin")
   })
 
   it("Base58", () => {
     const ADDRESS = "oeYf6KAJkLYhBuR8CiGc6L4D4Xtfepr85fuDgA9kq96"
-    expect(detectAddressEncoding(ADDRESS)).toEqual("base58")
+    expect(detectAddressEncoding(ADDRESS)).toEqual("base58solana")
   })
 
   it("SS58", () => {

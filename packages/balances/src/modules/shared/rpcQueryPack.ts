@@ -1,4 +1,4 @@
-import { ChainConnector } from "@talismn/chain-connector"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { toPairs } from "lodash-es"
@@ -16,7 +16,7 @@ export type RpcQueryPack<T> = {
 type QueryStorageResultContent = QueryStorageResult[0]
 
 export const fetchRpcQueryPack = async <T>(
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   queries: RpcQueryPack<T>[],
 ) => {
@@ -34,7 +34,7 @@ export const fetchRpcQueryPack = async <T>(
 }
 
 export const getRpcQueryPack$ = <T>(
-  connector: ChainConnector,
+  connector: IChainConnectorDot,
   networkId: DotNetworkId,
   queries: RpcQueryPack<T>[],
   timeout: number | false = false,

@@ -1,24 +1,26 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import { secp256k1 } from "@noble/curves/secp256k1"
-import { bytesToString, parseSecretKey } from "@talismn/crypto"
-import { encodeAnyAddress } from "@talismn/util"
-import { isAccountAddressEthereum } from "extension-core"
-import i18next from "i18next"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { useForm } from "react-hook-form"
+/* eslint-disable react/no-children-prop */
+
+import {
+  AccountPlatform,
+  addressEncodingFromCurve,
+  addressFromPublicKey,
+  base64,
+  getPublicKeyFromSecret,
+  KeypairCurve,
+  parseSecretKey,
+} from "@talismn/crypto"
+import { useField, useForm } from "@tanstack/react-form"
+import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
   FormFieldContainer,
   FormFieldInputText,
-  FormFieldTextarea,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-import { isHex, toHex } from "viem"
-import { publicKeyToAddress } from "viem/accounts"
-import * as yup from "yup"
+import { z } from "zod/v4"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -27,120 +29,89 @@ import { api } from "@ui/api"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
 
+import { AccountPlatformDropdown } from "../AccountPlatformDropdown"
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
 import { AccountAddPageProps } from "./types"
 
-/**
- * A minimal version of viem's privateKeyToAccount that only returns an address
- * @param privateKey: `0x${string}`
- * @returns string
- */
-const privateKeyToAddress = (privateKey: `0x${string}`) => {
-  const publicKey = toHex(secp256k1.getPublicKey(privateKey.slice(2), false))
-  return publicKeyToAddress(publicKey)
+const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "solana"]
+
+const platformToCurve = (platform: AccountPlatform): KeypairCurve => {
+  switch (platform) {
+    case "ethereum":
+      return "ethereum"
+    case "solana":
+      return "solana"
+    default:
+      throw new Error(`Unsupported platform: ${platform}`)
+  }
 }
 
-const isValidEthPrivateKey = (privateKey: `0x${string}`) => {
+const privateKeyToAddress = (privateKey: string, platform: AccountPlatform) => {
   try {
-    if (!isHex(privateKey)) return false
-    return Boolean(privateKeyToAddress(privateKey))
+    const secretKey = parseSecretKey(privateKey, platform)
+    const curve = platformToCurve(platform)
+    const publicKey = getPublicKeyFromSecret(secretKey, curve)
+    const encoding = addressEncodingFromCurve(curve)
+    return addressFromPublicKey(publicKey, encoding)
+  } catch {
+    return null
+  }
+}
+
+const isValidPrivateKey = (privateKey: string, platform: AccountPlatform) => {
+  try {
+    return Boolean(privateKeyToAddress(privateKey, platform))
   } catch (err) {
     return false
   }
 }
 
-/**
- * metamask exports private key without the 0x in front of it
- * pjs keyring & crypto api will throw if it's missing
- * @param privateKey: string
- * @returns `0x${string}`
- */
-const transformToHex = (privateKey: string): `0x${string}` =>
-  privateKey?.startsWith("0x") ? (privateKey as `0x${string}`) : `0x${privateKey}`
-
-type FormData = {
-  name: string
-  privateKey: string
-}
-
-type ValidationContext = {
-  accountEthAddresses: string[]
-}
-
-const schema = yup
-  .object({
-    name: yup.string().trim().required(" "),
-    privateKey: yup
-      .string()
-      .required(" ")
-      .trim()
-      .lowercase()
-      .transform(transformToHex)
-      .test("is-valid-mnemonic-ethereum", i18next.t("Invalid private key"), async (val) =>
-        isValidEthPrivateKey(val as `0x${string}`),
-      )
-      .test("account-exists", i18next.t("Account exists"), async (privateKey, ctx) => {
-        const context = ctx.options.context as ValidationContext
-        let address: string
-        try {
-          address = privateKeyToAddress(privateKey as `0x${string}`)
-        } catch (err) {
-          return ctx.createError({
-            path: "privateKey",
-            message: i18next.t("Error importing account"),
-          })
-        }
-
-        if (context.accountEthAddresses.some((a) => encodeAnyAddress(a) === address))
-          return ctx.createError({
-            path: "privateKey",
-            message: i18next.t("Account already exists"),
-          })
-
-        return true
-      }),
-  })
-  .required()
-
 export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => {
   const { t } = useTranslation()
   const allAccounts = useAccounts()
-  const accountEthAddresses = useMemo(
-    () => allAccounts.filter(isAccountAddressEthereum).map((a) => a.address),
+  const existingAccountNames = useMemo(
+    () => allAccounts.map((a) => a.name.trim().toLowerCase()),
     [allAccounts],
   )
+  const existingAccountAddresses = useMemo(() => allAccounts.map((a) => a.address), [allAccounts])
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors, isValid, isSubmitting },
-  } = useForm<FormData, ValidationContext>({
-    mode: "onChange",
-    resolver: yupResolver(schema),
-    context: { accountEthAddresses },
-  })
+  const FormSchema = useMemo(
+    () =>
+      z
+        .object({
+          platform: z.enum(SUPPORTED_ACCOUNT_PLATFORMS),
+          name: z
+            .string()
+            .nonempty()
+            .refine((name) => !existingAccountNames.includes(name), {
+              message: "Account name already exists",
+              path: ["privateKey"],
+            }),
+          privateKey: z.string().nonempty(),
+        })
+        .refine((data) => isValidPrivateKey(data.privateKey, data.platform), {
+          message: "Invalid private key for selected platform",
+          path: ["privateKey"],
+        })
+        .refine(
+          (data) =>
+            !existingAccountAddresses.includes(
+              privateKeyToAddress(data.privateKey, data.platform) as string,
+            ),
+          {
+            message: "Account already exists",
+            path: ["privateKey"],
+          },
+        ),
+    [existingAccountAddresses, existingAccountNames],
+  )
 
-  const privateKey = watch("privateKey")
-
-  const [targetAddress, setTargetAddress] = useState<string>()
-
-  useEffect(() => {
-    const refreshTargetAddress = async () => {
-      try {
-        if (!isValid) return setTargetAddress(undefined)
-        setTargetAddress(privateKeyToAddress(transformToHex(privateKey)))
-      } catch (err) {
-        setTargetAddress(undefined)
-      }
-    }
-
-    refreshTargetAddress()
-  }, [isValid, privateKey])
-
-  const submit = useCallback(
-    async ({ name, privateKey }: FormData) => {
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      privateKey: "",
+    } as z.infer<typeof FormSchema>,
+    onSubmit: async ({ value }) => {
       const notificationId = notify(
         {
           type: "processing",
@@ -150,13 +121,14 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         { autoClose: false },
       )
       try {
-        const secretKey = parseSecretKey(privateKey, "ethereum")
+        const secretKey = parseSecretKey(value.privateKey, value.platform)
+        const curve = platformToCurve(value.platform)
 
         const [address] = await api.accountAddKeypair([
           {
-            name,
-            curve: "ethereum",
-            secretKey: bytesToString("base64", secretKey),
+            name: value.name,
+            curve,
+            secretKey: base64.encode(secretKey),
           },
         ])
 
@@ -164,7 +136,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         notifyUpdate(notificationId, {
           type: "success",
           title: t("Account imported"),
-          subtitle: name,
+          subtitle: value.name,
         })
       } catch (err) {
         notifyUpdate(notificationId, {
@@ -174,69 +146,132 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         })
       }
     },
-    [t, onSuccess],
-  )
+    validators: {
+      onMount: ({ value }) => (FormSchema.safeParse(value).success ? null : "invalid"),
+      onChange: ({ value }) => (FormSchema.safeParse(value).success ? null : "invalid"),
+    },
+  })
 
   useEffect(() => {
     return () => {
-      setValue("privateKey", "")
+      form.reset() // so private key is cleared from memory
     }
-  }, [setValue])
+  }, [form])
+
+  const fldPlatform = useField({ form, name: "platform" })
+  const fldPrivateKey = useField({ form, name: "privateKey" })
+  const targetAddress = useMemo(() => {
+    if (!fldPlatform.state.value || !fldPrivateKey.state.value) return null
+    return privateKeyToAddress(fldPrivateKey.state.value, fldPlatform.state.value)
+  }, [fldPlatform.state.value, fldPrivateKey.state.value])
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <HeaderBlock title={t("Import Ethereum Private Key")} />
+      <HeaderBlock title={t("Import via Private Key")} />
 
-      <form onSubmit={handleSubmit(submit)}>
-        <FormFieldContainer error={errors.name?.message}>
-          <FormFieldInputText
-            {...register("name")}
-            placeholder={t("Choose a name")}
-            spellCheck={false}
-            autoComplete="off"
-            // eslint-disable-next-line jsx-a11y/no-autofocus
-            autoFocus
-            data-lpignore
-            translate="no"
-            after={
-              targetAddress ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="size-16">
-                      <AccountIcon address={targetAddress} className="text-xl" />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>{targetAddress}</TooltipContent>
-                </Tooltip>
-              ) : null
-            }
-          />
-        </FormFieldContainer>
-        <FormFieldTextarea
-          {...register("privateKey")}
-          placeholder={t("Enter your private key")}
-          rows={2}
-          data-lpignore
-          translate="no"
-          spellCheck={false}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+      >
+        <form.Field
+          name="platform"
+          children={(field) => (
+            <AccountPlatformDropdown
+              value={field.state.value}
+              platforms={SUPPORTED_ACCOUNT_PLATFORMS}
+              onChange={(platform) => field.handleChange(platform)}
+              className="h-28"
+            />
+          )}
         />
-        <div className="mt-2 flex w-full overflow-hidden text-xs">
-          <div className="text-alert-warn grow truncate text-right">
-            {errors.privateKey?.message}
-          </div>
-        </div>
+        <Spacer small />
+        <form.Field
+          name="name"
+          children={(field) => (
+            <FormFieldContainer error={field.state.meta.errors[0]}>
+              <FormFieldInputText
+                value={field.state.value}
+                placeholder={t("Choose a name")}
+                spellCheck={false}
+                autoComplete="off"
+                data-lpignore
+                translate="no"
+                onChange={(e) => field.handleChange(e.target.value)}
+                after={
+                  targetAddress ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="size-16">
+                          <AccountIcon address={targetAddress} className="text-xl" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>{targetAddress}</TooltipContent>
+                    </Tooltip>
+                  ) : null
+                }
+              />
+            </FormFieldContainer>
+          )}
+          validators={{
+            onChange: ({ value }) => {
+              const check = value.trim().toLowerCase()
+              if (value.trim() === "") return t("Account name is required")
+              if (existingAccountNames.includes(check)) return t("Account name already exists")
+              return null
+            },
+          }}
+        />
+        <form.Field
+          name="privateKey"
+          children={(field) => (
+            <FormFieldContainer error={field.state.meta.errors[0]}>
+              <FormFieldInputText
+                value={field.state.value}
+                placeholder={t("Enter your private key")}
+                spellCheck={false}
+                autoComplete="off"
+                data-lpignore
+                translate="no"
+                onChange={(e) => field.handleChange(e.target.value)}
+              />
+            </FormFieldContainer>
+          )}
+          validators={{
+            onChange: ({ value, fieldApi }) => {
+              const platform = fieldApi.form.getFieldValue("platform")
+              const address = privateKeyToAddress(value, platform)
+              if (value && !address) return t("Invalid private key")
+              if (address && existingAccountAddresses.includes(address))
+                return t("Account already exists")
+
+              return null
+            },
+          }}
+        />
         <Spacer small />
         <div className="mt-1 flex w-full justify-between">
           <BackToAddAccountButton methodType="import" />
-          <Button
-            className="w-[24rem]"
-            type="submit"
-            primary
-            disabled={!isValid}
-            processing={isSubmitting}
-          >
-            {t("Import")}
-          </Button>
+          <form.Subscribe
+            selector={(state) => [
+              state.canSubmit,
+              state.isSubmitting,
+              state.isValidating,
+              state.isValid,
+            ]}
+            children={([canSubmit, isSubmitting, isValidating]) => (
+              <Button
+                primary
+                className="h-24"
+                type="submit"
+                processing={isSubmitting || isValidating}
+                disabled={!canSubmit && !isSubmitting && !isValidating}
+              >
+                {t("Save")}
+              </Button>
+            )}
+          />
         </div>
       </form>
     </div>

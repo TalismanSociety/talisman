@@ -8,7 +8,7 @@ import {
   NetworkList,
   Token,
 } from "@talismn/chaindata-provider"
-import { encodeAddressSs58, isAddressEqual, normalizeAddress } from "@talismn/crypto"
+import { encodeAddressSs58, isAddressEqual, isSs58Address, normalizeAddress } from "@talismn/crypto"
 import {
   Account,
   Address,
@@ -58,8 +58,10 @@ const isAccountCompatibleWithChain = (
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   if (!inputs.address) return "account"
+
   // chainId beeing null means we want to copy the substrate (generic) format
-  if (inputs.networkId === undefined && !isEthereumAddress(inputs.address)) return "chain"
+  // => check for undefined before redirecting to chain page
+  if (isSs58Address(inputs.address) && inputs.networkId === undefined) return "chain"
 
   return "copy"
 }
@@ -72,14 +74,14 @@ const getFormattedAddress = (
   if (!address) return null
 
   try {
-    if (isEthereumAddress(address)) return normalizeAddress(address)
-
     if (network?.platform === "polkadot") {
       const prefix =
         legacyFormat && typeof network.oldPrefix === "number" ? network.oldPrefix : network.prefix
 
       return encodeAddressSs58(address, prefix)
-    } else throw new Error("Unexpected network platform")
+    } else {
+      return normalizeAddress(address)
+    }
   } catch (err) {
     log.error("Failed to format address", { err })
   }
@@ -129,8 +131,6 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const ethereum = useToken(evmNativeTokenId("1"))
 
   const network = useNetworkById(state.networkId)
-  // const chain = useChain(state.networkId)
-  // const evmNetwork = useEvmNetwork(state.networkId)
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, network, state.legacyFormat),

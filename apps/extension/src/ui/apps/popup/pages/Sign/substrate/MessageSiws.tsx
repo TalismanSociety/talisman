@@ -35,7 +35,7 @@ export const MessageSiws = ({ account, chain, request, validationError }: Props)
           <div className="text-body-secondary">{t("wants you to sign in with Substrate")}</div>
           <div className="[&>button>div>span]:text-body flex max-w-full items-center justify-center gap-2 truncate [&>button>div>span]:font-bold">
             <span>{t("with")}</span>
-            <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
+            <AccountPill account={account} ss58Format={chain?.prefix ?? undefined} />
           </div>
         </div>
         {!!request.statement && (

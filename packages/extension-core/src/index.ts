@@ -21,10 +21,13 @@ export {
 
 export * from "./domains/accounts/helpers.catalog"
 export {
-  formatSuri,
   isCurveCompatibleWithChain,
   isAccountCompatibleWithNetwork,
   isAddressCompatibleWithNetwork,
+  getDefaultCurveForAccountPlatform,
+  isAccountPlatformCompatibleWithNetwork,
+  getDerivationPathForCurve,
+  SUPPORTED_ACCOUNT_PLATFORMS,
 } from "./domains/accounts/helpers"
 export { runActionOnTrees } from "./domains/accounts/helpers.catalog"
 
@@ -74,3 +77,4 @@ export * from "./domains/keyring/exports"
 export * from "./domains/transactions/exports"
 export * from "./domains/metadata/helpers"
 export * from "./domains/defi/exports"
+export * from "./domains/solana/exports"

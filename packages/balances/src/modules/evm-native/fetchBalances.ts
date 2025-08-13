@@ -1,5 +1,5 @@
 import { parseTokenId } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 import { PublicClient } from "viem"
 
 import { IBalance } from "../../types"

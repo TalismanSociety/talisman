@@ -1,5 +1,5 @@
-import { isTokenDot, isTokenEth, Token, TokenId } from "@talismn/chaindata-provider"
-import { isEthereumAddress, isValidSubstrateAddress } from "@talismn/util"
+import { isTokenDot, isTokenEth, isTokenSol, Token, TokenId } from "@talismn/chaindata-provider"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { useCallback, useMemo } from "react"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -35,7 +35,15 @@ export const SendFundsTokenPicker = () => {
 }
 
 const getTokenFilter = (address: string) => {
-  if (isEthereumAddress(address)) return isTokenEth
-  else if (isValidSubstrateAddress(address)) return isTokenDot
-  throw new Error("Unknown address type")
+  const accountEncoding = detectAddressEncoding(address)
+  switch (accountEncoding) {
+    case "ss58":
+      return isTokenDot
+    case "ethereum":
+      return isTokenEth
+    case "base58solana":
+      return isTokenSol
+    default:
+      throw new Error(`Unsupported address encoding: ${accountEncoding}`)
+  }
 }

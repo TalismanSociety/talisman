@@ -1,5 +1,5 @@
 import { assert } from "@polkadot/util"
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { AddAccountExternalOptions } from "extension-core"
 import { useCallback, useState } from "react"
 import { useSearchParams } from "react-router-dom"
@@ -16,7 +16,12 @@ export type LedgerAccountDefEthereum = Extract<
   AddAccountExternalOptions,
   { type: "ledger-ethereum" }
 >
-export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
+export type LedgerAccountDefSolana = Extract<AddAccountExternalOptions, { type: "ledger-solana" }>
+
+export type LedgerAccountDef =
+  | LedgerAccountDefSubstrate
+  | LedgerAccountDefEthereum
+  | LedgerAccountDefSolana
 
 export enum AddSubstrateLedgerAppType {
   Legacy = "Legacy",
@@ -25,7 +30,7 @@ export enum AddSubstrateLedgerAppType {
 }
 
 type LedgerCreationInputs = {
-  platform: Platform
+  platform: AccountPlatform
   substrateAppType: AddSubstrateLedgerAppType
   accounts: LedgerAccountDef[]
   chainId?: string
@@ -34,7 +39,7 @@ type LedgerCreationInputs = {
 const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: string) => void }) => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
-    platform: params.get("platform") as Platform | undefined,
+    platform: params.get("platform") as AccountPlatform | undefined,
   }))
   const chain = useNetworkById(data.chainId as string, "polkadot")
 
@@ -47,17 +52,18 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
   const connectAccounts = useCallback(
     (accounts: LedgerAccountDef[]) => {
-      if (data.platform !== "ethereum")
+      if (data.platform === "polkadot") {
         assert(data.substrateAppType, "Substrate app type is required")
 
-      if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
-        assert(
-          accounts.every((acc) => {
-            const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
-            return !!genesisHash && genesisHash === chain?.genesisHash
-          }),
-          "Chain mismatch",
-        )
+        if (data.substrateAppType === AddSubstrateLedgerAppType.Legacy)
+          assert(
+            accounts.every((acc) => {
+              const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
+              return !!genesisHash && genesisHash === chain?.genesisHash
+            }),
+            "Chain mismatch",
+          )
+      }
 
       setData((prev) => ({ ...prev, accounts }))
 

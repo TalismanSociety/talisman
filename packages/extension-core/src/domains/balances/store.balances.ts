@@ -1,57 +1,56 @@
 import { BalanceJson, BalancesStorage, getBalanceId } from "@talismn/balances"
 import { isAccountNotContact } from "@talismn/keyring"
+import { splitSubject } from "@talismn/util"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, map, ReplaySubject, skip } from "rxjs"
+import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 
 import { getDbBlob, updateDbBlob } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
 import { keyringStore } from "../keyring/store"
 
-const BLOB_ID = "balances"
+const BLOB_ID = "balances" as const
+type BalancesBlobData = BalancesStorage & { id: typeof BLOB_ID }
+const getBalancesDbBlob = () => getDbBlob<typeof BLOB_ID, BalancesBlobData>(BLOB_ID)
 
-type BalancesStoreData = {
-  id: "balances"
-} & BalancesStorage
-
-const DEFAULT_DATA: BalancesStoreData = {
-  id: "balances",
+const DEFAULT_DATA: BalancesStorage = {
   balances: [],
+  /**
+   * NOTE: these are miniMetadatas needed for e.g. custom or out-of-date chains,
+   * they are not the same as the default miniMetadatas in the chaindata blob.
+   */
   miniMetadatas: [],
 }
 
-const subjectBalancesStore = new ReplaySubject<BalancesStoreData>(1)
-
-export const balancesStore$ = subjectBalancesStore.pipe(
-  map(
-    (data): BalancesStorage => ({
-      balances: data.balances,
-      miniMetadatas: data.miniMetadatas,
-    }),
-  ),
-)
-
-const cleanupBalanceForStorage = (balance: BalanceJson): BalanceJson => {
-  const { networkId, address, tokenId, source, useLegacyTransferableCalculation, values, value } =
-    balance
-  return {
-    // mark as cache and enforce property ordering for consistency
-    status: "cache",
-    networkId,
-    address,
-    tokenId,
-    source,
-    useLegacyTransferableCalculation,
-    values,
-    value,
-  } as BalanceJson
-}
+// balances store
+const [setBalances, balancesStore$] = splitSubject(new ReplaySubject<BalancesStorage>(1))
+export { balancesStore$ }
 
 export const updateBalancesStore = (data: BalancesStorage) => {
-  subjectBalancesStore.next({
-    id: BLOB_ID,
+  setBalances({
     balances: data.balances
-      .map(cleanupBalanceForStorage)
+      .map(function cleanupBalanceForStorage(balance: BalanceJson): BalanceJson {
+        const {
+          networkId,
+          address,
+          tokenId,
+          source,
+          useLegacyTransferableCalculation,
+          values,
+          value,
+        } = balance
+        return {
+          // mark as cache and enforce property ordering for consistency
+          status: "cache",
+          networkId,
+          address,
+          tokenId,
+          source,
+          useLegacyTransferableCalculation,
+          values: values!,
+          value,
+        }
+      })
       // enforce consistent ordering of balances and miniMetadatas to allow for easier change comparison
       .sort((a, b) => getBalanceId(a).localeCompare(getBalanceId(b))),
     miniMetadatas: data.miniMetadatas.concat().sort((a, b) => a.id.localeCompare(b.id)),
@@ -61,29 +60,30 @@ export const updateBalancesStore = (data: BalancesStorage) => {
 // once wallet is ready, initialize the balances store
 walletReady.then(() => {
   // provision store data from db
-  Promise.all([getDbBlob<"balances", BalancesStoreData>(BLOB_ID), keyringStore.getAccounts()])
-    .then(([storage, accounts]) => {
-      if (!storage) return subjectBalancesStore.next(DEFAULT_DATA)
+  Promise.all([getBalancesDbBlob(), keyringStore.getAccounts()])
+    .then(([blobData, accounts]) => {
+      if (!blobData) return setBalances(DEFAULT_DATA)
 
       const addresses = new Set(accounts.filter(isAccountNotContact).map((a) => a.address))
-      const balances = storage.balances.filter((b) => addresses.has(b.address))
+      // filter out any balances that do not match a keyring address
+      const balances = blobData.balances.filter((b) => addresses.has(b.address))
+      const miniMetadatas = blobData.miniMetadatas
 
-      if (balances.length !== storage.balances.length)
+      if (balances.length !== blobData.balances.length)
         log.debug(
-          `[balances] deleting ${storage.balances.length - balances.length} balances that do not match keyring addresses`,
+          `[balances] deleting ${blobData.balances.length - balances.length} balances that do not match keyring addresses`,
         )
 
-      subjectBalancesStore.next({
+      setBalances({
         ...DEFAULT_DATA,
-        ...storage,
-        // remove all balances that do not match a keyring address
         balances,
+        miniMetadatas,
       })
     })
     .catch((error) => {
-      log.error("[balances] failed to cleanup balances store on startup", error)
+      log.error("[balances] failed to load balances store on startup", error)
       // need at least one emit on startup as it's a replay subject
-      subjectBalancesStore.next(DEFAULT_DATA)
+      setBalances(DEFAULT_DATA)
     })
 
   // persist data to db when store is updated

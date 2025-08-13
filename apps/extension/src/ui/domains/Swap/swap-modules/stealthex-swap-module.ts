@@ -6,9 +6,8 @@ import {
   subAssetTokenId,
   subNativeTokenId,
 } from "@talismn/balances-react"
-import { isAddressEqual, isEthereumAddress } from "@talismn/crypto"
+import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
 import { ScaleApi } from "@talismn/sapi"
-import { encodeAnyAddress } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
 import { atom, ExtractAtomValue, Getter } from "jotai"
@@ -595,7 +594,7 @@ const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> =>
         (c) => c.id.toString() === asset.chainId.toString(),
       )
       if (!substrateChain) return address
-      return encodeAnyAddress(address, substrateChain.prefix ?? 42)
+      return encodeAnyAddress(address, { ss58Format: substrateChain.prefix })
     }
 
     const fromAsset = get(fromAssetAtom)

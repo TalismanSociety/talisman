@@ -16,6 +16,6 @@ export const addressEncodingFromCurve = (curve: KeypairCurve): AddressEncoding =
     case "ethereum":
       return "ethereum"
     case "solana":
-      return "base58"
+      return "base58solana"
   }
 }

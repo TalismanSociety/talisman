@@ -1,5 +1,5 @@
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { isEthereumAddress } from "@talismn/util"
+import { isEthereumAddress } from "@talismn/crypto"
 import { encodeFunctionData, erc20Abi } from "viem"
 
 import { IBalanceModule } from "../../types/IBalanceModule"

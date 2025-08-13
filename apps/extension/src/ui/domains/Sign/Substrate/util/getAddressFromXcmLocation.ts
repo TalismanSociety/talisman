@@ -1,6 +1,5 @@
 import { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
-import { u8aToHex } from "@polkadot/util"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAddressEthereum, encodeAddressSs58 } from "@talismn/crypto"
 import { Address } from "extension-core"
 import { log } from "extension-shared"
 import { FixedSizeBinary } from "polkadot-api"
@@ -43,9 +42,9 @@ const getAddressFromAccountId32 = (accountId32: FixedSizeBinary<32>): Address =>
   // test case: hydration portal, xcm mythos from mythos to hydration
 
   if (isPrefixMatch(accountId32.asBytes(), ETH_PREFIX))
-    return u8aToHex(accountId32.asBytes().slice(4, 24))
+    return encodeAddressEthereum(accountId32.asBytes().slice(4, 24))
 
-  return encodeAnyAddress(accountId32.asBytes())
+  return encodeAddressSs58(accountId32.asBytes())
 }
 
 const isPrefixMatch = (bytes: Uint8Array, prefix: Uint8Array) => {

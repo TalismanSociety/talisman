@@ -1,9 +1,9 @@
-import { Platform } from "@talismn/crypto"
+import { AccountPlatform } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
 import { FC, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
+import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@talisman/theme/logos"
 
 const AccountTypeButton: FC<{
   className?: string
@@ -33,8 +33,8 @@ const AccountTypeButton: FC<{
 )
 
 type AccountPlatformSelectorProps = {
-  defaultValue?: Platform
-  onChange: (value: Platform) => void
+  defaultValue?: AccountPlatform
+  onChange: (value: AccountPlatform) => void
   className?: string
 }
 
@@ -44,9 +44,9 @@ export const AccountPlatformSelector = ({
   className,
 }: AccountPlatformSelectorProps) => {
   const { t } = useTranslation()
-  const [platform, setPlatform] = useState<Platform | undefined>(defaultType)
+  const [platform, setPlatform] = useState<AccountPlatform | undefined>(defaultType)
 
-  const handleClick = (value: Platform) => () => {
+  const handleClick = (value: AccountPlatform) => () => {
     setPlatform(value)
   }
 
@@ -83,6 +83,20 @@ export const AccountPlatformSelector = ({
           </div>
         }
         onClick={handleClick("polkadot")}
+      />
+      <AccountTypeButton
+        className={classNames(
+          platform === "solana" ? "border-body" : "border-body-secondary border-opacity-20",
+          "border",
+        )}
+        icon={<SolanaLogo />}
+        title={t("Solana")}
+        subtitle={
+          <div className="line-clamp-2" data-testid="account-platform-selector-solana">
+            {t("Solana Mainnet and testnets")}
+          </div>
+        }
+        onClick={handleClick("solana")}
       />
     </div>
   )

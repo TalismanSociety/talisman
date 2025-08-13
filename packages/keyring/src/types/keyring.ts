@@ -5,6 +5,7 @@ import type {
   AccountContact,
   AccountLedgerEthereum,
   AccountLedgerPolkadot,
+  AccountLedgerSolana,
   AccountPolkadotVault,
   AccountSignet,
   AccountWatchOnly,
@@ -52,6 +53,7 @@ export type AddAccountExternalOptions =
   | Omit<AccountWatchOnly, "createdAt">
   | Omit<AccountLedgerEthereum, "createdAt">
   | Omit<AccountLedgerPolkadot, "createdAt">
+  | Omit<AccountLedgerSolana, "createdAt">
   | Omit<AccountPolkadotVault, "createdAt">
   | Omit<AccountSignet, "createdAt">
 

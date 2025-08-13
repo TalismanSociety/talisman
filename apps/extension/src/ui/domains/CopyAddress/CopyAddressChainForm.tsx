@@ -1,5 +1,5 @@
+import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
-import { isEthereumAddress } from "@talismn/util"
 import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
@@ -8,7 +8,6 @@ import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } fro
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import {
@@ -186,17 +185,17 @@ export const CopyAddressChainForm = () => {
       })
 
     return [
-      { ...SUBSTRATE_FORMAT, address: convertAddress(address, null) },
+      { ...SUBSTRATE_FORMAT, address: normalizeAddress(address) },
       ...sortedChains.map<ChainFormat>((chain) => ({
         key: chain.id,
         chainId: chain.id,
         prefix: chain.prefix,
         oldPrefix: chain.oldPrefix,
         name: chain.name ?? "unknown",
-        address: convertAddress(address, chain.prefix),
+        address: encodeAnyAddress(address, { ss58Format: chain.prefix }),
         oldAddress:
           typeof chain.oldPrefix === "number"
-            ? convertAddress(address, chain.oldPrefix)
+            ? encodeAnyAddress(address, { ss58Format: chain.oldPrefix })
             : undefined,
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)

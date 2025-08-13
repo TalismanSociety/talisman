@@ -5,7 +5,7 @@ import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
 import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { Address, Balances } from "@talismn/balances"
-import { encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { Account, LegacyAccountOrigin } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -137,9 +137,7 @@ const useJsonAccountImportProvider = () => {
               setPairs([pair])
 
               if (
-                !existingAccounts.some(
-                  (a) => encodeAnyAddress(a.address) === encodeAnyAddress(pair.address),
-                ) &&
+                !existingAccounts.some((a) => isAddressEqual(a.address, pair.address)) &&
                 !pair.meta.isHardware &&
                 !pair.meta.isExternal
               )
@@ -173,8 +171,8 @@ const useJsonAccountImportProvider = () => {
         ? chains.find((c) => c.genesisHash === pair.meta.genesisHash)
         : undefined
 
-      const address = encodeAnyAddress(pair.address)
-      const isExisting = existingAccounts.some((a) => encodeAnyAddress(a.address) === address)
+      const address = normalizeAddress(pair.address)
+      const isExisting = existingAccounts.some((a) => isAddressEqual(a.address, address))
 
       const { balances, isLoading } = accountBalances[address] ?? {
         balances: new Balances([]),
@@ -183,7 +181,7 @@ const useJsonAccountImportProvider = () => {
 
       return {
         id: pair.address,
-        address: encodeAnyAddress(pair.address, chain?.prefix ?? undefined),
+        address: encodeAnyAddress(pair.address, { ss58Format: chain?.prefix }),
         name: pair.meta.name as string,
         genesisHash: pair.meta.genesisHash as `0x${string}` | undefined,
         origin: pair.meta.origin as LegacyAccountOrigin,

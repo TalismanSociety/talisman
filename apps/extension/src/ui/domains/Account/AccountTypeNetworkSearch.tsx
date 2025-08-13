@@ -6,6 +6,7 @@ import {
   ComboboxOptions,
 } from "@headlessui/react"
 import { isNetworkDot } from "@talismn/chaindata-provider"
+import { AccountPlatform } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { isNetworkActive } from "extension-core"
@@ -20,9 +21,9 @@ import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@u
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
 export function AccountTypeNetworkSearch({
-  setAccountType,
+  setAccountPlatform,
 }: {
-  setAccountType: (accountType?: string) => void
+  setAccountPlatform: (accountType?: AccountPlatform) => void
 }) {
   const { t } = useTranslation()
 
@@ -78,12 +79,11 @@ export function AccountTypeNetworkSearch({
       setSelected(option)
       setSearch("")
 
-      if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountType()
+      if (!option || option.id === DEFAULT_COMBO_BOX_HEADER_ID) return setAccountPlatform()
 
-      const network = allNetworksMap[option.id] // ?? evmNetworksMap[option.id] ?? undefined
-      setAccountType(getAccountType(network))
+      setAccountPlatform(getAccountPlatform(allNetworksMap[option.id]))
     },
-    [allNetworksMap, setAccountType],
+    [allNetworksMap, setAccountPlatform],
   )
 
   const networksWithHeader = useMemo(
@@ -166,7 +166,7 @@ export function AccountTypeNetworkSearch({
                   <span className="text-white">{network.name}</span>
                   <span className="text-body-secondary/50 text-base">{network.type}</span>
                   <div className="flex-grow" />
-                  <span className="text-white">{startCase(getAccountType(network))}</span>
+                  <span className="text-white">{startCase(getAccountPlatform(network))}</span>
                 </ComboboxOption>
               )
             }
@@ -177,7 +177,9 @@ export function AccountTypeNetworkSearch({
   )
 }
 
-function getAccountType<T extends { id: string } | { id: string; account?: string }>(network: T) {
+function getAccountPlatform<T extends { id: string } | { id: string; account?: string }>(
+  network: T,
+) {
   if ("account" in network && network.account !== "secp256k1") return "polkadot"
   if ("account" in network && network.account === "secp256k1") return "ethereum"
   if (!("account" in network)) return "ethereum"

@@ -1,6 +1,6 @@
 import { ProviderType } from "extension-core"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
@@ -25,31 +25,31 @@ export const AuthorisedSites = () => {
           return !!site.addresses
         case "ethereum":
           return !!site.ethAddresses
+        case "solana":
+          return !!site.solAddresses
         default:
           return false
       }
     })
   }, [providerType, sites])
 
-  const { hasPolkadotSites, hasEthereumSites } = useMemo(
-    () => ({
-      hasPolkadotSites: Object.values(sites).some((site) => !!site.addresses),
-      hasEthereumSites: Object.values(sites).some((site) => !!site.ethAddresses),
-    }),
+  const [hasPolkadotSites, hasEthereumSites, hasSolanaSites] = useMemo(
+    () => [
+      Object.values(sites).some((site) => !!site.addresses),
+      Object.values(sites).some((site) => !!site.ethAddresses),
+      Object.values(sites).some((site) => !!site.solAddresses),
+    ],
     [sites],
   )
 
   const showBatchActions = useMemo(
     () =>
       (providerType === "polkadot" && hasPolkadotSites) ||
-      (providerType === "ethereum" && hasEthereumSites),
-    [hasEthereumSites, hasPolkadotSites, providerType],
-  )
+      (providerType === "ethereum" && hasEthereumSites) ||
+      (providerType === "solana" && hasSolanaSites),
 
-  useEffect(() => {
-    //when forgetting last ethereum site, force switch to polkadot
-    if (providerType === "ethereum" && !hasEthereumSites) setProviderType("polkadot")
-  }, [hasEthereumSites, providerType])
+    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType],
+  )
 
   return (
     <>
@@ -60,17 +60,16 @@ export const AuthorisedSites = () => {
       <Spacer large />
       <div className="flex items-center justify-between">
         <div>
-          {hasEthereumSites ? (
-            <OptionSwitch
-              options={[
-                ["ethereum", t("Ethereum")],
-                ["polkadot", t("Polkadot")],
-              ]}
-              className="text-xs [&>div]:h-full"
-              defaultOption="ethereum"
-              onChange={setProviderType}
-            />
-          ) : null}
+          <OptionSwitch
+            options={[
+              ["ethereum", t("Ethereum")],
+              ["polkadot", t("Polkadot")],
+              ["solana", t("Solana")],
+            ]}
+            className="text-xs [&>div]:h-full"
+            defaultOption="ethereum"
+            onChange={setProviderType}
+          />
         </div>
         {showBatchActions && <AuthorisedSitesBatchActions providerType={providerType} />}
       </div>
@@ -99,8 +98,14 @@ export const AuthorisedSites = () => {
         )}
         {sites && !hasEthereumSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <div className="bg-grey-850 w-full rounded p-8">
+          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
             {t("You haven't connected to any Ethereum sites yet.")}
+          </div>
+        )}
+        {sites && !hasSolanaSites && providerType === "solana" && (
+          // This should never be displayed unless we decide to display the provider switcher without check
+          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+            {t("You haven't connected to any Solana sites yet.")}
           </div>
         )}
       </div>

@@ -3,7 +3,12 @@ import { Account } from "@talismn/keyring"
 import { RpcTransactionRequest } from "viem"
 
 import type { Port } from "../../types/base"
-import type { EthSignRequest, SubstrateSigningRequest } from "./types"
+import type {
+  EthSignRequest,
+  SolSignRequest,
+  SolSignResult,
+  SubstrateSigningRequest,
+} from "./types"
 import { requestStore } from "../../libs/requests/store"
 
 export const signAndSendEth = (
@@ -67,4 +72,25 @@ export const signSubstrate = (
     },
     port,
   )
+}
+
+export const signSolana = <
+  T extends SolSignRequest["type"],
+  Req = Extract<SolSignRequest, { type: T }>,
+  Res = Extract<SolSignResult, { type: T }>,
+>(
+  url: string,
+  port: Port,
+  account: Account,
+  request: Req,
+): Promise<Res> => {
+  return requestStore.createRequest(
+    {
+      type: "sol-sign",
+      url,
+      request,
+      account,
+    },
+    port,
+  ) as Promise<Res>
 }

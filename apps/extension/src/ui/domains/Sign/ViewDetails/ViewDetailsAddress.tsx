@@ -1,5 +1,5 @@
+import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { encodeAnyAddress } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import urlJoin from "url-join"
@@ -21,7 +21,7 @@ export const ViewDetailsAddress: FC<
   const account = useAccountByAddress(address)
 
   const formatted = useMemo(
-    () => (address ? encodeAnyAddress(address, chainPrefix ?? undefined) : ""),
+    () => (address ? encodeAnyAddress(address, { ss58Format: chainPrefix ?? undefined }) : ""),
     [address, chainPrefix],
   )
 

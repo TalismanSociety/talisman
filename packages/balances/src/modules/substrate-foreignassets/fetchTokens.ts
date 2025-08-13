@@ -9,6 +9,7 @@ import { assign, keyBy, keys } from "lodash-es"
 import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
+import { QueryStorageResult } from "../shared"
 import { MODULE_TYPE, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -34,8 +35,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   ])
 
   const [assetStorageResults, metadataStorageResults] = await Promise.all([
-    connector.send(networkId, "state_queryStorageAt", [allAssetStorageKeys]),
-    connector.send(networkId, "state_queryStorageAt", [allMetadataStorageKeys]),
+    connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [allAssetStorageKeys]),
+    connector.send<QueryStorageResult>(networkId, "state_queryStorageAt", [allMetadataStorageKeys]),
   ])
 
   // if there is at least one storage entry, the results will be an array with a single object

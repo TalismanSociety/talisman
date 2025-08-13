@@ -3,6 +3,7 @@ import { LockIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { BigNumber } from "bignumber.js"
 import { useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -68,8 +69,13 @@ export const TokenBalancesDetailRow = ({
           <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
         )}
         {!row.address && row.description && (
-          <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-            {row.description}
+          <div className="text-left text-xs">
+            <Tooltip>
+              <TooltipTrigger className="max-w-full truncate">{row.description}</TooltipTrigger>
+              <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-[1.1rem] shadow">
+                {row.description}
+              </TooltipContent>
+            </Tooltip>
           </div>
         )}
       </div>

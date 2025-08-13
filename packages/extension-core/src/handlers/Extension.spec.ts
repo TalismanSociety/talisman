@@ -22,7 +22,7 @@ jest.setTimeout(10_000)
 describe("Extension", () => {
   let extension: Extension
   let messageSender: ReturnType<typeof getMessageSenderFn>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
+  const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
   let mnemonicId: string
 
@@ -60,14 +60,19 @@ describe("Extension", () => {
       pass: password,
       passConfirm: password,
     })
-    const address = await messageSender("pri(accounts.create)", {
-      name: "Test Polkadot Account",
-      curve: "sr25519", // ecdsa has determistic signatures
-      mnemonic: suri,
-      confirmed: false,
-    })
+    const [address] = await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "new-mnemonic",
+        mnemonic: mnemonic,
+        mnemonicName: "Test Mnemonic",
+        derivationPath: "",
+        name: "Test Polkadot Account",
+        curve: "sr25519",
+        confirmed: false,
+      },
+    ])
 
-    mnemonicId = (await keyringStore.getExistingMnemonicId(suri)) as string
+    mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
@@ -409,11 +414,15 @@ describe("Extension", () => {
     expect(talismanSite && talismanSite.addresses)
     expect(talismanSite.addresses?.includes(account.address))
 
-    const newAddress = await messageSender("pri(accounts.create)", {
-      name: "AutoAdd",
-      curve: "sr25519",
-      mnemonicId,
-    })
+    const [newAddress] = await messageSender("pri(accounts.add.derive)", [
+      {
+        type: "existing-mnemonic",
+        name: "AutoAdd",
+        curve: "sr25519",
+        mnemonicId,
+        derivationPath: "//Other",
+      },
+    ])
 
     const sites = await extensionStores.sites.get()
     const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]

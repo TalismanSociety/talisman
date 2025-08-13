@@ -1,4 +1,5 @@
-import { classNames, encodeAnyAddress } from "@talismn/util"
+import { encodeAnyAddress } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -39,7 +40,7 @@ export const Address: FC<AddressProps> = ({
   const formatted = useMemo(() => {
     if (!noOnChainId && onChainId) return onChainId
     const addressWithPrefix =
-      address && chain ? encodeAnyAddress(address, chain.prefix ?? 42) : address
+      address && chain ? encodeAnyAddress(address, { ss58Format: chain.prefix }) : address
     if (noShorten) return addressWithPrefix
     if (!addressWithPrefix) return addressWithPrefix
     return shortenAddress(addressWithPrefix, startCharCount, endCharCount)

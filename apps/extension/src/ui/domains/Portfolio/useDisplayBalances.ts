@@ -7,7 +7,7 @@ import {
   NetworkId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/util"
+import { isAddressEqual } from "@talismn/crypto"
 import {
   Account,
   getAccountGenesisHash,

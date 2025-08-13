@@ -8,7 +8,7 @@ import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "ta
 import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAnyNetwork, useNetworkByGenesisHash, useNetworkById, useTransaction } from "@ui/state"
+import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
@@ -29,17 +29,16 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     (newHash?: HexString) => {
       setReplaceType(undefined)
       if (newHash) {
-        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
-        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+        gotoProgress({ txId: newHash, networkId: tx.networkId })
       }
     },
     [gotoProgress, tx],
   )
 
-  const evmNetwork = useNetworkById(tx.networkType === "evm" ? tx.evmNetworkId : null, "ethereum")
+  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   if (evmNetwork?.preserveGasEstimate) return null
-  if (tx.status !== "pending" || tx.networkType !== "evm") return null
+  if (tx.status !== "pending" || tx.platform !== "ethereum") return null
 
   return (
     <>
@@ -82,10 +81,10 @@ const useTxStatusDetails = (tx?: WalletTransaction) => {
       }
 
     const isReplacementCancel =
-      tx.networkType === "evm" &&
+      tx.platform === "ethereum" &&
       tx.isReplacement &&
-      tx.unsigned.value &&
-      BigInt(tx.unsigned.value) === 0n
+      tx.payload.value &&
+      BigInt(tx.payload.value) === 0n
 
     switch (tx.status) {
       case "unknown":
@@ -198,7 +197,7 @@ type TxProgressSubstrateProps = {
 }
 
 const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
-  const chain = useNetworkByGenesisHash(tx.genesisHash)
+  const chain = useNetworkById(tx.id)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
@@ -219,7 +218,7 @@ type TxProgressEvmProps = {
 }
 
 const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
-  const network = useNetworkById(tx.evmNetworkId, "ethereum")
+  const network = useNetworkById(tx.networkId, "ethereum")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
   return (
@@ -250,10 +249,10 @@ export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose
     return <TxProgressBase href={href} className={className} onClose={onClose} />
   }
 
-  if (tx?.networkType === "substrate")
+  if (tx?.platform === "polkadot")
     return <TxProgressSubstrate tx={tx} onClose={onClose} className={className} />
 
-  if (tx?.networkType === "evm")
+  if (tx?.platform === "ethereum")
     return <TxProgressEvm tx={tx} onClose={onClose} className={className} />
 
   // render null while loading

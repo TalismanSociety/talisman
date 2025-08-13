@@ -1,3 +1,5 @@
+import { Prettify } from "@talismn/util"
+
 import type { EncryptRequests } from "../../domains/encrypt/types"
 import type { EthRequests } from "../../domains/ethereum/types"
 import type { MetadataRequests } from "../../domains/metadata/types"
@@ -14,7 +16,7 @@ export type KnownRequests = SigningRequests &
   { [name: string]: [RequestType, ResponseType] }
 */
 
-export type KnownRequestTypes = keyof KnownRequests
+export type KnownRequestTypes = Prettify<keyof KnownRequests>
 
 export type KnownRequestId<T extends KnownRequestTypes> = `${T}.${string}`
 export type AnyRequestID = KnownRequestId<KnownRequestTypes>
