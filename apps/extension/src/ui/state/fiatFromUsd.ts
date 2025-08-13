@@ -1,5 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { TokenRates } from "@talismn/token-rates"
+import { isNotNil } from "@talismn/util"
+import { values } from "lodash-es"
 import { combineLatest, map, shareReplay } from "rxjs"
 
 import { selectedCurrency$ } from "./settings"
@@ -13,13 +15,12 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
     let refTokenRates: TokenRates | null = null
     let refPrice: number | null = null
 
-    for (const rate of allTokenRates) {
-      if (!rate.rates) continue // TODO fix typing which doesnt indicate that this can be null
-      const usd = rate.rates["usd"]?.price
-      const custom = rate.rates[selectedCurrency]?.price
+    for (const rates of values(allTokenRates.tokenRates).filter(isNotNil)) {
+      const usd = rates["usd"]?.price
+      const custom = rates[selectedCurrency]?.price
       if (!usd || !custom) continue
       if (!refTokenRates || !refPrice || usd > refPrice) {
-        refTokenRates = rate.rates
+        refTokenRates = rates
         refPrice = usd
       }
     }
