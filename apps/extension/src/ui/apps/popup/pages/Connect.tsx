@@ -192,7 +192,7 @@ export const ConnectPolkadot: ConnectComponent = ({
         </ConnectAccountsContainer>
         {!accounts.length && (
           <NoAccountWarning
-            type={"solana"}
+            type={"polkadot"}
             onIgnoreClick={onNoAccountClose(false)}
             onAddAccountClick={onNoAccountClose(true)}
           />
