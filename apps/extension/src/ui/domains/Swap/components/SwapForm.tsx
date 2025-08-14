@@ -1,4 +1,5 @@
-import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { AlertCircleIcon, ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -151,6 +152,17 @@ export const SwapForm = ({
           disabled
           hideBalance
         />
+        <div className="mt-2 flex justify-end">
+          <a
+            className="text-grey-500 hover:text-grey-400 inline-flex items-center gap-2 text-xs"
+            href={TALISMAN_WEB_APP_SWAP_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <span>{t("See more routes")}</span>
+            <ExternalLinkIcon />
+          </a>
+        </div>
       </div>
 
       <FromToAccountSelector />
