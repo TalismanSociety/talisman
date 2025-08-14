@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { DefiPosition, DefiPositionItem } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useEffect, useMemo } from "react"
+import { FC, Fragment, useEffect, useMemo } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -10,6 +10,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDefiPosition } from "@ui/state"
 
 import { PositionContextMenu } from "./PositionContextMenu"
+import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
 import { PositionItemTokens } from "./PositionItemTokens"
 import { PositionItemType } from "./PositionItemType"
 
@@ -33,6 +34,11 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
       position.name.startsWith(position.defiName)
         ? position.name.substring(position.defiName.length).trim()
         : position.name,
+    [position],
+  )
+
+  const firstRewardIndex = useMemo(
+    () => position.breakdown.findIndex((item) => item.type === "reward"),
     [position],
   )
 
@@ -60,16 +66,26 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
       </div>
 
       {position.breakdown.map((item: DefiPositionItem, idx, arr) => (
-        <DefiPositionItemRow key={idx} item={item} roundedBottom={idx === arr.length - 1} />
+        <Fragment key={idx}>
+          {!!firstRewardIndex && idx === firstRewardIndex && (
+            <div className="bg-grey-700 mx-6 h-0.5"></div>
+          )}
+          <DefiPositionItemRow
+            item={item}
+            networkId={position.networkId}
+            roundedBottom={idx === arr.length - 1}
+          />
+        </Fragment>
       ))}
     </div>
   )
 }
 
-const DefiPositionItemRow: FC<{ item: DefiPositionItem; roundedBottom: boolean }> = ({
-  item,
-  roundedBottom,
-}) => {
+const DefiPositionItemRow: FC<{
+  networkId: string
+  item: DefiPositionItem
+  roundedBottom: boolean
+}> = ({ networkId, item, roundedBottom }) => {
   return (
     <div
       className={classNames(
@@ -77,7 +93,7 @@ const DefiPositionItemRow: FC<{ item: DefiPositionItem; roundedBottom: boolean }
         roundedBottom && "rounded-b-sm",
       )}
     >
-      <AssetLogo url={item.logo} className="size-16" />
+      <PositionItemAssetLogo networkId={networkId} item={item} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="grow truncate">{item.name}</div>

@@ -14,6 +14,7 @@ import { useDefiPosition } from "@ui/state"
 
 import { PortfolioAccount } from "../AssetDetails/PortfolioAccount"
 import { PositionContextMenu } from "./PositionContextMenu"
+import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
 import { PositionItemTokens } from "./PositionItemTokens"
 import { PositionItemType } from "./PositionItemType"
 import { PositionTotal } from "./PositionTotal"
@@ -61,16 +62,22 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
       </div>
 
       {position.breakdown.map((item: DefiPositionItem, idx, arr) => (
-        <DefiPositionItemRow key={idx} item={item} roundedBottom={idx === arr.length - 1} />
+        <DefiPositionItemRow
+          key={idx}
+          networkId={position.networkId}
+          item={item}
+          roundedBottom={idx === arr.length - 1}
+        />
       ))}
     </div>
   )
 }
 
-const DefiPositionItemRow: FC<{ item: DefiPositionItem; roundedBottom: boolean }> = ({
-  item,
-  roundedBottom,
-}) => {
+const DefiPositionItemRow: FC<{
+  networkId: string
+  item: DefiPositionItem
+  roundedBottom: boolean
+}> = ({ networkId, item, roundedBottom }) => {
   return (
     <div
       className={classNames(
@@ -78,7 +85,7 @@ const DefiPositionItemRow: FC<{ item: DefiPositionItem; roundedBottom: boolean }
         roundedBottom && "rounded-b-sm",
       )}
     >
-      <AssetLogo url={item.logo} className="size-16" />
+      <PositionItemAssetLogo networkId={networkId} item={item} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center justify-between gap-8 overflow-hidden font-bold">
           <div className="grow truncate">{item.name}</div>
