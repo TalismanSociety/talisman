@@ -1,11 +1,16 @@
 import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { camelCase, fromPairs, toPairs } from "lodash-es"
 import { Chain, ChainContract, createPublicClient, fallback, http, PublicClient } from "viem"
-import * as chains from "viem/chains"
+import * as viemChains from "viem/chains"
 
-const VIEM_CHAINS = Object.keys(chains).reduce(
+// exclude zoraTestnet which uses Hyperliquid's chain id
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { zoraTestnet, ...validViemChains } = viemChains
+
+// viem chains benefit from multicall config & other viem goodies
+const VIEM_CHAINS = Object.keys(validViemChains).reduce(
   (acc, curr) => {
-    const chain = chains[curr as keyof typeof chains]
+    const chain = validViemChains[curr as keyof typeof validViemChains]
     acc[chain.id] = chain
     return acc
   },
