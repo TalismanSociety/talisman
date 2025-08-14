@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { DefiPosition, DefiPositionItem } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useEffect } from "react"
+import { FC, useEffect, useMemo } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -28,8 +28,16 @@ export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ posi
 }
 
 const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => {
+  const name = useMemo(
+    () =>
+      position.name.startsWith(position.defiName)
+        ? position.name.substring(position.defiName.length).trim()
+        : position.name,
+    [position],
+  )
+
   return (
-    <div className="">
+    <div>
       <div
         className={classNames(
           "bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden border-transparent px-6",
@@ -39,7 +47,7 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
         <AssetLogo url={position.defiLogoUrl} className="size-16" />
         <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
           <div className="flex grow items-center gap-3">
-            <div className="text-body truncate text-sm font-bold">{position.name}</div>
+            <div className="text-body truncate text-sm font-bold">{name}</div>
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden text-xs">
             <NetworkLogo networkId={position.networkId} />
