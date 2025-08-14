@@ -4,10 +4,10 @@ import { combineLatest } from "rxjs"
 
 import {
   authorisedSites$,
-  portfolioSelectedAccounts$,
   preloadBalances$,
   remoteConfig$,
-  usePortfolio,
+  setPortfolioSelectedAccounts,
+  usePortfolioGlobalData,
 } from "@ui/state"
 
 import { PortfolioNavigationProvider, usePortfolioNavigation } from "./usePortfolioNavigation"
@@ -35,7 +35,7 @@ const ProvisionedPortfolioGuard: FC<PropsWithChildren<{ renderWhileLoading?: boo
   children,
   renderWhileLoading,
 }) => {
-  const { isProvisioned } = usePortfolio()
+  const { isProvisioned } = usePortfolioGlobalData()
 
   // on popup home page, portfolio is loading while we display the home page
   // but on dashboard, don't render until portfolio is provisioned
@@ -46,7 +46,7 @@ const SelectedAccountsGuard: FC<PropsWithChildren> = ({ children }) => {
   const { selectedAccounts } = usePortfolioNavigation()
 
   useEffect(() => {
-    portfolioSelectedAccounts$.next(selectedAccounts)
+    setPortfolioSelectedAccounts(selectedAccounts)
   }, [selectedAccounts])
 
   return children

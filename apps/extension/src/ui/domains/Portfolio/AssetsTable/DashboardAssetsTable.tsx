@@ -5,7 +5,7 @@ import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
-import { usePortfolio, useSelectedCurrency } from "@ui/state"
+import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
@@ -84,7 +84,7 @@ const HeaderRow = () => {
 
 export const DashboardAssetsTable = () => {
   const { t } = useTranslation()
-  const { isInitialising } = usePortfolio()
+  const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
 

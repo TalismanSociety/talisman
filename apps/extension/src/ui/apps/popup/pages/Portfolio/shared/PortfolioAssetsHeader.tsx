@@ -24,7 +24,12 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useNetworkByGenesisHash, usePortfolio, useSelectedCurrency } from "@ui/state"
+import {
+  useBalances,
+  useNetworkByGenesisHash,
+  usePortfolioBalances,
+  useSelectedCurrency,
+} from "@ui/state"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
@@ -88,7 +93,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
   const currency = useSelectedCurrency()
 
   const allBalances = useBalances()
-  const { networkBalances } = usePortfolio()
+  const { networkBalances } = usePortfolioBalances()
   const { selectedAccount: account, selectedFolder: folder } = usePortfolioNavigation()
 
   const balancesByAddress = useMemo(() => {

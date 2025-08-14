@@ -23,7 +23,7 @@ import {
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { usePortfolio } from "@ui/state"
+import { usePortfolioBalances } from "@ui/state"
 
 const HeaderRow: FC<{
   token: Token | undefined
@@ -133,7 +133,7 @@ const TokenBreadcrumb: FC<{
 
 const usePortfolioAsset = () => {
   const { symbol } = useParams()
-  const { allBalances } = usePortfolio()
+  const { allBalances } = usePortfolioBalances()
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.

@@ -5,10 +5,11 @@ import BigNumber from "bignumber.js"
 
 import "extension-core"
 
-import { keyBy } from "lodash-es"
+import { isNotNil } from "@talismn/util"
+import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
-import { usePortfolio, useSelectedCurrency } from "@ui/state"
+import { useNetworksMapById, useSelectedCurrency, useTokensMap } from "@ui/state"
 
 export type BalanceSummary = {
   totalTokens: BigNumber
@@ -33,7 +34,8 @@ const isRelayDotNetwork = (network: Network) =>
 
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
 const useBestTokenForSymbol = (balances: Balances) => {
-  const { tokens, networks } = usePortfolio()
+  const tokensById = useTokensMap()
+  const networksById = useNetworksMapById()
   const currency = useSelectedCurrency()
 
   return useMemo(() => {
@@ -43,15 +45,17 @@ const useBestTokenForSymbol = (balances: Balances) => {
       .sort((a, b) => (b.rates?.[currency]?.marketCap ?? 0) - (a.rates?.[currency]?.marketCap ?? 0))
 
     if (balancesByMarketCap.length) {
-      const token = tokens?.find((t) => t.id === balancesByMarketCap[0].tokenId)
+      const token = tokensById[balancesByMarketCap[0].tokenId]
       if (token) return token
     }
 
-    const tokenIds = balances.each.map((t) => t.tokenId)
-    const matches = tokens?.filter((t) => tokenIds.includes(t.id))
-    const networksById = keyBy(networks, "id")
+    const matches = uniq(balances.each.map((t) => t.tokenId))
+      .map((id) => tokensById[id])
+      .filter(isNotNil)
 
     const isTestnet = (token: Token) => !!networksById[token.networkId]?.isTestnet
+
+    if (matches.length === 1) return matches[0]
 
     return (
       // priority to token from a relay chain
@@ -75,7 +79,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
       // fallback
       matches?.[0]
     )
-  }, [balances.each, currency, networks, tokens])
+  }, [balances.each, currency, tokensById, networksById])
 }
 
 export const useTokenBalancesSummary = (balances: Balances) => {

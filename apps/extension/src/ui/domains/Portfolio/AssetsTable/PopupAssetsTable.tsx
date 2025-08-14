@@ -18,7 +18,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { useNetworkById, usePortfolio, useSelectedCurrency } from "@ui/state"
+import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -217,7 +217,7 @@ export const PopupAssetsTable = () => {
   const { t } = useTranslation()
   const { selectedAccount: account } = usePortfolioNavigation()
 
-  const { isInitialising } = usePortfolio()
+  const { isInitialising } = usePortfolioGlobalData()
   const balances = usePortfolioDisplayBalances("network")
 
   // group by status by token (symbol)

@@ -1,18 +1,9 @@
-import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
+import { GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuOptionItem,
-  ContextMenuTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  useOpenClose,
-} from "talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
@@ -20,10 +11,9 @@ import {
   setPortfolioNetworkFilter,
   setPortfolioSearch,
   useAllNetworkOptions,
-  usePortfolioBalances,
+  useDefiPositions,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
-  useSetting,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -34,15 +24,13 @@ import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 const NetworkFilterButton = () => {
   const allNetworkOptions = useAllNetworkOptions()
   const networkFilter = usePortfolioNetworkFilter()
-  const { allBalances } = usePortfolioBalances()
+  const { data: positions } = useDefiPositions()
   const { isOpen, open, close } = useOpenClose()
 
   const networkOptions = useMemo<NetworkOption[]>(() => {
-    const networkIds = new Set(
-      allBalances.each.filter((b) => !!b.total.planck).map((b) => b.networkId),
-    )
+    const networkIds = new Set(positions?.map((b) => b.networkId))
     return allNetworkOptions.filter((n) => n.networkIds.some((id) => networkIds.has(id)))
-  }, [allBalances, allNetworkOptions])
+  }, [positions, allNetworkOptions])
 
   const handleChange = useCallback(
     (option: NetworkOption | null) => {
@@ -101,58 +89,58 @@ const PortfolioSearch = () => {
   )
 }
 
-const TokensSortButton = () => {
-  const { t } = useTranslation()
-  const [sortBy, setSortBy] = useSetting("tokensSortBy")
+// const TokensSortButton = () => {
+//   const { t } = useTranslation()
+//   const [sortBy, setSortBy] = useSetting("tokensSortBy")
 
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span>
-          <ContextMenu>
-            <ContextMenuTrigger asChild>
-              <PortfolioToolbarButton>
-                <ToolbarSortIcon />
-              </PortfolioToolbarButton>
-            </ContextMenuTrigger>
-            <ContextMenuContent>
-              <ContextMenuOptionItem
-                label={t("Total")}
-                selected={sortBy === "total"}
-                onClick={() => setSortBy("total")}
-              />
-              <ContextMenuOptionItem
-                label={t("Available")}
-                selected={sortBy === "available"}
-                onClick={() => setSortBy("available")}
-              />
-              <ContextMenuOptionItem
-                label={t("Locked")}
-                selected={sortBy === "locked"}
-                onClick={() => setSortBy("locked")}
-              />
-              <ContextMenuOptionItem
-                label={t("Symbol")}
-                selected={sortBy === "name"}
-                onClick={() => setSortBy("name")}
-              />
-            </ContextMenuContent>
-          </ContextMenu>
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{t("Sort")}</TooltipContent>
-    </Tooltip>
-  )
-}
+//   return (
+//     <Tooltip>
+//       <TooltipTrigger asChild>
+//         <span>
+//           <ContextMenu>
+//             <ContextMenuTrigger asChild>
+//               <PortfolioToolbarButton>
+//                 <ToolbarSortIcon />
+//               </PortfolioToolbarButton>
+//             </ContextMenuTrigger>
+//             <ContextMenuContent>
+//               <ContextMenuOptionItem
+//                 label={t("Total")}
+//                 selected={sortBy === "total"}
+//                 onClick={() => setSortBy("total")}
+//               />
+//               <ContextMenuOptionItem
+//                 label={t("Available")}
+//                 selected={sortBy === "available"}
+//                 onClick={() => setSortBy("available")}
+//               />
+//               <ContextMenuOptionItem
+//                 label={t("Locked")}
+//                 selected={sortBy === "locked"}
+//                 onClick={() => setSortBy("locked")}
+//               />
+//               <ContextMenuOptionItem
+//                 label={t("Symbol")}
+//                 selected={sortBy === "name"}
+//                 onClick={() => setSortBy("name")}
+//               />
+//             </ContextMenuContent>
+//           </ContextMenu>
+//         </span>
+//       </TooltipTrigger>
+//       <TooltipContent>{t("Sort")}</TooltipContent>
+//     </Tooltip>
+//   )
+// }
 
-export const PortfolioToolbarTokens = () => {
+export const PortfolioToolbarDeFi = () => {
   return (
     <div className="@container flex h-16 w-full min-w-[30rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
       <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
-        {!IS_POPUP && <TokensSortButton />}
+        {/* {!IS_POPUP && <TokensSortButton />} */}
         <NetworkFilterButton />
       </div>
     </div>

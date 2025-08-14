@@ -11,11 +11,12 @@ import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { PopupDefiPositions } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
 import { PopupNfts } from "@ui/domains/Portfolio/Nfts/PopupNfts"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
+import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFeatureFlag, usePortfolio } from "@ui/state"
+import { useFeatureFlag, usePortfolioGlobalData } from "@ui/state"
 
 import { PortfolioAssetsHeader } from "./shared/PortfolioAssetsHeader"
 
@@ -51,7 +52,7 @@ const PopupAnalyticsEvent: FC<{ name: string }> = ({ name }) => {
 }
 
 const MainContent: FC = () => {
-  const { networks } = usePortfolio()
+  const { networks } = usePortfolioGlobalData()
   const { selectedAccount: account } = usePortfolioNavigation()
 
   const matchTokens = useMatch("/portfolio/tokens")
@@ -121,7 +122,8 @@ export const PortfolioAssetsToolbat = () => {
 
   return (
     <>
-      {(!!matchTokens || !!matchDefi) && <PortfolioToolbarTokens />}
+      {!!matchTokens && <PortfolioToolbarTokens />}
+      {!!matchDefi && <PortfolioToolbarDeFi />}
       {!!matchNfts && !!showNfts && <PortfolioToolbarNfts />}
     </>
   )

@@ -3,10 +3,10 @@ import { subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { uniq } from "lodash-es"
 import { useMemo } from "react"
 
-import { usePortfolio, useSelectedCurrency } from "@ui/state"
+import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 export const useAssetDetails = (balances: Balances) => {
-  const { hydrate } = usePortfolio()
+  const { hydrate } = usePortfolioGlobalData()
   const currency = useSelectedCurrency()
 
   const tokenIds = useMemo<TokenId[]>(

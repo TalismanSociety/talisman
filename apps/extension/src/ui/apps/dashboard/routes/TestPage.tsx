@@ -4,7 +4,7 @@ import { groupBy } from "lodash-es"
 import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } from "react"
 
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
-import { useNetworksMapById, usePortfolio, useTokens } from "@ui/state"
+import { useNetworksMapById, usePortfolioGlobalData, useTokens } from "@ui/state"
 import { useDefiPositions } from "@ui/state/defi"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 
@@ -159,7 +159,7 @@ const TestPortfolio = () => (
 )
 
 const PortfolioContent = () => {
-  const { networks, allBalances, isInitialising, isProvisioned } = usePortfolio()
+  const { allBalances, networks, isProvisioned, isInitialising } = usePortfolioGlobalData()
 
   const balancesByStatus = useMemo(() => groupBy(allBalances.each, (b) => b.status), [allBalances])
 

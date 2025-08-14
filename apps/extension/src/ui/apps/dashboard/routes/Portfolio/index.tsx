@@ -4,6 +4,7 @@ import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi"
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state"
@@ -41,7 +42,7 @@ const PortfolioToolbar = () => {
   return (
     <Routes>
       <Route path="tokens" element={<PortfolioToolbarTokens />} />
-      <Route path="defi" element={<PortfolioToolbarTokens />} />
+      <Route path="defi" element={<PortfolioToolbarDeFi />} />
       <Route path="nfts" element={!!showNfts && <PortfolioToolbarNfts />} />
     </Routes>
   )

@@ -115,11 +115,7 @@ const NetworkOptionsModalContent: FC<{
 
   const filteredNetworks = useMemo(() => {
     const lowerSearch = search.toLowerCase()
-    return allOptions.filter(
-      (network) =>
-        network.name.toLowerCase().includes(lowerSearch) ||
-        network.symbols?.find((symbol) => symbol.toLowerCase().includes(lowerSearch)),
-    )
+    return allOptions.filter((network) => network.name.toLowerCase().includes(lowerSearch))
   }, [allOptions, search])
 
   return (

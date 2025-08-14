@@ -20,7 +20,7 @@ import { combineLatest, map } from "rxjs"
 
 import {
   getNetworksMapById$,
-  portfolio$,
+  portfolioBalances$,
   portfolioSelectedAccounts$,
   useNetworksMapById,
   usePortfolioSelectedAccounts,
@@ -79,7 +79,7 @@ const shouldDisplayBalance = (
 
 export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
   (filter: "all" | "network" | "search") =>
-    combineLatest([portfolio$, getNetworksMapById$(), portfolioSelectedAccounts$]).pipe(
+    combineLatest([portfolioBalances$, getNetworksMapById$(), portfolioSelectedAccounts$]).pipe(
       map(([{ networkBalances, allBalances, searchBalances }, networksById, accounts]) => {
         switch (filter) {
           case "all":

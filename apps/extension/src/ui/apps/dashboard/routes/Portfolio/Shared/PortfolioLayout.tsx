@@ -10,7 +10,7 @@ import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfol
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { usePortfolio } from "@ui/state"
+import { usePortfolioGlobalData } from "@ui/state"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -34,7 +34,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
 }
 
 const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
-  const { networks } = usePortfolio()
+  const { networks } = usePortfolioGlobalData()
   const { selectedAccounts } = usePortfolioNavigation()
 
   const [chains, evmNetworks] = useMemo(() => {
