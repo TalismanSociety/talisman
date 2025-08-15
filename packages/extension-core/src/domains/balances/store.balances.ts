@@ -5,12 +5,11 @@ import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 
-import { DbBlobId, getDbBlob, updateDbBlob } from "../../db"
+import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
 import { keyringStore } from "../keyring/store"
 
-const BLOB_ID: DbBlobId = "balances"
-const getBalancesDbBlob = () => getDbBlob<BalancesStorage>(BLOB_ID)
+const blobStore = getBlobStore<BalancesStorage>("balances")
 
 const DEFAULT_DATA: BalancesStorage = {
   balances: [],
@@ -59,7 +58,7 @@ export const updateBalancesStore = (data: BalancesStorage) => {
 // once wallet is ready, initialize the balances store
 walletReady.then(() => {
   // provision store data from db
-  Promise.all([getBalancesDbBlob(), keyringStore.getAccounts()])
+  Promise.all([blobStore.get(), keyringStore.getAccounts()])
     .then(([blobData, accounts]) => {
       if (!blobData) return setBalances(DEFAULT_DATA)
 
@@ -92,6 +91,6 @@ walletReady.then(() => {
       log.debug(
         `[balances] updating db blob with data (bal:${storage.balances.length}, meta:${storage.miniMetadatas.length})`,
       )
-      updateDbBlob(BLOB_ID, storage)
+      blobStore.set(storage)
     })
 })

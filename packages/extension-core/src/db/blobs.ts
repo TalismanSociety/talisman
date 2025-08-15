@@ -6,18 +6,17 @@ import { db } from "./db"
 export type DbBlobId = "nfts" | "balances" | "chaindata" | "tokenRates" | "defi-positions"
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
-export const updateDbBlob = async <Data>(id: DbBlobId, data: Data) => {
-  await db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) })
-}
+export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({
+  set: (data: Data) => db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) }),
+  get: async () => {
+    try {
+      const blob = await db.blobs.get(id)
+      if (!blob?.data) return null
 
-export const getDbBlob = async <Data>(id: DbBlobId): Promise<Data | null> => {
-  try {
-    const blob = await db.blobs.get(id)
-    if (!blob?.data) return null
-
-    return JSON.parse(pako.inflate(blob.data, { to: "string" })) as Data
-  } catch (err) {
-    log.error("Error parsing blob data", { id, err })
-    return null
-  }
-}
+      return JSON.parse(pako.inflate(blob.data, { to: "string" })) as Data
+    } catch (err) {
+      log.error("Error parsing blob data", { id, err })
+      return null
+    }
+  },
+})
