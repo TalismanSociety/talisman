@@ -4,12 +4,10 @@ import { ProtectorSources, ProtectorStorage } from "../domains/app/protector/Par
 import { DiscoveredBalance } from "../domains/assetDiscovery/types"
 import { TalismanMetadataDef } from "../domains/substrate/types"
 import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
+import { DbBlobId, DbBlobItem } from "./blobs"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
-
-export type DbBlobId = "nfts" | "balances" | "chaindata" | "tokenRates" | "defi-positions"
-export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 class TalismanDatabase extends Dexie {
   assetDiscovery!: Dexie.Table<DiscoveredBalance, string>

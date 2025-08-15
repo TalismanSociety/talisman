@@ -10,7 +10,7 @@ const BLOB_ID: DbBlobId = "defi-positions"
 
 // TODO refactor getDbBlob so we dont need this useless type
 type DefiPositionsStoreData = {
-  id: "defi-positions"
+  /// id: "defi-positions"
   positions: DefiPosition[]
 }
 
@@ -20,7 +20,7 @@ const subjectDefiPositionsStore$ = new ReplaySubject<DefiPosition[]>(1)
 
 walletReady.then(async () => {
   try {
-    const data = await getDbBlob<"defi-positions", DefiPositionsStoreData>(BLOB_ID)
+    const data = await getDbBlob<DefiPositionsStoreData>(BLOB_ID)
     subjectDefiPositionsStore$.next(data ? data.positions : DEFAULT_DATA)
   } catch (error) {
     log.error("Error fetching defi positions:", error)
@@ -32,8 +32,7 @@ walletReady.then(async () => {
 subjectDefiPositionsStore$
   .pipe(skip(1), debounceTime(2_000), distinctUntilChanged(isEqual))
   .subscribe((positions) => {
-    updateDbBlob<"defi-positions", DefiPositionsStoreData>("defi-positions", {
-      id: BLOB_ID,
+    updateDbBlob<DefiPositionsStoreData>("defi-positions", {
       positions,
     })
   })

@@ -17,7 +17,7 @@ export const defiPositions$ = walletReady$.pipe(
   switchMap(() => accountAddresses$),
   switchMap((addresses) => {
     return defiPositionsStore$.pipe(
-      take(1), // we only want an initial value, changes to the store should not recreate the observable
+      take(1), // we only want an initial value, changes to the store should not re-emit
       switchMap((storage) => getDefiPositions$(addresses, storage)),
     )
   }),

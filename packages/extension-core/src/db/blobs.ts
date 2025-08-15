@@ -1,18 +1,16 @@
 import { log } from "extension-shared"
 import pako from "pako"
 
-import { db, DbBlobId } from "./db"
+import { db } from "./db"
 
-export const updateDbBlob = async <Id extends DbBlobId, Data extends { id: Id }>(
-  id: Id,
-  data: Data,
-) => {
+export type DbBlobId = "nfts" | "balances" | "chaindata" | "tokenRates" | "defi-positions"
+export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
+
+export const updateDbBlob = async <Data>(id: DbBlobId, data: Data) => {
   await db.blobs.put({ id, data: pako.deflate(JSON.stringify(data)) })
 }
 
-export const getDbBlob = async <Id extends DbBlobId, Data extends { id: Id }>(
-  id: Id,
-): Promise<Data | null> => {
+export const getDbBlob = async <Data>(id: DbBlobId): Promise<Data | null> => {
   try {
     const blob = await db.blobs.get(id)
     if (!blob?.data) return null
