@@ -124,7 +124,18 @@ export const SwapForm = ({
     //   + pb-8  (an extra gap at the bottom of the `overflow-y-auto` scrollable view)
     <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
       <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded p-8">
-        <h4 className="text-sm">{t("Select asset")}</h4>
+        <div className="flex items-start justify-between">
+          <h4 className="text-sm">{t("Select asset")}</h4>
+          <a
+            className="text-grey-500 hover:text-grey-400 inline-flex items-center gap-2 text-xs"
+            href={TALISMAN_WEB_APP_SWAP_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <span>{t("More routes")}</span>
+            <ExternalLinkIcon />
+          </a>
+        </div>
 
         <TokenAmountInput
           hideBalance={fromAsset?.id === "btc-native"}
@@ -152,17 +163,6 @@ export const SwapForm = ({
           disabled
           hideBalance
         />
-        <div className="mt-2 flex justify-end">
-          <a
-            className="text-grey-500 hover:text-grey-400 inline-flex items-center gap-2 text-xs"
-            href={TALISMAN_WEB_APP_SWAP_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            <span>{t("See more routes")}</span>
-            <ExternalLinkIcon />
-          </a>
-        </div>
       </div>
 
       <FromToAccountSelector />
