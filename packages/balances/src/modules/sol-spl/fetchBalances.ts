@@ -53,8 +53,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         })
         .filter(isNotNil)
 
-      // update the cache of owned token.
-      // this is used by the wallet to detect new tokens, and enable them
+      // allows the wallet to detect new tokens, and enable them automatically
       setDetectedTokenIds(
         address,
         MODULE_TYPE,
