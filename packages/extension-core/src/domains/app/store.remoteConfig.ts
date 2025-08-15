@@ -24,6 +24,8 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   swaps: {
     questApi: "",
     simpleswapApiKey: "",
+    simpleswapApiKeyDiscounted: "",
+    simpleswapDiscountedCurrencies: [],
     curatedTokens: [],
   },
   coingecko: {

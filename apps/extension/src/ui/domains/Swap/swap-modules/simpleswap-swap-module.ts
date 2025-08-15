@@ -60,6 +60,19 @@ export const PROTOCOL = "simpleswap"
 export const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 const TALISMAN_FEE = 0.015
+const TALISMAN_FEE_DISCOUNTED = 0.004
+
+type RouteProps = { currencyFrom: string; currencyTo: string }
+const discountedRoute = async ({ currencyFrom, currencyTo }: RouteProps) => {
+  const { simpleswapDiscountedCurrencies: discounted = [] } = await remoteConfigStore.get("swaps")
+  return discounted.includes(currencyFrom) || discounted.includes(currencyTo)
+}
+const getTalismanFee = async (route: RouteProps) =>
+  (await discountedRoute(route)) ? TALISMAN_FEE_DISCOUNTED : TALISMAN_FEE
+const getApiKey = async (route: RouteProps) =>
+  (await discountedRoute(route))
+    ? (await remoteConfigStore.get("swaps")).simpleswapApiKeyDiscounted
+    : (await remoteConfigStore.get("swaps")).simpleswapApiKey
 
 const LOGO = simpleswapLogo
 
@@ -314,10 +327,10 @@ const simpleSwapSdk = {
     string | { code: number; error: string; description: string; trace_id: string } | null
   > => {
     try {
-      const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
-      if (!simpleswapApiKey) throw new Error("Simpleswap api key not found")
+      const api_key = await getApiKey(props)
+      if (!api_key) throw new Error("Simpleswap api key not found")
       const search = new URLSearchParams({
-        api_key: simpleswapApiKey,
+        api_key,
         fixed: `${props.fixed}`,
         currency_from: props.currencyFrom,
         currency_to: props.currencyTo,
@@ -365,11 +378,12 @@ const simpleSwapSdk = {
     user_refund_address: string | null
     user_refund_extra_id: string | null
   }): Promise<Exchange> => {
-    const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
-    if (!simpleswapApiKey) throw new Error("Simpleswap api key not found")
-    const search = new URLSearchParams({
-      api_key: simpleswapApiKey,
+    const api_key = await getApiKey({
+      currencyFrom: props.currency_from,
+      currencyTo: props.currency_to,
     })
+    if (!api_key) throw new Error("Simpleswap api key not found")
+    const search = new URLSearchParams({ api_key: api_key })
     const exchange = await fetch(`https://api.simpleswap.io/create_exchange?${search.toString()}`, {
       method: "POST",
       headers: {
@@ -383,10 +397,7 @@ const simpleSwapSdk = {
   getExchange: async (id: string): Promise<Exchange> => {
     const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
     if (!simpleswapApiKey) throw new Error("Simpleswap api key not found")
-    const search = new URLSearchParams({
-      api_key: simpleswapApiKey,
-      id,
-    })
+    const search = new URLSearchParams({ api_key: simpleswapApiKey, id })
     const exchange = await fetch(`https://api.simpleswap.io/get_exchange?${search.toString()}`)
     return exchange.json()
   },
@@ -394,10 +405,13 @@ const simpleSwapSdk = {
     currency_from: string
     currency_to: string
   }): Promise<Range | undefined> => {
-    const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
-    if (!simpleswapApiKey) throw new Error("Simpleswap api key not found")
+    const api_key = await getApiKey({
+      currencyFrom: props.currency_from,
+      currencyTo: props.currency_to,
+    })
+    if (!api_key) throw new Error("Simpleswap api key not found")
     const search = new URLSearchParams({
-      api_key: simpleswapApiKey,
+      api_key,
       fixed: "false",
       ...props,
     })
@@ -533,6 +547,7 @@ const quote: QuoteFunction = loadable(
       currencyTo,
       fixed: false,
     })
+    const talismanFee = await getTalismanFee({ currencyFrom, currencyTo })
 
     // check for error object
     if (!output || typeof output !== "string") {
@@ -547,7 +562,7 @@ const quote: QuoteFunction = loadable(
           fees: [],
           providerLogo: LOGO,
           providerName: PROTOCOL_NAME,
-          talismanFee: TALISMAN_FEE,
+          talismanFee,
         }
       }
       return null
@@ -558,7 +573,7 @@ const quote: QuoteFunction = loadable(
     const fees: QuoteFee[] = (gasFee ? [gasFee] : []).concat({
       amount: BigNumber(fromAmount.planck.toString())
         .times(10 ** -fromAmount.decimals)
-        .times(TALISMAN_FEE),
+        .times(talismanFee),
       name: "Talisman Fee",
       tokenId: fromAsset.id,
     })
@@ -573,7 +588,7 @@ const quote: QuoteFunction = loadable(
       fees,
       providerLogo: LOGO,
       providerName: PROTOCOL_NAME,
-      talismanFee: TALISMAN_FEE,
+      talismanFee,
     }
   }),
 )
