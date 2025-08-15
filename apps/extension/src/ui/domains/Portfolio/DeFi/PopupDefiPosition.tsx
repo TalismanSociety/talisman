@@ -1,6 +1,5 @@
-import { classNames } from "@talismn/util"
 import { DefiPosition, DefiPositionItem } from "extension-core"
-import { FC, Fragment, useMemo } from "react"
+import { FC, useMemo } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -12,16 +11,23 @@ import { PositionContextMenu } from "./PositionContextMenu"
 import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
 import { PositionItemTokens } from "./PositionItemTokens"
 import { PositionItemType } from "./PositionItemType"
+import { PositionSectionLabel, PositionSectionType } from "./PositionSectionLabel"
 
 export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)
 
   if (!position) return null
 
-  return <DefiPositionContainer position={position} />
+  return (
+    <div className="flex w-full flex-col gap-6">
+      <DefiPositionActionRow position={position} />
+      <DefiPositionSection position={position} type="supplied" />
+      <DefiPositionSection position={position} type="rewards" />
+    </div>
+  )
 }
 
-const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => {
+const DefiPositionActionRow: FC<{ position: DefiPosition }> = ({ position }) => {
   const name = useMemo(
     () =>
       position.name.startsWith(position.defiName)
@@ -30,45 +36,49 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
     [position],
   )
 
-  const firstRewardIndex = useMemo(
-    () => position.breakdown.findIndex((item) => item.type === "reward"),
-    [position],
+  return (
+    <div className="bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm border-transparent px-6">
+      <AssetLogo url={position.defiLogoUrl} className="size-16" />
+      <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
+        <div className="flex grow items-center gap-3">
+          <div className="text-body truncate text-sm font-bold">{name}</div>
+        </div>
+        <div className="flex w-full items-center gap-2 overflow-hidden text-xs">
+          <NetworkLogo networkId={position.networkId} />
+          <span className="text-body-secondary truncate">
+            <NetworkName networkId={position.networkId} />
+          </span>
+        </div>
+      </div>
+      <PositionContextMenu position={position} />
+    </div>
   )
+}
+
+const DefiPositionSection: FC<{ position: DefiPosition; type: PositionSectionType }> = ({
+  position,
+  type,
+}) => {
+  const items = useMemo(() => {
+    switch (type) {
+      case "supplied":
+        return position.breakdown.filter((item) => item.type !== "reward") || []
+      case "rewards":
+        return position.breakdown.filter((item) => item.type === "reward") || []
+    }
+  }, [position.breakdown, type])
+
+  if (!items.length) return null
 
   return (
-    <div>
-      <div
-        className={classNames(
-          "bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden border-transparent px-6",
-          position.breakdown.length ? "rounded-t-sm" : "rounded",
-        )}
-      >
-        <AssetLogo url={position.defiLogoUrl} className="size-16" />
-        <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
-          <div className="flex grow items-center gap-3">
-            <div className="text-body truncate text-sm font-bold">{name}</div>
-          </div>
-          <div className="flex w-full items-center gap-2 overflow-hidden text-xs">
-            <NetworkLogo networkId={position.networkId} />
-            <span className="text-body-secondary truncate">
-              <NetworkName networkId={position.networkId} />
-            </span>
-          </div>
+    <div className="bg-black-secondary rounded-sm">
+      <div className="flex h-[3.8rem] w-full items-center">
+        <div className="px-6 text-sm font-bold text-white">
+          <PositionSectionLabel type={type} />
         </div>
-        <PositionContextMenu position={position} />
       </div>
-
-      {position.breakdown.map((item: DefiPositionItem, idx, arr) => (
-        <Fragment key={idx}>
-          {!!firstRewardIndex && idx === firstRewardIndex && (
-            <div className="bg-grey-700 mx-6 h-0.5"></div>
-          )}
-          <DefiPositionItemRow
-            item={item}
-            networkId={position.networkId}
-            roundedBottom={idx === arr.length - 1}
-          />
-        </Fragment>
+      {items.map((item: DefiPositionItem, idx) => (
+        <DefiPositionItemRow key={idx} item={item} networkId={position.networkId} />
       ))}
     </div>
   )
@@ -77,15 +87,9 @@ const DefiPositionContainer: FC<{ position: DefiPosition }> = ({ position }) => 
 const DefiPositionItemRow: FC<{
   networkId: string
   item: DefiPositionItem
-  roundedBottom: boolean
-}> = ({ networkId, item, roundedBottom }) => {
+}> = ({ networkId, item }) => {
   return (
-    <div
-      className={classNames(
-        "bg-grey-850 flex h-28 w-full items-center gap-4 overflow-hidden px-6",
-        roundedBottom && "rounded-b-sm",
-      )}
-    >
+    <div className="flex h-28 w-full items-center gap-4 overflow-hidden px-6">
       <PositionItemAssetLogo networkId={networkId} item={item} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">

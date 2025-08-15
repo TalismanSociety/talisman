@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, XCircleIcon, XIcon } from "@talismn/icons"
+import { ChevronLeftIcon, ProtocolIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
@@ -31,9 +31,7 @@ const ProtocolOptionRow: FC<{
       )}
     >
       {isAllProtocolsOption(option) ? (
-        <div className="size-16">
-          <XCircleIcon className="size-16" />
-        </div>
+        <ProtocolIcon className="size-16 shrink-0" />
       ) : (
         <AssetLogo url={option.logo} className="shrink-0 text-xl" />
       )}
