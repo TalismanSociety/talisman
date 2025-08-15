@@ -161,7 +161,6 @@ const DefiPositionRow: FC<{
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >
-      {/* AssetLogo can be used with any image and fallbacks to an unknown "Talisman hand" logo */}
       <AssetLogo url={position.defiLogoUrl} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">

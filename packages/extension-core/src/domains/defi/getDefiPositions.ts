@@ -11,7 +11,7 @@ import { keyringStore } from "../keyring/store"
 import { defiPositionsStore$, updateDefiPositionsStore } from "./store"
 import { DefiPosition } from "./types"
 
-const REFRESH_INTERVAL = 60_000 // 60 seconds
+const REFRESH_INTERVAL = 20_000 // refresh every 20 seconds, though data is cached on api side
 
 export const defiPositions$ = walletReady$.pipe(
   switchMap(() => accountAddresses$),

@@ -1,7 +1,6 @@
 import { classNames } from "@talismn/util"
 import { DefiPosition, DefiPositionItem } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useEffect, useMemo } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
@@ -21,10 +20,6 @@ import { PositionTotal } from "./PositionTotal"
 
 export const DashboardDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)
-
-  useEffect(() => {
-    log.debug("[DeFi] position", position)
-  }, [position])
 
   if (!position) return null
 

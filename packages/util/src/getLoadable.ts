@@ -2,7 +2,7 @@ import { catchError, from, map, Observable, of, startWith, switchMap, timer } fr
 
 // Designed to be serializable as it can be sent to the frontend
 type LoadableError = {
-  name: string // use to identify the error type
+  name: string // can be used to identify the error type
   message: string // display message
 }
 

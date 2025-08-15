@@ -65,7 +65,6 @@ const MainContent: FC = () => {
     return [chains, evmNetworks]
   }, [networks])
 
-  // TODO check if the below still works with multichain
   if (!account?.type && !networks.length) return <EnableNetworkMessage />
   if (isAccountAddressSs58(account) && !chains.length)
     return <EnableNetworkMessage type="substrate" />
@@ -107,14 +106,14 @@ export const PortfolioAssets = () => {
       <PortfolioAssetsHeader />
       <PortfolioTabs className="mt-4" />
       <Suspense fallback={<SuspenseTracker name="PortfolioAssets.TabContent" />}>
-        <PortfolioAssetsToolbat />
+        <PortfolioAssetsToolbar />
         <MainContent />
       </Suspense>
     </>
   )
 }
 
-export const PortfolioAssetsToolbat = () => {
+const PortfolioAssetsToolbar = () => {
   const showNfts = useFeatureFlag("NFTS")
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")

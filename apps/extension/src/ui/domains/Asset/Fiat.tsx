@@ -1,6 +1,6 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
+import { classNames, Prettify } from "@talismn/util"
 import React, { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
@@ -126,8 +126,7 @@ DisplayValue.displayName = "DisplayValue"
 const getDecimalPlacesCount = (amount: number) =>
   Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
 
-// TODO prettify (waiting solana pr)
-type FiatFromUsdProps = Omit<FiatProps, "amount" | ""> & { amount: number | null | undefined }
+type FiatFromUsdProps = Prettify<Omit<FiatProps, "amount"> & { amount: number | null | undefined }>
 
 export const FiatFromUsd: FC<FiatFromUsdProps> = (props) => {
   const amount = useFiatFromUsd(props.amount)

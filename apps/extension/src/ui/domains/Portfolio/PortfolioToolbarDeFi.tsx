@@ -29,7 +29,6 @@ import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 const DefiProtocolFilterButton = () => {
   const { isOpen, open, close } = useOpenClose()
-
   const protocolOptions = useDefiProtocolFilterOptions()
   const selectedOption = useDefiProtocolFilterOption()
 
@@ -139,50 +138,6 @@ const PortfolioSearch = () => {
   )
 }
 
-// const TokensSortButton = () => {
-//   const { t } = useTranslation()
-//   const [sortBy, setSortBy] = useSetting("tokensSortBy")
-
-//   return (
-//     <Tooltip>
-//       <TooltipTrigger asChild>
-//         <span>
-//           <ContextMenu>
-//             <ContextMenuTrigger asChild>
-//               <PortfolioToolbarButton>
-//                 <ToolbarSortIcon />
-//               </PortfolioToolbarButton>
-//             </ContextMenuTrigger>
-//             <ContextMenuContent>
-//               <ContextMenuOptionItem
-//                 label={t("Total")}
-//                 selected={sortBy === "total"}
-//                 onClick={() => setSortBy("total")}
-//               />
-//               <ContextMenuOptionItem
-//                 label={t("Available")}
-//                 selected={sortBy === "available"}
-//                 onClick={() => setSortBy("available")}
-//               />
-//               <ContextMenuOptionItem
-//                 label={t("Locked")}
-//                 selected={sortBy === "locked"}
-//                 onClick={() => setSortBy("locked")}
-//               />
-//               <ContextMenuOptionItem
-//                 label={t("Symbol")}
-//                 selected={sortBy === "name"}
-//                 onClick={() => setSortBy("name")}
-//               />
-//             </ContextMenuContent>
-//           </ContextMenu>
-//         </span>
-//       </TooltipTrigger>
-//       <TooltipContent>{t("Sort")}</TooltipContent>
-//     </Tooltip>
-//   )
-// }
-
 export const PortfolioToolbarDeFi = () => {
   return (
     <div className="@container flex h-16 w-full min-w-[30rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
@@ -190,7 +145,6 @@ export const PortfolioToolbarDeFi = () => {
         <PortfolioSearch />
       </div>
       <div className="flex shrink-0 gap-4">
-        {/* {!IS_POPUP && <TokensSortButton />} */}
         <DefiProtocolFilterButton />
         <NetworkFilterButton />
       </div>

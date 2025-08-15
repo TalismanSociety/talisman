@@ -1,7 +1,6 @@
 import { classNames } from "@talismn/util"
 import { DefiPosition, DefiPositionItem } from "extension-core"
-import { log } from "extension-shared"
-import { FC, Fragment, useEffect, useMemo } from "react"
+import { FC, Fragment, useMemo } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -17,12 +16,6 @@ import { PositionItemType } from "./PositionItemType"
 export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)
 
-  // TODO remove
-  useEffect(() => {
-    log.debug("[DeFi] position", position)
-  }, [position])
-
-  // TODO message if empty ?
   if (!position) return null
 
   return <DefiPositionContainer position={position} />

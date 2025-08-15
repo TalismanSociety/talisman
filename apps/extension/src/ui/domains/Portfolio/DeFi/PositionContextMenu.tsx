@@ -19,7 +19,7 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
     return `${network.blockExplorerUrls[0]}/address/${position.poolAddress}`
   }, [network, position.poolAddress])
 
-  // dont display the menu if there is no item to provide
+  // dont display the menu if there is no action to provide
   if (!blockExplorerUrl && !position.defiUrl) return null
 
   return (
