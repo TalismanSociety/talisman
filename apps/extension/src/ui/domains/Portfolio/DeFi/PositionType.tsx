@@ -21,7 +21,7 @@ export const PositionType: FC<{ type: DefiPositionType }> = ({ type }) => {
         return t("Streaming")
       case "unknown":
       default:
-        return t("Unknown")
+        return t("Position")
     }
   }, [type, t])
 }
