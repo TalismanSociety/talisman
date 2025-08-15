@@ -7,6 +7,7 @@ import log from "../../log"
 import { IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
+import { setDetectedTokenIds } from "../shared/detectedTokens"
 import { MODULE_TYPE } from "./config"
 
 const SPL_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
@@ -51,6 +52,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           }
         })
         .filter(isNotNil)
+
+      // update the cache of owned token.
+      // this is used by the wallet to detect new tokens, and enable them
+      setDetectedTokenIds(
+        address,
+        MODULE_TYPE,
+        balances.map((b) => b.tokenId),
+      )
 
       return [address, balances] as const
     }),
