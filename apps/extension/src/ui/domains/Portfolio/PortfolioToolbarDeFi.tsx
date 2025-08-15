@@ -1,4 +1,4 @@
-import { GlobeIcon } from "@talismn/icons"
+import { FilterIcon, GlobeIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
@@ -8,18 +8,68 @@ import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
   NetworkOption,
+  ProtocolOption,
+  setDefiProtocolFilter,
   setPortfolioNetworkFilter,
   setPortfolioSearch,
   useAllNetworkOptions,
   useDefiPositions,
+  useDefiProtocolFilterOption,
+  useDefiProtocolFilterOptions,
   usePortfolioNetworkFilter,
   usePortfolioSearch,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { AssetLogo } from "../Asset/AssetLogo"
 import { NetworkLogo } from "../Networks/NetworkLogo"
+import { ProtocolOptionsModal } from "./DeFi/ProtocolFilterModal"
 import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
+
+const DefiProtocolFilterButton = () => {
+  const { isOpen, open, close } = useOpenClose()
+
+  const protocolOptions = useDefiProtocolFilterOptions()
+  const selectedOption = useDefiProtocolFilterOption()
+
+  const handleChange = useCallback(
+    (value: ProtocolOption | null) => {
+      setDefiProtocolFilter(value?.name ?? null)
+      close()
+    },
+    [close],
+  )
+
+  return (
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <PortfolioToolbarButton
+            onClick={open}
+            className={classNames(selectedOption && "text-primary")}
+          >
+            {selectedOption?.logo ? (
+              <AssetLogo className="text-lg" url={selectedOption?.logo} />
+            ) : (
+              <FilterIcon className="text-base" />
+            )}
+          </PortfolioToolbarButton>
+        </TooltipTrigger>
+        <TooltipContent>
+          {selectedOption ? selectedOption.name : t("Filter by protocol")}
+        </TooltipContent>
+      </Tooltip>
+      <ProtocolOptionsModal
+        onChange={handleChange}
+        isOpen={isOpen}
+        onClose={close}
+        options={protocolOptions}
+        selected={selectedOption}
+      />
+    </>
+  )
+}
 
 const NetworkFilterButton = () => {
   const allNetworkOptions = useAllNetworkOptions()
@@ -141,6 +191,7 @@ export const PortfolioToolbarDeFi = () => {
       </div>
       <div className="flex shrink-0 gap-4">
         {/* {!IS_POPUP && <TokensSortButton />} */}
+        <DefiProtocolFilterButton />
         <NetworkFilterButton />
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { ChevronLeftIcon, XCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
@@ -7,13 +7,16 @@ import { IconButton, Modal } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { NetworkOption } from "@ui/state"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { ProtocolOption, useDefiPositions } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { NetworkLogo } from "../Networks/NetworkLogo"
+const isAllProtocolsOption = (option: ProtocolOption) =>
+  "id" in option && option.id === "ALL_PROTOCOLS"
 
-const NetworkOptionRow: FC<{
-  option: NetworkOption
+const ProtocolOptionRow: FC<{
+  option: ProtocolOption
   isSelected?: boolean
   onClick: () => void
 }> = ({ option, isSelected, onClick }) => {
@@ -27,16 +30,24 @@ const NetworkOptionRow: FC<{
         isSelected && "!bg-grey-700",
       )}
     >
-      <NetworkLogo networkId={option.networkIds[0]} className="shrink-0 text-xl" />
-      <div className="text-body flex grow flex-col gap-2 truncate text-left">{option.name}</div>
+      {isAllProtocolsOption(option) ? (
+        <div className="size-16">
+          <XCircleIcon className="size-16" />
+        </div>
+      ) : (
+        <AssetLogo url={option.logo} className="shrink-0 text-xl" />
+      )}
+
+      <div className="text-body grow flex-col gap-2 truncate text-left">{option.name}</div>
+      <FiatFromUsd amount={option.valueUsd} isBalance noCountUp className="text-sm" />
     </button>
   )
 }
 
-const NetworkOptionsList: FC<{
-  options: NetworkOption[]
-  selected: NetworkOption | null
-  onChange: (value: NetworkOption) => void
+const ProtocolOptionsList: FC<{
+  options: ProtocolOption[]
+  selected: ProtocolOption | null
+  onChange: (value: ProtocolOption) => void
 }> = ({ options, selected, onChange }) => {
   const { t } = useTranslation()
   const { ref: refContainer } = useScrollContainer()
@@ -52,7 +63,7 @@ const NetworkOptionsList: FC<{
   if (!options.length)
     return (
       <div className="text-body-inactive flex h-24 w-full items-center px-12">
-        {t("No networks found")}
+        {t("No protocols found")}
       </div>
     )
 
@@ -77,10 +88,10 @@ const NetworkOptionsList: FC<{
                 transform: `translateY(${item.start}px)`,
               }}
             >
-              <NetworkOptionRow
+              <ProtocolOptionRow
                 key={item.key}
                 option={option}
-                isSelected={option.id === selected?.id}
+                isSelected={option.name === selected?.name}
                 onClick={() => onChange(option)}
               />
             </div>
@@ -91,27 +102,40 @@ const NetworkOptionsList: FC<{
   )
 }
 
-const NetworkOptionsModalContent: FC<{
-  options: NetworkOption[]
-  selected: NetworkOption | null
-  onChange: (NetworkOption: NetworkOption | null) => void
+const ProtocolOptionsModalContent: FC<{
+  options: ProtocolOption[]
+  selected: ProtocolOption | null
+  onChange: (ProtocolOption: ProtocolOption | null) => void
   onClose?: () => void
 }> = ({ options, selected, onChange, onClose }) => {
   const { t } = useTranslation()
 
+  //const total = useMemo(() => options.reduce((sum, p) => sum + (p.valueUsd || 0), 0), [options])
+  const { data: positions = [] } = useDefiPositions()
+  const totalValue = useMemo(
+    () =>
+      positions.reduce(
+        (total, position) =>
+          total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0),
+        0,
+      ),
+    [positions],
+  )
+
   // freeze order on first render so it doesnt change when selecting an option
-  const [allOptions] = useState<NetworkOption[]>(() => [
+  const [allOptions] = useState<ProtocolOption[]>(() => [
     {
-      id: "ALL_NETWORKS",
-      name: t("All Networks"),
-      networkIds: [],
+      id: "ALL_PROTOCOLS",
+      name: t("All Protocols"),
+      logo: null,
+      valueUsd: totalValue,
     },
     ...options,
   ])
 
   const handleChange = useCallback(
-    (option: NetworkOption) => {
-      onChange(option.id === "ALL_NETWORKS" ? null : option)
+    (option: ProtocolOption) => {
+      onChange(isAllProtocolsOption(option) ? null : option)
     },
     [onChange],
   )
@@ -119,9 +143,9 @@ const NetworkOptionsModalContent: FC<{
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
 
-  const filteredNetworks = useMemo(() => {
+  const filteredProtocols = useMemo(() => {
     const lowerSearch = search.toLowerCase()
-    return allOptions.filter((network) => network.name.toLowerCase().includes(lowerSearch))
+    return allOptions.filter((protocol) => protocol.name.toLowerCase().includes(lowerSearch))
   }, [allOptions, search])
 
   return (
@@ -133,7 +157,7 @@ const NetworkOptionsModalContent: FC<{
         >
           <ChevronLeftIcon />
         </IconButton>
-        <div className="text-secondary grow text-center">{t("Network Filter")}</div>
+        <div className="text-secondary grow text-center">{t("Protocol Filter")}</div>
         <IconButton
           className={classNames("size-12 shrink-0", IS_POPUP && "invisible")}
           onClick={onClose}
@@ -143,11 +167,11 @@ const NetworkOptionsModalContent: FC<{
       </div>
       <div className="flex w-full shrink-0 items-center gap-8 px-12 py-8">
         {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-        <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
+        <SearchInput onChange={setSearch} placeholder={t("Search by name")} autoFocus />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        <NetworkOptionsList
-          options={filteredNetworks}
+        <ProtocolOptionsList
+          options={filteredProtocols}
           selected={selected}
           onChange={handleChange}
         />
@@ -156,12 +180,12 @@ const NetworkOptionsModalContent: FC<{
   )
 }
 
-export const NetworkOptionsModal: FC<{
+export const ProtocolOptionsModal: FC<{
   isOpen?: boolean
-  options: NetworkOption[]
-  selected: NetworkOption | null
+  options: ProtocolOption[]
+  selected: ProtocolOption | null
   containerId?: string
-  onChange: (value: NetworkOption | null) => void
+  onChange: (value: ProtocolOption | null) => void
   onClose: () => void
 }> = ({ isOpen, options, selected, containerId, onChange, onClose }) => {
   return (
@@ -174,7 +198,7 @@ export const NetworkOptionsModal: FC<{
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}
     >
-      <NetworkOptionsModalContent
+      <ProtocolOptionsModalContent
         options={options}
         selected={selected}
         onChange={onChange}
