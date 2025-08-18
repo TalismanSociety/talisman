@@ -32,4 +32,8 @@ export const balancesProvider = {
     const provider = await firstValueFrom(balancesProvider$)
     return provider.fetchBalances(...args)
   },
+
+  getDetectedTokensId$: (address: string) => {
+    return balancesProvider$.pipe(switchMap((provider) => provider.getDetectedTokensId$(address)))
+  },
 }
