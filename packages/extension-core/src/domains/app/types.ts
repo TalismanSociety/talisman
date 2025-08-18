@@ -15,6 +15,8 @@ export type RemoteConfigStoreData = {
   swaps: {
     questApi?: string
     simpleswapApiKey?: string
+    simpleswapApiKeyDiscounted?: string
+    simpleswapDiscountedCurrencies?: string[]
     curatedTokens?: string[]
   }
   coingecko: {

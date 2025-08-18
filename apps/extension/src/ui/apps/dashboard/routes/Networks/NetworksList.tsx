@@ -257,19 +257,19 @@ const ResetAllNetworksModalContent: FC<{
   return (
     <ModalDialog
       title={
-        platform
-          ? t("Reset {{platform}} networks", { platform: startCase(platform) })
-          : t("Reset all networks")
+        platform === "all"
+          ? t("Reset all networks")
+          : t("Reset {{platform}} networks", { platform: startCase(platform) })
       }
       onClose={onClose}
     >
       <p className="text-body-secondary mb-8 text-sm">
-        {platform
-          ? t(
+        {platform === "all"
+          ? t("This will reset active state of all networks to their Talisman defaults.")
+          : t(
               "This will reset active state of all {{platform}} networks to their Talisman defaults.",
               { platform },
-            )
-          : t("This will reset active state of all networks to their Talisman defaults.")}
+            )}
       </p>
 
       <div className="mt-4 flex justify-end gap-8">
@@ -324,9 +324,9 @@ const DeactivateNetworksModalContent: FC<{
   return (
     <ModalDialog
       title={
-        platform
-          ? t("Deactivate {{platform}} networks", { platform: startCase(platform) })
-          : t("Deactivate networks")
+        platform === "all"
+          ? t("Deactivate networks")
+          : t("Deactivate {{platform}} networks", { platform: startCase(platform) })
       }
       onClose={onClose}
     >
@@ -356,12 +356,12 @@ const DeactivateNetworksModalContent: FC<{
         <Radio
           name="deactivateMode"
           label={
-            platform
-              ? t("Deactivate all {{platform}} networks ({{count}})", {
+            platform === "all"
+              ? t("Deactivate all networks ({{count}})", { count: networks.length })
+              : t("Deactivate all {{platform}} networks ({{count}})", {
                   platform: startCase(platform),
                   count: networks.length,
                 })
-              : t("Deactivate all networks ({{count}})", { count: networks.length })
           }
           value="all"
           checked={mode === "all"}
@@ -370,12 +370,12 @@ const DeactivateNetworksModalContent: FC<{
         <Radio
           name="deactivateMode"
           label={
-            platform
-              ? t("Deactivate unused {{platform}} networks ({{count}})", {
-                  platform: startCase(platform),
+            platform === "all"
+              ? t("Deactivate all unused networks ({{count}})", {
                   count: unusedNetworkIds.length,
                 })
-              : t("Deactivate all unused networks ({{count}})", {
+              : t("Deactivate unused {{platform}} networks ({{count}})", {
+                  platform: startCase(platform),
                   count: unusedNetworkIds.length,
                 })
           }

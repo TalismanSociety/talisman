@@ -36,6 +36,7 @@ import { withRetry } from "viem"
 import { Balance, BALANCE_MODULES, ChainConnectors } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
+import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
 import { Address, deriveMiniMetadataId, getBalanceId, IBalance, MiniMetadata } from "./types"
 import { TokensWithAddresses } from "./types/IBalanceModule"
 
@@ -159,6 +160,10 @@ export class BalancesProvider {
         map(({ balances }) => balances),
       ),
     )
+  }
+
+  public getDetectedTokensId$(address: string): Observable<TokenId[]> {
+    return getDetectedTokensIds$(address)
   }
 
   private getNetworkBalances$(

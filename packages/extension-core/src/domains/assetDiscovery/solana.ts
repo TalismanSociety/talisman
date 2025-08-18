@@ -1,16 +1,15 @@
 import { Connection, PublicKey } from "@solana/web3.js"
-import { solSplTokenId } from "@talismn/chaindata-provider"
+import { networkIdFromTokenId, solSplTokenId, TokenId } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
-import { liveQuery } from "dexie"
 import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
-import { combineLatest, distinctUntilChanged, filter, first, map, pairwise } from "rxjs"
+import { combineLatest, distinctUntilChanged, filter, first, map, pairwise, switchMap } from "rxjs"
 
-import { db } from "../../db"
 import { isWalletReady$ } from "../../libs/isWalletReady"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { balancesProvider } from "../balances/balancesProvider"
 import { activeNetworksStore } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
 import { keyringStore } from "../keyring/store"
@@ -126,29 +125,48 @@ export const initialiseSolanaAssetDiscovery = () => {
       discoverSolanaAssets(newSolanaAddresses)
     })
 
-  // launch a scan after every confirmed solana transaction
+  // enable solana mainnet tokens found by balance modules (no scan needed)
   combineLatest({
     isWalletReady: isWalletReady$,
-    transactions: liveQuery(() =>
-      db.transactionsV2
-        //.where({ networkId: "solana-mainnet", status: "success", confirmed: true })
-        .toArray(),
-    ),
+    accounts: keyringStore.accounts$,
   })
     .pipe(
       filter(({ isWalletReady }) => !!isWalletReady),
-      map(
-        ({ transactions }) =>
-          transactions.filter(
-            (tx) => tx.networkId === MAINNET_NETWORK_ID && tx.status === "success" && tx.confirmed,
-          ).length,
+      map(({ accounts }) =>
+        accounts
+          .filter(isAccountNotContact)
+          .filter(isAccountPlatformSolana)
+          .map((acc) => acc.address),
       ),
-      distinctUntilChanged(),
-      pairwise(), // Emit pairs of [previous, current] transaction count
-      filter(([previous, current]) => previous < current), // Only emit when it increases
+      switchMap((addresses) =>
+        combineLatest([...addresses.map(balancesProvider.getDetectedTokensId$)]).pipe(
+          map((allTokenIds) => uniq(allTokenIds.flat()).sort()),
+        ),
+      ),
+      distinctUntilChanged<TokenId[]>(isEqual),
     )
-    .subscribe(() => {
-      log.debug("[discoverSolanaAssets] new confirmed solana transaction, launching scan")
-      discoverSolanaAssets()
+    .subscribe(async (tokenIds: TokenId[]) => {
+      log.debug("[discoverSolanaAssets] detectedTokens$")
+
+      const [activeTokens, existingTokenIds] = await Promise.all([
+        activeTokensStore.get(),
+        chaindataProvider.getTokenIds(),
+      ])
+
+      const tokenIdsToActivate = tokenIds.filter((tokenId) => {
+        if (activeTokens[tokenId] !== undefined) return false // already set
+        if (networkIdFromTokenId(tokenId) !== MAINNET_NETWORK_ID) return false // only process solana mainnet tokens
+        return existingTokenIds.includes(tokenId) // consider only tokens that talisman knows about
+      })
+
+      if (tokenIdsToActivate.length) {
+        log.debug("[discoverSolanaAssets] activating detected tokens:", tokenIdsToActivate)
+
+        await activeTokensStore.mutate((prev) => {
+          const next = { ...prev }
+          for (const tokenId of tokenIdsToActivate) next[tokenId] = true
+          return next
+        })
+      }
     })
 }
