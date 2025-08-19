@@ -8,6 +8,7 @@ import sortBy from "lodash-es/sortBy"
 import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import {
@@ -426,6 +427,9 @@ type TokenPickerProps = {
   className?: string
   showEmptyBalances?: boolean
   tokenFilter?: (token: Token) => boolean
+  tokenFilterOptions?: Array<[string, string]>
+  tokenFilterDefaultOption?: string
+  onTokenFilterOptionChange?: (option: string) => void
   onSelect?: (tokenId: TokenId) => void
 }
 
@@ -439,6 +443,9 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   className,
   showEmptyBalances,
   tokenFilter,
+  tokenFilterOptions,
+  tokenFilterDefaultOption,
+  onTokenFilterOptionChange,
   onSelect,
 }) => {
   const { t } = useTranslation()
@@ -449,7 +456,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
     <div
       className={classNames("flex h-full min-h-full w-full flex-col overflow-hidden", className)}
     >
-      <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+      <div className="flex min-h-fit w-full flex-col items-center gap-2 px-12 pb-8">
         <SearchInput
           onChange={setSearch}
           placeholder={t("Search by token or network name")}
@@ -457,6 +464,17 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus={!initialSearch}
         />
+        {tokenFilterOptions !== undefined && (
+          <div className="no-scrollbar max-w-full overflow-x-scroll">
+            <OptionSwitch
+              className="text-xs"
+              optionButtonClassName="px-3"
+              options={tokenFilterOptions}
+              defaultOption={tokenFilterDefaultOption}
+              onChange={onTokenFilterOptionChange}
+            />
+          </div>
+        )}
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList

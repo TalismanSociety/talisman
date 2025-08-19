@@ -1,6 +1,7 @@
+import { Token } from "@talismn/chaindata-provider"
 import { AlertTriangleIcon, ChevronLeftIcon } from "@talismn/icons"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { useAtomValue } from "jotai"
+import { useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -11,7 +12,12 @@ import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { useNetworkById } from "@ui/state"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { uniswapExtendedTokensList, uniswapSafeTokensList } from "../swaps.api"
+import {
+  getTokenTabs,
+  tokenTabAtom,
+  uniswapExtendedTokensList,
+  uniswapSafeTokensList,
+} from "../swaps.api"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
@@ -65,6 +71,14 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
     [assets, handleSelectAsset, onSelectAsset],
   )
 
+  const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
+    useTokenFilterOptions()
+
+  const tokenFilter = useCallback(
+    (token: Token) => assetIds?.includes(token.id) ?? false,
+    [assetIds],
+  )
+
   return (
     <>
       <OpenSelectorButton selectedAsset={selectedAsset} onClick={() => setOpen(true)} />
@@ -89,7 +103,10 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
               allowUntransferable
               ownedOnly
               isInitializing={!assets}
-              tokenFilter={(token) => assetIds?.includes(token.id) ?? false}
+              tokenFilter={tokenFilter}
+              tokenFilterOptions={tokenFilterOptions}
+              tokenFilterDefaultOption={defaultTokenFilterOption}
+              onTokenFilterOptionChange={onSelectTokenFilterOption}
               onSelect={(tokenId) => handleSelectAssetId(tokenId)}
               showEmptyBalances
             />
@@ -203,4 +220,18 @@ const OpenSelectorButton = ({
       )}
     </button>
   )
+}
+
+const useTokenFilterOptions = () => {
+  const { t } = useTranslation()
+
+  const tokenFilterOptions = getTokenTabs({ t }).map((tab): [string, string] => [
+    tab.value,
+    tab.label,
+  ])
+
+  const defaultTokenFilterOption = useAtomValue(tokenTabAtom)
+  const onSelectTokenFilterOption = useSetAtom(tokenTabAtom)
+
+  return { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption }
 }

@@ -12,11 +12,13 @@ import {
 import { FadeIn } from "@talisman/components/FadeIn"
 
 const OptionButton = <O extends string>({
+  className,
   selected,
   children,
   onClick,
   option,
 }: {
+  className?: string
   selected: boolean
   option: O
   onClick: (option: O, buttonRef: RefObject<HTMLButtonElement>) => void
@@ -37,8 +39,9 @@ const OptionButton = <O extends string>({
       ref={buttonRef}
       disabled={selected}
       className={classNames(
-        "z-10 h-full px-7 py-2 transition-colors duration-150",
+        "z-10 h-full whitespace-pre px-7 py-2 transition-colors duration-150",
         selected && "text-body-black",
+        className,
       )}
       onClick={() => onClick(option, buttonRef)}
     >
@@ -51,6 +54,7 @@ type OptionSwitchProps<O extends string> = {
   defaultOption?: O
   options: Array<[O, string]>
   className?: string
+  optionButtonClassName?: string
   onChange?: (option: O) => void
 }
 
@@ -58,6 +62,7 @@ export const OptionSwitch = <O extends string>({
   defaultOption,
   options,
   className,
+  optionButtonClassName,
   onChange,
 }: OptionSwitchProps<O>) => {
   const [selected, setSelected] = useState<O | undefined>(defaultOption)
@@ -85,6 +90,7 @@ export const OptionSwitch = <O extends string>({
       <div className="relative z-0 flex h-full items-center gap-2">
         {options.map(([option, optionText]) => (
           <OptionButton
+            className={optionButtonClassName}
             selected={selected === option}
             onClick={handleChange}
             key={option}
