@@ -2,13 +2,21 @@ import { LoaderIcon } from "@talismn/icons"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { Trans, useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworksMapById, useSelectedCurrency } from "@ui/state"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import { fromAmountAtom, fromAssetAtom, toAssetAtom } from "../swap-modules/common.swap-module"
+import {
+  fromAddressAtom,
+  fromAmountAtom,
+  fromAssetAtom,
+  toAddressAtom,
+  toAssetAtom,
+} from "../swap-modules/common.swap-module"
 import { useFastBalance } from "../swaps-port/useFastBalance"
 import { selectedQuoteAtom, toAmountAtom } from "../swaps.api"
 import { SwapConfirmEvm } from "./SwapConfirmEvm"
@@ -29,6 +37,8 @@ export const SwapConfirm = ({
   const toAsset = useAtomValue(toAssetAtom)
   const fromAmount = useAtomValue(fromAmountAtom)
   const toAmount = useAtomValue(loadable(toAmountAtom))
+  const fromAddress = useAtomValue(fromAddressAtom)
+  const toAddress = useAtomValue(toAddressAtom)
   const currency = useSelectedCurrency()
   const fromFiatAmount = useFiatValueForAmount({ amount: fromAmount, asset: fromAsset })
   const toFiatAmount = useFiatValueForAmount({
@@ -40,19 +50,29 @@ export const SwapConfirm = ({
 
   return (
     <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">
-      <h3 className="h-32 text-lg font-bold">{t("You are swapping")}</h3>
+      <h3 className="-mb-8 h-32 text-lg font-bold">{t("You are swapping")}</h3>
 
-      <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded p-8">
+      <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded px-12 py-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col overflow-hidden">
-            <div className="text-body-secondary">{t("Sending")}</div>
+            <div className="text-body-secondary text-sm">{t("Sending")}</div>
             <div className="text-body-inactive flex items-center gap-3 text-xs">
               <Trans t={t}>
-                from{" "}
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <NetworkLogo networkId={fromNetwork?.id} />{" "}
-                  <span className="truncate">{fromNetwork?.name}</span>
-                </div>
+                on{" "}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <NetworkLogo networkId={fromNetwork?.id} />{" "}
+                      <span className="truncate">{fromNetwork?.name}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex items-center gap-2">
+                      <NetworkLogo networkId={fromNetwork?.id} />{" "}
+                      <span className="truncate">{fromNetwork?.name}</span>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </Trans>
             </div>
           </div>
@@ -84,16 +104,26 @@ export const SwapConfirm = ({
             </div>
           </div>
         </div>
+
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col overflow-hidden">
-            <div className="text-body-secondary">{t("Receiving")}</div>
+            <div className="text-body-secondary text-sm">{t("Receiving")}</div>
             <div className="text-body-inactive flex items-center gap-3 text-xs">
               <Trans t={t}>
                 on{" "}
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <NetworkLogo networkId={toNetwork?.id} />{" "}
-                  <span className="truncate">{toNetwork?.name}</span>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <NetworkLogo networkId={toNetwork?.id} />{" "}
+                      <span className="truncate">{toNetwork?.name}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="flex items-center gap-2">
+                      <NetworkLogo networkId={toNetwork?.id} /> {toNetwork?.name}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </Trans>
             </div>
           </div>
@@ -132,9 +162,37 @@ export const SwapConfirm = ({
             )}
           </div>
         </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col overflow-hidden">
+            <div className="text-body-secondary">{t("From")}</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <AddressDisplay
+              className="h-16"
+              address={fromAddress}
+              networkId={fromAsset?.chainId ? String(fromAsset?.chainId) : undefined}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col overflow-hidden">
+            <div className="text-body-secondary">{t("To")}</div>
+          </div>
+          <div className="flex items-center gap-3">
+            <AddressDisplay
+              className="h-16"
+              address={toAddress}
+              networkId={toAsset?.chainId ? String(toAsset?.chainId) : undefined}
+            />
+          </div>
+        </div>
+
         <div className="my-6 border-t border-t-[#3f3f3f]" />
+
         <div className="flex items-center justify-between">
-          <div className="text-body-secondary text-sm">{t("Provider")}</div>
+          <div className="text-body-secondary text-xs">{t("Provider")}</div>
           <div className="flex items-center justify-end gap-4">
             <img
               src={
