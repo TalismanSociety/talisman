@@ -1,3 +1,4 @@
+import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
@@ -69,6 +70,8 @@ export const SwapForm = ({
   const toAccount = toAddress ? accountsMap[toAddress] : null
   const toIsWatched = toAccount?.type === "watch-only"
   const toIsExternal = !toAccount || toAccount.type === "contact"
+
+  useSyncSwapsChaindata()
 
   useEffect(() => {
     if (approveRecipient && !(toIsWatched || toIsExternal)) setSwapView("form")
