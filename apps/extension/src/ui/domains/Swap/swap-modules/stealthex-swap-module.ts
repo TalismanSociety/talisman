@@ -756,9 +756,9 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
               "Assets",
               allowReap ? "transfer" : "transfer_keep_alive",
               {
-                assetId: fromAsset.assetHubAssetId,
-                dest: MultiAddress.Id(exchange.deposit.address),
-                value: depositAmount.planck,
+                id: fromAsset.assetHubAssetId,
+                target: MultiAddress.Id(exchange.deposit.address),
+                amount: depositAmount.planck,
               },
               { address: fromAddress },
             )
