@@ -1,17 +1,5 @@
 {
   "extends": "@talismn/tsconfig/es6-react.json",
   "include": ["src"],
-  "compilerOptions": {
-    "outDir": "dist"
-  },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "background",
-    ".next",
-    ".turbo",
-    ".dist",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "exclude": ["background", "**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
 }
