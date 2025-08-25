@@ -38,6 +38,7 @@ const NetworkOptionsList: FC<{
   selected: NetworkOption | null
   onChange: (value: NetworkOption) => void
 }> = ({ options, selected, onChange }) => {
+  const { t } = useTranslation()
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
@@ -48,7 +49,12 @@ const NetworkOptionsList: FC<{
     getScrollElement: () => refContainer.current,
   })
 
-  if (!options.length) return null
+  if (!options.length)
+    return (
+      <div className="text-body-inactive flex h-24 w-full items-center px-12">
+        {t("No networks found")}
+      </div>
+    )
 
   return (
     <div ref={ref}>
@@ -115,11 +121,7 @@ const NetworkOptionsModalContent: FC<{
 
   const filteredNetworks = useMemo(() => {
     const lowerSearch = search.toLowerCase()
-    return allOptions.filter(
-      (network) =>
-        network.name.toLowerCase().includes(lowerSearch) ||
-        network.symbols?.find((symbol) => symbol.toLowerCase().includes(lowerSearch)),
-    )
+    return allOptions.filter((network) => network.name.toLowerCase().includes(lowerSearch))
   }, [allOptions, search])
 
   return (

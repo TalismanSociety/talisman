@@ -14,7 +14,7 @@ import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useBalances, usePortfolio, useSelectedCurrency } from "@ui/state"
+import { useBalances, usePortfolioBalances, useSelectedCurrency } from "@ui/state"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -60,7 +60,7 @@ export const PortfolioAsset = () => {
   const { symbol } = useParams()
   const { selectedAccount: account } = usePortfolioNavigation()
   const allBalances = useBalances()
-  const { networkBalances } = usePortfolio()
+  const { networkBalances } = usePortfolioBalances()
   const { popupOpenEvent } = useAnalytics()
 
   const accountBalances = useMemo(

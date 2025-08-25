@@ -1,7 +1,7 @@
 import { GlobeIcon, ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -15,7 +15,16 @@ import {
 } from "talisman-ui"
 
 import { SearchInput } from "@talisman/components/SearchInput"
-import { NetworkOption, usePortfolio, useSetting } from "@ui/state"
+import {
+  NetworkOption,
+  setPortfolioNetworkFilter,
+  setPortfolioSearch,
+  useAllNetworkOptions,
+  usePortfolioBalances,
+  usePortfolioNetworkFilter,
+  usePortfolioSearch,
+  useSetting,
+} from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
@@ -23,15 +32,24 @@ import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
 
 const NetworkFilterButton = () => {
-  const { networkOptions, networkFilter, setNetworkFilter } = usePortfolio()
+  const allNetworkOptions = useAllNetworkOptions()
+  const networkFilter = usePortfolioNetworkFilter()
+  const { allBalances } = usePortfolioBalances()
   const { isOpen, open, close } = useOpenClose()
+
+  const networkOptions = useMemo<NetworkOption[]>(() => {
+    const networkIds = new Set(
+      allBalances.each.filter((b) => !!b.total.planck).map((b) => b.networkId),
+    )
+    return allNetworkOptions.filter((n) => n.networkIds.some((id) => networkIds.has(id)))
+  }, [allBalances, allNetworkOptions])
 
   const handleChange = useCallback(
     (option: NetworkOption | null) => {
-      setNetworkFilter(option ?? undefined)
+      setPortfolioNetworkFilter(option ?? undefined)
       close()
     },
-    [close, setNetworkFilter],
+    [close],
   )
 
   return (
@@ -66,7 +84,7 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const { search, setSearch } = usePortfolio()
+  const search = usePortfolioSearch()
 
   return (
     <SearchInput
@@ -77,7 +95,7 @@ const PortfolioSearch = () => {
         IS_POPUP ? "w-full" : "max-w-[37.4rem]",
       )}
       placeholder={t("Search")}
-      onChange={setSearch}
+      onChange={setPortfolioSearch}
       initialValue={search}
     />
   )

@@ -6,6 +6,7 @@ import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
 import { BalancesMessages } from "../domains/balances/types"
 import { ChainsMessages } from "../domains/chains/types"
+import { DefiMessages } from "../domains/defi/types"
 import { EncryptMessages } from "../domains/encrypt/types"
 import { EthMessages } from "../domains/ethereum/types"
 import { MetadataMessages } from "../domains/metadata/types"
@@ -89,6 +90,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SolanaTabsMessages &
   AssetDiscoveryMessages &
   NftsMessages &
+  DefiMessages &
   PingMessages &
   ChaindataMessages &
   UnsubscribeMessages

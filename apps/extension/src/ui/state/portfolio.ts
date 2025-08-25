@@ -1,21 +1,19 @@
 import { bind } from "@react-rxjs/core"
 import { Balances, HydrateDb } from "@talismn/balances"
-import { isNetworkEth, Network, NetworkId, Token } from "@talismn/chaindata-provider"
+import { isNetworkEth, Network, Token } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
-import { Account, isAccountCompatibleWithNetwork } from "extension-core"
-import { t } from "i18next"
-import { keyBy } from "lodash-es"
+import { Account } from "extension-core"
 import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"
 import { getNetworks$, getTokens$ } from "./chaindata"
+import { networkDisplayNamesMapById$ } from "./networks"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
   networkIds: string[]
   name: string
-  symbols?: string[] // use when searching network by token symbol
 }
 
 type PortfolioGlobalData = {
@@ -28,51 +26,63 @@ type PortfolioGlobalData = {
   isInitialising: boolean
 }
 
-const getNetworkOptions = ({
-  tokens,
-  networks,
-  balances,
-  selectedAccounts,
-}: {
-  tokens: Token[]
-  networks: Network[]
-  balances?: Balances
-  selectedAccounts?: Account[]
-}) => {
-  const networkById = keyBy(networks, "id")
-  const networkIdsWithBalances = new Set<NetworkId>(balances?.each.map((b) => b.networkId))
-
-  const compatibleNetworkOptions = networks
-    .filter((n) => networkIdsWithBalances.has(n.id) && networkById[n.id])
-    .filter(
-      (n) =>
-        !selectedAccounts ||
-        selectedAccounts.some((a) => isAccountCompatibleWithNetwork(networkById[n.id], a)),
-    )
-
-  // we want only one entry for moonbeam and other networks that have substrateChainId
-  const networkIdsToExclude = new Set<string>(
-    compatibleNetworkOptions.filter(isNetworkEth).map((n) => n.substrateChainId ?? ""),
-  )
-
-  const result: NetworkOption[] = compatibleNetworkOptions
-    .filter((n) => !networkIdsToExclude.has(n.id))
-    .map((n) => {
-      const networkIds = [n.id, n.platform === "ethereum" ? n.substrateChainId : null].filter(
-        isTruthy,
+// ⚠️ suspenses
+export const [useAllNetworkOptions, allNetworkOptions$] = bind(
+  combineLatest([
+    getNetworks$({ activeOnly: true, includeTestnets: true }),
+    networkDisplayNamesMapById$,
+  ]).pipe(
+    map(([networks, networkDisplayNames]) => {
+      // we want only one entry for moonbeam and other networks that have substrateChainId
+      const networkIdsToExclude = new Set<string>(
+        networks
+          .filter(isNetworkEth)
+          .map((n) => n.substrateChainId)
+          .filter(isTruthy),
       )
 
-      return {
-        id: networkIds.join(":"),
-        networkIds,
-        name: n.name ?? t("Unknown chain"),
-        symbols: tokens.filter((t) => t.networkId === n.id).map((t) => t.symbol),
-      }
-    })
-    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+      const networkOptions: NetworkOption[] = networks
+        .filter((n) => !networkIdsToExclude.has(n.id) && !!networkDisplayNames[n.id])
+        .map((n) => {
+          const networkIds = [n.id, n.platform === "ethereum" ? n.substrateChainId : null].filter(
+            isTruthy,
+          )
 
-  return result.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
-}
+          return {
+            id: networkIds.join(":"),
+            networkIds,
+            name: networkDisplayNames[n.id] ?? n.name,
+          }
+        })
+        .sort((a, b) => a.name.localeCompare(b.name))
+
+      return networkOptions
+    }),
+  ),
+)
+
+// id of the currently selected network option
+// feels like this should be in the location state, not in an observable
+const subjectPortfolioNetworkOptionId$ = new BehaviorSubject<NetworkOption["id"] | undefined>(
+  undefined,
+)
+
+export const [usePortfolioNetworkOptionId, portfolioNetworkOptionId$] = bind(
+  subjectPortfolioNetworkOptionId$,
+)
+
+// ⚠️ suspenses
+export const [usePortfolioNetworkFilter, portfolioNetworkFilter$] = bind(
+  combineLatest([allNetworkOptions$, portfolioNetworkOptionId$]).pipe(
+    map(([allNetworkOptions, portfolioNetworkOptionId]) => {
+      if (!portfolioNetworkOptionId) return undefined
+      return allNetworkOptions.find((n) => n.id === portfolioNetworkOptionId)
+    }),
+  ),
+)
+
+export const setPortfolioNetworkFilter = (network: NetworkOption | undefined) =>
+  subjectPortfolioNetworkOptionId$.next(network?.id)
 
 const getFilteredBalances = ({
   networkFilter,
@@ -99,19 +109,20 @@ const getFilteredBalances = ({
   return new Balances(filtered, hydrate)
 }
 
-// TODO review this, we may want to use usePortfolioNavigation instead
-export const portfolioSelectedAccounts$ = new BehaviorSubject<Account[] | undefined>(undefined)
+const subjectPortfolioSelectedAccounts$ = new BehaviorSubject<Account[] | undefined>(undefined)
 
-export const [usePortfolioSelectedAccounts] = bind(portfolioSelectedAccounts$)
+export const [usePortfolioSelectedAccounts, portfolioSelectedAccounts$] = bind(
+  subjectPortfolioSelectedAccounts$,
+)
 
-export const portfolioNetworkFilter$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
+export const setPortfolioSelectedAccounts = (accounts: Account[] | undefined) =>
+  subjectPortfolioSelectedAccounts$.next(accounts)
 
-const setNetworkFilter = (network: NetworkOption | undefined) =>
-  portfolioNetworkFilter$.next(network)
+const subjectPortfolioSearch$ = new BehaviorSubject<string>("")
 
-export const portfolioSearch$ = new BehaviorSubject<string>("")
+export const [usePortfolioSearch, portfolioSearch$] = bind(subjectPortfolioSearch$)
 
-const setSearch = (search: string) => portfolioSearch$.next(search)
+export const setPortfolioSearch = (search: string) => subjectPortfolioSearch$.next(search)
 
 export const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlobalData>(
   combineLatest({
@@ -140,15 +151,7 @@ const portfolioForSelectedNetwork$ = combineLatest([
 ]).pipe(
   map(
     ([
-      {
-        hydrate,
-        tokens,
-        networks,
-        allBalances: allAccountsBalances,
-        portfolioBalances,
-        isInitialising,
-        isProvisioned,
-      },
+      { hydrate, allBalances: allAccountsBalances, portfolioBalances },
       networkFilter,
       selectedAccounts,
     ]) => {
@@ -160,62 +163,33 @@ const portfolioForSelectedNetwork$ = combineLatest([
 
       const networkBalances = getFilteredBalances({ networkFilter, allBalances, hydrate })
 
-      const networkOptions = getNetworkOptions({
-        tokens,
-        networks,
-        balances: allBalances,
-        selectedAccounts,
-      })
-
       return {
         allBalances,
-        tokens,
-        hydrate,
-        networkFilter,
         networkBalances,
-        networks,
-        networkOptions,
-        isInitialising,
-        isProvisioned,
       }
     },
   ),
   shareReplay({ bufferSize: 1, refCount: true }),
 )
 
-export const [usePortfolio, portfolio$] = bind(
-  combineLatest([portfolioForSelectedNetwork$, portfolioSearch$]).pipe(
-    map(([portfolioForSelectedNetwork, search]) => {
+export const [usePortfolioBalances, portfolioBalances$] = bind(
+  combineLatest([portfolioForSelectedNetwork$, portfolioSearch$, portfolioGlobalData$]).pipe(
+    map(([portfolioForSelectedNetwork, search, { hydrate }]) => {
       const searchBalances = getFilteredBalances({
         allBalances: portfolioForSelectedNetwork.networkBalances,
-        hydrate: portfolioForSelectedNetwork.hydrate,
+        hydrate,
         search,
       })
 
       return {
         ...portfolioForSelectedNetwork,
-
-        search,
         searchBalances,
-
-        setNetworkFilter,
-        setSearch,
       }
     }),
   ),
   {
     allBalances: new Balances([]),
     searchBalances: new Balances([]),
-    tokens: [],
-    hydrate: {},
-    networkFilter: undefined,
     networkBalances: new Balances([]),
-    networks: [],
-    networkOptions: [],
-    isInitialising: false,
-    isProvisioned: false,
-    search: "",
-    setNetworkFilter,
-    setSearch,
   },
 )

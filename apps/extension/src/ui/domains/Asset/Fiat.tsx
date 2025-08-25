@@ -1,12 +1,12 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
-import React, { useCallback, useMemo } from "react"
+import { classNames, Prettify } from "@talismn/util"
+import React, { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"
 
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
-import { useSelectedCurrency } from "@ui/state"
+import { useFiatFromUsd, useSelectedCurrency } from "@ui/state"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
@@ -125,3 +125,10 @@ DisplayValue.displayName = "DisplayValue"
  */
 const getDecimalPlacesCount = (amount: number) =>
   Math.abs(Math.min(0, Math.floor(Math.log10(Math.abs(amount)))))
+
+type FiatFromUsdProps = Prettify<Omit<FiatProps, "amount"> & { amount: number | null | undefined }>
+
+export const FiatFromUsd: FC<FiatFromUsdProps> = (props) => {
+  const amount = useFiatFromUsd(props.amount)
+  return <Fiat {...props} amount={amount} />
+}

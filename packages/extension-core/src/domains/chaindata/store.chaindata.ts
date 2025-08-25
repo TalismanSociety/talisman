@@ -3,22 +3,16 @@ import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { debounceTime, distinctUntilChanged, Observable } from "rxjs"
 
-import { getDbBlob, updateDbBlob } from "../../db"
+import { getBlobStore } from "../../db"
 
-const BLOB_ID = "chaindata" as const
-type ChaindataBlobData = ChaindataStorage & { id: typeof BLOB_ID }
-const getChaindataDbBlob = () => getDbBlob<typeof BLOB_ID, ChaindataBlobData>(BLOB_ID)
+const blobStore = getBlobStore<ChaindataStorage>("chaindata")
 
 export const loadChaindataPersistedStorage = async (): Promise<ChaindataStorage | undefined> => {
   try {
-    const blobData = await getChaindataDbBlob()
-    if (!blobData) return
-
-    const { id: _, ...storage } = blobData
-    return storage
+    return (await blobStore.get()) ?? undefined
   } catch (error) {
     log.error("[chaindata] failed to load chaindata store on startup", error)
-    return
+    return undefined
   }
 }
 
@@ -28,6 +22,6 @@ export const streamChaindataStorageChangesToDisk = (storage$: Observable<Chainda
     log.debug(
       `[chaindata] updating db blob with data (networks:${storage.networks.length}, tokens:${storage.tokens.length}, meta:${storage.miniMetadatas.length})`,
     )
-    updateDbBlob(BLOB_ID, { id: BLOB_ID, ...storage })
+    blobStore.set(storage)
   })
 }

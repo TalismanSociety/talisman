@@ -11,7 +11,13 @@ import { Hex } from "viem"
 import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, useBalance, usePortfolio, useToken, useTokenRates } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalance,
+  usePortfolioBalances,
+  useToken,
+  useTokenRates,
+} from "@ui/state"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
@@ -125,7 +131,7 @@ export const useResetBittensorBondWizard = () => {
 export const useBittensorBondWizard = () => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
-  const { allBalances } = usePortfolio()
+  const { allBalances } = usePortfolioBalances()
 
   const { subnetData } = useCombinedSubnetData()
 

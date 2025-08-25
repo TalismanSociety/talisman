@@ -14,7 +14,7 @@ import {
   ReplaySubject,
 } from "rxjs"
 
-import { getDbBlob, updateDbBlob } from "../../db"
+import { getBlobStore } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { Port } from "../../types/base"
@@ -22,9 +22,7 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
 
-const BLOB_ID = "tokenRates" as const
-type TokenRatesBlobData = TokenRatesStorage & { id: typeof BLOB_ID }
-const getTokenRatesDbBlob = () => getDbBlob<typeof BLOB_ID, TokenRatesBlobData>(BLOB_ID)
+const blobStore = getBlobStore<TokenRatesStorage>("tokenRates")
 
 const DEFAULT_TOKEN_RATES: TokenRatesStorage = { tokenRates: {} }
 const tokenRates$ = new ReplaySubject<TokenRatesStorage>(1)
@@ -35,14 +33,12 @@ tokenRates$
     log.debug(
       `[tokenRates] updating db blob with data (tokenRates:${Object.values(storage.tokenRates).length})`,
     )
-    updateDbBlob(BLOB_ID, { id: BLOB_ID, ...storage })
+    blobStore.set(storage)
   })
 // load from disk on startup
-getTokenRatesDbBlob().then(
-  (blobData) => {
-    if (!blobData) return tokenRates$.next(DEFAULT_TOKEN_RATES)
-
-    const { id: _, ...storage } = blobData
+blobStore.get().then(
+  (storage) => {
+    if (!storage) return tokenRates$.next(DEFAULT_TOKEN_RATES)
     tokenRates$.next({ ...DEFAULT_TOKEN_RATES, ...storage })
   },
   (error) => {
