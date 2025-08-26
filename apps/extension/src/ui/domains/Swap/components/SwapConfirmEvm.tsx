@@ -246,44 +246,46 @@ export const SwapConfirmEvm = ({
         networkUsage={networkUsage}
       />
 
-      {evmTxLoadable?.state === "hasError" &&
-        (evmTxLoadable.error instanceof EstimateGasExecutionError ? (
-          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
-            {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
-          </div>
-        ) : (
-          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
-            {t("Error loading transaction:")} {String(evmTxLoadable.error)}
-          </div>
-        ))}
+      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
+        {evmTxLoadable?.state === "hasError" &&
+          (evmTxLoadable.error instanceof EstimateGasExecutionError ? (
+            <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+              {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
+            </div>
+          ) : (
+            <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+              {t("Error loading transaction:")} {String(evmTxLoadable.error)}
+            </div>
+          ))}
 
-      {evmTxLoadable?.state === "loading" || isProcessing ? (
-        <Button className="w-full" primary disabled>
-          <LoaderIcon className="animate-spin-slow text-lg" />
-        </Button>
-      ) : account &&
-        account.type === "ledger-ethereum" &&
-        isReady &&
-        evmTxLoadable?.state === "hasData" ? (
-        <SignHardwareEthereum
-          evmNetworkId={fromAsset?.chainId.toString()}
-          account={account}
-          method="eth_sendTransaction"
-          payload={isReady && evmTxLoadable?.state === "hasData" ? evmTxLoadable.data : null}
-          onSigned={sendSigned}
-          onSentToDevice={onSentToDevice}
-          containerId="SwapTokensModalDialog"
-        />
-      ) : (
-        <Button
-          className="w-full"
-          primary
-          onClick={send}
-          disabled={!isReady || evmTxLoadable?.state !== "hasData"}
-        >
-          {t("Confirm Swap")}
-        </Button>
-      )}
+        {evmTxLoadable?.state === "loading" || isProcessing ? (
+          <Button className="w-full" primary disabled>
+            <LoaderIcon className="animate-spin-slow text-lg" />
+          </Button>
+        ) : account &&
+          account.type === "ledger-ethereum" &&
+          isReady &&
+          evmTxLoadable?.state === "hasData" ? (
+          <SignHardwareEthereum
+            evmNetworkId={fromAsset?.chainId.toString()}
+            account={account}
+            method="eth_sendTransaction"
+            payload={isReady && evmTxLoadable?.state === "hasData" ? evmTxLoadable.data : null}
+            onSigned={sendSigned}
+            onSentToDevice={onSentToDevice}
+            containerId="SwapTokensModalDialog"
+          />
+        ) : (
+          <Button
+            className="w-full"
+            primary
+            onClick={send}
+            disabled={!isReady || evmTxLoadable?.state !== "hasData"}
+          >
+            {t("Confirm Swap")}
+          </Button>
+        )}
+      </div>
     </>
   )
 }
