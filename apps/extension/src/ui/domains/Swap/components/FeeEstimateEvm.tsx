@@ -51,7 +51,7 @@ export const FeeEstimateEvm = ({
     <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-4 px-2 pb-10 text-sm">
       <div className="flex items-center justify-between gap-8">
         <div>
-          {t("Estimated Fee")}{" "}
+          {t("Estimated TX Fee")}{" "}
           <Tooltip placement="top">
             <TooltipTrigger asChild>
               <span>
@@ -69,7 +69,7 @@ export const FeeEstimateEvm = ({
               ) : loadableState === "loading" ? (
                 <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
                   <div className="flex w-full justify-between gap-8">
-                    <div>{t("Estimated Fee:")}</div>
+                    <div>{t("Estimated TX Fee:")}</div>
                     <div>
                       <div
                         className={"text-body-disabled bg-body-disabled rounded-xs animate-pulse"}

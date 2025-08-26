@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useGetFeeEstimate } from "@ui/domains/Staking/shared/useGetFeeEstimate"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useNetworkById } from "@ui/state"
 
 import { fromAmountAtom, fromAssetAtom } from "../swap-modules/common.swap-module"
 import { useFastBalance } from "../swaps-port/useFastBalance"
@@ -20,6 +21,7 @@ export const FeeEstimateSubstrate = ({
   const { t } = useTranslation()
 
   const fromAsset = useAtomValue(fromAssetAtom)
+  const fromDotNetwork = useNetworkById(String(fromAsset?.chainId), "polkadot")
   const fromAmount = useAtomValue(fromAmountAtom)
   const swapModule = useAtomValue(selectedSwapModuleAtom)
 
@@ -45,7 +47,7 @@ export const FeeEstimateSubstrate = ({
 
   return (
     <div className="text-body-secondary flex min-h-[4.48rem] items-center justify-between gap-8 px-2 pb-10 text-sm">
-      <div className="whitespace-nowrap">{t("Estimated Fee")} </div>
+      <div className="whitespace-nowrap">{t("Estimated TX Fee")} </div>
       <div>
         {feeEstimate.error ? (
           <div className={"text-alert-error truncate"}>{t("Failed to estimate fee")}</div>
@@ -55,7 +57,7 @@ export const FeeEstimateSubstrate = ({
           </div>
         ) : (feeEstimate.data || feeEstimate.data === 0n) && fromAsset?.id ? (
           <TokensAndFiat
-            tokenId={fromAsset.id}
+            tokenId={fromDotNetwork?.nativeTokenId}
             planck={feeEstimate.data}
             tokensClassName="text-body"
             fiatClassName="text-body-secondary"
