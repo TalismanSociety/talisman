@@ -54,9 +54,9 @@ export const FeeEstimateSubstrate = ({
         <div className="whitespace-nowrap text-xs">{t("Estimated TX Fee")} </div>
         <div>
           {feeEstimate.error ? (
-            <div className={"text-alert-error truncate"}>{t("Failed to estimate fee")}</div>
+            <div className="text-alert-error truncate">{t("Failed to estimate fee")}</div>
           ) : payloadLoadable.state === "loading" || feeEstimate.isLoading ? (
-            <div className={"text-body-disabled bg-body-disabled rounded-xs animate-pulse"}>
+            <div className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">
               0.0000 TKN ($0.00)
             </div>
           ) : (feeEstimate.data || feeEstimate.data === 0n) && fromAsset?.id ? (

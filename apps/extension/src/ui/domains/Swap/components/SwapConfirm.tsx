@@ -1,4 +1,3 @@
-import { LoaderIcon } from "@talismn/icons"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useTranslation } from "react-i18next"
@@ -53,7 +52,7 @@ export const SwapConfirm = ({
       <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded px-12 py-8">
         <div className="flex items-center justify-between gap-4">
           <div className="text-body-secondary">{t("Sending")}</div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {fromAsset && (
               <div className="relative">
                 <img
@@ -108,7 +107,7 @@ export const SwapConfirm = ({
 
         <div className="flex items-center justify-between gap-4">
           <div className="text-body-secondary">{t("Receiving")}</div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {toAsset && (
               <div className="relative">
                 <img
@@ -147,7 +146,11 @@ export const SwapConfirm = ({
                   </div>
                 </div>
               ) : (
-                <LoaderIcon className="animate-spin-slow text-body-disabled" />
+                <div className="flex items-center gap-2">
+                  <div className="text-body-disabled bg-body-disabled rounded-xs inline-block animate-pulse">
+                    ~0.002 TKN ($1.00)
+                  </div>
+                </div>
               )}
               <div className="text-body-inactive flex items-center gap-3 text-xs">
                 <Tooltip>
