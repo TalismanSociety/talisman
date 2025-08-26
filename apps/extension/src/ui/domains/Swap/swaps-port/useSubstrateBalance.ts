@@ -38,7 +38,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
   const unsubRef = useRef<() => void>()
   const chains = useNetworksMapById({ platform: "polkadot" })
   const chain = useMemo(() => {
-    if (!props) return chains["polkadot"]
+    if (!props) return null
     return chains[props.chainId]
   }, [chains, props])
   const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id)))

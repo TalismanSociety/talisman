@@ -19,8 +19,7 @@ export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
   } | null>()
   const chain = useNetworkById(props?.chainId, "polkadot")
 
-  // default to polkadot
-  const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id ?? "polkadot")))
+  const apiLoadable = useAtomValue(loadable(apiPromiseAtom(chain?.id)))
 
   useEffect(() => {
     if (!props) return

@@ -742,6 +742,7 @@ export const useSetToAddress = () => {
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
 
   useEffect(() => {
+    if (!toAsset) return
     // when fromAddress, fromAsset or toAsset changes, set toAddress to either fromAddress or null, depending on whether it's compatible with the new toAsset
     switch (toAsset?.networkType) {
       case "evm":
@@ -793,7 +794,7 @@ export const useSetToAddress = () => {
     setToBtcAddress,
     setToEvmAddress,
     setToSubstrateAddress,
-    toAsset?.networkType,
+    toAsset,
     toBtcAddress,
     toEvmAddress,
     toNetwork,
