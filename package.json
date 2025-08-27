@@ -22,6 +22,7 @@
     "chore:generate-init-data": "pnpm run --filter @talismn/chaindata-provider chore:generate-init-data",
     "generate-init-data": "pnpm chore:generate-init-data",
     "dev": "pnpm dev:extension",
+    "dev:firefox": "pnpm dev:extension:firefox",
     "dev:*": "concurrently --prefix \"{name}\" --prefix-colors auto \"pnpm:dev:*\"",
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "preconstruct dev && pnpm run --filter extension dev",

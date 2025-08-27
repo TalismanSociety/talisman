@@ -147,32 +147,34 @@ export const SwapConfirmSubstrate = ({
     <>
       {fromAsset?.networkType === "substrate" && <FeeEstimateSubstrate fastBalance={fastBalance} />}
 
-      {payloadLoadable?.state === "hasError" && (
-        <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
-          {t("Error loading transaction:")} {String(payloadLoadable.error)}
-        </div>
-      )}
+      <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
+        {payloadLoadable?.state === "hasError" && (
+          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+            {t("Error loading transaction:")} {String(payloadLoadable.error)}
+          </div>
+        )}
 
-      {payloadLoadable?.state !== "hasError" && (
-        <SapiSendButton
-          containerId="SwapTokensModalDialog"
-          label={t("Confirm Swap")}
-          loading={!isReady || !sapi || payloadLoadable.state === "loading"}
-          payload={
-            isReady && sapi && payloadLoadable.state === "hasData"
-              ? payloadLoadable.data?.payload
-              : undefined
-          }
-          txInfo={txInfo}
-          txMetadata={
-            isReady && sapi && payloadLoadable.state === "hasData"
-              ? payloadLoadable.data?.txMetadata
-              : undefined
-          }
-          onSubmitted={onSubmitted}
-          disabled={isDisabled}
-        />
-      )}
+        {payloadLoadable?.state !== "hasError" && (
+          <SapiSendButton
+            containerId="SwapTokensModalDialog"
+            label={t("Confirm Swap")}
+            loading={!isReady || !sapi || payloadLoadable.state === "loading"}
+            payload={
+              isReady && sapi && payloadLoadable.state === "hasData"
+                ? payloadLoadable.data?.payload
+                : undefined
+            }
+            txInfo={txInfo}
+            txMetadata={
+              isReady && sapi && payloadLoadable.state === "hasData"
+                ? payloadLoadable.data?.txMetadata
+                : undefined
+            }
+            onSubmitted={onSubmitted}
+            disabled={isDisabled}
+          />
+        )}
+      </div>
     </>
   )
 }

@@ -295,21 +295,21 @@ const itemsToMapByGenesisHash = <T extends { genesisHash: `0x${string}` | null }
   Object.fromEntries(items.flatMap((item) => (item.genesisHash ? [[item.genesisHash, item]] : [])))
 
 const filterTokensByType =
-  <T extends TokenType | undefined, Res extends T extends TokenType ? TokenOfType<T>[] : Token[]>(
+  <T extends TokenType | undefined, R extends T extends TokenType ? TokenOfType<T>[] : Token[]>(
     type: T,
   ) =>
-  (tokens: Token[]): Res =>
-    tokens.filter((token) => !type || isTokenOfType(token, type)) as Res
+  (tokens: Token[]): R =>
+    tokens.filter((token) => !type || isTokenOfType(token, type)) as R
 
 const filterNetworksByPlatform =
   <
     P extends NetworkPlatform | undefined,
-    Res extends P extends NetworkPlatform ? NetworkOfPlatform<P>[] : Network[],
+    R extends P extends NetworkPlatform ? NetworkOfPlatform<P>[] : Network[],
   >(
     platform: P,
   ) =>
-  (networks: Network[]): Res =>
-    networks.filter((network) => !platform || isNetworkOfPlatform(network, platform)) as Res
+  (networks: Network[]): R =>
+    networks.filter((network) => !platform || isNetworkOfPlatform(network, platform)) as R
 
 //
 // Utils to wrap Observable methods with one-shot Promise methods

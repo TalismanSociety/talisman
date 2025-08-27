@@ -11,6 +11,7 @@ import {
   isAddressCompatibleWithNetwork,
   remoteConfigStore,
 } from "extension-core"
+import { TFunction } from "i18next"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import { Loadable } from "jotai/vanilla/utils/loadable"
@@ -25,6 +26,7 @@ import {
   useNetworkById,
   useTokensMap,
 } from "@ui/state"
+import { t$ } from "@ui/state/i18n"
 
 import type {
   BaseQuote,
@@ -66,6 +68,8 @@ const btcTokens = {
   },
 }
 
+const tAtom = atomWithObservable(() => t$)
+
 const getTokensByChainId = async (
   get: Getter,
   allTokensSelector: Atom<
@@ -101,6 +105,105 @@ const getTokensByChainId = async (
   )
 }
 
+const getCoingeckoCategoryTokens = async (
+  get: Getter,
+  categoryId: string,
+  tokens: SwappableAssetWithDecimals[],
+): Promise<SwappableAssetWithDecimals[]> => {
+  const platforms = await get(coingeckoAssetPlatformsAtom)
+  const coinsList = await get(coingeckoListAtom)
+  const coins = (await get(coingeckoCoinsByCategoryAtom(categoryId))) as {
+    symbol: string
+    id: string
+    image?: string
+  }[]
+  return coins
+    .map((c) => {
+      const coinPlatforms = Object.entries(
+        coinsList.find((coin) => coin.id === c.id)?.platforms ?? {},
+      )
+      if (coinPlatforms.length === 0) {
+        const token = tokens.find((t) => t.symbol.toLowerCase() === c.symbol.toLowerCase())
+        if (token && !token.image && c.image) token.image = c.image
+        return token
+      }
+
+      return coinPlatforms.map(([platformId, address]) => {
+        const platform = platforms.find((p) => p.id === platformId)
+        const token = tokens.find(
+          (t) =>
+            (t.networkType === "evm" ? +t.chainId : t.chainId) === platform?.chain_identifier &&
+            t.contractAddress?.toLowerCase() === address.toLowerCase(),
+        )
+        if (token && !token.image && c.image) token.image = c.image
+        return token
+      })
+    })
+    .flat()
+    .filter((c) => !!c)
+}
+
+export const getTokenTabs = ({
+  t,
+  curatedTokens,
+}: {
+  t: TFunction
+  curatedTokens?: string[]
+}): {
+  value: string
+  label: string
+  coingecko?: boolean
+  filter?: (token: SwappableAssetWithDecimals) => boolean
+  sort?: (a: SwappableAssetWithDecimals, b: SwappableAssetWithDecimals) => number
+}[] => [
+  {
+    value: "all",
+    label: t("All tokens"),
+    sort: curatedTokens
+      ? (a, b) => curatedTokens.indexOf(a.id) - curatedTokens.indexOf(b.id)
+      : undefined,
+  },
+  {
+    value: "popular",
+    label: t("🔥 Popular"),
+    filter: curatedTokens ? (token) => curatedTokens.includes(token.id) ?? false : undefined,
+    sort: curatedTokens
+      ? (a, b) => curatedTokens.indexOf(a.id) - curatedTokens.indexOf(b.id)
+      : undefined,
+  },
+  {
+    value: "meme-token",
+    label: t("Memes"),
+    coingecko: true,
+  },
+  {
+    value: "liquid-staking-tokens",
+    label: t("LSTs"),
+    coingecko: true,
+  },
+  {
+    value: "artificial-intelligence",
+    label: t("AI"),
+    coingecko: true,
+  },
+  {
+    value: "depin",
+    label: t("DePIN"),
+    coingecko: true,
+  },
+  {
+    value: "decentralized-finance-defi",
+    label: t("Defi"),
+    coingecko: true,
+  },
+  {
+    value: "layer-2",
+    label: t("L2s"),
+    coingecko: true,
+  },
+]
+
+export const tokenTabAtom = atom<string>("all")
 export const coingeckoAssetPlatformsAtom = atom(async (get) => {
   const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
 
@@ -125,16 +228,6 @@ export const coingeckoListAtom = atom(async (get) => {
   })
 
   return (await response.json()) as { id: string; platforms: Record<string, string> }[]
-})
-
-export const coingeckoCategoriesAtom = atom(async (get) => {
-  const { apiUrl, apiKeyName, apiKeyValue } = (await get(remoteConfigAtom)).coingecko
-
-  const response = await fetch(`${apiUrl}/api/v3/coins/categories`, {
-    headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {},
-  })
-
-  return await response.json()
 })
 
 export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
@@ -322,12 +415,25 @@ const filterAndSortTokens = async (
   }
 
   const { curatedTokens = [] } = await remoteConfigStore.get("swaps")
-  const filter = (token: SwappableAssetWithDecimals): boolean =>
-    curatedTokens.includes(token.id) ?? false
-  const sort = (a: SwappableAssetWithDecimals, b: SwappableAssetWithDecimals): number =>
-    curatedTokens.indexOf(a.id) - curatedTokens.indexOf(b.id)
 
-  return tokens.filter(filter).sort(sort)
+  const t = await get(tAtom)
+  const tab = get(tokenTabAtom)
+  const tokenTabs = getTokenTabs({ t, curatedTokens })
+  const filter = tokenTabs.find((t) => t.value === tab)?.filter
+  const sort = tokenTabs.find((t) => t.value === tab)?.sort
+  const coingeckoCategoryId = tokenTabs.find((t) => t.value === tab && t.coingecko)?.value
+
+  let filteredSortedTokens = [...tokens]
+  if (filter) filteredSortedTokens = filteredSortedTokens.filter(filter)
+  if (sort) filteredSortedTokens = filteredSortedTokens.sort(sort)
+  if (coingeckoCategoryId)
+    filteredSortedTokens = await getCoingeckoCategoryTokens(
+      get,
+      coingeckoCategoryId,
+      filteredSortedTokens,
+    )
+
+  return filteredSortedTokens
 }
 
 /**
@@ -636,6 +742,7 @@ export const useSetToAddress = () => {
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
 
   useEffect(() => {
+    if (!toAsset) return
     // when fromAddress, fromAsset or toAsset changes, set toAddress to either fromAddress or null, depending on whether it's compatible with the new toAsset
     switch (toAsset?.networkType) {
       case "evm":
@@ -687,7 +794,7 @@ export const useSetToAddress = () => {
     setToBtcAddress,
     setToEvmAddress,
     setToSubstrateAddress,
-    toAsset?.networkType,
+    toAsset,
     toBtcAddress,
     toEvmAddress,
     toNetwork,
