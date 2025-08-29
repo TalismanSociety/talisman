@@ -379,8 +379,10 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !transaction?.maxAmount) return
 
-    if (isTokenDot(token)) set("sendMax", true)
-    else set("amount", transaction.maxAmount)
+    if (isTokenDot(token)) {
+      set("amount", transaction.maxAmount) // amount is necessary for pallets that dont have a transfer_all method
+      set("sendMax", true)
+    } else set("amount", transaction.maxAmount)
   }, [transaction?.maxAmount, set, token])
 
   const onSubmitted = useCallback(
