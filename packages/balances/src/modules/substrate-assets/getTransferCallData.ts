@@ -97,12 +97,12 @@ const getTransferAllEncodedArgs = (assetId: string, to: string, codec: Codec<unk
   return getEncodedValue(codec, [
     () => ({
       id: Number(assetId), // for most networks
-      target: Enum("Id", to),
+      dest: Enum("Id", to),
       keep_alive: false,
     }),
     () => ({
       id: BigInt(assetId), // for Astar
-      target: Enum("Id", to),
+      dest: Enum("Id", to),
       keep_alive: false,
     }),
   ])
