@@ -37,6 +37,8 @@ const config = (env) => ({
         "dexie",
         "@metaplex-foundation/umi",
         "@metaplex-foundation/mpl-token-metadata",
+        "toml",
+        "elliptic",
       ],
     },
 
