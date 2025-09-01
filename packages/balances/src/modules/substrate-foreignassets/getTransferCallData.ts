@@ -94,7 +94,7 @@ const getTransferAllEncodedArgs = (onChainId: string, to: string, codec: Codec<u
   return getEncodedValue(codec, [
     () => ({
       id: papiParse(onChainId), // for most networks
-      target: Enum("Id", to),
+      dest: Enum("Id", to),
       keep_alive: false,
     }),
   ])
