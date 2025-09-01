@@ -41,7 +41,7 @@ export const useSendFundsTransactionDot = ({
     network: network as DotNetwork,
     from: from as string,
     to: to as string,
-    value: value,
+    value,
     method: sendMax ? "all" : allowReap ? "allow-death" : "keep-alive",
     tip: qTip.data ?? "0",
     isLocked,
