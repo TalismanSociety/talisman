@@ -1,5 +1,14 @@
 import { state, useStateObservable } from "@react-rxjs/core"
-import { firstValueFrom, Observable, of, ReplaySubject, switchMap, tap } from "rxjs"
+import {
+  concatMap,
+  firstValueFrom,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  switchMap,
+  tap,
+} from "rxjs"
 
 import {
   SimpleswapExchange,
@@ -39,7 +48,7 @@ const getSwapStatus$ = state((protocolAndId?: string): Observable<SwapStatus | u
 
           // update cache with latest value
           // this will prevent further api requests for this swap
-          setSwapCache(protocolAndId, status)
+          cacheSwapStatus$.next({ protocolAndId, status })
         }),
       )
     }),
@@ -70,16 +79,23 @@ completedSwapsCache$.subscribe((cache) =>
   localStorage.setItem(completedSwapsCacheKey, JSON.stringify(cache ?? {})),
 )
 
-// setSwapCache makes sure that there's no race condition when saving new swap statuses to the cache.
+// cacheSwapStatus$ makes sure that there's no race condition when saving new swap statuses to the cache.
 // it prevents this specific timing issue:
 // 1. swap1 reads cache
 // 2. swap2 reads cache
 // 3. swap1 stores new cached value
 // 4. swap2 stores new cached value (deleting swap1's cached value)
-let _latestCacheValue: Record<string, CachedSwapStatus> | null = null
-const setSwapCache = async (protocolAndId: string, status: CachedSwapStatus) => {
-  if (!_latestCacheValue) _latestCacheValue = await firstValueFrom(completedSwapsCache$)
-
-  _latestCacheValue[protocolAndId] = status
-  completedSwapsCache$.next(_latestCacheValue)
-}
+//
+// instead, each new cached value is emitted from the cacheSwapStatus$ subject and processed in sequence using concatMap, like a queue.
+const cacheSwapStatus$ = new Subject<{ protocolAndId: string; status: CachedSwapStatus }>()
+cacheSwapStatus$
+  .pipe(
+    // save each new value in sequence, to prevent race conditions
+    concatMap((newValue) =>
+      firstValueFrom(completedSwapsCache$).then((cache) => {
+        cache[newValue.protocolAndId] = newValue.status
+        return completedSwapsCache$.next(cache)
+      }),
+    ),
+  )
+  .subscribe()
