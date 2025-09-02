@@ -474,7 +474,7 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   // show regular tx status while tx is still submitting
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
 
-  switch (swapStatus?.status) {
+  switch (swapStatus) {
     case "waiting":
     case "confirming":
     case "exchanging":
@@ -482,11 +482,11 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
     case "verifying":
       return (
         <>
-          {swapStatus?.status === "waiting" ? <span>{t("Depositing funds")} </span> : null}
-          {swapStatus?.status === "confirming" ? <span>{t("Confirming")} </span> : null}
-          {swapStatus?.status === "exchanging" ? <span>{t("Exchanging")} </span> : null}
-          {swapStatus?.status === "sending" ? <span>{t("Sending")} </span> : null}
-          {swapStatus?.status === "verifying" ? <span>{t("Verifying")} </span> : null}
+          {swapStatus === "waiting" ? <span>{t("Depositing funds")} </span> : null}
+          {swapStatus === "confirming" ? <span>{t("Confirming")} </span> : null}
+          {swapStatus === "exchanging" ? <span>{t("Exchanging")} </span> : null}
+          {swapStatus === "sending" ? <span>{t("Sending")} </span> : null}
+          {swapStatus === "verifying" ? <span>{t("Verifying")} </span> : null}
           <LoaderIcon className="animate-spin-slow text-body-disabled" />
         </>
       )
