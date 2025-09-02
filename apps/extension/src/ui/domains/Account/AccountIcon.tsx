@@ -1,4 +1,5 @@
-import { isEthereumAddress } from "@talismn/crypto"
+import type { IconTheme } from "@polkadot/react-identicon/types"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { Address, IdenticonType } from "extension-core"
@@ -31,8 +32,16 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   ) : null
 }
 
-const PolkadotAvatar = ({ seed }: { seed: string }) => {
-  const theme = useMemo(() => (isEthereumAddress(seed) ? "ethereum" : "polkadot"), [seed])
+export const PolkadotAvatar = ({ seed }: { seed: string }) => {
+  const theme = useMemo<IconTheme>(() => {
+    try {
+      const encoding = detectAddressEncoding(seed)
+      return encoding === "ss58" ? "polkadot" : "ethereum"
+    } catch {
+      return "ethereum" // works for any string
+    }
+  }, [seed])
+
   return (
     <IdentIcon
       value={seed}
