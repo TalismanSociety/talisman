@@ -3,6 +3,7 @@ import { SCALE_FACTOR } from "@talismn/balances"
 import { useMemo } from "react"
 
 import { useGetSubnetMetagraphByNetuid } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
+import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
 import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
 
 type GetDynamicTaoStakeInfoProps = {
@@ -21,6 +22,7 @@ export const useGetDynamicTaoStakeInfo = ({
   minJoinBond,
 }: GetDynamicTaoStakeInfoProps) => {
   const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
+  const { tier } = useGetSeekDiscount()
 
   const isTaoToAlpha = useMemo(() => direction === "taoToAlpha", [direction])
 
@@ -45,8 +47,8 @@ export const useGetDynamicTaoStakeInfo = ({
   )
 
   const taoToAlphaTalismanFee = useMemo(
-    () => calculateFee({ amount, fee: TALISMAN_FEE_BITTENSOR }),
-    [amount],
+    () => calculateFee({ amount, fee: TALISMAN_FEE_BITTENSOR, seekDiscount: tier.discount }),
+    [amount, tier.discount],
   )
 
   // calculate the conversion rate of 1 Tao to alpha with zero slippage
@@ -85,8 +87,9 @@ export const useGetDynamicTaoStakeInfo = ({
       calculateFee({
         amount: BigInt(Math.round(taoAmountFromAlpha)),
         fee: TALISMAN_FEE_BITTENSOR,
+        seekDiscount: tier.discount,
       }),
-    [taoAmountFromAlpha],
+    [taoAmountFromAlpha, tier.discount],
   )
 
   const alphaToTaoSlippage = useMemo(
@@ -163,13 +166,27 @@ const calculateSlippage = ({
   return Number(slippage) / 100 // Convert to a number with 0.01 precision
 }
 
-const calculateFee = ({ amount, fee }: { amount: bigint | null; fee: number }): bigint => {
+const calculateFee = ({
+  amount,
+  fee,
+  seekDiscount,
+}: {
+  amount: bigint | null
+  fee: number
+  seekDiscount: number
+}): bigint => {
   if (!amount) return 0n
   if (fee < 0) {
     throw new Error("Fee percentage cannot be negative")
   }
 
-  return (amount * BigInt(Math.round(fee * 100))) / BigInt(10000)
+  if (seekDiscount === 0 || !seekDiscount) {
+    return (amount * BigInt(Math.round(fee * 100))) / BigInt(10000)
+  }
+
+  const discountedFee = fee * (1 - seekDiscount)
+
+  return (amount * BigInt(Math.round(discountedFee * 100))) / BigInt(10000)
 }
 
 // Alpha price is calculated by taoIn / alphaIn

@@ -10,8 +10,10 @@ export const StakingFeeEstimate: FC<{
   plancks: bigint | null | undefined
   tokenId: TokenId | null | undefined
   noCountUp?: boolean
+  noFiat?: boolean
   className?: string
-}> = ({ error, isLoading, plancks, tokenId, noCountUp, className }) => {
+  tokensClassName?: string
+}> = ({ error, isLoading, plancks, tokenId, noCountUp, noFiat, className, tokensClassName }) => {
   return (
     <>
       {error ? (
@@ -22,9 +24,10 @@ export const StakingFeeEstimate: FC<{
         <TokensAndFiat
           tokenId={tokenId}
           planck={plancks}
-          tokensClassName="text-body"
+          tokensClassName={classNames("text-body", tokensClassName)}
           fiatClassName="text-body-secondary"
           noCountUp={noCountUp}
+          noFiat={noFiat}
           className={classNames(isLoading && "animate-pulse", className)}
         />
       ) : isLoading ? (

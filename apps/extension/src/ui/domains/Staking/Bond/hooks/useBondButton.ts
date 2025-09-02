@@ -123,7 +123,7 @@ export const useBondButton = ({
         handleOpenBittensorModal({
           ...openArgs,
           stakeType,
-          isSelectStakeDrawerOpen: stakeType === "root",
+          isSeekDiscountDrawerOpen: true,
           step: stakeType === "root" ? "form" : "subnet-form",
           netuid,
         })

@@ -7,6 +7,7 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { useAppState } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -60,6 +61,10 @@ export const BittensorSubnetBondReview = () => {
     onSubmitted,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
+  const { tier } = useGetSeekDiscount()
+
+  const { discount } = tier
+  const discountPercent = `${tier.discount * 100}%`
 
   const { isLoading } = useCombinedSubnetData()
 
@@ -215,13 +220,20 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
+              {discount > 0 && (
+                <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
+                  <div className="text-[1rem] text-[#D5FF5C]">{discountPercent} Off Fees</div>
+                </div>
+              )}
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}
               tokenId={feeToken?.id}
               isLoading={isDynamicInfoLoading}
               error={isDynamicInfoError}
+              tokensClassName={discount > 0 ? "text-[#D5FF5C]" : ""}
               noCountUp
+              noFiat
             />
           </div>
         </div>
