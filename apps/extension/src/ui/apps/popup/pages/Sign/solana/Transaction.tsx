@@ -247,11 +247,6 @@ const useEstimatedFee = ({
       return result.value ? String(result.value) : null
     },
     refetchInterval: !isLocked && 5_000, // refresh fee every 5 seconds
-
-    // sometimes (~20%? of the time) the reference block passed along with the tx is too recent for the wallet to estimate fees,
-    // when this happens, retry a few times to allow the wallet some time to catch up
-    retry: 3,
-    retryDelay: 1000,
   })
 }
 
@@ -281,7 +276,7 @@ const useTransactionValidity = ({
 
         // Check if the blockhash is still valid
         const isValid = await connection.isBlockhashValid(recentBlockhash, {
-          commitment: "confirmed",
+          commitment: "processed", // Fastest, but may include blocks that could be rolled back.
         })
 
         return {
