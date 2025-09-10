@@ -10,6 +10,7 @@ const languages = { en: "English" }
 module.exports = {
   // use `common` instead of `translation` as the default namespace
   defaultNamespace: "common",
+  ns: ["common"], // consider only the `common` namespace
 
   // natural language keys
   namespaceSeparator: false,

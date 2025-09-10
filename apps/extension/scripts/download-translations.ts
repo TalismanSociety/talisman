@@ -8,6 +8,7 @@ if (!process.env.SIMPLE_LOCALIZE_API_KEY)
   throw new Error("Missing SIMPLE_LOCALIZE_API_KEY env variable")
 
 const fallbackLanguages = { en: "English" }
+const allowedNamespaces = ["common"]
 
 type ApiFetchResult<T> = {
   msg: string
@@ -65,7 +66,7 @@ const fetchNamespaceUrls = async () => {
     throw new Error("Bad response from SimpleLocalize")
   }
 
-  return result.data.files
+  return result.data.files.filter((file) => allowedNamespaces.includes(file.namespace))
 }
 
 const fetchNamespaceJson = async (fileUrl: string) => {
