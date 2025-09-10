@@ -34,7 +34,6 @@ yarn-error.log*
 # extension
 dist
 review
-apps/extension/public/locales/*
 
 # Playwright
 /test-results/

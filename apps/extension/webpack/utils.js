@@ -1,6 +1,7 @@
 /* eslint-env es2021 */
 
 const childProcess = require("child_process")
+const { readFileSync } = require("fs")
 const { readFile } = require("fs/promises")
 const path = require("path")
 const sentryWebpackPlugin = require("@sentry/webpack-plugin").sentryWebpackPlugin
@@ -115,6 +116,11 @@ const updateManifestDetails = async (env, manifest) => {
   return { ...manifest, ...browserSpecificManifestDetails }
 }
 
+const getSupportedLanguages = () => {
+  const localesPath = path.join("./public/locales/languages.json")
+  return readFileSync(localesPath, "utf8")
+}
+
 module.exports = {
   browser,
   srcDir,
@@ -127,4 +133,5 @@ module.exports = {
   getManifestVersionName,
   getArchiveFileName,
   getSentryPlugin,
+  getSupportedLanguages,
 }
