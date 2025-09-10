@@ -5,4 +5,4 @@ WORKDIR /talisman
 COPY . ./
 
 RUN pnpm clean
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
