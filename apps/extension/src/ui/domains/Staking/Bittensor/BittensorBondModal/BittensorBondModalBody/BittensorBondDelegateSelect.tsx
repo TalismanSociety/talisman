@@ -1,7 +1,6 @@
 import { classNames } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
@@ -33,7 +32,6 @@ export const BittensorBondDelegateSelect = () => {
 
   const { poolId, stakeType, netuid, setStep, setPoolId } = useBittensorBondWizard()
 
-  const [selectedPoolId, setSelectedPoolId] = useState<number | string | null>(poolId)
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
 
@@ -120,19 +118,13 @@ export const BittensorBondDelegateSelect = () => {
     [combinedValidatorsData, handleSearchClear],
   )
 
-  const handleSelectPoolId = useCallback(
-    (poolId: number | string) => {
-      setSelectedPoolId(poolId)
-    },
-    [setSelectedPoolId],
-  )
-
-  const handleSubmit = useCallback(() => {
-    if (selectedPoolId) {
-      setPoolId(selectedPoolId)
+  const handleSubmit = useCallback(
+    (poolId: string | number) => {
       setStep(stakeType === "root" ? "form" : "subnet-form")
-    }
-  }, [selectedPoolId, setPoolId, setStep, stakeType])
+      setPoolId(poolId)
+    },
+    [setPoolId, setStep, stakeType],
+  )
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
@@ -170,7 +162,7 @@ export const BittensorBondDelegateSelect = () => {
           <div>{t("Name")}</div>
           <div>{t("Est. Rewards")}</div>
         </div>
-        <ScrollContainer className="h-[29.5rem]" innerClassName="space-y-[0.8rem]">
+        <ScrollContainer className="h-[40rem]" innerClassName="space-y-[0.8rem]">
           {isLoading && sortedDelegators.length === 0
             ? Array(6)
                 .fill(null)
@@ -181,8 +173,8 @@ export const BittensorBondDelegateSelect = () => {
                 <BittensorBondOption
                   key={option.poolId}
                   option={option}
-                  selectedPoolId={selectedPoolId}
-                  handleSelectPoolId={handleSelectPoolId}
+                  selectedPoolId={poolId}
+                  handleSelectPoolId={handleSubmit}
                   tokenId={BITTENSOR_TOKEN_ID}
                 />
               ))}
@@ -193,14 +185,6 @@ export const BittensorBondDelegateSelect = () => {
           )}
         </ScrollContainer>
       </div>
-      <Button
-        primary
-        className="mt-auto w-full"
-        onClick={handleSubmit}
-        disabled={!selectedPoolId || selectedPoolId === poolId}
-      >
-        {t("Select Validator")}
-      </Button>
     </div>
   )
 }
