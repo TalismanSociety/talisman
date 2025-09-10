@@ -852,6 +852,9 @@ importers:
       tsconfig-paths-webpack-plugin:
         specifier: ^4.1.0
         version: 4.1.0
+      tsx:
+        specifier: ^4.20.3
+        version: 4.20.3
       url:
         specifier: ^0.11.4
         version: 0.11.4
