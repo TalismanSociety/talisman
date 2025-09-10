@@ -60,6 +60,7 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
     queryFn: async () => {
       if (!publicClient) return null
       if (evmNetwork?.feeType) return evmNetwork.feeType === "eip-1559"
+      if (evmNetwork?.preserveGasEstimate) return false
 
       try {
         const {
@@ -74,6 +75,10 @@ const useHasEip1559Support = (publicClient: PublicClient | undefined) => {
         // edge case identified on Scroll network: viem's getFeeHistory method crashes as the rpc response doesn't match expected data type
         // error message: "Cannot convert null to a BigInt"
         if (error.name === "TypeError") return false
+
+        // ⚠️ some networks (ex ACALA EVM) dont return a specific error code when the method doesn't exist, causing false positive
+        // though we still need to throw because in most case, its a connection related error
+        // => For Acala EVM, we worked around this by checking the preserveGasEstimate flag above
 
         throw err
       }
