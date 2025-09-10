@@ -41,8 +41,6 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build papi descriptors
-        run: pnpm papi
       - name: Test
         run: pnpm preconstruct:dev && pnpm test
       - name: Extract short SHA + package version
@@ -60,7 +58,7 @@ jobs:
           api-key: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
           command: "upload"
           cli-version: "2.2.0"
-          args: "--apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
+          args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
       - name: Build
         run: pnpm build:extension:ci
         env:

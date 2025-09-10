@@ -40,3 +40,6 @@ review
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# tmp folder for translations extraction
+.i18next-parser/
