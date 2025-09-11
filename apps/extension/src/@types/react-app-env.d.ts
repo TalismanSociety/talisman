@@ -9,8 +9,6 @@ declare namespace NodeJS {
     readonly POSTHOG_AUTH_TOKEN?: string
     readonly SENTRY_DSN?: string
     readonly SENTRY_AUTH_TOKEN?: string
-    readonly SIMPLE_LOCALIZE_API_KEY?: string
-    readonly SIMPLE_LOCALIZE_PROJECT_TOKEN?: string
     readonly BUILD?: "production" | "canary" | "ci" | "qa" | "dev"
 
     // dev utilities

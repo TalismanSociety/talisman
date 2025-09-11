@@ -34,10 +34,12 @@ yarn-error.log*
 # extension
 dist
 review
-apps/extension/public/locales/*
 
 # Playwright
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# tmp folder for translations extraction
+.i18next-parser/

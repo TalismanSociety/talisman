@@ -12,7 +12,14 @@ const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 
-const { browser, srcDir, distDir, getRelease, getGitShortHash } = require("./utils")
+const {
+  browser,
+  srcDir,
+  distDir,
+  getRelease,
+  getGitShortHash,
+  getSupportedLanguages,
+} = require("./utils")
 
 /** @type { import('webpack').Configuration } */
 const config = (env) => ({
@@ -228,6 +235,7 @@ const config = (env) => ({
       "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
       "process.env.BROWSER": JSON.stringify(browser),
+      "process.env.SUPPORTED_LANGUAGES": JSON.stringify(getSupportedLanguages()),
     }),
     ...[
       { title: "Talisman", entrypoint: "popup" },

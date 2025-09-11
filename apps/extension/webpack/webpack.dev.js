@@ -4,9 +4,7 @@ const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
 const path = require("path")
 const CopyPlugin = require("copy-webpack-plugin")
-// const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const { SourceMapDevToolPlugin } = require("webpack")
-const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
 
 const { updateManifestDetails, browser, distDir, manifestDir } = require("./utils.js")
 
@@ -29,9 +27,6 @@ const config = (env) =>
         // If either of these scripts have `eval` in them, the wallet will be unable to inject on dapps with a good
         // content security policy, like https://app.uniswap.org/swap for example.
         test: /(?<!(content_script|page))\.(ts|js|mts|mjs)/,
-      }),
-      new SimpleLocalizeDownloadPlugin({
-        devMode: !process.env.DEV_WITH_LANGUAGES,
       }),
       new CopyPlugin({
         patterns: [

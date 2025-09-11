@@ -192,6 +192,7 @@
     "ts-jest": "^29.2.5",
     "ts-loader": "9.5.1",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "tsx": "^4.20.3",
     "url": "^0.11.4",
     "vm-browserify": "^1.1.2",
     "webpack": "^5.95.0",
@@ -204,6 +205,7 @@
   "scripts": {
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "chore:update-translations": "pnpm exec i18next --silent --config i18next-parser.config.cjs",
+    "chore:download-translations": "pnpm tsx scripts/download-translations.ts",
     "chore:codegen:stealthex-swaps": "openapi-typescript https://stealthex.talisman.xyz/docs/openapi.json --export-type --root-types -o src/ui/domains/Swap/swap-modules/stealthex.api.d.ts",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch --env build=dev",
     "dev:firefox": "rm -rf dist && BROWSER=firefox webpack --config webpack/webpack.dev.js --watch --env build=dev",
@@ -219,7 +221,7 @@
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "clean": "rm -rf dist .turbo node_modules public/locales coverage"
+    "clean": "rm -rf dist .turbo node_modules coverage"
   },
   "browserslist": {
     "production": [
