@@ -58,7 +58,7 @@ jobs:
           api-key: ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}
           command: "upload"
           cli-version: "2.2.0"
-          args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
+          args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
       - name: Build
         run: pnpm build:extension:ci
         env:
