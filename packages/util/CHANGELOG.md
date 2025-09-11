@@ -1,5 +1,13 @@
 # @talismn/util
 
+## 0.5.1
+
+### Patch Changes
+
+- dfe2992: getLoadable$
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+
 ## 0.5.0
 
 ### Minor Changes

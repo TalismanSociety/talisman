@@ -1,5 +1,12 @@
 # @talismn/crypto
 
+## 0.2.1
+
+### Patch Changes
+
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+
 ## 0.2.0
 
 ### Minor Changes

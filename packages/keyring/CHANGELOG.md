@@ -1,5 +1,15 @@
 # @talismn/keyring
 
+## 1.0.3
+
+### Patch Changes
+
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/crypto@0.2.1
+
 ## 1.0.2
 
 ### Patch Changes

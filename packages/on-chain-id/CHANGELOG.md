@@ -1,5 +1,19 @@
 # @talismn/on-chain-id
 
+## 0.1.22
+
+### Patch Changes
+
+- f0a103b: feat: updates for solana
+- Updated dependencies [daacbf1]
+- Updated dependencies [dfe2992]
+- Updated dependencies [af7cb29]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/balances@1.0.3
+  - @talismn/util@0.5.1
+  - @talismn/crypto@0.2.1
+
 ## 0.1.21
 
 ### Patch Changes

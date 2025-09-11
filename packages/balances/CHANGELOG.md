@@ -1,5 +1,30 @@
 # @talismn/balances
 
+## 1.0.3
+
+### Patch Changes
+
+- daacbf1: auto detect new tokens
+- af7cb29: fix transferAll for substrate assets and foreign assets
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+- Updated dependencies [7b41204]
+- Updated dependencies [f5e2f60]
+- Updated dependencies [dfe2992]
+- Updated dependencies [0c9b3c7]
+- Updated dependencies [52b851c]
+- Updated dependencies [8a31f57]
+- Updated dependencies [f0a103b]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/chaindata-provider@1.1.0
+  - @talismn/util@0.5.1
+  - @talismn/chain-connectors@0.0.1
+  - @talismn/crypto@0.2.1
+  - @talismn/solana@0.0.1
+  - @talismn/sapi@0.0.10
+  - @talismn/token-rates@3.0.3
+
 ## 1.0.2
 
 ### Patch Changes
