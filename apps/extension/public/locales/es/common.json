@@ -4,6 +4,7 @@
   "'{{name}}' is now in your address book": "'{{name}}' ahora está en tu libreta de direcciones",
   "(optional)": "Opcional",
   "[\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\"]": "[{{label}}] Error al conectar con tu Ledger. Asegúrate de que la aplicación <strong>{{appName}}</strong> esté abierta e inténtalo de nuevo. {{message}}",
+  "[\"[\\\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\\\"]\"]": "[{{label}}] Error al conectar con tu Ledger. Asegúrate de que la aplicación <strong>{{appName}}</strong> esté abierta e inténtalo de nuevo. {{message}}",
   "{{ count }} recovery phrases not backed up_pluralSeparator_one": "{{ count }} frases de recuperación no respaldadas",
   "{{ count }} recovery phrases not backed up_pluralSeparator_other": "{{ count }} frases de recuperación no respaldadas",
   "{{baseFee}} GWEI": "{{baseFee}} GWEI",
