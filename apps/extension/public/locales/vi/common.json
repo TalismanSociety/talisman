@@ -4,6 +4,7 @@
   "'{{name}}' is now in your address book": "'{{name}}' hiện đã có trong sổ địa chỉ của bạn",
   "(optional)": "(tùy chọn)",
   "[\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\"]": "[{{label}}] Không thể kết nối với Ledger của bạn. Đảm bảo ứng dụng <strong>{{appName}}</strong> đã được mở và thử lại. {{message}}",
+  "[\"[\\\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\\\"]\"]": "[{{label}}] Không thể kết nối với Ledger của bạn. Đảm bảo ứng dụng <strong>{{appName}}</strong> đã được mở và thử lại. {{message}}",
   "{{ count }} recovery phrases not backed up_pluralSeparator_one": "{{ count }} cụm từ khôi phục chưa được sao lưu",
   "{{ count }} recovery phrases not backed up_pluralSeparator_other": "{{ count }} cụm từ khôi phục chưa được sao lưu",
   "{{baseFee}} GWEI": "{{baseFee}} GWEI",

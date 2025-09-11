@@ -4,6 +4,7 @@
   "'{{name}}' is now in your address book": "'{{name}}' acum e în contactele tale",
   "(optional)": "(opțional)",
   "[\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\"]": "[\"{{label}}] Conectarea la Ledger a eșuat. Asigură-te că aplicația <strong>{{appName}}</strong> este deschisă și încearcă din nou. {{message}}\"]",
+  "[\"[\\\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\\\"]\"]": "[\"{{label}}] Conectarea la Ledger a eșuat. Asigură-te că aplicația <strong>{{appName}}</strong> este deschisă și încearcă din nou. {{message}}\"]",
   "{{ count }} recovery phrases not backed up_pluralSeparator_one": "{{ count }} fraze de recuperare nesalvate up_pluralSeparator_one",
   "{{ count }} recovery phrases not backed up_pluralSeparator_other": "{{ count }} fraze de recuperare nesalvate up_pluralSeparator_other",
   "{{baseFee}} GWEI": "{{baseFee}} GWEI",

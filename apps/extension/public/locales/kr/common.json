@@ -4,6 +4,7 @@
   "'{{name}}' is now in your address book": "'{{name}}'가 주소록에 추가되었습니다.",
   "(optional)": "(선택 사항)",
   "[\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\"]": "[{{label}}] Ledger에 연결하지 못했습니다. <strong>{{appName}}</strong> 앱이 열려 있는지 확인하고 다시 시도하세요. {{message}}",
+  "[\"[\\\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\\\"]\"]": "[{{label}}] Ledger에 연결하지 못했습니다. <strong>{{appName}}</strong> 앱이 열려 있는지 확인하고 다시 시도하세요. {{message}}",
   "{{ count }} recovery phrases not backed up_pluralSeparator_one": "{{ count }}개의 복구 구문이 백업되지 않았습니다.",
   "{{ count }} recovery phrases not backed up_pluralSeparator_other": "{{ count }}개의 복구 구문이 백업되지 않았습니다.",
   "{{baseFee}} GWEI": "{{baseFee}} GWEI",

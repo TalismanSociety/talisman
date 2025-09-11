@@ -4,6 +4,7 @@
   "'{{name}}' is now in your address book": "{{name}}\"现已在您的通讯录中",
   "(optional)": "可选的",
   "[\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\"]": "[{{label}}] 无法连接到您的Ledger。确保 <strong>{{appName}}</strong> 应用程序已打开，然后重试。 {{message}}",
+  "[\"[\\\"[{{label}}] Failed to connect to your Ledger. Make sure <strong>{{appName}}</strong> app is open and try again. {{message}}\\\"]\"]": "[{{label}}] 无法连接到您的Ledger。确保 <strong>{{appName}}</strong> 应用程序已打开，然后重试。 {{message}}",
   "{{ count }} recovery phrases not backed up_pluralSeparator_one": "{{ count }} 未备份的恢复短语",
   "{{ count }} recovery phrases not backed up_pluralSeparator_other": "{{ count }} 未备份的恢复短语",
   "{{baseFee}} GWEI": "{{baseFee}}GWEI",
