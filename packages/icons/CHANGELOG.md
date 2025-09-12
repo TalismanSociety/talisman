@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.2
+
+### Patch Changes
+
+- dfe2992: protocol icon
+
 ## 0.1.1
 
 ### Patch Changes

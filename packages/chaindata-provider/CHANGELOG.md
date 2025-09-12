@@ -1,5 +1,24 @@
 # @talismn/chaindata-provider
 
+## 1.1.0
+
+### Minor Changes
+
+- f0a103b: add getBlockExplorerUrls and getBlockExplorerLabel
+
+### Patch Changes
+
+- 7b41204: update init data
+- f5e2f60: chore: updated types & added sync hook for wallet swaps
+- 0c9b3c7: generate init data
+- 8a31f57: generate init data
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+- Updated dependencies [dfe2992]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/util@0.5.1
+
 ## 1.0.2
 
 ### Patch Changes

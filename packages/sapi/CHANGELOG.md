@@ -1,5 +1,11 @@
 # @talismn/sapi
 
+## 0.0.10
+
+### Patch Changes
+
+- f0a103b: feat: updates for solana
+
 ## 0.0.9
 
 ### Patch Changes
