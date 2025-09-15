@@ -4,3 +4,7 @@ packages:
   - "config/*"
   - "packages/*"
   - "lib/*"
+
+# don't install NPM dependencies which were published less than 3 days ago
+# provides some buffer time for the package maintainer / wider community to detect and publicise malicious package versions
+minimumReleaseAge: 4320
