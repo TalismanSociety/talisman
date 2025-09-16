@@ -3,6 +3,7 @@ import { classNames } from "@talismn/util"
 import { format } from "date-fns/format"
 import { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
+import { toPairs } from "lodash"
 import {
   CSSProperties,
   FC,
@@ -34,6 +35,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { Tabs } from "@talisman/components/Tabs"
 import { api } from "@ui/api"
 import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -43,7 +45,7 @@ import { NetworkAddress } from "../Account/AddressLinkOrCopy"
 import { Fiat } from "../Asset/Fiat"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NftImage } from "./NftImage"
-import { getNftCollectionFloorUsd } from "./Nfts/helpers"
+import { NftDescription } from "./Nfts/NftDescription"
 
 const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
   const { t } = useTranslation()
@@ -104,20 +106,34 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         <MoreHorizontalIcon className="size-12" />
       </ContextMenuTrigger>
       <ContextMenuContent>
-        {nft.marketplaces.map((mp, i) => (
-          <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
-            {t("Open in {{marketplace}}", { marketplace: mp.name })}
-          </ContextMenuItem>
-        ))}
+        {nft.marketplaceUrls
+          ?.map((url) => ({ url, label: getMarketPlaceLabel(url) }))
+          .filter((m) => !!m.label)
+          .map((mp, i) => (
+            <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
+              {t("View on {{marketplace}}", { marketplace: mp.label })}
+            </ContextMenuItem>
+          ))}
         <ContextMenuItem onClick={handleHideCollectionClick}>
           {isCollectionHidden ? t("Show collection") : t("Hide collection")}
         </ContextMenuItem>
-        <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
-          {t("Refresh Metadata")}
-        </ContextMenuItem>
+        {!nft.id.startsWith("subscan:") && (
+          <ContextMenuItem onClick={hadnleRefreshMetadataClick}>
+            {t("Refresh Metadata")}
+          </ContextMenuItem>
+        )}
       </ContextMenuContent>
     </ContextMenu>
   )
+}
+
+const getMarketPlaceLabel = (url: string) => {
+  try {
+    const parsed = new URL(url)
+    return parsed.hostname.split(".").slice(-2).join(".")
+  } catch (err) {
+    return null
+  }
 }
 
 const TabContentCollection: FC<{
@@ -125,39 +141,47 @@ const TabContentCollection: FC<{
   nft: Nft
 }> = ({ collection, nft }) => {
   const { t } = useTranslation()
-  const network = useNetworkById(nft.evmNetworkId, "ethereum")
-
-  const floorPrice = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
+  const network = useNetworkById(nft.networkId)
 
   return (
     <>
       <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
-        <div className="text-body-secondary">{t("Floor Price")}</div>
-        <div className="text-right">
-          {floorPrice ? <Fiat amount={floorPrice} forceCurrency="usd" /> : t("Unavailable")}
-        </div>
-        <div className="text-body-secondary">{t("Items")}</div>
-        <div className="text-right">{collection.totalQuantity}</div>
-        <div className="text-body-secondary">{t("Holders")}</div>
-        <div className="text-right">{collection.distinctOwners}</div>
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
-          <NetworkLogo networkId={nft.evmNetworkId} className="text-md" />
+          <NetworkLogo networkId={nft.networkId} className="text-md" />
           <div className="truncate">{network?.name}</div>
         </div>
-        <div className="text-body-secondary">{t("Contract")}</div>
-        <div className="text-right">
-          <NetworkAddress address={nft.contract.address} networkId={nft.evmNetworkId} />
-        </div>
+        {!!nft.contract && (
+          <>
+            <div className="text-body-secondary">{t("Contract")}</div>
+            <div className="text-right">
+              <NetworkAddress address={nft.contract} networkId={nft.networkId} />
+            </div>
+          </>
+        )}
         <div className="text-body-secondary">{t("Type")}</div>
-        <div className="text-right">{nft.contract.type ?? t("Unknown")}</div>
+        <div className="text-right">{nft.type ?? t("Unknown")}</div>
+        {!!nft.nftCollectionId && (
+          <>
+            <div className="text-body-secondary">{t("Collection ID")}</div>
+            <div className="text-right">{nft.nftCollectionId}</div>
+          </>
+        )}
+        <div className="text-body-secondary">{t("Price")}</div>
+        <div className="text-right">
+          {nft.price ? <Fiat amount={nft.price} forceCurrency="usd" /> : t("Unknown")}
+        </div>
+        <div className="text-body-secondary">{t("Total Supply")}</div>
+        <div className="text-right">{collection.itemsCount ?? t("Unknown")}</div>
+        <div className="text-body-secondary">{t("Holders")}</div>
+        <div className="text-right">{collection.ownersCount ?? t("Unknown")}</div>
       </div>
       {!!collection.description && (
         <>
           <div className="bg-grey-800 h-0.5"></div>
           <div className="space-y-8 hyphens-auto">
             <div className="text-body-secondary">{t("Description")}</div>
-            <div>{collection.description}</div>
+            <NftDescription text={collection.description} />
           </div>
         </>
       )}
@@ -169,8 +193,11 @@ const TabContentNft: FC<{
   nft: Nft
 }> = ({ nft }) => {
   const { t } = useTranslation()
+  const locale = useDateFnsLocale()
 
   const copyToClipboard = useCopyToClipboard()
+
+  const traits = useMemo(() => toPairs(nft.traits ?? {}), [nft.traits])
 
   return (
     <>
@@ -192,23 +219,27 @@ const TabContentNft: FC<{
                 </div>
               )}
             </div>
+
+            {!!nft.updatedAt && (
+              <>
+                <div className="text-body-secondary">{t("Updated on")}</div>
+                <div className="text-right">{format(new Date(nft.updatedAt), "P", { locale })}</div>
+              </>
+            )}
           </>
         )}
-        {nft.owners.map(({ address, acquiredAt, quantity }) => (
+        {Object.entries(nft.owners).map(([address, quantity]) => (
           <Fragment key={address}>
             <div className="text-body-secondary">{t("Owner")}</div>
             <div className="flex items-center justify-end gap-[0.5em]">
               <AccountIcon address={address} className="text-md" />
               <div className="truncate">
-                <Address address={address} />
+                <Address address={address} startCharCount={6} endCharCount={6} />
               </div>
-
               <IconButton className="text-base" onClick={() => copyToClipboard(address)}>
                 <CopyIcon />
               </IconButton>
             </div>
-            <div className="text-body-secondary">{t("Acquired on")}</div>
-            <div className="text-right">{format(new Date(acquiredAt), "P")}</div>
             {quantity > 1 && (
               <>
                 <div className="text-body-secondary">{t("Quantity")}</div>
@@ -218,18 +249,18 @@ const TabContentNft: FC<{
           </Fragment>
         ))}
       </div>
-      {(!!nft.description || !!nft.properties.length) && <div className="bg-grey-800 h-0.5"></div>}
+      {(!!nft.description || !!traits.length) && <div className="bg-grey-800 h-0.5"></div>}
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
-          <div>{nft.description}</div>
+          <NftDescription text={nft.description} />
         </div>
       )}
-      {!!nft.properties.length && (
+      {!!traits.length && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Properties")}</div>
           <div className="flex flex-wrap gap-4">
-            {nft.properties.map(({ name, value }, i) => (
+            {traits.map(([name, value], i) => (
               <div key={i} className="rounded-xs bg-grey-800 px-5 py-2">
                 <div className="text-body-secondary text-xs">{name}</div>
                 <div className="text-sm">{value}</div>
@@ -378,7 +409,7 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className={classNames("relative", className)} onClick={handleBgClick}>
-      <NftImage src={nft.previews.medium ?? nft.imageUrl} className="absolute size-full" />
+      <NftImage src={nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
     </div>
   )
@@ -387,7 +418,7 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
 const NftDisplay: FC<{ nft: Nft }> = ({ nft }) => {
   if (nft.videoUrl) return <NftVideo nft={nft} className="size-full" />
   if (nft.audioUrl) return <NftAudio nft={nft} className={"size-full object-cover"} />
-  return <NftImage src={nft.previews.medium ?? nft.imageUrl} className="size-full object-contain" />
+  return <NftImage src={nft.imageUrl ?? nft.previewUrl} className="size-full object-contain" />
 }
 
 const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft: Nft }> = ({
@@ -411,8 +442,9 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   }, [nft, collection])
 
   const webResourceUrl = useMemo(
-    () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
-    [nft.imageUrl, nft.audioUrl, nft.modelUrl, nft.otherUrl, nft.videoUrl],
+    //() => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
+    () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.previewUrl,
+    [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl],
   )
 
   const handleFullScreenViewClick = useCallback(() => {
@@ -478,7 +510,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
               // scrollbar should be centered into the 24px empty space used as right-padding for the modal
               paddingRight={20}
               className="h-full w-full"
-              innerClassName="leading-paragraph flex flex-col gap-12 text-base font-light"
+              innerClassName="leading-paragraph flex flex-col gap-8 text-base font-light"
             >
               {tab === "collection" && <TabContentCollection collection={collection} nft={nft} />}
               {tab === "nft" && <TabContentNft nft={nft} />}

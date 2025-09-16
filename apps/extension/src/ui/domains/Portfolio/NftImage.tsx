@@ -2,6 +2,7 @@ import { classNames } from "@talismn/util"
 import { useState } from "react"
 
 import imgUnknownNft from "@talisman/theme/images/unknown-nft.svg?url"
+import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
 
 export const NftImage = ({
   src,
@@ -12,7 +13,7 @@ export const NftImage = ({
   alt?: string
   className?: string
 }) => {
-  const [imageUrl, setImageUrl] = useState<string>(src || imgUnknownNft)
+  const [imageUrl, setImageUrl] = useState<string>(src ? getSafeImageUrl(src) : imgUnknownNft)
 
   return (
     <img

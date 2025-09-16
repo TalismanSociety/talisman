@@ -1,14 +1,11 @@
 import { bind } from "@react-rxjs/core"
+import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { NftData } from "extension-core"
 import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
-import {
-  getNftCollectionFloorUsd,
-  getNftCollectionLastAcquiredAt,
-  getNftLastAcquiredAt,
-} from "@ui/domains/Portfolio/Nfts/helpers"
+import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
 
 import { getAccountsByCategory$ } from "./accounts"
 import { getNetworks$ } from "./chaindata"
@@ -46,32 +43,35 @@ const nftData$ = new Observable<NftData>((subscriber) => {
   const unsubscribe = api.nftsSubscribe((data) => {
     subscriber.next(data)
   })
-  return () => unsubscribe()
-}).pipe(debugObservable("nftData$"), shareReplay(1))
+  return () => {
+    unsubscribe()
+  }
+}).pipe(
+  debugObservable("nftData$"),
+  // backend subscription must be active only when this observable is subscribed
+  // => all bind() calls using this observable will need a default value or they will never unsubscribe
+  shareReplay({ refCount: true, bufferSize: 1 }),
+)
 
-const evmNetworks$ = getNetworks$({
-  platform: "ethereum",
+const networks$ = getNetworks$({
   activeOnly: true,
   includeTestnets: true,
 })
 
+// TODO: same as DeFi positions
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
-  combineLatest([evmNetworks$, nftData$]).pipe(
-    map(([evmNetworks, { nfts, collections }]) => {
-      const networkIdsWithNfts = [
-        ...new Set(
-          nfts.map((nft) => nft.evmNetworkId).concat(...collections.map((c) => c.evmNetworkIds)),
-        ),
-      ]
+  combineLatest([networks$, nftData$]).pipe(
+    map(([networksetworks, { nfts }]) => {
+      const networkIdsWithNfts = [...new Set(nfts.map((nft) => nft.networkId))]
 
-      return evmNetworks
+      return networksetworks
         .filter((network) => networkIdsWithNfts.includes(network.id))
-        .map<NetworkOption>((evmNetwork) => {
+        .map<NetworkOption>((network) => {
           return {
-            id: evmNetwork.substrateChainId ?? evmNetwork.id,
-            networkIds: [evmNetwork.id, evmNetwork.substrateChainId].filter(isTruthy),
-            name: evmNetwork.name ?? `Network ${evmNetwork.id}`,
-            evmNetworkId: evmNetwork.id,
+            id: network.id,
+            networkIds: [network.id].filter(isTruthy),
+            name: network.name ?? `Network ${network.id}`,
+            evmNetworkId: network.id,
           }
         })
     }),
@@ -117,7 +117,9 @@ export const [useNfts, nfts$] = bind(
         const nfts = allNfts
           // account filter
           .filter((nft) =>
-            nft.owners.some(({ address }) => addresses.includes(address.toLowerCase())),
+            Object.entries(nft.owners).some(([address]) =>
+              addresses.some((a) => isAddressEqual(a, address)),
+            ),
           )
 
           // visibility mode
@@ -129,7 +131,7 @@ export const [useNfts, nfts$] = bind(
           })
 
           // network filter
-          .filter((nft) => networkIds.includes(nft.evmNetworkId))
+          .filter((nft) => networkIds.includes(nft.networkId))
 
           // search filter
           .filter((nft) => {
@@ -153,11 +155,13 @@ export const [useNfts, nfts$] = bind(
 
             switch (sortBy) {
               case "date": {
-                const last1 = getNftLastAcquiredAt(n1)
-                const last2 = getNftLastAcquiredAt(n2)
-                const d1 = new Date(last1).getTime()
-                const d2 = new Date(last2).getTime()
-                if (d1 !== d2) return d2 - d1
+                const last1 = n1.updatedAt
+                const last2 = n2.updatedAt
+                if (last1 && last2) {
+                  const d1 = new Date(last1).getTime()
+                  const d2 = new Date(last2).getTime()
+                  if (d1 !== d2) return d2 - d1
+                }
                 break
               }
 
@@ -165,15 +169,8 @@ export const [useNfts, nfts$] = bind(
                 return (n1.name ?? "").localeCompare(n2.name ?? "")
               }
 
-              case "floor": {
-                if (!collection1 || !collection2) return 0
-
-                const f1 = getNftCollectionFloorUsd(collection1)
-                const f2 = getNftCollectionFloorUsd(collection2)
-
-                if (f1 !== f2) return (f2 ?? 0) - (f1 ?? 0)
-
-                break
+              case "value": {
+                if (n1.price !== n2.price) return (n2.price ?? 0) - (n1.price ?? 0)
               }
             }
 
@@ -193,11 +190,11 @@ export const [useNfts, nfts$] = bind(
               //ignore
             }
 
-            return 0
+            return n1.id.localeCompare(n2.id) // if nothing else, sort by id.
           })
 
         const collectionIds = new Set(nfts.map((nft) => nft.collectionId))
-        const lastAcquiredPerCollection = new Map<string, string | null>()
+        const lastUpdatedPerCollection = new Map<string, number | null>()
         const collections = allCollections
           .filter((c) => collectionIds.has(c.id))
           .sort((c1, c2) => {
@@ -211,66 +208,81 @@ export const [useNfts, nfts$] = bind(
 
             switch (sortBy) {
               case "date": {
-                if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastAcquiredAt(c1, nfts))
+                if (!lastUpdatedPerCollection.has(c1.id))
+                  lastUpdatedPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c1, nfts))
 
-                if (!lastAcquiredPerCollection.has(c1.id))
-                  lastAcquiredPerCollection.set(c1.id, getNftCollectionLastAcquiredAt(c2, nfts))
+                if (!lastUpdatedPerCollection.has(c1.id))
+                  lastUpdatedPerCollection.set(c1.id, getNftCollectionLastUpdatedAt(c2, nfts))
 
-                const lastAcquired1 = lastAcquiredPerCollection.get(c1.id)
-                const lastAcquired2 = lastAcquiredPerCollection.get(c2.id)
+                const lastUpdated1 = lastUpdatedPerCollection.get(c1.id)
+                const lastUpdated2 = lastUpdatedPerCollection.get(c2.id)
 
-                if (lastAcquired1 && lastAcquired2)
-                  return lastAcquired2.localeCompare(lastAcquired1)
+                if (lastUpdated1 && lastUpdated2) return lastUpdated2 - lastUpdated1
 
                 break
               }
 
               case "name": {
-                return (c1.name ?? "").localeCompare(c2.name ?? "")
+                if (c1.name !== c2.name) return (c1.name ?? "").localeCompare(c2.name ?? "")
+                break
               }
 
-              case "floor": {
-                const f1 = getNftCollectionFloorUsd(c1)
-                const f2 = getNftCollectionFloorUsd(c2)
+              case "value": {
+                const nfts1 = allNfts.filter((n) => n.collectionId === c1.id)
+                const nfts2 = allNfts.filter((n) => n.collectionId === c2.id)
 
-                if (f1 !== f2) return (f2 ?? 0) - (f1 ?? 0)
+                const v1 = nfts1.reduce((acc, n) => acc + (n.price ?? 0), 0)
+                const v2 = nfts2.reduce((acc, n) => acc + (n.price ?? 0), 0)
+
+                if (v1 !== v2) return (v2 ?? 0) - (v1 ?? 0)
 
                 break
               }
             }
 
-            return (c1.name ?? "").localeCompare(c2.name ?? "")
+            return c1.id.localeCompare(c2.id) // if not
           })
 
         return { status, nfts, collections, favoriteNftIds, hiddenNftCollectionIds } as NftData
       },
     ),
   ),
+  {
+    status: "loading",
+    nfts: [],
+    collections: [],
+    favoriteNftIds: [],
+    hiddenNftCollectionIds: [],
+    timestamp: 0,
+  } as NftData,
 )
 
-export const [useNft, nft$] = bind((id: string | null) =>
-  nfts$.pipe(
-    map(({ nfts, collections }) => {
-      if (!id) return null
+export const [useNft, nft$] = bind(
+  (id: string | null) =>
+    nftData$.pipe(
+      map(({ nfts, collections }) => {
+        if (!id) return null
 
-      const nft = nfts.find((nft) => nft.id === id)
-      if (!nft) return null
+        const nft = nfts.find((nft) => nft.id === id)
+        if (!nft) return null
 
-      const collection = collections.find((c) => c.id === nft.collectionId)
-      if (!collection) return null
+        const collection = collections.find((c) => c.id === nft.collectionId)
+        if (!collection) return null
 
-      return { nft, collection }
-    }),
-  ),
+        return { nft, collection }
+      }),
+    ),
+  null,
 )
 
-export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
+export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind(
+  (id: string) => nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
+  false,
 )
 
-export const [useIsFavoriteNft, getIsFavoriteNft$] = bind((id: string) =>
-  nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
+export const [useIsFavoriteNft, getIsFavoriteNft$] = bind(
+  (id: string) => nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
+  false,
 )
 
 export const [useNftCollection, getNftCollection$] = bind(
@@ -281,4 +293,5 @@ export const [useNftCollection, getNftCollection$] = bind(
         nfts: allNfts.filter((nft) => nft.collectionId === collectionId) ?? [],
       })),
     ),
+  { collection: null, nfts: [] },
 )

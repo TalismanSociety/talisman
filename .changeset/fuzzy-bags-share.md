@@ -1,0 +1,5 @@
+---
+"@talismn/util": patch
+---
+
+getQuery$
