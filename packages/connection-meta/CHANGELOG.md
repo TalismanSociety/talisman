@@ -1,5 +1,12 @@
 # @talismn/connection-meta
 
+## 0.2.22
+
+### Patch Changes
+
+- Updated dependencies [9869029]
+  - @talismn/chaindata-provider@1.1.1
+
 ## 0.2.21
 
 ### Patch Changes
