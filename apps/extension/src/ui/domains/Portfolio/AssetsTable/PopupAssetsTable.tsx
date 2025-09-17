@@ -14,6 +14,7 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
+import { EarnPillButton } from "@ui/domains/Staking/Earn"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -93,6 +94,8 @@ const AssetRow: FC<{
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
+  // TODO: Add a hook like useEarnButton to determine if the earn button should be shown
+  const showEarnButton = true
 
   if (!token || !summary || !network) return null
 
@@ -142,7 +145,7 @@ const AssetRow: FC<{
               className={classNames(
                 "whitespace-nowrap text-sm font-bold",
                 locked ? "text-body-secondary" : "text-white",
-                showStakingButton && "group-hover:hidden",
+                "group-hover:hidden",
               )}
             >
               <Tokens
@@ -160,7 +163,7 @@ const AssetRow: FC<{
             <div
               className={classNames(
                 "text-body-secondary leading-base text-xs",
-                showStakingButton && "group-hover:hidden",
+                "group-hover:hidden",
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
@@ -175,6 +178,12 @@ const AssetRow: FC<{
             balances={balances}
             className="[>svg]:text-[2rem] text-base"
           />
+        </div>
+      )}
+
+      {showEarnButton && (
+        <div className="absolute right-2 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <EarnPillButton onClick={() => {}} className="[>svg]:text-md text-base" />
         </div>
       )}
     </div>

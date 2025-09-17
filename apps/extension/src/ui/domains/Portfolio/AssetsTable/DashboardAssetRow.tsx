@@ -8,6 +8,7 @@ import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
+import { EarnPillButton } from "@ui/domains/Staking/Earn"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -108,7 +109,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
-              canBondNomPool && "group-hover:hidden",
+              "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
             noCountUp={noCountUp}
@@ -131,6 +132,9 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           </div>
         </>
       )}
+      <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+        <EarnPillButton onClick={() => {}} className="[>svg]:text-md text-base" />
+      </div>
     </div>
   )
 }
