@@ -4,7 +4,7 @@ import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
 } from "@talismn/keyring"
-import { getQuery$, isNotNil } from "@talismn/util"
+import { getQuery$, isNotNil, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"
 import { isEqual } from "lodash"
 import {
@@ -16,6 +16,7 @@ import {
   Observable,
   shareReplay,
   switchMap,
+  tap,
 } from "rxjs"
 
 import { keyringStore } from "../keyring/store"
@@ -155,7 +156,14 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     subOutput.unsubscribe()
     subUpdateStore.unsubscribe()
   }
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(
+  tap({
+    subscribe: () => log.debug("[nfts] starting main subscription"),
+    unsubscribe: () => log.debug("[nfts] stopping main subscription"),
+  }),
+  shareReplay({ refCount: true, bufferSize: 1 }),
+  keepAlive(3000),
+)
 
 const mergeAccountNfts = (accountNfts: AccountNft[]): Nft[] => {
   const nfts: Nft[] = []

@@ -109,8 +109,8 @@ export const [useNfts, nfts$] = bind(
         const lowerSearch = search.toLowerCase()
 
         const addresses = selectedAccounts
-          ? selectedAccounts.map((a) => a.address.toLowerCase())
-          : accounts.map((a) => a.address.toLowerCase())
+          ? selectedAccounts.map((a) => a.address)
+          : accounts.map((a) => a.address)
 
         const networkIds = networkFilter ? [networkFilter.id] : networks.map((n) => n.id)
 
