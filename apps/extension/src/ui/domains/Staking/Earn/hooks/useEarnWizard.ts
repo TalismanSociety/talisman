@@ -5,10 +5,12 @@ import { BehaviorSubject } from "rxjs"
 
 interface EarnWizardState {
   tokenId?: TokenId
+  selectedAccountAddress?: string
 }
 
 const DEFAULT_STATE: EarnWizardState = {
   tokenId: undefined,
+  selectedAccountAddress: undefined,
 }
 
 const earnWizardState$ = new BehaviorSubject<EarnWizardState>(DEFAULT_STATE)
@@ -22,7 +24,8 @@ const [useEarnWizardState] = bind(earnWizardState$)
 
 export const useResetEarnWizard = () => {
   return useCallback(
-    (init: Pick<EarnWizardState, "tokenId">) => setEarnWizardState({ ...DEFAULT_STATE, ...init }),
+    (init: Pick<EarnWizardState, "tokenId" | "selectedAccountAddress">) =>
+      setEarnWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )
 }
@@ -32,5 +35,12 @@ export const useEarnWizard = () => {
 
   return {
     tokenId: state.tokenId,
+    selectedAccountAddress: state.selectedAccountAddress,
   }
+}
+
+export const useSetEarnWizardAccount = () => {
+  return useCallback((selectedAccountAddress: string) => {
+    setEarnWizardState({ ...earnWizardState$.value, selectedAccountAddress })
+  }, [])
 }

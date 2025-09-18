@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { EarnModalBody } from "./EarnModalBody"
 import { EarnModalHeader } from "./EarnModalHeader"
@@ -9,6 +10,11 @@ import { useEarnModal } from "./hooks/useEarnModal"
 
 export const EarnModal = () => {
   const { isOpen, close, tokenId } = useEarnModal()
+
+  // In popup mode, don't render the modal - the EarnPage will handle the full page view
+  if (IS_POPUP) {
+    return null
+  }
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>

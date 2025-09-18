@@ -9,6 +9,7 @@ export type YieldProduct = {
 
 export type YieldProductsFilter = {
   tokenId?: string
-  networkId?: string
+  tokenSymbol?: string
+  networkName?: string
   protocolIds?: string[]
 }

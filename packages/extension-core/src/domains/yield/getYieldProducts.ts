@@ -17,17 +17,14 @@ export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<
 
     const url = new URL(`${YIELD_API_BASE_URL}/yields`)
 
-    // Start with basic request - add filtering later once we confirm the API works
-    // TODO: Add query parameters once we understand the supported filter options
-    // if (filter?.tokenId) {
-    //   const tokenSymbol = extractTokenSymbol(filter.tokenId)
-    //   if (tokenSymbol) url.searchParams.set('asset', tokenSymbol)
-    // }
-    //
-    // if (filter?.networkId) {
-    //   const networkName = mapNetworkIdToYieldNetwork(filter.networkId)
-    //   if (networkName) url.searchParams.set('network', networkName)
-    // }
+    // Add filtering based on the API documentation
+    if (filter?.tokenSymbol) {
+      url.searchParams.set("token", filter.tokenSymbol)
+    }
+
+    if (filter?.networkName) {
+      url.searchParams.set("network", filter?.networkName)
+    }
 
     const headers: HeadersInit = {}
 

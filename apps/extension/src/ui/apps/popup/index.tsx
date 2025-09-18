@@ -9,7 +9,7 @@ import {
   WATCH_ASSET_PREFIX,
 } from "extension-core"
 import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -23,6 +23,8 @@ import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
+import { EarnAccountPickerPage } from "@ui/domains/Staking/Earn/components/EarnAccountPickerPage"
+import { EarnPage } from "@ui/domains/Staking/Earn/components/EarnPage"
 import { EarnModal } from "@ui/domains/Staking/Earn/EarnModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
@@ -49,6 +51,12 @@ import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
 import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
+
+const EarnAccountPickerPageWrapper = () => {
+  const [searchParams] = useSearchParams()
+  const tokenId = searchParams.get("tokenId") || ""
+  return <EarnAccountPickerPage tokenId={tokenId} />
+}
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
@@ -90,6 +98,8 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
+          <Route path="earn" element={<EarnPage />} />
+          <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
