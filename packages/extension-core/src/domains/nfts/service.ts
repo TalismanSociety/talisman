@@ -6,7 +6,7 @@ import {
 } from "@talismn/keyring"
 import { getQuery$, isNotNil, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"
-import { isEqual } from "lodash"
+import { isEqual } from "lodash-es"
 import {
   combineLatest,
   distinctUntilChanged,

@@ -1,5 +1,5 @@
 import { normalizeAddress } from "@talismn/crypto"
-import { isEqual, keyBy } from "lodash"
+import { isEqual, keyBy } from "lodash-es"
 import { BehaviorSubject, debounceTime, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
