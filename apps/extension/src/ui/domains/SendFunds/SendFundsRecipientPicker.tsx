@@ -10,6 +10,7 @@ import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
+  isSs58Address,
 } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
 import {
@@ -163,7 +164,7 @@ export const SendFundsRecipientPicker = () => {
     if (matchingAccounts.length) return null
 
     if (isAddressValid(search) && isAddressCompatibleWithNetwork(network, search)) {
-      if (network.platform === "polkadot") {
+      if (network.platform === "polkadot" && isSs58Address(search)) {
         const [, ss58Format] = decodeSs58Address(search)
         return {
           address: search,
