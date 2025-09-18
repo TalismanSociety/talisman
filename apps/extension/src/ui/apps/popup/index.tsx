@@ -23,6 +23,7 @@ import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
+import { EarnModal } from "@ui/domains/Staking/Earn/EarnModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
 import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
@@ -99,6 +100,7 @@ const Popup = () => {
         <AccountRenameModal />
         <BondModal />
         <BittensorBondModal />
+        <EarnModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />
         <LedgerPolkadotUpgradeAlertDrawer />

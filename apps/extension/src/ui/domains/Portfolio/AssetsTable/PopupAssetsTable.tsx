@@ -183,7 +183,7 @@ const AssetRow: FC<{
 
       {showEarnButton && (
         <div className="absolute right-2 top-0 hidden h-28 flex-col justify-center group-hover:flex">
-          <EarnPillButton onClick={() => {}} className="[>svg]:text-md text-base" />
+          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
         </div>
       )}
     </div>

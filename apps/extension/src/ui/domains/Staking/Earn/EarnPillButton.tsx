@@ -1,22 +1,35 @@
 import { EarnIcon } from "@talismn/icons"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
+
+import { useEarnModal } from "./hooks/useEarnModal"
 
 interface EarnPillButtonProps {
+  tokenId: string
   onClick?: () => void
   className?: string
 }
 
-export const EarnPillButton: FC<EarnPillButtonProps> = ({ onClick, className = "" }) => {
+export const EarnPillButton: FC<EarnPillButtonProps> = ({ tokenId, onClick, className }) => {
   const { t } = useTranslation()
+  const { open } = useEarnModal()
+
+  const handleClick = () => {
+    // Open the modal with the actual tokenId
+    open({ tokenId })
+    // Call the optional onClick prop if provided
+    onClick?.()
+  }
 
   return (
-    <button
-      onClick={onClick}
-      className={`flex h-[32px] w-[83px] items-center gap-4 rounded-[37px] bg-[#D5FF5C]/10 p-8 font-normal transition-colors hover:bg-[#D5FF5C]/20 ${className}`}
+    <PillButton
+      icon={EarnIcon}
+      size="xs"
+      onClick={handleClick}
+      className={`bg-[#D5FF5C]/10 text-[#D5FF5C] hover:bg-[#D5FF5C]/20 ${className || ""}`}
     >
-      <EarnIcon />
-      <span className="text-xs font-medium text-[#D5FF5C]">{t("Earn")}</span>
-    </button>
+      {t("Earn")}
+    </PillButton>
   )
 }

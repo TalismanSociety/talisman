@@ -22,6 +22,8 @@ export const RAMPS_COINBASE_PAY_URL = "https://pay.coinbase.com"
 export const RAMPS_RAMP_API_BASE_PATH = "https://api.ramp.network/api/host-api/v3"
 export const RAMPS_RAMP_PAY_URL = "https://app.ramp.network"
 export const ASSET_DISCOVERY_API_URL = "https://ada.talisman.xyz"
+export const YIELD_API_BASE_URL = "https://api.yield.xyz/v1"
+export const YIELD_API_KEY = process.env.YIELD_API_KEY
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
 export const TALISMAN_WEB_APP_URL = "https://app.talisman.xyz"

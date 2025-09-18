@@ -11,6 +11,7 @@ import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
+import { EarnModal } from "@ui/domains/Staking/Earn"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
 import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
@@ -46,6 +47,7 @@ export const DashboardNotificationsAndModals = () => {
       <AccountRenameModal />
       <BondModal />
       <BittensorBondModal />
+      <EarnModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />
       <GetStartedModals />
