@@ -2,7 +2,15 @@ import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { NftData } from "extension-core"
-import { BehaviorSubject, combineLatest, map, Observable, shareReplay } from "rxjs"
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  ReplaySubject,
+  shareReplay,
+  throttleTime,
+} from "rxjs"
 
 import { api } from "@ui/api"
 import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
@@ -39,17 +47,22 @@ export const [useNftsVisibilityFilter] = bind(nftsVisibilityFilter$)
 export const setNftsVisibilityFilter = (filter: NftVisibilityFilter) =>
   nftsVisibilityFilter$.next(filter)
 
+const subjectNftDataCache = new ReplaySubject<NftData>(1)
+
 const nftData$ = new Observable<NftData>((subscriber) => {
   const unsubscribe = api.nftsSubscribe((data) => {
-    subscriber.next(data)
+    subjectNftDataCache.next(data)
   })
+
+  const subscription = subjectNftDataCache.subscribe(subscriber)
+
   return () => {
     unsubscribe()
+    subscription.unsubscribe()
   }
 }).pipe(
+  throttleTime(200, undefined, { leading: true, trailing: true }),
   debugObservable("nftData$"),
-  // backend subscription must be active only when this observable is subscribed
-  // => all bind() calls using this observable will need a default value or they will never unsubscribe
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
 
@@ -76,6 +89,7 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
         })
     }),
   ),
+  [],
 )
 
 export const [useNfts, nfts$] = bind(
