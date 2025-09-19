@@ -2,23 +2,15 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { YieldProduct } from "../../../../../../../../packages/extension-core/src/domains/yield/types"
 import { ProductItem } from "./ProductItem"
-
-interface YieldProduct {
-  id: string
-  name: string
-  description: string
-  apy: number
-  tvl: string
-  protocolLogo: string | null
-}
 
 interface ProductListProps {
   products: YieldProduct[]
   tokenId: TokenId
   isLoading: boolean
   error: Error | null
-  onProductClick: (productId: string) => void
+  onProductClick: (product: YieldProduct) => void
 }
 
 export const ProductList: FC<ProductListProps> = ({
@@ -82,11 +74,7 @@ export const ProductList: FC<ProductListProps> = ({
         {products.map((product) => (
           <ProductItem
             key={product.id}
-            id={product.id}
-            name={product.name}
-            description={product.description}
-            apy={product.apy}
-            tvl={product.tvl}
+            product={product}
             tokenId={tokenId}
             onClick={onProductClick}
           />

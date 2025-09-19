@@ -31,7 +31,7 @@ export const EarnPage: FC = () => {
         <IconButton onClick={handleBack}>
           <ChevronLeftIcon />
         </IconButton>
-        <div>{t("Earn")}</div>
+        <div>{t("Select a Product")}</div>
         <IconButton onClick={handleClose} className="invisible">
           <ChevronLeftIcon />
         </IconButton>

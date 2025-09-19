@@ -71,48 +71,17 @@ export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<
 }
 
 // Type definitions for yield.xyz API response
-interface YieldApiItem {
-  id?: string
-  network?: string
-  token?: {
-    symbol?: string
-    name?: string
-    logoURI?: string
-  }
-  rewardRate?: {
-    total?: number
-    rateType?: string
-  }
-  metadata?: {
-    name?: string
-    description?: string
-    logoURI?: string
-  }
-  mechanics?: {
-    type?: string
-  }
-}
-
 interface YieldApiResponse {
-  items?: YieldApiItem[]
+  items?: YieldProduct[]
   total?: number
   offset?: number
   limit?: number
 }
 
 /**
- * Transform yield.xyz API response to our YieldProduct format
+ * Pass through yield.xyz API response without transformation
  */
-const transformYieldApiResponse = (apiData: YieldApiResponse | YieldApiItem[]): YieldProduct[] => {
-  // Handle both array and object responses
-  const items = Array.isArray(apiData) ? apiData : apiData?.items || []
-
-  return items.map((item: YieldApiItem) => ({
-    id: item.id || `${item.token?.symbol}-${item.network}`.toLowerCase().replace(/\s+/g, "-"),
-    name: `${item.metadata?.name || "Staking"} ${item.token?.symbol || ""}`.trim(),
-    description: item.metadata?.description || item.mechanics?.type || "Native Staking",
-    apy: (item.rewardRate?.total || 0) * 100, // Convert decimal to percentage
-    tvl: "N/A", // TVL not provided in this API response
-    protocolLogo: item.metadata?.logoURI || item.token?.logoURI || null,
-  }))
+const transformYieldApiResponse = (apiData: YieldApiResponse | YieldProduct[]): YieldProduct[] => {
+  // Handle both array and object responses - pass through as-is
+  return Array.isArray(apiData) ? apiData : apiData?.items || []
 }

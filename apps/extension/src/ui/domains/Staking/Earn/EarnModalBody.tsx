@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { TokenId } from "@talismn/chaindata-provider"
+import { YieldProduct } from "extension-core"
 import { FC, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -38,7 +39,7 @@ export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
     networkName: network?.platform,
   })
 
-  const handleProductClick = (productId: string) => {
+  const handleProductClick = (product: YieldProduct) => {
     // Check if we have a selected account from portfolio or earn wizard
     const currentAccount = selectedAccountAddress || selectedAccount?.address
 
@@ -55,7 +56,7 @@ export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
     }
 
     // eslint-disable-next-line no-console
-    console.log("Product clicked:", productId, tokenId, "Account:", currentAccount)
+    console.log("Product clicked:", product, tokenId, "Account:", currentAccount)
     // TODO: Navigate to product details or start earning process
   }
 
