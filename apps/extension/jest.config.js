@@ -27,5 +27,5 @@ module.exports = {
     "<rootDir>/tests/setup",
   ],
   setupFilesAfterEnv: ["<rootDir>/tests/mocks/index.ts"],
-  testEnvironment: "jsdom",
+  testEnvironment: "<rootDir>/tests/env.js",
 }

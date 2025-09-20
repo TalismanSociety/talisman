@@ -62,7 +62,7 @@
     "@playwright/test": "^1.51.1",
     "@talismn/eslint-config": "workspace:*",
     "@testing-library/react": "^16.0.1",
-    "@types/node": "^22.7.9",
+    "@types/node": "^24.5.1",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "concurrently": "^9.0.1",
