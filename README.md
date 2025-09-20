@@ -41,6 +41,10 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 
    `cd talisman`
 
+1. Install nodejs
+
+   `nvm install`
+
 1. Install dependencies.
 
    `pnpm install`
