@@ -1,6 +1,7 @@
 import { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
+import { fromPairs, toPairs } from "lodash-es"
 import PQueue from "p-queue"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -152,11 +153,13 @@ const fetchDotAccountChainNfts = async (
       }),
     )
 
-    const collectionIds = [
-      ...new Set(allData.map((item) => [item.collection_id, item.collection_name] as const)),
-    ]
+    // this clears up duplicates along the way
+    const collectionNameById = fromPairs(
+      allData.map((item) => [item.collection_id, item.collection_name] as const),
+    )
+
     const collections = await Promise.all(
-      collectionIds.map(async ([collectionId, name]) => {
+      toPairs(collectionNameById).map(async ([collectionId, name]) => {
         try {
           const cacheKey = `nftCollection:subscan:${chainId}:${collectionId}`
           const cached = CACHE.get(cacheKey)
