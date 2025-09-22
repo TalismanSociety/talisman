@@ -71,7 +71,6 @@ const networks$ = getNetworks$({
   includeTestnets: true,
 })
 
-// TODO: same as DeFi positions
 export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
   combineLatest([networks$, nftData$]).pipe(
     map(([networksetworks, { nfts }]) => {

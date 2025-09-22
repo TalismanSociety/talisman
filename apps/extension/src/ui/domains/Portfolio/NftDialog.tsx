@@ -442,7 +442,6 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
   }, [nft, collection])
 
   const webResourceUrl = useMemo(
-    //() => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.modelUrl ?? nft.otherUrl,
     () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.previewUrl,
     [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl],
   )
