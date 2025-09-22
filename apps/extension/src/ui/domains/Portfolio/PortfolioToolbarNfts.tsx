@@ -214,7 +214,7 @@ export const SortByButton = () => {
 
 export const PortfolioToolbarNfts = () => {
   return (
-    <div className="@container flex h-16 w-full min-w-[40rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
+    <div className="@container flex h-16 w-full min-w-[30rem] shrink-0 items-center justify-between gap-4 overflow-hidden">
       <div className="flex grow items-center overflow-hidden">
         <PortfolioSearch />
       </div>
