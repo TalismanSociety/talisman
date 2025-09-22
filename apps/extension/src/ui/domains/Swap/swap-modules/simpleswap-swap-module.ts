@@ -28,6 +28,7 @@ import {
 import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
 import {
   arbitrum,
+  arbitrumNova,
   base,
   blast,
   bsc,
@@ -35,14 +36,16 @@ import {
   manta,
   moonbeam,
   moonriver,
+  opBNB,
   optimism,
   polygon,
   sonic,
+  zksync,
 } from "viem/chains"
 
 import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
@@ -65,7 +68,7 @@ import {
 } from "./common.swap-module"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
-export const PROTOCOL = "simpleswap"
+export const PROTOCOL: SupportedSwapProtocol = "simpleswap"
 export const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 const TALISMAN_FEE = 0.015
@@ -89,6 +92,7 @@ type SimpleSwapCurrency = {
   name: string
   network: string
   symbol: string
+  precision: number | null
   contract_address: string | null
   extra_id: string
   has_extra_id: boolean
@@ -103,18 +107,22 @@ type SimpleSwapAssetContext = {
 }
 
 const supportedEvmChains: Record<string, ViemChain | undefined> = {
-  eth: mainnet,
-  bsc,
-  base,
   arbitrum,
-  optimism,
+  arbnova: arbitrumNova,
+  base,
   blast,
-  polygon,
-  manta,
-  movr: moonriver,
+  bsc,
+  eth: mainnet,
   glmr: moonbeam,
+  manta,
+  matic: polygon,
+  movr: moonriver,
+  opbnb: opBNB,
+  optimism,
+  polygon,
   s: sonic,
   vana: vanaMainnet,
+  zksync,
 }
 
 /**
@@ -478,6 +486,11 @@ const simpleswapAssetsAtom = atom(async (get) => {
           id,
           name: polkadotAsset?.name ?? currency.name,
           symbol: polkadotAsset?.symbol ?? currency.symbol,
+          decimals:
+            polkadotAsset?.decimals ??
+            evmChain?.nativeCurrency?.decimals ??
+            currency.precision ??
+            undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,

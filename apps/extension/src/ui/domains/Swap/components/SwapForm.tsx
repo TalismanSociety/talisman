@@ -199,6 +199,8 @@ export const SwapForm = ({
               !fromAddress ||
               !toAddress ||
               insufficientBalance !== false ||
+              quotes.state !== "hasData" ||
+              quotes.data?.some((d) => d.state === "loading") ||
               approvalLoading
             }
             onClick={() => {

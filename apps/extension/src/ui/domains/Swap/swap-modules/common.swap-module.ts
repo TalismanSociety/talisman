@@ -29,7 +29,7 @@ import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { SimpleswapExchange } from "./simpleswap-swap-module"
 import { StealthexExchange } from "./stealthex-swap-module"
 
-export type SupportedSwapProtocol = "simpleswap" | "stealthex"
+export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
 
 export type SwappableAssetBaseType<TContext = Partial<Record<SupportedSwapProtocol, any>>> = {
   id: string
@@ -192,6 +192,7 @@ export const fromAddressAtom = atom((get) => {
   return fromAsset.networkType === "evm" ? evmAddress : substrateAddress
 })
 
+// TODO: Make this select from the URL so we can link it to the button in the seek banner
 export const toAssetAtom = atom<SwappableAssetWithDecimals | null>(null)
 export const toSubstrateAddressAtom = atom<string | null>(null)
 export const toEvmAddressAtom = atom<string | null>(null)

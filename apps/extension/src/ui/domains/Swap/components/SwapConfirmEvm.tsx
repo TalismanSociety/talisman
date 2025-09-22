@@ -26,6 +26,7 @@ import {
   fromAssetAtom,
   resetSwapFormAtom,
   saveAddressForQuest,
+  selectedSubProtocolAtom,
   toAddressAtom,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
@@ -66,14 +67,13 @@ export const SwapConfirmEvm = ({
     () => swapModule?.evmTransactionAtom ?? atom(null),
     [swapModule?.evmTransactionAtom],
   )
+  const subProtocol = useAtomValue(selectedSubProtocolAtom)
 
   const account = useAccountByAddress(fromAddress)
   const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
   const evmTxLoadable = useAtomValue(loadable(evmTransactionAtom))
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
-    if (exchangeLoadable.state !== "hasData") return
-    if (!exchangeLoadable.data) return
     if (!fromAsset) return
     if (!toAsset) return
     if (toAmount.state !== "hasData") return
@@ -82,6 +82,8 @@ export const SwapConfirmEvm = ({
 
     switch (swapModule?.protocol) {
       case "simpleswap":
+        if (exchangeLoadable.state !== "hasData") return
+        if (!exchangeLoadable.data) return
         return {
           type: "swap-simpleswap",
           exchangeId: exchangeLoadable.data.id,
@@ -92,6 +94,8 @@ export const SwapConfirmEvm = ({
           to: toAddress,
         }
       case "stealthex":
+        if (exchangeLoadable.state !== "hasData") return
+        if (!exchangeLoadable.data) return
         return {
           type: "swap-stealthex",
           exchangeId: exchangeLoadable.data.id,
@@ -101,9 +105,29 @@ export const SwapConfirmEvm = ({
           toAmount: toAmount.data.planck.toString(),
           to: toAddress,
         }
+      case "lifi":
+        if (!subProtocol) return
+        return {
+          type: "swap-lifi",
+          protocolName: subProtocol,
+          fromTokenId: fromAsset.id,
+          toTokenId: toAsset.id,
+          fromAmount: fromAmount.planck.toString(),
+          toAmount: toAmount.data.planck.toString(),
+          to: toAddress,
+        }
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
-  }, [exchangeLoadable, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])
+  }, [
+    exchangeLoadable,
+    fromAmount.planck,
+    fromAsset,
+    subProtocol,
+    swapModule?.protocol,
+    toAddress,
+    toAmount,
+    toAsset,
+  ])
 
   // once the payload is sent to ledger, we must freeze it
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
@@ -146,7 +170,7 @@ export const SwapConfirmEvm = ({
       if (txInfo && txInfo.type === "swap-simpleswap") saveIdForMonitoring(txInfo.exchangeId, hash)
       if (
         txInfo &&
-        ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
+        (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") &&
         fromAddress &&
         swapModule?.protocol
       )
@@ -194,7 +218,7 @@ export const SwapConfirmEvm = ({
           saveIdForMonitoring(txInfo.exchangeId, hash)
         if (
           txInfo &&
-          ["swap-simpleswap", "swap-stealthex"].includes(txInfo?.type) &&
+          (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") &&
           fromAddress &&
           swapModule?.protocol
         )

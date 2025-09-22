@@ -10,6 +10,7 @@ import {
   tap,
 } from "rxjs"
 
+import { LifiStatus, swapStatus$ as lifiStatus$ } from "../swap-modules/lifi-swap-module"
 import {
   SimpleswapExchange,
   swapStatus$ as simpleswapStatus$,
@@ -19,7 +20,7 @@ import {
   swapStatus$ as stealthexStatus$,
 } from "../swap-modules/stealthex-swap-module"
 
-type SwapStatus = (SimpleswapExchange | StealthexExchange)["status"]
+type SwapStatus = SimpleswapExchange["status"] | StealthexExchange["status"] | LifiStatus
 
 export const useSwapStatus = (protocol?: string, id?: string): SwapStatus | undefined => {
   const protocolAndId = protocol && id && `${protocol}::${id}`
@@ -60,6 +61,7 @@ const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefi
   const swapStatus$ = (() => {
     if (protocol === "swap-simpleswap") return simpleswapStatus$
     if (protocol === "swap-stealthex") return stealthexStatus$
+    if (protocol === "swap-lifi") return lifiStatus$
     return
   })()
   if (!swapStatus$) return of(undefined)

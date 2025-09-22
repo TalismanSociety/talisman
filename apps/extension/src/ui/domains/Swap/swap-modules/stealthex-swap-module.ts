@@ -131,8 +131,8 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
   opbnb: opBNB,
   optimism,
   theta,
-  zksync,
   vana: vanaMainnet,
+  zksync,
 }
 
 /**
@@ -458,6 +458,11 @@ const assetsAtom = atom(async (get) => {
           id,
           name: specialAsset?.name ?? currency.name,
           symbol: specialAsset?.symbol ?? currency.symbol,
+          decimals:
+            specialAsset?.decimals ??
+            evmChain?.nativeCurrency?.decimals ??
+            currency?.precision ??
+            undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,

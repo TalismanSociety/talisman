@@ -1,5 +1,6 @@
 import type { PrimitiveAtom } from "jotai"
 import type { Chain as ViemChain } from "viem/chains"
+import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import BigNumber from "bignumber.js"
@@ -15,9 +16,10 @@ import { TFunction } from "i18next"
 import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
 import { Loadable } from "jotai/vanilla/utils/loadable"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { erc20Abi, isAddress } from "viem"
+import { useCallback, useEffect, useMemo } from "react"
+import { encodeFunctionData, erc20Abi, isAddress, publicActions } from "viem"
 
+import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import {
   getNetworks$,
   getTokensMap$,
@@ -56,7 +58,7 @@ import { Decimal } from "./swaps-port/Decimal"
 import { publicClientAtomFamily } from "./swaps-port/publicClientAtomFamily"
 import { remoteConfigAtom } from "./swaps-port/remoteConfigAtom"
 
-const swapModules = [simpleswapSwapModule, stealthexSwapModule]
+const swapModules = [simpleswapSwapModule, stealthexSwapModule, lifiSwapModule]
 const ETH_LOGO =
   "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/eth.svg"
 const BTC_LOGO = "https://assets.coingecko.com/coins/images/1/standard/bitcoin.png?1696501400"
@@ -558,6 +560,7 @@ export const selectedQuoteAtom = atom(async (get) => {
   const selectedProtocol = get(selectedProtocolAtom)
   const subProtocol = get(selectedSubProtocolAtom)
   if (!quotes) return null
+
   const quote =
     quotes.find(
       (q) =>
@@ -567,6 +570,7 @@ export const selectedQuoteAtom = atom(async (get) => {
         (q.quote.data.subProtocol ? q.quote.data.subProtocol === subProtocol : true),
     ) ?? quotes[0]
   if (!quote) return null
+
   return quote
 })
 
@@ -581,17 +585,11 @@ export const selectedSwapModuleAtom = atom(async (get) => {
   return swapModules.find((module) => module.protocol === selectedProtocol)
 })
 
-const approvalCounterAtom = atom(0)
+export const approvalCounterAtom = atom(0)
 export const approvalAtom = atom(async (get) => {
-  const protocol = get(selectedProtocolAtom)
-  const quotes = await get(sortedQuotesAtom)
+  const module = await get(selectedSwapModuleAtom)
 
-  const defaultQuote = quotes?.[0]
-  const selectedProtocol =
-    protocol ?? (defaultQuote?.quote.state === "hasData" ? defaultQuote.quote.data?.protocol : null)
-  const module = swapModules.find((module) => module.protocol === selectedProtocol)
-
-  if (!module?.approvalAtom || !selectedProtocol) return null
+  if (!module?.approvalAtom) return null
 
   const approval = get(module.approvalAtom)
   if (!approval) return null
@@ -812,19 +810,52 @@ export const categoriesAtom = atom(async (get) => {
   return await response.json()
 })
 
+// NOTE: only used by lifi
 export const useSwapErc20Approval = () => {
   const approval = useAtomValue(loadable(approvalAtom))
-  const [approving] = useState(false)
+  const approvalData = useMemo(
+    () => (approval.state === "hasData" && approval.data) || null,
+    [approval],
+  )
+  const approveTxLoadable = useAtomValue(loadable(erc20ApprovalTxAtom))
 
-  const approvalData = useMemo(() => {
-    if (approval.state !== "hasData" || !approval.data) return null
-    return approval.data
-  }, [approval])
-
-  const approve = useCallback(async () => {
-    // Not needed for simpleswap, only for lifi
-    throw new Error("Erc20 approval not implemented")
-  }, [])
-
-  return { data: approvalData, approve, approving, loading: approval.state === "loading" }
+  return {
+    data: approvalData,
+    loading: approval.state === "loading",
+    approveTxLoadable,
+  }
 }
+
+const erc20ApprovalTxAtom = atom(async (get) => {
+  const approval = get(loadable(approvalAtom))
+  const approvalData = approval.state === "hasData" && approval.data
+  if (!approvalData) throw new Error("Approval not ready yet")
+
+  const evmChainConnector = get(chainConnectorsAtom).evm
+  if (!evmChainConnector) throw new Error("Missing evm chain connector")
+
+  const fromAddress = get(fromAddressAtom)
+  if (!fromAddress) throw new Error("Missing from address")
+
+  const fromAsset = get(fromAssetAtom)
+  if (fromAsset?.networkType !== "evm") throw new Error("Approval not supported for this asset")
+
+  const walletClient = (
+    await evmChainConnector.getWalletClientForEvmNetwork(fromAsset.chainId.toString())
+  )?.extend(publicActions)
+  if (!walletClient) throw new Error("Missing evm client")
+
+  const data = encodeFunctionData({
+    abi: erc20Abi,
+    functionName: "approve",
+    args: [approvalData.contractAddress as `0x${string}`, approvalData.amount],
+  })
+
+  return walletClient.prepareTransactionRequest({
+    chain: approvalData.chain,
+    to: approvalData.tokenAddress as `0x${string}`,
+    data,
+    value: 0n,
+    account: fromAddress as `0x${string}`,
+  })
+})
