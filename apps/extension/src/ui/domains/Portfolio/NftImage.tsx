@@ -1,3 +1,4 @@
+import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useState } from "react"
 
@@ -15,12 +16,34 @@ export const NftImage = ({
 }) => {
   const [imageUrl, setImageUrl] = useState<string>(src ? getSafeImageUrl(src) : imgUnknownNft)
 
+  // loading indicator handling: it sometimes takes a while before a IPFS resource fails on 404
+  const [isLoading, setIsLoading] = useState<boolean>(!!src)
+  const [hasError, setHasError] = useState<boolean>(false)
+
+  const handleLoad = () => {
+    setIsLoading(false)
+  }
+
+  const handleError = () => {
+    setIsLoading(false)
+    setHasError(true)
+    setImageUrl(imgUnknownNft)
+  }
+
   return (
-    <img
-      onError={() => setImageUrl(imgUnknownNft)}
-      className={classNames("size-16 shrink-0 rounded-sm", className)}
-      src={imageUrl}
-      alt={alt}
-    />
+    <div className={classNames("relative size-16 shrink-0 overflow-hidden rounded-sm", className)}>
+      {isLoading && !hasError && (
+        <div className="bg-grey-800 text-body-secondary absolute inset-0 flex size-full items-center justify-center">
+          <LoaderIcon className="animate-spin-slow size-1/5" />
+        </div>
+      )}
+      <img
+        onLoad={handleLoad}
+        onError={handleError}
+        className={classNames("size-full shrink-0", className)}
+        src={imageUrl}
+        alt={alt}
+      />
+    </div>
   )
 }
