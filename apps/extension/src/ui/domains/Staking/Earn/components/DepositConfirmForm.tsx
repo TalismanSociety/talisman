@@ -15,6 +15,7 @@ import { useSelectedCurrency } from "@ui/state"
 
 import { DepositProvider } from "./DepositProvider"
 import { useDepositFunds } from "./useDepositFunds"
+import { YieldSubmitButton } from "./YieldSubmitButton"
 
 const AmountDisplay = () => {
   const { deposit, token } = useDepositFunds()
@@ -111,29 +112,46 @@ const TotalAmountRow = () => {
 
 const DepositSubmitButton = () => {
   const { t } = useTranslation()
-  const { account, token, product, deposit } = useDepositFunds()
+  const { account, token, product, deposit, transaction } = useDepositFunds()
   const [isSubmitting, _setIsSubmitting] = useState(false)
 
-  const transaction: TxSubmitButtonTransaction | null = useMemo(() => {
-    if (!account || !token || !product || !deposit) return null
+  // No fallback transaction - only use real transaction data
+  const txTransaction: TxSubmitButtonTransaction | null = useMemo(() => {
+    // Only proceed if we have real transaction data
+    if (!account || !token || !product || !deposit || !transaction?.tx) return null
 
-    // Mock transaction - in real implementation, this would create the actual deposit transaction
+    // Use the real transaction data from Yield.xyz or useEthTransaction
     return {
       platform: "ethereum" as const,
       networkId: token.networkId as `0x${string}`,
-      payload: {
-        to: "0x0000000000000000000000000000000000000000" as `0x${string}`,
-        value: BigInt(deposit.planck),
-        data: "0x" as `0x${string}`,
-      },
+      payload: transaction.tx,
     }
-  }, [account, token, product, deposit])
+  }, [account, token, product, deposit, transaction?.tx])
 
-  if (!transaction) return null
+  // Use Yield.xyz submit button if we have a yield transaction
+  if (transaction?.isYieldTransaction) {
+    return (
+      <YieldSubmitButton
+        label={isSubmitting ? t("Depositing...") : t("Deposit")}
+        disabled={isSubmitting}
+        onSuccess={(txId) => {
+          // eslint-disable-next-line no-console
+          console.log("Yield deposit transaction successful:", txId)
+          // Navigate to success page
+        }}
+        onError={(error) => {
+          // eslint-disable-next-line no-console
+          console.error("Yield deposit transaction failed:", error)
+        }}
+      />
+    )
+  }
+
+  if (!txTransaction) return null
 
   return (
     <TxSubmitButton
-      tx={transaction}
+      tx={txTransaction}
       label={isSubmitting ? t("Depositing...") : t("Deposit")}
       disabled={isSubmitting}
       onSubmit={(txId) => {

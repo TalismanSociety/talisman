@@ -52,16 +52,61 @@ export const useDepositFunds = () => {
 
   // Use transaction's estimated fee if available
   const estimatedFee = useMemo(() => {
+    // Prioritize Yield.xyz gas estimate if available
+    if (transaction?.yieldTransaction?.gasEstimate && token && tokenRates) {
+      // eslint-disable-next-line no-console
+      console.log("Yield.xyz gasEstimate structure:", transaction.yieldTransaction.gasEstimate)
+
+      // Extract the gas estimate value - it could be a string or an object
+      let gasEstimateValue: string
+      try {
+        if (typeof transaction.yieldTransaction.gasEstimate === "string") {
+          // Check if it's a JSON string that needs parsing
+          if (transaction.yieldTransaction.gasEstimate.startsWith("{")) {
+            const parsed = JSON.parse(transaction.yieldTransaction.gasEstimate)
+            gasEstimateValue = parsed.amount
+          } else {
+            // It's a plain string value
+            gasEstimateValue = transaction.yieldTransaction.gasEstimate
+          }
+        } else if (
+          typeof transaction.yieldTransaction.gasEstimate === "object" &&
+          transaction.yieldTransaction.gasEstimate.amount
+        ) {
+          gasEstimateValue = transaction.yieldTransaction.gasEstimate.amount
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn("Unexpected gasEstimate format:", transaction.yieldTransaction.gasEstimate)
+          gasEstimateValue = "0"
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to parse gasEstimate:", error)
+        gasEstimateValue = "0"
+      }
+
+      // Convert from decimal string to planck (wei) units
+      const gasEstimatePlanck = BigInt(
+        Math.floor(parseFloat(gasEstimateValue) * Math.pow(10, token.decimals)),
+      )
+      // eslint-disable-next-line no-console
+      console.log("Using Yield.xyz gas estimate:", {
+        gasEstimateValue,
+        gasEstimatePlanck: gasEstimatePlanck.toString(),
+        tokenDecimals: token.decimals,
+      })
+      return new BalanceFormatter(gasEstimatePlanck, token.decimals, tokenRates)
+    }
+
+    // Fallback to useEthTransaction estimated fee
     if (transaction?.estimatedFee && token && tokenRates) {
       return new BalanceFormatter(transaction.estimatedFee, token.decimals, tokenRates)
     }
-    if (!token || !tokenRates) return null
-    // Fallback mock fee: 0.01 tokens
-    const feePlanck = BigInt(Math.floor(0.01 * Math.pow(10, token.decimals)))
-    return new BalanceFormatter(feePlanck, token.decimals, tokenRates)
-  }, [transaction?.estimatedFee, token, tokenRates])
 
-  const feeToken = token // For simplicity, fee is paid in the same token
+    return null
+  }, [transaction?.estimatedFee, transaction?.yieldTransaction?.gasEstimate, token, tokenRates])
+
+  const feeToken = token
 
   // Use transaction loading state
   const isLoading = transaction?.isLoading || false
