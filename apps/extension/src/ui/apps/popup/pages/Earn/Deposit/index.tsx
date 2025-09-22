@@ -7,6 +7,7 @@ import { accounts$, balancesHydrate$, contacts$ } from "@ui/state"
 
 import { DepositAmount } from "../DepositAmount"
 import { DepositConfirm } from "../DepositConfirm"
+import { DepositProgress } from "../DepositProgress"
 
 const [usePreload] = bind(combineLatest([balancesHydrate$, accounts$, contacts$]))
 
@@ -18,6 +19,7 @@ export const DepositPage = () => {
       <Routes>
         <Route path="amount" element={<DepositAmount />} />
         <Route path="confirm" element={<DepositConfirm />} />
+        <Route path="progress" element={<DepositProgress />} />
         <Route path="*" element={<DepositAmount />} />
       </Routes>
     </DepositWizardProvider>

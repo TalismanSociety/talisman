@@ -2,6 +2,7 @@ import { isTokenEth } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { useDepositFunds } from "../useDepositFunds"
 
@@ -36,7 +37,7 @@ export const TransactionPriorityRow = () => {
         {network.nativeTokenId && priority && tx && txDetails && (
           <EthFeeSelect
             tokenId={network.nativeTokenId}
-            drawerContainerId="main"
+            drawerContainerId={IS_POPUP ? "main" : "deposit-modal-content"}
             gasSettingsByPriority={gasSettingsByPriority}
             setCustomSettings={setCustomSettings}
             onChange={setPriority}

@@ -8,7 +8,9 @@ import { Button } from "talisman-ui"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 
+import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi } from "../services/yieldApi"
 import { useDepositFunds } from "./useDepositFunds"
 
@@ -30,6 +32,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   const { t } = useTranslation()
   const { account, token, product, deposit, transaction } = useDepositFunds()
   const accountData = useAccountByAddress(account?.address)
+  const { gotoProgress } = useDepositWizard()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState<string | null>(null)
@@ -63,21 +66,12 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       setCurrentStep("Submitting to Yield.xyz...")
       await yieldApi.submitHash(yieldTx.id, { hash })
 
-      // Step 3: Poll for status
-      setCurrentStep("Waiting for confirmation...")
-      const finalStatus = await yieldApi.pollStatus(yieldTx.id, (status) => {
-        // Update UI with status updates
-        if (status.status === "PENDING") {
-          setCurrentStep("Transaction pending...")
-        }
-      })
-
-      if (finalStatus.status === "CONFIRMED") {
-        setCurrentStep("Transaction confirmed!")
-        onSuccess?.(hash)
-      } else {
-        throw new Error(`Transaction failed: ${finalStatus.error || "Unknown error"}`)
+      // Step 3: Hand off to progress screen
+      if (IS_POPUP) {
+        gotoProgress({ networkId: token.networkId, txId: hash })
       }
+      onSuccess?.(hash)
+      return
     } catch (cause) {
       log.error("Failed to submit yield transaction", { cause, product: product.id })
       const error = cause as Error
@@ -91,7 +85,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       setIsSubmitting(false)
       setCurrentStep(null)
     }
-  }, [account, token, product, deposit, transaction, onSuccess, onError])
+  }, [account, token, product, deposit, transaction, onSuccess, onError, gotoProgress])
 
   if (!isAccountPlatformEthereum(accountData)) {
     return (

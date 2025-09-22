@@ -110,7 +110,11 @@ const TotalAmountRow = () => {
   )
 }
 
-const DepositSubmitButton = () => {
+const DepositSubmitButton = ({
+  onTxSubmitted,
+}: {
+  onTxSubmitted?: (params: { networkId: string; txId: string }) => void
+}) => {
   const { t } = useTranslation()
   const { account, token, product, deposit, transaction } = useDepositFunds()
   const [isSubmitting, _setIsSubmitting] = useState(false)
@@ -135,9 +139,7 @@ const DepositSubmitButton = () => {
         label={isSubmitting ? t("Depositing...") : t("Deposit")}
         disabled={isSubmitting}
         onSuccess={(txId) => {
-          // eslint-disable-next-line no-console
-          console.log("Yield deposit transaction successful:", txId)
-          // Navigate to success page
+          if (token) onTxSubmitted?.({ networkId: token.networkId, txId })
         }}
         onError={(error) => {
           // eslint-disable-next-line no-console
@@ -155,9 +157,7 @@ const DepositSubmitButton = () => {
       label={isSubmitting ? t("Depositing...") : t("Deposit")}
       disabled={isSubmitting}
       onSubmit={(txId) => {
-        // eslint-disable-next-line no-console
-        console.log("Deposit transaction successful:", txId)
-        // Navigate to success page
+        if (token) onTxSubmitted?.({ networkId: token.networkId as string, txId })
       }}
     />
   )
@@ -166,11 +166,13 @@ const DepositSubmitButton = () => {
 interface DepositConfirmFormProps {
   onBack?: () => void
   onClose?: () => void
+  onTxSubmitted?: (params: { networkId: string; txId: string }) => void
 }
 
 export const DepositConfirmForm = ({
   onBack: _onBack,
   onClose: _onClose,
+  onTxSubmitted,
 }: DepositConfirmFormProps) => {
   const { t } = useTranslation()
   const { account, token, product, deposit, estimatedFee } = useDepositFunds()
@@ -232,7 +234,7 @@ export const DepositConfirmForm = ({
 
             {/* Submit Button */}
             <div className="mt-auto">
-              <DepositSubmitButton />
+              <DepositSubmitButton onTxSubmitted={onTxSubmitted} />
             </div>
           </div>
         </Suspense>

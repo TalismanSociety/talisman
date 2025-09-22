@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState } from "react"
 import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { DepositAmountForm } from "./components/DepositAmountForm"
@@ -22,8 +23,9 @@ const DepositModalContent = ({
   tokenId,
   productId,
 }: Omit<DepositModalProps, "isOpen">) => {
-  const [currentStep, setCurrentStep] = useState<"amount" | "confirm">("amount")
+  const [currentStep, setCurrentStep] = useState<"amount" | "confirm" | "progress">("amount")
   const { set } = useDepositWizard()
+  const [progress, setProgress] = useState<{ networkId: string; txId: string } | null>(null)
 
   // Initialize the wizard with the provided parameters
   useEffect(() => {
@@ -53,10 +55,17 @@ const DepositModalContent = ({
   }
 
   return (
-    <div className="flex h-[600px] max-h-[80vh] min-w-[400px] flex-col gap-12 rounded-[20px] border border-[#5A5A5A] bg-black p-8">
+    <div
+      id="deposit-modal-content"
+      className="flex h-[600px] max-h-[80vh] min-w-[400px] flex-col gap-12 rounded-[20px] border border-[#5A5A5A] bg-black p-8"
+    >
       <div className="flex items-center justify-between">
         <div className="text-lg font-semibold">
-          {currentStep === "amount" ? "Deposit" : "Confirm Deposit"}
+          {currentStep === "amount"
+            ? "Deposit"
+            : currentStep === "confirm"
+              ? "Confirm Deposit"
+              : "Transfer in progress"}
         </div>
         <button
           type="button"
@@ -68,10 +77,22 @@ const DepositModalContent = ({
       </div>
 
       <div className="flex-1 overflow-hidden">
-        {currentStep === "amount" ? (
-          <DepositAmountForm onNext={handleNext} />
-        ) : (
-          <DepositConfirmForm onBack={handleBack} onClose={handleClose} />
+        {currentStep === "amount" && <DepositAmountForm onNext={handleNext} />}
+        {currentStep === "confirm" && (
+          <DepositConfirmForm
+            onBack={handleBack}
+            onClose={handleClose}
+            onTxSubmitted={({ networkId, txId }: { networkId: string; txId: string }) => {
+              // switch to progress screen in dashboard modal
+              setCurrentStep("progress")
+              setProgress({ networkId, txId })
+            }}
+          />
+        )}
+        {currentStep === "progress" && progress && (
+          <div className="h-full w-full">
+            <SendFundsProgress networkId={progress.networkId} txId={progress.txId} />
+          </div>
         )}
       </div>
     </div>

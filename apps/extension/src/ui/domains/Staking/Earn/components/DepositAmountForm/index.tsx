@@ -1,3 +1,4 @@
+import { ZapFastIcon } from "@talismn/icons"
 import { FormEvent, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -38,7 +39,14 @@ const ReviewButton = ({ onNext }: { onNext?: () => void }) => {
       data-testid="component-review-button"
       onClick={handleConfirm}
     >
-      {isLoading ? t("Validating...") : t("Review")}
+      {isLoading ? (
+        t("Validating...")
+      ) : (
+        <span className="inline-flex items-center gap-2">
+          <ZapFastIcon className="h-8 w-8" />
+          {t("Review")}
+        </span>
+      )}
     </Button>
   )
 }
