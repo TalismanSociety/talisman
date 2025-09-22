@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:24.8.0
 RUN npm install -g corepack@latest && corepack enable
 
 WORKDIR /talisman
