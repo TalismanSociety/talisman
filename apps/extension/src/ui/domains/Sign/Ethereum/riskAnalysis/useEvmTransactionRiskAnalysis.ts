@@ -20,7 +20,7 @@ export const useEvmTransactionRiskAnalysis = ({
   tx,
   disableAutoRiskScan,
 }: UseEvmTransactionRiskAnalysisProps) => {
-  const enabled = useFeatureFlag("RISK_ANALYSIS")
+  const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
   const txData = useMemo<EvmTxData | null>(() => {
     if (!tx?.from) return null

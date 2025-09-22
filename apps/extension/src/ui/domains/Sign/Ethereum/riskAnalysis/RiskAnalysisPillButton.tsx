@@ -32,7 +32,7 @@ const getErrorTooltip = (t: TFunction, error: Error) => {
 }
 
 export const RiskAnalysisPillButton: FC = () => {
-  const isEnabled = useFeatureFlag("RISK_ANALYSIS")
+  const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
   const riskAnalysis = useRiskAnalysis()
   const { t } = useTranslation()
 

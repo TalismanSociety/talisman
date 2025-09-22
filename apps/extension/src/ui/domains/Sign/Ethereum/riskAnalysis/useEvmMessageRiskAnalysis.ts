@@ -80,7 +80,7 @@ export const useEvmMessageRiskAnalysis = ({
   origin,
   disableAutoRiskScan,
 }: UseEvmMessageRiskAnalysisProps) => {
-  const enabled = useFeatureFlag("RISK_ANALYSIS")
+  const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
   return useEvmRiskAnalysisBase({
     type: "message",
