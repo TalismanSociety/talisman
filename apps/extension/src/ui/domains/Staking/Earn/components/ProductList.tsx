@@ -67,11 +67,20 @@ export const ProductList: FC<ProductListProps> = ({
     )
   }
 
+  // Filter products based on status and availability
+  const availableProducts = products.filter(
+    (product) =>
+      product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
+  )
+
+  // Sort by APY (highest first)
+  const sortedProducts = availableProducts.sort((a, b) => b.rewardRate.total - a.rewardRate.total)
+
   // Show products list
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="space-y-3 pb-4">
-        {products.map((product) => (
+        {sortedProducts.map((product) => (
           <ProductItem
             key={product.id}
             product={product}

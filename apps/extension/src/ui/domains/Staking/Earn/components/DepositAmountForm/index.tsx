@@ -10,7 +10,9 @@ import { AmountEdit } from "./AmountEdit"
 import { AvailableBalanceRow } from "./AvailableBalanceRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
+import { InsufficientTokenNotice } from "./InsufficientTokenNotice"
 import { ProductSummary } from "./ProductSummary"
+import { ValidationErrors } from "./ValidationErrors"
 
 const ReviewButton = ({ onNext }: { onNext?: () => void }) => {
   const { t } = useTranslation()
@@ -68,6 +70,11 @@ export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
         onSubmit={handleSubmit}
         className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
       >
+        {/* Top-level notices */}
+        <div className="mb-4 space-y-3 px-8">
+          <InsufficientTokenNotice />
+          <ValidationErrors />
+        </div>
         <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
           <div className="flex w-full items-center justify-between gap-4">
             <div>{t("Account")}</div>

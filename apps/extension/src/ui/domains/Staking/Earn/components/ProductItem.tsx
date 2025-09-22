@@ -35,6 +35,7 @@ export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick })
   const description = metadata.description
   const apy = rewardRate.total * 100 // Convert decimal to percentage
   const protocolLogo = metadata.logoURI
+
   const getApyColor = () => {
     // Always use the same color for APY value
     return "text-[#D5FF5C]"
@@ -54,7 +55,9 @@ export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick })
           </div>
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-          <div className="truncate text-sm font-bold text-white">{name}</div>
+          <div className="flex items-center gap-2">
+            <div className="truncate text-sm font-bold text-white">{name}</div>
+          </div>
           <div className="truncate text-xs text-[#5A5A5A]">{description}</div>
         </div>
       </div>
