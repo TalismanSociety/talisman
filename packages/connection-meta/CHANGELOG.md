@@ -1,5 +1,14 @@
 # @talismn/connection-meta
 
+## 0.2.23
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [0d38ece]
+- Updated dependencies [e399b86]
+  - @talismn/chaindata-provider@1.1.2
+
 ## 0.2.22
 
 ### Patch Changes

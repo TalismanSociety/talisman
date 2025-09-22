@@ -1,5 +1,20 @@
 # @talismn/balances-react
 
+## 1.0.5
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [0d38ece]
+- Updated dependencies [e399b86]
+  - @talismn/chaindata-provider@1.1.2
+  - @talismn/chain-connectors@0.0.3
+  - @talismn/connection-meta@0.2.23
+  - @talismn/token-rates@3.0.5
+  - @talismn/balances@1.0.5
+  - @talismn/scale@0.2.1
+  - @talismn/util@0.5.2
+
 ## 1.0.4
 
 ### Patch Changes

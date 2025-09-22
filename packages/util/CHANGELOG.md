@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.5.2
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
 ## 0.5.1
 
 ### Patch Changes

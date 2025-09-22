@@ -1,5 +1,13 @@
 # @talismn/sapi
 
+## 0.0.11
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/scale@0.2.1
+
 ## 0.0.10
 
 ### Patch Changes

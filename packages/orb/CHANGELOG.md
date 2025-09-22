@@ -1,5 +1,12 @@
 # @talismn/orb
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [e399b86]
+  - @talismn/crypto@0.2.2
+
 ## 0.3.2
 
 ### Patch Changes
