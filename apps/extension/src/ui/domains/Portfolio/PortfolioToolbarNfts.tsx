@@ -7,7 +7,7 @@ import {
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { t } from "i18next"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -24,13 +24,14 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import {
   NetworkOption,
   NftVisibilityFilter,
-  setNftNetworkFilter,
-  setNftSearch,
   setNftsVisibilityFilter,
-  useNftNetworkFilter,
-  useNftNetworkOptions,
-  useNftSearch,
+  setPortfolioNetworkFilter,
+  setPortfolioSearch,
+  useAllNetworkOptions,
+  useNftData,
   useNftsVisibilityFilter,
+  usePortfolioNetworkFilter,
+  usePortfolioSearch,
   useSetting,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
@@ -62,13 +63,19 @@ export const NftViewModeToggleButton = () => {
 }
 
 const NetworkFilterButton = () => {
-  const options = useNftNetworkOptions()
-  const networkFilter = useNftNetworkFilter()
+  const allNetworkOptions = useAllNetworkOptions()
+  const networkFilter = usePortfolioNetworkFilter()
+  const { nfts } = useNftData()
   const { isOpen, open, close } = useOpenClose()
+
+  const networkOptions = useMemo<NetworkOption[]>(() => {
+    const networkIds = new Set(nfts.map((n) => n.networkId))
+    return allNetworkOptions.filter((n) => n.networkIds.some((id) => networkIds.has(id)))
+  }, [nfts, allNetworkOptions])
 
   const handleChange = useCallback(
     (option: NetworkOption | null) => {
-      setNftNetworkFilter(option ?? undefined)
+      setPortfolioNetworkFilter(option ?? undefined)
       close()
     },
     [close],
@@ -97,7 +104,7 @@ const NetworkFilterButton = () => {
         onChange={handleChange}
         isOpen={isOpen}
         onClose={close}
-        options={options}
+        options={networkOptions}
         selected={networkFilter ?? null}
       />
     </>
@@ -106,7 +113,7 @@ const NetworkFilterButton = () => {
 
 const PortfolioSearch = () => {
   const { t } = useTranslation()
-  const search = useNftSearch()
+  const search = usePortfolioSearch()
 
   return (
     <SearchInput
@@ -117,7 +124,7 @@ const PortfolioSearch = () => {
         IS_POPUP ? "w-full" : "max-w-[37.4rem]",
       )}
       placeholder={t("Search")}
-      onChange={setNftSearch}
+      onChange={setPortfolioSearch}
       initialValue={search}
     />
   )

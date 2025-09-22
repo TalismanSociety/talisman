@@ -17,7 +17,12 @@ import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helper
 
 import { getAccountsByCategory$ } from "./accounts"
 import { getNetworks$ } from "./chaindata"
-import { NetworkOption, portfolioSelectedAccounts$ } from "./portfolio"
+import {
+  NetworkOption,
+  portfolioNetworkFilter$,
+  portfolioSearch$,
+  portfolioSelectedAccounts$,
+} from "./portfolio"
 import { getSettingValue$ } from "./settings"
 import { debugObservable } from "./util/debugObservable"
 
@@ -27,18 +32,18 @@ export enum NftVisibilityFilter {
   Favorites = "Favorites",
 }
 
-const nftNetworkFilter$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
+// const nftNetworkFilter$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
 
-export const [useNftNetworkFilter] = bind(nftNetworkFilter$)
+// export const [useNftNetworkFilter] = bind(nftNetworkFilter$)
 
-export const setNftNetworkFilter = (network: NetworkOption | undefined) =>
-  nftNetworkFilter$.next(network)
+// export const setNftNetworkFilter = (network: NetworkOption | undefined) =>
+//   nftNetworkFilter$.next(network)
 
-const nftSearch$ = new BehaviorSubject<string>("")
+// const nftSearch$ = new BehaviorSubject<string>("")
 
-export const [useNftSearch] = bind(nftSearch$)
+// export const [useNftSearch] = bind(nftSearch$)
 
-export const setNftSearch = (search: string) => nftSearch$.next(search)
+// export const setNftSearch = (search: string) => nftSearch$.next(search)
 
 const nftsVisibilityFilter$ = new BehaviorSubject<NftVisibilityFilter>(NftVisibilityFilter.Default)
 
@@ -65,6 +70,15 @@ const nftData$ = new Observable<NftData>((subscriber) => {
   debugObservable("nftData$"),
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
+
+export const [useNftData] = bind(nftData$, {
+  status: "loading",
+  nfts: [],
+  collections: [],
+  favoriteNftIds: [],
+  hiddenNftCollectionIds: [],
+  timestamp: 0,
+} as NftData)
 
 const networks$ = getNetworks$({
   activeOnly: true,
@@ -99,8 +113,8 @@ export const [useNfts, nfts$] = bind(
     getSettingValue$("nftsSortBy"),
     portfolioSelectedAccounts$,
     nftsVisibilityFilter$,
-    nftNetworkFilter$,
-    nftSearch$,
+    portfolioNetworkFilter$,
+    portfolioSearch$,
   ]).pipe(
     map(
       ([
