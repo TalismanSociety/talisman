@@ -53,49 +53,59 @@ export const useDepositFunds = () => {
   // Use transaction's estimated fee if available
   const estimatedFee = useMemo(() => {
     // Prioritize Yield.xyz gas estimate if available
-    if (transaction?.yieldTransaction?.gasEstimate && token && tokenRates) {
+    if (transaction?.yieldTransaction?.gasEstimate && token && tokenRates && network) {
       // eslint-disable-next-line no-console
       console.log("Yield.xyz gasEstimate structure:", transaction.yieldTransaction.gasEstimate)
 
       // Extract the gas estimate value - it could be a string or an object
       let gasEstimateValue: string
+      let feeTokenDecimals: number
       try {
         if (typeof transaction.yieldTransaction.gasEstimate === "string") {
           // Check if it's a JSON string that needs parsing
           if (transaction.yieldTransaction.gasEstimate.startsWith("{")) {
             const parsed = JSON.parse(transaction.yieldTransaction.gasEstimate)
             gasEstimateValue = parsed.amount
+            feeTokenDecimals = parsed.token?.decimals || 18
           } else {
             // It's a plain string value
             gasEstimateValue = transaction.yieldTransaction.gasEstimate
+            feeTokenDecimals = 18 // Default to ETH decimals
           }
         } else if (
           typeof transaction.yieldTransaction.gasEstimate === "object" &&
           transaction.yieldTransaction.gasEstimate.amount
         ) {
           gasEstimateValue = transaction.yieldTransaction.gasEstimate.amount
+          feeTokenDecimals = transaction.yieldTransaction.gasEstimate.token?.decimals || 18
         } else {
           // eslint-disable-next-line no-console
           console.warn("Unexpected gasEstimate format:", transaction.yieldTransaction.gasEstimate)
           gasEstimateValue = "0"
+          feeTokenDecimals = 18
         }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error("Failed to parse gasEstimate:", error)
         gasEstimateValue = "0"
+        feeTokenDecimals = 18
       }
 
       // Convert from decimal string to planck (wei) units
+      // Use the fee token decimals from Yield.xyz response or fallback to network native token
       const gasEstimatePlanck = BigInt(
-        Math.floor(parseFloat(gasEstimateValue) * Math.pow(10, token.decimals)),
+        Math.floor(parseFloat(gasEstimateValue) * Math.pow(10, feeTokenDecimals)),
       )
       // eslint-disable-next-line no-console
       console.log("Using Yield.xyz gas estimate:", {
         gasEstimateValue,
         gasEstimatePlanck: gasEstimatePlanck.toString(),
-        tokenDecimals: token.decimals,
+        feeTokenDecimals,
+        depositTokenDecimals: token.decimals,
+        networkId: network.id,
       })
-      return new BalanceFormatter(gasEstimatePlanck, token.decimals, tokenRates)
+      // Use fee token decimals for the actual value, but display with deposit token decimals
+      return new BalanceFormatter(gasEstimatePlanck, feeTokenDecimals, tokenRates)
     }
 
     // Fallback to useEthTransaction estimated fee
@@ -104,9 +114,16 @@ export const useDepositFunds = () => {
     }
 
     return null
-  }, [transaction?.estimatedFee, transaction?.yieldTransaction?.gasEstimate, token, tokenRates])
+  }, [
+    transaction?.estimatedFee,
+    transaction?.yieldTransaction?.gasEstimate,
+    token,
+    tokenRates,
+    network,
+  ])
 
-  const feeToken = token
+  // Fee token should be the network's native token (ETH), not the deposit token
+  const feeToken = useToken(network?.nativeTokenId)
 
   // Use transaction loading state
   const isLoading = transaction?.isLoading || false

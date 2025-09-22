@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
-import { useToken } from "@ui/state"
+import { useBalance, useToken } from "@ui/state"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi, YieldEnterResponse, YieldTransaction } from "../services/yieldApi"
@@ -11,6 +11,7 @@ import { yieldApi, YieldEnterResponse, YieldTransaction } from "../services/yiel
 export const useYieldTransaction = () => {
   const { account, tokenId, productId, amount, depositMax } = useDepositWizard()
   const token = useToken(tokenId as string)
+  const balance = useBalance(account as string, tokenId as string)
 
   // Only call Yield.xyz API when we have all required data and user has entered an amount
   const shouldFetch = !!(
@@ -33,6 +34,13 @@ export const useYieldTransaction = () => {
     queryFn: async (): Promise<YieldEnterResponse> => {
       if (!account || !productId || (!amount && !depositMax)) {
         throw new Error("Missing required parameters")
+      }
+
+      // Check if user has sufficient balance
+      if (amount && balance && BigInt(amount) > balance.transferable.planck) {
+        throw new Error(
+          `Insufficient balance. You have ${planckToTokens(balance.transferable.planck.toString(), token?.decimals || 18)} ${token?.symbol || "tokens"}, but trying to deposit ${planckToTokens(amount, token?.decimals || 18)} ${token?.symbol || "tokens"}.`,
+        )
       }
 
       // For now, use productId as yieldId - in real implementation this would be mapped
@@ -76,6 +84,21 @@ export const useYieldTransaction = () => {
     try {
       // Parse the unsigned transaction JSON string
       const unsignedTx = JSON.parse(primaryTransaction.unsignedTransaction)
+
+      // Validate required fields
+      if (!unsignedTx.to || !unsignedTx.data) {
+        return undefined
+      }
+
+      // Validate that to address is a valid Ethereum address
+      if (!unsignedTx.to.startsWith("0x") || unsignedTx.to.length !== 42) {
+        return undefined
+      }
+
+      // Validate that data is a valid hex string
+      if (!unsignedTx.data.startsWith("0x")) {
+        return undefined
+      }
 
       // Convert to the format expected by useEthTransaction
       const baseTx: TransactionRequest = {

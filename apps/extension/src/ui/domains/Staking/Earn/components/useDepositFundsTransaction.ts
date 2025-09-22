@@ -37,7 +37,6 @@ export const useDepositFundsTransaction = () => {
       return [undefined, undefined]
     }
 
-    // Only use real transaction data from Yield.xyz
     if (yieldTransaction) {
       return [yieldTransaction, yieldError]
     }
