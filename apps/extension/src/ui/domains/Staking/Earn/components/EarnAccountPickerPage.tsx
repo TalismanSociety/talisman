@@ -21,6 +21,10 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({ tokenId 
   const [search, setSearch] = useState("")
   const setEarnWizardAccount = useSetEarnWizardAccount()
 
+  // Get productId from URL params
+  const urlParams = new URLSearchParams(window.location.search)
+  const productId = urlParams.get("productId")
+
   // Get owned accounts only (excludes watch accounts)
   const allAccounts = useAccounts("owned")
   const balances = useBalances()
@@ -44,9 +48,20 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({ tokenId 
   const handleSelect = useCallback(
     (address: string) => {
       setEarnWizardAccount(address)
-      navigate(-1) // Go back to previous page
+
+      // If we have a productId, navigate to deposit page
+      if (productId) {
+        const params = new URLSearchParams({
+          account: address,
+          tokenId,
+          productId,
+        })
+        navigate(`/earn/deposit/amount?${params.toString()}`)
+      } else {
+        navigate(-1) // Go back to previous page
+      }
     },
-    [setEarnWizardAccount, navigate],
+    [setEarnWizardAccount, navigate, productId, tokenId],
   )
 
   const handleBack = useCallback(() => {

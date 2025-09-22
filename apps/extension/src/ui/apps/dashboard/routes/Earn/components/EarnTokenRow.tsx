@@ -1,6 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { ChevronDownIcon, ChevronUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { YieldProduct } from "extension-core"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -56,9 +57,9 @@ export const EarnTokenRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   }, [isExpanded, token, genericEvent])
 
   const handleProductClick = useCallback(
-    (productId: string) => {
+    (product: YieldProduct) => {
       // eslint-disable-next-line no-console
-      console.log("Product clicked:", productId, "for token:", token?.symbol)
+      console.log("Product clicked:", product.id, "for token:", token?.symbol)
       // TODO: Navigate to product details or start earning process
     },
     [token],

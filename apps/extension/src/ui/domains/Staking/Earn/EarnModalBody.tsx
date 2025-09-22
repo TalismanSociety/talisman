@@ -12,6 +12,7 @@ import { IS_POPUP } from "@ui/util/constants"
 import { EarnAccountPicker } from "./components/EarnAccountPicker"
 import { ProductList } from "./components/ProductList"
 import { TokenDetails } from "./components/TokenDetails"
+import { DepositModal } from "./DepositModal"
 import { useEarnWizard, useSetEarnWizardAccount } from "./hooks/useEarnWizard"
 
 interface EarnModalBodyProps {
@@ -27,6 +28,8 @@ export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
   const navigate = useNavigate()
 
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<YieldProduct | null>(null)
 
   // Fetch yield products filtered by token symbol
   const {
@@ -47,22 +50,57 @@ export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
       // No account selected, show account picker
       if (IS_POPUP) {
         // Navigate to account picker page in popup mode
-        navigate(`/earn/select-account?tokenId=${encodeURIComponent(tokenId)}`)
+        navigate(
+          `/earn/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(product.id)}`,
+        )
       } else {
         // Show modal in dashboard mode
+        setSelectedProduct(product)
         setIsAccountPickerOpen(true)
       }
       return
     }
 
-    // eslint-disable-next-line no-console
-    console.log("Product clicked:", product, tokenId, "Account:", currentAccount)
-    // TODO: Navigate to product details or start earning process
+    // Navigate to deposit amount page with all required parameters
+    const params = new URLSearchParams({
+      account: currentAccount,
+      tokenId,
+      productId: product.id,
+    })
+
+    if (IS_POPUP) {
+      navigate(`/earn/deposit/amount?${params.toString()}`)
+    } else {
+      // Open deposit modal in dashboard mode
+      setSelectedProduct(product)
+      setIsDepositModalOpen(true)
+    }
   }
 
   const handleAccountSelect = (address: string) => {
     setEarnWizardAccount(address)
     setIsAccountPickerOpen(false)
+
+    // If we have a product selected, open deposit modal
+    if (selectedProduct) {
+      setIsDepositModalOpen(true)
+    } else {
+      // Fallback for URL params (popup mode)
+      const urlParams = new URLSearchParams(window.location.search)
+      const productId = urlParams.get("productId")
+
+      if (productId) {
+        const params = new URLSearchParams({
+          account: address,
+          tokenId,
+          productId,
+        })
+
+        if (IS_POPUP) {
+          navigate(`/earn/deposit/amount?${params.toString()}`)
+        }
+      }
+    }
   }
 
   return (
@@ -84,6 +122,19 @@ export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
         onDismiss={() => setIsAccountPickerOpen(false)}
         onSelect={handleAccountSelect}
       />
+
+      {selectedProduct && (
+        <DepositModal
+          isOpen={isDepositModalOpen}
+          onClose={() => {
+            setIsDepositModalOpen(false)
+            setSelectedProduct(null)
+          }}
+          account={selectedAccountAddress || selectedAccount?.address || ""}
+          tokenId={tokenId}
+          productId={selectedProduct.id}
+        />
+      )}
     </>
   )
 }

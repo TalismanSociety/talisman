@@ -1,0 +1,52 @@
+import { isTokenEth } from "@talismn/chaindata-provider"
+import { useTranslation } from "react-i18next"
+
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
+
+import { useDepositFunds } from "../useDepositFunds"
+
+export const TransactionPriorityRow = () => {
+  const { t } = useTranslation()
+  const { token, network, transaction } = useDepositFunds()
+
+  if (
+    !token ||
+    !network ||
+    network.platform !== "ethereum" ||
+    !isTokenEth(token) ||
+    !transaction ||
+    transaction.platform !== "ethereum"
+  )
+    return null
+
+  const {
+    tx,
+    txDetails,
+    priority,
+    gasSettingsByPriority,
+    setCustomSettings,
+    setPriority,
+    networkUsage,
+  } = transaction
+
+  return (
+    <div className="flex h-12 w-full items-center justify-between gap-4">
+      <div>{t("Transaction Priority")}</div>
+      <div>
+        {network.nativeTokenId && priority && tx && txDetails && (
+          <EthFeeSelect
+            tokenId={network.nativeTokenId}
+            drawerContainerId="main"
+            gasSettingsByPriority={gasSettingsByPriority}
+            setCustomSettings={setCustomSettings}
+            onChange={setPriority}
+            priority={priority}
+            txDetails={txDetails}
+            networkUsage={networkUsage}
+            tx={tx}
+          />
+        )}
+      </div>
+    </div>
+  )
+}

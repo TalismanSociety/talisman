@@ -37,6 +37,7 @@ import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpg
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
+import { DepositPage } from "./pages/Earn/Deposit"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
@@ -100,6 +101,7 @@ const Popup = () => {
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="earn" element={<EarnPage />} />
           <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
+          <Route path="earn/deposit/*" element={<DepositPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
