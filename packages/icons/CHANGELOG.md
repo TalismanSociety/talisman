@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.3
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
 ## 0.1.2
 
 ### Patch Changes

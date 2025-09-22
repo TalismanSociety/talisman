@@ -1,5 +1,15 @@
 # @talismn/on-chain-id
 
+## 0.1.24
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/balances@1.0.5
+  - @talismn/crypto@0.2.2
+  - @talismn/util@0.5.2
+
 ## 0.1.23
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @talismn/chaindata-provider
 
+## 1.1.2
+
+### Patch Changes
+
+- 0d38ece: generate init data
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/util@0.5.2
+
 ## 1.1.1
 
 ### Patch Changes

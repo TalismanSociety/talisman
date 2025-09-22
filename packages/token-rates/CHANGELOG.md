@@ -1,5 +1,14 @@
 # @talismn/token-rates
 
+## 3.0.5
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [0d38ece]
+- Updated dependencies [e399b86]
+  - @talismn/chaindata-provider@1.1.2
+
 ## 3.0.4
 
 ### Patch Changes

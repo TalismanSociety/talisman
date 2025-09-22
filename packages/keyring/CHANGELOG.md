@@ -1,5 +1,13 @@
 # @talismn/keyring
 
+## 1.0.4
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/crypto@0.2.2
+
 ## 1.0.3
 
 ### Patch Changes

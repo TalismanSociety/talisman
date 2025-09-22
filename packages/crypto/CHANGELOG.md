@@ -1,5 +1,11 @@
 # @talismn/crypto
 
+## 0.2.2
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
 ## 0.2.1
 
 ### Patch Changes
