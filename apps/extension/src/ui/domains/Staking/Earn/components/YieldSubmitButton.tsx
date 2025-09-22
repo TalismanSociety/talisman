@@ -20,6 +20,7 @@ interface YieldSubmitButtonProps {
   disabled?: boolean
   onSuccess?: (txHash: string) => void
   onError?: (error: Error) => void
+  onTxSubmitted?: (params: { networkId: string; txId: string }) => void
 }
 
 export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
@@ -28,6 +29,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   disabled,
   onSuccess,
   onError,
+  onTxSubmitted,
 }) => {
   const { t } = useTranslation()
   const { account, token, product, deposit, transaction } = useDepositFunds()
@@ -67,7 +69,11 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       await yieldApi.submitHash(yieldTx.id, { hash })
 
       // Step 3: Hand off to progress screen
-      if (IS_POPUP) {
+      if (onTxSubmitted) {
+        // Modal context - call onTxSubmitted
+        onTxSubmitted({ networkId: token.networkId, txId: hash })
+      } else if (IS_POPUP) {
+        // Popup context - use gotoProgress
         gotoProgress({ networkId: token.networkId, txId: hash })
       }
       onSuccess?.(hash)
@@ -85,7 +91,17 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       setIsSubmitting(false)
       setCurrentStep(null)
     }
-  }, [account, token, product, deposit, transaction, onSuccess, onError, gotoProgress])
+  }, [
+    account,
+    token,
+    product,
+    deposit,
+    transaction,
+    onSuccess,
+    onError,
+    gotoProgress,
+    onTxSubmitted,
+  ])
 
   if (!isAccountPlatformEthereum(accountData)) {
     return (

@@ -100,6 +100,23 @@ const useDepositWizardProvider = () => {
     [navigate],
   )
 
+  const reset = useCallback(() => {
+    // Clear all search parameters to reset the wizard state
+    searchParams.delete("account")
+    searchParams.delete("tokenId")
+    searchParams.delete("productId")
+    searchParams.delete("amount")
+    searchParams.delete("depositMax")
+    setSearchParams(searchParams, { replace: true })
+  }, [searchParams, setSearchParams])
+
+  const resetUserInput = useCallback(() => {
+    // Clear only user input fields, keep account, tokenId, productId
+    searchParams.delete("amount")
+    searchParams.delete("depositMax")
+    setSearchParams(searchParams, { replace: true })
+  }, [searchParams, setSearchParams])
+
   return {
     // State
     account,
@@ -113,6 +130,8 @@ const useDepositWizardProvider = () => {
     goto,
     gotoConfirm,
     gotoProgress,
+    reset,
+    resetUserInput,
   }
 }
 

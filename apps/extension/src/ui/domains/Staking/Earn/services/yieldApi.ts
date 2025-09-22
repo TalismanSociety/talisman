@@ -13,7 +13,7 @@ export interface YieldTransaction {
   id: string
   title: string
   network: string
-  status: "PENDING" | "CONFIRMED" | "FAILED" | "SKIPPED"
+  status: "PENDING" | "CONFIRMED" | "FAILED" | "SKIPPED" | "BROADCASTED" | "CREATED"
   type: string
   hash?: string
   createdAt: string
@@ -60,7 +60,7 @@ export interface YieldEnterResponse {
   rawArguments: Record<string, string | number | boolean | string[] | undefined>
   createdAt: string
   completedAt?: string
-  status: "PENDING" | "CONFIRMED" | "FAILED" | "CANCELED"
+  status: "PENDING" | "CONFIRMED" | "FAILED" | "CANCELED" | "CREATED"
 }
 
 export interface YieldSubmitHashRequest {
@@ -152,10 +152,20 @@ class YieldApiService {
     transactionId: string,
     onStatusUpdate?: (status: YieldStatusResponse) => void,
     intervalMs: number = 1000,
+    timeoutMs: number = 300000, // 5 minutes timeout
   ): Promise<YieldStatusResponse> {
     return new Promise((resolve, reject) => {
+      const startTime = Date.now()
+
       const poll = async () => {
         try {
+          const elapsed = Date.now() - startTime
+
+          if (elapsed > timeoutMs) {
+            reject(new Error(`Transaction polling timed out after ${timeoutMs}ms`))
+            return
+          }
+
           const status = await this.getStatus(transactionId)
 
           if (onStatusUpdate) {
@@ -164,7 +174,13 @@ class YieldApiService {
 
           if (status.status === "CONFIRMED") {
             resolve(status)
-          } else if (status.status === "FAILED") {
+          }
+          // else if (status.status === "BROADCASTED") {
+          //   // Transaction has been successfully broadcasted to the network
+          //   // For UI flow purposes, consider this successful
+          //   resolve(status)
+          // }
+          else if (status.status === "FAILED") {
             reject(new Error(`Transaction failed: ${status.error || "Unknown error"}`))
           } else {
             // Still pending, continue polling

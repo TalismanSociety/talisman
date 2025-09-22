@@ -7,6 +7,7 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { DepositAmountForm } from "./components/DepositAmountForm"
 import { DepositConfirmForm } from "./components/DepositConfirmForm"
+import { SequentialTransactionExecutor } from "./components/SequentialTransactionExecutor"
 import { DepositWizardProvider, useDepositWizard } from "./context/DepositWizardContext"
 
 interface DepositModalProps {
@@ -23,8 +24,10 @@ const DepositModalContent = ({
   tokenId,
   productId,
 }: Omit<DepositModalProps, "isOpen">) => {
-  const [currentStep, setCurrentStep] = useState<"amount" | "confirm" | "progress">("amount")
-  const { set } = useDepositWizard()
+  const [currentStep, setCurrentStep] = useState<"amount" | "confirm" | "execute" | "progress">(
+    "amount",
+  )
+  const { set, resetUserInput } = useDepositWizard()
   const [progress, setProgress] = useState<{ networkId: string; txId: string } | null>(null)
 
   // Initialize the wizard with the provided parameters
@@ -49,8 +52,23 @@ const DepositModalContent = ({
     setCurrentStep("amount")
   }
 
+  const _handleExecute = () => {
+    setCurrentStep("execute")
+  }
+
+  const handleExecutionComplete = (networkId: string, txId: string) => {
+    setCurrentStep("progress")
+    setProgress({ networkId, txId })
+  }
+
+  const handleExecutionError = (_error: Error) => {
+    // Could show error state or go back to confirm
+    setCurrentStep("confirm")
+  }
+
   const handleClose = () => {
     setCurrentStep("amount")
+    resetUserInput()
     onClose()
   }
 
@@ -65,7 +83,9 @@ const DepositModalContent = ({
             ? "Deposit"
             : currentStep === "confirm"
               ? "Confirm Deposit"
-              : "Transfer in progress"}
+              : currentStep === "execute"
+                ? "Executing Transactions"
+                : "Transfer in progress"}
         </div>
         <button
           type="button"
@@ -82,9 +102,23 @@ const DepositModalContent = ({
           <DepositConfirmForm
             onBack={handleBack}
             onClose={handleClose}
-            onTxSubmitted={({ networkId, txId }: { networkId: string; txId: string }) => {
-              // switch to progress screen in dashboard modal
-              setCurrentStep("progress")
+            onTxSubmitted={({
+              networkId: _networkId,
+              txId: _txId,
+            }: {
+              networkId: string
+              txId: string
+            }) => {
+              // switch to sequential execution
+              setCurrentStep("execute")
+            }}
+          />
+        )}
+        {currentStep === "execute" && (
+          <SequentialTransactionExecutor
+            onComplete={handleExecutionComplete}
+            onError={handleExecutionError}
+            onTransactionComplete={(networkId, txId) => {
               setProgress({ networkId, txId })
             }}
           />

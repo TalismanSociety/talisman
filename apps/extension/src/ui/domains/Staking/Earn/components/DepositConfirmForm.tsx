@@ -141,10 +141,7 @@ const DepositSubmitButton = ({
         onSuccess={(txId) => {
           if (token) onTxSubmitted?.({ networkId: token.networkId, txId })
         }}
-        onError={(error) => {
-          // eslint-disable-next-line no-console
-          console.error("Yield deposit transaction failed:", error)
-        }}
+        onError={(_error) => {}}
       />
     )
   }

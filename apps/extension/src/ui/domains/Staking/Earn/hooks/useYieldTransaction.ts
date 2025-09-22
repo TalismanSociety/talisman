@@ -68,14 +68,18 @@ export const useYieldTransaction = () => {
     staleTime: 30000, // 30 seconds
   })
 
-  // Get the first pending transaction (most yield products have a single transaction)
-  const primaryTransaction = useMemo((): YieldTransaction | null => {
-    if (!yieldResponse?.transactions) return null
+  // Get all non-skipped transactions for sequential execution
+  const allTransactions = useMemo((): YieldTransaction[] => {
+    if (!yieldResponse?.transactions) return []
 
-    // Find the first non-skipped transaction
-    const pendingTx = yieldResponse.transactions.find((tx) => tx.status !== "SKIPPED")
-    return pendingTx || null
+    // Return all non-skipped transactions in order
+    return yieldResponse.transactions.filter((tx) => tx.status !== "SKIPPED")
   }, [yieldResponse])
+
+  // Get the first transaction for gas estimation (backward compatibility)
+  const primaryTransaction = useMemo((): YieldTransaction | null => {
+    return allTransactions[0] || null
+  }, [allTransactions])
 
   // Parse the unsigned transaction for use with useEthTransaction
   const parsedTransaction = useMemo((): TransactionRequest | undefined => {
@@ -143,6 +147,7 @@ export const useYieldTransaction = () => {
     yieldResponse,
     primaryTransaction,
     allTransactions: yieldResponse?.transactions || [],
+    nonSkippedTransactions: allTransactions, // New: filtered transactions for execution
 
     // Transaction data for useEthTransaction
     transaction: parsedTransaction,
@@ -155,6 +160,7 @@ export const useYieldTransaction = () => {
 
     // Helper flags
     hasTransactions: !!yieldResponse?.transactions?.length,
-    isMultiStep: (yieldResponse?.transactions?.length || 0) > 1,
+    isMultiStep: allTransactions.length > 1,
+    transactionCount: allTransactions.length,
   }
 }

@@ -54,9 +54,6 @@ export const useDepositFunds = () => {
   const estimatedFee = useMemo(() => {
     // Prioritize Yield.xyz gas estimate if available
     if (transaction?.yieldTransaction?.gasEstimate && token && tokenRates && network) {
-      // eslint-disable-next-line no-console
-      console.log("Yield.xyz gasEstimate structure:", transaction.yieldTransaction.gasEstimate)
-
       // Extract the gas estimate value - it could be a string or an object
       let gasEstimateValue: string
       let feeTokenDecimals: number
@@ -79,14 +76,10 @@ export const useDepositFunds = () => {
           gasEstimateValue = transaction.yieldTransaction.gasEstimate.amount
           feeTokenDecimals = transaction.yieldTransaction.gasEstimate.token?.decimals || 18
         } else {
-          // eslint-disable-next-line no-console
-          console.warn("Unexpected gasEstimate format:", transaction.yieldTransaction.gasEstimate)
           gasEstimateValue = "0"
           feeTokenDecimals = 18
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Failed to parse gasEstimate:", error)
         gasEstimateValue = "0"
         feeTokenDecimals = 18
       }
@@ -96,14 +89,6 @@ export const useDepositFunds = () => {
       const gasEstimatePlanck = BigInt(
         Math.floor(parseFloat(gasEstimateValue) * Math.pow(10, feeTokenDecimals)),
       )
-      // eslint-disable-next-line no-console
-      console.log("Using Yield.xyz gas estimate:", {
-        gasEstimateValue,
-        gasEstimatePlanck: gasEstimatePlanck.toString(),
-        feeTokenDecimals,
-        depositTokenDecimals: token.decimals,
-        networkId: network.id,
-      })
       // Use fee token decimals for the actual value, but display with deposit token decimals
       return new BalanceFormatter(gasEstimatePlanck, feeTokenDecimals, tokenRates)
     }
@@ -180,7 +165,7 @@ export const useDepositFunds = () => {
     }
 
     return errors
-  }, [account, tokenId, productId, amount, depositMax, deposit, balance, product, token])
+  }, [amount, depositMax, product, deposit, balance, account, tokenId, productId, token?.symbol])
 
   const isValid = useMemo(() => {
     return validationErrors.length === 0
