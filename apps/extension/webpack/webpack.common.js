@@ -180,15 +180,6 @@ const config = (env) => ({
       "process.env.EVM_LOGPROXY": JSON.stringify(
         env.build === "dev" ? process.env.EVM_LOGPROXY || "" : "",
       ),
-      "process.env.COINGECKO_API_URL": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : "",
-      ),
       "process.env.TAOSTATS_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.TAOSTATS_BASE_PATH || "" : "",
       ),

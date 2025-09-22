@@ -32,19 +32,6 @@ export enum NftVisibilityFilter {
   Favorites = "Favorites",
 }
 
-// const nftNetworkFilter$ = new BehaviorSubject<NetworkOption | undefined>(undefined)
-
-// export const [useNftNetworkFilter] = bind(nftNetworkFilter$)
-
-// export const setNftNetworkFilter = (network: NetworkOption | undefined) =>
-//   nftNetworkFilter$.next(network)
-
-// const nftSearch$ = new BehaviorSubject<string>("")
-
-// export const [useNftSearch] = bind(nftSearch$)
-
-// export const setNftSearch = (search: string) => nftSearch$.next(search)
-
 const nftsVisibilityFilter$ = new BehaviorSubject<NftVisibilityFilter>(NftVisibilityFilter.Default)
 
 export const [useNftsVisibilityFilter] = bind(nftsVisibilityFilter$)
