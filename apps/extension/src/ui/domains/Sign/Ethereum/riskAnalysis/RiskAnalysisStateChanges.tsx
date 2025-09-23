@@ -2,17 +2,22 @@
 import {
   AccountSummary,
   NativeAddressAssetBalanceChangeDiff,
+  TransactionSimulation,
 } from "@blockaid/client/resources/index.mjs"
-import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
-import { NetworkId } from "@talismn/chaindata-provider"
+// import { EvmExpectedStateChange } from "@blowfishxyz/api-client/v20230605"
+import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { log } from "extension-shared"
+import { isEqual } from "lodash-es"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { useNetworkById } from "@ui/state"
+
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
 import { EvmRiskAnalysis } from "./types"
-import { isCurrencyStateChange, isNftStateChangeWithMetadata, isPositiveStateChange } from "./util"
 
 type AssetDiff =
   | AccountSummary.Erc20AddressAssetBalanceChangeDiff
@@ -20,23 +25,44 @@ type AssetDiff =
   | AccountSummary.Erc1155AddressAssetBalanceChangeDiff
   | NativeAddressAssetBalanceChangeDiff
 
+const getAccountStateChanges = (accountSummary: AccountSummary) => {
+  return accountSummary.assets_diffs.flatMap((diff) => {
+    const { in: changesIn, out: changesOut, ...rest } = diff
+
+    if (!changesIn.length && !changesOut.length) {
+      log.warn("[getAccountStateChanges] assetDiff with no changes", { accountSummary, diff })
+    }
+
+    return [
+      ...changesIn.map((cIn) => ({ change: cIn, side: "in" as const, ...rest })),
+      ...changesOut.map((cOut) => ({ change: cOut, side: "out" as const, ...rest })),
+    ]
+  })
+}
+
+type AccountStateChange = ReturnType<typeof getAccountStateChanges>[number]
+
+// type AssetDiff = AssetDiffRaw & {
+//   side: "in" | "out"
+// }
+
 type AssetImageProps =
   | {
       type: "currency"
-      isPositiveEffect: boolean
+      side: "in" | "out"
       imageUrl: string | null | undefined
       name: string
       //verified: boolean
     }
   | {
       type: "nft"
-      isPositiveEffect: boolean
+      side: "in" | "out"
       imageUrl: string | null | undefined
       name: string
     }
   | {
       type: "unknown"
-      isPositiveEffect: boolean
+      side: "in" | "out"
     }
 
 const AssetImage = (props: AssetImageProps) => {
@@ -79,14 +105,17 @@ const AssetImage = (props: AssetImageProps) => {
       <div
         className={classNames(
           "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
-          props.isPositiveEffect ? "bg-[#16541D]" : "bg-[#262C54]",
+          props.side === "in" && "bg-[#16541D]",
+          props.side === "out" && "bg-[#262C54]",
         )}
       >
-        {props.isPositiveEffect ? (
+        {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}
+        {props.side === "out" && <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />}
+        {/* {props.isPositiveEffect ? (
           <ArrowDownIcon className="text-green h-8 w-8" />
         ) : (
           <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />
-        )}
+        )} */}
 
         {/* TODO nice blue chip badge if props.verified === true */}
       </div>
@@ -94,18 +123,16 @@ const AssetImage = (props: AssetImageProps) => {
   )
 }
 
-const StateChangeImage: FC<{ assetDiff: AssetDiff }> = ({ assetDiff }) => {
-  const isPositive = !!assetDiff.in.length // TODO: could there be both in and outs ?
-
-  switch (assetDiff.asset_type) {
+const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
+  switch (change.asset_type) {
     case "NATIVE":
     case "ERC20":
       return (
         <AssetImage
           type="currency"
-          imageUrl={assetDiff.asset.logo_url}
-          name={assetDiff.asset.name ?? assetDiff.asset.symbol!}
-          isPositiveEffect={isPositive}
+          imageUrl={change.asset.logo_url}
+          name={change.asset.name ?? change.asset.symbol!}
+          side={change.side}
         />
       )
     case "ERC721":
@@ -113,14 +140,15 @@ const StateChangeImage: FC<{ assetDiff: AssetDiff }> = ({ assetDiff }) => {
       return (
         <AssetImage
           type="nft"
-          imageUrl={assetDiff.asset.logo_url}
-          name={assetDiff.asset.name ?? assetDiff.asset.symbol!}
-          isPositiveEffect={isPositive}
+          imageUrl={change.asset.logo_url}
+          name={change.asset.name ?? change.asset.symbol!}
+          side={change.side}
         />
       )
 
     default:
-      return <AssetImage type="unknown" isPositiveEffect={isPositive} />
+      return null
+    //return <AssetImage type="unknown" side={change.side} />
   }
 
   //if (isCurrencyStateChange(rawInfo)) {
@@ -193,70 +221,102 @@ const FooterFieldLink: FC<{ href?: string; label: ReactNode; value: ReactNode }>
   )
 
 const StateChangeFooter: FC<{
-  rawInfo: EvmExpectedStateChange["rawInfo"]
+  simulation: TransactionSimulation
+  change: AccountStateChange
   networkId: NetworkId | undefined
-}> = ({ rawInfo, networkId }) => {
+}> = ({ change, networkId, simulation }) => {
   // TODO
-
-  // const { t } = useTranslation()
+  // const isPositive = !!assetDiff.in.length
+  const network = useNetworkById(networkId)
+  const { t } = useTranslation()
   // const assetLink = useAssetLinkFromRawInfo(rawInfo, chainInfo)
+  const assetLink = useMemo(() => {
+    if (!network) return null
+    if (change.asset_type === "NATIVE") return null
+    return (
+      getBlockExplorerUrls(network, { type: "address", address: change.asset.address })[0] ?? null
+    )
+  }, [change, network])
+
   // const counterpartyLink = generateCounterpartyBlockExplorerUrl(rawInfo, chainInfo)
+  const counterparty = useMemo(() => {
+    const trace = simulation.account_summary.traces.find((trace) => {
+      if (trace.trace_type !== "AssetTrace") return false
+      if (change.side === "in" && trace.to_address !== simulation.params?.from) return false
+      if (change.side === "out" && trace.from_address !== simulation.params?.from) return false
+      return isEqual(trace.asset, change.asset)
+    })
+
+    if (!trace || trace.trace_type !== "AssetTrace") return null
+
+    return change.side === "in" ? trace?.from_address : trace?.to_address
+
+    //return getBlockExplorerUrls(network, {type: "address", address})[0] ?? null
+  }, [change, simulation])
+
+  const counterpartyLink = useMemo(() => {
+    if (!network || !counterparty) return null
+    return getBlockExplorerUrls(network, { type: "address", address: counterparty })[0] ?? null
+  }, [network, counterparty])
+
   // const isPositiveEffect = useMemo(() => isPositiveStateChange(rawInfo), [rawInfo])
 
-  // if (isCurrencyStateChange(rawInfo)) {
-  //   return (
-  //     <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
-  //       <FooterFieldLink href={assetLink} label={t("Asset:")} value={rawInfo.data.asset.name} />
-  //       {counterpartyLink && hasCounterparty(rawInfo) && rawInfo.data.counterparty?.address && (
-  //         <FooterFieldLink
-  //           href={counterpartyLink}
-  //           label={isPositiveEffect ? t("From:") : t("To:")}
-  //           value={shortenAddress(rawInfo.data.counterparty.address, 6, 4)}
-  //         />
-  //       )}
-  //     </div>
-  //   )
-  // } else if (isNftStateChange(rawInfo)) {
-  //   const price = getAssetPriceInUsd(rawInfo)
-  //   let typeStr: string | undefined = undefined
+  //if (    isCurrencyStateChange(rawInfo)) {
+  if (change.asset_type === "ERC20" || change.asset_type === "NATIVE") {
+    return (
+      <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
+        {assetLink && (
+          <FooterFieldLink href={assetLink} label={t("Asset:")} value={change.asset.name} />
+        )}
+        {counterpartyLink && counterparty && (
+          <FooterFieldLink
+            href={counterpartyLink}
+            label={change.side === "in" ? t("From:") : t("To:")}
+            value={shortenAddress(counterparty, 6, 4)}
+          />
+        )}
+      </div>
+    )
+  } else if (change.asset_type === "ERC721" || change.asset_type === "ERC1155") {
+    return null
+    // const price = getAssetPriceInUsd(rawInfo)
+    // let typeStr: string | undefined = undefined
 
-  //   if (rawInfo.kind.includes("ERC721")) {
-  //     typeStr = "ERC-721"
-  //   } else if (rawInfo.kind.includes("ERC1155")) {
-  //     typeStr = "ERC-1155"
-  //   }
+    // if (rawInfo.kind.includes("ERC721")) {
+    //   typeStr = "ERC-721"
+    // } else if (rawInfo.kind.includes("ERC1155")) {
+    //   typeStr = "ERC-1155"
+    // }
 
-  //   return (
-  //     <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
-  //       <FooterField label={"Type:"} value={typeStr} />
-  //       {!!price && <FooterField label={t("Floor price:")} value={formatPrice(price)} />}
-  //       {counterpartyLink && hasCounterparty(rawInfo) && rawInfo.data.counterparty?.address && (
-  //         <FooterFieldLink
-  //           href={counterpartyLink}
-  //           label={isPositiveEffect ? t("From:") : t("To:")}
-  //           value={shortenAddress(rawInfo.data.counterparty.address, 6, 4)}
-  //         />
-  //       )}
-  //     </div>
-  //   )
-  // }
+    // return (
+    //   <div className="flex max-w-full flex-wrap items-center gap-4 overflow-hidden">
+    //     <FooterField label={"Type:"} value={typeStr} />
+    //     {!!price && <FooterField label={t("Floor price:")} value={formatPrice(price)} />}
+    //     {counterpartyLink && hasCounterparty(rawInfo) && rawInfo.data.counterparty?.address && (
+    //       <FooterFieldLink
+    //         href={counterpartyLink}
+    //         label={isPositiveEffect ? t("From:") : t("To:")}
+    //         value={shortenAddress(rawInfo.data.counterparty.address, 6, 4)}
+    //       />
+    //     )}
+    //   </div>
+    // )
+  }
   return null
 }
 
 const StateChange: FC<{
-  assetDiff: AssetDiff
+  simulation: TransactionSimulation
+  change: AccountStateChange
   networkId: NetworkId | undefined
-}> = ({ assetDiff, networkId }) => (
+}> = ({ change, simulation, networkId }) => (
   <div className="flex w-full gap-8 p-4">
     <div className="w-20 shrink-0 pt-4">
-      <StateChangeImage assetDiff={assetDiff} />
+      <StateChangeImage change={change} />
     </div>
     <div className="text-body flex grow flex-col justify-center gap-2 overflow-hidden pt-4">
-      {assetDiff.in.concat(assetDiff.out).map((change, i) => (
-        <div key={i}>{change.summary}</div>
-      ))}
-      {/* TODO */}
-      {/* <StateChangeFooter rawInfo={assetDiff.rawInfo} networkId={networkId} /> */}
+      <div>{change.change.summary}</div>
+      <StateChangeFooter change={change} simulation={simulation} networkId={networkId} />
     </div>
   </div>
 )
@@ -283,8 +343,19 @@ export const RiskAnalysisStateChanges: FC<{
 
   // if (!changes.length) return null
 
+  const simulation = useMemo(() => {
+    const sim = riskAnalysis.result?.simulation
+    if (sim?.status === "Success") return sim
+    return null
+  }, [riskAnalysis])
+
+  const changes = useMemo<AccountStateChange[]>(() => {
+    if (!simulation) return []
+    return getAccountStateChanges(simulation.account_summary)
+  }, [simulation])
+
   // TODO display an error or something?
-  if (riskAnalysis.result?.simulation?.status !== "Success") return null
+  if (!simulation) return null
 
   // const { chainInfo } = riskAnalysis
   // if (!chainInfo) return null
@@ -292,8 +363,13 @@ export const RiskAnalysisStateChanges: FC<{
   return (
     <div className="flex w-full flex-col">
       <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
-      {riskAnalysis.result?.simulation.account_summary.assets_diffs.map((assetDiff, i) => (
-        <StateChange key={i} assetDiff={assetDiff} networkId={riskAnalysis.networkId} />
+      {changes.map((change, i) => (
+        <StateChange
+          key={i}
+          change={change}
+          simulation={simulation}
+          networkId={riskAnalysis.networkId}
+        />
       ))}
       {/* {changes.map((change, i) => (
         <StateChange key={i} change={change} networkId={riskAnalysis.networkId} />
