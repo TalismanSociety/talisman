@@ -7,7 +7,7 @@ export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, n
   // if user has only 1 NFT in that collection, use it as the image
   if (collectionNfts.length === 1) return collectionNfts[0].previewUrl
 
-  return collection.iconUrl
+  return collection.iconUrl ?? collection.bannerUrl ?? collectionNfts[0].previewUrl
 }
 
 export const getNftQuantity = (nft: Nft, owner?: string) => {
