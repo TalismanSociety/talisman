@@ -1,4 +1,3 @@
-import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useState } from "react"
 
@@ -31,11 +30,14 @@ export const NftImage = ({
   }
 
   return (
-    <div className={classNames("relative size-16 shrink-0 overflow-hidden rounded-sm", className)}>
+    <div
+      className={classNames(
+        "bg-grey-800 relative size-16 shrink-0 overflow-hidden rounded-sm",
+        className,
+      )}
+    >
       {isLoading && !hasError && (
-        <div className="bg-grey-800 text-body-secondary absolute inset-0 flex size-full items-center justify-center">
-          <LoaderIcon className="animate-spin-slow size-1/5" />
-        </div>
+        <img src={imgUnknownNft} className="size-full shrink-0 animate-pulse" alt="Loading" />
       )}
       <img
         onLoad={handleLoad}
