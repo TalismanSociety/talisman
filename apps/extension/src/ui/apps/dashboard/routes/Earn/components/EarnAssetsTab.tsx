@@ -5,11 +5,11 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
-import { usePortfolioSymbolBalancesByFilter } from "@ui/domains/Portfolio/AssetsTable/usePortfolioSymbolBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useYieldBalances } from "@ui/domains/Staking/Earn/hooks/useYieldBalances"
 import { usePortfolioGlobalData } from "@ui/state"
 
-import { EarnTokenRow } from "./EarnTokenRow"
+import { DefiAssetRow } from "./DefiAssetRow"
 
 const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
@@ -70,18 +70,21 @@ export const EarnAssetsTab = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
-  const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
+  const { groupedByToken, isLoading: isYieldLoading } = useYieldBalances()
 
   const location = useLocation()
 
-  if (!symbolBalances.length && !isInitialising) {
+  // Show grouped assets instead of individual positions
+  const hasDefiAssets = groupedByToken.size > 0
+
+  if (!hasDefiAssets && !isInitialising && !isYieldLoading) {
     return (
       <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
         {selectedAccount
-          ? t("No assets were found on this account.")
+          ? t("No staking positions found for this account.")
           : selectedFolder
-            ? t("No assets were found in this folder.")
-            : t("No assets were found.")}
+            ? t("No staking positions found in this folder.")
+            : t("No staking positions found.")}
       </div>
     )
   }
@@ -95,25 +98,17 @@ export const EarnAssetsTab = () => {
       </div>
 
       {/* Defi Section */}
-      <div className="mb-4">
-        <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Defi")}</h2>
-        <div className="space-y-0">
-          {symbolBalances.length > 0 ? (
-            symbolBalances.map(([symbol, balances]) => (
-              <EarnTokenRow key={symbol} balances={balances} noCountUp />
-            ))
-          ) : !isInitialising ? (
-            <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
-              {selectedAccount
-                ? t("No assets were found on this account.")
-                : selectedFolder
-                  ? t("No assets were found in this folder.")
-                  : t("No assets were found.")}
-            </div>
-          ) : null}
+      {hasDefiAssets && (
+        <div className="mb-6">
+          <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Defi")}</h2>
+          <div className="space-y-0">
+            {Array.from(groupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
+              <DefiAssetRow key={tokenSymbol} tokenSymbol={tokenSymbol} tokenData={tokenData} />
+            ))}
+          </div>
         </div>
-      </div>
-      {isInitialising && <EarnTokenRowSkeleton />}
+      )}
+      {(isInitialising || isYieldLoading) && <EarnTokenRowSkeleton />}
     </div>
   )
 }

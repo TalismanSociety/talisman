@@ -19,10 +19,10 @@ import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTok
 import { useNetworkById } from "@ui/state"
 import { useYieldProducts } from "@ui/state/yield"
 
-export const EarnTokenRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
-  balances,
-  noCountUp,
-}) => {
+export const EarnTokenRow: FC<{
+  balances: Balances
+  noCountUp?: boolean
+}> = ({ balances, noCountUp }) => {
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()

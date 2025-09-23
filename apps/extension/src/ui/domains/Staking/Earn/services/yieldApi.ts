@@ -67,6 +67,52 @@ export interface YieldSubmitHashRequest {
   hash: string
 }
 
+export interface YieldBalanceQuery {
+  address: string
+  network: string
+}
+
+export interface YieldBalanceRequest {
+  queries: YieldBalanceQuery[]
+}
+
+export interface YieldToken {
+  address: string
+  symbol: string
+  name: string
+  decimals: number
+  logoURI: string
+  coinGeckoId: string
+  network: string
+  isPoints: boolean
+}
+
+export interface YieldPositionBalance {
+  address: string
+  amount: string
+  amountRaw: string
+  type: string
+  token: YieldToken
+  pendingActions: unknown[]
+  amountUsd: string
+  isEarning: boolean
+}
+
+export interface YieldPositionItem {
+  yieldId: string
+  balances: YieldPositionBalance[]
+}
+
+export interface YieldError {
+  yieldId: string
+  error: string
+}
+
+export interface YieldBalancesResponse {
+  items: YieldPositionItem[]
+  errors: YieldError[]
+}
+
 export type YieldStatusResponse = YieldTransaction
 
 class YieldApiService {
@@ -134,6 +180,16 @@ class YieldApiService {
   ): Promise<YieldStatusResponse> {
     return this.makeRequest<YieldStatusResponse>(`/transactions/${transactionId}/submit-hash`, {
       method: "PUT",
+      body: JSON.stringify(request),
+    })
+  }
+
+  /**
+   * Fetch user yield balances across networks
+   */
+  async getYieldBalances(request: YieldBalanceRequest): Promise<YieldBalancesResponse> {
+    return this.makeRequest<YieldBalancesResponse>("/yields/balances", {
+      method: "POST",
       body: JSON.stringify(request),
     })
   }
