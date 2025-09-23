@@ -1,4 +1,4 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -10,10 +10,9 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { RiskAnalysisWarnings } from "./RiskAnalysisWarnings"
 import { EvmRiskAnalysis } from "./types"
 
-const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnalysis) => {
+const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
@@ -25,8 +24,8 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
         ...scanError,
       }
 
-    switch (result?.action) {
-      case ActionEnum.Block:
+    switch (result?.validation?.result_type) {
+      case "Malicious":
         return {
           Icon: ShieldNotOkIcon,
           bgClassName: "bg-brand-orange/10",
@@ -34,9 +33,9 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
           iconClassName: "bg-brand-orange/10",
           title: t("Critical Risk"),
           // in this case there should always be at least 1 warning
-          description: result.warnings[0]?.message ?? "",
+          description: result.validation.reason ?? "",
         }
-      case ActionEnum.Warn:
+      case "Warning":
         return {
           Icon: ShieldZapIcon,
           bgClassName: "bg-alert-warn/10",
@@ -44,21 +43,31 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
           iconClassName: "bg-alert-warn/10",
           title: t("Medium Risk"),
           // in this case there should always be at least 1 warning
-          description: result.warnings[0]?.message ?? "",
+          description: result.validation.reason ?? "", // result.warnings[0]?.message ?? "",
         }
-      case ActionEnum.None:
+      case "Benign":
         return {
           Icon: ShieldOkIcon,
           bgClassName: "bg-green/10",
           textClassName: "text-green",
           iconClassName: "bg-green/10",
-          title: result.warnings.length ? t("No Risk Found") : t("Low Risk"),
-          description:
-            result.warnings[0]?.message ??
-            (type === "transaction"
-              ? t("No risks were identified in this transaction")
-              : t("No risks were identified in this message")),
+          title: t("Low Risk"), // result.warnings.length ? t("No Risk Found") : t("Low Risk"),
+          description: t("No risks were identified"),
+          // result.warnings[0]?.message ??
+          // (type === "transaction"
+          //   ? t("No risks were identified in this transaction")
+          //   : t("No risks were identified in this message")),
         }
+      case "Error": {
+        return {
+          Icon: ShieldUnknownIcon,
+          bgClassName: "bg-grey-800",
+          textClassName: "text-body-secondary",
+          iconClassName: "text-body-disabled",
+          title: t("Analysis Error"),
+          description: t("Proceed at your own risk."),
+        }
+      }
     }
     if (!isAvailable) {
       return {
@@ -74,7 +83,7 @@ const useRecommendation = ({ type, isAvailable, result, scanError }: EvmRiskAnal
     }
 
     return null
-  }, [isAvailable, result?.action, result?.warnings, scanError, t, type])
+  }, [isAvailable, result, scanError, t])
 }
 
 const RiskAnalysisRecommendationInner: FC<{
@@ -110,9 +119,14 @@ const RiskAnalysisRecommendationInner: FC<{
 export const RiskAnalysisRecommendation: FC<{
   riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
-  return riskAnalysis.result?.warnings.length ? (
-    <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
-  ) : (
-    <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
-  )
+  // if (riskAnalysis.result?.validation?.result_type === "Benign")
+  //   return <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
+
+  return null // TODO
+  //   return riskAnalysis.result?.warnings.length ? (
+  //     <>TODO WARNINGS</>
+  //  //   <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
+  //   ) : (
+  //     <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
+  //   )
 }

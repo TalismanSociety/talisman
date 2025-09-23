@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -84,8 +83,8 @@ const RiskAnalysisCriticalPane: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (riskAnalysis?.result?.action === ActionEnum.Block) open()
-  }, [open, riskAnalysis?.result?.action])
+    if (riskAnalysis?.result?.validation?.result_type === "Malicious") open()
+  }, [open, riskAnalysis?.result])
 
   return (
     <Transition show={isOpen}>
@@ -107,8 +106,9 @@ const RiskAnalysisCriticalPane: FC<{
           </div>
           <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
           <p className="text-body text-md">
-            {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
-            {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
+            {t("We suspect this transaction is harmful.")}
+            {/* TODO {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
+            {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")} */}
             <br />
             {t("Signing it could lead to funds loss.")}
           </p>

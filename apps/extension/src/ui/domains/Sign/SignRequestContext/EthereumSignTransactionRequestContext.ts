@@ -50,7 +50,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const origin = useOriginFromUrl(signingRequest?.url)
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId: signingRequest?.ethChainId,
+    networkId: signingRequest?.ethChainId,
     tx: transaction,
     origin,
   })
@@ -68,7 +68,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         networkType: "evm",
         type: "message",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.action,
+        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
         origin,
       })
 
@@ -93,7 +93,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         networkType: "evm",
         type: "message",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.action,
+        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
         origin,
       })
     }
@@ -128,7 +128,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
           networkType: "evm",
           type: "message",
           network: network?.id,
-          riskAnalysisAction: riskAnalysis?.result?.action,
+          riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
           origin,
         })
       }

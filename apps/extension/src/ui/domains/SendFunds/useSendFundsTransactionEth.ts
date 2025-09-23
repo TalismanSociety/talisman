@@ -47,7 +47,7 @@ export const useSendFundsTransactionEth = ({
   const result = useEthTransaction(tx, token?.networkId, isLocked, false)
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId: token?.networkId,
+    networkId: token?.networkId,
     tx,
     disableAutoRiskScan: true,
   })

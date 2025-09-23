@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import {
   LoaderIcon,
   ShieldNotOkIcon,
@@ -45,21 +44,21 @@ export const RiskAnalysisPillButton: FC = () => {
         disabled: false,
       }
     }
-    if (riskAnalysis?.result?.action === ActionEnum.None)
+    if (riskAnalysis?.result?.validation?.result_type === "Benign")
       return {
         label: t("Low Risk"),
         icon: ShieldOkIcon,
         className: "text-alert-success",
         disabled: false,
       }
-    if (riskAnalysis?.result?.action === ActionEnum.Warn)
+    if (riskAnalysis?.result?.validation?.result_type === "Warning")
       return {
         label: t("Medium Risk"),
         icon: ShieldZapIcon,
         className: "text-alert-warn",
         disabled: false,
       }
-    if (riskAnalysis?.result?.action === ActionEnum.Block)
+    if (riskAnalysis?.result?.validation?.result_type === "Malicious")
       return {
         label: t("Critical Risk"),
         icon: ShieldNotOkIcon,

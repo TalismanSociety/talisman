@@ -1,56 +1,55 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
+import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-import { getBlowfishChainInfo } from "./blowfish"
+// import { getBlowfishChainInfo } from "./blowfish"
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
 import {
-  BlowfishEvmChainInfo,
-  PayloadType,
-  ResponseType,
+  // BlowfishEvmChainInfo,
+  // PayloadType,
+  // ResponseType,
   RiskAnalysisScanError,
   RisksReview,
 } from "./types"
 import { useRisksReview } from "./useRisksReview"
 
 type UseEvmRiskAnalysisBaseProps<
-  Type extends PayloadType,
   Key extends QueryKey,
-  Func = QueryFunction<ResponseType<Type>, Key>,
+  Func = QueryFunction<TransactionScanResponse | null, Key>,
 > = {
-  type: Type
-  evmNetworkId: EthNetworkId | undefined
+  networkId: NetworkId | undefined
   disableAutoRiskScan?: boolean
   queryKey: Key
   queryFn: Func
   enabled: boolean
 }
 
-type EvmRiskAnalysisResult<Type extends PayloadType, Result = ResponseType<Type>> = {
-  type: Type
+type EvmRiskAnalysisResult = {
+  networkId: NetworkId | undefined
   shouldPromptAutoRiskScan: boolean
   isAvailable: boolean
   unavailableReason: string | undefined
   isValidating: boolean
-  result: Result | undefined
+  result: TransactionScanResponse | null | undefined
   error: unknown
   scanError: RiskAnalysisScanError | null
-  chainInfo: BlowfishEvmChainInfo | null
+  // chainInfo: BlowfishEvmChainInfo | null
   review: RisksReview
   launchScan: () => void
 }
 
-export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends QueryKey>({
-  type,
-  evmNetworkId,
+export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
+  networkId,
   disableAutoRiskScan,
   queryKey,
   queryFn,
   enabled,
-}: UseEvmRiskAnalysisBaseProps<Type, Key>): EvmRiskAnalysisResult<Type> => {
+}: UseEvmRiskAnalysisBaseProps<Key>): EvmRiskAnalysisResult => {
   const { t } = useTranslation()
   const [autoRiskScan] = useSetting("autoRiskScan")
   const [isScanRequested, setIsScanRequested] = useState(false)
@@ -60,16 +59,16 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     [autoRiskScan, disableAutoRiskScan],
   )
 
-  const chainInfo = useMemo(
-    () => (evmNetworkId ? getBlowfishChainInfo(evmNetworkId) : null),
-    [evmNetworkId],
-  )
+  // const chainInfo = useMemo(
+  //   () => (networkId ? getBlowfishChainInfo(networkId) : null),
+  //   [networkId],
+  // )
 
   const [isAvailable, unavailableReason] = useMemo(() => {
-    if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
+    // if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
     if (!enabled) return [false, t("Risk analysis unavailable")]
     return [true, undefined]
-  }, [chainInfo, enabled, t])
+  }, [enabled, t])
 
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
@@ -99,11 +98,17 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     retry: false,
   })
 
-  const review = useRisksReview(result?.action)
+  useEffect(() => {
+    log.debug("EvmRiskAnalysisBase result", { result, error })
+  }, [result, error])
+
+  //result?.validation?.result_type
+
+  const review = useRisksReview(result)
 
   const scanError = useMemo(
-    () => (result ? getRiskAnalysisScanError(type, result, t) : null),
-    [type, result, t],
+    () => (result ? getRiskAnalysisScanError(result, t) : null),
+    [result, t],
   )
 
   const launchScan = useCallback(() => {
@@ -130,7 +135,8 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
   )
 
   return {
-    type,
+    //type,
+    networkId,
     isAvailable,
     unavailableReason,
     isValidating,
@@ -138,7 +144,7 @@ export const useEvmRiskAnalysisBase = <Type extends PayloadType, Key extends Que
     error,
     scanError,
     launchScan,
-    chainInfo,
+    //chainInfo,
     review,
     shouldPromptAutoRiskScan,
   }

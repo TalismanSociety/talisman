@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -10,15 +9,15 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
   const riskAnalysis = useRiskAnalysis()
 
   const color = useMemo(() => {
-    switch (riskAnalysis?.result?.action) {
-      case ActionEnum.Block:
+    switch (riskAnalysis?.result?.validation?.result_type) {
+      case "Malicious":
         return "red"
-      case ActionEnum.Warn:
+      case "Warning":
         return "orange"
       default:
         return "primary"
     }
-  }, [riskAnalysis?.result?.action])
+  }, [riskAnalysis?.result?.validation?.result_type])
 
   const [disabled, tooltip] = useMemo(() => {
     if (!riskAnalysis || props.disabled) return [!!props.disabled, null]

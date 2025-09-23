@@ -1,28 +1,32 @@
-import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+// import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
+// import http from "http"
+
+import { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
+import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import { log } from "extension-shared"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
 import { useFeatureFlag } from "@ui/state"
 
-import { getBlowfishClient } from "./blowfish"
+import { blockaid } from "./blockaid"
 import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 
 type UseEvmTransactionRiskAnalysisProps = {
-  evmNetworkId: EthNetworkId | undefined
+  networkId: SolNetworkId | EthNetworkId | undefined
   tx: TransactionRequest | undefined
   origin?: string
   disableAutoRiskScan?: boolean
 }
 
 export const useEvmTransactionRiskAnalysis = ({
-  evmNetworkId,
+  networkId,
   tx,
   disableAutoRiskScan,
 }: UseEvmTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
-  const txData = useMemo<EvmTxData | null>(() => {
+  const txData = useMemo<TransactionScanParams.Data | null>(() => {
     if (!tx?.from) return null
 
     return {
@@ -35,18 +39,28 @@ export const useEvmTransactionRiskAnalysis = ({
   }, [tx?.from, tx?.to, tx?.data, tx?.value])
 
   return useEvmRiskAnalysisBase({
-    type: "transaction",
-    evmNetworkId,
+    networkId,
     disableAutoRiskScan,
-    queryKey: ["useEvmTransactionRiskAnalysis", evmNetworkId, txData, origin],
-    queryFn: () => {
-      if (!evmNetworkId || !txData?.from) return null
+    queryKey: ["useEvmTransactionRiskAnalysis", networkId, txData, origin],
+    queryFn: async () => {
+      if (!networkId || !txData) return null
 
-      const client = getBlowfishClient(evmNetworkId)
-      if (!client) return null
+      const params: TransactionScanParams = {
+        chain: `0x${Number(networkId).toString(16)}`,
+        options: ["simulation", "validation"],
+        data: txData,
+        account_address: txData.from,
+        metadata: {
+          domain: origin,
+        },
+      }
 
-      return client.scanTransactions([txData], txData.from, { origin })
+      const response = await blockaid.evm.transaction.scan(params)
+
+      log.debug("useEvmTransactionRiskAnalysis", { params, response })
+
+      return response
     },
-    enabled: enabled && !!txData && !!evmNetworkId,
+    enabled: enabled && !!txData && !!networkId,
   })
 }

@@ -1,4 +1,5 @@
-import { FC, ReactNode } from "react"
+import { log } from "extension-shared"
+import { FC, ReactNode, useEffect } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 
@@ -10,6 +11,9 @@ type RisksAnalysisProviderProps = {
 }
 
 const useRisksAnalysisProvider = ({ riskAnalysis }: RisksAnalysisProviderProps) => {
+  useEffect(() => {
+    log.debug("useRisksAnalysis", { riskAnalysis })
+  }, [riskAnalysis])
   return riskAnalysis
 }
 
