@@ -7,6 +7,7 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useSetting } from "@ui/state"
 
+import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
@@ -22,6 +23,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
+          <RiskAnalysisExposures riskAnalysis={riskAnalysis} />
         </div>
       </div>
       <RisksAnalysisAcknowledgement riskAnalysis={riskAnalysis} />

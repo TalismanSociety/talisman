@@ -1,9 +1,13 @@
-import { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
+import {
+  Erc20Exposure,
+  Erc721Exposure,
+  Erc1155Exposure,
+  TransactionScanResponse,
+} from "@blockaid/client/resources/index.mjs"
 import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { log } from "extension-shared"
-import { isEqual } from "lodash-es"
+import { toPairs, values } from "lodash-es"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,22 +17,22 @@ import { useNetworkById } from "@ui/state"
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
 import { EvmRiskAnalysis } from "./types"
 
-const getAccountStateChanges = (accountSummary: AccountSummary) => {
-  return accountSummary.assets_diffs.flatMap((diff) => {
-    const { in: changesIn, out: changesOut, ...rest } = diff
+// const getAccountStateChanges = (accountSummary: AccountSummary) => {
+//   return accountSummary.assets_diffs.flatMap((diff) => {
+//     const { in: changesIn, out: changesOut, ...rest } = diff
 
-    if (!changesIn.length && !changesOut.length) {
-      log.warn("[getAccountStateChanges] assetDiff with no changes", { accountSummary, diff })
-    }
+//     if (!changesIn.length && !changesOut.length) {
+//       log.warn("[getAccountStateChanges] assetDiff with no changes", { accountSummary, diff })
+//     }
 
-    return [
-      ...changesIn.map((cIn) => ({ change: cIn, side: "in" as const, ...rest })),
-      ...changesOut.map((cOut) => ({ change: cOut, side: "out" as const, ...rest })),
-    ]
-  })
-}
+//     return [
+//       ...changesIn.map((cIn) => ({ change: cIn, side: "in" as const, ...rest })),
+//       ...changesOut.map((cOut) => ({ change: cOut, side: "out" as const, ...rest })),
+//     ]
+//   })
+// }
 
-type AccountStateChange = ReturnType<typeof getAccountStateChanges>[number]
+// type AccountStateChange = ReturnType<typeof getAccountStateChanges>[number]
 
 type AssetImageProps =
   | {
@@ -99,16 +103,15 @@ const AssetImage = (props: AssetImageProps) => {
   )
 }
 
-const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
-  switch (change.asset_type) {
-    case "NATIVE":
+const ExposureImage: FC<{ exposure: Exposure }> = ({ exposure }) => {
+  switch (exposure.asset_type) {
     case "ERC20":
       return (
         <AssetImage
           type="currency"
-          imageUrl={change.asset.logo_url}
-          name={change.asset.name ?? change.asset.symbol!}
-          side={change.side}
+          imageUrl={exposure.asset.logo_url}
+          name={exposure.asset.name ?? exposure.asset.symbol!}
+          side="out"
         />
       )
     case "ERC721":
@@ -116,9 +119,9 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
       return (
         <AssetImage
           type="nft"
-          imageUrl={change.asset.logo_url}
-          name={change.asset.name ?? change.asset.symbol!}
-          side={change.side}
+          imageUrl={exposure.asset.logo_url}
+          name={exposure.asset.name ?? exposure.asset.symbol!}
+          side="out"
         />
       )
 
@@ -152,100 +155,90 @@ const FooterFieldLink: FC<{ href?: string; label: ReactNode; value: ReactNode }>
     <FooterField label={label} value={value} />
   )
 
-const StateChangeFooter: FC<{
-  simulation: TransactionSimulation
-  change: AccountStateChange
+const ExposureFooter: FC<{
+  exposure: Exposure
   networkId: NetworkId | undefined
-}> = ({ change, networkId, simulation }) => {
+}> = ({ exposure, networkId }) => {
   const network = useNetworkById(networkId)
   const { t } = useTranslation()
 
   const assetLink = useMemo(() => {
     if (!network) return null
-    if (change.asset_type === "NATIVE") return null
     return (
-      getBlockExplorerUrls(network, { type: "address", address: change.asset.address })[0] ?? null
+      getBlockExplorerUrls(network, { type: "address", address: exposure.asset.address })[0] ?? null
     )
-  }, [change, network])
-
-  const counterparty = useMemo(() => {
-    const trace = simulation.account_summary.traces.find((trace) => {
-      if (trace.trace_type !== "AssetTrace") return false
-      if (change.side === "in" && trace.to_address !== simulation.params?.from) return false
-      if (change.side === "out" && trace.from_address !== simulation.params?.from) return false
-      return isEqual(trace.asset, change.asset)
-    })
-
-    if (!trace || trace.trace_type !== "AssetTrace") return null
-
-    return change.side === "in" ? trace?.from_address : trace?.to_address
-  }, [change, simulation])
+  }, [exposure, network])
 
   const counterpartyLink = useMemo(() => {
-    if (!network || !counterparty) return null
-    return getBlockExplorerUrls(network, { type: "address", address: counterparty })[0] ?? null
-  }, [network, counterparty])
+    if (!network) return null
+    return getBlockExplorerUrls(network, { type: "address", address: exposure.spender })[0] ?? null
+  }, [network, exposure])
 
   return (
     <div className="flex max-w-full flex-wrap items-center overflow-hidden">
       {assetLink && (
-        <FooterFieldLink href={assetLink} label={t("Asset:")} value={change.asset.name} />
+        <FooterFieldLink href={assetLink} label={t("Asset:")} value={exposure.asset.name} />
       )}
-      {counterpartyLink && counterparty && (
+      {counterpartyLink && (
         <FooterFieldLink
           href={counterpartyLink}
-          label={change.side === "in" ? t("From:") : t("To:")}
-          value={shortenAddress(counterparty, 6, 4)}
+          label={t("Spender:")}
+          value={shortenAddress(exposure.spender, 6, 4)}
         />
       )}
     </div>
   )
 }
 
-const StateChange: FC<{
-  simulation: TransactionSimulation
-  change: AccountStateChange
+const ExposureEntry: FC<{
+  exposure: Exposure
   networkId: NetworkId | undefined
-}> = ({ change, simulation, networkId }) => (
+}> = ({ exposure, networkId }) => (
   <div className="flex w-full gap-8 p-4">
     <div className="w-20 shrink-0 pt-4">
-      <StateChangeImage change={change} />
+      <ExposureImage exposure={exposure} />
     </div>
     <div className="text-body flex grow flex-col justify-center gap-2 overflow-hidden pt-4">
-      <div>{change.change.summary}</div>
-      <StateChangeFooter change={change} simulation={simulation} networkId={networkId} />
+      <div>{exposure.exposure.summary}</div>
+      <ExposureFooter exposure={exposure} networkId={networkId} />
     </div>
   </div>
 )
 
-export const RiskAnalysisStateChanges: FC<{
+const getExposures = (scan: TransactionScanResponse | null | undefined) => {
+  if (scan?.simulation?.status !== "Success") return []
+  return values(scan.simulation.exposures)
+    .flat()
+    .flatMap(({ spenders, ...rest }) =>
+      toPairs(spenders as Record<string, Erc20Exposure | Erc721Exposure | Erc1155Exposure>).map(
+        ([spender, exposure]) => ({ ...rest, spender, exposure }),
+      ),
+    )
+}
+
+type Exposure = ReturnType<typeof getExposures>[number]
+
+export const RiskAnalysisExposures: FC<{
   riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
-  const simulation = useMemo(() => {
-    const sim = riskAnalysis.result?.simulation
-    if (sim?.status === "Success") return sim
-    return null
-  }, [riskAnalysis])
+  const exposures = useMemo(() => {
+    return getExposures(riskAnalysis.result)
+  }, [riskAnalysis.result])
 
-  const changes = useMemo<AccountStateChange[]>(() => {
-    if (!simulation) return []
-    return getAccountStateChanges(simulation.account_summary)
-  }, [simulation])
+  // const changes = useMemo<AccountStateChange[]>(() => {
+  //   if (!simulation) return []
+  //   return getAccountStateChanges(simulation.account_summary)
+  // }, [simulation])
 
-  if (!simulation || !changes.length) return null
+  if (!exposures.length) return null
 
   return (
     <div className="flex w-full flex-col">
-      <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
-      {changes.map((change, i) => (
-        <StateChange
-          key={i}
-          change={change}
-          simulation={simulation}
-          networkId={riskAnalysis.networkId}
-        />
+      <div className="text-body-secondary text-sm">{t("Exposure")}</div>
+      {exposures.map((exposure, i) => (
+        <ExposureEntry key={i} exposure={exposure} networkId={riskAnalysis.networkId} />
       ))}
     </div>
   )

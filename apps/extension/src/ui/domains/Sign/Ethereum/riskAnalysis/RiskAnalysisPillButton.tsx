@@ -6,8 +6,6 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { log } from "extension-shared"
-import { TFunction } from "i18next"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -15,20 +13,6 @@ import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 import { useFeatureFlag } from "@ui/state"
 
 import { useRiskAnalysis } from "./context"
-
-const getErrorTooltip = (t: TFunction, error: Error) => {
-  log.error("Failed to analyse risks", { error })
-  switch (error.name) {
-    case "FetchError":
-      return t("Failed to connect to risk analysis service. ")
-    case "AbortError":
-      return t("Risk analysis request was aborted")
-    case "BlowfishBadRequestError":
-      return t("Invalid request")
-    default:
-      return t("Failed to analyse risks: {{message}}", { message: error.message })
-  }
-}
 
 export const RiskAnalysisPillButton: FC = () => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")
@@ -75,7 +59,7 @@ export const RiskAnalysisPillButton: FC = () => {
     }
 
     if (riskAnalysis?.error) {
-      const error = riskAnalysis?.error as Error
+      const error = riskAnalysis.error as Error
 
       // Consider it's worth retrying in case of api error (429, 500..) unless it's because of an invalid request
       // Add conditions here as we discover them
@@ -86,7 +70,7 @@ export const RiskAnalysisPillButton: FC = () => {
         label: isInvalidRequest ? t("Assessment unavailable") : t("Scan failed"),
         className: "opacity-50",
         disabled: isInvalidRequest, // let user retry if he wants, unless it's an invalid request
-        tooltip: getErrorTooltip(t, riskAnalysis.error as Error),
+        tooltip: error.message,
       }
     }
 

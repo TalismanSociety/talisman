@@ -33,7 +33,7 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
           iconClassName: "bg-brand-orange/10",
           title: t("Critical Risk"),
           // in this case there should always be at least 1 warning
-          description: result.validation.reason ?? "",
+          description: result.validation.description ?? "",
         }
       case "Warning":
         return {
@@ -43,7 +43,7 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
           iconClassName: "bg-alert-warn/10",
           title: t("Medium Risk"),
           // in this case there should always be at least 1 warning
-          description: result.validation.reason ?? "", // result.warnings[0]?.message ?? "",
+          description: result.validation.description ?? "", // result.warnings[0]?.message ?? "",
         }
       case "Benign":
         return {
@@ -120,9 +120,9 @@ export const RiskAnalysisRecommendation: FC<{
   riskAnalysis: EvmRiskAnalysis
 }> = ({ riskAnalysis }) => {
   // if (riskAnalysis.result?.validation?.result_type === "Benign")
-  //   return <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
+  return <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
 
-  return null // TODO
+  // return null // TODO
   //   return riskAnalysis.result?.warnings.length ? (
   //     <>TODO WARNINGS</>
   //  //   <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />

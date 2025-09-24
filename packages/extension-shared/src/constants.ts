@@ -12,8 +12,6 @@ export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"
 
-// export const BLOWFISH_BASE_PATH = process.env.BLOWFISH_BASE_PATH || "https://bfp.talisman.xyz"
-// export const BLOWFISH_API_KEY = process.env.BLOWFISH_API_KEY
 export const BLOCKAID_API_URL = "http://localhost:8787"
 export const NFTS_API_KEY = process.env.NFTS_API_KEY
 export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"

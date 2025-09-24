@@ -1,9 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalEnv": [
-    "BLOWFISH_API_KEY",
-    "BLOWFISH_BASE_PATH",
-    "BLOWFISH_QA_API_KEY",
     "COINGECKO_API_KEY_NAME",
     "COINGECKO_API_KEY_VALUE",
     "COINGECKO_API_URL",

@@ -51,7 +51,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
   const riskAnalysis = useEvmTransactionRiskAnalysis({
     networkId: signingRequest?.ethChainId,
-    tx: transaction,
+    tx: txBase,
     origin,
   })
 

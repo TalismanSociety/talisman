@@ -29,7 +29,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   const riskAnalysis = useEvmMessageRiskAnalysis({
     networkId: request?.ethChainId,
     method: request?.method,
-    message: request?.request,
+    params: request?.params,
     account: request?.account?.address,
     origin,
   })

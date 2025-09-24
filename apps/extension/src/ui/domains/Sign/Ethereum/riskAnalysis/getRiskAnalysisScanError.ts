@@ -33,8 +33,8 @@ export const getRiskAnalysisScanError = (
 ): RiskAnalysisScanError | null => {
   if (response?.validation?.result_type === "Error")
     return {
-      title: t("Risk analysis failed"),
-      description: t("Proceed at your own risk."),
+      title: t("Risk analysis failed, proceed at your own risk."),
+      description: response.validation.error ?? t("Unknown error"),
     }
 
   return null

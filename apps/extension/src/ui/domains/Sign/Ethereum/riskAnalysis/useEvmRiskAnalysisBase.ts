@@ -7,15 +7,8 @@ import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-// import { getBlowfishChainInfo } from "./blowfish"
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import {
-  // BlowfishEvmChainInfo,
-  // PayloadType,
-  // ResponseType,
-  RiskAnalysisScanError,
-  RisksReview,
-} from "./types"
+import { RiskAnalysisScanError, RisksReview } from "./types"
 import { useRisksReview } from "./useRisksReview"
 
 type UseEvmRiskAnalysisBaseProps<
@@ -38,7 +31,6 @@ type EvmRiskAnalysisResult = {
   result: TransactionScanResponse | null | undefined
   error: unknown
   scanError: RiskAnalysisScanError | null
-  // chainInfo: BlowfishEvmChainInfo | null
   review: RisksReview
   launchScan: () => void
 }
@@ -59,13 +51,7 @@ export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
     [autoRiskScan, disableAutoRiskScan],
   )
 
-  // const chainInfo = useMemo(
-  //   () => (networkId ? getBlowfishChainInfo(networkId) : null),
-  //   [networkId],
-  // )
-
   const [isAvailable, unavailableReason] = useMemo(() => {
-    // if (!chainInfo) return [false, t("Risk analysis is not available on this network")]
     if (!enabled) return [false, t("Risk analysis unavailable")]
     return [true, undefined]
   }, [enabled, t])
@@ -102,8 +88,6 @@ export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
     log.debug("EvmRiskAnalysisBase result", { result, error })
   }, [result, error])
 
-  //result?.validation?.result_type
-
   const review = useRisksReview(result)
 
   const scanError = useMemo(
@@ -135,7 +119,6 @@ export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
   )
 
   return {
-    //type,
     networkId,
     isAvailable,
     unavailableReason,
@@ -144,7 +127,6 @@ export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
     error,
     scanError,
     launchScan,
-    //chainInfo,
     review,
     shouldPromptAutoRiskScan,
   }

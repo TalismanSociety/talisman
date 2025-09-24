@@ -13,7 +13,7 @@ import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
 type UseEvmMessageRiskAnalysisProps = {
   networkId: EthNetworkId | undefined
   method: EthSignMessageMethod | undefined
-  message: string | undefined
+  params: unknown[] | undefined
   account: string | undefined
   origin: string
   disableAutoRiskScan?: boolean
@@ -22,7 +22,7 @@ type UseEvmMessageRiskAnalysisProps = {
 export const useEvmMessageRiskAnalysis = ({
   networkId,
   method,
-  message,
+  params,
   account,
   origin,
   disableAutoRiskScan,
@@ -32,25 +32,29 @@ export const useEvmMessageRiskAnalysis = ({
   return useEvmRiskAnalysisBase({
     networkId,
     disableAutoRiskScan,
-    queryKey: ["useEvmMessageRiskAnalysis", networkId, method, message, account, origin],
+    queryKey: ["useEvmMessageRiskAnalysis", networkId, method, params, account, origin],
     queryFn: async () => {
-      if (!networkId || !method || !message || !account) return null
+      if (!networkId || !method || !params || !account) return null
 
-      const params: JsonRpcScanParams = {
+      const scanParams: JsonRpcScanParams = {
         chain: `0x${Number(networkId).toString(16)}`,
         data: {
           method,
-          params: [account, message],
+          params,
         },
         metadata: { domain: origin },
       }
+      try {
+        const response = await blockaid.evm.jsonRpc.scan(scanParams)
 
-      const response = await blockaid.evm.jsonRpc.scan(params)
+        log.debug("useEvmMessageRiskAnalysis", { scanParams, response })
 
-      log.debug("useEvmMessageRiskAnalysis", { payload: params, response })
-
-      return response
+        return response
+      } catch (err) {
+        log.error("useEvmMessageRiskAnalysis", { scanParams })
+        throw err
+      }
     },
-    enabled: enabled && !!method && !!message && !!account && !!networkId,
+    enabled: enabled && !!method && !!params && !!account && !!networkId,
   })
 }

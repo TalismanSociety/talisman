@@ -130,7 +130,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
-      <div className="mb-8">
+      <div className="mb-8 flex w-full flex-col items-center gap-4">
         <RiskAnalysisPillButton />
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>

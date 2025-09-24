@@ -1,6 +1,4 @@
-// import { EvmTxData } from "@blowfishxyz/api-client/v20230605"
-// import http from "http"
-
+import { APIError } from "@blockaid/client"
 import { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
 import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
@@ -55,11 +53,20 @@ export const useEvmTransactionRiskAnalysis = ({
         },
       }
 
-      const response = await blockaid.evm.transaction.scan(params)
+      try {
+        const response = await blockaid.evm.transaction.scan(params)
 
-      log.debug("useEvmTransactionRiskAnalysis", { params, response })
+        log.debug("useEvmTransactionRiskAnalysis", { params, response })
 
-      return response
+        return response
+      } catch (err) {
+        log.error("useEvmTransactionRiskAnalysis", { params, err })
+
+        if (err instanceof APIError && err.error.detail[0]?.msg)
+          throw new Error(err.error.detail[0]?.msg, { cause: err })
+
+        throw err
+      }
     },
     enabled: enabled && !!txData && !!networkId,
   })
