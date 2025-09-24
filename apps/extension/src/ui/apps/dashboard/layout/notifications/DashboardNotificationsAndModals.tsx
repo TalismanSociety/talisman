@@ -6,7 +6,7 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
-import { EarnModal } from "@ui/domains/Earn"
+import { ProductSelectionModal } from "@ui/domains/Earn"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
@@ -47,7 +47,7 @@ export const DashboardNotificationsAndModals = () => {
       <AccountRenameModal />
       <BondModal />
       <BittensorBondModal />
-      <EarnModal />
+      <ProductSelectionModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />
       <GetStartedModals />

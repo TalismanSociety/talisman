@@ -60,6 +60,7 @@ const AssetRow: FC<{
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
 
@@ -145,7 +146,7 @@ const AssetRow: FC<{
               className={classNames(
                 "whitespace-nowrap text-sm font-bold",
                 locked ? "text-body-secondary" : "text-white",
-                "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               <Tokens
@@ -163,7 +164,7 @@ const AssetRow: FC<{
             <div
               className={classNames(
                 "text-body-secondary leading-base text-xs",
-                "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
@@ -182,7 +183,12 @@ const AssetRow: FC<{
       )}
 
       {showEarnButton && (
-        <div className="absolute right-2 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+        <div
+          className={classNames(
+            "absolute right-2 top-0 hidden h-28 flex-col justify-center",
+            selectedAccount?.type !== "watch-only" && "group-hover:flex",
+          )}
+        >
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
         </div>
       )}

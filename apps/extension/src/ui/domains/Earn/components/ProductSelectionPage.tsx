@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
-import { EarnModalBody } from "../EarnModalBody"
 import { useEarnModal } from "../hooks/useEarnModal"
+import { ProductSelectionModalBody } from "./ProductSelectionModal"
 
-export const EarnPage: FC = () => {
+export const ProductSelectionPage: FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -37,7 +37,7 @@ export const EarnPage: FC = () => {
         </IconButton>
       </header>
       <div className="flex grow flex-col overflow-hidden px-10 pb-10">
-        <EarnModalBody tokenId={tokenId} />
+        <ProductSelectionModalBody tokenId={tokenId} />
       </div>
     </div>
   )

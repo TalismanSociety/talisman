@@ -9,17 +9,17 @@ import { useNetworkById, useToken } from "@ui/state"
 import { useYieldProducts } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { EarnAccountPicker } from "./components/EarnAccountPicker"
-import { ProductList } from "./components/ProductList"
-import { TokenDetails } from "./components/TokenDetails"
-import { DepositModal } from "./DepositModal"
-import { useEarnWizard, useSetEarnWizardAccount } from "./hooks/useEarnWizard"
+import { DepositModal } from "../../DepositModal"
+import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
+import { EarnAccountPicker } from "../EarnAccountPicker"
+import { ProductList } from "../ProductList"
+import { TokenDetails } from "../TokenDetails"
 
-interface EarnModalBodyProps {
+interface ProductSelectionModalBodyProps {
   tokenId: TokenId
 }
 
-export const EarnModalBody: FC<EarnModalBodyProps> = ({ tokenId }) => {
+export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ tokenId }) => {
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
   const { selectedAccount } = usePortfolioNavigation()

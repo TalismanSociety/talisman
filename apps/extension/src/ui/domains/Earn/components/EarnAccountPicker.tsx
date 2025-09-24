@@ -1,4 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -61,17 +62,22 @@ export const EarnAccountPicker: FC<EarnAccountPickerProps> = ({
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={onDismiss}>
-      <div className="flex h-[600px] max-h-[80vh] min-w-[400px] flex-col gap-12 rounded-[20px] bg-black p-8">
-        <header className="flex items-center justify-between">
+      <div
+        className={classNames(
+          "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+          "border-grey-800 rounded border",
+        )}
+      >
+        <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
           <IconButton onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
-          <div>{t("Select an account to stake")}</div>
+          <div className="text-base font-bold">{t("Select an account to stake")}</div>
           <IconButton onClick={onDismiss} className="invisible">
             <XIcon />
           </IconButton>
         </header>
-        <div className="flex grow flex-col overflow-hidden">
+        <div className="grow overflow-hidden p-12 pt-0">
           <div className="flex min-h-fit w-full items-center gap-8 pb-8">
             <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
           </div>

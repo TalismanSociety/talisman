@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnPillButton } from "@ui/domains/Earn"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -28,6 +29,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -109,7 +111,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
-              "group-hover:hidden",
+              selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
             noCountUp={noCountUp}
@@ -132,7 +134,12 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           </div>
         </>
       )}
-      <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+      <div
+        className={classNames(
+          "absolute right-2 top-0 hidden h-[6.6rem] flex-col justify-center",
+          selectedAccount?.type !== "watch-only" && "group-hover:flex",
+        )}
+      >
         <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
       </div>
     </div>

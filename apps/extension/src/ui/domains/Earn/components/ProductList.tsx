@@ -25,7 +25,7 @@ export const ProductList: FC<ProductListProps> = ({
   // Show loading state
   if (isLoading) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
         <div className="space-y-3 pb-4">
           <div className="flex h-32 items-center justify-center">
             <div className="py-8 text-center text-gray-400">
@@ -40,7 +40,7 @@ export const ProductList: FC<ProductListProps> = ({
   // Show error state
   if (error) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
         <div className="space-y-3 pb-4">
           <div className="flex h-32 items-center justify-center">
             <div className="py-8 text-center text-gray-400">
@@ -55,7 +55,7 @@ export const ProductList: FC<ProductListProps> = ({
   // Show empty state
   if (products.length === 0) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
         <div className="space-y-3 pb-4">
           <div className="flex h-32 items-center justify-center">
             <div className="py-8 text-center text-gray-400">
@@ -78,7 +78,7 @@ export const ProductList: FC<ProductListProps> = ({
 
   // Show products list
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto">
+    <div className="min-h-0 flex-1 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
       <div className="space-y-3 pb-4">
         {sortedProducts.map((product) => (
           <ProductItem

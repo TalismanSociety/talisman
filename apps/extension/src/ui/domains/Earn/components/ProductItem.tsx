@@ -63,7 +63,7 @@ export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick })
       </div>
       <div className="flex shrink-0 flex-col items-end justify-center">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-[#5A5A5A]">APY</span>
+          <span className="text-xs text-gray-500">APY</span>
           <span className={`text-sm font-semibold ${getApyColor()}`}>{apy.toFixed(2)}%</span>
         </div>
       </div>

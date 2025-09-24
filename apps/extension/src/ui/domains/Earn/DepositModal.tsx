@@ -1,3 +1,4 @@
+import { classNames } from "@talismn/util"
 import { Suspense, useEffect, useState } from "react"
 import { Modal } from "talisman-ui"
 
@@ -75,10 +76,13 @@ const DepositModalContent = ({
   return (
     <div
       id="deposit-modal-content"
-      className="flex h-[600px] max-h-[80vh] min-w-[400px] flex-col gap-12 rounded-[20px] border border-[#5A5A5A] bg-black p-8"
+      className={classNames(
+        "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+        !IS_POPUP && "border-grey-800 rounded border",
+      )}
     >
-      <div className="flex items-center justify-between">
-        <div className="text-lg font-semibold">
+      <div className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
+        <div className="text-base font-bold">
           {currentStep === "amount"
             ? "Deposit"
             : currentStep === "confirm"
@@ -96,7 +100,7 @@ const DepositModalContent = ({
         </button>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="grow overflow-hidden p-12 pt-0">
         {currentStep === "amount" && <DepositAmountForm onNext={handleNext} />}
         {currentStep === "confirm" && (
           <DepositConfirmForm
