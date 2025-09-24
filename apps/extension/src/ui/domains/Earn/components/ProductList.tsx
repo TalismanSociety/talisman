@@ -1,8 +1,8 @@
 import { TokenId } from "@talismn/chaindata-provider"
+import { YieldProduct } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { YieldProduct } from "../../../../../../../../packages/extension-core/src/domains/yield/types"
 import { ProductItem } from "./ProductItem"
 
 interface ProductListProps {

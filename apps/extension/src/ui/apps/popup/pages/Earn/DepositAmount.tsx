@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 
 import { AnalyticsPage } from "@ui/api/analytics"
-import { DepositAmountForm } from "@ui/domains/Staking/Earn/components/DepositAmountForm"
+import { DepositAmountForm } from "@ui/domains/Earn/components/DepositAmountForm"
 
 import { EarnLayout } from "./EarnLayout"
 

@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import { Route, Routes } from "react-router-dom"
 import { combineLatest } from "rxjs"
 
-import { DepositWizardProvider } from "@ui/domains/Staking/Earn/context/DepositWizardContext"
+import { DepositWizardProvider } from "@ui/domains/Earn/context/DepositWizardContext"
 import { accounts$, balancesHydrate$, contacts$ } from "@ui/state"
 
 import { DepositAmount } from "../DepositAmount"

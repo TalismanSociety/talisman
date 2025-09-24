@@ -5,8 +5,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
 
+import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useYieldBalances } from "@ui/domains/Staking/Earn/hooks/useYieldBalances"
 import { usePortfolioGlobalData } from "@ui/state"
 
 import { DefiAssetRow } from "./DefiAssetRow"

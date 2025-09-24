@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { YieldPositionBalance } from "@ui/domains/Staking/Earn/services/yieldApi"
+import { YieldPositionBalance } from "@ui/domains/Earn/services/yieldApi"
 
 interface YieldPositionRowProps {
   position: YieldPositionBalance

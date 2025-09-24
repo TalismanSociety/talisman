@@ -2,7 +2,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldBalances } from "@ui/domains/Staking/Earn/hooks/useYieldBalances"
+import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
 
 import { EarnAssetsTab } from "./EarnAssetsTab"
 import { EarnDiscoverTab } from "./EarnDiscoverTab"
