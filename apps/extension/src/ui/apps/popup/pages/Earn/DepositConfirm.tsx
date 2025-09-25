@@ -115,7 +115,7 @@ const DepositConfirmContent = () => {
   return (
     <div className="flex size-full flex-grow flex-col bg-black">
       <div className="flex w-full items-center justify-center gap-8 overflow-hidden p-10">
-        <div className="text-base font-bold">Staking</div>
+        <div className="text-base font-bold text-white">Staking</div>
         <button
           type="button"
           onClick={handleClose}
@@ -126,14 +126,14 @@ const DepositConfirmContent = () => {
       </div>
 
       <div className="px-10 pb-4">
-        <div className="text-body-secondary text-sm">You're approving staking</div>
-        <div className="mt-4">
+        <div className="text-body text-center text-lg font-bold">You're approving staking</div>
+        <div className="mt-12">
           <DepositProgressBar
             currentStep={transactionStep}
             tokenSymbol={token?.symbol || "Token"}
           />
         </div>
-        <div className="mt-6">
+        <div className="mt-16">
           <DepositDetails />
         </div>
       </div>

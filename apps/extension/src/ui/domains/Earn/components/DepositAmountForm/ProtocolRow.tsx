@@ -22,7 +22,7 @@ export const ProtocolRow = () => {
             e.currentTarget.style.display = "none"
           }}
         />
-        <div>{metadata.name}</div>
+        <div className="text-white">{metadata.name}</div>
       </div>
     </div>
   )

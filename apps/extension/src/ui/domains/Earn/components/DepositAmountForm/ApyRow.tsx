@@ -51,7 +51,7 @@ export const ApyRow = () => {
           </div>
         </TooltipContent>
       </Tooltip>
-      <div>{apy.toFixed(2)}%</div>
+      <div className="text-white">{apy.toFixed(2)}%</div>
     </div>
   )
 }

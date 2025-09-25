@@ -131,31 +131,43 @@ const ConfirmDepositModalContent = ({
         !IS_POPUP && "border-grey-800 rounded border",
       )}
     >
-      <div className="flex w-full items-center justify-center gap-8 overflow-hidden p-10">
-        <div className="text-base font-bold">Staking</div>
+      {/* Header matching SendFundsLayout pattern */}
+      <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
+        <div className="w-12">&nbsp;</div>
+        <div className="grow text-center text-lg font-bold text-white">Staking</div>
         <button
           type="button"
           onClick={handleClose}
-          className="text-body-secondary hover:text-body absolute right-10 text-xl"
+          className="text-body-secondary hover:text-body flex w-12 items-center justify-center text-xl"
         >
           ×
         </button>
       </div>
 
-      <div className="px-10 pb-4">
-        <div className="text-body-secondary text-sm">You're approving staking</div>
-        <div className="mt-4">
-          <DepositProgressBar
-            currentStep={transactionStep}
-            tokenSymbol={token?.symbol || "Token"}
-          />
-        </div>
-        <div className="mt-6">
-          <DepositDetails />
+      {/* Main content area with consistent padding */}
+      <div className="w-full grow overflow-hidden">
+        <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
+          <div className="w-full grow">
+            <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
+              <div className="text-body mb-12 text-center text-lg font-bold">
+                You're approving staking
+              </div>
+              <div className="mb-16">
+                <DepositProgressBar
+                  currentStep={transactionStep}
+                  tokenSymbol={token?.symbol || "Token"}
+                />
+              </div>
+              <div>
+                <DepositDetails />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grow overflow-hidden pt-0">
+      {/* Action area with consistent padding */}
+      <div className="w-full">
         {currentStep === "confirm" && (
           <div className="flex h-full w-full flex-col px-12 pb-8">
             <div className="mt-auto">

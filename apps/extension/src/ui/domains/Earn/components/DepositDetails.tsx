@@ -1,11 +1,12 @@
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 
 import { AddressDisplay } from "../../SendFunds/AddressDisplay"
 import { ApyRow } from "./DepositAmountForm/ApyRow"
+import { ProtocolRow } from "./DepositAmountForm/ProtocolRow"
 import { useDepositFunds } from "./useDepositFunds"
 
 interface DepositDetailsProps {
@@ -60,38 +61,38 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
     return product.providerId || t("Auto-selected")
   }
 
-  const getProtocolInfo = () => {
-    return product.metadata.name || t("Unknown Protocol")
-  }
-
   const getReceiveInfo = () => {
     return product.outputToken.symbol || t("Yield Token")
   }
 
   return (
-    <div className={`flex flex-col gap-[14/16rem] ${className || ""}`}>
+    <div className={`flex flex-col gap-6 ${className || ""}`}>
       {/* Group 1: Amount and Account */}
       <div className="flex flex-col gap-3">
         {/* Amount */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Amount")}</span>
-          <div className="text-right">
-            <Tokens
-              amount={deposit.planck.toString()}
-              symbol={token.symbol}
-              decimals={token.decimals}
-              isBalance
+          <span className="text-body-secondary text-xs">{t("Amount")}</span>
+          <div className="flex w-full items-center justify-end gap-4 text-right">
+            <TokenLogo tokenId={token.id} className="text-sm" />
+            <TokensAndFiat
+              tokenId={token.id}
+              planck={deposit.planck}
+              tokensClassName="text-white text-xs"
+              noCountUp
+              noFiat
             />
-            <div className="text-body-secondary text-xs">
-              <Fiat amount={deposit.fiat("usd")} isBalance />
-            </div>
           </div>
         </div>
 
         {/* Account */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Account")}</span>
-          <AddressDisplay address={account.address} networkId={token.networkId} />
+          <span className="text-body-secondary text-xs">{t("Account")}</span>
+          <AddressDisplay
+            address={account.address}
+            networkId={token.networkId}
+            className="text-sm"
+            hideBlockExplorer
+          />
         </div>
       </div>
 
@@ -101,20 +102,22 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       {/* Group 2: APY, Reward Frequency, and Withdrawal Time */}
       <div className="flex flex-col gap-3">
         {/* APY */}
-        <ApyRow />
+        <div className="!text-sm">
+          <ApyRow />
+        </div>
 
         {/* Reward Frequency */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Reward Frequency")}</span>
-          <span className="text-body text-sm">
+          <span className="text-body-secondary text-xs">{t("Reward Frequency")}</span>
+          <span className="text-body text-xs">
             {formatRewardFrequency(product.mechanics.rewardSchedule)}
           </span>
         </div>
 
         {/* Withdrawal Time */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Withdrawal Time")}</span>
-          <span className="text-body text-sm">
+          <span className="text-body-secondary text-xs">{t("Withdrawal Time")}</span>
+          <span className="text-body text-xs">
             {formatWithdrawalTime(product.mechanics.cooldownPeriod)}
           </span>
         </div>
@@ -127,20 +130,18 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       <div className="flex flex-col gap-3">
         {/* Curator */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Curator")}</span>
-          <span className="text-body text-sm">{getCuratorInfo()}</span>
+          <span className="text-body-secondary text-xs">{t("Curator")}</span>
+          <span className="text-body text-xs">{getCuratorInfo()}</span>
         </div>
 
-        {/* Protocol */}
-        <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Protocol")}</span>
-          <span className="text-body text-sm">{getProtocolInfo()}</span>
+        <div className="!text-xs">
+          <ProtocolRow />
         </div>
 
         {/* Receive */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-sm">{t("Receive")}</span>
-          <span className="text-body text-sm">{getReceiveInfo()}</span>
+          <span className="text-body-secondary text-xs">{t("Receive")}</span>
+          <span className="text-body text-xs">{getReceiveInfo()}</span>
         </div>
       </div>
     </div>
