@@ -2,12 +2,10 @@ import "@talisman/theme/styles.css"
 
 import { Subscribe } from "@react-rxjs/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { wagmiConfig } from "ethereum/wagmiConfig"
 import { ReactNode, StrictMode, Suspense } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { FontFamily, preloadFonts } from "talisman-ui"
-import { WagmiProvider } from "wagmi"
 
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
@@ -60,9 +58,7 @@ export const renderTalisman = (
             <KeepWalletUnlocked mode={keepWalletUnlockedMode} />
             <Subscribe>
               <QueryClientProvider client={queryClient}>
-                <WagmiProvider config={wagmiConfig}>
-                  <HashRouter>{app}</HashRouter>
-                </WagmiProvider>
+                <HashRouter>{app}</HashRouter>
                 <NotificationsContainer />
               </QueryClientProvider>
             </Subscribe>
