@@ -28,21 +28,21 @@ export const RiskAnalysisPillButton: FC = () => {
         disabled: false,
       }
     }
-    if (riskAnalysis?.result?.validation?.result_type === "Benign")
+    if (riskAnalysis?.validationResult === "Benign")
       return {
         label: t("Low Risk"),
         icon: ShieldOkIcon,
         className: "text-alert-success",
         disabled: false,
       }
-    if (riskAnalysis?.result?.validation?.result_type === "Warning")
+    if (riskAnalysis?.validationResult === "Warning")
       return {
         label: t("Medium Risk"),
         icon: ShieldZapIcon,
         className: "text-alert-warn",
         disabled: false,
       }
-    if (riskAnalysis?.result?.validation?.result_type === "Malicious")
+    if (riskAnalysis?.validationResult === "Malicious")
       return {
         label: t("Critical Risk"),
         icon: ShieldNotOkIcon,

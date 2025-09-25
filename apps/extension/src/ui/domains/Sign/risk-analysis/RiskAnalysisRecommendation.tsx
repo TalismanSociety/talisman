@@ -10,21 +10,29 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "../Ethereum/riskAnalysis/types"
 
-const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) => {
+const getValidationDescription = (riskAnalysis: RiskAnalysis) => {
+  if (riskAnalysis.platform === "ethereum")
+    return riskAnalysis.result?.validation?.description ?? "" // TODO ?
+  if (riskAnalysis.platform === "solana")
+    return riskAnalysis.result?.result?.validation?.reason ?? ""
+  return undefined
+}
+
+const useRecommendation = (riskAnalysis: RiskAnalysis) => {
   const { t } = useTranslation()
 
   return useMemo(() => {
-    if (scanError)
+    if (riskAnalysis.scanError)
       return {
         Icon: ShieldUnknownIcon,
         bgClassName: "bg-grey-800",
         iconClassName: "text-body-disabled",
-        ...scanError,
+        ...riskAnalysis.scanError,
       }
 
-    switch (result?.validation?.result_type) {
+    switch (riskAnalysis.validationResult) {
       case "Malicious":
         return {
           Icon: ShieldNotOkIcon,
@@ -33,7 +41,7 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
           iconClassName: "bg-brand-orange/10",
           title: t("Critical Risk"),
           // in this case there should always be at least 1 warning
-          description: result.validation.description ?? "",
+          description: getValidationDescription(riskAnalysis) ?? "",
         }
       case "Warning":
         return {
@@ -43,7 +51,7 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
           iconClassName: "bg-alert-warn/10",
           title: t("Medium Risk"),
           // in this case there should always be at least 1 warning
-          description: result.validation.description ?? "", // result.warnings[0]?.message ?? "",
+          description: getValidationDescription(riskAnalysis) ?? "", // result.warnings[0]?.message ?? "",
         }
       case "Benign":
         return {
@@ -69,7 +77,7 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
         }
       }
     }
-    if (!isAvailable) {
+    if (!riskAnalysis.isAvailable) {
       return {
         Icon: ShieldUnavailableIcon,
         bgClassName: "bg-body-secondary/10",
@@ -83,11 +91,11 @@ const useRecommendation = ({ isAvailable, result, scanError }: EvmRiskAnalysis) 
     }
 
     return null
-  }, [isAvailable, result, scanError, t])
+  }, [riskAnalysis, t])
 }
 
 const RiskAnalysisRecommendationInner: FC<{
-  riskAnalysis: EvmRiskAnalysis
+  riskAnalysis: RiskAnalysis
 }> = ({ riskAnalysis }) => {
   const reco = useRecommendation(riskAnalysis)
 
@@ -117,16 +125,7 @@ const RiskAnalysisRecommendationInner: FC<{
 }
 
 export const RiskAnalysisRecommendation: FC<{
-  riskAnalysis: EvmRiskAnalysis
+  riskAnalysis: RiskAnalysis
 }> = ({ riskAnalysis }) => {
-  // if (riskAnalysis.result?.validation?.result_type === "Benign")
   return <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
-
-  // return null // TODO
-  //   return riskAnalysis.result?.warnings.length ? (
-  //     <>TODO WARNINGS</>
-  //  //   <RiskAnalysisWarnings warnings={riskAnalysis.result.warnings} />
-  //   ) : (
-  //     <RiskAnalysisRecommendationInner riskAnalysis={riskAnalysis} />
-  //   )
 }

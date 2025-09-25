@@ -68,13 +68,13 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         networkType: "evm",
         type: "message",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+        riskAnalysisAction: riskAnalysis.result?.validation?.result_type,
         origin,
       })
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis],
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -93,7 +93,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         networkType: "evm",
         type: "message",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+        riskAnalysisAction: riskAnalysis.result?.validation?.result_type,
         origin,
       })
     }
@@ -102,15 +102,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     if (!transaction) throw new Error("Missing transaction")
     const serialized = serializeTransactionRequest(transaction)
     return baseRequest && baseRequest.approve(serialized)
-  }, [
-    baseRequest,
-    genericEvent,
-    network?.id,
-    riskAnalysis?.result,
-    riskAnalysis?.review,
-    origin,
-    transaction,
-  ])
+  }, [baseRequest, genericEvent, network?.id, riskAnalysis, origin, transaction])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -128,7 +120,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
           networkType: "evm",
           type: "message",
           network: network?.id,
-          riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+          riskAnalysisAction: riskAnalysis.result?.validation?.result_type,
           origin,
         })
       }
@@ -144,15 +136,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         setIsPayloadLocked(false)
       }
     },
-    [
-      baseRequest,
-      riskAnalysis?.result,
-      riskAnalysis?.review,
-      transaction,
-      origin,
-      network?.id,
-      genericEvent,
-    ],
+    [baseRequest, riskAnalysis, transaction, origin, network?.id, genericEvent],
   )
 
   return {

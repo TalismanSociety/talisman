@@ -9,7 +9,7 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
   const riskAnalysis = useRiskAnalysis()
 
   const color = useMemo(() => {
-    switch (riskAnalysis?.result?.validation?.result_type) {
+    switch (riskAnalysis?.validationResult) {
       case "Malicious":
         return "red"
       case "Warning":
@@ -17,7 +17,7 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
       default:
         return "primary"
     }
-  }, [riskAnalysis?.result?.validation?.result_type])
+  }, [riskAnalysis?.validationResult])
 
   const [disabled, tooltip] = useMemo(() => {
     if (!riskAnalysis || props.disabled) return [!!props.disabled, null]

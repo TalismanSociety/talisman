@@ -20,8 +20,14 @@ import {
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import {
+  RiskAnalysisPillButton,
+  RiskAnalysisProvider,
+} from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAnalysisStateChanges"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
+import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/Solana/riskAnalysis/useSolTransactionRiskAnalysis"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
@@ -49,6 +55,12 @@ export const SolSignTransactionRequest: FC<{
   const { data: validity } = useTransactionValidity({
     transaction,
     networkId,
+  })
+
+  const riskAnalysis = useSolTransactionRiskAnalysis({
+    from: account.address,
+    networkId,
+    tx: serializedTx,
   })
 
   const { t } = useTranslation()
@@ -113,12 +125,18 @@ export const SolSignTransactionRequest: FC<{
         <AppPill url={request.url} />
       </PopupHeader>
       <PopupContent>
-        <div className="text-body-secondary flex w-full flex-col items-center text-center">
-          <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
-          <h2 className="mb-8 text-base leading-[3.2rem]">
-            {t("You are signing a transaction with account")} <AccountPill account={account} />
-          </h2>
-        </div>
+        <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={() => window.close()}>
+          <div className="text-body-secondary flex w-full flex-col items-center text-center">
+            <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
+            <h2 className="mb-8 text-base leading-[3.2rem]">
+              {t("You are signing a transaction with account")} <AccountPill account={account} />
+            </h2>
+            <RiskAnalysisPillButton />
+            <div className="bg-grey-850 mt-8 w-full rounded-sm p-2 empty:hidden">
+              <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} noTitle />
+            </div>
+          </div>
+        </RiskAnalysisProvider>
       </PopupContent>
       <PopupFooter className="flex flex-col gap-8">
         {!!displayError && (

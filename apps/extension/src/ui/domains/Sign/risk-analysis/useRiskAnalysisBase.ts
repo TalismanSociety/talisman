@@ -1,4 +1,3 @@
-import { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -6,41 +5,51 @@ import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-import { getRiskAnalysisScanError } from "../Ethereum/riskAnalysis/getRiskAnalysisScanError"
 import { RiskAnalysisScanError, RisksReview } from "../Ethereum/riskAnalysis/types"
 import { useRisksReview } from "../Ethereum/riskAnalysis/useRisksReview"
+import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
+import { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 
 type UseRiskAnalysisBaseProps<
+  Platform extends RiskAnalysisPlatform,
   Key extends QueryKey,
-  Func = QueryFunction<TransactionScanResponse | null, Key>,
+  Func = QueryFunction<RiskAnalysisResponse<Platform> | null, Key>,
 > = {
-  networkId: NetworkId | undefined
+  platform: RiskAnalysisPlatform
+  networkId: NetworkId | null | undefined
   disableAutoRiskScan?: boolean
   queryKey: Key
   queryFn: Func
   enabled: boolean
 }
 
-type RiskAnalysisResult = {
+export type RiskAnalysisResult<Platform extends RiskAnalysisPlatform> = {
+  platform: Platform
   networkId: NetworkId | undefined
   shouldPromptAutoRiskScan: boolean
   isAvailable: boolean
   unavailableReason: string | undefined
   isValidating: boolean
-  result: TransactionScanResponse | null | undefined
+  result: RiskAnalysisResponse<Platform> | null | undefined
   error: unknown
   scanError: RiskAnalysisScanError | null
   review: RisksReview
   launchScan: () => void
+  validationResult: "Benign" | "Warning" | "Malicious" | "Error" | undefined
 }
 
-export const useRiskAnalysisBase = <Key extends QueryKey>({
+export const useRiskAnalysisBase = <
+  Platform extends RiskAnalysisPlatform,
+  Key extends QueryKey = unknown[],
+  Result = RiskAnalysisResult<Platform>,
+>({
+  platform,
   networkId,
   disableAutoRiskScan,
   queryKey,
   queryFn,
   enabled,
-}: UseRiskAnalysisBaseProps<Key>): RiskAnalysisResult => {
+}: UseRiskAnalysisBaseProps<Platform, Key>): Result => {
   const { t } = useTranslation()
   const [autoRiskScan] = useSetting("autoRiskScan")
   const [isScanRequested, setIsScanRequested] = useState(false)
@@ -83,15 +92,11 @@ export const useRiskAnalysisBase = <Key extends QueryKey>({
     retry: false,
   })
 
-  // useEffect(() => {
-  //   log.debug("RiskAnalysisBase", { result, error })
-  // }, [result, error])
-
-  const review = useRisksReview(result)
+  const review = useRisksReview(platform, result)
 
   const scanError = useMemo(
-    () => (result ? getRiskAnalysisScanError(result, t) : null),
-    [result, t],
+    () => (result ? getRiskAnalysisScanError(platform, result, t) : null),
+    [platform, result, t],
   )
 
   const launchScan = useCallback(() => {
@@ -117,16 +122,32 @@ export const useRiskAnalysisBase = <Key extends QueryKey>({
     [enabled, isAvailable, isLoading, shouldValidate],
   )
 
+  const validationResult = useMemo(() => {
+    if (platform === "solana") {
+      const r = result as RiskAnalysisResponse<"solana"> | undefined
+      return r?.result?.validation?.result_type
+    }
+
+    if (platform === "ethereum") {
+      const r = result as RiskAnalysisResponse<"ethereum"> | undefined
+      return r?.validation?.result_type
+    }
+
+    return undefined
+  }, [platform, result])
+
   return {
+    platform,
     networkId,
     isAvailable,
     unavailableReason,
     isValidating,
-    result,
+    result: result as RiskAnalysisResponse<Platform> | null | undefined,
     error,
     scanError,
     launchScan,
     review,
     shouldPromptAutoRiskScan,
-  }
+    validationResult,
+  } as Result
 }

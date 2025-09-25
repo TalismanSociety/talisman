@@ -7,8 +7,8 @@ import { TransactionRequest } from "viem"
 
 import { useFeatureFlag } from "@ui/state"
 
-import { blockaid } from "../../riskAnalysis/blockaid"
-import { useRiskAnalysisBase } from "../../riskAnalysis/useRiskAnalysisBase"
+import { blockaid } from "../../risk-analysis/blockaid"
+import { useRiskAnalysisBase } from "../../risk-analysis/useRiskAnalysisBase"
 
 type UseEvmTransactionRiskAnalysisProps = {
   networkId: SolNetworkId | EthNetworkId | undefined
@@ -36,7 +36,8 @@ export const useEvmTransactionRiskAnalysis = ({
     // don't pass the whole tx as a memo dependency, as it changes a lot  (ex: gas) it would trigger many api calls
   }, [tx?.from, tx?.to, tx?.data, tx?.value])
 
-  return useRiskAnalysisBase({
+  return useRiskAnalysisBase<"ethereum">({
+    platform: "ethereum",
     networkId,
     disableAutoRiskScan,
     queryKey: ["useEvmTransactionRiskAnalysis", networkId, txData, origin],

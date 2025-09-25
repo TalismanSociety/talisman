@@ -7,13 +7,13 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useSetting } from "@ui/state"
 
+import { RiskAnalysisRecommendation } from "../../risk-analysis/RiskAnalysisRecommendation"
+import { RiskAnalysisStateChanges } from "../../risk-analysis/RiskAnalysisStateChanges"
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
-import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
-import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "./types"
 
-const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
+const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
   return (
@@ -77,7 +77,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
 }
 
 const RiskAnalysisCriticalPane: FC<{
-  riskAnalysis: EvmRiskAnalysis | undefined
+  riskAnalysis: RiskAnalysis | undefined
   onReject?: () => void
 }> = ({ riskAnalysis, onReject = () => window.close() }) => {
   const { t } = useTranslation()
@@ -85,8 +85,8 @@ const RiskAnalysisCriticalPane: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (riskAnalysis?.result?.validation?.result_type === "Malicious") open()
-  }, [open, riskAnalysis?.result])
+    if (riskAnalysis?.validationResult === "Malicious") open()
+  }, [open, riskAnalysis?.validationResult])
 
   return (
     <Transition show={isOpen}>
@@ -131,7 +131,7 @@ const RiskAnalysisCriticalPane: FC<{
   )
 }
 
-export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis; onReject?: () => void }> = ({
+export const RiskAnalysisDrawers: FC<{ riskAnalysis?: RiskAnalysis; onReject?: () => void }> = ({
   riskAnalysis,
   onReject,
 }) => {

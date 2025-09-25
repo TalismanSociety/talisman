@@ -4,10 +4,10 @@ import { FC, ReactNode, useEffect } from "react"
 import { provideContext } from "@talisman/util/provideContext"
 
 import { RiskAnalysisDrawers } from "./RiskAnalysisDrawers"
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "./types"
 
 type RisksAnalysisProviderProps = {
-  riskAnalysis?: EvmRiskAnalysis
+  riskAnalysis?: RiskAnalysis
 }
 
 const useRisksAnalysisProvider = ({ riskAnalysis }: RisksAnalysisProviderProps) => {

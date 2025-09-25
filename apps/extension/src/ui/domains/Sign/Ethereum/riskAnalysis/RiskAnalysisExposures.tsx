@@ -15,7 +15,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById } from "@ui/state"
 
 import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "./types"
 
 // const getAccountStateChanges = (accountSummary: AccountSummary) => {
 //   return accountSummary.assets_diffs.flatMap((diff) => {
@@ -219,13 +219,15 @@ const getExposures = (scan: TransactionScanResponse | null | undefined) => {
 type Exposure = ReturnType<typeof getExposures>[number]
 
 export const RiskAnalysisExposures: FC<{
-  riskAnalysis: EvmRiskAnalysis
+  riskAnalysis: RiskAnalysis
 }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
   const exposures = useMemo(() => {
+    // TODO SOL
+    if (riskAnalysis.platform !== "ethereum") return []
     return getExposures(riskAnalysis.result)
-  }, [riskAnalysis.result])
+  }, [riskAnalysis])
 
   // const changes = useMemo<AccountStateChange[]>(() => {
   //   if (!simulation) return []

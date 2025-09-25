@@ -10,8 +10,11 @@ import { useTranslation } from "react-i18next"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById } from "@ui/state"
 
-import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
-import { EvmRiskAnalysis } from "./types"
+import {
+  RiskAnalysisImageBase,
+  RiskAnalysisPlaceholderImage,
+} from "../../Ethereum/riskAnalysis/RiskAnalysisImageBase"
+import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (accountSummary: AccountSummary) => {
   return accountSummary.assets_diffs.flatMap((diff) => {
@@ -218,9 +221,10 @@ const StateChange: FC<{
   </div>
 )
 
-export const RiskAnalysisStateChanges: FC<{
-  riskAnalysis: EvmRiskAnalysis
-}> = ({ riskAnalysis }) => {
+export const RiskAnalysisStateChangesEth: FC<{
+  riskAnalysis: RiskAnalysisResult<"ethereum">
+  noTitle?: boolean
+}> = ({ riskAnalysis, noTitle }) => {
   const { t } = useTranslation()
 
   const simulation = useMemo(() => {
@@ -238,7 +242,7 @@ export const RiskAnalysisStateChanges: FC<{
 
   return (
     <div className="flex w-full flex-col">
-      <div className="text-body-secondary text-sm">{t("Expected changes")}</div>
+      {!noTitle && <div className="text-body-secondary text-sm">{t("Expected changes")}</div>}
       {changes.map((change, i) => (
         <StateChange
           key={i}
