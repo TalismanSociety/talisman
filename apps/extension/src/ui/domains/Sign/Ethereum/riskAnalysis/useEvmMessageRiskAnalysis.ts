@@ -7,8 +7,8 @@ import { log } from "extension-shared"
 
 import { useFeatureFlag } from "@ui/state"
 
-import { blockaid } from "./blockaid"
-import { useEvmRiskAnalysisBase } from "./useEvmRiskAnalysisBase"
+import { blockaid } from "../../riskAnalysis/blockaid"
+import { useRiskAnalysisBase } from "../../riskAnalysis/useRiskAnalysisBase"
 
 type UseEvmMessageRiskAnalysisProps = {
   networkId: EthNetworkId | undefined
@@ -29,7 +29,7 @@ export const useEvmMessageRiskAnalysis = ({
 }: UseEvmMessageRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
-  return useEvmRiskAnalysisBase({
+  return useRiskAnalysisBase({
     networkId,
     disableAutoRiskScan,
     queryKey: ["useEvmMessageRiskAnalysis", networkId, method, params, account, origin],

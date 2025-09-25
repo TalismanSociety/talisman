@@ -1,17 +1,16 @@
 import { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import { RiskAnalysisScanError, RisksReview } from "./types"
-import { useRisksReview } from "./useRisksReview"
+import { getRiskAnalysisScanError } from "../Ethereum/riskAnalysis/getRiskAnalysisScanError"
+import { RiskAnalysisScanError, RisksReview } from "../Ethereum/riskAnalysis/types"
+import { useRisksReview } from "../Ethereum/riskAnalysis/useRisksReview"
 
-type UseEvmRiskAnalysisBaseProps<
+type UseRiskAnalysisBaseProps<
   Key extends QueryKey,
   Func = QueryFunction<TransactionScanResponse | null, Key>,
 > = {
@@ -22,7 +21,7 @@ type UseEvmRiskAnalysisBaseProps<
   enabled: boolean
 }
 
-type EvmRiskAnalysisResult = {
+type RiskAnalysisResult = {
   networkId: NetworkId | undefined
   shouldPromptAutoRiskScan: boolean
   isAvailable: boolean
@@ -35,13 +34,13 @@ type EvmRiskAnalysisResult = {
   launchScan: () => void
 }
 
-export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
+export const useRiskAnalysisBase = <Key extends QueryKey>({
   networkId,
   disableAutoRiskScan,
   queryKey,
   queryFn,
   enabled,
-}: UseEvmRiskAnalysisBaseProps<Key>): EvmRiskAnalysisResult => {
+}: UseRiskAnalysisBaseProps<Key>): RiskAnalysisResult => {
   const { t } = useTranslation()
   const [autoRiskScan] = useSetting("autoRiskScan")
   const [isScanRequested, setIsScanRequested] = useState(false)
@@ -84,9 +83,9 @@ export const useEvmRiskAnalysisBase = <Key extends QueryKey>({
     retry: false,
   })
 
-  useEffect(() => {
-    log.debug("EvmRiskAnalysisBase result", { result, error })
-  }, [result, error])
+  // useEffect(() => {
+  //   log.debug("RiskAnalysisBase", { result, error })
+  // }, [result, error])
 
   const review = useRisksReview(result)
 

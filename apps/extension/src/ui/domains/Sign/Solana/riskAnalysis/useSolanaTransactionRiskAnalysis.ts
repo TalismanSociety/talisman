@@ -1,5 +1,6 @@
 import { APIError } from "@blockaid/client"
 import { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
+import { MessageScanParams } from "@blockaid/client/resources/solana/message.mjs"
 import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { useMemo } from "react"
@@ -17,7 +18,7 @@ type UseEvmTransactionRiskAnalysisProps = {
   disableAutoRiskScan?: boolean
 }
 
-export const useEvmTransactionRiskAnalysis = ({
+export const useSolanaTransactionRiskAnalysis = ({
   networkId,
   tx,
   disableAutoRiskScan,
@@ -39,22 +40,23 @@ export const useEvmTransactionRiskAnalysis = ({
   return useRiskAnalysisBase({
     networkId,
     disableAutoRiskScan,
-    queryKey: ["useEvmTransactionRiskAnalysis", networkId, txData, origin],
+    queryKey: ["useSolanaMessageRiskAnalysis", networkId, txData, origin],
     queryFn: async () => {
-      if (!networkId || !txData) return null
+      if (networkId !== "solana-mainnet" || !txData) return null
 
-      const params: TransactionScanParams = {
-        chain: `0x${Number(networkId).toString(16)}`,
+      const params: MessageScanParams = {
+        chain: "mainnet",
+        encoding: "base58",
         options: ["simulation", "validation"],
-        data: txData,
         account_address: txData.from,
         metadata: {
-          domain: origin,
+          url: origin,
         },
+        transactions: [],
       }
 
       try {
-        const response = await blockaid.evm.transaction.scan(params)
+        const response = await blockaid.solana.message.scan(params)
 
         log.debug("useEvmTransactionRiskAnalysis", { params, response })
 
