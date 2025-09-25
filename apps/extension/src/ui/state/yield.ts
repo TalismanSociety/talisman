@@ -11,7 +11,7 @@ export const useYieldProducts = (filter?: YieldProductsFilter) => {
     queryFn: () => fetchYieldProducts(filter),
     enabled: true,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds for fresh APY data
+    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
     refetchOnWindowFocus: false,
     retry: 2,
   })

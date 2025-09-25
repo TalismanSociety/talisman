@@ -14,7 +14,7 @@ export const AvailableBalanceRow = () => {
   return (
     <Container className="space-y-4 px-8 py-4">
       <div className="flex w-full items-center justify-between">
-        <div>{t("Available Balance")}</div>
+        <div className="text-grey-400">{t("Available Balance")}</div>
         {balance && token && (
           <div
             className={classNames(

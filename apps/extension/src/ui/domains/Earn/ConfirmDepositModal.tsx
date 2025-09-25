@@ -1,20 +1,20 @@
+import { classNames } from "@talismn/util"
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
+import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { DepositDetails } from "@ui/domains/Earn/components/DepositDetails"
-import { DepositProgressBar } from "@ui/domains/Earn/components/DepositProgressBar"
-import { SequentialTransactionExecutor } from "@ui/domains/Earn/components/SequentialTransactionExecutor"
-import { useDepositFunds } from "@ui/domains/Earn/components/useDepositFunds"
-import { YieldSubmitButton } from "@ui/domains/Earn/components/YieldSubmitButton"
-import {
-  DepositWizardProvider,
-  useDepositWizard,
-} from "@ui/domains/Earn/context/DepositWizardContext"
 import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import { IS_POPUP } from "@ui/util/constants"
+
+import { DepositDetails } from "./components/DepositDetails"
+import { DepositProgressBar } from "./components/DepositProgressBar"
+import { SequentialTransactionExecutor } from "./components/SequentialTransactionExecutor"
+import { useDepositFunds } from "./components/useDepositFunds"
+import { YieldSubmitButton } from "./components/YieldSubmitButton"
+import { DepositWizardProvider, useDepositWizard } from "./context/DepositWizardContext"
 
 const DepositSubmitButton = ({
   onTxSubmitted,
@@ -66,18 +66,25 @@ const DepositSubmitButton = ({
   )
 }
 
-const DepositConfirmContent = () => {
-  const [searchParams] = useSearchParams()
+interface ConfirmDepositModalProps {
+  isOpen: boolean
+  onClose: () => void
+  account: string
+  tokenId: string
+  productId: string
+}
+
+const ConfirmDepositModalContent = ({
+  onClose,
+  account,
+  tokenId,
+  productId,
+}: Omit<ConfirmDepositModalProps, "isOpen">) => {
   const [currentStep, setCurrentStep] = useState<"confirm" | "execute" | "progress">("confirm")
   const [transactionStep, setTransactionStep] = useState<1 | 2>(1)
   const { set, resetUserInput } = useDepositWizard()
   const { token } = useDepositFunds()
   const [progress, setProgress] = useState<{ networkId: string; txId: string } | null>(null)
-
-  // Get parameters from URL
-  const account = searchParams.get("account") || ""
-  const tokenId = searchParams.get("tokenId") || ""
-  const productId = searchParams.get("productId") || ""
 
   // Initialize the wizard with the provided parameters
   useEffect(() => {
@@ -87,6 +94,11 @@ const DepositConfirmContent = () => {
       set("productId", productId)
     }
   }, [account, tokenId, productId, set])
+
+  // In popup mode, don't render the modal - the pages will handle the full page view
+  if (IS_POPUP) {
+    return null
+  }
 
   const handleExecutionComplete = (networkId: string, txId: string) => {
     setCurrentStep("progress")
@@ -108,12 +120,17 @@ const DepositConfirmContent = () => {
   const handleClose = () => {
     setCurrentStep("confirm")
     resetUserInput()
-    // Navigate back to portfolio
-    window.location.href = "/portfolio"
+    onClose()
   }
 
   return (
-    <div className="flex size-full flex-grow flex-col bg-black">
+    <div
+      id="confirm-deposit-modal-content"
+      className={classNames(
+        "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+        !IS_POPUP && "border-grey-800 rounded border",
+      )}
+    >
       <div className="flex w-full items-center justify-center gap-8 overflow-hidden p-10">
         <div className="text-base font-bold">Staking</div>
         <button
@@ -174,12 +191,25 @@ const DepositConfirmContent = () => {
   )
 }
 
-export const DepositConfirm = () => {
+export const ConfirmDepositModal = ({
+  isOpen,
+  onClose,
+  account,
+  tokenId,
+  productId,
+}: ConfirmDepositModalProps) => {
   return (
-    <Suspense fallback={<SuspenseTracker name="DepositConfirm" />}>
-      <DepositWizardProvider>
-        <DepositConfirmContent />
-      </DepositWizardProvider>
-    </Suspense>
+    <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
+      <Suspense fallback={<SuspenseTracker name="ConfirmDepositModal" />}>
+        <DepositWizardProvider>
+          <ConfirmDepositModalContent
+            onClose={onClose}
+            account={account}
+            tokenId={tokenId}
+            productId={productId}
+          />
+        </DepositWizardProvider>
+      </Suspense>
+    </Modal>
   )
 }

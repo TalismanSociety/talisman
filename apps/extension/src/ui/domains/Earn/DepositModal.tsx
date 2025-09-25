@@ -1,19 +1,17 @@
 import { classNames } from "@talismn/util"
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect } from "react"
 import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { DepositAmountForm } from "./components/DepositAmountForm"
-import { DepositConfirmForm } from "./components/DepositConfirmForm"
-import { SequentialTransactionExecutor } from "./components/SequentialTransactionExecutor"
 import { DepositWizardProvider, useDepositWizard } from "./context/DepositWizardContext"
 
 interface DepositModalProps {
   isOpen: boolean
   onClose: () => void
+  onNext: () => void
   account: string
   tokenId: string
   productId: string
@@ -21,15 +19,12 @@ interface DepositModalProps {
 
 const DepositModalContent = ({
   onClose,
+  onNext,
   account,
   tokenId,
   productId,
 }: Omit<DepositModalProps, "isOpen">) => {
-  const [currentStep, setCurrentStep] = useState<"amount" | "confirm" | "execute" | "progress">(
-    "amount",
-  )
   const { set, resetUserInput } = useDepositWizard()
-  const [progress, setProgress] = useState<{ networkId: string; txId: string } | null>(null)
 
   // Initialize the wizard with the provided parameters
   useEffect(() => {
@@ -45,30 +40,7 @@ const DepositModalContent = ({
     return null
   }
 
-  const handleNext = () => {
-    setCurrentStep("confirm")
-  }
-
-  const handleBack = () => {
-    setCurrentStep("amount")
-  }
-
-  const _handleExecute = () => {
-    setCurrentStep("execute")
-  }
-
-  const handleExecutionComplete = (networkId: string, txId: string) => {
-    setCurrentStep("progress")
-    setProgress({ networkId, txId })
-  }
-
-  const handleExecutionError = (_error: Error) => {
-    // Could show error state or go back to confirm
-    setCurrentStep("confirm")
-  }
-
   const handleClose = () => {
-    setCurrentStep("amount")
     resetUserInput()
     onClose()
   }
@@ -81,57 +53,19 @@ const DepositModalContent = ({
         !IS_POPUP && "border-grey-800 rounded border",
       )}
     >
-      <div className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
-        <div className="text-base font-bold">
-          {currentStep === "amount"
-            ? "Deposit"
-            : currentStep === "confirm"
-              ? "Confirm Deposit"
-              : currentStep === "execute"
-                ? "Executing Transactions"
-                : "Transfer in progress"}
-        </div>
+      <div className="flex w-full items-center justify-center gap-8 overflow-hidden p-10">
+        <div className="text-base font-bold">Deposit</div>
         <button
           type="button"
           onClick={handleClose}
-          className="text-body-secondary hover:text-body text-xl"
+          className="text-body-secondary hover:text-body absolute right-10 text-xl"
         >
           ×
         </button>
       </div>
 
-      <div className="grow overflow-hidden p-12 pt-0">
-        {currentStep === "amount" && <DepositAmountForm onNext={handleNext} />}
-        {currentStep === "confirm" && (
-          <DepositConfirmForm
-            onBack={handleBack}
-            onClose={handleClose}
-            onTxSubmitted={({
-              networkId: _networkId,
-              txId: _txId,
-            }: {
-              networkId: string
-              txId: string
-            }) => {
-              // switch to sequential execution
-              setCurrentStep("execute")
-            }}
-          />
-        )}
-        {currentStep === "execute" && (
-          <SequentialTransactionExecutor
-            onComplete={handleExecutionComplete}
-            onError={handleExecutionError}
-            onTransactionComplete={(networkId, txId) => {
-              setProgress({ networkId, txId })
-            }}
-          />
-        )}
-        {currentStep === "progress" && progress && (
-          <div className="h-full w-full">
-            <SendFundsProgress networkId={progress.networkId} txId={progress.txId} />
-          </div>
-        )}
+      <div className="grow overflow-hidden pt-0">
+        <DepositAmountForm onNext={onNext} />
       </div>
     </div>
   )
@@ -140,6 +74,7 @@ const DepositModalContent = ({
 export const DepositModal = ({
   isOpen,
   onClose,
+  onNext,
   account,
   tokenId,
   productId,
@@ -150,6 +85,7 @@ export const DepositModal = ({
         <DepositWizardProvider>
           <DepositModalContent
             onClose={onClose}
+            onNext={onNext}
             account={account}
             tokenId={tokenId}
             productId={productId}

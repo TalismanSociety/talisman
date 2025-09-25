@@ -7,7 +7,7 @@ import { DepositWizardPage, useDepositWizard } from "../../context/DepositWizard
 import { DepositProvider } from "../DepositProvider"
 import { useDepositFunds } from "../useDepositFunds"
 import { AddressPillButton } from "./AddressPillButton"
-import { AmountEdit } from "./AmountEdit"
+import { AmountEdit, DepositAmountErrorMessage } from "./AmountEdit"
 import { AvailableBalanceRow } from "./AvailableBalanceRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
@@ -78,24 +78,29 @@ export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
         onSubmit={handleSubmit}
         className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
       >
-        {/* Top-level notices */}
-        <div className="mb-4 space-y-3 px-8">
-          <InsufficientTokenNotice />
-          <ValidationErrors />
-        </div>
-        <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
-          <div className="flex w-full items-center justify-between gap-4">
-            <div>{t("Account")}</div>
-            <div>
-              <AddressPillButton
-                className="!max-w-[260px]"
-                address={account}
-                onClick={handleGotoClick("amount")}
-              />
+        <div className="flex flex-col gap-0">
+          <Container className="flex h-[7rem] w-full flex-col justify-center px-8">
+            <div className="flex w-full items-center justify-between gap-4">
+              <div className="text-grey-400">{t("Account")}</div>
+              <div>
+                <AddressPillButton
+                  className="!w-full"
+                  address={account}
+                  onClick={handleGotoClick("amount")}
+                />
+              </div>
             </div>
+          </Container>
+          <AmountEdit />
+        </div>
+        {/* Single consolidated validation/errors area */}
+        <div className="flex justify-center px-8 py-2">
+          <div className="flex w-full flex-col items-center gap-3">
+            <DepositAmountErrorMessage />
+            <InsufficientTokenNotice />
+            <ValidationErrors />
           </div>
-        </Container>
-        <AmountEdit />
+        </div>
         <div className="w-full space-y-4 text-xs leading-[140%]">
           <AvailableBalanceRow />
           <ProductSummary />

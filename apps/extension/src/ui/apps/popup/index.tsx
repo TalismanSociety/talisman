@@ -21,6 +21,7 @@ import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { EarnAccountPickerPage } from "@ui/domains/Earn/components/EarnAccountPickerPage"
 import { ProductSelectionModal } from "@ui/domains/Earn/components/ProductSelectionModal/ProductSelectionModal"
+import { ProductSelectionPage } from "@ui/domains/Earn/components/ProductSelectionPage"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -32,7 +33,6 @@ import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
 
-import { ProductionSelectionPage } from "../dashboard/routes/Earn/EarnPage"
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
@@ -99,7 +99,7 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
-          <Route path="earn" element={<ProductionSelectionPage />} />
+          <Route path="earn" element={<ProductSelectionPage />} />
           <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
           <Route path="earn/deposit/*" element={<DepositPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />

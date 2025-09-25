@@ -230,13 +230,24 @@ const TokenDisplay = () => {
   )
 }
 
-const ErrorMessage = () => {
+export const DepositAmountErrorMessage = () => {
   const { error } = useDepositFunds()
 
   return error ? (
     <WithTooltip tooltip={typeof error === "string" ? error : error.message}>
-      <AlertCircleIcon className="inline-block align-text-top text-sm" />{" "}
-      {typeof error === "string" ? error : error.message}
+      <div
+        className="text-alert-error flex items-center justify-center gap-2"
+        style={{
+          fontWeight: 400,
+          fontSize: "12px",
+          lineHeight: "140%",
+          letterSpacing: "0%",
+          verticalAlign: "middle",
+        }}
+      >
+        <AlertCircleIcon className="inline-block align-text-top text-sm" />
+        {typeof error === "string" ? error : error.message}
+      </div>
     </WithTooltip>
   ) : null
 }
@@ -255,7 +266,7 @@ export const AmountEdit = () => {
     <div className="w-full grow">
       {!!token && (
         <>
-          <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
+          <div className="flex h-[8rem] flex-col justify-end text-xl font-bold">
             {isTokenEdit ? <TokenInput /> : <FiatInput />}
           </div>
           <div
@@ -285,9 +296,7 @@ export const AmountEdit = () => {
               {t("Max")}
             </PillButton>
           </div>
-          <div className="text-brand-orange mt-4 text-center text-xs">
-            <ErrorMessage />
-          </div>
+          {/* Error message moved to parent form for single source of truth */}
         </>
       )}
     </div>

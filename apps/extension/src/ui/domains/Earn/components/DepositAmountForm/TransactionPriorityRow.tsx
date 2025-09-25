@@ -32,7 +32,7 @@ export const TransactionPriorityRow = () => {
 
   return (
     <div className="flex h-12 w-full items-center justify-between gap-4">
-      <div>{t("Transaction Priority")}</div>
+      <div className="text-grey-400">{t("Transaction Priority")}</div>
       <div>
         {network.nativeTokenId && priority && tx && txDetails && (
           <EthFeeSelect

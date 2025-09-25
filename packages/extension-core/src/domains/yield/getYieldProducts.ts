@@ -19,7 +19,7 @@ export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<
 
     // Add filtering based on the API documentation
     if (filter?.tokenSymbol) {
-      url.searchParams.set("token", filter.tokenSymbol)
+      url.searchParams.set("inputTokens", filter.tokenSymbol)
     }
 
     if (filter?.networkName) {

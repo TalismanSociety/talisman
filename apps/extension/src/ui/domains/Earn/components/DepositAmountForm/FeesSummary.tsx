@@ -15,7 +15,7 @@ const NetworkRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div>{t("Network")}</div>
+      <div className="text-grey-400">{t("Network")}</div>
       <div className="flex items-center gap-2">
         <NetworkLogo networkId={network?.id} className="inline-block text-base" />
         <div>{network?.name}</div>
@@ -35,7 +35,7 @@ export const FeesSummary = () => {
       <NetworkRow />
       <TransactionPriorityRow />
       <div className="flex w-full items-center justify-between gap-4">
-        <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+        <div className="text-grey-400 whitespace-nowrap">{t("Estimated Fee")}</div>
         <div
           className={classNames(
             "flex grow items-center justify-end gap-2 truncate",

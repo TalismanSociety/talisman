@@ -9,6 +9,7 @@ import { useNetworkById, useToken } from "@ui/state"
 import { useYieldProducts } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { ConfirmDepositModal } from "../../ConfirmDepositModal"
 import { DepositModal } from "../../DepositModal"
 import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
 import { EarnAccountPicker } from "../EarnAccountPicker"
@@ -29,6 +30,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
 
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<YieldProduct | null>(null)
 
   // Fetch yield products filtered by token symbol
@@ -128,6 +130,24 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
           isOpen={isDepositModalOpen}
           onClose={() => {
             setIsDepositModalOpen(false)
+            setSelectedProduct(null)
+          }}
+          onNext={() => {
+            // Close deposit modal and open confirm modal
+            setIsDepositModalOpen(false)
+            setIsConfirmModalOpen(true)
+          }}
+          account={selectedAccountAddress || selectedAccount?.address || ""}
+          tokenId={tokenId}
+          productId={selectedProduct.id}
+        />
+      )}
+
+      {selectedProduct && (
+        <ConfirmDepositModal
+          isOpen={isConfirmModalOpen}
+          onClose={() => {
+            setIsConfirmModalOpen(false)
             setSelectedProduct(null)
           }}
           account={selectedAccountAddress || selectedAccount?.address || ""}

@@ -3,25 +3,44 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
-import { useBalance, useToken } from "@ui/state"
+import { useBalance, useNetworkById, useToken } from "@ui/state"
+import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi, YieldEnterResponse, YieldTransaction } from "../services/yieldApi"
+import { useDepositValidation } from "./useDepositValidation"
 
 export const useYieldTransaction = () => {
   const { account, tokenId, productId, amount, depositMax } = useDepositWizard()
   const token = useToken(tokenId as string)
   const balance = useBalance(account as string, tokenId as string)
+  const network = useNetworkById(token?.networkId)
 
-  // Only call Yield.xyz API when we have all required data and user has entered an amount
+  // Get yield products to find the selected product
+  const { data: yieldProducts = [] } = useYieldProducts({
+    tokenId: tokenId as string,
+    tokenSymbol: token?.symbol,
+    networkName: network?.platform,
+  })
+
+  const product = useMemo(() => {
+    return yieldProducts.find((p) => p.id === productId) || null
+  }, [yieldProducts, productId])
+
+  // Get validation state
+  const { isValid } = useDepositValidation(product)
+
+  // Only call Yield.xyz API when we have all required data, user has entered an amount > 0, and validations pass
   const shouldFetch = !!(
     account &&
     tokenId &&
     productId &&
     token &&
     (amount || depositMax) &&
-    // Only fetch if user has actually entered an amount (not just opened the form)
-    (amount || depositMax)
+    // Only fetch if user has actually entered an amount greater than zero
+    (amount ? BigInt(amount) > 0n : depositMax) &&
+    // Only fetch if all validations pass
+    isValid
   )
 
   const {

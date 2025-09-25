@@ -120,6 +120,13 @@ export type YieldProduct = {
     network: string
     isPoints: boolean
   }
+  statistics?: {
+    tvlUsd: string
+    tvl: string
+    uniqueUsers: string | null
+    averagePositionSizeUsd: string | null
+    averagePositionSize: string | null
+  }
   tags: string[]
 }
 

@@ -1,14 +1,49 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { YieldProduct } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccountByAddress, useBalance, useNetworkById, useToken, useTokenRates } from "@ui/state"
 import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
+import { useDepositValidation } from "../hooks/useDepositValidation"
 import { useDepositFundsTransaction } from "./useDepositFundsTransaction"
 
-export const useDepositFunds = () => {
+interface TDepositFunds {
+  // Data
+  account: ReturnType<typeof useAccountByAddress>
+  token: ReturnType<typeof useToken>
+  tokenId: string | undefined
+  network: ReturnType<typeof useNetworkById>
+  product: YieldProduct | null
+  balance: ReturnType<typeof useBalance>
+  tokenRates: ReturnType<typeof useTokenRates>
+
+  // Calculated values
+  deposit: BalanceFormatter | null
+  maxAmount: BalanceFormatter | null
+  estimatedFee: BalanceFormatter | null
+  feeToken: ReturnType<typeof useToken>
+  feeTokenRates: ReturnType<typeof useTokenRates>
+
+  // Transaction data
+  transaction: ReturnType<typeof useDepositFundsTransaction>
+
+  // State
+  isLoading: boolean
+  error: string | Error | null
+  isValid: boolean
+  validationErrors: string[]
+  isEstimatingMaxAmount: boolean
+  depositMax: boolean
+  amount: string | undefined
+
+  // Actions
+  onDepositMaxClick: () => void
+}
+
+export const useDepositFunds = (): TDepositFunds => {
   const { account, tokenId, productId, amount, depositMax, set, remove } = useDepositWizard()
 
   // Get account, token, and network data
@@ -32,7 +67,7 @@ export const useDepositFunds = () => {
   }, [yieldProducts, productId])
 
   // Get transaction data (similar to SendFunds)
-  const transaction = useDepositFundsTransaction()
+  const transaction: ReturnType<typeof useDepositFundsTransaction> = useDepositFundsTransaction()
 
   // Calculate deposit amount
   const deposit = useMemo(() => {
@@ -42,7 +77,7 @@ export const useDepositFunds = () => {
   }, [amount, token, tokenRates])
 
   // Use transaction's max amount if available, otherwise calculate from balance
-  const maxAmount = useMemo(() => {
+  const maxAmount: BalanceFormatter | null = useMemo(() => {
     if (transaction?.maxAmount) {
       return new BalanceFormatter(transaction.maxAmount, token?.decimals || 18, tokenRates)
     }
@@ -115,61 +150,8 @@ export const useDepositFunds = () => {
   const error = transaction?.error || null
   const isEstimatingMaxAmount = depositMax && !transaction?.maxAmount
 
-  // Validation with YieldProduct constraints
-  const validationErrors = useMemo(() => {
-    const errors: string[] = []
-
-    // Only show basic validations if user has started interacting
-    const hasUserInput = amount || depositMax
-
-    // Basic validations (only show if user has started entering data)
-    if (hasUserInput) {
-      if (!account) errors.push("Account required")
-      if (!tokenId) errors.push("Token required")
-      if (!productId) errors.push("Product required")
-      if (!amount && !depositMax) errors.push("Amount required")
-    }
-
-    // Product status validations
-    if (product) {
-      if (!product.status.enter) {
-        errors.push("Deposits are currently disabled for this product")
-      }
-      if (product.metadata.underMaintenance) {
-        errors.push("Product is under maintenance")
-      }
-      if (product.metadata.deprecated) {
-        errors.push("This product is deprecated")
-      }
-    }
-
-    // Amount validations
-    if (deposit && product) {
-      const minAmount = BigInt(product.mechanics.entryLimits.minimum)
-      const maxAmount = product.mechanics.entryLimits.maximum
-        ? BigInt(product.mechanics.entryLimits.maximum)
-        : null
-
-      if (deposit.planck < minAmount) {
-        errors.push(`Minimum deposit: ${product.mechanics.entryLimits.minimum} ${token?.symbol}`)
-      }
-
-      if (maxAmount && deposit.planck > maxAmount) {
-        errors.push(`Maximum deposit: ${product.mechanics.entryLimits.maximum} ${token?.symbol}`)
-      }
-    }
-
-    // Balance validation
-    if (deposit && balance && deposit.planck > balance.transferable.planck) {
-      errors.push("Insufficient balance")
-    }
-
-    return errors
-  }, [amount, depositMax, product, deposit, balance, account, tokenId, productId, token?.symbol])
-
-  const isValid = useMemo(() => {
-    return validationErrors.length === 0
-  }, [validationErrors])
+  // Use the validation hook
+  const { isValid, validationErrors } = useDepositValidation(product)
 
   // Actions
   const onDepositMaxClick = () => {

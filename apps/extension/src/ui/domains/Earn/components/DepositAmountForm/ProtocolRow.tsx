@@ -12,7 +12,7 @@ export const ProtocolRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div>{t("Protocol")}</div>
+      <div className="text-grey-400">{t("Protocol")}</div>
       <div className="flex items-center gap-2">
         <img
           src={metadata.logoURI || undefined}
