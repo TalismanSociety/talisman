@@ -90,7 +90,7 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
           <AddressDisplay
             address={account.address}
             networkId={token.networkId}
-            className="text-sm"
+            className="text-xs"
             hideBlockExplorer
           />
         </div>
@@ -102,7 +102,7 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       {/* Group 2: APY, Reward Frequency, and Withdrawal Time */}
       <div className="flex flex-col gap-3">
         {/* APY */}
-        <div className="!text-sm">
+        <div className="!text-xs">
           <ApyRow />
         </div>
 

@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useSearchParams } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DepositDetails } from "@ui/domains/Earn/components/DepositDetails"
@@ -68,6 +68,7 @@ const DepositSubmitButton = ({
 
 const DepositConfirmContent = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<"confirm" | "execute" | "progress">("confirm")
   const [transactionStep, setTransactionStep] = useState<1 | 2>(1)
   const { set, resetUserInput } = useDepositWizard()
@@ -108,8 +109,12 @@ const DepositConfirmContent = () => {
   const handleClose = () => {
     setCurrentStep("confirm")
     resetUserInput()
-    // Navigate back to portfolio
-    window.location.href = "/portfolio"
+    // Navigate back to deposit amount page with preserved parameters
+    const params = new URLSearchParams()
+    if (account) params.set("account", account)
+    if (tokenId) params.set("tokenId", tokenId)
+    if (productId) params.set("productId", productId)
+    navigate(`/earn/deposit/amount?${params.toString()}`)
   }
 
   return (
@@ -125,15 +130,13 @@ const DepositConfirmContent = () => {
         </button>
       </div>
 
-      <div className="px-10 pb-4">
+      <div className="flex flex-col gap-16 px-10 pb-4">
         <div className="text-body text-center text-lg font-bold">You're approving staking</div>
-        <div className="mt-12">
+        <div className="flex flex-col gap-32">
           <DepositProgressBar
             currentStep={transactionStep}
             tokenSymbol={token?.symbol || "Token"}
           />
-        </div>
-        <div className="mt-16">
           <DepositDetails />
         </div>
       </div>

@@ -152,13 +152,11 @@ const ConfirmDepositModalContent = ({
               <div className="text-body mb-12 text-center text-lg font-bold">
                 You're approving staking
               </div>
-              <div className="mb-16">
+              <div className="flex flex-col gap-32">
                 <DepositProgressBar
                   currentStep={transactionStep}
                   tokenSymbol={token?.symbol || "Token"}
                 />
-              </div>
-              <div>
                 <DepositDetails />
               </div>
             </div>
