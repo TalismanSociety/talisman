@@ -1,5 +1,4 @@
-// import http from "http"
-
+import { APIError } from "@blockaid/client"
 import { JsonRpcScanParams } from "@blockaid/client/resources/evm/json-rpc.mjs"
 import { EthNetworkId } from "@talismn/chaindata-provider"
 import { EthSignMessageMethod } from "extension-core"
@@ -52,7 +51,11 @@ export const useEvmMessageRiskAnalysis = ({
 
         return response
       } catch (err) {
-        log.error("useEvmMessageRiskAnalysis", { scanParams })
+        log.error("useEvmMessageRiskAnalysis", { scanParams, err })
+
+        if (err instanceof APIError && err.error.detail[0]?.msg)
+          throw new Error(err.error.detail[0]?.msg, { cause: err })
+
         throw err
       }
     },

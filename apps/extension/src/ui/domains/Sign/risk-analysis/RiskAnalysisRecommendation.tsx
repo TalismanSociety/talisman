@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   ShieldNotOkIcon,
   ShieldOkIcon,
@@ -59,12 +58,8 @@ const useRecommendation = (riskAnalysis: RiskAnalysis) => {
           bgClassName: "bg-green/10",
           textClassName: "text-green",
           iconClassName: "bg-green/10",
-          title: t("Low Risk"), // result.warnings.length ? t("No Risk Found") : t("Low Risk"),
+          title: t("Low Risk"),
           description: t("No risks were identified"),
-          // result.warnings[0]?.message ??
-          // (type === "transaction"
-          //   ? t("No risks were identified in this transaction")
-          //   : t("No risks were identified in this message")),
         }
       case "Error": {
         return {

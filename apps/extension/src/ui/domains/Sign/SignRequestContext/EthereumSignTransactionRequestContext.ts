@@ -68,7 +68,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         networkType: "evm",
         type: "message",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis.result?.validation?.result_type,
+        riskAnalysisAction: riskAnalysis.validationResult,
         origin,
       })
 

@@ -112,7 +112,6 @@ const StateChangeDescription: FC<{ change: AccountStateChange; networkId: SolNet
 }
 
 const StateChange: FC<{
-  //simulation: TransactionSimulation
   networkId: SolNetworkId
   change: AccountStateChange
 }> = ({ change, networkId }) => {
