@@ -20,10 +20,8 @@ import {
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import {
-  RiskAnalysisPillButton,
-  RiskAnalysisProvider,
-} from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisPillButton } from "@ui/domains/Sign/Ethereum/riskAnalysis/RiskAnalysisPillButton"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAnalysisStateChanges"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"

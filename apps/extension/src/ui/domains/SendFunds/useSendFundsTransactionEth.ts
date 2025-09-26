@@ -6,7 +6,7 @@ import { useMemo, useState } from "react"
 import { useBalance, useNetworkById, useToken } from "@ui/state"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
-import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
+import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis/useEvmTransactionRiskAnalysis"
 import { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionEth = ({

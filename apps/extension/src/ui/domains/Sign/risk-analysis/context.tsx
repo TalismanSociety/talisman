@@ -3,8 +3,8 @@ import { FC, ReactNode, useEffect } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 
-import { RiskAnalysisDrawers } from "./RiskAnalysisDrawers"
-import { RiskAnalysis } from "./types"
+import { RiskAnalysisDrawers } from "../Ethereum/riskAnalysis/RiskAnalysisDrawers"
+import { RiskAnalysis } from "../Ethereum/riskAnalysis/types"
 
 type RisksAnalysisProviderProps = {
   riskAnalysis?: RiskAnalysis

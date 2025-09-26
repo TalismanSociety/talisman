@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById, useRequest } from "@ui/state"

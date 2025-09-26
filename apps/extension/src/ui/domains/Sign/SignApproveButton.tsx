@@ -2,7 +2,7 @@ import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useRiskAnalysis } from "./Ethereum/riskAnalysis"
+import { useRiskAnalysis } from "./risk-analysis/context"
 
 export const SignApproveButton: FC<ButtonProps> = (props) => {
   const { t } = useTranslation()

@@ -6,7 +6,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { ViewDetailsSub } from "@ui/domains/Sign/ViewDetails/ViewDetailsSub"
 
-import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis"
+import { RiskAnalysisPillButton } from "./Ethereum/riskAnalysis/RiskAnalysisPillButton"
 import { SubSignDecoded } from "./Substrate/decode/SubSignDecoded"
 
 type SignContainerProps = {

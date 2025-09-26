@@ -16,7 +16,7 @@ import { useNetworkById } from "@ui/state"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
-import { RiskAnalysisPillButton } from "./riskAnalysis"
+import { RiskAnalysisPillButton } from "./riskAnalysis/RiskAnalysisPillButton"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
