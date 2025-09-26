@@ -26,19 +26,6 @@ type QueryOptions<Output, Args> = {
 /**
  * Creates a shared observable for executing queries with caching, loading states, and automatic refresh capabilities.
  *
- * @template Output - The type of data returned by the query function
- * @template Args - The type of arguments passed to the query function
- *
- * @param options - Configuration options for the query
- * @param options.namespace - Unique namespace for caching this query type
- * @param options.args - Arguments to pass to the query function
- * @param options.queryFn - Async function that performs the actual query
- * @param options.defaultValue - Optional default value to use while loading
- * @param options.refreshInterval - Optional interval in milliseconds to automatically refresh the query
- * @param options.serializer - Optional function to serialize args for caching (defaults to JSON.stringify)
- *
- * @returns Observable that emits QueryResult objects with status, data, and error information
- *
  * @example
  * ```typescript
  * const userQuery$ = getQuery$({
