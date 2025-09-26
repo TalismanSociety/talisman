@@ -172,26 +172,24 @@ const AssetRow: FC<{
           </div>
         </div>
       </button>
-      {showStakingButton && (
-        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+      {/* Dynamic button positioning based on which buttons are shown */}
+      <div
+        className={classNames(
+          "absolute right-2 top-0 hidden h-28 flex-row items-center justify-center gap-2",
+          selectedAccount?.type !== "watch-only" && "group-hover:flex",
+        )}
+      >
+        {showStakingButton && (
           <BondPillButton
             tokenId={token.id}
             balances={balances}
             className="[>svg]:text-[2rem] text-base"
           />
-        </div>
-      )}
-
-      {showEarnButton && (
-        <div
-          className={classNames(
-            "absolute right-2 top-0 hidden h-28 flex-col justify-center",
-            selectedAccount?.type !== "watch-only" && "group-hover:flex",
-          )}
-        >
+        )}
+        {showEarnButton && (
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

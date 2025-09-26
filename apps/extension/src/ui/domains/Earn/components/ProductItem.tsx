@@ -30,15 +30,25 @@ const ProductTokenLogo: FC<{
 }
 
 export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick }) => {
-  const { metadata, rewardRate } = product
+  const { metadata, rewardRate, statistics } = product
   const name = metadata.name
   const description = metadata.description
   const apy = rewardRate.total * 100 // Convert decimal to percentage
   const protocolLogo = metadata.logoURI
 
-  const getApyColor = () => {
-    // Always use the same color for APY value
-    return "text-[#D5FF5C]"
+  const formatTvl = () => {
+    if (!statistics?.tvlUsd) return "N/A"
+
+    const tvl = parseFloat(statistics.tvlUsd)
+    if (tvl >= 1e9) {
+      return `$${(tvl / 1e9).toFixed(1)}B`
+    } else if (tvl >= 1e6) {
+      return `$${(tvl / 1e6).toFixed(1)}M`
+    } else if (tvl >= 1e3) {
+      return `$${(tvl / 1e3).toFixed(1)}K`
+    } else {
+      return `$${tvl.toFixed(0)}`
+    }
   }
 
   return (
@@ -58,13 +68,17 @@ export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick })
           <div className="flex items-center gap-2">
             <div className="truncate text-sm font-bold text-white">{name}</div>
           </div>
-          <div className="truncate text-xs text-[#5A5A5A]">{description}</div>
+          <div className="text-grey-600 truncate text-xs">{description}</div>
         </div>
       </div>
       <div className="flex shrink-0 flex-col items-end justify-center">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">APY</span>
-          <span className={`text-sm font-semibold ${getApyColor()}`}>{apy.toFixed(2)}%</span>
+          <span className="text-primary text-xs font-normal">{apy.toFixed(2)}%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">TVL</span>
+          <span className="text-xs font-normal text-white">{formatTvl()}</span>
         </div>
       </div>
     </button>

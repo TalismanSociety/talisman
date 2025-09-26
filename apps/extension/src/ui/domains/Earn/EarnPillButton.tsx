@@ -1,7 +1,7 @@
 import { EarnIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { useEarnModal } from "./hooks/useEarnModal"
 
@@ -23,13 +23,18 @@ export const EarnPillButton: FC<EarnPillButtonProps> = ({ tokenId, onClick, clas
   }
 
   return (
-    <PillButton
-      icon={EarnIcon}
-      size="xs"
+    <button
+      className={classNames(
+        "h-16 rounded-[28px] bg-[#D5FF5C]/10 px-4 text-sm font-light text-[#D5FF5C] hover:bg-[#D5FF5C]/20",
+        className,
+      )}
+      type="button"
       onClick={handleClick}
-      className={`bg-[#D5FF5C]/10 text-[#D5FF5C] hover:bg-[#D5FF5C]/20 ${className || ""}`}
     >
-      {t("Earn")}
-    </PillButton>
+      <div className="flex items-center gap-2">
+        <EarnIcon className="shrink-0 text-base" />
+        <div>{t("Earn")}</div>
+      </div>
+    </button>
   )
 }

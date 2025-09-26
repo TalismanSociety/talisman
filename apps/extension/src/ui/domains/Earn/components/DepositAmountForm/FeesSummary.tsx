@@ -1,13 +1,65 @@
-import { LoaderIcon } from "@talismn/icons"
+import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useTranslation } from "react-i18next"
 
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useBalance } from "@ui/state"
 
 import { useDepositFunds } from "../useDepositFunds"
 import { Container } from "./Container"
 import { TransactionPriorityRow } from "./TransactionPriorityRow"
+
+const EarnFeeTooltip = () => {
+  const { t } = useTranslation()
+  const { feeToken, transaction, account } = useDepositFunds()
+
+  // Get fee token balance - use account address string
+  const feeTokenBalance = useBalance(account?.address as string, feeToken?.id)
+
+  // Use transaction data based on platform (like SendFunds)
+  const estimatedFee = transaction?.estimatedFee
+  const maxFee = transaction?.maxFee
+
+  if (!feeToken || !estimatedFee) return null
+
+  return (
+    <WithTooltip
+      className="ml-1"
+      tooltip={
+        <div className="grid grid-cols-2 gap-2">
+          <div>{t("Estimated fee:")}</div>
+          <div className="text-right">
+            <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} noCountUp />
+          </div>
+          {transaction?.platform === "ethereum" && !!maxFee && (
+            <>
+              <div>{t("Max. fee:")}</div>
+              <div className="text-right">
+                <TokensAndFiat planck={maxFee} tokenId={feeToken.id} noCountUp />
+              </div>
+            </>
+          )}
+          {feeTokenBalance && (
+            <>
+              <div>{t("Balance:")}</div>
+              <div className="text-right">
+                <TokensAndFiat
+                  planck={feeTokenBalance.transferable.planck}
+                  tokenId={feeToken.id}
+                  noCountUp
+                />
+              </div>
+            </>
+          )}
+        </div>
+      }
+    >
+      <InfoIcon className="inline align-text-top text-sm" />
+    </WithTooltip>
+  )
+}
 
 const NetworkRow = () => {
   const [t] = useTranslation()
@@ -35,7 +87,9 @@ export const FeesSummary = () => {
       <NetworkRow />
       <TransactionPriorityRow />
       <div className="flex w-full items-center justify-between gap-4">
-        <div className="text-grey-400 whitespace-nowrap">{t("Estimated Fee")}</div>
+        <div className="text-grey-400 whitespace-nowrap">
+          {t("Estimated Fee")} <EarnFeeTooltip />
+        </div>
         <div
           className={classNames(
             "flex grow items-center justify-end gap-2 truncate",

@@ -1,4 +1,5 @@
 import { Balance } from "@talismn/balances"
+import { planckToTokens } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -56,7 +57,10 @@ export const EarnAccountsList: FC<EarnAccountsListProps> = ({
             <div className="flex flex-col items-end">
               <div>
                 <Tokens
-                  amount={account.balance?.transferable.planck?.toString() ?? "0"}
+                  amount={planckToTokens(
+                    account.balance?.transferable.planck?.toString() ?? "0",
+                    account.balance?.token?.decimals ?? 0,
+                  )}
                   symbol={account.balance?.token?.symbol}
                   decimals={account.balance?.token?.decimals}
                 />

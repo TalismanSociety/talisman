@@ -118,29 +118,25 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           />
         </div>
       </button>
-      {canBondNomPool && (
-        <>
-          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+      {/* Dynamic button positioning based on which buttons are shown */}
+      <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-row items-center justify-center gap-2 group-hover:flex">
+        {canBondNomPool && (
+          <>
             <BondPillButton
               tokenId={token.id}
               balances={balances}
               className="[>svg]:text-[2rem] text-base"
             />
-          </div>
-          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
-              <ZapFastIcon className="size-6" />
+            <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
+              <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+                <ZapFastIcon className="size-6" />
+              </div>
             </div>
-          </div>
-        </>
-      )}
-      <div
-        className={classNames(
-          "absolute right-2 top-0 hidden h-[6.6rem] flex-col justify-center",
-          selectedAccount?.type !== "watch-only" && "group-hover:flex",
+          </>
         )}
-      >
-        <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
+        {selectedAccount?.type !== "watch-only" && (
+          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
+        )}
       </div>
     </div>
   )

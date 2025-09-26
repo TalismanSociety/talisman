@@ -19,13 +19,13 @@ export const DepositProgressBar: FC<DepositProgressBarProps> = ({ currentStep, t
         {/* First circle */}
         <div
           className={classNames(
-            "z-[1] flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
+            "z-[1] flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
             currentStep >= 1 ? "bg-primary-500" : "bg-white",
           )}
         >
           <span
             className={classNames(
-              "flex items-center justify-center text-sm font-normal",
+              "flex items-center justify-center text-xs font-normal",
               currentStep >= 1 ? "text-black" : "text-grey-400",
             )}
           >
@@ -41,13 +41,13 @@ export const DepositProgressBar: FC<DepositProgressBarProps> = ({ currentStep, t
         {/* Second circle */}
         <div
           className={classNames(
-            "z-[1] flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
+            "z-[1] flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
             currentStep >= 2 ? "bg-primary-500" : "bg-grey-400",
           )}
         >
           <span
             className={classNames(
-              "flex items-center justify-center text-sm font-normal",
+              "flex items-center justify-center text-xs font-normal",
               currentStep >= 2 ? "text-black" : "text-white",
             )}
           >
