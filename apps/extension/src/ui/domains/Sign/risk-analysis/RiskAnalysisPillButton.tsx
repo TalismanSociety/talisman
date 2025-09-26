@@ -12,7 +12,7 @@ import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui
 
 import { useFeatureFlag } from "@ui/state"
 
-import { useRiskAnalysis } from "../../risk-analysis/context"
+import { useRiskAnalysis } from "./context"
 
 export const RiskAnalysisPillButton: FC = () => {
   const isEnabled = useFeatureFlag("RISK_ANALYSIS_V2")

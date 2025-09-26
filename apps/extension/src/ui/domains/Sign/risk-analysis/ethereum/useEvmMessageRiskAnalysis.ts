@@ -7,8 +7,8 @@ import { log } from "extension-shared"
 
 import { useFeatureFlag } from "@ui/state"
 
-import { blockaid } from "../../risk-analysis/blockaid"
-import { useRiskAnalysisBase } from "../../risk-analysis/useRiskAnalysisBase"
+import { blockaid } from "../blockaid"
+import { useRiskAnalysisBase } from "../useRiskAnalysisBase"
 
 type UseEvmMessageRiskAnalysisProps = {
   networkId: EthNetworkId | undefined

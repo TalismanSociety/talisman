@@ -1,8 +1,8 @@
 import { FC } from "react"
 
-import { RiskAnalysis } from "../Ethereum/riskAnalysis/types"
 import { RiskAnalysisStateChangesEth } from "./ethereum/RiskAnalysisStateChangesEth"
 import { RiskAnalysisStateChangesSol } from "./solana/RiskAnalysisStateChangesSol"
+import { RiskAnalysis } from "./types"
 
 export const RiskAnalysisStateChanges: FC<{ riskAnalysis: RiskAnalysis; noTitle?: boolean }> = ({
   riskAnalysis,

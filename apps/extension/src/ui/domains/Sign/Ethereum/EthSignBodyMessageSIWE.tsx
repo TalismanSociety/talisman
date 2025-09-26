@@ -9,11 +9,11 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useNetworkById } from "@ui/state"
 
+import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsAddress } from "../ViewDetails/ViewDetailsAddress"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { ViewDetailsField } from "../ViewDetails/ViewDetailsField"
-import { RiskAnalysisPillButton } from "./riskAnalysis/RiskAnalysisPillButton"
 import { SignParamAccountButton } from "./shared"
 
 const ViewDetailsContent: FC<{

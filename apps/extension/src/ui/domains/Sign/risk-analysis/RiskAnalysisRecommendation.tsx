@@ -10,7 +10,7 @@ import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { RiskAnalysis } from "../Ethereum/riskAnalysis/types"
+import { RiskAnalysis } from "./types"
 
 const getValidationDescription = (riskAnalysis: RiskAnalysis) => {
   if (riskAnalysis.platform === "ethereum")

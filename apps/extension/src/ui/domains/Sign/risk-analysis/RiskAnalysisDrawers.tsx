@@ -7,9 +7,9 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useSetting } from "@ui/state"
 
-import { RiskAnalysisRecommendation } from "../../risk-analysis/RiskAnalysisRecommendation"
-import { RiskAnalysisStateChanges } from "../../risk-analysis/RiskAnalysisStateChanges"
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
+import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
+import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
 import { RiskAnalysis } from "./types"
 

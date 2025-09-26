@@ -5,10 +5,14 @@ import { useTranslation } from "react-i18next"
 
 import { useSetting } from "@ui/state"
 
-import { RiskAnalysisScanError, RisksReview } from "../Ethereum/riskAnalysis/types"
-import { useRisksReview } from "../Ethereum/riskAnalysis/useRisksReview"
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
+import {
+  RiskAnalysisPlatform,
+  RiskAnalysisResponse,
+  RiskAnalysisScanError,
+  RisksReview,
+} from "./types"
+import { useRisksReview } from "./useRisksReview"
 
 type UseRiskAnalysisBaseProps<
   Platform extends RiskAnalysisPlatform,

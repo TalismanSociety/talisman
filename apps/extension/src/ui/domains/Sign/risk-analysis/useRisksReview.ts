@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useOpenClose } from "talisman-ui"
 
-import { RiskAnalysisPlatform, RiskAnalysisResponse } from "../../risk-analysis/types"
+import { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 
 const getValidationResultType = (
   platform: RiskAnalysisPlatform,

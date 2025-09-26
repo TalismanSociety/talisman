@@ -10,10 +10,7 @@ import { useTranslation } from "react-i18next"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById } from "@ui/state"
 
-import {
-  RiskAnalysisImageBase,
-  RiskAnalysisPlaceholderImage,
-} from "../../Ethereum/riskAnalysis/RiskAnalysisImageBase"
+import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "../RiskAnalysisImageBase"
 import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (accountSummary: AccountSummary) => {

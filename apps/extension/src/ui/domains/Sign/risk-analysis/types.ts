@@ -1,6 +1,11 @@
 import { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
 import { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
 
+import { useEvmMessageRiskAnalysis } from "./ethereum/useEvmMessageRiskAnalysis"
+import { useEvmTransactionRiskAnalysis } from "./ethereum/useEvmTransactionRiskAnalysis"
+import { useSolTransactionRiskAnalysis } from "./solana/useSolTransactionRiskAnalysis"
+import { useRisksReview } from "./useRisksReview"
+
 // export type RiskAnalysisResponseType = TransactionScanResponse | MessageScanResponse
 
 // type MAP_RESPONSES = {
@@ -29,3 +34,11 @@ export type RiskAnalysisResponse<T = RiskAnalysisPlatform> = T extends "ethereum
 //       platform: "ethereum"
 //       data: TransactionScanResponse // actually works for both messages and transactions
 //     }
+export type RiskAnalysis =
+  | ReturnType<typeof useEvmMessageRiskAnalysis>
+  | ReturnType<typeof useEvmTransactionRiskAnalysis>
+  | ReturnType<typeof useSolTransactionRiskAnalysis>
+
+export type RisksReview = ReturnType<typeof useRisksReview>
+
+export type RiskAnalysisScanError = { title: string; description: string }

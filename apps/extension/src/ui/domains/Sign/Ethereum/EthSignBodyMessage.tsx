@@ -13,10 +13,10 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 import { Message } from "@ui/domains/Sign/Message"
 import { useNetworkById } from "@ui/state"
 
+import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
-import { RiskAnalysisPillButton } from "./riskAnalysis/RiskAnalysisPillButton"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {

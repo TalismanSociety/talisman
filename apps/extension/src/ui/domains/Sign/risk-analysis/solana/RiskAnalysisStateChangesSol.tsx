@@ -10,10 +10,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useTokensMap } from "@ui/state"
 
-import {
-  RiskAnalysisImageBase,
-  RiskAnalysisPlaceholderImage,
-} from "../../Ethereum/riskAnalysis/RiskAnalysisImageBase"
+import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "../RiskAnalysisImageBase"
 import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (

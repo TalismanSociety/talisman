@@ -1,7 +1,6 @@
 import { TFunction } from "i18next"
 
-import { RiskAnalysisScanError } from "../Ethereum/riskAnalysis/types"
-import { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
+import { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } from "./types"
 
 export const getRiskAnalysisScanError = (
   platform: RiskAnalysisPlatform,
