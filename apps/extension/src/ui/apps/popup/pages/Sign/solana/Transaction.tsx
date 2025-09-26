@@ -25,6 +25,7 @@ import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnaly
 import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAnalysisStateChanges"
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById } from "@ui/state"
@@ -118,12 +119,12 @@ export const SolSignTransactionRequest: FC<{
   )
 
   return (
-    <PopupLayout>
-      <PopupHeader right={<SignNetworkLogo network={network} />}>
-        <AppPill url={request.url} />
-      </PopupHeader>
-      <PopupContent>
-        <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={() => window.close()}>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={() => window.close()}>
+      <PopupLayout>
+        <PopupHeader right={<SignNetworkLogo network={network} />}>
+          <AppPill url={request.url} />
+        </PopupHeader>
+        <PopupContent>
           <div className="text-body-secondary flex w-full flex-col items-center text-center">
             <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
             <h2 className="mb-8 text-base leading-[3.2rem]">
@@ -134,43 +135,43 @@ export const SolSignTransactionRequest: FC<{
               <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} noTitle />
             </div>
           </div>
-        </RiskAnalysisProvider>
-      </PopupContent>
-      <PopupFooter className="flex flex-col gap-8">
-        {!!displayError && (
-          <SignAlertMessage className="mb-6" type="error">
-            {displayError}
-          </SignAlertMessage>
-        )}
-        <FeeEstimateRow
-          transaction={transaction}
-          networkId={networkId}
-          isLocked={isLocked}
-          account={account}
-        />
-        <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={() => window.close()}>{t("Cancel")}</Button>
-          {isAccountOfType(account, "ledger-solana") ? (
-            <SignLedgerSolana
-              disabled={!validity?.isValid}
-              account={account}
-              payload={signPayload}
-              onSentToDevice={setIsLocked}
-              onSigned={handleSigned}
-            />
-          ) : (
-            <Button
-              disabled={!validity?.isValid}
-              processing={state.processing}
-              primary
-              onClick={handleApprove}
-            >
-              {t("Approve")}
-            </Button>
+        </PopupContent>
+        <PopupFooter className="flex flex-col gap-8">
+          {!!displayError && (
+            <SignAlertMessage className="mb-6" type="error">
+              {displayError}
+            </SignAlertMessage>
           )}
-        </div>
-      </PopupFooter>
-    </PopupLayout>
+          <FeeEstimateRow
+            transaction={transaction}
+            networkId={networkId}
+            isLocked={isLocked}
+            account={account}
+          />
+          <div className="grid w-full grid-cols-2 gap-12">
+            <Button onClick={() => window.close()}>{t("Cancel")}</Button>
+            {isAccountOfType(account, "ledger-solana") ? (
+              <SignLedgerSolana
+                disabled={!validity?.isValid}
+                account={account}
+                payload={signPayload}
+                onSentToDevice={setIsLocked}
+                onSigned={handleSigned}
+              />
+            ) : (
+              <SignApproveButton
+                disabled={!validity?.isValid}
+                processing={state.processing}
+                primary
+                onClick={handleApprove}
+              >
+                {t("Approve")}
+              </SignApproveButton>
+            )}
+          </div>
+        </PopupFooter>
+      </PopupLayout>
+    </RiskAnalysisProvider>
   )
 }
 
