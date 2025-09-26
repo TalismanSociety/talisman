@@ -21,7 +21,7 @@ export interface SettingsStoreData {
   newFeaturesDismissed: string
   autoRiskScan?: boolean // undefined = user has never been prompted to use the feature
   nftsViewMode: "list" | "tiles"
-  nftsSortBy: "floor" | "name" | "date"
+  nftsSortBy: "value" | "name" | "date"
   tokensSortBy: "name" | "total" | "locked" | "available"
   developerMode: boolean
   polkadotVaultSignWithProof: boolean

@@ -114,7 +114,7 @@ export const PortfolioAssets = () => {
 }
 
 const PortfolioAssetsToolbar = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
   const matchTokens = useMatch("/portfolio/tokens")
   const matchNfts = useMatch("/portfolio/nfts")
   const matchDefi = useMatch("/portfolio/defi")

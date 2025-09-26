@@ -40,7 +40,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/lodash-es": "^4.17.12",
+    "@types/lodash-es": "4.17.12",
     "tsx": "^4.20.3"
   }
 }

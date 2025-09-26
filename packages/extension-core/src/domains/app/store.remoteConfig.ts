@@ -1,5 +1,5 @@
 import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { DEBUG, log, TEST } from "extension-shared"
+import { log, TEST } from "extension-shared"
 import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
@@ -64,15 +64,6 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 
         // safety measure, most likely always an object
         if (!config) return
-
-        // dev mode overrides
-        if (DEBUG) {
-          if (process.env.COINGECKO_API_URL) config.coingecko.apiUrl = process.env.COINGECKO_API_URL
-          if (process.env.COINGECKO_API_KEY_NAME)
-            config.coingecko.apiKeyName = process.env.COINGECKO_API_KEY_NAME
-          if (process.env.COINGECKO_API_KEY_VALUE)
-            config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
-        }
 
         // as per 2.8.0 we dont want this address to be the default validator anymore.
         // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime

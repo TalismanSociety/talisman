@@ -7,13 +7,14 @@ import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getNftLastAcquiredAt, getNftQuantity } from "./helpers"
+import { getNftQuantity } from "./helpers"
 
 export const PopupNftCollection: FC<{ className?: string }> = () => {
   const [viewMode] = useSetting("nftsViewMode")
@@ -60,9 +61,8 @@ const NftRowInner: FC<{
   nft: Nft
   onClick: () => void
 }> = ({ collection, nft, onClick }) => {
-  const imageUrl = useMemo(() => {
-    return nft.previews.small ?? nft.imageUrl
-  }, [nft.imageUrl, nft.previews.small])
+  const { t } = useTranslation()
+  const locale = useDateFnsLocale()
 
   const isFavorite = useIsFavoriteNft(nft.id)
 
@@ -73,13 +73,15 @@ const NftRowInner: FC<{
       className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
     >
       <div className="flex grow items-center gap-6 overflow-hidden">
-        <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
+        <NftImage className="size-16" src={nft.previewUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
           <div className="truncate text-base font-bold">{nft.name}</div>
           {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
         </div>
       </div>
-      <div className="text-right">{format(new Date(getNftLastAcquiredAt(nft)), "P")}</div>
+      <div className="text-right">
+        {nft.updatedAt ? format(new Date(nft.updatedAt), "P", { locale }) : t("N/A")}
+      </div>
     </button>
   )
 }
@@ -124,24 +126,19 @@ const NftsRows: FC<{ onNftClick: (nft: Nft) => void }> = ({ onNftClick }) => {
 }
 
 const NftTileInner: FC<{ collection: NftCollection; nft: Nft; onClick: () => void }> = ({
-  collection,
   nft,
   onClick,
 }) => {
   // favorites are the first ones in the list, can check just the first one
   const isFavorite = useIsFavoriteNft(nft.id)
 
-  const imageUrl = useMemo(() => {
-    return nft.previews.small ?? nft.imageUrl
-  }, [nft.imageUrl, nft.previews.small])
-
   return (
     <NftTile
       isFavorite={isFavorite}
-      imageUrl={imageUrl}
+      imageUrl={nft.previewUrl}
       onClick={onClick}
       label={nft.name ?? (nft.tokenId ? `#${nft.tokenId}` : "")}
-      networkIds={collection.evmNetworkIds}
+      networkIds={[nft.networkId]}
       count={getNftQuantity(nft)}
     />
   )
