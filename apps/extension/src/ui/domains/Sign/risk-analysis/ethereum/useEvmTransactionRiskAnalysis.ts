@@ -57,7 +57,7 @@ export const useEvmTransactionRiskAnalysis = ({
       try {
         const response = await blockaid.evm.transaction.scan(params)
 
-        log.debug("useEvmTransactionRiskAnalysis", { params, response })
+        log.log("useEvmTransactionRiskAnalysis", { params, response })
 
         return response
       } catch (err) {

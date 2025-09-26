@@ -108,9 +108,7 @@ const RiskAnalysisCriticalPane: FC<{
           </div>
           <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
           <p className="text-body text-md">
-            {t("We suspect this transaction is harmful.")}
-            {/* TODO {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
-            {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")} */}
+            {t("We suspect this request is harmful.")}
             <br />
             {t("Signing it could lead to funds loss.")}
           </p>

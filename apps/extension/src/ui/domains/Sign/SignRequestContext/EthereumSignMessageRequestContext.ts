@@ -41,13 +41,13 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         networkType: "evm",
         type: "transaction",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+        riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
       })
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult],
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -66,19 +66,12 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         networkType: "evm",
         type: "transaction",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+        riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
       })
     }
     return baseRequest.approve()
-  }, [
-    baseRequest,
-    genericEvent,
-    network?.id,
-    origin,
-    riskAnalysis?.result?.validation?.result_type,
-    riskAnalysis.review,
-  ])
+  }, [baseRequest, genericEvent, network?.id, origin, riskAnalysis])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -96,7 +89,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
           networkType: "evm",
           type: "transaction",
           network: network?.id,
-          riskAnalysisAction: riskAnalysis?.result?.validation?.result_type,
+          riskAnalysisAction: riskAnalysis?.validationResult,
           origin,
         })
       }
@@ -110,14 +103,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.error((err as Error).message)
       }
     },
-    [
-      baseRequest,
-      riskAnalysis?.result?.validation?.result_type,
-      riskAnalysis.review,
-      genericEvent,
-      network?.id,
-      origin,
-    ],
+    [baseRequest, riskAnalysis, genericEvent, network?.id, origin],
   )
 
   const isValid = useMemo(() => {

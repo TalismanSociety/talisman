@@ -24,18 +24,6 @@ export const useSolTransactionRiskAnalysis = ({
 }: UseSolTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
-  // const txData = useMemo<TransactionScanParams.Data | null>(() => {
-  //   if (!tx?.from) return null
-
-  //   return {
-  //     data: tx.data,
-  //     from: tx.from,
-  //     to: tx.to ?? undefined,
-  //     value: typeof tx.value === "bigint" ? tx.value.toString() : undefined,
-  //   }
-  //   // don't pass the whole tx as a memo dependency, as it changes a lot  (ex: gas) it would trigger many api calls
-  // }, [tx?.from, tx?.to, tx?.data, tx?.value])
-
   return useRiskAnalysisBase<"solana">({
     platform: "solana",
     networkId,
@@ -58,7 +46,7 @@ export const useSolTransactionRiskAnalysis = ({
       try {
         const response = await blockaid.solana.message.scan(params)
 
-        log.debug("useSolTransactionRiskAnalysis", { params, response })
+        log.log("useSolTransactionRiskAnalysis", { params, response })
 
         return response
       } catch (err) {

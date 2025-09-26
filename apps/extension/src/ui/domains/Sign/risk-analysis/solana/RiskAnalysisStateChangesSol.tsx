@@ -1,7 +1,5 @@
 import { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
 import { solNativeTokenId, SolNetworkId, solSplTokenId } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { log } from "extension-shared"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -10,7 +8,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useTokensMap } from "@ui/state"
 
-import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "../RiskAnalysisImageBase"
+import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
 import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (
@@ -31,80 +29,11 @@ type AccountStateChange = NonNullable<
   MessageScanResponse.Result.Simulation.AccountSummary["account_assets_diff"]
 >[number]
 
-type AssetImageProps =
-  | {
-      type: "currency"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "nft"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "unknown"
-      side: "in" | "out"
-    }
-
-const AssetImage = (props: AssetImageProps) => {
-  const content = useMemo(() => {
-    if (props.type === "currency") {
-      return (
-        <>
-          <RiskAnalysisImageBase
-            src={props.imageUrl}
-            alt={props.name}
-            width={40}
-            height={40}
-            borderRadius="100%"
-            type="currency"
-          />
-        </>
-      )
-    }
-
-    if (props.type === "nft") {
-      return (
-        <RiskAnalysisImageBase
-          src={props.imageUrl}
-          alt={props.name || ""}
-          width={40}
-          height={40}
-          borderRadius={6}
-          type="nft"
-        />
-      )
-    }
-
-    return <RiskAnalysisPlaceholderImage type="unknown" width={38} height={38} borderRadius={6} />
-  }, [props])
-
-  return (
-    <div className="relative">
-      {content}
-
-      <div
-        className={classNames(
-          "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
-          props.side === "in" && "bg-[#16541D]",
-          props.side === "out" && "bg-[#262C54]",
-        )}
-      >
-        {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}
-        {props.side === "out" && <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />}
-      </div>
-    </div>
-  )
-}
-
 const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
   switch (change.asset.type) {
     case "SOL":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="currency"
           imageUrl={change.asset.logo}
           name={"Solana"}
@@ -113,7 +42,7 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
       )
     case "TOKEN":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="currency"
           imageUrl={change.asset.logo}
           name={change.asset.name ?? change.asset.symbol!}
@@ -122,7 +51,7 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
       )
     case "ETH":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="currency"
           imageUrl={change.asset.logo}
           name={"Ethereum"}
@@ -133,43 +62,15 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
     case "CNFT":
     default:
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="nft"
           imageUrl={change.asset.logo}
           name={change.asset.name ?? change.asset.symbol!}
           side={change.in ? "in" : "out"}
         />
       )
-
-    // default:
-    //   return null
   }
 }
-
-// const FooterField: FC<{ label: ReactNode; value: ReactNode; extra?: ReactNode }> = ({
-//   label,
-//   value,
-//   extra,
-// }) => (
-//   <span className="text-body-secondary group flex max-w-full items-center gap-[0.5em] overflow-hidden">
-//     <span className="text-body-secondary">{label}</span>
-//     <span className="text-body truncate">{value}</span>
-//     <span className="group-hover:text-body">{extra}</span>
-//   </span>
-// )
-
-// const FooterFieldLink: FC<{ href?: string; label: ReactNode; value: ReactNode }> = ({
-//   label,
-//   value,
-//   href,
-// }) =>
-//   href ? (
-//     <a href={href} target="_blank" rel="noopener noreferrer">
-//       <FooterField label={label} value={value} />
-//     </a>
-//   ) : (
-//     <FooterField label={label} value={value} />
-//   )
 
 const StateChangeDescription: FC<{ change: AccountStateChange; networkId: SolNetworkId }> = ({
   change,

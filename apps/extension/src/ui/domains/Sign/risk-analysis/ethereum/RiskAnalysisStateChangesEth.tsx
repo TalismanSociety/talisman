@@ -1,7 +1,5 @@
 import { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
 import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { FC, ReactNode, useMemo } from "react"
@@ -10,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById } from "@ui/state"
 
-import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "../RiskAnalysisImageBase"
+import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
 import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (accountSummary: AccountSummary) => {
@@ -30,81 +28,12 @@ const getAccountStateChanges = (accountSummary: AccountSummary) => {
 
 type AccountStateChange = ReturnType<typeof getAccountStateChanges>[number]
 
-type AssetImageProps =
-  | {
-      type: "currency"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "nft"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "unknown"
-      side: "in" | "out"
-    }
-
-const AssetImage = (props: AssetImageProps) => {
-  const content = useMemo(() => {
-    if (props.type === "currency") {
-      return (
-        <>
-          <RiskAnalysisImageBase
-            src={props.imageUrl}
-            alt={props.name}
-            width={40}
-            height={40}
-            borderRadius="100%"
-            type="currency"
-          />
-        </>
-      )
-    }
-
-    if (props.type === "nft") {
-      return (
-        <RiskAnalysisImageBase
-          src={props.imageUrl}
-          alt={props.name || ""}
-          width={40}
-          height={40}
-          borderRadius={6}
-          type="nft"
-        />
-      )
-    }
-
-    return <RiskAnalysisPlaceholderImage type="unknown" width={38} height={38} borderRadius={6} />
-  }, [props])
-
-  return (
-    <div className="relative">
-      {content}
-
-      <div
-        className={classNames(
-          "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
-          props.side === "in" && "bg-[#16541D]",
-          props.side === "out" && "bg-[#262C54]",
-        )}
-      >
-        {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}
-        {props.side === "out" && <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />}
-      </div>
-    </div>
-  )
-}
-
 const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
   switch (change.asset_type) {
     case "NATIVE":
     case "ERC20":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="currency"
           imageUrl={change.asset.logo_url}
           name={change.asset.name ?? change.asset.symbol!}
@@ -114,7 +43,7 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
     case "ERC721":
     case "ERC1155":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="nft"
           imageUrl={change.asset.logo_url}
           name={change.asset.name ?? change.asset.symbol!}

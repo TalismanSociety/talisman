@@ -5,8 +5,6 @@ import {
   TransactionScanResponse,
 } from "@blockaid/client/resources/index.mjs"
 import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
-import { ArrowDownIcon, ArrowUpIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
 import { toPairs, values } from "lodash-es"
 import { FC, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,100 +12,14 @@ import { useTranslation } from "react-i18next"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useNetworkById } from "@ui/state"
 
-import { RiskAnalysisImageBase, RiskAnalysisPlaceholderImage } from "./RiskAnalysisImageBase"
+import { RiskAnalysisAssetImage } from "./RiskAnalysisAssetImage"
 import { RiskAnalysis } from "./types"
-
-// const getAccountStateChanges = (accountSummary: AccountSummary) => {
-//   return accountSummary.assets_diffs.flatMap((diff) => {
-//     const { in: changesIn, out: changesOut, ...rest } = diff
-
-//     if (!changesIn.length && !changesOut.length) {
-//       log.warn("[getAccountStateChanges] assetDiff with no changes", { accountSummary, diff })
-//     }
-
-//     return [
-//       ...changesIn.map((cIn) => ({ change: cIn, side: "in" as const, ...rest })),
-//       ...changesOut.map((cOut) => ({ change: cOut, side: "out" as const, ...rest })),
-//     ]
-//   })
-// }
-
-// type AccountStateChange = ReturnType<typeof getAccountStateChanges>[number]
-
-type AssetImageProps =
-  | {
-      type: "currency"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "nft"
-      side: "in" | "out"
-      imageUrl: string | null | undefined
-      name: string
-    }
-  | {
-      type: "unknown"
-      side: "in" | "out"
-    }
-
-const AssetImage = (props: AssetImageProps) => {
-  const content = useMemo(() => {
-    if (props.type === "currency") {
-      return (
-        <>
-          <RiskAnalysisImageBase
-            src={props.imageUrl}
-            alt={props.name}
-            width={40}
-            height={40}
-            borderRadius="100%"
-            type="currency"
-          />
-        </>
-      )
-    }
-
-    if (props.type === "nft") {
-      return (
-        <RiskAnalysisImageBase
-          src={props.imageUrl}
-          alt={props.name || ""}
-          width={40}
-          height={40}
-          borderRadius={6}
-          type="nft"
-        />
-      )
-    }
-
-    return <RiskAnalysisPlaceholderImage type="unknown" width={38} height={38} borderRadius={6} />
-  }, [props])
-
-  return (
-    <div className="relative">
-      {content}
-
-      <div
-        className={classNames(
-          "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
-          props.side === "in" && "bg-[#16541D]",
-          props.side === "out" && "bg-[#262C54]",
-        )}
-      >
-        {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}
-        {props.side === "out" && <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />}
-      </div>
-    </div>
-  )
-}
 
 const ExposureImage: FC<{ exposure: Exposure }> = ({ exposure }) => {
   switch (exposure.asset_type) {
     case "ERC20":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="currency"
           imageUrl={exposure.asset.logo_url}
           name={exposure.asset.name ?? exposure.asset.symbol!}
@@ -117,7 +29,7 @@ const ExposureImage: FC<{ exposure: Exposure }> = ({ exposure }) => {
     case "ERC721":
     case "ERC1155":
       return (
-        <AssetImage
+        <RiskAnalysisAssetImage
           type="nft"
           imageUrl={exposure.asset.logo_url}
           name={exposure.asset.name ?? exposure.asset.symbol!}
@@ -224,15 +136,10 @@ export const RiskAnalysisExposures: FC<{
   const { t } = useTranslation()
 
   const exposures = useMemo(() => {
-    // TODO SOL
+    // EVM concept only for now
     if (riskAnalysis.platform !== "ethereum") return []
     return getExposures(riskAnalysis.result)
   }, [riskAnalysis])
-
-  // const changes = useMemo<AccountStateChange[]>(() => {
-  //   if (!simulation) return []
-  //   return getAccountStateChanges(simulation.account_summary)
-  // }, [simulation])
 
   if (!exposures.length) return null
 

@@ -48,7 +48,7 @@ export const useEvmMessageRiskAnalysis = ({
       try {
         const response = await blockaid.evm.jsonRpc.scan(scanParams)
 
-        log.debug("useEvmMessageRiskAnalysis", { scanParams, response })
+        log.log("useEvmMessageRiskAnalysis", { scanParams, response })
 
         return response
       } catch (err) {
