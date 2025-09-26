@@ -328,10 +328,18 @@ export const SendFundsConfirmForm = () => {
   const { t } = useTranslation()
   const { from, to, network, transaction } = useSendFunds()
 
+  const riskAnalysis = useMemo(() => {
+    switch (transaction?.platform) {
+      case "ethereum":
+      case "solana":
+        return transaction.riskAnalysis
+      default:
+        return undefined
+    }
+  }, [transaction])
+
   return (
-    <RiskAnalysisProvider
-      riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
-    >
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
       <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
         <ScrollContainer
           className="w-full grow"

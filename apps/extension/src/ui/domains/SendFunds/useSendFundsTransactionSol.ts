@@ -1,6 +1,7 @@
 import { Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { isTokenSol, Token } from "@talismn/chaindata-provider"
+import { serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 
@@ -10,6 +11,7 @@ import {
   useSolanaConnection,
 } from "@ui/util/solana/useSolanaConnection"
 
+import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionSol = ({
@@ -48,6 +50,18 @@ export const useSendFundsTransactionSol = ({
     }
   }, [balance, token, qEstimatedFee.data])
 
+  const serializedTx = useMemo(
+    () => (qPayload.data ? serializeTransaction(qPayload.data) : null),
+    [qPayload.data],
+  )
+
+  const riskAnalysis = useSolTransactionRiskAnalysis({
+    from,
+    networkId: token?.networkId,
+    tx: serializedTx,
+    disableAutoRiskScan: true,
+  })
+
   if (!isTokenSol(token)) return null
 
   return {
@@ -60,8 +74,8 @@ export const useSendFundsTransactionSol = ({
 
     maxAmount,
     estimatedFee: qEstimatedFee.data ? String(qEstimatedFee.data) : null,
-
     feeTokenId: feeToken?.id,
+    riskAnalysis,
 
     setIsLocked,
   }

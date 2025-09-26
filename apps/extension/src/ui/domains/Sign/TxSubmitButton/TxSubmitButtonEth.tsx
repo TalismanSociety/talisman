@@ -3,13 +3,13 @@ import { isAccountPlatformEthereum, serializeTransactionRequest } from "extensio
 import { log } from "extension-shared"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 import { BaseError } from "viem"
 
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 
+import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonProps } from "./types"
@@ -87,13 +87,13 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   }
 
   return (
-    <Button
+    <SignApproveButton
       processing={isSubmitting}
       onClick={handleSubmitClick}
       className={classNames("w-full", className)}
       primary
     >
       {label ?? t("Approve")}
-    </Button>
+    </SignApproveButton>
   )
 }

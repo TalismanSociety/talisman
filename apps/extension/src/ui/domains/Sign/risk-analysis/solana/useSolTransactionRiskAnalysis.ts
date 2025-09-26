@@ -9,9 +9,9 @@ import { blockaid } from "../blockaid"
 import { useRiskAnalysisBase } from "../useRiskAnalysisBase"
 
 type UseSolTransactionRiskAnalysisProps = {
-  from: string
+  from: string | null | undefined
   networkId: SolNetworkId | null | undefined
-  tx: string | undefined
+  tx: string | null | undefined
   origin?: string
   disableAutoRiskScan?: boolean
 }
