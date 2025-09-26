@@ -2,7 +2,9 @@ import { Balances } from "@talismn/balances"
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { Account, isAccountOwned } from "@talismn/keyring"
+import { isNotNil } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
+import { uniq } from "lodash-es"
 import groupBy from "lodash-es/groupBy"
 import { filter, firstValueFrom, map } from "rxjs"
 
@@ -14,7 +16,6 @@ import { settingsStore } from "../domains/app/store.settings"
 import { balancesStore$ } from "../domains/balances/store.balances"
 import { walletBalances$ } from "../domains/balances/walletBalances"
 import { keyringStore } from "../domains/keyring/store"
-import { getNftCollectionFloorUsd } from "../domains/nfts"
 import { nftsStore$ } from "../domains/nfts/store"
 import { tokenRatesStore } from "../domains/tokenRates"
 import { chaindataProvider } from "../rpcs/chaindata"
@@ -126,7 +127,6 @@ async function getGeneralReport({
   const ownedAccounts = accounts.filter(isAccountOwned)
   const ownedAccountsCount = ownedAccounts.length
   const ownedAddresses = ownedAccounts.map((account) => account.address)
-  const ownedAddressesLower = ownedAddresses.map((a) => a.toLowerCase())
 
   // Don't create report if user doesn't have any accounts.
   // Prevents us from overriding a previous report for users who have upgraded to the latest
@@ -272,28 +272,25 @@ async function getGeneralReport({
   //
   // nfts
   //
-  const ownedNfts = nftsStore$.value.nfts.filter((nft) =>
-    nft.owners.some((o) => ownedAddressesLower.includes(o.address.toLowerCase())),
-  )
-  const ownedCollections = nftsStore$.value.collections.filter((c) =>
-    ownedNfts.some((n) => n.collectionId === c.id),
+  const { nfts, collections } = await firstValueFrom(nftsStore$)
+  const ownedNfts = nfts.filter((nft) =>
+    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress)),
   )
 
   const TOP_NFT_COLLECTIONS_COUNT = 20
   const nftsCount = ownedNfts.length
-  const floorByCollectionId = Object.fromEntries(
-    ownedCollections
-      .map((collection) => [collection.id, getNftCollectionFloorUsd(collection)] as const)
-      .filter(([, floor]) => !!floor),
+
+  const nftsTotalValue = ownedNfts.reduce((total, nft) => total + (nft.price || 0) * nft.amount, 0)
+
+  const topNftCollections = uniq(
+    nfts
+      .concat()
+      .sort((n1, n2) => (n1.price ?? 0) - (n2.price ?? 0))
+      .map((nft) => nft.collectionId),
   )
-  const nftsTotalValue = ownedNfts.reduce(
-    (total, nft) => total + (floorByCollectionId[nft.collectionId] ?? 0),
-    0,
-  )
-  const topNftCollections = Object.entries(floorByCollectionId)
-    .sort((c1, c2) => (c2[1] ?? 0) - (c1[1] ?? 0))
     .slice(0, TOP_NFT_COLLECTIONS_COUNT)
-    .map(([collectionId]) => ownedCollections.find((c) => c.id === collectionId)?.name)
+    .map((cid) => collections.find((c) => c.id === cid)?.name)
+    .filter(isNotNil)
 
   return {
     // accounts

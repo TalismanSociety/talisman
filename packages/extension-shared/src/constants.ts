@@ -14,8 +14,6 @@ export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-c
 
 export const BLOWFISH_BASE_PATH = process.env.BLOWFISH_BASE_PATH || "https://bfp.talisman.xyz"
 export const BLOWFISH_API_KEY = process.env.BLOWFISH_API_KEY
-export const NFTS_API_KEY = process.env.NFTS_API_KEY
-export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"
 export const TAOSTATS_BASE_PATH = process.env.TAOSTATS_BASE_PATH || "https://tsp.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
 export const RAMPS_COINBASE_PAY_URL = "https://pay.coinbase.com"

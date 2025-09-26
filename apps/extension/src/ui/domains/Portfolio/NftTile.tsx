@@ -25,7 +25,7 @@ export const NftTile: FC<{
     >
       <div className="relative w-full grow overflow-hidden rounded-sm">
         <NftImage
-          className="size-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
+          className="aspect-square size-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
           src={imageUrl}
           alt={label ?? ""}
         />

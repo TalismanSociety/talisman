@@ -1,32 +1,8 @@
-import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
+import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import {
-  MessageHandler,
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-  SubscriptionHandler,
-} from "../../types"
-import {
-  refreshNftMetadata,
-  setFavoriteNft,
-  setHiddenNftCollection,
-  subscribeNfts,
-} from "./service"
-
-const handleSubscribeNfts: SubscriptionHandler<"pri(nfts.subscribe)"> = (id, port) => {
-  const cb = createSubscription(id, port)
-
-  const unsubscribeNfts = subscribeNfts(cb)
-
-  // TODO cooldown: handle unsubscribe properly, our subscription model only allows unsubscribing when port closes
-  port.onDisconnect.addListener((): void => {
-    unsubscribe(id)
-    unsubscribeNfts()
-  })
-
-  return true
-}
+import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
+import { nfts$, refreshNftMetadata } from "./service"
+import { setFavoriteNft, setHiddenNftCollection } from "./store"
 
 const handleSetHiddenNftCollection: MessageHandler<"pri(nfts.collection.setHidden)"> = (
   request,
@@ -57,11 +33,7 @@ export class NftsHandler extends ExtensionHandler {
   >(id: string, type: Type, request: Request, port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(nfts.subscribe)":
-        return handleSubscribeNfts(
-          id,
-          port,
-          request as RequestTypes["pri(nfts.subscribe)"],
-        ) as Response
+        return genericSubscription(id, port, nfts$) as Response
 
       case "pri(nfts.collection.setHidden)":
         return handleSetHiddenNftCollection(

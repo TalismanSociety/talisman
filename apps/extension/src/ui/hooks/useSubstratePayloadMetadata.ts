@@ -99,14 +99,17 @@ const getSubstratePayloadMetadata = async ({
         sapi,
       }
 
-    const merkleizedMetadata = merkleizeMetadata(metadataRpc, {
+    const metadataHashInputs = {
       tokenSymbol: token.symbol,
       decimals: token.decimals,
       base58Prefix: registry.chainSS58 ?? 42,
       specName: network.specName,
       specVersion,
-    })
+    }
+
+    const merkleizedMetadata = merkleizeMetadata(metadataRpc, metadataHashInputs)
     const metadataHash = u8aToHex(merkleizedMetadata.digest())
+    log.log("metadataHash", metadataHash, metadataHashInputs)
 
     // payload can be modified only if withSignedTransaction is true
     const payloadWithMetadataHash = payload.withSignedTransaction

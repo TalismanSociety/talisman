@@ -180,15 +180,6 @@ const config = (env) => ({
       "process.env.EVM_LOGPROXY": JSON.stringify(
         env.build === "dev" ? process.env.EVM_LOGPROXY || "" : "",
       ),
-      "process.env.COINGECKO_API_URL": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : "",
-      ),
       "process.env.TAOSTATS_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.TAOSTATS_BASE_PATH || "" : "",
       ),
@@ -209,16 +200,6 @@ const config = (env) => ({
           : ["canary", "ci", "qa"].includes(env.build)
             ? process.env.BLOWFISH_QA_API_KEY || ""
             : "",
-      ),
-      "process.env.NFTS_API_KEY": JSON.stringify(
-        env.build === undefined
-          ? process.env.NFTS_API_KEY || ""
-          : ["canary", "ci", "qa"].includes(env.build)
-            ? process.env.NFTS_QA_API_KEY || ""
-            : "",
-      ),
-      "process.env.NFTS_API_BASE_PATH": JSON.stringify(
-        env.build === undefined ? process.env.NFTS_API_BASE_PATH || "" : "",
       ),
       // computed values
       "process.env.DEBUG": JSON.stringify(
