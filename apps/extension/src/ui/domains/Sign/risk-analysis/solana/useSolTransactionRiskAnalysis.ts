@@ -14,6 +14,7 @@ type UseSolTransactionRiskAnalysisProps = {
   tx: string | null | undefined
   origin?: string
   disableAutoRiskScan?: boolean
+  disableCriticalPane?: boolean
 }
 
 export const useSolTransactionRiskAnalysis = ({
@@ -21,6 +22,7 @@ export const useSolTransactionRiskAnalysis = ({
   networkId,
   tx,
   disableAutoRiskScan,
+  disableCriticalPane,
 }: UseSolTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
@@ -28,6 +30,7 @@ export const useSolTransactionRiskAnalysis = ({
     platform: "solana",
     networkId,
     disableAutoRiskScan,
+    disableCriticalPane,
     queryKey: ["useSolTransactionRiskAnalysis", from, networkId, tx, origin],
     queryFn: async () => {
       if (networkId !== "solana-mainnet" || !tx || !from) return null

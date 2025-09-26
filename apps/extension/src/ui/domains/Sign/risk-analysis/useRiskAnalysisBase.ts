@@ -22,6 +22,7 @@ type UseRiskAnalysisBaseProps<
   platform: RiskAnalysisPlatform
   networkId: NetworkId | null | undefined
   disableAutoRiskScan?: boolean
+  disableCriticalPane?: boolean
   queryKey: Key
   queryFn: Func
   enabled: boolean
@@ -40,6 +41,7 @@ export type RiskAnalysisResult<Platform extends RiskAnalysisPlatform> = {
   review: RisksReview
   launchScan: () => void
   validationResult: "Benign" | "Warning" | "Malicious" | "Error" | undefined
+  disableCriticalPane: boolean
 }
 
 export const useRiskAnalysisBase = <
@@ -50,6 +52,7 @@ export const useRiskAnalysisBase = <
   platform,
   networkId,
   disableAutoRiskScan,
+  disableCriticalPane = false,
   queryKey,
   queryFn,
   enabled,
@@ -153,5 +156,6 @@ export const useRiskAnalysisBase = <
     review,
     shouldPromptAutoRiskScan,
     validationResult,
+    disableCriticalPane,
   } as Result
 }

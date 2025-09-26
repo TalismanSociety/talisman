@@ -15,12 +15,14 @@ type UseEvmTransactionRiskAnalysisProps = {
   tx: TransactionRequest | undefined
   origin?: string
   disableAutoRiskScan?: boolean
+  disableCriticalPane?: boolean
 }
 
 export const useEvmTransactionRiskAnalysis = ({
   networkId,
   tx,
   disableAutoRiskScan,
+  disableCriticalPane,
 }: UseEvmTransactionRiskAnalysisProps) => {
   const enabled = useFeatureFlag("RISK_ANALYSIS_V2")
 
@@ -40,6 +42,7 @@ export const useEvmTransactionRiskAnalysis = ({
     platform: "ethereum",
     networkId,
     disableAutoRiskScan,
+    disableCriticalPane,
     queryKey: ["useEvmTransactionRiskAnalysis", networkId, txData, origin],
     queryFn: async () => {
       if (!networkId || !txData) return null

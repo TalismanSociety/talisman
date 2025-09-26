@@ -88,6 +88,8 @@ const RiskAnalysisCriticalPane: FC<{
     if (riskAnalysis?.validationResult === "Malicious") open()
   }, [open, riskAnalysis?.validationResult])
 
+  if (riskAnalysis?.disableCriticalPane) return null
+
   return (
     <Transition show={isOpen}>
       <TransitionChild

@@ -3,9 +3,10 @@ import { BALANCE_MODULES } from "@talismn/balances"
 import { isTokenSol, Token } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
+import { isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
-import { useBalance, useNetworkById, useToken } from "@ui/state"
+import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
 import {
   getFrontEndSolanaConnector,
   useSolanaConnection,
@@ -55,11 +56,16 @@ export const useSendFundsTransactionSol = ({
     [qPayload.data],
   )
 
+  // force a risk analysis scan if the account isnt owned
+  const targetAccount = useAccountByAddress(to)
+  const isScanRequired = useMemo(() => !!to && !isAccountOwned(targetAccount), [targetAccount, to])
+
   const riskAnalysis = useSolTransactionRiskAnalysis({
     from,
     networkId: token?.networkId,
     tx: serializedTx,
-    disableAutoRiskScan: true,
+    disableAutoRiskScan: !isScanRequired,
+    disableCriticalPane: true,
   })
 
   if (!isTokenSol(token)) return null
