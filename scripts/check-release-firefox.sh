@@ -30,9 +30,7 @@ cd review
 unzip -qq $OUTPUT_NAME.sources.zip -d "$OUTPUT_NAME.sources"
 (cd "$OUTPUT_NAME.sources/sources" && pnpm install --frozen-lockfile && pnpm build:extension:prod:firefox)
 
-unzip build
 unzip -qq $OUTPUT_NAME.zip -d $OUTPUT_NAME
-unzip build from sources
 unzip -qq ./$OUTPUT_NAME.sources/sources/apps/extension/dist/firefox/$OUTPUT_NAME.zip -d ./check-build.unzipped
 
 # compare both: if anything is output, the builds differ
