@@ -61,6 +61,27 @@ const config = (env) => ({
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
     globalObject: "self",
   },
+  // Exclude timestamps from snapshots, to ensure exact same webpack compilation hashes
+  snapshot: {
+    managedPaths: [/^(.+?[\\/]node_modules[\\/])/],
+    immutablePaths: [],
+    buildDependencies: {
+      hash: true,
+      timestamp: false, // Key: ignore timestamps
+    },
+    module: {
+      hash: true,
+      timestamp: false, // Key: ignore timestamps
+    },
+    resolve: {
+      hash: true,
+      timestamp: false, // Key: ignore timestamps
+    },
+    resolveBuildDependencies: {
+      hash: true,
+      timestamp: false, // Key: ignore timestamps
+    },
+  },
   stats: "minimal",
   experiments: {
     asyncWebAssembly: true,

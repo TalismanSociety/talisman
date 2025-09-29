@@ -25,10 +25,11 @@ echo "Building Firefox release version: $VERSION"
 OUTPUT_NAME="talisman_extension_${VERSION}_firefox"
 
 # cleanup and save source files in a zip before installing
-pnpm clean
+
 rm -rf ./review
 mkdir ./review
 cp -r ./ ./review/sources
+(cd review/sources && pnpm clean) 
 (cd review && zip -qq -rm $OUTPUT_NAME.sources.zip sources) 
 
 # install and build
