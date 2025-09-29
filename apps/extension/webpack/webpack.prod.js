@@ -97,6 +97,7 @@ const config = (env) => {
       minimize: true,
       minimizer: [
         new TerserPlugin({
+          parallel: 1,
           terserOptions: {
             compress: {
               defaults: true,
