@@ -63,7 +63,6 @@ const DepositSubmitButton = ({
     return (
       <YieldSubmitButton
         label={isSubmitting ? t("Depositing...") : t("Deposit")}
-        disabled={isSubmitting}
         onSuccess={(txId) => {
           if (token) onTxSubmitted?.({ networkId: token.networkId, txId })
         }}

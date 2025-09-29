@@ -22,7 +22,6 @@ import { useDepositFunds } from "./useDepositFunds"
 interface YieldSubmitButtonProps {
   className?: string
   label?: string
-  disabled?: boolean
   onSuccess?: (txHash: string) => void
   onError?: (error: Error) => void
   onTxSubmitted?: (params: { networkId: string; txId: string }) => void
@@ -31,7 +30,6 @@ interface YieldSubmitButtonProps {
 export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   className,
   label,
-  disabled,
   onSuccess,
   onError,
   onTxSubmitted,
@@ -61,7 +59,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       for (let i = 0; i < allTransactions.length; i++) {
         const currentTransaction = allTransactions[i]
         const isLastTransaction = i === allTransactions.length - 1
-
         if (currentTransaction.status === "SKIPPED") {
           continue
         }
@@ -207,7 +204,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     <Button
       className={classNames("w-full", className)}
       primary
-      disabled={disabled || isSubmitting}
       onClick={handleSubmit}
       processing={isSubmitting}
     >
