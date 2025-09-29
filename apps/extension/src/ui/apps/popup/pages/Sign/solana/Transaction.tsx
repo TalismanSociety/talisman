@@ -28,6 +28,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
@@ -62,6 +63,8 @@ export const SolSignTransactionRequest: FC<{
     tx: serializedTx,
   })
 
+  const { enableTokens } = useEnableTokens()
+
   const { t } = useTranslation()
 
   const [state, setState] = useState<{
@@ -75,6 +78,7 @@ export const SolSignTransactionRequest: FC<{
   const handleApprove = useCallback(async () => {
     setState({ error: undefined, processing: true })
     try {
+      await enableTokens(riskAnalysis.tokenIds)
       await api.solSignApprove({ id, type: "transaction", networkId: network?.id }) // will close the window automatically if successful
     } catch (error) {
       setState({
@@ -82,7 +86,7 @@ export const SolSignTransactionRequest: FC<{
         error: (error as Error).message || "Failed to approve sign request",
       })
     }
-  }, [id, network?.id])
+  }, [id, network?.id, riskAnalysis.tokenIds, enableTokens])
 
   const handleSigned = useCallback(
     async (output: SolSignOutput) => {
@@ -90,6 +94,7 @@ export const SolSignTransactionRequest: FC<{
 
       setState({ error: undefined, processing: true })
       try {
+        await enableTokens(riskAnalysis.tokenIds)
         await api.solSignApprove({
           id,
           type: "transaction",
@@ -103,7 +108,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id, network?.id, transaction],
+    [id, network?.id, transaction, riskAnalysis.tokenIds, enableTokens],
   )
 
   const displayError = useMemo(() => {

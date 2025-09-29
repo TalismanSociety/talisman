@@ -12,6 +12,7 @@ import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
 
@@ -22,6 +23,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   const { genericEvent } = useAnalytics()
   const signingRequest = useRequest(id)
   const network = useNetworkById(signingRequest?.ethChainId, "ethereum")
+  const { enableTokens } = useEnableTokens()
 
   const txBase = useMemo(
     () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),
@@ -80,7 +82,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   // flag to prevent capturing multiple submit attempts
   const refIsApproveCaptured = useRef(false)
 
-  const approve = useCallback(() => {
+  const approve = useCallback(async () => {
     if (
       riskAnalysis.review.isRiskAcknowledgementRequired &&
       !riskAnalysis.review.isRiskAcknowledged
@@ -101,8 +103,10 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     if (!baseRequest) throw new Error("Missing base request")
     if (!transaction) throw new Error("Missing transaction")
     const serialized = serializeTransactionRequest(transaction)
+
+    await enableTokens(riskAnalysis.tokenIds)
     return baseRequest && baseRequest.approve(serialized)
-  }, [baseRequest, genericEvent, network?.id, riskAnalysis, origin, transaction])
+  }, [riskAnalysis, baseRequest, transaction, enableTokens, genericEvent, network?.id, origin])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -128,6 +132,8 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       baseRequest.setStatus.processing("Approving request")
       try {
         const serialized = serializeTransactionRequest(transaction)
+
+        await enableTokens(riskAnalysis.tokenIds)
         await api.ethApproveSignAndSendHardware(baseRequest.id, serialized, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
@@ -136,7 +142,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction, origin, network?.id, genericEvent],
+    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent],
   )
 
   return {

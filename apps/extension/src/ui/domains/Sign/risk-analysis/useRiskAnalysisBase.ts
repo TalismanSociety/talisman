@@ -1,9 +1,17 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  NetworkId,
+  solNativeTokenId,
+  solSplTokenId,
+  TokenId,
+} from "@talismn/chaindata-provider"
+import { isNotNil } from "@talismn/util"
 import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSetting } from "@ui/state"
+import { useSetting, useTokensMap } from "@ui/state"
 
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
 import {
@@ -42,6 +50,7 @@ export type RiskAnalysisResult<Platform extends RiskAnalysisPlatform> = {
   launchScan: () => void
   validationResult: "Benign" | "Warning" | "Malicious" | "Error" | undefined
   disableCriticalPane: boolean
+  tokenIds: TokenId[]
 }
 
 export const useRiskAnalysisBase = <
@@ -143,6 +152,38 @@ export const useRiskAnalysisBase = <
     return undefined
   }, [platform, result])
 
+  const tokensMap = useTokensMap()
+
+  const tokenIds = useMemo<TokenId[]>(() => {
+    if (platform === "ethereum" && networkId) {
+      const r = result as RiskAnalysisResponse<"ethereum"> | undefined
+      if (r?.simulation?.status === "Success")
+        return r.simulation.account_summary.assets_diffs
+          .map((diff) => {
+            if (diff.asset.type === "NATIVE") return evmNativeTokenId(networkId)
+            if (diff.asset.type === "ERC20")
+              return evmErc20TokenId(networkId, diff.asset.address as `0x${string}`)
+            return null
+          })
+          .filter(isNotNil)
+          .filter((id) => tokensMap[id]) // only keep tokens we know about
+    }
+    if (platform === "solana" && networkId) {
+      const r = result as RiskAnalysisResponse<"solana"> | undefined
+      if (r?.result?.simulation?.account_summary.account_assets_diff) {
+        return r.result.simulation.account_summary.account_assets_diff
+          .map((token) => {
+            if (token.asset.type === "SOL") return solNativeTokenId(networkId)
+            if (token.asset.type === "TOKEN") return solSplTokenId(networkId, token.asset.address)
+            return null
+          })
+          .filter(isNotNil)
+          .filter((id) => tokensMap[id]) // only keep tokens we know about
+      }
+    }
+    return []
+  }, [networkId, platform, result, tokensMap])
+
   return {
     platform,
     networkId,
@@ -157,5 +198,6 @@ export const useRiskAnalysisBase = <
     shouldPromptAutoRiskScan,
     validationResult,
     disableCriticalPane,
+    tokenIds,
   } as Result
 }
