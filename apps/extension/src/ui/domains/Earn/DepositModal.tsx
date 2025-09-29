@@ -15,6 +15,7 @@ interface DepositModalProps {
   account: string
   tokenId: string
   productId: string
+  validatorAddress?: string
 }
 
 const DepositModalContent = ({
@@ -23,6 +24,7 @@ const DepositModalContent = ({
   account,
   tokenId,
   productId,
+  validatorAddress,
 }: Omit<DepositModalProps, "isOpen">) => {
   const { set, resetUserInput } = useDepositWizard()
 
@@ -32,8 +34,11 @@ const DepositModalContent = ({
       set("account", account)
       set("tokenId", tokenId)
       set("productId", productId)
+      if (validatorAddress) {
+        set("validatorAddress", validatorAddress)
+      }
     }
-  }, [account, tokenId, productId, set])
+  }, [account, tokenId, productId, validatorAddress, set])
 
   // In popup mode, don't render the modal - the pages will handle the full page view
   if (IS_POPUP) {
@@ -78,6 +83,7 @@ export const DepositModal = ({
   account,
   tokenId,
   productId,
+  validatorAddress,
 }: DepositModalProps) => {
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={onClose}>
@@ -89,6 +95,7 @@ export const DepositModal = ({
             account={account}
             tokenId={tokenId}
             productId={productId}
+            validatorAddress={validatorAddress}
           />
         </DepositWizardProvider>
       </Suspense>

@@ -12,9 +12,9 @@ export const DepositAmount = () => {
     // Navigate back to product selection with preserved tokenId
     const tokenId = searchParams.get("tokenId")
     if (tokenId) {
-      navigate(`/earn?tokenId=${tokenId}`)
+      navigate(`/earn?tokenId=${tokenId}`, { replace: true })
     } else {
-      navigate("/earn")
+      navigate("/earn", { replace: true })
     }
   }
 

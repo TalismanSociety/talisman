@@ -14,6 +14,7 @@ import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
+import { ValidatorPickerPage } from "@ui/apps/popup/pages/Earn/ValidatorPicker"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -56,7 +57,16 @@ import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
 const EarnAccountPickerPageWrapper = () => {
   const [searchParams] = useSearchParams()
   const tokenId = searchParams.get("tokenId") || ""
-  return <EarnAccountPickerPage tokenId={tokenId} />
+  const productId = searchParams.get("productId") || ""
+  const validatorAddress = searchParams.get("validatorAddress") || ""
+
+  return (
+    <EarnAccountPickerPage
+      tokenId={tokenId}
+      productId={productId}
+      validatorAddress={validatorAddress}
+    />
+  )
 }
 
 const Popup = () => {
@@ -100,6 +110,7 @@ const Popup = () => {
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
           <Route path="earn" element={<ProductSelectionPage />} />
+          <Route path="earn/select-validator" element={<ValidatorPickerPage />} />
           <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
           <Route path="earn/deposit/*" element={<DepositPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />

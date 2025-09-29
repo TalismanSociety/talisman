@@ -11,9 +11,10 @@ type DepositWizardParams = {
   productId: string
   amount: string // planck
   depositMax: boolean
+  validatorAddress?: string
 }
 
-const STRING_PROPS = ["account", "tokenId", "productId", "amount"]
+const STRING_PROPS = ["account", "tokenId", "productId", "amount", "validatorAddress"]
 const BOOL_PROPS = ["depositMax"]
 
 export type DepositWizardPage = "amount" | "confirm"
@@ -22,13 +23,21 @@ const useDepositWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const { account, tokenId, productId, amount, depositMax } = useMemo(
+  const {
+    account,
+    tokenId,
+    productId,
+    amount,
+    depositMax,
+    validatorAddress: _validatorAddress,
+  } = useMemo(
     () => ({
       account: searchParams.get("account") ?? undefined,
       tokenId: searchParams.get("tokenId") ?? undefined,
       productId: searchParams.get("productId") ?? undefined,
       amount: searchParams.get("amount") ?? undefined,
       depositMax: searchParams.get("depositMax") !== null,
+      validatorAddress: searchParams.get("validatorAddress") ?? undefined,
     }),
     [searchParams],
   )
@@ -124,6 +133,7 @@ const useDepositWizardProvider = () => {
     productId,
     amount,
     depositMax,
+    validatorAddress: _validatorAddress,
     // Actions
     set,
     remove,

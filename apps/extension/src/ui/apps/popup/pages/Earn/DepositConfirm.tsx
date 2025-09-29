@@ -134,7 +134,7 @@ const DepositConfirmContent = () => {
     if (account) params.set("account", account)
     if (tokenId) params.set("tokenId", tokenId)
     if (productId) params.set("productId", productId)
-    navigate(`/earn/deposit/amount?${params.toString()}`)
+    navigate(`/earn/deposit/amount?${params.toString()}`, { replace: true })
   }
 
   return (

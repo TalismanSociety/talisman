@@ -3,6 +3,7 @@ import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   serializeTransactionRequest,
+  SignerPayloadJSON,
 } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useState } from "react"
@@ -51,10 +52,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     setIsSubmitting(true)
 
     try {
-      // Get the current nonce for the account before processing transactions
-      const address = account.address as `0x${string}`
-      const currentNonce = await api.ethGetTransactionsCount(address, token.networkId)
-
       // Process all transactions sequentially
       for (let i = 0; i < allTransactions.length; i++) {
         const currentTransaction = allTransactions[i]
@@ -64,6 +61,9 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
         }
 
         if (isAccountPlatformEthereum(accountData)) {
+          // Get the current nonce for Ethereum accounts
+          const address = account.address as `0x${string}`
+          const currentNonce = await api.ethGetTransactionsCount(address, token.networkId)
           // For Ethereum, parse the unsigned transaction and create a proper TransactionRequest
           if (!currentTransaction?.unsignedTransaction) {
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
@@ -78,7 +78,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             gas: unsignedTx.gas
               ? BigInt(unsignedTx.gas) + (BigInt(unsignedTx.gas) * 10n) / 100n
               : undefined,
-            nonce: currentNonce + i, // Use calculated nonce instead of unsignedTx.nonce
+            nonce: currentNonce + i, // Use calculated nonce for Ethereum
             ...(unsignedTx.maxFeePerGas && unsignedTx.maxPriorityFeePerGas
               ? {
                   maxFeePerGas: BigInt(unsignedTx.maxFeePerGas),
@@ -134,23 +134,25 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
           const signerPayload = JSON.parse(currentTransaction.unsignedTransaction)
 
-          const result = await api.subSubmit(signerPayload)
+          const result = await api.subSubmit(signerPayload?.tx as SignerPayloadJSON)
 
           // Submit hash to Yield.xyz
           await yieldApi.submitHash(currentTransaction.id, { hash: result.hash })
 
           // Poll for transaction confirmation before proceeding to next transaction
-          try {
-            await yieldApi.pollStatus(
-              currentTransaction.id,
-              undefined,
-              2000, // Poll every 2 seconds
-              300000, // 5 minutes timeout
-            )
-          } catch (pollError) {
-            // Don't throw here - the transaction might still be successful
-            // We'll continue to the next transaction
-            log.warn("Transaction polling failed, but continuing", { pollError })
+          if (!isLastTransaction) {
+            try {
+              await yieldApi.pollStatus(
+                currentTransaction.id,
+                undefined,
+                2000, // Poll every 2 seconds
+                300000, // 5 minutes timeout
+              )
+            } catch (pollError) {
+              // Don't throw here - the transaction might still be successful
+              // We'll continue to the next transaction
+              log.warn("Transaction polling failed, but continuing", { pollError })
+            }
           }
 
           // Only trigger progress bar change and callbacks for the last transaction

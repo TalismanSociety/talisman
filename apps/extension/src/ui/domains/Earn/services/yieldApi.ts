@@ -72,6 +72,44 @@ export interface YieldBalanceQuery {
   network: string
 }
 
+export interface YieldValidator {
+  address: string
+  preferred: boolean
+  name: string
+  logoURI: string
+  website?: string
+  commission?: number
+  votingPower?: number
+  nominatorCount?: number
+  status: "active" | "inactive"
+  providerId?: string
+  tvl: string
+  provider?: {
+    id: string
+    createdAt: string
+    updatedAt: string
+    name: string
+    uniqueId: string
+    website: string
+    rank: number
+    preferred: boolean
+    revshare: {
+      pro: { maxRevShare: number; minRevShare: number }
+      trial: { maxRevShare: number; minRevShare: number }
+      standard: { maxRevShare: number; minRevShare: number }
+    }
+  }
+  rewardRate: {
+    total: number
+    rateType: "APR" | "APY"
+    components: unknown[]
+  }
+}
+
+export interface YieldValidatorsResponse {
+  items: YieldValidator[]
+}
+
 export interface YieldBalanceRequest {
   queries: YieldBalanceQuery[]
 }
@@ -191,6 +229,15 @@ class YieldApiService {
     return this.makeRequest<YieldBalancesResponse>("/yields/balances", {
       method: "POST",
       body: JSON.stringify(request),
+    })
+  }
+
+  /**
+   * Fetch validators for a specific yield product
+   */
+  async getValidators(yieldId: string): Promise<YieldValidatorsResponse> {
+    return this.makeRequest<YieldValidatorsResponse>(`/yields/${yieldId}/validators`, {
+      method: "GET",
     })
   }
 

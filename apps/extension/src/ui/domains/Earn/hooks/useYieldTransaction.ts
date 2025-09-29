@@ -12,7 +12,7 @@ import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 import { useDepositValidation } from "./useDepositValidation"
 
 export const useYieldTransaction = () => {
-  const { account, tokenId, productId, amount, depositMax } = useDepositWizard()
+  const { account, tokenId, productId, amount, depositMax, validatorAddress } = useDepositWizard()
   const token = useToken(tokenId as string)
   const balance = useBalance(account as string, tokenId as string)
   const network = useNetworkById(token?.networkId)
@@ -85,9 +85,7 @@ export const useYieldTransaction = () => {
 
       // For products that require validator selection, include validatorAddress
       if (product?.mechanics?.requiresValidatorSelection) {
-        // For now, we'll use a well-known validator address as a fallback
-        // TODO: Implement proper validator selection UI
-        arguments_.validatorAddress = "302"
+        arguments_.validatorAddress = validatorAddress
       }
 
       const requestPayload = {

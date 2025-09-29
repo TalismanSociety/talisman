@@ -13,17 +13,19 @@ import { EarnAccountsList } from "./EarnAccountsList"
 
 interface EarnAccountPickerPageProps {
   tokenId: string
+  productId?: string
+  validatorAddress?: string
 }
 
-export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({ tokenId }) => {
+export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({
+  tokenId,
+  productId,
+  validatorAddress,
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const setEarnWizardAccount = useSetEarnWizardAccount()
-
-  // Get productId from URL params
-  const urlParams = new URLSearchParams(window.location.search)
-  const productId = urlParams.get("productId")
 
   // Get owned accounts only (excludes watch accounts)
   const allAccounts = useAccounts("owned")
@@ -56,12 +58,16 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({ tokenId 
           tokenId,
           productId,
         })
+        // Add validatorAddress if it exists
+        if (validatorAddress) {
+          params.set("validatorAddress", validatorAddress)
+        }
         navigate(`/earn/deposit/amount?${params.toString()}`)
       } else {
         navigate(-1) // Go back to previous page
       }
     },
-    [setEarnWizardAccount, navigate, productId, tokenId],
+    [setEarnWizardAccount, navigate, productId, tokenId, validatorAddress],
   )
 
   const handleBack = useCallback(() => {
