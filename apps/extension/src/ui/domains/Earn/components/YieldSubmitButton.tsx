@@ -1,5 +1,9 @@
 import { classNames } from "@talismn/util"
-import { isAccountPlatformEthereum, serializeTransactionRequest } from "extension-core"
+import {
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+  serializeTransactionRequest,
+} from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,6 +15,7 @@ import { useAccountByAddress } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
+import { useYieldTransaction } from "../hooks/useYieldTransaction"
 import { yieldApi } from "../services/yieldApi"
 import { useDepositFunds } from "./useDepositFunds"
 
@@ -32,52 +37,148 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   onTxSubmitted,
 }) => {
   const { t } = useTranslation()
-  const { account, token, product, deposit, transaction } = useDepositFunds()
+  const { account, token, product, deposit } = useDepositFunds()
   const accountData = useAccountByAddress(account?.address)
   const { gotoProgress } = useDepositWizard()
+  const { allTransactions } = useYieldTransaction()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState<string | null>(null)
 
   const handleSubmit = useCallback(async () => {
-    if (!account || !token || !product || !deposit || !transaction?.yieldTransaction) {
+    if (!account || !token || !product || !deposit || !allTransactions.length) {
       onError?.(new Error("Missing required data for yield transaction"))
       return
     }
 
     setIsSubmitting(true)
-    setCurrentStep("Preparing transaction...")
+    setCurrentStep("Preparing transactions...")
 
     try {
-      const yieldTx = transaction.yieldTransaction
+      // Get the current nonce for the account before processing transactions
+      const address = account.address as `0x${string}`
+      const currentNonce = await api.ethGetTransactionsCount(address, token.networkId)
 
-      // Step 1: Sign the transaction
-      setCurrentStep("Signing transaction...")
-      if (!transaction.tx) throw new Error("No transaction data available")
+      // Process all transactions sequentially
+      for (let i = 0; i < allTransactions.length; i++) {
+        const currentTransaction = allTransactions[i]
+        const isLastTransaction = i === allTransactions.length - 1
 
-      const serialized = serializeTransactionRequest(transaction.tx)
-      if (!serialized) throw new Error("Failed to serialize transaction request")
-      const hash = await api.ethSignAndSend(token.networkId, serialized, {
-        type: "transfer", // Use transfer type for yield deposits
-        tokenId: token.id,
-        value: deposit.planck.toString(),
-        to: transaction.tx?.to || "",
-      })
+        setCurrentStep(`Processing transaction ${i + 1} of ${allTransactions.length}...`)
+        if (isAccountPlatformEthereum(accountData)) {
+          if (isLastTransaction) {
+            setCurrentStep("Signing final transaction...")
+          }
 
-      // Step 2: Submit hash to Yield.xyz
-      setCurrentStep("Submitting to Yield.xyz...")
-      await yieldApi.submitHash(yieldTx.id, { hash })
+          // For Ethereum, parse the unsigned transaction and create a proper TransactionRequest
+          if (!currentTransaction?.unsignedTransaction) {
+            throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
+          }
 
-      // Step 3: Hand off to progress screen
-      if (onTxSubmitted) {
-        // Modal context - call onTxSubmitted
-        onTxSubmitted({ networkId: token.networkId, txId: hash })
-      } else if (IS_POPUP) {
-        // Popup context - use gotoProgress
-        gotoProgress({ networkId: token.networkId, txId: hash })
+          const unsignedTx = JSON.parse(currentTransaction.unsignedTransaction)
+          const txRequest = {
+            to: unsignedTx.to as `0x${string}`,
+            value: BigInt(unsignedTx.value || "0"),
+            data: unsignedTx.data as `0x${string}`,
+            from: account?.address as `0x${string}`,
+            gas: unsignedTx.gas
+              ? BigInt(unsignedTx.gas) + (BigInt(unsignedTx.gas) * 10n) / 100n
+              : undefined,
+            nonce: currentNonce + i, // Use calculated nonce instead of unsignedTx.nonce
+            ...(unsignedTx.maxFeePerGas && unsignedTx.maxPriorityFeePerGas
+              ? {
+                  maxFeePerGas: BigInt(unsignedTx.maxFeePerGas),
+                  maxPriorityFeePerGas: BigInt(unsignedTx.maxPriorityFeePerGas),
+                  type: "eip1559" as const,
+                }
+              : unsignedTx.gasPrice
+                ? {
+                    gasPrice: BigInt(unsignedTx.gasPrice),
+                    type: "legacy" as const,
+                  }
+                : {}),
+          }
+
+          const serializedTx = serializeTransactionRequest(txRequest)
+
+          const txHash = await api.ethSignAndSend(token.networkId, serializedTx)
+
+          // Submit hash to Yield.xyz
+          setCurrentStep(`Submitting transaction ${i + 1} hash to Yield.xyz...`)
+          await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
+
+          // Poll for transaction confirmation before proceeding to next transaction
+          setCurrentStep(`Waiting for transaction ${i + 1} confirmation...`)
+          if (!isLastTransaction) {
+            try {
+              await yieldApi.pollStatus(
+                currentTransaction.id,
+                undefined,
+                2000, // Poll every 2 seconds
+                300000, // 5 minutes timeout
+              )
+            } catch (pollError) {
+              // Don't throw here - the transaction might still be successful
+              // We'll continue to the next transaction
+              log.warn("Transaction polling failed, but continuing", { pollError })
+            }
+          }
+
+          // Only trigger progress bar change and callbacks for the last transaction
+          if (isLastTransaction) {
+            onSuccess?.(txHash)
+
+            if (onTxSubmitted) {
+              onTxSubmitted({ networkId: token.networkId, txId: txHash })
+            } else if (IS_POPUP) {
+              gotoProgress({ networkId: token.networkId, txId: txHash })
+            }
+          }
+        } else if (isAccountPlatformPolkadot(accountData)) {
+          if (isLastTransaction) {
+            setCurrentStep("Signing final transaction...")
+          }
+
+          // For Polkadot, parse the unsigned transaction to get the SignerPayloadJSON
+          if (!currentTransaction?.unsignedTransaction) {
+            throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
+          }
+
+          const signerPayload = JSON.parse(currentTransaction.unsignedTransaction)
+
+          const result = await api.subSubmit(signerPayload)
+
+          // Submit hash to Yield.xyz
+          setCurrentStep(`Submitting transaction ${i + 1} hash to Yield.xyz...`)
+          await yieldApi.submitHash(currentTransaction.id, { hash: result.hash })
+
+          // Poll for transaction confirmation before proceeding to next transaction
+          setCurrentStep(`Waiting for transaction ${i + 1} confirmation...`)
+          try {
+            await yieldApi.pollStatus(
+              currentTransaction.id,
+              undefined,
+              2000, // Poll every 2 seconds
+              300000, // 5 minutes timeout
+            )
+          } catch (pollError) {
+            // Don't throw here - the transaction might still be successful
+            // We'll continue to the next transaction
+            log.warn("Transaction polling failed, but continuing", { pollError })
+          }
+
+          // Only trigger progress bar change and callbacks for the last transaction
+          if (isLastTransaction) {
+            onSuccess?.(result.hash)
+
+            if (onTxSubmitted) {
+              onTxSubmitted({ networkId: token.networkId, txId: result.hash })
+            } else if (IS_POPUP) {
+              gotoProgress({ networkId: token.networkId, txId: result.hash })
+            }
+          }
+        }
       }
-      onSuccess?.(hash)
-      return
     } catch (cause) {
       log.error("Failed to submit yield transaction", { cause, product: product.id })
       const error = cause as Error
@@ -96,14 +197,15 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     token,
     product,
     deposit,
-    transaction,
+    allTransactions,
+    accountData,
     onSuccess,
     onError,
     gotoProgress,
     onTxSubmitted,
   ])
 
-  if (!isAccountPlatformEthereum(accountData)) {
+  if (!isAccountPlatformEthereum(accountData) && !isAccountPlatformPolkadot(accountData)) {
     return (
       <Button className={classNames("w-full", className)} disabled>
         {t("Unsupported account type")}

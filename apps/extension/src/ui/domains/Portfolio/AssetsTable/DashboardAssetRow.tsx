@@ -1,5 +1,4 @@
 import { Balances } from "@talismn/balances"
-import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
@@ -121,18 +120,11 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       {/* Dynamic button positioning based on which buttons are shown */}
       <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-row items-center justify-center gap-2 group-hover:flex">
         {canBondNomPool && (
-          <>
-            <BondPillButton
-              tokenId={token.id}
-              balances={balances}
-              className="[>svg]:text-[2rem] text-base"
-            />
-            <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-              <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
-                <ZapFastIcon className="size-6" />
-              </div>
-            </div>
-          </>
+          <BondPillButton
+            tokenId={token.id}
+            balances={balances}
+            className="[>svg]:text-[2rem] text-base"
+          />
         )}
         {selectedAccount?.type !== "watch-only" && (
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />

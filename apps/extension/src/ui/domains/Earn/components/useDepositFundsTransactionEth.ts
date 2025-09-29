@@ -22,7 +22,6 @@ export const useDepositFundsTransactionEth = () => {
     maxAmount: yieldMaxAmount,
     isLoading: isYieldLoading,
     error: yieldError,
-    primaryTransaction,
   } = useYieldTransaction()
 
   // Use Yield.xyz transaction data only
@@ -81,7 +80,7 @@ export const useDepositFundsTransactionEth = () => {
     setIsLocked,
 
     // Yield.xyz specific data
-    yieldTransaction: primaryTransaction,
+    yieldTransaction: yieldTransaction,
     isYieldTransaction: !!yieldTransaction,
   }
 }

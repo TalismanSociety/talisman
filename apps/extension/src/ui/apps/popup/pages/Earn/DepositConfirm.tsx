@@ -30,13 +30,34 @@ const DepositSubmitButton = ({
     // Only proceed if we have real transaction data
     if (!account || !token || !product || !deposit || !transaction?.tx) return null
 
-    // Use the real transaction data from Yield.xyz or useEthTransaction
-    return {
-      platform: "ethereum" as const,
-      networkId: token.networkId as `0x${string}`,
-      payload: transaction.tx,
+    // Handle different platforms based on the transaction platform
+    const platform = transaction.platform as "ethereum" | "polkadot" | "solana"
+
+    if (platform === "ethereum") {
+      return {
+        platform: "ethereum" as const,
+        networkId: token.networkId as `0x${string}`,
+        payload: transaction.tx as import("viem").TransactionRequest,
+      }
+    } else if (platform === "polkadot") {
+      return {
+        platform: "polkadot" as const,
+        payload: transaction.tx as import("extension-core").SignerPayloadJSON,
+        txMetadata: (transaction.txDetails as { shortMetadata?: Uint8Array | `0x${string}` })
+          ?.shortMetadata,
+      }
+    } else if (platform === "solana") {
+      return {
+        platform: "solana" as const,
+        networkId: token.networkId as `0x${string}`,
+        payload: transaction.tx as
+          | import("@solana/web3.js").Transaction
+          | import("@solana/web3.js").VersionedTransaction,
+      }
     }
-  }, [account, token, product, deposit, transaction?.tx])
+
+    return null
+  }, [account, token, product, deposit, transaction])
 
   // Use Yield.xyz submit button if we have a yield transaction
   if (transaction?.isYieldTransaction) {

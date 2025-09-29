@@ -9,7 +9,7 @@ export const useYieldProducts = (filter?: YieldProductsFilter) => {
   return useQuery({
     queryKey: ["yieldProducts", filter],
     queryFn: () => fetchYieldProducts(filter),
-    enabled: true,
+    enabled: !!filter?.networkName, // Only fetch when network name is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
     refetchOnWindowFocus: false,

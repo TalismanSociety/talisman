@@ -58,11 +58,11 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
   const getCuratorInfo = () => {
     // This would need to be determined based on the product type
     // For now, we'll show the provider or a default
-    return product.providerId || t("Auto-selected")
+    return product?.providerId || t("Auto-selected")
   }
 
-  const getReceiveInfo = () => {
-    return product.outputToken.symbol || t("Yield Token")
+  const getReceiveInfo = (): string => {
+    return product?.outputToken?.symbol
   }
 
   return (
@@ -110,7 +110,7 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
         <div className="flex items-center justify-between">
           <span className="text-body-secondary text-xs">{t("Reward Frequency")}</span>
           <span className="text-body text-xs">
-            {formatRewardFrequency(product.mechanics.rewardSchedule)}
+            {formatRewardFrequency(product?.mechanics?.rewardSchedule || "")}
           </span>
         </div>
 
@@ -118,7 +118,7 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
         <div className="flex items-center justify-between">
           <span className="text-body-secondary text-xs">{t("Withdrawal Time")}</span>
           <span className="text-body text-xs">
-            {formatWithdrawalTime(product.mechanics.cooldownPeriod)}
+            {formatWithdrawalTime(product?.mechanics?.cooldownPeriod)}
           </span>
         </div>
       </div>
@@ -138,11 +138,13 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
           <ProtocolRow />
         </div>
 
-        {/* Receive */}
-        <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Receive")}</span>
-          <span className="text-body text-xs">{getReceiveInfo()}</span>
-        </div>
+        {/* Receive - only show if outputToken exists */}
+        {product?.outputToken && (
+          <div className="flex items-center justify-between">
+            <span className="text-body-secondary text-xs">{t("Receive")}</span>
+            <span className="text-body text-xs">{getReceiveInfo()}</span>
+          </div>
+        )}
       </div>
     </div>
   )

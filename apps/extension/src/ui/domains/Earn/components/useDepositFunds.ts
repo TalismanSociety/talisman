@@ -8,6 +8,7 @@ import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { useDepositValidation } from "../hooks/useDepositValidation"
+import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 import { useDepositFundsTransaction } from "./useDepositFundsTransaction"
 
 interface TDepositFunds {
@@ -55,11 +56,14 @@ export const useDepositFunds = (): TDepositFunds => {
   // Get balance for the account and token
   const balance = useBalance(account as string, tokenId as string)
 
+  // Get the mapped network name
+  const mappedNetworkName = mapNetworkToYieldNetwork(network)
+
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
     tokenId: tokenId as TokenId,
     tokenSymbol: token?.symbol,
-    networkName: network?.platform,
+    networkName: mappedNetworkName || undefined,
   })
 
   const product = useMemo(() => {
@@ -88,7 +92,14 @@ export const useDepositFunds = (): TDepositFunds => {
   // Use transaction's estimated fee if available
   const estimatedFee = useMemo(() => {
     // Prioritize Yield.xyz gas estimate if available
-    if (transaction?.yieldTransaction?.gasEstimate && token && tokenRates && network) {
+    if (
+      transaction?.yieldTransaction &&
+      "gasEstimate" in transaction.yieldTransaction &&
+      transaction.yieldTransaction.gasEstimate &&
+      token &&
+      tokenRates &&
+      network
+    ) {
       // Extract the gas estimate value - it could be a string or an object
       let gasEstimateValue: string
       let feeTokenDecimals: number
@@ -134,13 +145,7 @@ export const useDepositFunds = (): TDepositFunds => {
     }
 
     return null
-  }, [
-    transaction?.estimatedFee,
-    transaction?.yieldTransaction?.gasEstimate,
-    token,
-    tokenRates,
-    network,
-  ])
+  }, [transaction?.estimatedFee, transaction?.yieldTransaction, token, tokenRates, network])
 
   // Fee token should be the network's native token (ETH), not the deposit token
   const feeToken = useToken(network?.nativeTokenId)

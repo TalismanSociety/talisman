@@ -8,6 +8,7 @@ import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi, YieldEnterResponse, YieldTransaction } from "../services/yieldApi"
+import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 import { useDepositValidation } from "./useDepositValidation"
 
 export const useYieldTransaction = () => {
@@ -16,11 +17,14 @@ export const useYieldTransaction = () => {
   const balance = useBalance(account as string, tokenId as string)
   const network = useNetworkById(token?.networkId)
 
+  // Get the mapped network name
+  const mappedNetworkName = mapNetworkToYieldNetwork(network)
+
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
     tokenId: tokenId as string,
     tokenSymbol: token?.symbol,
-    networkName: network?.platform,
+    networkName: mappedNetworkName || undefined,
   })
 
   const product = useMemo(() => {
@@ -71,12 +75,25 @@ export const useYieldTransaction = () => {
         depositAmount = planckToTokens(amount, token.decimals)
       }
 
+      // Build arguments based on product requirements
+      const arguments_: {
+        amount: string
+        [key: string]: string | number | boolean | string[] | undefined
+      } = {
+        amount: depositAmount,
+      }
+
+      // For products that require validator selection, include validatorAddress
+      if (product?.mechanics?.requiresValidatorSelection) {
+        // For now, we'll use a well-known validator address as a fallback
+        // TODO: Implement proper validator selection UI
+        arguments_.validatorAddress = "302"
+      }
+
       const requestPayload = {
         yieldId,
         address: account,
-        arguments: {
-          amount: depositAmount,
-        },
+        arguments: arguments_,
       }
 
       return yieldApi.enter(requestPayload)
@@ -95,18 +112,14 @@ export const useYieldTransaction = () => {
     return yieldResponse.transactions.filter((tx) => tx.status !== "SKIPPED")
   }, [yieldResponse])
 
-  // Get the first transaction for gas estimation (backward compatibility)
-  const primaryTransaction = useMemo((): YieldTransaction | null => {
-    return allTransactions[0] || null
-  }, [allTransactions])
-
-  // Parse the unsigned transaction for use with useEthTransaction
+  // Parse the first unsigned transaction for use with useEthTransaction (for gas estimation)
   const parsedTransaction = useMemo((): TransactionRequest | undefined => {
-    if (!primaryTransaction?.unsignedTransaction) return undefined
+    const firstTransaction = allTransactions[0]
+    if (!firstTransaction?.unsignedTransaction) return undefined
 
     try {
       // Parse the unsigned transaction JSON string
-      const unsignedTx = JSON.parse(primaryTransaction.unsignedTransaction)
+      const unsignedTx = JSON.parse(firstTransaction.unsignedTransaction)
 
       // Validate required fields
       if (!unsignedTx.to || !unsignedTx.data) {
@@ -153,7 +166,7 @@ export const useYieldTransaction = () => {
     } catch (error) {
       return undefined
     }
-  }, [primaryTransaction, account])
+  }, [allTransactions, account])
 
   // Calculate max amount from Yield.xyz response if available
   const maxAmount = useMemo(() => {
@@ -164,7 +177,6 @@ export const useYieldTransaction = () => {
   return {
     // Yield.xyz specific data
     yieldResponse,
-    primaryTransaction,
     allTransactions: yieldResponse?.transactions || [],
     nonSkippedTransactions: allTransactions, // New: filtered transactions for execution
 

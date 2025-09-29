@@ -11,7 +11,6 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { DepositDetails } from "./components/DepositDetails"
 import { DepositProgressBar } from "./components/DepositProgressBar"
-import { SequentialTransactionExecutor } from "./components/SequentialTransactionExecutor"
 import { useDepositFunds } from "./components/useDepositFunds"
 import { YieldSubmitButton } from "./components/YieldSubmitButton"
 import { DepositWizardProvider, useDepositWizard } from "./context/DepositWizardContext"
@@ -30,13 +29,34 @@ const DepositSubmitButton = ({
     // Only proceed if we have real transaction data
     if (!account || !token || !product || !deposit || !transaction?.tx) return null
 
-    // Use the real transaction data from Yield.xyz or useEthTransaction
-    return {
-      platform: "ethereum" as const,
-      networkId: token.networkId as `0x${string}`,
-      payload: transaction.tx,
+    // Handle different platforms based on the transaction platform
+    const platform = transaction.platform as "ethereum" | "polkadot" | "solana"
+
+    if (platform === "ethereum") {
+      return {
+        platform: "ethereum" as const,
+        networkId: token.networkId as `0x${string}`,
+        payload: transaction.tx as import("viem").TransactionRequest,
+      }
+    } else if (platform === "polkadot") {
+      return {
+        platform: "polkadot" as const,
+        payload: transaction.tx as import("extension-core").SignerPayloadJSON,
+        txMetadata: (transaction.txDetails as { shortMetadata?: Uint8Array | `0x${string}` })
+          ?.shortMetadata,
+      }
+    } else if (platform === "solana") {
+      return {
+        platform: "solana" as const,
+        networkId: token.networkId as `0x${string}`,
+        payload: transaction.tx as
+          | import("@solana/web3.js").Transaction
+          | import("@solana/web3.js").VersionedTransaction,
+      }
     }
-  }, [account, token, product, deposit, transaction?.tx])
+
+    return null
+  }, [account, token, product, deposit, transaction])
 
   // Use Yield.xyz submit button if we have a yield transaction
   if (transaction?.isYieldTransaction) {
@@ -69,6 +89,7 @@ const DepositSubmitButton = ({
 interface ConfirmDepositModalProps {
   isOpen: boolean
   onClose: () => void
+  onTxSubmitted?: (data: { networkId: string; txId: string }) => void
   account: string
   tokenId: string
   productId: string
@@ -76,11 +97,12 @@ interface ConfirmDepositModalProps {
 
 const ConfirmDepositModalContent = ({
   onClose,
+  onTxSubmitted: _onTxSubmitted,
   account,
   tokenId,
   productId,
 }: Omit<ConfirmDepositModalProps, "isOpen">) => {
-  const [currentStep, setCurrentStep] = useState<"confirm" | "execute" | "progress">("confirm")
+  const [currentStep, setCurrentStep] = useState<"confirm" | "progress">("confirm")
   const [transactionStep, setTransactionStep] = useState<1 | 2>(1)
   const { set, resetUserInput } = useDepositWizard()
   const { token } = useDepositFunds()
@@ -100,29 +122,31 @@ const ConfirmDepositModalContent = ({
     return null
   }
 
-  const handleExecutionComplete = (networkId: string, txId: string) => {
-    setCurrentStep("progress")
-    setProgress({ networkId, txId })
-  }
-
-  const handleExecutionError = (_error: Error) => {
-    // Could show error state or go back to confirm
-    setCurrentStep("confirm")
-  }
-
-  const handleTransactionComplete = (networkId: string, txId: string) => {
-    setProgress({ networkId, txId })
-    if (transactionStep === 1) {
-      setTransactionStep(2)
-    }
-  }
-
   const handleClose = () => {
     setCurrentStep("confirm")
     resetUserInput()
     onClose()
   }
 
+  // For progress step, render a clean full-screen view like SendFunds
+  if (currentStep === "progress" && progress) {
+    return (
+      <div
+        className={classNames(
+          "relative h-full w-full bg-black px-12 py-8",
+          !IS_POPUP && "border-grey-800 rounded border",
+        )}
+      >
+        <SendFundsProgress
+          networkId={progress.networkId}
+          txId={progress.txId}
+          onClose={handleClose}
+        />
+      </div>
+    )
+  }
+
+  // Normal modal layout for confirm step
   return (
     <div
       id="confirm-deposit-modal-content"
@@ -170,30 +194,15 @@ const ConfirmDepositModalContent = ({
           <div className="flex h-full w-full flex-col px-12 pb-8">
             <div className="mt-auto">
               <DepositSubmitButton
-                onTxSubmitted={({
-                  networkId: _networkId,
-                  txId: _txId,
-                }: {
-                  networkId: string
-                  txId: string
-                }) => {
-                  // switch to sequential execution
-                  setCurrentStep("execute")
+                onTxSubmitted={({ networkId, txId }: { networkId: string; txId: string }) => {
+                  // Update progress bar to show step 2 (green) when last transaction starts
+                  setTransactionStep(2)
+                  // Direct flow - close modal and show progress
+                  setProgress({ networkId, txId })
+                  setCurrentStep("progress")
                 }}
               />
             </div>
-          </div>
-        )}
-        {currentStep === "execute" && (
-          <SequentialTransactionExecutor
-            onComplete={handleExecutionComplete}
-            onError={handleExecutionError}
-            onTransactionComplete={handleTransactionComplete}
-          />
-        )}
-        {currentStep === "progress" && progress && (
-          <div className="h-full w-full">
-            <SendFundsProgress networkId={progress.networkId} txId={progress.txId} />
           </div>
         )}
       </div>
@@ -204,6 +213,7 @@ const ConfirmDepositModalContent = ({
 export const ConfirmDepositModal = ({
   isOpen,
   onClose,
+  onTxSubmitted,
   account,
   tokenId,
   productId,
@@ -214,6 +224,7 @@ export const ConfirmDepositModal = ({
         <DepositWizardProvider>
           <ConfirmDepositModalContent
             onClose={onClose}
+            onTxSubmitted={onTxSubmitted}
             account={account}
             tokenId={tokenId}
             productId={productId}

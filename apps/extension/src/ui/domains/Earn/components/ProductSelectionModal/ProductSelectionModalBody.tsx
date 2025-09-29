@@ -12,6 +12,7 @@ import { IS_POPUP } from "@ui/util/constants"
 import { ConfirmDepositModal } from "../../ConfirmDepositModal"
 import { DepositModal } from "../../DepositModal"
 import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
+import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"
 import { EarnAccountPicker } from "../EarnAccountPicker"
 import { ProductList } from "../ProductList"
 import { TokenDetails } from "../TokenDetails"
@@ -33,6 +34,9 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<YieldProduct | null>(null)
 
+  // Get the mapped network name
+  const mappedNetworkName = mapNetworkToYieldNetwork(network)
+
   // Fetch yield products filtered by token symbol
   const {
     data: yieldProducts = [],
@@ -41,7 +45,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   } = useYieldProducts({
     tokenId,
     tokenSymbol: token?.symbol,
-    networkName: network?.platform,
+    networkName: mappedNetworkName || undefined,
   })
 
   const handleProductClick = (product: YieldProduct) => {
