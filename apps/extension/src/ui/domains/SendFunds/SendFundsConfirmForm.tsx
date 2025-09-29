@@ -372,7 +372,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
         </ScrollContainer>
-        {transaction?.platform === "ethereum" && <RiskAnalysisPillButton />}
+        {riskAnalysis && <RiskAnalysisPillButton />}
         <SendButton />
       </div>
     </RiskAnalysisProvider>
