@@ -43,7 +43,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   const { allTransactions } = useYieldTransaction()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [currentStep, setCurrentStep] = useState<string | null>(null)
 
   const handleSubmit = useCallback(async () => {
     if (!account || !token || !product || !deposit || !allTransactions.length) {
@@ -52,7 +51,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     }
 
     setIsSubmitting(true)
-    setCurrentStep("Preparing transactions...")
 
     try {
       // Get the current nonce for the account before processing transactions
@@ -64,12 +62,11 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
         const currentTransaction = allTransactions[i]
         const isLastTransaction = i === allTransactions.length - 1
 
-        setCurrentStep(`Processing transaction ${i + 1} of ${allTransactions.length}...`)
-        if (isAccountPlatformEthereum(accountData)) {
-          if (isLastTransaction) {
-            setCurrentStep("Signing final transaction...")
-          }
+        if (currentTransaction.status === "SKIPPED") {
+          continue
+        }
 
+        if (isAccountPlatformEthereum(accountData)) {
           // For Ethereum, parse the unsigned transaction and create a proper TransactionRequest
           if (!currentTransaction?.unsignedTransaction) {
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
@@ -104,11 +101,9 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
           const txHash = await api.ethSignAndSend(token.networkId, serializedTx)
 
           // Submit hash to Yield.xyz
-          setCurrentStep(`Submitting transaction ${i + 1} hash to Yield.xyz...`)
           await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
 
           // Poll for transaction confirmation before proceeding to next transaction
-          setCurrentStep(`Waiting for transaction ${i + 1} confirmation...`)
           if (!isLastTransaction) {
             try {
               await yieldApi.pollStatus(
@@ -135,10 +130,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             }
           }
         } else if (isAccountPlatformPolkadot(accountData)) {
-          if (isLastTransaction) {
-            setCurrentStep("Signing final transaction...")
-          }
-
           // For Polkadot, parse the unsigned transaction to get the SignerPayloadJSON
           if (!currentTransaction?.unsignedTransaction) {
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
@@ -149,11 +140,9 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
           const result = await api.subSubmit(signerPayload)
 
           // Submit hash to Yield.xyz
-          setCurrentStep(`Submitting transaction ${i + 1} hash to Yield.xyz...`)
           await yieldApi.submitHash(currentTransaction.id, { hash: result.hash })
 
           // Poll for transaction confirmation before proceeding to next transaction
-          setCurrentStep(`Waiting for transaction ${i + 1} confirmation...`)
           try {
             await yieldApi.pollStatus(
               currentTransaction.id,
@@ -190,7 +179,6 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       })
     } finally {
       setIsSubmitting(false)
-      setCurrentStep(null)
     }
   }, [
     account,
@@ -213,7 +201,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     )
   }
 
-  const buttonLabel = isSubmitting ? currentStep || t("Processing...") : label || t("Deposit")
+  const buttonLabel = label || t("Deposit")
 
   return (
     <Button
