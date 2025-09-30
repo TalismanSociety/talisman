@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "noEmit": false
   },
-  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
 }
