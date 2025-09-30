@@ -1,5 +1,19 @@
 # @talismn/balances
 
+## 1.0.6
+
+### Patch Changes
+
+- f2d3cf5: pin p-queue lib version
+- f2d3cf5: pin @types/lodash-es version
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/chaindata-provider@1.1.3
+  - @talismn/util@0.5.3
+  - @talismn/chain-connectors@0.0.4
+  - @talismn/token-rates@3.0.6
+
 ## 1.0.5
 
 ### Patch Changes

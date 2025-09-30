@@ -1,5 +1,15 @@
 # @talismn/chaindata-provider
 
+## 1.1.3
+
+### Patch Changes
+
+- cc3fa02: generate init data
+- f2d3cf5: pin @types/lodash-es version
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/util@0.5.3
+
 ## 1.1.2
 
 ### Patch Changes

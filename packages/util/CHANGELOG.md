@@ -1,5 +1,12 @@
 # @talismn/util
 
+## 0.5.3
+
+### Patch Changes
+
+- f2d3cf5: getQuery$
+- f2d3cf5: pin @types/lodash-es version
+
 ## 0.5.2
 
 ### Patch Changes
