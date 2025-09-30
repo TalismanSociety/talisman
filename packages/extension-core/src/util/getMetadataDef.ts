@@ -1,14 +1,14 @@
 import { assert, isHex } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
-import { fetchBestMetadata } from "@talismn/sapi"
-import { getConstantValueFromMetadata } from "@talismn/scale"
+import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi"
+import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
 import { DEBUG, log } from "extension-shared"
 import { withRetry } from "viem"
 
 import { sentry } from "../config/sentry"
 import { db } from "../db"
-import { encodeMetadataRpc } from "../domains/metadata/helpers"
+import { decodeMetadataRpc, encodeMetadataRpc } from "../domains/metadata/helpers"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
 import { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
@@ -61,15 +61,27 @@ const getMetadataDefInner = async (
     var storeMetadata = await db.metadata.get(genesisHash)
 
     // having a metadataRpc on expected specVersion is ideal scenario, don't go further
-    if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) {
-      return storeMetadata
-    }
+    if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion)
+      if (
+        // TODO remove this check once PAPI handles metadata hash for v16
+        getMetadataVersion(decodeMetadataRpc(storeMetadata.metadataRpc)) <=
+        MAX_SUPPORTED_METADATA_VERSION
+      )
+        return storeMetadata
   } catch (cause) {
     const message = `Failed to load chain metadata from the db for chain ${genesisHash}`
     const error = new Error(message, { cause })
     log.error(error)
     throw error
   }
+
+  // TODO remove this block once PAPI handles metadata hash for v16
+  if (
+    storeMetadata?.metadataRpc &&
+    getMetadataVersion(decodeMetadataRpc(storeMetadata.metadataRpc)) >
+      MAX_SUPPORTED_METADATA_VERSION
+  )
+    storeMetadata = undefined
 
   if (!chain) {
     log.warn(`Metadata for unknown chain isn't up to date`, storeMetadata?.chain ?? genesisHash)
@@ -103,24 +115,15 @@ const getMetadataDefInner = async (
 
     // save in cache
     CACHE_RESULTS.set(cacheKey, newData)
-
     metadataUpdatesStore.set(genesisHash, false)
 
     // if requested version is outdated, cache it and return it without updating store
     if (storeMetadata && runtimeSpecVersion < storeMetadata.specVersion) return newData
 
     // persist in store
-    if (storeMetadata) await db.metadata.put(newData)
-    else {
-      // could be a race condition caused by multiple calls to this function, in the meantime storeMetadata could be out of date
-      const latestStoreMetadata = await db.metadata.get(genesisHash)
-      if (!latestStoreMetadata || runtimeSpecVersion > latestStoreMetadata.specVersion)
-        await db.metadata.put(newData)
-    }
+    await db.metadata.put(newData)
 
-    // save full object in cache
-    CACHE_RESULTS.set(cacheKey, (await db.metadata.get(genesisHash)) as TalismanMetadataDef)
-    return CACHE_RESULTS.get(cacheKey)
+    return newData
   } catch (cause) {
     if ((cause as Error).message !== "RPC connect timeout reached") {
       const error = new Error("Failed to update metadata", { cause })
