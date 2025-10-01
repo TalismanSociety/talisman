@@ -47,6 +47,7 @@ export const TALISMAN_DOCS_URL_PREFIX = "https://docs.talisman.xyz/talisman"
 export const POLKADOT_VAULT_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-polkadot-vault`
 export const RELEASE_NOTES_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/wallet-release-notes`
 export const SECURITY_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/security`
+export const SEEK_DOCS_URL = `https://talisman.xyz/seek`
 export const MNEMONIC_BACKUP_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/installing-talisman/back-up-your-secret-phrase`
 export const PRIVACY_POLICY_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/privacy-policy`
 export const TERMS_OF_USE_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/terms-of-use`

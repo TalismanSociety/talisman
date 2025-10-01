@@ -34,6 +34,12 @@ export type RemoteConfigStoreData = {
     unifiedAddressDocsUrl: string
   }
   recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
+  seek: {
+    stakingUrl: string
+    docsUrl: string
+    tradeUrl: string
+    swapUrl: string
+  }
 }
 
 export interface RequestOnboardCreatePassword {
