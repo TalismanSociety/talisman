@@ -1,5 +1,13 @@
 # @talismn/solana
 
+## 0.0.3
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/crypto@0.2.3
+
 ## 0.0.2
 
 ### Patch Changes
