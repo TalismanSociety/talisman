@@ -1,11 +1,12 @@
 import { Balances } from "@talismn/balances"
-import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnPillButton } from "@ui/domains/Earn"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -13,6 +14,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById } from "@ui/state"
+import { EARN_TOKEN_IDS } from "@ui/util/constants"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -27,6 +29,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -43,6 +46,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
+  const showEarnButton = useMemo(() => token?.id && EARN_TOKEN_IDS.includes(token.id), [token?.id])
 
   if (!token || !network || !summary) return null
 
@@ -108,29 +112,26 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
-              canBondNomPool && "group-hover:hidden",
+              selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
             noCountUp={noCountUp}
           />
         </div>
       </button>
-      {canBondNomPool && (
-        <>
-          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
-            <BondPillButton
-              tokenId={token.id}
-              balances={balances}
-              className="[>svg]:text-[2rem] text-base"
-            />
-          </div>
-          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
-              <ZapFastIcon className="size-6" />
-            </div>
-          </div>
-        </>
-      )}
+      {/* Dynamic button positioning based on which buttons are shown */}
+      <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-row items-center justify-center gap-2 group-hover:flex">
+        {canBondNomPool && (
+          <BondPillButton
+            tokenId={token.id}
+            balances={balances}
+            className="[>svg]:text-[2rem] text-base"
+          />
+        )}
+        {showEarnButton && selectedAccount?.type !== "watch-only" && (
+          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
+        )}
+      </div>
     </div>
   )
 }

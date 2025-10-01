@@ -9,16 +9,20 @@ import {
   WATCH_ASSET_PREFIX,
 } from "extension-core"
 import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
+import { ValidatorPickerPage } from "@ui/apps/popup/pages/Earn/ValidatorPicker"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { EarnAccountPickerPage } from "@ui/domains/Earn/components/EarnAccountPickerPage"
+import { ProductSelectionModal } from "@ui/domains/Earn/components/ProductSelectionModal/ProductSelectionModal"
+import { ProductSelectionPage } from "@ui/domains/Earn/components/ProductSelectionPage"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -34,6 +38,7 @@ import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpg
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
+import { DepositPage } from "./pages/Earn/Deposit"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
@@ -48,6 +53,21 @@ import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
 import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
+
+const EarnAccountPickerPageWrapper = () => {
+  const [searchParams] = useSearchParams()
+  const tokenId = searchParams.get("tokenId") || ""
+  const productId = searchParams.get("productId") || ""
+  const validatorAddress = searchParams.get("validatorAddress") || ""
+
+  return (
+    <EarnAccountPickerPage
+      tokenId={tokenId}
+      productId={productId}
+      validatorAddress={validatorAddress}
+    />
+  )
+}
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
@@ -89,6 +109,10 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
+          <Route path="earn" element={<ProductSelectionPage />} />
+          <Route path="earn/select-validator" element={<ValidatorPickerPage />} />
+          <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
+          <Route path="earn/deposit/*" element={<DepositPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
@@ -99,6 +123,7 @@ const Popup = () => {
         <AccountRenameModal />
         <BondModal />
         <BittensorBondModal />
+        <ProductSelectionModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />
         <LedgerPolkadotUpgradeAlertDrawer />

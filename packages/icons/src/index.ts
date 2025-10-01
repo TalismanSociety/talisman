@@ -57,6 +57,7 @@ export { ReactComponent as VoteIcon } from "./icons/vote.svg"
 export { ReactComponent as ZapFastIcon } from "./icons/zap-fast.svg"
 export { ReactComponent as ZapPlusIcon } from "./icons/zap-plus.svg"
 export { ReactComponent as ZapMinusIcon } from "./icons/zap-minus.svg"
+export { ReactComponent as EarnIcon } from "./icons/earn.svg"
 
 export {
   FiActivity as ActivityIcon,

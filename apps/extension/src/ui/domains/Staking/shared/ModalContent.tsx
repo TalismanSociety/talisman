@@ -15,7 +15,7 @@ export const ModalContent = ({ ModalHeader, ModalBody }: ModalContentProps) => {
       id={MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals
       className={classNames(
         "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
-        !IS_POPUP && "border-grey-850 rounded border",
+        !IS_POPUP && "border-grey-800 rounded border",
       )}
     >
       <ModalHeader />

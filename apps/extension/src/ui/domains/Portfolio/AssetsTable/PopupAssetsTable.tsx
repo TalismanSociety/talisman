@@ -12,6 +12,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { EarnPillButton } from "@ui/domains/Earn"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -19,6 +20,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
+import { EARN_TOKEN_IDS } from "@ui/util/constants"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -59,6 +61,7 @@ const AssetRow: FC<{
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
 
@@ -93,6 +96,7 @@ const AssetRow: FC<{
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
+  const showEarnButton = useMemo(() => token?.id && EARN_TOKEN_IDS.includes(token.id), [token?.id])
 
   if (!token || !summary || !network) return null
 
@@ -142,7 +146,7 @@ const AssetRow: FC<{
               className={classNames(
                 "whitespace-nowrap text-sm font-bold",
                 locked ? "text-body-secondary" : "text-white",
-                showStakingButton && "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               <Tokens
@@ -160,7 +164,7 @@ const AssetRow: FC<{
             <div
               className={classNames(
                 "text-body-secondary leading-base text-xs",
-                showStakingButton && "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
@@ -168,15 +172,24 @@ const AssetRow: FC<{
           </div>
         </div>
       </button>
-      {showStakingButton && (
-        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+      {/* Dynamic button positioning based on which buttons are shown */}
+      <div
+        className={classNames(
+          "absolute right-2 top-0 hidden h-28 flex-row items-center justify-center gap-2",
+          selectedAccount?.type !== "watch-only" && "group-hover:flex",
+        )}
+      >
+        {showStakingButton && (
           <BondPillButton
             tokenId={token.id}
             balances={balances}
             className="[>svg]:text-[2rem] text-base"
           />
-        </div>
-      )}
+        )}
+        {showEarnButton && (
+          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
+        )}
+      </div>
     </div>
   )
 }
