@@ -4,13 +4,13 @@ import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
-import { useAppState, useFeatureFlag } from "@ui/state"
+import { useAppState } from "@ui/state"
 
 import bg from "./assets/autonomys-quest-bg.png"
 
 export const AutonomysQuestBanner = () => {
   const { t } = useTranslation()
-  const allowBanner = useFeatureFlag("AUTONOMYS_QUEST_BANNER")
+  const allowBanner = true
   const [hideBanner, setHideBanner] = useAppState("hideAutonomysQuestBanner")
 
   const showBanner = useMemo(() => allowBanner && !hideBanner, [allowBanner, hideBanner])

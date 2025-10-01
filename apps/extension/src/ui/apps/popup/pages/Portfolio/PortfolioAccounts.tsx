@@ -30,7 +30,6 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
-import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -46,9 +45,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
-import { AutonomysQuestBanner } from "../../components/banners/AutonomysQuestBanner"
-import { BackupReminderBanner } from "../../components/banners/BackupReminderBanner"
-import { UnifiedAddressInfoBanner } from "../../components/banners/UnifiedAddressInfoBanner"
+import { PopupHomeBanners } from "../../components/banners/PopupHomeBanners"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 
 const portfolioAccountsSearch$ = new BehaviorSubject("")
@@ -301,10 +298,7 @@ const Accounts = ({
       ) : (
         <>
           <AllAccountsHeader accounts={accounts} />
-          <AutonomysQuestBanner />
-          <BackupReminderBanner />
-          <NewFeaturesButton />
-          <UnifiedAddressInfoBanner />
+          <PopupHomeBanners />
         </>
       )}
 

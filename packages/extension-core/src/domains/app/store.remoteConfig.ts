@@ -1,5 +1,5 @@
 import { evmNativeTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
-import { log, TEST } from "extension-shared"
+import { DEBUG, log, TEST } from "extension-shared"
 import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
@@ -70,6 +70,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
+
+        if (DEBUG) config.featureFlags.SEEK_BENEFITS_BANNER = true
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
