@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
 ## 0.1.3
 
 ### Patch Changes

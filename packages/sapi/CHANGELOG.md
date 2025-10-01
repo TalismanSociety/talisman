@@ -1,5 +1,14 @@
 # @talismn/sapi
 
+## 0.0.12
+
+### Patch Changes
+
+- 16c2ee4: set max metadata version to 15
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/scale@0.2.2
+
 ## 0.0.11
 
 ### Patch Changes

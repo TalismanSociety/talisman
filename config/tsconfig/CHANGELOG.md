@@ -1,5 +1,11 @@
 # @talismn/tsconfig
 
+## 0.0.3
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
 ## 0.0.2
 
 ### Patch Changes

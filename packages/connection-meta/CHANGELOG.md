@@ -1,5 +1,13 @@
 # @talismn/connection-meta
 
+## 0.2.25
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+
 ## 0.2.24
 
 ### Patch Changes

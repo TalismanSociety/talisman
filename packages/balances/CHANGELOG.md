@@ -1,5 +1,21 @@
 # @talismn/balances
 
+## 1.0.7
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [16c2ee4]
+- Updated dependencies [72acc04]
+  - @talismn/sapi@0.0.12
+  - @talismn/chaindata-provider@1.1.4
+  - @talismn/chain-connectors@0.0.5
+  - @talismn/token-rates@3.0.7
+  - @talismn/crypto@0.2.3
+  - @talismn/solana@0.0.3
+  - @talismn/scale@0.2.2
+  - @talismn/util@0.5.4
+
 ## 1.0.6
 
 ### Patch Changes
