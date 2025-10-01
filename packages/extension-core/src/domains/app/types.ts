@@ -35,6 +35,7 @@ export type RemoteConfigStoreData = {
   }
   recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
   seek: {
+    address: `0x${string}`
     stakingUrl: string
     docsUrl: string
     tradeUrl: string

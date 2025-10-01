@@ -8,9 +8,10 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { FC, ReactNode, SVGProps, useCallback } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useRemoteConfig } from "@ui/state"
 
 import { ReactComponent as BitgetLogo } from "./bitget.svg"
@@ -23,6 +24,7 @@ export const SeekBenefitsModal: FC<{
 }> = ({ isOpen, containerId, onClose }) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
 
   const handleClickLearnMore = useCallback(() => {
     window.open(remoteConfig.seek.docsUrl, "_blank", "noopener")
@@ -33,8 +35,9 @@ export const SeekBenefitsModal: FC<{
   }, [remoteConfig.seek.stakingUrl])
 
   const handleClickSwap = useCallback(() => {
-    window.open(remoteConfig.seek.swapUrl, "_blank", "noopener")
-  }, [remoteConfig.seek.swapUrl])
+    openSwapTokensModal()
+    onClose()
+  }, [openSwapTokensModal, onClose])
 
   const handleClickTrade = useCallback(() => {
     window.open(remoteConfig.seek.tradeUrl, "_blank", "noopener")
@@ -52,7 +55,7 @@ export const SeekBenefitsModal: FC<{
         title={"$SEEK Benefits"}
         className="[&>header>h1]:text-md relative size-full rounded-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%"
       >
-        <Background className="absolute right-0 top-0 h-[20.7rem] w-[17rem]" />
+        <Background className="absolute right-0 top-0 z-0 h-[20.7rem] w-[17rem]" />
         <div className="flex size-full flex-col">
           <div className="grow pt-[3.4rem]">
             <p className="text-[2.1rem]">{t("Talisman SEEK is live")}</p>
@@ -68,11 +71,11 @@ export const SeekBenefitsModal: FC<{
               </button>
             </p>
             <div className="h-20"></div>
-            <div className="bg-grey-700 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
+            <div className="bg-grey-800 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
               <div className="flex grow items-center justify-start gap-3 overflow-hidden">
                 <div className="truncate">{t("Earn SEEK rewards")}</div>
-                <div className="bg-grey-600 size-2 shrink-0 rounded-full"></div>
-                <div className="text-primary shrink-0 whitespace-nowrap">15% APY</div>
+                {/* <div className="bg-grey-600 size-2 shrink-0 rounded-full"></div>
+                <div className="text-primary shrink-0 whitespace-nowrap">15% APY</div> */}
               </div>
               <button
                 type="button"
@@ -83,12 +86,19 @@ export const SeekBenefitsModal: FC<{
                 <div className="text-xs">{t("Stake")}</div>
               </button>
             </div>
-            <div className="bg-grey-750 border-t-none border-grey-700 flex flex-col gap-16 rounded-b-sm border p-10">
+            <div className="bg-grey-850 border-t-none border-grey-800 flex flex-col gap-16 rounded-b-sm border p-10">
               <ListItem
                 color="#D5FF5C"
                 backgroundColor="rgba(213, 255, 92, 0.12)"
                 icon={ZapFastIcon}
-                title={t("Up to XX% rewards")}
+                title={
+                  <Trans
+                    t={t}
+                    defaults="Stake to get <Highlight>{{yield}}</Highlight>"
+                    components={{ Highlight: <span className="text-primary" /> }}
+                    values={{ yield: "15% APY" }}
+                  />
+                }
                 description={t("Maximize your staking power with SEEK.")}
               />
               <ListItem
