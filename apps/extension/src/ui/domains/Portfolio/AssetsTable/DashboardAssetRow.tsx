@@ -1,6 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
@@ -14,6 +14,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById } from "@ui/state"
+import { EARN_TOKEN_IDS } from "@ui/util/constants"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -45,6 +46,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
+  const showEarnButton = useMemo(() => token?.id && EARN_TOKEN_IDS.includes(token.id), [token?.id])
 
   if (!token || !network || !summary) return null
 
@@ -126,7 +128,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             className="[>svg]:text-[2rem] text-base"
           />
         )}
-        {selectedAccount?.type !== "watch-only" && (
+        {showEarnButton && selectedAccount?.type !== "watch-only" && (
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
         )}
       </div>

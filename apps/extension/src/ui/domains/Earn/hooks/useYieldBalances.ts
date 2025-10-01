@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
+import { YieldBalanceQuery, YieldPositionBalance, YieldPositionItem } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccounts } from "@ui/state"
 
-import {
-  yieldApi,
-  YieldBalanceQuery,
-  YieldPositionBalance,
-  YieldPositionItem,
-} from "../services/yieldApi"
+import { yieldApi } from "../services/yieldApi"
 
 // Supported networks for yield balances
 const SUPPORTED_NETWORKS = ["ethereum", "base"] as const

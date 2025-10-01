@@ -1,7 +1,8 @@
+import { YieldTransaction } from "extension-core"
 import { useCallback, useState } from "react"
 import { TransactionRequest } from "viem"
 
-import { yieldApi, YieldTransaction } from "../services/yieldApi"
+import { yieldApi } from "../services/yieldApi"
 
 export interface TransactionStep {
   index: number

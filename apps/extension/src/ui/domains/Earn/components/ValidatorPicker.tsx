@@ -1,5 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { YieldValidator } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -8,7 +9,6 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { useYieldValidators } from "../hooks/useYieldValidators"
-import { YieldValidator } from "../services/yieldApi"
 import { ValidatorItem } from "./ValidatorItem"
 
 type SortMethod = "name" | "tvl" | "rewardRate" | "nominatorCount"

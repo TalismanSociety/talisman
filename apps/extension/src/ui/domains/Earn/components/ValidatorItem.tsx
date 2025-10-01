@@ -1,8 +1,7 @@
 import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { YieldValidator } from "extension-core"
 import { FC } from "react"
-
-import { YieldValidator } from "../services/yieldApi"
 
 interface ValidatorItemProps {
   validator: YieldValidator

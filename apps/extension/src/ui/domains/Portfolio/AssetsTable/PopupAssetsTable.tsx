@@ -20,6 +20,7 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
+import { EARN_TOKEN_IDS } from "@ui/util/constants"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -95,8 +96,7 @@ const AssetRow: FC<{
 
   const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
   const showStakingButton = canBondNomPool && !locked
-  // TODO: Add a hook like useEarnButton to determine if the earn button should be shown
-  const showEarnButton = true
+  const showEarnButton = useMemo(() => token?.id && EARN_TOKEN_IDS.includes(token.id), [token?.id])
 
   if (!token || !summary || !network) return null
 

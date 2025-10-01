@@ -1,3 +1,4 @@
+import type { YieldEnterResponse, YieldTransaction } from "extension-core"
 import { planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -7,7 +8,7 @@ import { useBalance, useNetworkById, useToken } from "@ui/state"
 import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
-import { yieldApi, YieldEnterResponse, YieldTransaction } from "../services/yieldApi"
+import { yieldApi } from "../services/yieldApi"
 import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 import { useDepositValidation } from "./useDepositValidation"
 

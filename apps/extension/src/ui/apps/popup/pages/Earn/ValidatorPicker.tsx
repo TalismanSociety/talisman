@@ -1,5 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { YieldValidator } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -9,7 +10,6 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { ValidatorItem } from "@ui/domains/Earn/components/ValidatorItem"
 // import { useDepositWizard } from "@ui/domains/Earn/context/DepositWizardContext" // Not available in popup pages
 import { useYieldValidators } from "@ui/domains/Earn/hooks/useYieldValidators"
-import { YieldValidator } from "@ui/domains/Earn/services/yieldApi"
 
 type SortMethod = "name" | "tvl" | "rewardRate" | "nominatorCount"
 

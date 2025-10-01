@@ -2,6 +2,7 @@ import { classNames } from "@talismn/util"
 import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
+  isAccountPlatformSolana,
   serializeTransactionRequest,
   SignerPayloadJSON,
 } from "extension-core"
@@ -42,6 +43,42 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   const { allTransactions } = useYieldTransaction()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Consolidated function to handle transaction completion logic
+  const handleTransactionCompletion = useCallback(
+    async (currentTransaction: { id: string }, isLastTransaction: boolean, txHash: string) => {
+      // Submit hash to Yield.xyz
+      await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
+
+      // Poll for transaction confirmation before proceeding to next transaction
+      if (!isLastTransaction) {
+        try {
+          await yieldApi.pollStatus(
+            currentTransaction.id,
+            undefined,
+            2000, // Poll every 2 seconds
+            300000, // 5 minutes timeout
+          )
+        } catch (pollError) {
+          // Don't throw here - the transaction might still be successful
+          // We'll continue to the next transaction
+          log.warn("Transaction polling failed, but continuing", { pollError })
+        }
+      }
+
+      // Only trigger progress bar change and callbacks for the last transaction
+      if (isLastTransaction) {
+        onSuccess?.(txHash)
+
+        if (onTxSubmitted && token) {
+          onTxSubmitted({ networkId: token.networkId, txId: txHash })
+        } else if (IS_POPUP && token) {
+          gotoProgress({ networkId: token.networkId, txId: txHash })
+        }
+      }
+    },
+    [onSuccess, onTxSubmitted, token, gotoProgress],
+  )
 
   const handleSubmit = useCallback(async () => {
     if (!account || !token || !product || !deposit || !allTransactions.length) {
@@ -97,35 +134,8 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
           const txHash = await api.ethSignAndSend(token.networkId, serializedTx)
 
-          // Submit hash to Yield.xyz
-          await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
-
-          // Poll for transaction confirmation before proceeding to next transaction
-          if (!isLastTransaction) {
-            try {
-              await yieldApi.pollStatus(
-                currentTransaction.id,
-                undefined,
-                2000, // Poll every 2 seconds
-                300000, // 5 minutes timeout
-              )
-            } catch (pollError) {
-              // Don't throw here - the transaction might still be successful
-              // We'll continue to the next transaction
-              log.warn("Transaction polling failed, but continuing", { pollError })
-            }
-          }
-
-          // Only trigger progress bar change and callbacks for the last transaction
-          if (isLastTransaction) {
-            onSuccess?.(txHash)
-
-            if (onTxSubmitted) {
-              onTxSubmitted({ networkId: token.networkId, txId: txHash })
-            } else if (IS_POPUP) {
-              gotoProgress({ networkId: token.networkId, txId: txHash })
-            }
-          }
+          // Handle transaction completion (polling, callbacks, etc.)
+          await handleTransactionCompletion(currentTransaction, isLastTransaction, txHash)
         } else if (isAccountPlatformPolkadot(accountData)) {
           // For Polkadot, parse the unsigned transaction to get the SignerPayloadJSON
           if (!currentTransaction?.unsignedTransaction) {
@@ -136,35 +146,20 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
           const result = await api.subSubmit(signerPayload?.tx as SignerPayloadJSON)
 
-          // Submit hash to Yield.xyz
-          await yieldApi.submitHash(currentTransaction.id, { hash: result.hash })
-
-          // Poll for transaction confirmation before proceeding to next transaction
-          if (!isLastTransaction) {
-            try {
-              await yieldApi.pollStatus(
-                currentTransaction.id,
-                undefined,
-                2000, // Poll every 2 seconds
-                300000, // 5 minutes timeout
-              )
-            } catch (pollError) {
-              // Don't throw here - the transaction might still be successful
-              // We'll continue to the next transaction
-              log.warn("Transaction polling failed, but continuing", { pollError })
-            }
+          // Handle transaction completion (polling, callbacks, etc.)
+          await handleTransactionCompletion(currentTransaction, isLastTransaction, result.hash)
+        } else if (isAccountPlatformSolana(accountData)) {
+          // For Solana, parse the unsigned transaction to get the transaction data
+          if (!currentTransaction?.unsignedTransaction) {
+            throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
           }
 
-          // Only trigger progress bar change and callbacks for the last transaction
-          if (isLastTransaction) {
-            onSuccess?.(result.hash)
+          const transactionData = JSON.parse(currentTransaction.unsignedTransaction)
 
-            if (onTxSubmitted) {
-              onTxSubmitted({ networkId: token.networkId, txId: result.hash })
-            } else if (IS_POPUP) {
-              gotoProgress({ networkId: token.networkId, txId: result.hash })
-            }
-          }
+          const result = await api.solSubmit(token.networkId, transactionData)
+
+          // Handle transaction completion (polling, callbacks, etc.)
+          await handleTransactionCompletion(currentTransaction, isLastTransaction, result.signature)
         }
       }
     } catch (cause) {
@@ -186,13 +181,15 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     deposit,
     allTransactions,
     accountData,
-    onSuccess,
     onError,
-    gotoProgress,
-    onTxSubmitted,
+    handleTransactionCompletion,
   ])
 
-  if (!isAccountPlatformEthereum(accountData) && !isAccountPlatformPolkadot(accountData)) {
+  if (
+    !isAccountPlatformEthereum(accountData) &&
+    !isAccountPlatformPolkadot(accountData) &&
+    !isAccountPlatformSolana(accountData)
+  ) {
     return (
       <Button className={classNames("w-full", className)} disabled>
         {t("Unsupported account type")}

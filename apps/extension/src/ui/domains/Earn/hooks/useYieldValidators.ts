@@ -1,6 +1,7 @@
+import type { YieldValidator } from "extension-core"
 import { useQuery } from "@tanstack/react-query"
 
-import { yieldApi, YieldValidator } from "../services/yieldApi"
+import { yieldApi } from "../services/yieldApi"
 
 export const useYieldValidators = (yieldId: string | undefined) => {
   const {
