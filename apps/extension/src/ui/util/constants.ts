@@ -9,3 +9,6 @@ export const EARN_TOKEN_IDS = [
   "8453:evm-native", // ETH on base
   "1:evm-erc20:0xdac17f958d2ee523a2206206994597c13d831ec7", // USDT on mainnet
 ]
+
+// Networks supported by Yield.xyz API
+export const YIELD_SUPPORTED_NETWORKS = ["ethereum", "base"]

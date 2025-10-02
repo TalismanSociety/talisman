@@ -1,8 +1,15 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+// import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import {
+  setPortfolioSearch,
+  useAccounts,
+  useDefiPositionsDisplay,
+  usePortfolioSearch,
+} from "@ui/state"
 
 import { EarnAssetsTab } from "./EarnAssetsTab"
 import { EarnDiscoverTab } from "./EarnDiscoverTab"
@@ -10,13 +17,30 @@ import { EarnTabs } from "./EarnTabs"
 
 const EarnHeaderRow = () => {
   const { t } = useTranslation()
-  const { totalUsd, isLoading } = useYieldBalances()
+  // const { totalUsd, isLoading } = useYieldBalances()
+  const positions = useDefiPositionsDisplay()
+  const accounts = useAccounts("owned")
 
-  // Convert USD total to selected currency if needed
+  // Get owned account addresses to filter out watched accounts
+  const ownedAddresses = useMemo(() => {
+    return new Set(accounts.map((account) => account.address))
+  }, [accounts])
+
+  // Calculate total from DeFi positions (excluding watch-only accounts)
   const displayTotal = useMemo(() => {
-    // Convert string to number for Fiat component
-    return parseFloat(totalUsd) || 0
-  }, [totalUsd])
+    if (!positions.data?.length) return 0
+
+    return positions.data.reduce((total, position) => {
+      // Skip positions from watched accounts
+      if (!ownedAddresses.has(position.address)) {
+        return total
+      }
+
+      return total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0)
+    }, 0)
+  }, [positions.data, ownedAddresses])
+
+  const isLoading = positions.status === "loading"
 
   return (
     <div className="text-body-secondary bg-grey-850 mb-4 flex h-40 items-center justify-between rounded px-8 text-left text-base">
@@ -35,7 +59,9 @@ const EarnHeaderRow = () => {
 }
 
 export const EarnTokensTable = () => {
+  const { t } = useTranslation()
   const [selectedTab, setSelectedTab] = useState("assets")
+  const search = usePortfolioSearch()
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab)
@@ -46,9 +72,19 @@ export const EarnTokensTable = () => {
       {/* Header with total balance - always show */}
       <EarnHeaderRow />
 
-      {/* Tabs */}
-      <div className="mb-6">
-        <EarnTabs onTabChange={handleTabChange} />
+      {/* Tabs and Search in same row */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex-shrink-0">
+          <EarnTabs onTabChange={handleTabChange} />
+        </div>
+        <div className="w-[28rem]">
+          <SearchInput
+            containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+            placeholder={t("Search DeFi positions")}
+            onChange={setPortfolioSearch}
+            initialValue={search}
+          />
+        </div>
       </div>
 
       {/* Tab Content */}

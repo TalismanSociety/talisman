@@ -2,31 +2,62 @@ import { useQuery } from "@tanstack/react-query"
 import { YieldBalanceQuery, YieldPositionBalance, YieldPositionItem } from "extension-core"
 import { useMemo } from "react"
 
-import { useAccounts } from "@ui/state"
+import { useAccounts, useBalances, useNetworksMapById, useTokens } from "@ui/state"
+import { YIELD_SUPPORTED_NETWORKS } from "@ui/util/constants"
 
 import { yieldApi } from "../services/yieldApi"
-
-// Supported networks for yield balances
-const SUPPORTED_NETWORKS = ["ethereum", "base"] as const
+import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 
 export const useYieldBalances = () => {
   const allAccounts = useAccounts("owned")
+  const balances = useBalances("owned")
+  const tokens = useTokens({ activeOnly: true, includeTestnets: false })
+  const networksMap = useNetworksMapById({ activeOnly: true, includeTestnets: false })
 
-  // Create queries for all owned accounts across supported networks
+  // Create queries for accounts that have tokens on supported networks
   const queries = useMemo(() => {
     const balanceQueries: YieldBalanceQuery[] = []
+    const uniqueQueries = new Set<string>()
 
     allAccounts.forEach((account) => {
-      SUPPORTED_NETWORKS.forEach((network) => {
-        balanceQueries.push({
-          address: account.address,
-          network,
-        })
+      // Get all tokens for this account by checking balances
+      const accountBalances = balances.find({ address: account.address })
+      const accountTokens = accountBalances.each
+        .map((balance) => tokens.find((token) => token.id === balance.tokenId))
+        .filter(Boolean)
+
+      // Get unique networks from tokens
+      const accountNetworks = new Set<string>()
+      accountTokens.forEach((token) => {
+        if (token) {
+          const network = networksMap[token.networkId]
+          if (network) {
+            const yieldNetwork = mapNetworkToYieldNetwork({
+              platform: network.platform,
+              id: network.id,
+            })
+            if (yieldNetwork && YIELD_SUPPORTED_NETWORKS.includes(yieldNetwork)) {
+              accountNetworks.add(yieldNetwork)
+            }
+          }
+        }
+      })
+
+      // Create queries for each supported network this account has tokens on
+      accountNetworks.forEach((network) => {
+        const queryKey = `${account.address}-${network}`
+        if (!uniqueQueries.has(queryKey)) {
+          uniqueQueries.add(queryKey)
+          balanceQueries.push({
+            address: account.address,
+            network,
+          })
+        }
       })
     })
 
     return balanceQueries
-  }, [allAccounts])
+  }, [allAccounts, balances, tokens, networksMap])
 
   const {
     data: yieldBalancesResponse,
