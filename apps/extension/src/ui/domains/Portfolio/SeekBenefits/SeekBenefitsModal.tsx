@@ -65,20 +65,22 @@ export const SeekBenefitsModal = () => {
       >
         <Background className="absolute right-0 top-0 z-0 h-[20.7rem] w-[17rem]" />
         <div className="flex size-full flex-col">
-          <div className="grow pt-[3.4rem]">
-            <p className="text-[2.1rem]">{t("Talisman SEEK is live")}</p>
-            <p className="text-body-secondary my-4 max-w-[25rem] text-sm">
-              {t("Become part of the Seeker community")}{" "}
-              <button
-                type="button"
-                className="text-primary-500 inline-flex items-center gap-1 text-xs"
-                onClick={handleClickLearnMore}
-              >
-                <span>{t("Learn more")}</span>
-                <ArrowRightIcon />
-              </button>
-            </p>
-            <UserSeekBalance />
+          <div className="grow">
+            <div className="mt-7 flex h-60 flex-col justify-center gap-4">
+              <p className="text-[2.1rem]">{t("Talisman SEEK is live")}</p>
+              <p className="text-body-secondary max-w-[25rem] text-sm">
+                {t("Become part of the Seeker community")}{" "}
+                <button
+                  type="button"
+                  className="text-primary-500 inline-flex items-center gap-1 text-xs"
+                  onClick={handleClickLearnMore}
+                >
+                  <span>{t("Learn more")}</span>
+                  <ArrowRightIcon />
+                </button>
+              </p>
+              <UserSeekBalance />
+            </div>
             <div className="bg-grey-800 mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
               <div className="flex grow items-center justify-start gap-3 overflow-hidden">
                 <div className="truncate">{t("Earn SEEK rewards")}</div>
@@ -156,13 +158,15 @@ const UserSeekBalance = () => {
     return new BalanceFormatter(filtered.sum.planck.transferable, token?.decimals)
   }, [balances, accounts, token])
 
-  if (!token || !totalOwned) return <div className="h-[2.6rem]"></div>
+  if (!token || !totalOwned) return null
 
   return (
-    <div className="bg-primary/10 inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm px-6 text-sm">
-      <span>{t("You have")}</span>
-      <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
-      <span>{token.symbol}</span>
+    <div>
+      <div className="bg-primary/10 inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm px-6 text-sm">
+        <span>{t("You have")}</span>
+        <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
+        <span>{token.symbol}</span>
+      </div>
     </div>
   )
 }

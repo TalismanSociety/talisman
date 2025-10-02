@@ -49,12 +49,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
   seek: {
-    tokenId: "1:evm-erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    tokenId: "",
     stakingUrl: "",
     docsUrl: "",
     tradeUrl: "",
-    stakingContractNetworkId: "137",
-    stakingContractAddress: "0xaddc8f61a5509655c31ed9c1dcb66a2b905841be",
+    stakingContractNetworkId: "",
+    stakingContractAddress: "0x",
   },
 }
 
@@ -75,6 +75,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
+
+        log.debug("Fetched remote config", config)
 
         if (DEBUG) config.featureFlags.SEEK_BENEFITS_BANNER = true
 

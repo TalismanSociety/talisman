@@ -36,7 +36,13 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: st
       >
         <div className="absolute inset-0 rounded-sm bg-gradient-to-l from-[#606060] to-[#5A6825]" />
         <div className="from-black-secondary relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% to-[#3F3F0C]/50 to-[200%]">
-          <div className="flex size-full flex-col justify-center gap-2 px-8">
+          <div
+            className={cn(
+              "flex size-full flex-col justify-center gap-2 px-8",
+              variant === "large" && "gap-3",
+              variant === "small" && "gap-2",
+            )}
+          >
             <div className="text-body truncate text-sm font-bold">{t("Talisman SEEK is live")}</div>
             <div className="text-body-secondary truncate">
               {t("Stake $SEEK now to get discounts")}
