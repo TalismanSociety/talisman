@@ -8,7 +8,7 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, SVGProps, useCallback } from "react"
+import { FC, ReactNode, SVGProps, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
@@ -19,6 +19,7 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { ReactComponent as BitgetLogo } from "./bitget.svg"
 import { ReactComponent as Background } from "./seek-benefits-page-bg.svg"
+import { useSeekStakingApr } from "./useSeekStakingApr"
 
 export const useSeekBenefitsModal = () => useGlobalOpenClose("SEEK_BENEFITS_MODAL")
 
@@ -96,14 +97,7 @@ export const SeekBenefitsModal = () => {
                 color="#D5FF5C"
                 backgroundColor="rgba(213, 255, 92, 0.12)"
                 icon={ZapFastIcon}
-                title={
-                  <Trans
-                    t={t}
-                    defaults="Stake to get <Highlight>{{yield}}</Highlight>"
-                    components={{ Highlight: <span className="text-primary" /> }}
-                    values={{ yield: "15% APY" }}
-                  />
-                }
+                title={<StakeTitle />}
                 description={t("Maximize your staking power with SEEK.")}
               />
               <ListItem
@@ -143,6 +137,33 @@ export const SeekBenefitsModal = () => {
         </div>
       </ModalDialog>
     </Modal>
+  )
+}
+
+const StakeTitle = () => {
+  const { t } = useTranslation()
+  const { data, isLoading } = useSeekStakingApr()
+
+  const apr = useMemo(() => {
+    if (!data) return null
+    return (100 * data).toFixed(2)
+  }, [data])
+
+  if (data === null) return t("Stake to get up to 15% APR")
+
+  return (
+    <Trans
+      t={t}
+      defaults="Stake to get <Highlight>{{apr}}% APR</Highlight>"
+      components={{
+        Highlight: isLoading ? (
+          <div className="text-body-disabled bg-body-disabled rounded-xs inline-block animate-pulse"></div>
+        ) : (
+          <span className="text-primary" />
+        ),
+      }}
+      values={{ apr: isLoading ? "15.00" : apr }}
+    />
   )
 }
 

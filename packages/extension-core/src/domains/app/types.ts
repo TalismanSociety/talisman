@@ -38,6 +38,8 @@ export type RemoteConfigStoreData = {
     stakingUrl: string
     docsUrl: string
     tradeUrl: string
+    stakingContractNetworkId: string
+    stakingContractAddress: `0x${string}`
   }
 }
 

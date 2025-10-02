@@ -52,6 +52,8 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingUrl: "",
     docsUrl: "",
     tradeUrl: "",
+    stakingContractNetworkId: "137",
+    stakingContractAddress: "0xaddc8f61a5509655c31ed9c1dcb66a2b905841be",
   },
 }
 
