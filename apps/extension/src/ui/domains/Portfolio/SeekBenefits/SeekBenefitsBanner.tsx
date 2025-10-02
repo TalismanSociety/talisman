@@ -45,7 +45,7 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: st
           >
             <div className="text-body truncate text-sm font-bold">{t("Talisman SEEK is live")}</div>
             <div className="text-body-secondary truncate">
-              {t("Stake $SEEK now to get discounts")}
+              {t("Stake SEEK now to get discounts")}
             </div>
           </div>
           <div
