@@ -1,14 +1,16 @@
 import { XIcon } from "@talismn/icons"
-import { useMemo } from "react"
+import { classNames } from "@talismn/util"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
-import { ReactComponent as BgIcon } from "./assets/seek-benefits-bg.svg"
+import { ReactComponent as BgIconLarge } from "./seek-benefits-bg-large.svg"
+import { ReactComponent as BgIconSmall } from "./seek-benefits-bg-small.svg"
 
-export const SeekBenefitsBanner = () => {
+export const SeekBenefitsBanner: FC<{ variant: "small" | "large" }> = ({ variant }) => {
   const { t } = useTranslation()
   const allowBanner = useFeatureFlag("SEEK_BENEFITS_BANNER")
   const [hideBanner, setHideBanner] = useAppState("hideSeekBenefitsBanner")
@@ -23,7 +25,11 @@ export const SeekBenefitsBanner = () => {
       <button
         type="button"
         onClick={ocDialog.open}
-        className="relative h-[6rem] w-full shrink-0 overflow-hidden rounded-sm p-0.5 text-left text-xs"
+        className={classNames(
+          "relative h-[6.4rem] w-full shrink-0 overflow-hidden rounded-sm p-0.5 text-left text-xs",
+          variant === "large" && "h-[6.4rem]",
+          variant === "small" && "h-[6rem]",
+        )}
       >
         <div className="absolute inset-0 rounded-sm bg-gradient-to-l from-[#606060] to-[#5A6825]" />
         <div className="from-black-secondary relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% to-[#3F3F0C]/50 to-[200%]">
@@ -33,8 +39,15 @@ export const SeekBenefitsBanner = () => {
               {t("Stake $SEEK now to get discounts")}
             </div>
           </div>
-          <div className="absolute right-0 top-0 aspect-[142/59] h-full">
-            <BgIcon className="size-full" />
+          <div
+            className={classNames(
+              "absolute right-0 top-0 aspect-[272/64] h-full",
+              variant === "large" && "aspect-[272/64]",
+              variant === "small" && "aspect-[142/59]",
+            )}
+          >
+            {variant === "large" && <BgIconLarge className="size-full" />}
+            {variant === "small" && <BgIconSmall className="size-full" />}
           </div>
         </div>
       </button>

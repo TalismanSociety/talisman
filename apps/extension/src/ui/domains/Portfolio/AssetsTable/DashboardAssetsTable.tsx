@@ -7,6 +7,8 @@ import { useLocation } from "react-router-dom"
 
 import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
+import { SeekBenefitsBanner } from "../SeekBenefits/SeekBenefitsBanner"
+import { SeekBenefitsModal } from "../SeekBenefits/SeekBenefitsModal"
 import { Statistics } from "../Statistics"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -104,6 +106,8 @@ export const DashboardAssetsTable = () => {
 
   return (
     <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
+      <SeekBenefitsBanner variant="large" />
+      <SeekBenefitsModal />
       {!!symbolBalances.length && <HeaderRow />}
       <VirtualizedRows symbolBalances={symbolBalances} />
       {isInitialising && <AssetRowSkeleton />}

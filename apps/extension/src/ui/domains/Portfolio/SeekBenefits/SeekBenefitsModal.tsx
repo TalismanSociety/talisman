@@ -50,7 +50,7 @@ export const SeekBenefitsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "h-[60rem] w-[40rem]",
+        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border",
       )}
       containerId={IS_POPUP ? "main" : undefined}
@@ -58,7 +58,9 @@ export const SeekBenefitsModal = () => {
       <ModalDialog
         onClose={close}
         title={"$SEEK Benefits"}
-        className="[&>header>h1]:text-md relative size-full rounded-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%"
+        className={classNames(
+          "[&>header>h1]:text-md relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%",
+        )}
       >
         <Background className="absolute right-0 top-0 z-0 h-[20.7rem] w-[17rem]" />
         <div className="flex size-full flex-col">
