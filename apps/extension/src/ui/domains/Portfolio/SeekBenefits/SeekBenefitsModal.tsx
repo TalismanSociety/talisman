@@ -7,23 +7,25 @@ import {
   ZapFastIcon,
   ZapIcon,
 } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { FC, ReactNode, SVGProps, useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useRemoteConfig } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { ReactComponent as BitgetLogo } from "./bitget.svg"
 import { ReactComponent as Background } from "./seek-benefits-page-bg.svg"
 
-export const SeekBenefitsModal: FC<{
-  isOpen: boolean
-  containerId?: string
-  onClose: () => void
-}> = ({ isOpen, containerId, onClose }) => {
+export const useSeekBenefitsModal = () => useGlobalOpenClose("SEEK_BENEFITS_MODAL")
+
+export const SeekBenefitsModal = () => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
+  const { isOpen, close } = useSeekBenefitsModal()
   const { open: openSwapTokensModal } = useSwapTokensModal()
 
   const handleClickLearnMore = useCallback(() => {
@@ -36,8 +38,8 @@ export const SeekBenefitsModal: FC<{
 
   const handleClickSwap = useCallback(() => {
     openSwapTokensModal()
-    onClose()
-  }, [openSwapTokensModal, onClose])
+    close()
+  }, [openSwapTokensModal, close])
 
   const handleClickTrade = useCallback(() => {
     window.open(remoteConfig.seek.tradeUrl, "_blank", "noopener")
@@ -46,12 +48,15 @@ export const SeekBenefitsModal: FC<{
   return (
     <Modal
       isOpen={isOpen}
-      onDismiss={onClose}
-      className="h-[60rem] w-[40rem]"
-      containerId={containerId}
+      onDismiss={close}
+      className={classNames(
+        "h-[60rem] w-[40rem]",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border",
+      )}
+      containerId={IS_POPUP ? "main" : undefined}
     >
       <ModalDialog
-        onClose={onClose}
+        onClose={close}
         title={"$SEEK Benefits"}
         className="[&>header>h1]:text-md relative size-full rounded-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%"
       >
