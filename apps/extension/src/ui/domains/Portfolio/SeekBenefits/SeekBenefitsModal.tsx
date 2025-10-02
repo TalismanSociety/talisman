@@ -149,12 +149,12 @@ const StakeTitle = () => {
     return (100 * data).toFixed(2)
   }, [data])
 
-  if (data === null) return t("Stake to get up to 15% APR")
+  if (data === null) return t("Staking rewards")
 
   return (
     <Trans
       t={t}
-      defaults="Stake to get <Highlight>{{apr}}% APR</Highlight>"
+      defaults="Staking rewards <Highlight>{{apr}}% APR</Highlight>"
       components={{
         Highlight: isLoading ? (
           <div className="text-body-disabled bg-body-disabled rounded-xs inline-block animate-pulse"></div>
