@@ -9,7 +9,8 @@ import { useBalance } from "@ui/state"
 
 import { useDepositFunds } from "../useDepositFunds"
 import { Container } from "./Container"
-import { TransactionPriorityRow } from "./TransactionPriorityRow"
+
+// import { TransactionPriorityRow } from "./TransactionPriorityRow"
 
 const EarnFeeTooltip = () => {
   const { t } = useTranslation()
@@ -85,7 +86,7 @@ export const FeesSummary = () => {
       className={classNames("space-y-4 px-8 py-4", isLoading && !estimatedFee && "animate-pulse")}
     >
       <NetworkRow />
-      <TransactionPriorityRow />
+      {/* <TransactionPriorityRow /> */}
       <div className="flex w-full items-center justify-between gap-4">
         <div className="text-grey-400 whitespace-nowrap">
           {t("Estimated Fee")} <EarnFeeTooltip />
