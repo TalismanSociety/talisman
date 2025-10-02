@@ -38,7 +38,6 @@ export type RemoteConfigStoreData = {
     stakingUrl: string
     docsUrl: string
     tradeUrl: string
-    swapUrl: string
   }
 }
 

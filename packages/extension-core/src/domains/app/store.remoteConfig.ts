@@ -52,7 +52,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingUrl: "",
     docsUrl: "",
     tradeUrl: "",
-    swapUrl: "",
   },
 }
 

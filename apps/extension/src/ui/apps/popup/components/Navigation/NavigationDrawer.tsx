@@ -142,12 +142,12 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [close, navigate])
 
-  const ocSeekBenefits = useSeekBenefitsModal()
+  const { open: openSeekBenefitsModal } = useSeekBenefitsModal()
   const handleSeekBenefitsClick = useCallback(() => {
     sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Seek Benefits" })
-    ocSeekBenefits.open()
+    openSeekBenefitsModal()
     close()
-  }, [ocSeekBenefits, close])
+  }, [openSeekBenefitsModal, close])
 
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
