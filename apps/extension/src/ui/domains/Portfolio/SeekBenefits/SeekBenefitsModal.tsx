@@ -1,3 +1,4 @@
+import { BalanceFormatter } from "@talismn/balances"
 import {
   ArrowRightIcon,
   ClockIcon,
@@ -13,8 +14,9 @@ import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useRemoteConfig } from "@ui/state"
+import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ReactComponent as BitgetLogo } from "./bitget.svg"
@@ -65,7 +67,7 @@ export const SeekBenefitsModal = () => {
         <div className="flex size-full flex-col">
           <div className="grow pt-[3.4rem]">
             <p className="text-[2.1rem]">{t("Talisman SEEK is live")}</p>
-            <p className="text-body-secondary mt-4 max-w-[25rem] text-sm">
+            <p className="text-body-secondary my-4 max-w-[25rem] text-sm">
               {t("Become part of the Seeker community")}{" "}
               <button
                 type="button"
@@ -76,8 +78,8 @@ export const SeekBenefitsModal = () => {
                 <ArrowRightIcon />
               </button>
             </p>
-            <div className="h-20"></div>
-            <div className="bg-grey-800 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
+            <UserSeekBalance />
+            <div className="bg-grey-800 mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
               <div className="flex grow items-center justify-start gap-3 overflow-hidden">
                 <div className="truncate">{t("Earn SEEK rewards")}</div>
                 {/* <div className="bg-grey-600 size-2 shrink-0 rounded-full"></div>
@@ -137,6 +139,31 @@ export const SeekBenefitsModal = () => {
         </div>
       </ModalDialog>
     </Modal>
+  )
+}
+
+const UserSeekBalance = () => {
+  const remoteConfig = useRemoteConfig()
+  const token = useToken(remoteConfig.seek.tokenId)
+  const { t } = useTranslation()
+  const balances = useBalances()
+  const accounts = useAccounts("owned")
+
+  const totalOwned = useMemo(() => {
+    if (!balances.count || !accounts.length || !token) return null
+    const addresses = accounts.map((a) => a.address)
+    const filtered = balances.find((b) => b.tokenId === token.id && addresses.includes(b.address))
+    return new BalanceFormatter(filtered.sum.planck.transferable, token?.decimals)
+  }, [balances, accounts, token])
+
+  if (!token || !totalOwned) return <div className="h-[2.6rem]"></div>
+
+  return (
+    <div className="bg-primary/10 inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm px-6 text-sm">
+      <span>{t("You have")}</span>
+      <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
+      <span>{token.symbol}</span>
+    </div>
   )
 }
 

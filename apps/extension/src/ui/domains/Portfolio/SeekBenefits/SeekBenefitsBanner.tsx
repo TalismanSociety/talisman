@@ -1,5 +1,5 @@
 import { XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { cn } from "@talismn/util"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
@@ -10,7 +10,10 @@ import { useAppState, useFeatureFlag } from "@ui/state"
 import { ReactComponent as BgIconLarge } from "./seek-benefits-bg-large.svg"
 import { ReactComponent as BgIconSmall } from "./seek-benefits-bg-small.svg"
 
-export const SeekBenefitsBanner: FC<{ variant: "small" | "large" }> = ({ variant }) => {
+export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: string }> = ({
+  variant,
+  className,
+}) => {
   const { t } = useTranslation()
   const allowBanner = useFeatureFlag("SEEK_BENEFITS_BANNER")
   const [hideBanner, setHideBanner] = useAppState("hideSeekBenefitsBanner")
@@ -21,11 +24,11 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large" }> = ({ variant
   if (!showBanner) return null
 
   return (
-    <div className="relative w-full">
+    <div className={cn("relative w-full", className)}>
       <button
         type="button"
         onClick={ocDialog.open}
-        className={classNames(
+        className={cn(
           "relative h-[6.4rem] w-full shrink-0 overflow-hidden rounded-sm p-0.5 text-left text-xs",
           variant === "large" && "h-[6.4rem]",
           variant === "small" && "h-[6rem]",
@@ -40,7 +43,7 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large" }> = ({ variant
             </div>
           </div>
           <div
-            className={classNames(
+            className={cn(
               "absolute right-0 top-0 aspect-[272/64] h-full",
               variant === "large" && "aspect-[272/64]",
               variant === "small" && "aspect-[142/59]",

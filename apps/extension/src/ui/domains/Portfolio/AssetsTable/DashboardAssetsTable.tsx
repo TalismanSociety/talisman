@@ -106,7 +106,7 @@ export const DashboardAssetsTable = () => {
 
   return (
     <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
-      <SeekBenefitsBanner variant="large" />
+      <SeekBenefitsBanner className="mb-2" variant="large" />
       <SeekBenefitsModal />
       {!!symbolBalances.length && <HeaderRow />}
       <VirtualizedRows symbolBalances={symbolBalances} />

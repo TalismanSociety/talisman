@@ -49,6 +49,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
   seek: {
+    tokenId: "1:evm-erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     stakingUrl: "",
     docsUrl: "",
     tradeUrl: "",
