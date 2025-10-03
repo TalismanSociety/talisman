@@ -1,5 +1,5 @@
-import { ChevronRightIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { ArrowRightCircleIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
+import { classNames, cn } from "@talismn/util"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,13 +11,16 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
+import { useAccounts, useAppState, useFeatureFlag, useRemoteConfig } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { useSeekBenefitsModal } from "../SeekBenefits/SeekBenefitsModal"
 import {
   GetStartedAddAccountIcon,
+  GetStartedBitgetIcon,
   GetStartedBuyIcon,
+  GetStartedEyeIcon,
   GetStartedReceiveIcon,
   GetStartedSwapIcon,
   GetStartedTryItIcon,
@@ -37,9 +40,12 @@ export const GetStarted = () => {
     onBuyClick,
     onLearnMoreClick,
     onDismissClick,
+    onSeekClick,
+    onTradeClick,
   } = useGetStarted()
 
   const canBuy = useFeatureFlag("BUY_CRYPTO")
+  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
 
   // ensure it appears if it was hidden and user deletes all accounts
   if (hasAccounts && isHidden) return null
@@ -106,15 +112,51 @@ export const GetStarted = () => {
         </div>
       )}
 
-      <GetStartedActionButton
-        label={t("Learn More")}
-        description={t("Discover how Talisman can elevate your web3 journey")}
-        className="group"
-        iconRight={
-          <ChevronRightIcon className="text-body-inactive group-hover:text-body-secondary -mr-4 size-12" />
-        }
-        onClick={onLearnMoreClick}
-      />
+      {IS_POPUP ? (
+        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-2")}>
+          <GetStartedActionButton
+            label={t("Trade")}
+            iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
+            onClick={onTradeClick}
+          />
+          {showSeekBenefits && (
+            <GetStartedActionButton
+              label={t("Get SEEK")}
+              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+              onClick={onSeekClick}
+            />
+          )}
+          <GetStartedActionButton
+            label={t("Learn More")}
+            iconTop={<ArrowRightCircleIcon className="-ml-2 size-12" />}
+            onClick={onLearnMoreClick}
+          />
+        </div>
+      ) : (
+        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-2")}>
+          <GetStartedActionButton
+            label={t("Trade on Bitget")}
+            iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
+            onClick={onTradeClick}
+          />
+          {showSeekBenefits && (
+            <GetStartedActionButton
+              label={t("Get Talisman SEEK")}
+              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+              onClick={onSeekClick}
+            />
+          )}
+          <GetStartedActionButton
+            label={t("Learn More")}
+            description={t("Discover how Talisman can elevate your web3 journey")}
+            className="group"
+            iconRight={
+              <ChevronRightIcon className="text-body-inactive group-hover:text-body-secondary -mr-4 size-12" />
+            }
+            onClick={onLearnMoreClick}
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -122,6 +164,7 @@ export const GetStarted = () => {
 const useGetStarted = () => {
   const ownedAccounts = useAccounts("owned")
   const hasAccounts = useMemo(() => !!ownedAccounts.length, [ownedAccounts])
+  const remoteConfig = useRemoteConfig()
 
   const navigate = useNavigate()
   const { open: onCopyAddressModal } = useCopyAddressModal()
@@ -129,6 +172,7 @@ const useGetStarted = () => {
   const { open: openRamps } = useRampsModal()
   const { open: openLearnMoreModal } = useLearnMoreModal()
   const { open: openTryTalismanModal } = useTryTalismanModal()
+  const { open: openSeekBenefits } = useSeekBenefitsModal()
 
   const [isHidden, setIsHidden] = useAppState("hideGetStarted")
 
@@ -181,6 +225,17 @@ const useGetStarted = () => {
     setIsHidden(true)
   }, [setIsHidden])
 
+  const onSeekClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Seek Benefits" })
+    openSeekBenefits()
+  }, [openSeekBenefits])
+
+  const onTradeClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Trade" })
+    window.open(remoteConfig.seek.tradeUrl, "_blank")
+    closeIfEmbeddedPopup()
+  }, [remoteConfig.seek.tradeUrl])
+
   return {
     isHidden,
     hasAccounts,
@@ -191,6 +246,8 @@ const useGetStarted = () => {
     onBuyClick,
     onDismissClick,
     onLearnMoreClick,
+    onSeekClick,
+    onTradeClick,
   }
 }
 
@@ -200,6 +257,7 @@ const GetStartedActionButton: FC<{
   iconTop?: ReactNode
   iconRight?: ReactNode
   className?: string
+  small?: boolean
   onClick: () => void
 }> = ({ label, description, iconTop, iconRight, className, onClick }) => (
   <button
@@ -214,7 +272,7 @@ const GetStartedActionButton: FC<{
     <div className="flex grow flex-col gap-4">
       {iconTop}
       <div className="flex w-full flex-col gap-1">
-        <div className="text-body font-bold">{label}</div>
+        <div className="text-body @2xl:text-base truncate text-sm font-bold">{label}</div>
         {description && (
           <div className="text-body-secondary @2xl:text-sm text-[1rem]">{description}</div>
         )}
