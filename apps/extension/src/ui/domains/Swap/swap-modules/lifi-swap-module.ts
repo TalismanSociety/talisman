@@ -55,6 +55,14 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
   const sdk = await getSdk()
   const allSdkTokens = (await sdk.getTokens({ chainTypes: [sdk.ChainType.EVM, sdk.ChainType.SVM] }))
     ?.tokens
+
+  const deek = await sdk.getToken(137, "0x2a69b0383759572081c09f0a68d3a8a955751dde")
+  allSdkTokens[deek.chainId]?.push?.(deek)
+  // const seek = await sdk.getToken(1, "0x1fB35614aA19c80eb997adad5F71520e915003C0")
+  // seek.logoURI =
+  //   "https://raw.githubusercontent.com/TalismanSociety/chaindata/refs/heads/main/assets/tokens/seek.svg"
+  // allSdkTokens[seek.chainId]?.push?.(seek)
+
   const knownEvmNetworks = await get(
     atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
   )

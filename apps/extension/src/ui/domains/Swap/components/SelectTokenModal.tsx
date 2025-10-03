@@ -12,12 +12,7 @@ import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
 import { useNetworkById } from "@ui/state"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import {
-  getTokenTabs,
-  tokenTabAtom,
-  uniswapExtendedTokensList,
-  uniswapSafeTokensList,
-} from "../swaps.api"
+import { getTokenTabs, safeTokensSetAtom, tokenTabAtom } from "../swaps.api"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
 
 type Props = {
@@ -30,27 +25,17 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(null)
-
-  const uniswapSafeList = useAtomValue(loadable(uniswapSafeTokensList))
-  const uniswapExtendedList = useAtomValue(loadable(uniswapExtendedTokensList))
+  const safeList = useAtomValue(loadable(safeTokensSetAtom))
 
   const handleSelectAsset = useCallback(
     (asset: SwappableAssetWithDecimals, hideWarning?: boolean) => {
       if (!hideWarning) {
         const erc20Address = asset.contractAddress
         const isSafe =
-          uniswapSafeList.state === "hasData"
-            ? uniswapSafeList.data.some(
-                (t) => t.address.toLowerCase() === erc20Address?.toLowerCase(),
-              )
+          safeList.state === "hasData"
+            ? safeList.data.has(`${asset.chainId}:${erc20Address?.toLowerCase()}`)
             : false
-        const isExtended =
-          uniswapExtendedList.state === "hasData"
-            ? uniswapExtendedList.data.some(
-                (t) => t.address.toLowerCase() === erc20Address?.toLowerCase(),
-              )
-            : false
-        const shouldShowWarning = !isSafe && !isExtended && erc20Address !== undefined
+        const shouldShowWarning = !isSafe && erc20Address !== undefined
         if (shouldShowWarning) return setAssetWithWarning(asset)
       }
 
@@ -58,7 +43,7 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
       onSelectAsset(asset)
       setOpen(false)
     },
-    [onSelectAsset, uniswapExtendedList, uniswapSafeList],
+    [onSelectAsset, safeList],
   )
   const assetIds = assets?.map((a) => a.id)
   const handleSelectAssetId = useCallback(

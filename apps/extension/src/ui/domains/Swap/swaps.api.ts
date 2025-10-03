@@ -245,20 +245,30 @@ export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
   }),
 )
 
-export const uniswapSafeTokensList = atom(async () => {
+const uniswapSafeTokensSet = atom(async () => {
   const response = await fetch("https://tokens.uniswap.org/")
-  return (await response.json()).tokens as { chainId: number; address: string }[]
+  const tokens: Array<{ chainId: number; address: string }> = (await response.json()).tokens
+  return new Set(tokens.map((token) => `${token.chainId}:${token.address.toLowerCase()}`))
 })
 
-export const uniswapExtendedTokensList = atom(async () => {
+const uniswapExtendedTokensSet = atom(async () => {
   const response = await fetch("https://extendedtokens.uniswap.org/")
-  return (await response.json()).tokens as { chainId: number; address: string }[]
+  const tokens: Array<{ chainId: number; address: string }> = (await response.json()).tokens
+  return new Set(tokens.map((token) => `${token.chainId}:${token.address.toLowerCase()}`))
 })
 
-export const safeTokensListAtom = atom(async (get) => {
-  const uniswapSafeTokens = await get(uniswapSafeTokensList)
-  const uniswapExtendedTokens = await get(uniswapExtendedTokensList)
-  return [...uniswapSafeTokens, ...uniswapExtendedTokens]
+const talismanSafeTokensSet = atom(async () => {
+  return new Set([
+    "1:0x1fB35614aA19c80eb997adad5F71520e915003C0",
+    "137:0x2a69b0383759572081c09f0a68d3a8a955751dde",
+  ])
+})
+
+export const safeTokensSetAtom = atom(async (get) => {
+  const uniswapSafeTokens = await get(uniswapSafeTokensSet)
+  const uniswapExtendedTokens = await get(uniswapExtendedTokensSet)
+  const talismanSafeTokens = await get(talismanSafeTokensSet)
+  return new Set([...uniswapSafeTokens, ...uniswapExtendedTokens, ...talismanSafeTokens])
 })
 
 const coingeckoCoinByAddressAtom = atomFamily((addressPlatform: string) =>
@@ -380,19 +390,15 @@ const filterAndSortTokens = async (
       )
       return allOnChainTokens.filter((t) => t !== null)
     }
-    const safeTokens = await get(safeTokensListAtom)
+    const safeTokens = await get(safeTokensSetAtom)
     return knownFilteredTokens.sort((a, b) => {
       // prioritize native tokens
       if (a.id.includes("native") && !b.id.includes("native")) return -1
       if (b.id.includes("native") && !a.id.includes("native")) return 1
 
       // prioritize tokens in safe tokens list
-      const aSafe = safeTokens.some(
-        (t) => t.address.toLowerCase() === a.contractAddress?.toLowerCase(),
-      )
-      const bSafe = safeTokens.some(
-        (t) => t.address.toLowerCase() === b.contractAddress?.toLowerCase(),
-      )
+      const aSafe = safeTokens.has(`${a.chainId}:${a.contractAddress?.toLowerCase()}`)
+      const bSafe = safeTokens.has(`${a.chainId}:${a.contractAddress?.toLowerCase()}`)
       if (aSafe && !bSafe) return -1
       if (bSafe && !aSafe) return 1
 
