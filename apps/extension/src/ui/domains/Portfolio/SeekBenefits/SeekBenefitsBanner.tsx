@@ -15,7 +15,7 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: st
   className,
 }) => {
   const { t } = useTranslation()
-  const allowBanner = useFeatureFlag("SEEK_BENEFITS_BANNER")
+  const allowBanner = useFeatureFlag("SEEK_BENEFITS")
   const [hideBanner, setHideBanner] = useAppState("hideSeekBenefitsBanner")
   const ocDialog = useSeekBenefitsModal()
 

@@ -78,7 +78,7 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 
         log.debug("Fetched remote config", config)
 
-        if (DEBUG) config.featureFlags.SEEK_BENEFITS_BANNER = true
+        if (DEBUG) config.featureFlags.SEEK_BENEFITS = true
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
