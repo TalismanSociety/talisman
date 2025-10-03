@@ -43,6 +43,7 @@ const getSwapStatus$ = state((protocolAndId?: string): Observable<SwapStatus | u
             status !== "failed" &&
             status !== "finished" &&
             status !== "expired" &&
+            status !== "invalid" &&
             status !== "refunded"
           )
             return
@@ -69,7 +70,7 @@ const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefi
   return swapStatus$(id)
 })
 
-type CachedSwapStatus = "finished" | "failed" | "expired" | "refunded"
+type CachedSwapStatus = "finished" | "failed" | "expired" | "invalid" | "refunded"
 const completedSwapsCacheKey = "TalismanCompletedSwapsCache"
 const completedSwapsCache$ = new ReplaySubject<Record<string, CachedSwapStatus>>(1)
 

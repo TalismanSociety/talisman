@@ -316,14 +316,21 @@ export const lifiSwapModule: SwapModule = {
   approvalAtom,
 }
 
-export type LifiStatus = lifiSdk.StatusResponse
-export const swapStatus$ = (id: string): Observable<lifiSdk.StatusResponse | undefined> =>
+export type LifiStatus = "unknown" | "not_found" | "exchanging" | "finished" | "failed" | "invalid"
+const statusMap: Record<lifiSdk.StatusResponse["status"], LifiStatus> = {
+  NOT_FOUND: "not_found",
+  INVALID: "invalid",
+  PENDING: "exchanging",
+  DONE: "finished",
+  FAILED: "failed",
+}
+export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
   retryStatus$(id).pipe(
     switchMap((status) => {
       if (status === undefined) return of(undefined)
 
-      const shouldRefresh = (status: lifiSdk.StatusResponse | undefined) =>
-        status?.substatus !== "COMPLETED"
+      const shouldRefresh = (status: LifiStatus | undefined) =>
+        !(status && ["invalid", "finished", "failed"].includes(status))
 
       // refresh every 20s if status isn't final
       if (shouldRefresh(status)) {
@@ -337,10 +344,11 @@ export const swapStatus$ = (id: string): Observable<lifiSdk.StatusResponse | und
     }),
   )
 
-const retryStatus$ = (id: string): Observable<lifiSdk.StatusResponse | undefined> =>
+const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
   defer(async () => {
     const sdk = await getSdk()
-    return await sdk.getStatus({ txHash: id })
+    const status = (await sdk.getStatus({ txHash: id })).status
+    return statusMap[status] ?? "unknown"
   }).pipe(
     // retry up to 10 times, wait 5s between each retry
     retry({ count: 10, delay: 5_000 }),

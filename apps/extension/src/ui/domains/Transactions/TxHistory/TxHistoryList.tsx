@@ -468,10 +468,13 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
 
 const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()
-  const swapStatus = useSwapStatus(
-    tx.txInfo?.type,
-    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined,
-  )
+  const swapExchangeId =
+    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
+  const swapLifiHash =
+    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi" && tx.platform === "ethereum"
+      ? tx.hash
+      : undefined
+  const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
 
   // show regular tx status while tx is still submitting
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
@@ -495,6 +498,7 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
     case "failed":
     case "refunded":
     case "expired":
+    case "invalid":
       return <TransactionStatusLabel status="error" />
     case "finished":
       return <TransactionStatusLabel status={tx.status} />
