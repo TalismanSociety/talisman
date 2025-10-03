@@ -91,7 +91,7 @@ const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {
 
   const isToOrFromBtc = fromAsset.networkType === "btc" || toAsset.networkType === "btc"
 
-  if (isSubToOrFromEvm) return 0.015 // 1.5% total fee for sub<>evm
+  if (isSubToOrFromEvm) return 0.006 // 0.6% total fee for sub<>evm
   if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub
   if (isEvmToOrFromEvm) return 0.002 // 0.2% total fee for evm<>evm (NOTE: will actually be 0.4%, as that is the minimum we can set via stealthex for now)
   if (isToOrFromBtc) return 0.015 // 1.5% total fee for any<>btc
@@ -131,8 +131,8 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
   opbnb: opBNB,
   optimism,
   theta,
-  zksync,
   vana: vanaMainnet,
+  zksync,
 }
 
 /**
@@ -458,6 +458,11 @@ const assetsAtom = atom(async (get) => {
           id,
           name: specialAsset?.name ?? currency.name,
           symbol: specialAsset?.symbol ?? currency.symbol,
+          decimals:
+            specialAsset?.decimals ??
+            evmChain?.nativeCurrency?.decimals ??
+            currency?.precision ??
+            undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,

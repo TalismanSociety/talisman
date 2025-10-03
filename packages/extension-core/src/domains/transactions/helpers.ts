@@ -263,7 +263,10 @@ export const isTxInfoInTypes = <T extends WalletTransactionInfo["type"]>(
 }
 
 export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =>
-  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex"])
+  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex", "swap-lifi"])
 
 export const isTxInfoTransfer = (txInfo: WalletTransactionInfo | undefined | null) =>
   isTxInfoOfType(txInfo, "transfer")
+
+export const isTxInfoApproval = (txInfo: WalletTransactionInfo | undefined | null) =>
+  isTxInfoOfType(txInfo, "approve-erc20")

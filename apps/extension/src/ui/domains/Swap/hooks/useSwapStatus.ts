@@ -10,6 +10,7 @@ import {
   tap,
 } from "rxjs"
 
+import { LifiStatus, swapStatus$ as lifiStatus$ } from "../swap-modules/lifi-swap-module"
 import {
   SimpleswapExchange,
   swapStatus$ as simpleswapStatus$,
@@ -19,7 +20,7 @@ import {
   swapStatus$ as stealthexStatus$,
 } from "../swap-modules/stealthex-swap-module"
 
-type SwapStatus = (SimpleswapExchange | StealthexExchange)["status"]
+type SwapStatus = SimpleswapExchange["status"] | StealthexExchange["status"] | LifiStatus
 
 export const useSwapStatus = (protocol?: string, id?: string): SwapStatus | undefined => {
   const protocolAndId = protocol && id && `${protocol}::${id}`
@@ -42,6 +43,7 @@ const getSwapStatus$ = state((protocolAndId?: string): Observable<SwapStatus | u
             status !== "failed" &&
             status !== "finished" &&
             status !== "expired" &&
+            status !== "invalid" &&
             status !== "refunded"
           )
             return
@@ -60,6 +62,7 @@ const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefi
   const swapStatus$ = (() => {
     if (protocol === "swap-simpleswap") return simpleswapStatus$
     if (protocol === "swap-stealthex") return stealthexStatus$
+    if (protocol === "swap-lifi") return lifiStatus$
     return
   })()
   if (!swapStatus$) return of(undefined)
@@ -67,7 +70,7 @@ const getStatus$ = state((protocolAndId: string): Observable<SwapStatus | undefi
   return swapStatus$(id)
 })
 
-type CachedSwapStatus = "finished" | "failed" | "expired" | "refunded"
+type CachedSwapStatus = "finished" | "failed" | "expired" | "invalid" | "refunded"
 const completedSwapsCacheKey = "TalismanCompletedSwapsCache"
 const completedSwapsCache$ = new ReplaySubject<Record<string, CachedSwapStatus>>(1)
 
