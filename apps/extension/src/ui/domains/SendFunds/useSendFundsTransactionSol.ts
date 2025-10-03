@@ -1,15 +1,18 @@
 import { Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { isTokenSol, Token } from "@talismn/chaindata-provider"
+import { serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
+import { isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
-import { useBalance, useNetworkById, useToken } from "@ui/state"
+import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
 import {
   getFrontEndSolanaConnector,
   useSolanaConnection,
 } from "@ui/util/solana/useSolanaConnection"
 
+import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionSol = ({
@@ -48,6 +51,23 @@ export const useSendFundsTransactionSol = ({
     }
   }, [balance, token, qEstimatedFee.data])
 
+  const serializedTx = useMemo(
+    () => (qPayload.data ? serializeTransaction(qPayload.data) : null),
+    [qPayload.data],
+  )
+
+  // force a risk analysis scan if the account isnt owned
+  const targetAccount = useAccountByAddress(to)
+  const isScanRequired = useMemo(() => !!to && !isAccountOwned(targetAccount), [targetAccount, to])
+
+  const riskAnalysis = useSolTransactionRiskAnalysis({
+    from,
+    networkId: token?.networkId,
+    tx: serializedTx,
+    disableAutoRiskScan: !isScanRequired,
+    disableCriticalPane: true,
+  })
+
   if (!isTokenSol(token)) return null
 
   return {
@@ -60,8 +80,8 @@ export const useSendFundsTransactionSol = ({
 
     maxAmount,
     estimatedFee: qEstimatedFee.data ? String(qEstimatedFee.data) : null,
-
     feeTokenId: feeToken?.id,
+    riskAnalysis,
 
     setIsLocked,
   }

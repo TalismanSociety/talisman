@@ -10,6 +10,7 @@ import type {
   SubstrateSigningRequest,
 } from "./types"
 import { requestStore } from "../../libs/requests/store"
+import { EthRequestSignArguments } from "../ethereum/types"
 
 export const signAndSendEth = (
   url: string,
@@ -39,6 +40,7 @@ export const signEth = (
     | "eth_signTypedData_v1"
     | "eth_signTypedData_v3"
     | "eth_signTypedData_v4",
+  params: EthRequestSignArguments["params"],
   request: EthSignRequest["request"],
   ethChainId: EthNetworkId,
   account: Account,
@@ -51,6 +53,7 @@ export const signEth = (
       account,
       type: "eth-sign",
       method,
+      params,
       request,
     },
     port,

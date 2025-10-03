@@ -13,10 +13,10 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 import { Message } from "@ui/domains/Sign/Message"
 import { useNetworkById } from "@ui/state"
 
+import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
 import { ViewDetailsButton } from "../ViewDetails/ViewDetailsButton"
 import { EthSignBodyMessageSIWE } from "./EthSignBodyMessageSIWE"
-import { RiskAnalysisPillButton } from "./riskAnalysis"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
@@ -130,7 +130,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
-      <div className="mb-8">
+      <div className="mb-8 flex w-full flex-col items-center gap-4">
         <RiskAnalysisPillButton />
         <ViewDetailsButton onClick={ocViewDetails.open} />
       </div>

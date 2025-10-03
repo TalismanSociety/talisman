@@ -73,7 +73,7 @@ export interface AnalyticsCaptureRequest {
 export type FeatureFlags = Partial<{
   BUY_CRYPTO: boolean
   LINK_STAKING: boolean
-  RISK_ANALYSIS: boolean
+  RISK_ANALYSIS_V2: boolean
   NEW_FEATURES_HOME_BANNER: boolean
   SWAPS: boolean
   QUEST_LINK: boolean

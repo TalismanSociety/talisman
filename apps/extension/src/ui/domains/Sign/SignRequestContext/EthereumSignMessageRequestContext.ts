@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById, useRequest } from "@ui/state"
@@ -27,9 +27,9 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   const origin = useOriginFromUrl(request?.url)
 
   const riskAnalysis = useEvmMessageRiskAnalysis({
-    evmNetworkId: request?.ethChainId,
+    networkId: request?.ethChainId,
     method: request?.method,
-    message: request?.request,
+    params: request?.params,
     account: request?.account?.address,
     origin,
   })
@@ -41,13 +41,13 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         networkType: "evm",
         type: "transaction",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.action,
+        riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
       })
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.result],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult],
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -66,19 +66,12 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         networkType: "evm",
         type: "transaction",
         network: network?.id,
-        riskAnalysisAction: riskAnalysis?.result?.action,
+        riskAnalysisAction: riskAnalysis?.validationResult,
         origin,
       })
     }
     return baseRequest.approve()
-  }, [
-    baseRequest,
-    genericEvent,
-    network?.id,
-    origin,
-    riskAnalysis?.result?.action,
-    riskAnalysis.review,
-  ])
+  }, [baseRequest, genericEvent, network?.id, origin, riskAnalysis])
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -96,7 +89,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
           networkType: "evm",
           type: "transaction",
           network: network?.id,
-          riskAnalysisAction: riskAnalysis?.result?.action,
+          riskAnalysisAction: riskAnalysis?.validationResult,
           origin,
         })
       }
@@ -110,14 +103,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.error((err as Error).message)
       }
     },
-    [
-      baseRequest,
-      riskAnalysis?.result?.action,
-      riskAnalysis.review,
-      genericEvent,
-      network?.id,
-      origin,
-    ],
+    [baseRequest, riskAnalysis, genericEvent, network?.id, origin],
   )
 
   const isValid = useMemo(() => {

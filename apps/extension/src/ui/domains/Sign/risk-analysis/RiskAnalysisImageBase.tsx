@@ -36,7 +36,7 @@ export const RiskAnalysisImageBase: React.FC<{
           src={src}
           onError={handleImageError}
           alt={alt}
-          className="rounded-sm object-cover"
+          className="aspect-square rounded-sm object-cover"
         />
       )
     }

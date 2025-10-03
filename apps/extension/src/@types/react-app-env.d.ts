@@ -15,8 +15,6 @@ declare namespace NodeJS {
     readonly PASSWORD?: string
     readonly TEST_MNEMONIC?: string
     readonly EVM_LOGPROXY?: string
-    readonly BLOWFISH_BASE_PATH?: string
-    readonly BLOWFISH_API_KEY?: string
     readonly LOG_SUBSCRIPTION_CALLBACKS?: string
   }
 }

@@ -1,4 +1,3 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -8,12 +7,13 @@ import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { useSetting } from "@ui/state"
 
+import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "./types"
 
-const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ riskAnalysis }) => {
+const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
   return (
@@ -23,6 +23,7 @@ const RiskAnalysisDrawerContent: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({ risk
           <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
+          <RiskAnalysisExposures riskAnalysis={riskAnalysis} />
         </div>
       </div>
       <RisksAnalysisAcknowledgement riskAnalysis={riskAnalysis} />
@@ -76,7 +77,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
 }
 
 const RiskAnalysisCriticalPane: FC<{
-  riskAnalysis: EvmRiskAnalysis | undefined
+  riskAnalysis: RiskAnalysis | undefined
   onReject?: () => void
 }> = ({ riskAnalysis, onReject = () => window.close() }) => {
   const { t } = useTranslation()
@@ -84,8 +85,10 @@ const RiskAnalysisCriticalPane: FC<{
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (riskAnalysis?.result?.action === ActionEnum.Block) open()
-  }, [open, riskAnalysis?.result?.action])
+    if (riskAnalysis?.validationResult === "Malicious") open()
+  }, [open, riskAnalysis?.validationResult])
+
+  if (riskAnalysis?.disableCriticalPane) return null
 
   return (
     <Transition show={isOpen}>
@@ -107,8 +110,7 @@ const RiskAnalysisCriticalPane: FC<{
           </div>
           <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
           <p className="text-body text-md">
-            {riskAnalysis?.type === "transaction" && t("We suspect this transaction is harmful.")}
-            {riskAnalysis?.type === "message" && t("We suspect this message is harmful.")}
+            {t("We suspect this request is harmful.")}
             <br />
             {t("Signing it could lead to funds loss.")}
           </p>
@@ -129,7 +131,7 @@ const RiskAnalysisCriticalPane: FC<{
   )
 }
 
-export const RiskAnalysisDrawers: FC<{ riskAnalysis?: EvmRiskAnalysis; onReject?: () => void }> = ({
+export const RiskAnalysisDrawers: FC<{ riskAnalysis?: RiskAnalysis; onReject?: () => void }> = ({
   riskAnalysis,
   onReject,
 }) => {
