@@ -290,6 +290,7 @@ const Accounts = ({
 
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
+  const hasAnyAccount = accounts.length > 0
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -302,7 +303,7 @@ const Accounts = ({
         </>
       )}
 
-      <AccountsToolbar />
+      {hasAnyAccount && <AccountsToolbar />}
 
       {hasPortfolioOptions && <AccountsList options={portfolioOptions} />}
 
@@ -314,7 +315,7 @@ const Accounts = ({
       )}
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
 
-      {!portfolioOptions.length && !watchedOptions.length && (
+      {hasAnyAccount && !portfolioOptions.length && !watchedOptions.length && (
         <div className="bg-grey-900 text-body-disabled flex h-[10rem] items-center justify-center rounded-sm text-xs opacity-50">
           {t("No accounts found")}
         </div>
