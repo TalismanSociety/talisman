@@ -30,7 +30,6 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
-import { NewFeaturesButton } from "@ui/apps/popup/components/NewFeaturesButton"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -46,9 +45,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
-import { AutonomysQuestBanner } from "../../components/banners/AutonomysQuestBanner"
-import { BackupReminderBanner } from "../../components/banners/BackupReminderBanner"
-import { UnifiedAddressInfoBanner } from "../../components/banners/UnifiedAddressInfoBanner"
+import { PopupHomeBanners } from "../../components/banners/PopupHomeBanners"
 import { useQuickSettingsOpenClose } from "../../components/Navigation/QuickSettings"
 
 const portfolioAccountsSearch$ = new BehaviorSubject("")
@@ -293,6 +290,7 @@ const Accounts = ({
 
   const hasPortfolioOptions = portfolioOptions.length > 0
   const hasWatchedOptions = watchedOptions.length > 0
+  const hasAnyAccount = accounts.length > 0
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -301,14 +299,11 @@ const Accounts = ({
       ) : (
         <>
           <AllAccountsHeader accounts={accounts} />
-          <AutonomysQuestBanner />
-          <BackupReminderBanner />
-          <NewFeaturesButton />
-          <UnifiedAddressInfoBanner />
+          <PopupHomeBanners />
         </>
       )}
 
-      <AccountsToolbar />
+      {hasAnyAccount && <AccountsToolbar />}
 
       {hasPortfolioOptions && <AccountsList options={portfolioOptions} />}
 
@@ -320,7 +315,7 @@ const Accounts = ({
       )}
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
 
-      {!portfolioOptions.length && !watchedOptions.length && (
+      {hasAnyAccount && !portfolioOptions.length && !watchedOptions.length && (
         <div className="bg-grey-900 text-body-disabled flex h-[10rem] items-center justify-center rounded-sm text-xs opacity-50">
           {t("No accounts found")}
         </div>

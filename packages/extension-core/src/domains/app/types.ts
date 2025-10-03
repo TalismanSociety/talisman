@@ -34,6 +34,14 @@ export type RemoteConfigStoreData = {
     unifiedAddressDocsUrl: string
   }
   recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
+  seek: {
+    tokenId: string
+    stakingUrl: string
+    docsUrl: string
+    tradeUrl: string
+    stakingContractNetworkId: string
+    stakingContractAddress: `0x${string}`
+  }
 }
 
 export interface RequestOnboardCreatePassword {
@@ -70,8 +78,8 @@ export type FeatureFlags = Partial<{
   SWAPS: boolean
   QUEST_LINK: boolean
   UNIFIED_ADDRESS_BANNER: boolean
-  AUTONOMYS_QUEST_BANNER: boolean
   NFTS_V2: boolean
+  SEEK_BENEFITS: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 
