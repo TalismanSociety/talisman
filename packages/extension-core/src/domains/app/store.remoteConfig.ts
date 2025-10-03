@@ -76,8 +76,6 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
 
-        log.debug("Fetched remote config", config)
-
         if (DEBUG) config.featureFlags.SEEK_BENEFITS = true
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
