@@ -15,7 +15,8 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
-import { RiskAnalysisPillButton, RiskAnalysisProvider } from "../Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
+import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
@@ -327,10 +328,18 @@ export const SendFundsConfirmForm = () => {
   const { t } = useTranslation()
   const { from, to, network, transaction } = useSendFunds()
 
+  const riskAnalysis = useMemo(() => {
+    switch (transaction?.platform) {
+      case "ethereum":
+      case "solana":
+        return transaction.riskAnalysis
+      default:
+        return undefined
+    }
+  }, [transaction])
+
   return (
-    <RiskAnalysisProvider
-      riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
-    >
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
       <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
         <ScrollContainer
           className="w-full grow"
@@ -363,7 +372,7 @@ export const SendFundsConfirmForm = () => {
             </div>
           </div>
         </ScrollContainer>
-        {transaction?.platform === "ethereum" && <RiskAnalysisPillButton />}
+        {riskAnalysis && <RiskAnalysisPillButton />}
         <SendButton />
       </div>
     </RiskAnalysisProvider>

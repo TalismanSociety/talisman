@@ -1,9 +1,6 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "globalEnv": [
-    "BLOWFISH_API_KEY",
-    "BLOWFISH_BASE_PATH",
-    "BLOWFISH_QA_API_KEY",
     "EVM_LOGPROXY",
     "MEASURE_WEBPACK_SPEED",
     "NODE_DEBUG",
