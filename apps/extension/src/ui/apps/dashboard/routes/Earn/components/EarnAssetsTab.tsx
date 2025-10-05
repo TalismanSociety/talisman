@@ -60,7 +60,7 @@ const YieldPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6",
+        "bg-grey-850 hover:bg-grey-800 flex h-auto w-full items-center gap-4 overflow-hidden rounded-sm p-6",
       )}
       onClick={() => navigate(`/portfolio/yield/${yieldId}`)}
     >
@@ -68,13 +68,15 @@ const YieldPositionRow: FC<{
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate">{product?.metadata.name || balance.token.name}</div>
+            <div className="truncate text-white">
+              {product?.metadata.name || balance.token.name}
+            </div>
             <NetworkLogo
               networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}
               className="inline-block"
             />
             <div className="text-body-secondary border-grey-500 rounded-xs border-[0.2rem] px-2 py-1 text-[0.8rem]">
-              {(product?.mechanics.type || balance.type).toLocaleUpperCase()}
+              {(product?.mechanics.type || "").toLocaleUpperCase()}
             </div>
           </div>
           <div className="w-[20rem] shrink-0">
@@ -82,23 +84,17 @@ const YieldPositionRow: FC<{
               <div className="text-body-secondary flex h-6 items-center gap-2 overflow-hidden whitespace-nowrap text-xs">
                 {/* Input token */}
                 <div className="flex min-w-0 items-center gap-2">
-                  <AssetLogo
-                    url={product?.inputTokens?.[0]?.logoURI || balance.token.logoURI}
-                    className="h-8 w-8"
-                  />
-                  <span className="max-w-[7rem] truncate">
-                    {product?.inputTokens?.[0]?.symbol || balance.token.symbol}
+                  <AssetLogo url={product?.inputTokens?.[0]?.logoURI} className="h-[100%]" />
+                  <span className="max-w-[7rem] truncate text-white">
+                    {product?.inputTokens?.[0]?.symbol}
                   </span>
                 </div>
-                <span>/</span>
+                <span className="text-white">/</span>
                 {/* Output token */}
                 <div className="flex min-w-0 items-center gap-2">
-                  <AssetLogo
-                    url={product?.outputToken?.logoURI || balance.token.logoURI}
-                    className="h-8 w-8"
-                  />
-                  <span className="max-w-[7rem] truncate">
-                    {product?.outputToken?.symbol || balance.token.symbol}
+                  <AssetLogo url={product?.outputToken?.logoURI} className="h-[100%]" />
+                  <span className="max-w-[7rem] truncate text-white">
+                    {product?.outputToken?.symbol}
                   </span>
                 </div>
               </div>
@@ -110,7 +106,7 @@ const YieldPositionRow: FC<{
             {selectedAccounts?.length === 1 ? (
               <div className="text-body-secondary text-xs">{balance.type}</div>
             ) : (
-              <PortfolioAccount address={balance.address} />
+              <PortfolioAccount address={balance.address} className="text-white" />
             )}
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
@@ -151,7 +147,7 @@ const DefiTokenRow: FC<{
         type="button"
         onClick={handleToggle}
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden rounded px-8 py-4 text-left text-base",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden rounded p-8 text-left text-base",
         )}
       >
         {/* Left section - Logo and Token Info */}
