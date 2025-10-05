@@ -65,11 +65,11 @@ const YieldPositionRow: FC<{
       onClick={() => navigate(`/portfolio/yield/${yieldId}`)}
     >
       <AssetLogo url={product?.metadata.logoURI || balance.token.logoURI} className="size-16" />
-      <div className="flex w-full grow flex-col gap-2 overflow-hidden">
+      <div className="flex w-full grow flex-col gap-4 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate text-white">
-              {product?.metadata.name || balance.token.name}
+            <div className="truncate text-white" title={product?.metadata.name ?? undefined}>
+              {product?.metadata.name}
             </div>
             <NetworkLogo
               networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}
@@ -81,19 +81,25 @@ const YieldPositionRow: FC<{
           </div>
           <div className="w-[20rem] shrink-0">
             <div className="flex w-full flex-col items-end gap-1 overflow-hidden">
-              <div className="text-body-secondary flex h-6 items-center gap-2 overflow-hidden whitespace-nowrap text-xs">
+              <div className="text-body-secondary flex items-center gap-2 overflow-hidden whitespace-nowrap text-sm">
                 {/* Input token */}
                 <div className="flex min-w-0 items-center gap-2">
-                  <AssetLogo url={product?.inputTokens?.[0]?.logoURI} className="h-[100%]" />
-                  <span className="max-w-[7rem] truncate text-white">
+                  <AssetLogo url={product?.inputTokens?.[0]?.logoURI} className="h-8 w-8" />
+                  <span
+                    className="max-w-[7rem] truncate text-sm text-white"
+                    title={product?.inputTokens?.[0]?.symbol ?? undefined}
+                  >
                     {product?.inputTokens?.[0]?.symbol}
                   </span>
                 </div>
                 <span className="text-white">/</span>
                 {/* Output token */}
                 <div className="flex min-w-0 items-center gap-2">
-                  <AssetLogo url={product?.outputToken?.logoURI} className="h-[100%]" />
-                  <span className="max-w-[7rem] truncate text-white">
+                  <AssetLogo url={product?.outputToken?.logoURI} className="h-8 w-8" />
+                  <span
+                    className="max-w-[7rem] truncate text-sm text-white"
+                    title={product?.outputToken?.symbol ?? undefined}
+                  >
                     {product?.outputToken?.symbol}
                   </span>
                 </div>
