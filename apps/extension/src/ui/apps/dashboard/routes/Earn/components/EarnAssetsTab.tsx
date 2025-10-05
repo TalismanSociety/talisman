@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapFastIcon } from "@talismn/icons"
+import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { classNames, LoadableStatus } from "@talismn/util"
 import { YieldPositionBalance, YieldProduct } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
@@ -262,9 +262,9 @@ const StakingTile = () => {
       onClick={handleStakingClick}
     >
       <div className="flex items-center gap-6">
-        <ZapFastIcon className="text-primary h-8 w-8" />
+        <ZapIcon className="h-8 w-8 text-white" />
         <div className="flex flex-col">
-          <div className="text-body text-base font-bold">{t("Staking")}</div>
+          <div className="text-base font-bold !text-white">{t("Staking")}</div>
         </div>
       </div>
       <div className="flex items-center gap-2">

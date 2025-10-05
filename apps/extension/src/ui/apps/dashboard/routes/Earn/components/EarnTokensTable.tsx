@@ -25,9 +25,9 @@ const EarnHeaderRow = () => {
   }, [totalUsd])
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-4 flex h-40 items-center justify-between rounded px-8 text-left text-base">
-      <div className="flex flex-col gap-4">
-        <div className="text-body-secondary text-sm">{t("Total Earn Assets")}</div>
+    <div className="text-body-secondary bg-grey-850 border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">
+      <div className="flex flex-col gap-4 px-6 py-8">
+        <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
         <div className="text-body text-2xl font-bold">
           {isLoading ? (
             <div className="bg-grey-700 h-8 w-32 animate-pulse rounded"></div>
@@ -50,7 +50,7 @@ export const EarnTokensTable = () => {
   }
 
   return (
-    <div className="text-body-secondary min-w-[45rem] text-left text-base">
+    <div className="text-body-secondary flex min-w-[45rem] flex-col gap-6 text-left text-base">
       {/* Header with total balance - always show */}
       <EarnHeaderRow />
 

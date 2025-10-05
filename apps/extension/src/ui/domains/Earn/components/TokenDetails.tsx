@@ -31,7 +31,7 @@ export const TokenDetails: FC<TokenDetailsProps> = ({ tokenId, tokenSymbol, netw
       </div>
 
       {/* Divider */}
-      <div className="h-0 border-t border-[#262626]"></div>
+      <div className="border-grey-800 h-0 border-t"></div>
     </>
   )
 }
