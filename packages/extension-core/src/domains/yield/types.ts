@@ -135,6 +135,7 @@ export type YieldProductsFilter = {
   tokenSymbol?: string
   networkName?: string
   protocolIds?: string[]
+  yieldIds?: string[]
 }
 
 // API Request/Response Types
@@ -290,3 +291,15 @@ export interface YieldBalancesResponse {
 }
 
 export type YieldStatusResponse = YieldTransaction
+
+export interface YieldPositionWithProduct extends YieldPositionItem {
+  product?: YieldProduct
+}
+
+// UI subscription response type (store-backed), mirroring DeFi
+export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldPositionWithProduct[]>
+
+// Message type augmentation for handler routing
+export interface YieldMessages {
+  "pri(yield.balances.subscribe)": [null, boolean, YieldPositionsResponse]
+}

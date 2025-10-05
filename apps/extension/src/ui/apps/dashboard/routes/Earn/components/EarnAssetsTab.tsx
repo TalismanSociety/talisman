@@ -1,70 +1,60 @@
 import { ChevronDownIcon, ChevronRightIcon, ZapFastIcon } from "@talismn/icons"
 import { classNames, LoadableStatus } from "@talismn/util"
-import { DefiPosition } from "extension-core"
+import { YieldPositionBalance, YieldProduct } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 
-// import { Fiat } from "@ui/domains/Asset/Fiat"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+// import { DefiPositionRow } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
+
+import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
-import { PositionSymbol } from "@ui/domains/Portfolio/DeFi/PositionSymbol"
-import { PositionTotal } from "@ui/domains/Portfolio/DeFi/PositionTotal"
-import { PositionType } from "@ui/domains/Portfolio/DeFi/PositionType"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-// import { DefiPositionRow } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
-
-// import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
-import {
-  useAccounts,
-  useDefiPositionsDisplay,
-  usePortfolioGlobalData,
-  usePortfolioSelectedAccounts,
-} from "@ui/state"
+import { useAccounts, usePortfolioGlobalData, usePortfolioSelectedAccounts } from "@ui/state"
 
 // import { SearchInput } from "@talisman/components/SearchInput"
 // import { setPortfolioSearch, usePortfolioSearch } from "@ui/state"
 
 // import { DefiAssetRow } from "./DefiAssetRow"
 
+const mapYieldNetworkToNetworkId = (yieldNetwork?: string): string | undefined => {
+  switch (yieldNetwork) {
+    case "ethereum":
+      return "1"
+    case "base":
+      return "8453"
+    default:
+      return undefined
+  }
+}
+
 interface GroupedTokenData {
   tokenSymbol: string
   totalAmountUsd: number
   positions: Array<{
-    position: DefiPosition
+    balance: YieldPositionBalance
+    yieldId: string
     amountUsd: number
+    product?: YieldProduct
   }>
   holdingsCount: number
 }
 
-// DefiPositionRow copied from PopupDefiPositions
-const DefiPositionRow: FC<{
-  position: DefiPosition
+// YieldPositionRow for yield balances
+const YieldPositionRow: FC<{
+  balance: YieldPositionBalance
+  yieldId: string
+  product?: YieldProduct
   status: LoadableStatus
   noCountUp: boolean
-}> = ({ position, status, noCountUp }) => {
+}> = ({ balance, yieldId, product, status, noCountUp: _noCountUp }) => {
   const selectedAccounts = usePortfolioSelectedAccounts()
   const navigate = useNavigate()
-
-  if (position.id === "SHIMMER")
-    return (
-      <div className="bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm px-6">
-        <div className="bg-body-disabled size-16 shrink-0 animate-pulse rounded-full"></div>
-        <div className="flex grow flex-col gap-2">
-          <div className="flex w-full animate-pulse items-center justify-between text-sm font-bold">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Protocol</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">TKN/TKN</div>
-          </div>
-          <div className="flex w-full animate-pulse items-center justify-between text-xs font-normal">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Account name</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Amount USD</div>
-          </div>
-        </div>
-      </div>
-    )
 
   return (
     <button
@@ -72,32 +62,61 @@ const DefiPositionRow: FC<{
       className={classNames(
         "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6",
       )}
-      onClick={() => navigate(`/portfolio/defi/${position.id}`)}
+      onClick={() => navigate(`/portfolio/yield/${yieldId}`)}
     >
-      <AssetLogo url={position.defiLogoUrl} className="size-16" />
+      <AssetLogo url={product?.metadata.logoURI || balance.token.logoURI} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate">{position.defiName}</div>
-            <NetworkLogo networkId={position.networkId} className="inline-block" />
+            <div className="truncate">{product?.metadata.name || balance.token.name}</div>
+            <NetworkLogo
+              networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}
+              className="inline-block"
+            />
             <div className="text-body-secondary border-grey-500 rounded-xs border-[0.2rem] px-2 py-1 text-[0.8rem]">
-              {position.type.toLocaleUpperCase()}
+              {(product?.mechanics.type || balance.type).toLocaleUpperCase()}
             </div>
           </div>
-          <div className="max-w-[50%] shrink-0 truncate">
-            <PositionSymbol position={position} />
+          <div className="w-[20rem] shrink-0">
+            <div className="flex w-full flex-col items-end gap-1 overflow-hidden">
+              <div className="text-body-secondary flex h-6 items-center gap-2 overflow-hidden whitespace-nowrap text-xs">
+                {/* Input token */}
+                <div className="flex min-w-0 items-center gap-2">
+                  <AssetLogo
+                    url={product?.inputTokens?.[0]?.logoURI || balance.token.logoURI}
+                    className="h-8 w-8"
+                  />
+                  <span className="max-w-[7rem] truncate">
+                    {product?.inputTokens?.[0]?.symbol || balance.token.symbol}
+                  </span>
+                </div>
+                <span>/</span>
+                {/* Output token */}
+                <div className="flex min-w-0 items-center gap-2">
+                  <AssetLogo
+                    url={product?.outputToken?.logoURI || balance.token.logoURI}
+                    className="h-8 w-8"
+                  />
+                  <span className="max-w-[7rem] truncate">
+                    {product?.outputToken?.symbol || balance.token.symbol}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 text-xs font-normal">
           <div className="truncate">
             {selectedAccounts?.length === 1 ? (
-              <PositionType type={position.type} />
+              <div className="text-body-secondary text-xs">{balance.type}</div>
             ) : (
-              <PortfolioAccount address={position.address} />
+              <PortfolioAccount address={balance.address} />
             )}
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
-            <PositionTotal position={position} noCountUp={noCountUp} />
+            <div className="text-body text-sm font-bold">
+              <Fiat amount={parseFloat(balance.amountUsd) || 0} noCountUp />
+            </div>
           </div>
         </div>
       </div>
@@ -117,13 +136,12 @@ const DefiTokenRow: FC<{
 
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
-    return tokenData.positions.reduce((total, { position }) => {
-      const posAmount = position.breakdown.reduce(
-        (sum, item) => sum + Number(item.amount || 0) / Math.pow(10, item.decimals || 0),
-        0,
-      )
-      return total + posAmount
-    }, 0)
+    return tokenData.positions.reduce(
+      (total: number, { balance }: { balance: YieldPositionBalance }) => {
+        return total + parseFloat(balance.amount)
+      },
+      0,
+    )
   }, [tokenData.positions])
 
   return (
@@ -141,18 +159,17 @@ const DefiTokenRow: FC<{
           <div className="shrink-0 text-xl">
             <AssetLogo
               tokenId={undefined}
-              url={
-                tokenData.positions[0]?.position.breakdown[0]?.logo ||
-                tokenData.positions[0]?.position.defiLogoUrl ||
-                null
-              }
+              url={tokenData.positions[0]?.balance.token.logoURI || null}
             />
           </div>
           <div className="flex flex-col gap-2">
             <div className="text-body flex items-center gap-2 text-base font-bold">
               {tokenData.tokenSymbol}
               <NetworkLogo
-                networkId={tokenData.positions[0]?.position.networkId}
+                networkId={
+                  mapYieldNetworkToNetworkId(tokenData.positions[0]?.product?.network) ||
+                  tokenData.positions[0]?.balance.token.network
+                }
                 className="text-[1rem]"
               />
             </div>
@@ -184,10 +201,12 @@ const DefiTokenRow: FC<{
       {/* Expanded Positions - part of same row background */}
       {isExpanded && (
         <div className="bg-grey-850 flex flex-col gap-4 pb-4 pl-8 pr-8">
-          {tokenData.positions.map(({ position }) => (
-            <DefiPositionRow
-              key={position.poolAddress + position.address}
-              position={position}
+          {tokenData.positions.map(({ balance, yieldId, product }) => (
+            <YieldPositionRow
+              key={balance.address + yieldId}
+              balance={balance}
+              yieldId={yieldId}
+              product={product}
               status="success"
               noCountUp={false}
             />
@@ -257,8 +276,7 @@ export const EarnAssetsTab = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
-  // const { groupedByToken, isLoading: isYieldLoading } = useYieldBalances()
-  const positions = useDefiPositionsDisplay()
+  const { groupedByToken, isLoading: isYieldLoading } = useYieldBalances()
   const accounts = useAccounts("owned")
   // const search = usePortfolioSearch()
 
@@ -269,43 +287,54 @@ export const EarnAssetsTab = () => {
     return new Set(accounts.map((account) => account.address))
   }, [accounts])
 
-  // Group DeFi positions by token symbol (excluding watched accounts)
-  const groupedByToken = useMemo(() => {
-    if (!positions.data?.length) return new Map<string, GroupedTokenData>()
+  // Convert yield balances groupedByToken to our GroupedTokenData format
+  const convertedGroupedByToken = useMemo(() => {
+    if (!groupedByToken || groupedByToken.size === 0) return new Map<string, GroupedTokenData>()
 
-    const grouped = new Map<string, GroupedTokenData>()
+    const converted = new Map<string, GroupedTokenData>()
 
-    positions.data.forEach((position) => {
-      // Skip positions from watched accounts
-      if (!ownedAddresses.has(position.address)) {
-        return
-      }
+    groupedByToken.forEach((tokenGroup, tokenSymbol) => {
+      // Filter positions by owned accounts
+      const ownedPositions = tokenGroup.positions.filter(
+        ({ balance }: { balance: YieldPositionBalance }) => ownedAddresses.has(balance.address),
+      )
 
-      // Extract token symbol from position breakdown
-      const tokenSymbol = position.breakdown[0]?.symbol || position.symbol || "Unknown"
-      const positionValue = position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0)
+      if (ownedPositions.length > 0) {
+        const totalAmountUsd = ownedPositions.reduce(
+          (sum: number, { balance }: { balance: YieldPositionBalance }) =>
+            sum + parseFloat(balance.amountUsd),
+          0,
+        )
 
-      const existing = grouped.get(tokenSymbol)
-      if (existing) {
-        existing.positions.push({ position, amountUsd: positionValue })
-        existing.totalAmountUsd += positionValue
-        existing.holdingsCount += 1
-      } else {
-        grouped.set(tokenSymbol, {
+        converted.set(tokenSymbol, {
           tokenSymbol,
-          totalAmountUsd: positionValue,
-          positions: [{ position, amountUsd: positionValue }],
-          holdingsCount: 1,
+          totalAmountUsd,
+          positions: ownedPositions.map(
+            ({
+              balance,
+              yieldId,
+              product,
+            }: {
+              balance: YieldPositionBalance
+              yieldId: string
+              product?: YieldProduct
+            }) => ({
+              balance,
+              yieldId,
+              amountUsd: parseFloat(balance.amountUsd),
+              product,
+            }),
+          ),
+          holdingsCount: ownedPositions.length,
         })
       }
     })
 
-    return grouped
-  }, [positions.data, ownedAddresses])
+    return converted
+  }, [groupedByToken, ownedAddresses])
 
   // Show grouped assets instead of individual positions
-  const hasDefiAssets = groupedByToken.size > 0
-  const isYieldLoading = positions.status === "loading"
+  const hasDefiAssets = convertedGroupedByToken.size > 0
 
   if (!hasDefiAssets && !isInitialising && !isYieldLoading) {
     return (
@@ -332,7 +361,7 @@ export const EarnAssetsTab = () => {
         <div className="mb-6">
           <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Defi")}</h2>
           <div className="flex flex-col gap-4">
-            {Array.from(groupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
+            {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
               <DefiTokenRow key={tokenSymbol + tokenData.totalAmountUsd} tokenData={tokenData} />
             ))}
           </div>

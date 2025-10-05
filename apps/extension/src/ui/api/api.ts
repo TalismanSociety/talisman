@@ -291,4 +291,8 @@ export const api: MessageTypes = {
 
   defiPositionsSubscribe: (cb) =>
     messageService.subscribe("pri(defi.positions.subscribe)", null, cb),
+
+  // yield
+  yieldBalancesSubscribe: (cb) =>
+    messageService.subscribe("pri(yield.balances.subscribe)", null, cb),
 }

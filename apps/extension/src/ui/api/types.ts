@@ -276,4 +276,7 @@ export default interface MessageTypes {
   nftsRefreshMetadata: (id: string) => Promise<boolean>
 
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
+  yieldBalancesSubscribe: (
+    cb: (positions: Loadable<import("extension-core").YieldPositionWithProduct[]>) => void,
+  ) => UnsubscribeFn
 }

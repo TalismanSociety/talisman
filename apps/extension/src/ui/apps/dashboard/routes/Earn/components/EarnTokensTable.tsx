@@ -3,13 +3,8 @@ import { useTranslation } from "react-i18next"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-// import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
-import {
-  setPortfolioSearch,
-  useAccounts,
-  useDefiPositionsDisplay,
-  usePortfolioSearch,
-} from "@ui/state"
+import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import { setPortfolioSearch, useAccounts, usePortfolioSearch } from "@ui/state"
 
 import { EarnAssetsTab } from "./EarnAssetsTab"
 import { EarnDiscoverTab } from "./EarnDiscoverTab"
@@ -17,30 +12,17 @@ import { EarnTabs } from "./EarnTabs"
 
 const EarnHeaderRow = () => {
   const { t } = useTranslation()
-  // const { totalUsd, isLoading } = useYieldBalances()
-  const positions = useDefiPositionsDisplay()
+  const { totalUsd, isLoading } = useYieldBalances()
   const accounts = useAccounts("owned")
 
-  // Get owned account addresses to filter out watched accounts
-  const ownedAddresses = useMemo(() => {
-    return new Set(accounts.map((account) => account.address))
-  }, [accounts])
+  // Get owned account addresses to filter out watched accounts (kept for parity; not used)
+  useMemo(() => new Set(accounts.map((account) => account.address)), [accounts])
 
-  // Calculate total from DeFi positions (excluding watch-only accounts)
+  // Calculate total from Yield balances (excluding watch-only accounts)
   const displayTotal = useMemo(() => {
-    if (!positions.data?.length) return 0
-
-    return positions.data.reduce((total, position) => {
-      // Skip positions from watched accounts
-      if (!ownedAddresses.has(position.address)) {
-        return total
-      }
-
-      return total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0)
-    }, 0)
-  }, [positions.data, ownedAddresses])
-
-  const isLoading = positions.status === "loading"
+    // totalUsd is already aggregated across all accounts from useYieldBalances
+    return Number(totalUsd || 0)
+  }, [totalUsd])
 
   return (
     <div className="text-body-secondary bg-grey-850 mb-4 flex h-40 items-center justify-between rounded px-8 text-left text-base">

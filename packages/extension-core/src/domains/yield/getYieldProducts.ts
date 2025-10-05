@@ -26,6 +26,10 @@ export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<
       url.searchParams.set("network", filter?.networkName)
     }
 
+    if (filter?.yieldIds && filter.yieldIds.length > 0) {
+      url.searchParams.set("yieldIds", filter.yieldIds.join(","))
+    }
+
     const headers: HeadersInit = {}
 
     // Add API key to headers - yield.xyz uses X-API-Key
@@ -55,6 +59,32 @@ export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<
     })
 
     const transformed = transformYieldApiResponse(data)
+
+    // If specific input token symbols were requested, filter out any product
+    // that includes input tokens not present in the requested set.
+    if (filter?.tokenSymbol) {
+      const requestedSymbols = new Set(
+        filter.tokenSymbol
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((s) => s.toLowerCase()),
+      )
+
+      const filtered = transformed.filter((product) =>
+        product.inputTokens.every((t) => requestedSymbols.has((t.symbol || "").toLowerCase())),
+      )
+
+      log.debug("[Yield] Transformed and client-filtered data", {
+        before: transformed.length,
+        after: filtered.length,
+        requested: Array.from(requestedSymbols.values()),
+        firstFiltered: filtered[0],
+      })
+
+      return filtered
+    }
+
     log.debug("[Yield] Transformed data", {
       count: transformed.length,
       firstTransformed: transformed[0],

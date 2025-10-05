@@ -1,11 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
-import { YieldBalanceQuery, YieldPositionBalance, YieldPositionItem } from "extension-core"
+import { YieldBalanceQuery, YieldPositionBalance, YieldPositionWithProduct } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccounts, useBalances, useNetworksMapById, useTokens } from "@ui/state"
+import { useYieldRawBalances } from "@ui/state/yield"
 import { YIELD_SUPPORTED_NETWORKS } from "@ui/util/constants"
 
-import { yieldApi } from "../services/yieldApi"
 import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
 
 export const useYieldBalances = () => {
@@ -15,7 +14,10 @@ export const useYieldBalances = () => {
   const networksMap = useNetworksMapById({ activeOnly: true, includeTestnets: false })
 
   // Create queries for accounts that have tokens on supported networks
-  const queries = useMemo(() => {
+  // NOTE: queries are built here for parity with DeFi flow, but
+  // the core subscription currently aggregates by address without network filters.
+  // Keep computed but unused to allow quick extension later.
+  const _queries = useMemo(() => {
     const balanceQueries: YieldBalanceQuery[] = []
     const uniqueQueries = new Set<string>()
 
@@ -59,26 +61,18 @@ export const useYieldBalances = () => {
     return balanceQueries
   }, [allAccounts, balances, tokens, networksMap])
 
-  const {
-    data: yieldBalancesResponse,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["yieldBalances", queries],
-    queryFn: async () => {
-      if (queries.length === 0) {
-        return { items: [], errors: [] }
-      }
-
-      return yieldApi.getYieldBalances({ queries })
-    },
-    enabled: queries.length > 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 1000, // Refetch every 30 seconds
-    refetchOnWindowFocus: false,
-    retry: 2,
-  })
+  const yieldBalancesLoadable = useYieldRawBalances()
+  const yieldBalancesResponse = useMemo(() => {
+    if (!yieldBalancesLoadable?.data) return { items: [], errors: [] }
+    // Core observable emits items[] already; align to UI expectations
+    return {
+      items: yieldBalancesLoadable.data as YieldPositionWithProduct[],
+      errors: [] as unknown[],
+    }
+  }, [yieldBalancesLoadable])
+  const isLoading = yieldBalancesLoadable.status === "loading"
+  const error = undefined
+  const refetch = () => {}
 
   // Calculate totals and organize data by token
   const { totalUsd, yieldPositions, positionsByAddress, allBalances, groupedByToken } =
@@ -99,7 +93,11 @@ export const useYieldBalances = () => {
         string,
         {
           token: YieldPositionBalance["token"]
-          positions: Array<{ balance: YieldPositionBalance; yieldId: string }>
+          positions: Array<{
+            balance: YieldPositionBalance
+            yieldId: string
+            product?: YieldPositionWithProduct["product"]
+          }>
           totalAmount: string
           totalAmountUsd: string
           holdingsCount: number
@@ -107,7 +105,7 @@ export const useYieldBalances = () => {
       >()
       let totalUsdValue = 0
 
-      yieldBalancesResponse.items.forEach((item: YieldPositionItem) => {
+      yieldBalancesResponse.items.forEach((item: YieldPositionWithProduct) => {
         item.balances.forEach((balance: YieldPositionBalance) => {
           allBalances.push(balance)
           totalUsdValue += parseFloat(balance.amountUsd) || 0
@@ -120,7 +118,7 @@ export const useYieldBalances = () => {
           const existingGroup = groupedByToken.get(tokenSymbol)
 
           if (existingGroup) {
-            existingGroup.positions.push({ balance, yieldId: item.yieldId })
+            existingGroup.positions.push({ balance, yieldId: item.yieldId, product: item.product })
             existingGroup.totalAmountUsd = (
               parseFloat(existingGroup.totalAmountUsd) + parseFloat(balance.amountUsd)
             ).toString()
@@ -128,7 +126,7 @@ export const useYieldBalances = () => {
           } else {
             groupedByToken.set(tokenSymbol, {
               token: balance.token,
-              positions: [{ balance, yieldId: item.yieldId }],
+              positions: [{ balance, yieldId: item.yieldId, product: item.product }],
               totalAmount: balance.amount,
               totalAmountUsd: balance.amountUsd,
               holdingsCount: 1,

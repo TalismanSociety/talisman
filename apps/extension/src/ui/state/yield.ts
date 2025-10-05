@@ -1,5 +1,37 @@
+import { bind } from "@react-rxjs/core"
+import { Loadable } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { fetchYieldProducts, YieldProductsFilter } from "extension-core"
+import { fetchYieldProducts, YieldPositionWithProduct, YieldProductsFilter } from "extension-core"
+import { Observable, ReplaySubject, shareReplay } from "rxjs"
+
+import { api } from "@ui/api"
+
+const DEFAULT_YIELD_BALANCES: Loadable<YieldPositionWithProduct[]> = {
+  status: "loading",
+  data: [],
+}
+
+const subjectRawYieldBalances$ = new ReplaySubject<Loadable<YieldPositionWithProduct[]>>(1)
+
+const rawYieldBalances$ = new Observable<Loadable<YieldPositionWithProduct[]>>((subscriber) => {
+  const sub = subjectRawYieldBalances$.subscribe(subscriber)
+
+  const unsubscribe = api.yieldBalancesSubscribe(
+    (loadable: Loadable<YieldPositionWithProduct[]>) => {
+      subjectRawYieldBalances$.next(loadable)
+    },
+  )
+
+  return () => {
+    sub.unsubscribe()
+    unsubscribe()
+  }
+})
+
+export const [useYieldRawBalances, yieldBalances$] = bind(
+  rawYieldBalances$.pipe(shareReplay({ bufferSize: 1, refCount: true })),
+  DEFAULT_YIELD_BALANCES,
+)
 
 /**
  * Hook to fetch yield products for earning opportunities
