@@ -38,6 +38,7 @@ import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpg
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
+import { Earn } from "./pages/Earn"
 import { DepositPage } from "./pages/Earn/Deposit"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
@@ -92,6 +93,7 @@ const Popup = () => {
       <Suspense fallback={<SuspenseTracker name="Routes" />}>
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
+          <Route path="earn/*" element={<Earn />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
           <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolanaSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />

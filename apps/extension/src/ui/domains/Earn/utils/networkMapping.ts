@@ -37,3 +37,20 @@ export function mapNetworkToYieldNetwork(
 
   return mapToYieldNetwork(network.platform, network.id)
 }
+
+/**
+ * Maps Yield.xyz network name to network ID
+ *
+ * @param yieldNetwork - The Yield.xyz network name (e.g., 'ethereum', 'base')
+ * @returns The network ID as a string, or undefined if not supported
+ */
+export function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
+  switch (yieldNetwork) {
+    case "ethereum":
+      return "1"
+    case "base":
+      return "8453"
+    default:
+      return undefined
+  }
+}

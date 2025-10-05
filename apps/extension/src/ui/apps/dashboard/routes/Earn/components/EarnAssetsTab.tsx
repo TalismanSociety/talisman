@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronRightIcon, ZapFastIcon } from "@talismn/icons"
+import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapFastIcon } from "@talismn/icons"
 import { classNames, LoadableStatus } from "@talismn/util"
 import { YieldPositionBalance, YieldProduct } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
@@ -267,8 +267,9 @@ const StakingTile = () => {
           <div className="text-body text-base font-bold">{t("Staking")}</div>
         </div>
       </div>
-      <div className="text-body-secondary text-sm">
-        {t("Go to Talisman Portal for more staking")}
+      <div className="flex items-center gap-2">
+        <div className="text-body-secondary text-sm">{t("Self-stake through Talisman portal")}</div>
+        <ExternalLinkIcon className="text-body-secondary h-8 w-8" />
       </div>
     </button>
   )
