@@ -70,7 +70,7 @@ const useDepositWizardProvider = () => {
         let page: DepositWizardPage = "amount"
         if (!searchParams.has("account")) page = "amount"
         else if (!searchParams.has("amount") && !searchParams.has("depositMax")) page = "amount"
-        const url = `/earn/deposit/${page}?${searchParams.toString()}`
+        const url = `/select-product/deposit/${page}?${searchParams.toString()}`
         navigate(url)
       }
     },
@@ -87,7 +87,7 @@ const useDepositWizardProvider = () => {
 
   const goto = useCallback(
     (page: DepositWizardPage, replace?: boolean) => {
-      const url = `/earn/deposit/${page}?${searchParams.toString()}`
+      const url = `/select-product/deposit/${page}?${searchParams.toString()}`
       navigate(url, { replace })
     },
     [navigate, searchParams],
@@ -99,12 +99,12 @@ const useDepositWizardProvider = () => {
     if (!productId) throw new Error("Product is not set")
     if (!amount && !depositMax) throw new Error("Amount is not set")
 
-    navigate(`/earn/deposit/confirm?${searchParams.toString()}`)
+    navigate(`/select-product/deposit/confirm?${searchParams.toString()}`)
   }, [account, navigate, searchParams, amount, depositMax, tokenId, productId])
 
   const gotoProgress = useCallback(
     ({ networkId, txId }: { networkId: string; txId: string }) => {
-      navigate(`/earn/deposit/progress?networkId=${networkId}&txId=${txId}`)
+      navigate(`/select-product/deposit/progress?networkId=${networkId}&txId=${txId}`)
     },
     [navigate],
   )

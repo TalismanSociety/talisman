@@ -99,7 +99,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
         if (currentAccount) {
           params.set("account", currentAccount)
         }
-        navigate(`/earn/select-validator?${params.toString()}`)
+        navigate(`/select-product/select-validator?${params.toString()}`)
       } else {
         // Show validator picker modal in dashboard mode
         setIsValidatorPickerOpen(true)
@@ -112,7 +112,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       if (IS_POPUP) {
         // In popup mode, navigate to account picker first
         navigate(
-          `/earn/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(product.id)}`,
+          `/select-product/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(product.id)}`,
         )
         return
       }
@@ -130,7 +130,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     })
 
     if (IS_POPUP) {
-      navigate(`/earn/deposit/amount?${params.toString()}`)
+      navigate(`/select-product/deposit/amount?${params.toString()}`)
     } else {
       // Open deposit modal in dashboard mode
       setSelectedProduct(product)
@@ -151,7 +151,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       // No account selected, show account picker
       if (IS_POPUP) {
         navigate(
-          `/earn/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
+          `/select-product/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
         )
         return
       }
@@ -166,7 +166,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       })
 
       if (IS_POPUP) {
-        navigate(`/earn/deposit/amount?${params.toString()}`)
+        navigate(`/select-product/deposit/amount?${params.toString()}`)
       } else {
         setIsDepositModalOpen(true)
       }
@@ -207,7 +207,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
         }
 
         if (IS_POPUP) {
-          navigate(`/earn/deposit/amount?${params.toString()}`)
+          navigate(`/select-product/deposit/amount?${params.toString()}`)
         }
       }
     }

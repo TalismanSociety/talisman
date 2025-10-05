@@ -60,7 +60,7 @@ export const ValidatorPickerPage = () => {
 
       if (!account) {
         // No account selected, navigate to account picker
-        const accountPickerUrl = `/earn/select-account?tokenId=${encodeURIComponent(tokenId || "")}&productId=${encodeURIComponent(productId || "")}&validatorAddress=${encodeURIComponent(validator.address)}`
+        const accountPickerUrl = `/select-product/select-account?tokenId=${encodeURIComponent(tokenId || "")}&productId=${encodeURIComponent(productId || "")}&validatorAddress=${encodeURIComponent(validator.address)}`
         navigate(accountPickerUrl)
       } else {
         // Account is selected, go directly to deposit page
@@ -70,7 +70,7 @@ export const ValidatorPickerPage = () => {
           productId: productId || "",
           validatorAddress: validator.address,
         })
-        navigate(`/earn/deposit/amount?${params.toString()}`)
+        navigate(`/select-product/deposit/amount?${params.toString()}`)
       }
     },
     [navigate, tokenId, productId],
@@ -78,7 +78,7 @@ export const ValidatorPickerPage = () => {
 
   const handleDismiss = () => {
     // Go back to earn page
-    navigate(`/earn?tokenId=${encodeURIComponent(tokenId || "")}`, { replace: true })
+    navigate(`/select-product?tokenId=${encodeURIComponent(tokenId || "")}`, { replace: true })
   }
 
   if (!productId) {

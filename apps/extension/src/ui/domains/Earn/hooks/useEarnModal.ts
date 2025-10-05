@@ -19,7 +19,7 @@ export const useEarnModal = () => {
 
       if (IS_POPUP) {
         // Navigate to full page in popup mode
-        navigate(`/earn?tokenId=${encodeURIComponent(tokenId)}`)
+        navigate(`/select-product?tokenId=${encodeURIComponent(tokenId)}`)
       } else {
         // Open modal in dashboard mode
         innerOpen()

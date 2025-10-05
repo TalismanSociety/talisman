@@ -62,7 +62,7 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({
         if (validatorAddress) {
           params.set("validatorAddress", validatorAddress)
         }
-        navigate(`/earn/deposit/amount?${params.toString()}`)
+        navigate(`/select-product/deposit/amount?${params.toString()}`)
       } else {
         navigate(-1) // Go back to previous page
       }

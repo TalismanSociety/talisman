@@ -109,10 +109,10 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
-          <Route path="earn" element={<ProductSelectionPage />} />
-          <Route path="earn/select-validator" element={<ValidatorPickerPage />} />
-          <Route path="earn/select-account" element={<EarnAccountPickerPageWrapper />} />
-          <Route path="earn/deposit/*" element={<DepositPage />} />
+          <Route path="select-product" element={<ProductSelectionPage />} />
+          <Route path="select-product/select-validator" element={<ValidatorPickerPage />} />
+          <Route path="select-product/select-account" element={<EarnAccountPickerPageWrapper />} />
+          <Route path="select-product/deposit/*" element={<DepositPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
