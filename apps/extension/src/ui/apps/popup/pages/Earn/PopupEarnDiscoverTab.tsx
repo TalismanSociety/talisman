@@ -60,7 +60,7 @@ const PopupEarnProductCard: FC<PopupEarnProductCardProps> = ({ product, onProduc
           <div className="text-body-secondary text-xs">{t("TVL")}</div>
           <div className="text-body text-sm font-bold">
             {product.statistics?.tvlUsd ? (
-              <Fiat amount={Number(product.statistics.tvlUsd)} />
+              <Fiat amount={Number(product.statistics.tvlUsd)} forceCurrency="usd" />
             ) : (
               <span className="text-body-secondary">-</span>
             )}

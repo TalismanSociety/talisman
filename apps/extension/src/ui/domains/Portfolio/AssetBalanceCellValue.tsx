@@ -1,4 +1,5 @@
 import { LockIcon } from "@talismn/icons"
+import { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
@@ -20,6 +21,7 @@ type Props = {
   tooltip?: ReactNode
   balancesStatus?: BalancesStatus
   noCountUp?: boolean
+  forceFiatCurrency?: TokenRateCurrency
 }
 
 export const AssetBalanceCellValue = ({
@@ -32,6 +34,7 @@ export const AssetBalanceCellValue = ({
   tooltip,
   balancesStatus,
   noCountUp,
+  forceFiatCurrency,
 }: Props) => {
   if (!render) return null
   return (
@@ -62,7 +65,13 @@ export const AssetBalanceCellValue = ({
             </div>
           ) : null}
         </div>
-        <div>{fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}</div>
+        <div>
+          {fiat === null ? (
+            "-"
+          ) : (
+            <Fiat amount={fiat} isBalance noCountUp={noCountUp} forceCurrency={forceFiatCurrency} />
+          )}
+        </div>
       </div>
     </WithTooltip>
   )

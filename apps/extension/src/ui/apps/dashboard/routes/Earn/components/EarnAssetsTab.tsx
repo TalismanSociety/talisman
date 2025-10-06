@@ -122,7 +122,7 @@ const YieldPositionRow: FC<{
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
             <div className="text-body text-sm font-bold">
-              <Fiat amount={parseFloat(balance.amountUsd) || 0} noCountUp />
+              <Fiat amount={parseFloat(balance.amountUsd) || 0} noCountUp forceCurrency="usd" />
             </div>
           </div>
         </div>
@@ -194,6 +194,7 @@ const DefiTokenRow: FC<{
             fiat={tokenData.totalAmountUsd}
             symbol={tokenData.tokenSymbol}
             className="!h-auto !p-0"
+            forceFiatCurrency="usd"
           />
           <div className="flex items-center">
             {isExpanded ? (

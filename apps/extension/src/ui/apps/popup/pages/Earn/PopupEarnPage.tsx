@@ -36,7 +36,7 @@ const PopupEarnHeader = () => {
           {isLoading ? (
             <div className="bg-grey-700 h-8 w-32 animate-pulse rounded"></div>
           ) : (
-            <Fiat amount={displayTotal} />
+            <Fiat amount={displayTotal} forceCurrency="usd" />
           )}
         </div>
       </div>

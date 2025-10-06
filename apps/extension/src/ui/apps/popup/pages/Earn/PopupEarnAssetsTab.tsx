@@ -100,7 +100,7 @@ const PopupYieldPositionRow: FC<{
           </div>
           <div>
             <div className="text-body text-xs font-bold">
-              <Fiat amount={Number(balance.amountUsd)} />
+              <Fiat amount={Number(balance.amountUsd)} forceCurrency="usd" />
             </div>
           </div>
         </div>
@@ -255,11 +255,11 @@ const PopupEarnTokenRow: FC<{
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="text-body truncate text-right text-sm font-bold">
-                  <Fiat amount={tokenData.totalAmountUsd} />
+                  <Fiat amount={tokenData.totalAmountUsd} forceCurrency="usd" />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <Fiat amount={tokenData.totalAmountUsd} />
+                <Fiat amount={tokenData.totalAmountUsd} forceCurrency="usd" />
               </TooltipContent>
             </Tooltip>
           </div>
