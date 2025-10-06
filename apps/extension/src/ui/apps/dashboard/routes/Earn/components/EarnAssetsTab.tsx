@@ -16,6 +16,7 @@ import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellVal
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAccounts, usePortfolioGlobalData, usePortfolioSelectedAccounts } from "@ui/state"
+import { useYieldSearch } from "@ui/state/yield"
 
 // import { SearchInput } from "@talisman/components/SearchInput"
 // import { setPortfolioSearch, usePortfolioSearch } from "@ui/state"
@@ -92,17 +93,21 @@ const YieldPositionRow: FC<{
                     {product?.inputTokens?.[0]?.symbol}
                   </span>
                 </div>
-                <span className="text-white">/</span>
-                {/* Output token */}
-                <div className="flex min-w-0 items-center gap-2">
-                  <AssetLogo url={product?.outputToken?.logoURI} className="h-8 w-8" />
-                  <span
-                    className="max-w-[7rem] truncate text-sm text-white"
-                    title={product?.outputToken?.symbol ?? undefined}
-                  >
-                    {product?.outputToken?.symbol}
-                  </span>
-                </div>
+                {product?.outputToken && (
+                  <>
+                    <span className="text-white">/</span>
+                    {/* Output token */}
+                    <div className="flex min-w-0 items-center gap-2">
+                      <AssetLogo url={product.outputToken.logoURI} className="h-8 w-8" />
+                      <span
+                        className="max-w-[7rem] truncate text-sm text-white"
+                        title={product.outputToken.symbol}
+                      >
+                        {product.outputToken.symbol}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -281,7 +286,7 @@ export const EarnAssetsTab = () => {
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const { groupedByToken, isLoading: isYieldLoading } = useYieldBalances()
   const accounts = useAccounts("owned")
-  // const search = usePortfolioSearch()
+  const search = useYieldSearch()
 
   const location = useLocation()
 
@@ -295,6 +300,7 @@ export const EarnAssetsTab = () => {
     if (!groupedByToken || groupedByToken.size === 0) return new Map<string, GroupedTokenData>()
 
     const converted = new Map<string, GroupedTokenData>()
+    const lowerSearch = (search || "").toLowerCase().trim()
 
     groupedByToken.forEach((tokenGroup, tokenSymbol) => {
       // Filter positions by owned accounts
@@ -302,8 +308,24 @@ export const EarnAssetsTab = () => {
         ({ balance }: { balance: YieldPositionBalance }) => ownedAddresses.has(balance.address),
       )
 
-      if (ownedPositions.length > 0) {
-        const totalAmountUsd = ownedPositions.reduce(
+      // Apply search filtering across token symbol, product name, input/output token symbols
+      const searchedPositions = ownedPositions.filter(
+        ({ balance, product }: { balance: YieldPositionBalance; product?: YieldProduct }) => {
+          if (!lowerSearch) return true
+          const haystack: string[] = [
+            balance.token.symbol,
+            product?.metadata?.name,
+            product?.inputTokens?.[0]?.symbol,
+            product?.outputToken?.symbol,
+          ]
+            .filter(Boolean)
+            .map((v) => String(v).toLowerCase())
+          return haystack.some((text) => text.includes(lowerSearch))
+        },
+      )
+
+      if (searchedPositions.length > 0) {
+        const totalAmountUsd = searchedPositions.reduce(
           (sum: number, { balance }: { balance: YieldPositionBalance }) =>
             sum + parseFloat(balance.amountUsd),
           0,
@@ -312,7 +334,7 @@ export const EarnAssetsTab = () => {
         converted.set(tokenSymbol, {
           tokenSymbol,
           totalAmountUsd,
-          positions: ownedPositions.map(
+          positions: searchedPositions.map(
             ({
               balance,
               yieldId,
@@ -328,13 +350,13 @@ export const EarnAssetsTab = () => {
               product,
             }),
           ),
-          holdingsCount: ownedPositions.length,
+          holdingsCount: searchedPositions.length,
         })
       }
     })
 
     return converted
-  }, [groupedByToken, ownedAddresses])
+  }, [groupedByToken, ownedAddresses, search])
 
   // Show grouped assets instead of individual positions
   const hasDefiAssets = convertedGroupedByToken.size > 0

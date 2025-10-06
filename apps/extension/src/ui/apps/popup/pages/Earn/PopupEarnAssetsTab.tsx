@@ -13,6 +13,7 @@ import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMappin
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useAccounts } from "@ui/state"
+import { useYieldSearch } from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -292,15 +293,37 @@ const PopupEarnTokenRow: FC<{
 export const PopupEarnAssetsTab: FC = () => {
   const { t } = useTranslation()
   const { yieldPositions, isLoading } = useYieldBalances()
+  const search = useYieldSearch()
 
   // Group positions by token symbol for display - matching dashboard logic
   const groupedPositions = useMemo(() => {
     if (!yieldPositions) return []
 
+    const lowerSearch = (search || "").toLowerCase().trim()
+
     const grouped = new Map<string, GroupedTokenData>()
 
     yieldPositions.forEach((position) => {
       position.balances.forEach((balance) => {
+        const product = position.product
+
+        // Search match across token symbol, product name, input/output token symbols
+        const matchesSearch = (() => {
+          if (!lowerSearch) return true
+          const haystack: string[] = [
+            balance.token.symbol,
+            product?.metadata?.name,
+            product?.inputTokens?.[0]?.symbol,
+            product?.outputToken?.symbol,
+          ]
+            .filter(Boolean)
+            .map((v) => String(v).toLowerCase())
+
+          return haystack.some((text) => text.includes(lowerSearch))
+        })()
+
+        if (!matchesSearch) return
+
         const symbol = balance.token.symbol
         if (!grouped.has(symbol)) {
           grouped.set(symbol, {
@@ -324,7 +347,7 @@ export const PopupEarnAssetsTab: FC = () => {
     })
 
     return Array.from(grouped.values()).sort((a, b) => b.totalAmountUsd - a.totalAmountUsd)
-  }, [yieldPositions])
+  }, [yieldPositions, search])
 
   if (isLoading) {
     return <PopupEarnAssetsSkeleton />

@@ -2,7 +2,7 @@ import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { fetchYieldProducts, YieldPositionWithProduct, YieldProductsFilter } from "extension-core"
-import { Observable, ReplaySubject, shareReplay } from "rxjs"
+import { BehaviorSubject, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -48,3 +48,10 @@ export const useYieldProducts = (filter?: YieldProductsFilter) => {
     retry: 2,
   })
 }
+
+// Yield-specific search state (separate from portfolio search)
+const subjectYieldSearch$ = new BehaviorSubject<string>("")
+
+export const [useYieldSearch, yieldSearch$] = bind(subjectYieldSearch$)
+
+export const setYieldSearch = (search: string) => subjectYieldSearch$.next(search)
