@@ -20,15 +20,21 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
   }, [riskAnalysis?.validationResult])
 
   const [disabled, tooltip] = useMemo(() => {
-    if (!riskAnalysis || props.disabled) return [!!props.disabled, null]
+    try {
+      if (!riskAnalysis || props.disabled) return [!!props.disabled, null]
 
-    if (
-      riskAnalysis.review.isRiskAcknowledgementRequired &&
-      !riskAnalysis.review.isRiskAcknowledged
-    )
-      return [true, t("You must acknowledge the risks before signing")]
+      if (
+        riskAnalysis.review.isRiskAcknowledgementRequired &&
+        !riskAnalysis.review.isRiskAcknowledged
+      )
+        return [true, t("You must acknowledge the risks before signing")]
 
-    if (riskAnalysis.isValidating) return [true, null]
+      if (riskAnalysis.isValidating) return [true, null]
+    } catch (err) {
+      // This will crash if the button is not in a RiskAnalysisProvider container, resulting in riskAnalysis being an empty object
+      // this is the case for substrate transactions
+      // ignore until we implement a system in provideContext that allows fallback if a consumer is not in a provider
+    }
 
     return [false, null]
   }, [props.disabled, riskAnalysis, t])
