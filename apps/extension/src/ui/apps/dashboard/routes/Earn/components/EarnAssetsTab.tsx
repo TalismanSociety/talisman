@@ -56,6 +56,8 @@ const YieldPositionRow: FC<{
 }> = ({ balance, yieldId, product, status, noCountUp: _noCountUp }) => {
   const selectedAccounts = usePortfolioSelectedAccounts()
   const navigate = useNavigate()
+  const validator = (balance as unknown as { validator?: { name?: string; logoURI?: string } })
+    ?.validator
 
   return (
     <button
@@ -65,12 +67,18 @@ const YieldPositionRow: FC<{
       )}
       onClick={() => navigate(`/portfolio/yield/${yieldId}`)}
     >
-      <AssetLogo url={product?.metadata.logoURI || balance.token.logoURI} className="size-16" />
+      <AssetLogo
+        url={validator?.logoURI || product?.metadata.logoURI || balance.token.logoURI}
+        className="size-16"
+      />
       <div className="flex w-full grow flex-col gap-4 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate text-white" title={product?.metadata.name ?? undefined}>
-              {product?.metadata.name}
+            <div
+              className="truncate text-white"
+              title={(validator?.name || product?.metadata.name) ?? undefined}
+            >
+              {validator?.name || product?.metadata.name}
             </div>
             <NetworkLogo
               networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}

@@ -35,6 +35,8 @@ const PopupYieldPositionRow: FC<{
 }> = ({ balance, yieldId, product }) => {
   const navigate = useNavigate()
   const accounts = useAccounts("owned")
+  const validator = (balance as unknown as { validator?: { name?: string; logoURI?: string } })
+    ?.validator
 
   const handleClick = useCallback(() => {
     navigate(`/portfolio/yield/${yieldId}`)
@@ -46,12 +48,18 @@ const PopupYieldPositionRow: FC<{
       className="bg-grey-850 hover:bg-grey-800 flex h-auto w-full items-center gap-3 overflow-hidden rounded-sm p-4"
       onClick={handleClick}
     >
-      <AssetLogo url={product?.metadata.logoURI || balance.token.logoURI} className="size-12" />
+      <AssetLogo
+        url={validator?.logoURI || product?.metadata.logoURI || balance.token.logoURI}
+        className="size-12"
+      />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-xs font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate text-white" title={product?.metadata.name ?? undefined}>
-              {product?.metadata.name}
+            <div
+              className="truncate text-white"
+              title={(validator?.name || product?.metadata.name) ?? undefined}
+            >
+              {validator?.name || product?.metadata.name}
             </div>
             <NetworkLogo
               networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}
