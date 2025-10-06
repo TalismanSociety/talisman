@@ -1,10 +1,11 @@
+import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { classNames, LoadableStatus } from "@talismn/util"
 import { YieldPositionBalance, YieldProduct } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -14,7 +15,8 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAccounts, usePortfolioGlobalData, usePortfolioSelectedAccounts } from "@ui/state"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { useAccounts, usePortfolioGlobalData } from "@ui/state"
 import { useYieldSearch } from "@ui/state/yield"
 
 interface GroupedTokenData {
@@ -37,7 +39,6 @@ const YieldPositionRow: FC<{
   status: LoadableStatus
   noCountUp: boolean
 }> = ({ balance, yieldId, product, status, noCountUp: _noCountUp }) => {
-  const selectedAccounts = usePortfolioSelectedAccounts()
   const navigate = useNavigate()
   const validator = (balance as unknown as { validator?: { name?: string; logoURI?: string } })
     ?.validator
@@ -105,11 +106,7 @@ const YieldPositionRow: FC<{
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 text-xs font-normal">
           <div className="truncate">
-            {selectedAccounts?.length === 1 ? (
-              <div className="text-body-secondary text-xs">{balance.type}</div>
-            ) : (
-              <PortfolioAccount address={balance.address} className="text-white" />
-            )}
+            <PortfolioAccount address={balance.address} className="text-white" />
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
             <div className="text-body text-sm font-bold">
@@ -279,6 +276,32 @@ export const EarnAssetsTab = () => {
   const { groupedByToken, isLoading: isYieldLoading } = useYieldBalances()
   const accounts = useAccounts("owned")
   const search = useYieldSearch()
+  const [searchParams] = useSearchParams()
+  const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
+
+  // Get selected accounts from URL params, similar to usePortfolioNavigation
+  const selectedAccounts = useMemo(() => {
+    const accountAddress = searchParams.get("account")
+    const folderId = searchParams.get("folder")
+
+    if (accountAddress) {
+      const selectedAccount = allAccounts.find((acc) => isAddressEqual(acc.address, accountAddress))
+      return selectedAccount ? [selectedAccount] : portfolioAccounts
+    }
+
+    if (folderId) {
+      const selectedFolder =
+        catalog.portfolio.find((folder) => folder.type === "folder" && folder.id === folderId) ||
+        catalog.watched.find((folder) => folder.type === "folder" && folder.id === folderId)
+      if (selectedFolder && selectedFolder.type === "folder") {
+        return allAccounts.filter((acc) =>
+          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address)),
+        )
+      }
+    }
+
+    return portfolioAccounts
+  }, [allAccounts, portfolioAccounts, catalog, searchParams])
 
   const location = useLocation()
 
@@ -293,6 +316,7 @@ export const EarnAssetsTab = () => {
 
     const converted = new Map<string, GroupedTokenData>()
     const lowerSearch = (search || "").toLowerCase().trim()
+    const selectedAddresses = new Set((selectedAccounts || []).map((a) => a.address))
 
     groupedByToken.forEach((tokenGroup, tokenSymbol) => {
       // Filter positions by owned accounts
@@ -300,8 +324,15 @@ export const EarnAssetsTab = () => {
         ({ balance }: { balance: YieldPositionBalance }) => ownedAddresses.has(balance.address),
       )
 
+      // If a specific account is selected, filter positions to that account only
+      const filteredByAccount = selectedAddresses.size
+        ? ownedPositions.filter(({ balance }: { balance: YieldPositionBalance }) =>
+            selectedAddresses.has(balance.address),
+          )
+        : ownedPositions
+
       // Apply search filtering across token symbol, product name, input/output token symbols
-      const searchedPositions = ownedPositions.filter(
+      const searchedPositions = filteredByAccount.filter(
         ({ balance, product }: { balance: YieldPositionBalance; product?: YieldProduct }) => {
           if (!lowerSearch) return true
           const haystack: string[] = [
@@ -348,7 +379,7 @@ export const EarnAssetsTab = () => {
     })
 
     return converted
-  }, [groupedByToken, ownedAddresses, search])
+  }, [groupedByToken, ownedAddresses, search, selectedAccounts])
 
   // Show grouped assets instead of individual positions
   const hasDefiAssets = convertedGroupedByToken.size > 0
