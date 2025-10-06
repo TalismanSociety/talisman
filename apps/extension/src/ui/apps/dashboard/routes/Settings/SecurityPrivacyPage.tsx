@@ -26,7 +26,7 @@ const Content = () => {
   const [autoRiskScan, setAutoRiskScan] = useSetting("autoRiskScan")
   const navigate = useNavigate()
 
-  const withRiskAnalysis = useFeatureFlag("RISK_ANALYSIS")
+  const withRiskAnalysis = useFeatureFlag("RISK_ANALYSIS_V2")
 
   const allBackedUp = useMnemonicsAllBackedUp()
 
@@ -69,7 +69,7 @@ const Content = () => {
                   </TooltipTrigger>
                   <TooltipContent>
                     {t(
-                      "This service is only available for some Ethereum networks, please visit Blowfish website for more information.",
+                      "This service is only available for some Ethereum networks and Solana, please visit Blockaid website for more information.",
                     )}
                   </TooltipContent>
                 </Tooltip>
@@ -77,14 +77,14 @@ const Content = () => {
             }
             subtitle={
               <Trans t={t}>
-                Automatically assess risks of Ethereum transactions and messages via{" "}
+                Automatically assess risks of transactions via{" "}
                 <a
                   className="text-grey-200 hover:text-body"
-                  href="https://blowfish.xyz"
+                  href="https://blockaid.io"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  Blowfish
+                  Blockaid
                 </a>
               </Trans>
             }

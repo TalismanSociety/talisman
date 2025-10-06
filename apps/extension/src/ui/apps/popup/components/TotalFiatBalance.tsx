@@ -5,6 +5,7 @@ import {
   EyeOffIcon,
   QuestStarCircleIcon,
   RepeatIcon,
+  SeekEyeIcon,
   SendIcon,
 } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
@@ -18,6 +19,7 @@ import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/a
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -169,6 +171,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const ownedAccounts = useAccounts("owned")
   const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
+  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
   const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const { disableActions, disabledReason } = useMemo(() => {
@@ -243,11 +246,35 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           <Action key={index} {...action} />
         ))}
       </div>
-      {showQuestLink && i18n.language === "en" && <QuestLink />}
+      {i18n.language === "en" && // not enough space in other languages
+        (showSeekBenefits ? <SeekBenefitsLink /> : showQuestLink ? <QuestLink /> : null)}
     </div>
   )
 }
 
+const SeekBenefitsLink = () => {
+  const { open } = useSeekBenefitsModal()
+
+  const handleSeekClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "SEEK" })
+    open()
+  }, [open])
+
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "text-primary-700 hover:text-primary pointer-events-auto flex items-center gap-2.5 text-[1rem]",
+      )}
+      onClick={handleSeekClick}
+    >
+      <div className="flex flex-col justify-center text-sm">
+        <SeekEyeIcon />
+      </div>
+      <div>SEEK</div>
+    </button>
+  )
+}
 const QuestLink = () => {
   const { t } = useTranslation()
 

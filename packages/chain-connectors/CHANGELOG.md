@@ -1,5 +1,26 @@
 # @talismn/chain-connectors
 
+## 0.0.5
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+  - @talismn/connection-meta@0.2.25
+  - @talismn/util@0.5.4
+
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/chaindata-provider@1.1.3
+  - @talismn/util@0.5.3
+  - @talismn/connection-meta@0.2.24
+
 ## 0.0.3
 
 ### Patch Changes

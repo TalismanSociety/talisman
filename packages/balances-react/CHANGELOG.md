@@ -1,5 +1,35 @@
 # @talismn/balances-react
 
+## 1.0.7
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+  - @talismn/chain-connectors@0.0.5
+  - @talismn/connection-meta@0.2.25
+  - @talismn/token-rates@3.0.7
+  - @talismn/balances@1.0.7
+  - @talismn/scale@0.2.2
+  - @talismn/util@0.5.4
+
+## 1.0.6
+
+### Patch Changes
+
+- f2d3cf5: pin @types/lodash-es version
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/balances@1.0.6
+  - @talismn/chaindata-provider@1.1.3
+  - @talismn/util@0.5.3
+  - @talismn/chain-connectors@0.0.4
+  - @talismn/connection-meta@0.2.24
+  - @talismn/token-rates@3.0.6
+
 ## 1.0.5
 
 ### Patch Changes

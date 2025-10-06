@@ -1,5 +1,18 @@
 # @talismn/util
 
+## 0.5.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
+## 0.5.3
+
+### Patch Changes
+
+- f2d3cf5: getQuery$
+- f2d3cf5: pin @types/lodash-es version
+
 ## 0.5.2
 
 ### Patch Changes

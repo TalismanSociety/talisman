@@ -104,6 +104,7 @@ export const SwapConfirmSubstrate = ({
           toAmount: toAmount.data.planck.toString(),
           to: toAddress,
         }
+      // NOTE: Lifi doesn't support substrate, we don't need to handle it here
     }
     throw new Error(`swapModule ${swapModule?.protocol} not supported`)
   }, [exchangeLoadable, fromAmount, fromAsset, swapModule, toAddress, toAmount, toAsset])

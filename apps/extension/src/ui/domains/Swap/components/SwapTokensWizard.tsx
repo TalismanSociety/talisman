@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { fromAssetAtom } from "../swap-modules/common.swap-module"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { useFastBalance } from "../swaps-port/useFastBalance"
-import { useFromAccount } from "../swaps.api"
+import { swapQuotesAtom, useFromAccount } from "../swaps.api"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm } from "./SwapForm"
@@ -43,11 +43,15 @@ export const SwapTokensWizard = () => {
     }, [fromAsset, fromEvmAddress, fromSubstrateAddress]),
   )
 
+  // START: some things to keep loaded when switching between swaps views
+  useAtomValue(swapQuotesAtom)
+  // END: some things to keep loaded when switching between swaps views
+
   return (
     <div id="SwapTokensModalDialog" className="relative flex h-full w-full flex-col gap-4">
       <SwapHeader />
 
-      {["form", "approve-recipient"].includes(swapView) && (
+      {(swapView === "form" || swapView === "approve-recipient") && (
         <SwapForm fastBalance={fastBalance} approveRecipient={swapView === "approve-recipient"} />
       )}
       {swapView === "approve-erc20" && <SwapApproveErc20 />}

@@ -1,35 +1,40 @@
-import { ActionEnum } from "@blowfishxyz/api-client/v20230605"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useRiskAnalysis } from "./Ethereum/riskAnalysis"
+import { useRiskAnalysis } from "./risk-analysis/context"
 
 export const SignApproveButton: FC<ButtonProps> = (props) => {
   const { t } = useTranslation()
   const riskAnalysis = useRiskAnalysis()
 
   const color = useMemo(() => {
-    switch (riskAnalysis?.result?.action) {
-      case ActionEnum.Block:
+    switch (riskAnalysis?.validationResult) {
+      case "Malicious":
         return "red"
-      case ActionEnum.Warn:
+      case "Warning":
         return "orange"
       default:
         return "primary"
     }
-  }, [riskAnalysis?.result?.action])
+  }, [riskAnalysis?.validationResult])
 
   const [disabled, tooltip] = useMemo(() => {
-    if (!riskAnalysis || props.disabled) return [!!props.disabled, null]
+    try {
+      if (!riskAnalysis || props.disabled) return [!!props.disabled, null]
 
-    if (
-      riskAnalysis.review.isRiskAcknowledgementRequired &&
-      !riskAnalysis.review.isRiskAcknowledged
-    )
-      return [true, t("You must acknowledge the risks before signing")]
+      if (
+        riskAnalysis.review.isRiskAcknowledgementRequired &&
+        !riskAnalysis.review.isRiskAcknowledged
+      )
+        return [true, t("You must acknowledge the risks before signing")]
 
-    if (riskAnalysis.isValidating) return [true, null]
+      if (riskAnalysis.isValidating) return [true, null]
+    } catch (err) {
+      // This will crash if the button is not in a RiskAnalysisProvider container, resulting in riskAnalysis being an empty object
+      // this is the case for substrate transactions
+      // ignore until we implement a system in provideContext that allows fallback if a consumer is not in a provider
+    }
 
     return [false, null]
   }, [props.disabled, riskAnalysis, t])

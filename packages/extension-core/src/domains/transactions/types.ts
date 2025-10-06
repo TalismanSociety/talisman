@@ -29,12 +29,8 @@ export type WalletTransactionTransferInfo = {
 }
 
 export type WalletTransactionInfo =
-  | {
-      type: "transfer"
-      tokenId: TokenId
-      value: string
-      to: Address
-    }
+  | { type: "transfer"; tokenId: TokenId; value: string; to: Address }
+  | { type: "approve-erc20"; tokenId: TokenId; contractAddress: string; amount: string }
   | {
       type: "swap-simpleswap"
       exchangeId: string
@@ -47,6 +43,15 @@ export type WalletTransactionInfo =
   | {
       type: "swap-stealthex"
       exchangeId: string
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+      to: Address
+    }
+  | {
+      type: "swap-lifi"
+      protocolName: string
       fromTokenId: TokenId
       toTokenId: TokenId
       fromAmount: string

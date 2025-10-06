@@ -1,5 +1,21 @@
 # @talismn/token-rates
 
+## 3.0.7
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+
+## 3.0.6
+
+### Patch Changes
+
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+  - @talismn/chaindata-provider@1.1.3
+
 ## 3.0.5
 
 ### Patch Changes

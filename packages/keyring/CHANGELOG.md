@@ -1,5 +1,13 @@
 # @talismn/keyring
 
+## 1.0.5
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/crypto@0.2.3
+
 ## 1.0.4
 
 ### Patch Changes

@@ -20,9 +20,15 @@ import {
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
+import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAnalysisStateChanges"
+import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
@@ -51,6 +57,14 @@ export const SolSignTransactionRequest: FC<{
     networkId,
   })
 
+  const riskAnalysis = useSolTransactionRiskAnalysis({
+    from: account.address,
+    networkId,
+    tx: serializedTx,
+  })
+
+  const { enableTokens } = useEnableTokens()
+
   const { t } = useTranslation()
 
   const [state, setState] = useState<{
@@ -64,6 +78,7 @@ export const SolSignTransactionRequest: FC<{
   const handleApprove = useCallback(async () => {
     setState({ error: undefined, processing: true })
     try {
+      await enableTokens(riskAnalysis.tokenIds)
       await api.solSignApprove({ id, type: "transaction", networkId: network?.id }) // will close the window automatically if successful
     } catch (error) {
       setState({
@@ -71,7 +86,7 @@ export const SolSignTransactionRequest: FC<{
         error: (error as Error).message || "Failed to approve sign request",
       })
     }
-  }, [id, network?.id])
+  }, [id, network?.id, riskAnalysis.tokenIds, enableTokens])
 
   const handleSigned = useCallback(
     async (output: SolSignOutput) => {
@@ -79,6 +94,7 @@ export const SolSignTransactionRequest: FC<{
 
       setState({ error: undefined, processing: true })
       try {
+        await enableTokens(riskAnalysis.tokenIds)
         await api.solSignApprove({
           id,
           type: "transaction",
@@ -92,7 +108,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id, network?.id, transaction],
+    [id, network?.id, transaction, riskAnalysis.tokenIds, enableTokens],
   )
 
   const displayError = useMemo(() => {
@@ -108,53 +124,59 @@ export const SolSignTransactionRequest: FC<{
   )
 
   return (
-    <PopupLayout>
-      <PopupHeader right={<SignNetworkLogo network={network} />}>
-        <AppPill url={request.url} />
-      </PopupHeader>
-      <PopupContent>
-        <div className="text-body-secondary flex w-full flex-col items-center text-center">
-          <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
-          <h2 className="mb-8 text-base leading-[3.2rem]">
-            {t("You are signing a transaction with account")} <AccountPill account={account} />
-          </h2>
-        </div>
-      </PopupContent>
-      <PopupFooter className="flex flex-col gap-8">
-        {!!displayError && (
-          <SignAlertMessage className="mb-6" type="error">
-            {displayError}
-          </SignAlertMessage>
-        )}
-        <FeeEstimateRow
-          transaction={transaction}
-          networkId={networkId}
-          isLocked={isLocked}
-          account={account}
-        />
-        <div className="grid w-full grid-cols-2 gap-12">
-          <Button onClick={() => window.close()}>{t("Cancel")}</Button>
-          {isAccountOfType(account, "ledger-solana") ? (
-            <SignLedgerSolana
-              disabled={!validity?.isValid}
-              account={account}
-              payload={signPayload}
-              onSentToDevice={setIsLocked}
-              onSigned={handleSigned}
-            />
-          ) : (
-            <Button
-              disabled={!validity?.isValid}
-              processing={state.processing}
-              primary
-              onClick={handleApprove}
-            >
-              {t("Approve")}
-            </Button>
+    <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={() => window.close()}>
+      <PopupLayout>
+        <PopupHeader right={<SignNetworkLogo network={network} />}>
+          <AppPill url={request.url} />
+        </PopupHeader>
+        <PopupContent>
+          <div className="text-body-secondary flex w-full flex-col items-center text-center">
+            <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
+            <h2 className="mb-8 text-base leading-[3.2rem]">
+              {t("You are signing a transaction with account")} <AccountPill account={account} />
+            </h2>
+            <RiskAnalysisPillButton />
+            <div className="bg-grey-850 mt-8 w-full rounded-sm p-2 empty:hidden">
+              <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} noTitle />
+            </div>
+          </div>
+        </PopupContent>
+        <PopupFooter className="flex flex-col gap-8">
+          {!!displayError && (
+            <SignAlertMessage className="mb-6" type="error">
+              {displayError}
+            </SignAlertMessage>
           )}
-        </div>
-      </PopupFooter>
-    </PopupLayout>
+          <FeeEstimateRow
+            transaction={transaction}
+            networkId={networkId}
+            isLocked={isLocked}
+            account={account}
+          />
+          <div className="grid w-full grid-cols-2 gap-12">
+            <Button onClick={() => window.close()}>{t("Cancel")}</Button>
+            {isAccountOfType(account, "ledger-solana") ? (
+              <SignLedgerSolana
+                disabled={!validity?.isValid}
+                account={account}
+                payload={signPayload}
+                onSentToDevice={setIsLocked}
+                onSigned={handleSigned}
+              />
+            ) : (
+              <SignApproveButton
+                disabled={!validity?.isValid}
+                processing={state.processing}
+                primary
+                onClick={handleApprove}
+              >
+                {t("Approve")}
+              </SignApproveButton>
+            )}
+          </div>
+        </PopupFooter>
+      </PopupLayout>
+    </RiskAnalysisProvider>
   )
 }
 

@@ -7,6 +7,7 @@ import {
   PlusIcon,
   QuestStarIcon,
   RepeatIcon,
+  SeekEyeIcon,
   SendIcon,
   SettingsIcon,
   StarsIcon,
@@ -24,6 +25,7 @@ import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
+import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
@@ -149,6 +151,14 @@ export const NavigationDrawer: FC = () => {
     if (IS_EMBEDDED_POPUP) window.close()
   }, [])
 
+  const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
+  const { open: openSeekBenefitsModal } = useSeekBenefitsModal()
+  const handleSeekBenefitsClick = useCallback(() => {
+    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Seek Benefits" })
+    openSeekBenefitsModal()
+    close()
+  }, [openSeekBenefitsModal, close])
+
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
@@ -193,7 +203,15 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
               {t("Latest Features")}
             </NavItem>
-            {showQuestLink && (
+            {showSeekBenefits ? (
+              <NavItem
+                className="hover:bg-primary/10"
+                icon={<SeekEyeIcon className="text-primary" />}
+                onClick={handleSeekBenefitsClick}
+              >
+                <span className="text-primary font-bold">SEEK</span>
+              </NavItem>
+            ) : showQuestLink ? (
               <NavItem
                 className="hover:bg-primary/10"
                 icon={
@@ -205,7 +223,7 @@ export const NavigationDrawer: FC = () => {
               >
                 <span className="text-primary font-bold">{t("Quests")}</span>
               </NavItem>
-            )}
+            ) : null}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
             </NavItem>

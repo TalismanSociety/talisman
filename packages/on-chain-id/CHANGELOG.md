@@ -1,5 +1,25 @@
 # @talismn/on-chain-id
 
+## 0.1.26
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/balances@1.0.7
+  - @talismn/crypto@0.2.3
+  - @talismn/util@0.5.4
+
+## 0.1.25
+
+### Patch Changes
+
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/balances@1.0.6
+  - @talismn/util@0.5.3
+
 ## 0.1.24
 
 ### Patch Changes
