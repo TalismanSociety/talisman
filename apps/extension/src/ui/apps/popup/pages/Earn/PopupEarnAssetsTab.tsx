@@ -135,6 +135,37 @@ const PopupStakingTile = () => {
   )
 }
 
+// Loading skeleton for token rows
+const PopupEarnAssetsSkeleton: FC = () => {
+  return (
+    <div className="flex w-full flex-col gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-grey-850 w-full rounded">
+          <div className="flex w-full items-center gap-6 p-6">
+            {/* Left: token logo placeholder */}
+            <div className="bg-grey-700 h-12 w-12 shrink-0 animate-pulse rounded-full" />
+
+            {/* Middle: token name and holdings */}
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div className="bg-grey-700 h-3 w-40 max-w-[50%] animate-pulse rounded" />
+              <div className="bg-grey-700 h-2 w-24 max-w-[35%] animate-pulse rounded" />
+            </div>
+
+            {/* Right: amounts and chevron */}
+            <div className="flex shrink-0 items-center gap-4">
+              <div className="flex flex-col items-end gap-2">
+                <div className="bg-grey-700 h-3 w-32 animate-pulse rounded" />
+                <div className="bg-grey-700 h-4 w-24 animate-pulse rounded" />
+              </div>
+              <div className="bg-grey-700 h-8 w-8 animate-pulse rounded" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // Token row with accordion functionality like dashboard
 const PopupEarnTokenRow: FC<{
   tokenData: GroupedTokenData
@@ -296,24 +327,7 @@ export const PopupEarnAssetsTab: FC = () => {
   }, [yieldPositions])
 
   if (isLoading) {
-    return (
-      <div className="flex w-full flex-col gap-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-grey-850 flex w-full flex-col gap-3">
-            <div className="bg-grey-700 h-16 w-full animate-pulse rounded p-6">
-              <div className="flex w-full items-center gap-3">
-                <div className="bg-grey-600 h-12 w-12 animate-pulse rounded-full"></div>
-                <div className="flex-1 space-y-1">
-                  <div className="bg-grey-600 h-3 w-3/4 animate-pulse rounded"></div>
-                  <div className="bg-grey-600 h-2 w-1/2 animate-pulse rounded"></div>
-                </div>
-                <div className="bg-grey-600 h-6 w-6 animate-pulse rounded"></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    )
+    return <PopupEarnAssetsSkeleton />
   }
 
   if (!groupedPositions.length) {
