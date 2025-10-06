@@ -8,31 +8,14 @@ import { useLocation, useNavigate } from "react-router-dom"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-// import { DefiPositionRow } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
-
 import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAccounts, usePortfolioGlobalData, usePortfolioSelectedAccounts } from "@ui/state"
 import { useYieldSearch } from "@ui/state/yield"
-
-// import { SearchInput } from "@talisman/components/SearchInput"
-// import { setPortfolioSearch, usePortfolioSearch } from "@ui/state"
-
-// import { DefiAssetRow } from "./DefiAssetRow"
-
-const mapYieldNetworkToNetworkId = (yieldNetwork?: string): string | undefined => {
-  switch (yieldNetwork) {
-    case "ethereum":
-      return "1"
-    case "base":
-      return "8453"
-    default:
-      return undefined
-  }
-}
 
 interface GroupedTokenData {
   tokenSymbol: string
