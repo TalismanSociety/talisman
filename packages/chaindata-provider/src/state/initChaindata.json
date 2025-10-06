@@ -410,11 +410,11 @@
         "wss://kusama-rpc-tn.dwellir.com",
         "wss://kusama-rpc.publicnode.com",
         "wss://rpc-kusama.helixstreet.io",
-        "wss://kusama.dotters.network",
         "wss://rpc-kusama.luckyfriday.io",
         "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
         "wss://ksm-rpc.stakeworld.io",
-        "wss://kusama.public.curie.radiumblock.co/ws"
+        "wss://kusama.public.curie.radiumblock.co/ws",
+        "wss://kusama.dotters.network"
       ],
       "hasCheckMetadataHash": true,
       "topology": {
@@ -493,6 +493,7 @@
         "wss://polkadot-public-rpc.blockops.network/ws",
         "wss://rpc-polkadot.helixstreet.io",
         "wss://polkadot.dotters.network",
+        "wss://rpc-polkadot.luckyfriday.io",
         "wss://polkadot.rpc.permanence.io",
         "wss://rockx-dot.w3node.com/polka-public-dot/ws",
         "wss://dot-rpc.stakeworld.io",
