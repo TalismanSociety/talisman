@@ -26,16 +26,17 @@ OUTPUT_NAME="talisman_extension_${VERSION}_firefox"
 
 # cleanup and save source files in a zip before installing
 
+echo "step: copy sources"
+pnpm clean
 rm -rf ./review
 mkdir ./review
 cp -r ./ ./review/sources
-(cd review/sources && pnpm clean) 
-(cd review && zip -qq -rm $OUTPUT_NAME.sources.zip sources) 
 
-# install and build
-pnpm install --frozen-lockfile
-pnpm build:extension:prod:firefox
+echo "step: zip sources"
+(cd review && zip -qq -r $OUTPUT_NAME.sources.zip sources) 
 
-# zip the build
-echo "Copying $OUTPUT_NAME.zip to review folder" 
-cp ./apps/extension/dist/firefox/$OUTPUT_NAME.zip ./review/$OUTPUT_NAME.zip
+echo "step: build from sources folder"
+(cd review/sources && pnpm install --frozen-lockfile && pnpm build:extension:prod:firefox)
+
+echo "step: copy build output"
+cp ./review/sources/apps/extension/dist/firefox/$OUTPUT_NAME.zip ./review/$OUTPUT_NAME.zip

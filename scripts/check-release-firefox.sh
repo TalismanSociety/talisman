@@ -20,18 +20,22 @@ fi
 
 # Prefix the version with 'v'
 VERSION="v$VERSION"
-echo "Building Firefox release version: $VERSION"
+echo "Checking Firefox release version: $VERSION"
 
 OUTPUT_NAME="talisman_extension_${VERSION}_firefox"
 
 
 # unzip and build sources
 cd review
+echo "step: rebuild in a new folder"
 unzip -qq $OUTPUT_NAME.sources.zip -d "$OUTPUT_NAME.sources"
-(cd "$OUTPUT_NAME.sources/sources" && pnpm install --frozen-lockfile && pnpm build:extension:prod:firefox)
+(cd "./$OUTPUT_NAME.sources/sources" && pnpm install --frozen-lockfile && pnpm build:extension:prod:firefox)
 
+echo "step: unzip initial build content"
 unzip -qq $OUTPUT_NAME.zip -d $OUTPUT_NAME
+echo "step: unzip new build content"
 unzip -qq ./$OUTPUT_NAME.sources/sources/apps/extension/dist/firefox/$OUTPUT_NAME.zip -d ./check-build.unzipped
 
 # compare both: if anything is output, the builds differ
+echo "step: compare build contents"
 diff -qr ./$OUTPUT_NAME ./check-build.unzipped
