@@ -207,6 +207,21 @@ const routeQuoteAtom = atomFamily((id: string) =>
         tokenId: fromAsset.id,
       })
 
+      const totalGasLimit =
+        fromAsset?.networkType === "evm" && fromAsset?.contractAddress === undefined
+          ? route.steps
+              .flatMap((step) =>
+                (step.estimate.gasCosts ?? []).flatMap((gas) =>
+                  String(gas.token.chainId) === String(fromAsset?.chainId) &&
+                  gas.token.address === zeroAddress
+                    ? gas.limit
+                    : "0",
+                ),
+              )
+              .reduce((a, c) => a.plus(c), BigNumber(0))
+              .toString()
+          : undefined
+
       return {
         decentralisationScore: DECENTRALISATION_SCORE,
         protocol: PROTOCOL,
@@ -219,6 +234,7 @@ const routeQuoteAtom = atomFamily((id: string) =>
         providerName: step.toolDetails.name,
         talismanFee: Math.round((LIFI_FEE + TALISMAN_FEE) * 10_000) / 10_000,
         data: { ...route, transactionRequest: transaction.transactionRequest },
+        maxNativeTokenGasBuffer: totalGasLimit,
       }
     }),
   ),
