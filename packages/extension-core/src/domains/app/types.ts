@@ -15,6 +15,7 @@ export type RemoteConfigStoreData = {
   swaps: {
     questApi?: string
     lifiApiKey?: string
+    lifiTalismanTokens?: string[]
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
     simpleswapDiscountedCurrencies?: string[]

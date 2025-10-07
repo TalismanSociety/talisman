@@ -24,6 +24,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   swaps: {
     questApi: "",
     lifiApiKey: "",
+    lifiTalismanTokens: [],
     simpleswapApiKey: "",
     simpleswapApiKeyDiscounted: "",
     simpleswapDiscountedCurrencies: [],
