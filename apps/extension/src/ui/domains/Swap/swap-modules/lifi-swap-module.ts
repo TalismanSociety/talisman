@@ -42,6 +42,7 @@ const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
 const TALISMAN_FEE = 0.002 // We take a fee of 0.2%
+const LIFI_FEE = 0.0025 // lifi takes a fee of 0.25%
 
 let apiKey: string | undefined
 const getSdk = async () => {
@@ -201,7 +202,7 @@ const routeQuoteAtom = atomFamily((id: string) =>
       fees.push({
         amount: BigNumber(step.estimate.fromAmount.toString())
           .times(10 ** -fromAsset.decimals)
-          .times(TALISMAN_FEE),
+          .times(Math.round((LIFI_FEE + TALISMAN_FEE) * 10_000) / 10_000),
         name: "Talisman Fee",
         tokenId: fromAsset.id,
       })
@@ -216,7 +217,7 @@ const routeQuoteAtom = atomFamily((id: string) =>
         fees,
         providerLogo: step.toolDetails.logoURI,
         providerName: step.toolDetails.name,
-        talismanFee: TALISMAN_FEE,
+        talismanFee: Math.round((LIFI_FEE + TALISMAN_FEE) * 10_000) / 10_000,
         data: { ...route, transactionRequest: transaction.transactionRequest },
       }
     }),
