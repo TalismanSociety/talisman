@@ -98,7 +98,10 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
 
-        if (DEBUG) config.featureFlags.SEEK_BENEFITS = true
+        if (DEBUG) {
+          config.featureFlags.SEEK_BENEFITS = true
+          config.featureFlags.SEEK_TAO_DISCOUNT = true
+        }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))

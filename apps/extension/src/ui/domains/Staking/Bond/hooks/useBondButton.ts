@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
+import { useAccounts, useFeatureFlag, useRemoteConfig, useToken } from "@ui/state"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
@@ -28,6 +28,7 @@ export const useBondButton = ({
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -123,7 +124,8 @@ export const useBondButton = ({
         handleOpenBittensorModal({
           ...openArgs,
           stakeType,
-          isSeekDiscountDrawerOpen: true,
+          isSeekDiscountDrawerOpen: isSeekTaoDiscountEnabled,
+          isSelectStakeDrawerOpen: stakeType === "root" && !isSeekTaoDiscountEnabled,
           step: stakeType === "root" ? "form" : "subnet-form",
           netuid,
         })
@@ -132,7 +134,16 @@ export const useBondButton = ({
       }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [openArgs, token?.networkId, genericEvent, handleOpenBittensorModal, stakeType, open, netuid],
+    [
+      openArgs,
+      token?.networkId,
+      genericEvent,
+      handleOpenBittensorModal,
+      stakeType,
+      isSeekTaoDiscountEnabled,
+      netuid,
+      open,
+    ],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }

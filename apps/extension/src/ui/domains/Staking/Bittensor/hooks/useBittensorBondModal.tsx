@@ -22,6 +22,7 @@ export const useBittensorBondModal = () => {
       stakeDirection = "bond",
       step = "form",
       netuid = null,
+      isSelectStakeDrawerOpen = false,
     }: {
       address: Address
       tokenId: TokenId
@@ -40,6 +41,7 @@ export const useBittensorBondModal = () => {
         step,
         stakeType,
         stakeDirection,
+        isSelectStakeDrawerOpen,
         isSeekDiscountDrawerOpen,
         netuid,
       })

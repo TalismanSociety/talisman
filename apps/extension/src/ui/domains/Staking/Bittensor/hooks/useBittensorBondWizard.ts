@@ -89,6 +89,7 @@ type innerOpenCloseKey =
   | "isSlippageDrawerOpen"
   | "isWarningDrawerOpen"
   | "isSeekDiscountDrawerOpen"
+  | "isSelectStakeDrawerOpen"
 
 const useInnerOpenClose = (key: innerOpenCloseKey) => {
   const state = useWizardState()
@@ -120,6 +121,7 @@ export const useResetBittensorBondWizard = () => {
         | "poolId"
         | "step"
         | "isSeekDiscountDrawerOpen"
+        | "isSelectStakeDrawerOpen"
         | "stakeType"
         | "netuid"
         | "stakeDirection"
