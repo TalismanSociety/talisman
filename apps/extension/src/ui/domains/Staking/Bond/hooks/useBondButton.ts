@@ -29,9 +29,7 @@ export const useBondButton = ({
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
 
-  // const seekStakingPath = remoteConfig.seek.webAppStakingPath // TODO: Uncomment this once remote config is updated
-  const seekStakingPath = useMemo(() => "/staking/providers?action=stake&type=seek", [])
-
+  const seekStakingPath = remoteConfig.seek.webAppStakingPath
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
   // accounts that are solo-staking cannot stake in nomination pools
@@ -60,13 +58,11 @@ export const useBondButton = ({
   const address = sorted[0]?.address
 
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
-    // const isStakingEnableForToken = Boolean(
-    //   token?.networkId &&
-    //     token?.symbol &&
-    //     remoteConfig.stakingPools[token.networkId]?.includes(token.symbol),
-    // ) //  TODO: Uncomment this once remote config is updated
-
-    const isStakingEnableForToken = token?.symbol === "SEEK" //  TODO: Remove this once remote config is updated
+    const isStakingEnableForToken = Boolean(
+      token?.networkId &&
+        token?.symbol &&
+        remoteConfig.stakingPools[token.networkId]?.includes(token.symbol),
+    )
 
     if (
       !token ||
@@ -86,7 +82,7 @@ export const useBondButton = ({
       if (!poolId && !isStakingEnabled && !isStakingEnableForToken) return [null, false]
 
       // if a watch-only or solo-staking account is selected, array will be empty
-      // if (!sorted.length) return [null, false] // TODO: Uncomment this when you have an account that has seek. MUST UNCOMMENT THIS before shipping to prod.
+      if (!sorted.length) return [null, false]
 
       // lookup existing poolId for that account
       for (const balance of sorted.filter((b) => b.address === address)) {
