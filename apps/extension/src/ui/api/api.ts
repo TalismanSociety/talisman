@@ -295,4 +295,6 @@ export const api: MessageTypes = {
   // yield
   yieldBalancesSubscribe: (cb) =>
     messageService.subscribe("pri(yield.balances.subscribe)", null, cb),
+  yieldBalancesGroupedSubscribe: (cb) =>
+    messageService.subscribe("pri(yield.balances.grouped.subscribe)", null, cb),
 }

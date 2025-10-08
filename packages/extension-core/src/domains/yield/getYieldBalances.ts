@@ -8,6 +8,7 @@ import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
 import { fetchYieldBalances } from "./fetchYieldBalances"
 import { fetchYieldProducts } from "./getYieldProducts"
+import { groupYieldBalances } from "./groupYieldBalances"
 import { mapToYieldNetwork } from "./networkMapping"
 import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
 import {
@@ -34,6 +35,25 @@ export const yieldBalances$ = walletReady$.pipe(
   tap((loadable) => {
     if (loadable.status === "success")
       updateYieldBalancesStore(loadable.data as unknown as YieldPositionItem[])
+  }),
+  shareReplay({ refCount: true, bufferSize: 1 }),
+  keepAlive(3000),
+)
+
+// Grouped yield balances for UI consumption
+export const yieldBalancesGrouped$ = yieldBalances$.pipe(
+  map((loadable) => {
+    if (loadable.status === "success" && loadable.data) {
+      const grouped = groupYieldBalances(loadable.data)
+      return {
+        ...loadable,
+        data: grouped,
+      }
+    }
+    return {
+      ...loadable,
+      data: [],
+    }
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000),

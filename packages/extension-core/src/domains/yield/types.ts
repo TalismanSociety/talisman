@@ -1,3 +1,5 @@
+import { YieldPositionGroup } from "./groupYieldBalances"
+
 export type YieldProduct = {
   id: string
   network: string
@@ -296,10 +298,15 @@ export interface YieldPositionWithProduct extends YieldPositionItem {
   product?: YieldProduct
 }
 
+// Re-export grouped types
+export type { YieldPositionGroup } from "./groupYieldBalances"
+
 // UI subscription response type (store-backed), mirroring DeFi
 export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldPositionWithProduct[]>
+export type YieldPositionsGroupedResponse = import("@talismn/util").Loadable<YieldPositionGroup[]>
 
 // Message type augmentation for handler routing
 export interface YieldMessages {
   "pri(yield.balances.subscribe)": [null, boolean, YieldPositionsResponse]
+  "pri(yield.balances.grouped.subscribe)": [null, boolean, YieldPositionsGroupedResponse]
 }

@@ -9,11 +9,13 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
 import { PopupEarnPage } from "./PopupEarnPage"
+import { PopupYieldPosition } from "./PopupYieldPosition"
 
 const EarnRoutes = () => (
   <>
     <Routes>
       <Route path="" element={<PopupEarnPage />} />
+      <Route path="yield/:yieldId" element={<PopupYieldPosition />} />
     </Routes>
     <Suspense fallback={<SuspenseTracker name="EarnContent" />}>
       <BottomNav />

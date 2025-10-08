@@ -279,4 +279,7 @@ export default interface MessageTypes {
   yieldBalancesSubscribe: (
     cb: (positions: Loadable<import("extension-core").YieldPositionWithProduct[]>) => void,
   ) => UnsubscribeFn
+  yieldBalancesGroupedSubscribe: (
+    cb: (positions: Loadable<import("extension-core").YieldPositionGroup[]>) => void,
+  ) => UnsubscribeFn
 }

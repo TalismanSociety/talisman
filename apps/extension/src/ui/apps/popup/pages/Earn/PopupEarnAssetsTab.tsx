@@ -1,6 +1,6 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
-import { YieldPositionBalance, YieldProduct } from "extension-core"
+import { YieldProduct } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
@@ -20,7 +20,7 @@ interface GroupedTokenData {
   tokenSymbol: string
   totalAmountUsd: number
   positions: Array<{
-    balance: YieldPositionBalance
+    balance: import("extension-core").YieldPositionGroup
     yieldId: string
     amountUsd: number
     product?: YieldProduct
@@ -30,16 +30,14 @@ interface GroupedTokenData {
 
 // YieldPositionRow for yield balances - clickable like dashboard
 const PopupYieldPositionRow: FC<{
-  balance: YieldPositionBalance
+  balance: import("extension-core").YieldPositionGroup
   yieldId: string
   product?: YieldProduct
 }> = ({ balance, yieldId, product }) => {
   const navigate = useNavigate()
-  const validator = (balance as unknown as { validator?: { name?: string; logoURI?: string } })
-    ?.validator
 
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/yield/${yieldId}`)
+    navigate(`/earn/yield/${yieldId}`)
   }, [navigate, yieldId])
 
   return (
@@ -49,22 +47,25 @@ const PopupYieldPositionRow: FC<{
       onClick={handleClick}
     >
       <AssetLogo
-        url={validator?.logoURI || product?.metadata.logoURI || balance.token.logoURI}
+        url={
+          balance.validators?.[0]?.logoURI ||
+          product?.metadata.logoURI ||
+          balance.primaryToken.logoURI
+        }
         className="size-12"
       />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-xs font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div
-              className="truncate text-white"
-              title={(validator?.name || product?.metadata.name) ?? undefined}
-            >
-              {validator?.name || product?.metadata.name}
+            <div className="truncate text-white" title={balance.displayName}>
+              {balance.displayName}
             </div>
-            <NetworkLogo
-              networkId={mapYieldNetworkToNetworkId(product?.network) || balance.token.network}
-              className="inline-block"
-            />
+            <NetworkLogo networkId={balance.networkId} className="inline-block" />
+            {balance.hasClaimableRewards && (
+              <div className="text-[10px] font-medium text-green-400">
+                +{balance.rewardPercentage.toFixed(1)}% rewards
+              </div>
+            )}
           </div>
           <div className="w-[16rem] shrink-0">
             <div className="flex w-full flex-col items-end gap-1 overflow-hidden">
@@ -104,7 +105,7 @@ const PopupYieldPositionRow: FC<{
           </div>
           <div>
             <div className="text-body text-xs font-bold">
-              <Fiat amount={Number(balance.amountUsd)} forceCurrency="usd" />
+              <Fiat amount={balance.totalAmountUsd} forceCurrency="usd" />
             </div>
           </div>
         </div>
@@ -185,8 +186,8 @@ const PopupEarnTokenRow: FC<{
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
     return tokenData.positions.reduce(
-      (total: number, { balance }: { balance: YieldPositionBalance }) => {
-        return total + parseFloat(balance.amount)
+      (total: number, { balance }: { balance: import("extension-core").YieldPositionGroup }) => {
+        return total + parseFloat(balance.totalAmountUsd.toString())
       },
       0,
     )
@@ -205,7 +206,7 @@ const PopupEarnTokenRow: FC<{
           <div className="shrink-0 text-xl">
             <AssetLogo
               tokenId={undefined}
-              url={tokenData.positions[0]?.balance.token.logoURI || null}
+              url={tokenData.positions[0]?.balance.primaryToken.logoURI || null}
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -221,7 +222,7 @@ const PopupEarnTokenRow: FC<{
               <NetworkLogo
                 networkId={
                   mapYieldNetworkToNetworkId(tokenData.positions[0]?.product?.network) ||
-                  tokenData.positions[0]?.balance.token.network
+                  tokenData.positions[0]?.balance.networkId
                 }
                 className="shrink-0 text-[1rem]"
               />
@@ -296,7 +297,7 @@ const PopupEarnTokenRow: FC<{
 
 export const PopupEarnAssetsTab: FC = () => {
   const { t } = useTranslation()
-  const { yieldPositions, isLoading } = useYieldBalances()
+  const yieldBalancesGrouped = useYieldBalancesGrouped()
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
@@ -325,67 +326,65 @@ export const PopupEarnAssetsTab: FC = () => {
     return portfolioAccounts
   }, [allAccounts, portfolioAccounts, catalog, searchParams])
 
-  // Group positions by token symbol for display - matching dashboard logic
+  // Use grouped positions directly from extension-core
   const groupedPositions = useMemo(() => {
-    if (!yieldPositions) return []
+    if (yieldBalancesGrouped.status !== "success" || !yieldBalancesGrouped.data) return []
 
     const lowerSearch = (search || "").toLowerCase().trim()
     const selectedAddresses = new Set((selectedAccounts || []).map((a) => a.address))
 
-    const grouped = new Map<string, GroupedTokenData>()
+    const filtered = yieldBalancesGrouped.data
+      // Filter by selected accounts
+      .filter((position) =>
+        selectedAddresses.size ? selectedAddresses.has(position.address) : true,
+      )
+      // Filter by search
+      .filter((position) => {
+        if (!lowerSearch) return true
+        const haystack: string[] = [
+          position.primaryToken.symbol,
+          position.displayName,
+          position.product?.inputTokens?.[0]?.symbol,
+          position.product?.outputToken?.symbol,
+        ]
+          .filter(Boolean)
+          .map((v) => String(v).toLowerCase())
 
-    yieldPositions.forEach((position) => {
-      position.balances
-        // If a specific account is selected, include only balances from that account
-        .filter((balance) =>
-          selectedAddresses.size ? selectedAddresses.has(balance.address) : true,
-        )
-        .forEach((balance) => {
-          const product = position.product
+        return haystack.some((text) => text.includes(lowerSearch))
+      })
 
-          // Search match across token symbol, product name, input/output token symbols
-          const matchesSearch = (() => {
-            if (!lowerSearch) return true
-            const haystack: string[] = [
-              balance.token.symbol,
-              product?.metadata?.name,
-              product?.inputTokens?.[0]?.symbol,
-              product?.outputToken?.symbol,
-            ]
-              .filter(Boolean)
-              .map((v) => String(v).toLowerCase())
-
-            return haystack.some((text) => text.includes(lowerSearch))
-          })()
-
-          if (!matchesSearch) return
-
-          const symbol = balance.token.symbol
-          if (!grouped.has(symbol)) {
-            grouped.set(symbol, {
-              tokenSymbol: symbol,
-              totalAmountUsd: 0,
-              positions: [],
-              holdingsCount: 0,
-            })
+    // Group by token symbol
+    const grouped = filtered.reduce(
+      (acc: Record<string, GroupedTokenData>, position) => {
+        const symbol = position.primaryToken.symbol
+        if (!acc[symbol]) {
+          acc[symbol] = {
+            tokenSymbol: symbol,
+            totalAmountUsd: 0,
+            positions: [],
+            holdingsCount: 0,
           }
-
-          const group = grouped.get(symbol)!
-          group.positions.push({
-            balance,
-            yieldId: position.yieldId,
-            product: position.product,
-            amountUsd: Number(balance.amountUsd),
-          })
-          group.totalAmountUsd += Number(balance.amountUsd)
-          group.holdingsCount += 1
+        }
+        acc[symbol].positions.push({
+          balance: position,
+          yieldId: position.yieldId,
+          product: position.product,
+          amountUsd: position.totalAmountUsd,
         })
-    })
+        acc[symbol].totalAmountUsd += position.totalAmountUsd
+        acc[symbol].holdingsCount += 1
+        return acc
+      },
+      {} as Record<string, GroupedTokenData>,
+    )
 
-    return Array.from(grouped.values()).sort((a, b) => b.totalAmountUsd - a.totalAmountUsd)
-  }, [yieldPositions, search, selectedAccounts])
+    // Convert to array and sort
+    return Object.values(grouped).sort(
+      (a: GroupedTokenData, b: GroupedTokenData) => b.totalAmountUsd - a.totalAmountUsd,
+    )
+  }, [yieldBalancesGrouped, search, selectedAccounts])
 
-  if (isLoading) {
+  if (yieldBalancesGrouped.status === "loading") {
     return <PopupEarnAssetsSkeleton />
   }
 
