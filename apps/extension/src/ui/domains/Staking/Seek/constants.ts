@@ -1,7 +1,3 @@
-export const DECIMALS = 18
-export const DEEK_TICKER = "DEEK"
-export const CHAIN_ID = 137 // Polygon
-
 export const DISCOUNT_TIERS = [
   { tier: 0, min: 0n, discount: 0 },
   { tier: 1, min: 100n * 10n ** 18n, discount: 0.25 },
