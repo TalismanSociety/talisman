@@ -1,4 +1,4 @@
-import { YieldProduct } from "extension-core"
+import { YieldDto } from "extension-core"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -10,8 +10,8 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useYieldProducts } from "@ui/state/yield"
 
 interface PopupEarnProductCardProps {
-  product: YieldProduct
-  onProductClick: (product: YieldProduct) => void
+  product: YieldDto
+  onProductClick: (product: YieldDto) => void
 }
 
 const PopupEarnProductCard: FC<PopupEarnProductCardProps> = ({ product, onProductClick }) => {
@@ -77,7 +77,7 @@ export const PopupEarnDiscoverTab: FC = () => {
   const { data: yieldProducts = [], isLoading, error } = useYieldProducts()
 
   const handleProductClick = useCallback(
-    (product: YieldProduct) => {
+    (product: YieldDto) => {
       // Navigate to product selection page with tokenId parameter
       navigate(
         `/select-product?tokenId=${product.inputTokens?.[0]?.symbol}&productId=${product.id}`,

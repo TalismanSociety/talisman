@@ -15,7 +15,7 @@ export const ApyRow = () => {
 
   // Calculate fee information
   const grossRewardRate = rewardRate.total * 100
-  const performanceFee = mechanics.possibleFeeTakingMechanisms.performanceFee ? "Yes" : "No"
+  const performanceFee = mechanics?.possibleFeeTakingMechanisms?.performanceFee ? "Yes" : "No"
   const additionalRewards = rewardRate.components.length > 1 ? "Yes" : "No"
 
   return (

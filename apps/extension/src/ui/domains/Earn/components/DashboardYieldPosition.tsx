@@ -1,5 +1,5 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { YieldPositionGroup } from "extension-core"
+import { BalanceDto, YieldPositionGroup } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 import urlJoin from "url-join"
@@ -228,12 +228,7 @@ const YieldPositionSection: FC<{
 }
 
 const YieldPositionItemRow: FC<{
-  balance: {
-    token: { logoURI: string; symbol: string }
-    amount: string
-    amountUsd: string
-    address: string
-  }
+  balance: BalanceDto
 }> = ({ balance }) => {
   return (
     <div className="flex h-[6.6rem] w-full items-center gap-8 overflow-hidden px-8">
@@ -250,7 +245,7 @@ const YieldPositionItemRow: FC<{
             <PortfolioAccount address={balance.address} />
           </div>
           <div className="shrink-0">
-            <FiatFromUsd amount={parseFloat(balance.amountUsd)} isBalance />
+            <FiatFromUsd amount={parseFloat(balance.amountUsd || "0")} isBalance />
           </div>
         </div>
       </div>

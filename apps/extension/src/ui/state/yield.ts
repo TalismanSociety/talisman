@@ -1,23 +1,27 @@
 import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { fetchYieldProducts, YieldPositionWithProduct, YieldProductsFilter } from "extension-core"
+import {
+  fetchYieldProducts,
+  YieldBalancesDtoWithProduct,
+  YieldsControllerGetYieldsParams,
+} from "extension-core"
 import { BehaviorSubject, Observable, ReplaySubject, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
-const DEFAULT_YIELD_BALANCES: Loadable<YieldPositionWithProduct[]> = {
+const DEFAULT_YIELD_BALANCES: Loadable<YieldBalancesDtoWithProduct[]> = {
   status: "loading",
   data: [],
 }
 
-const subjectRawYieldBalances$ = new ReplaySubject<Loadable<YieldPositionWithProduct[]>>(1)
+const subjectRawYieldBalances$ = new ReplaySubject<Loadable<YieldBalancesDtoWithProduct[]>>(1)
 
-const rawYieldBalances$ = new Observable<Loadable<YieldPositionWithProduct[]>>((subscriber) => {
+const rawYieldBalances$ = new Observable<Loadable<YieldBalancesDtoWithProduct[]>>((subscriber) => {
   const sub = subjectRawYieldBalances$.subscribe(subscriber)
 
   const unsubscribe = api.yieldBalancesSubscribe(
-    (loadable: Loadable<YieldPositionWithProduct[]>) => {
+    (loadable: Loadable<YieldBalancesDtoWithProduct[]>) => {
       subjectRawYieldBalances$.next(loadable)
     },
   )
@@ -37,11 +41,11 @@ export const [useYieldRawBalances, yieldBalances$] = bind(
  * Hook to fetch yield products for earning opportunities
  * Uses React Query for caching and error handling
  */
-export const useYieldProducts = (filter?: YieldProductsFilter) => {
+export const useYieldProducts = (filter?: YieldsControllerGetYieldsParams) => {
   return useQuery({
     queryKey: ["yieldProducts", filter],
     queryFn: () => fetchYieldProducts(filter),
-    enabled: !!filter?.networkName, // Only fetch when network name is available
+    enabled: !!filter?.network, // Only fetch when network name is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
     refetchOnWindowFocus: false,

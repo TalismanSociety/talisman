@@ -23,9 +23,9 @@ export const useYieldTransaction = () => {
 
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
-    tokenId: tokenId as string,
-    tokenSymbol: token?.symbol,
-    networkName: mappedNetworkName || undefined,
+    token: tokenId as string,
+    inputToken: token?.symbol,
+    network: mappedNetworkName || undefined,
   })
 
   const product = useMemo(() => {

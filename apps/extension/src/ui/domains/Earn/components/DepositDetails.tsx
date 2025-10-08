@@ -62,7 +62,7 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
   }
 
   const getReceiveInfo = (): string => {
-    return product?.outputToken?.symbol
+    return product?.outputToken?.symbol || ""
   }
 
   return (

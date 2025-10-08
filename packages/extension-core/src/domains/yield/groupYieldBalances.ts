@@ -1,14 +1,16 @@
-import { YieldPositionBalance, YieldPositionWithProduct } from "./types"
+import { BalanceDto } from "@yieldxyz/sdk"
+
+import { YieldBalancesDtoWithProduct, YieldDto } from "./types"
 
 export interface YieldPositionGroup {
   yieldId: string
   address: string
-  product?: YieldPositionWithProduct["product"]
+  product?: YieldDto
 
   // Grouped balances by lifecycle type
-  activeBalances: YieldPositionBalance[]
-  claimableBalances: YieldPositionBalance[]
-  otherBalances: YieldPositionBalance[] // entering, exiting, withdrawable, locked
+  activeBalances: BalanceDto[]
+  claimableBalances: BalanceDto[]
+  otherBalances: BalanceDto[] // entering, exiting, withdrawable, locked
 
   // Aggregated data
   totalAmountUsd: number
@@ -17,7 +19,7 @@ export interface YieldPositionGroup {
   totalOtherAmountUsd: number
 
   // Primary token info (from first active balance)
-  primaryToken: YieldPositionBalance["token"]
+  primaryToken: BalanceDto["token"]
 
   // Validator info (support multiple validators)
   validators?: Array<{
@@ -40,7 +42,9 @@ export interface YieldPositionGroup {
   networkId: string
 }
 
-export const groupYieldBalances = (positions: YieldPositionWithProduct[]): YieldPositionGroup[] => {
+export const groupYieldBalances = (
+  positions: YieldBalancesDtoWithProduct[],
+): YieldPositionGroup[] => {
   const groups = new Map<string, YieldPositionGroup>()
 
   for (const position of positions) {
@@ -77,20 +81,20 @@ export const groupYieldBalances = (positions: YieldPositionWithProduct[]): Yield
       // Categorize balance by lifecycle type
       if (balance.type === "active") {
         group.activeBalances.push(balance)
-        group.totalActiveAmountUsd += parseFloat(balance.amountUsd)
+        group.totalActiveAmountUsd += parseFloat(balance.amountUsd || "0")
         group.isEarning = group.isEarning || balance.isEarning
       } else if (balance.type === "claimable") {
         group.claimableBalances.push(balance)
-        group.totalClaimableAmountUsd += parseFloat(balance.amountUsd)
+        group.totalClaimableAmountUsd += parseFloat(balance.amountUsd || "0")
         group.hasClaimableRewards = true
       } else if (["entering", "exiting", "withdrawable", "locked"].includes(balance.type)) {
         group.otherBalances.push(balance)
-        group.totalOtherAmountUsd += parseFloat(balance.amountUsd)
+        group.totalOtherAmountUsd += parseFloat(balance.amountUsd || "0")
         group.hasOtherBalances = true
       }
 
       // Update total
-      group.totalAmountUsd += parseFloat(balance.amountUsd)
+      group.totalAmountUsd += parseFloat(balance.amountUsd || "0")
 
       // Collect pending actions
       group.allPendingActions.push(...balance.pendingActions)

@@ -277,7 +277,7 @@ export default interface MessageTypes {
 
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
   yieldBalancesSubscribe: (
-    cb: (positions: Loadable<import("extension-core").YieldPositionWithProduct[]>) => void,
+    cb: (positions: Loadable<import("extension-core").YieldBalancesDtoWithProduct[]>) => void,
   ) => UnsubscribeFn
   yieldBalancesGroupedSubscribe: (
     cb: (positions: Loadable<import("extension-core").YieldPositionGroup[]>) => void,

@@ -1,136 +1,27 @@
+import { YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
+
 import { YieldPositionGroup } from "./groupYieldBalances"
 
-export type YieldProduct = {
-  id: string
-  network: string
-  inputTokens: Array<{
-    address?: string
-    symbol: string
-    name: string
-    decimals: number
-    logoURI: string
-    coinGeckoId?: string
-    network: string
-    isPoints: boolean
-  }>
-  token: {
-    symbol: string
-    name: string
-    decimals: number
-    logoURI: string
-    coinGeckoId?: string
-    network: string
-    isPoints: boolean
-  }
-  rewardRate: {
-    total: number
-    rateType: string
-    components: Array<{
-      rate: number
-      rateType: string
-      token: {
-        symbol: string
-        name: string
-        decimals: number
-        logoURI: string
-        coinGeckoId?: string
-        network: string
-        isPoints: boolean
-      }
-      yieldSource: string
-      description: string
-    }>
-  }
-  status: {
-    enter: boolean
-    exit: boolean
-  }
-  metadata: {
-    name: string
-    description: string
-    documentation?: string
-    logoURI: string
-    underMaintenance: boolean
-    deprecated: boolean
-    supportedStandards: string[]
-  }
-  mechanics: {
-    type: string
-    requiresValidatorSelection: boolean
-    rewardSchedule: string
-    rewardClaiming: string
-    gasFeeToken: {
-      symbol: string
-      name: string
-      decimals: number
-      logoURI: string
-      coinGeckoId?: string
-      network: string
-      isPoints: boolean
-    }
-    cooldownPeriod?: {
-      seconds: number
-    }
-    entryLimits: {
-      minimum: string
-      maximum: string | null
-    }
-    supportsLedgerWalletApi: boolean
-    arguments: {
-      enter: {
-        fields: Array<{
-          name: string
-          type: string
-          label: string
-          description: string
-          required: boolean
-          placeholder: string
-          minimum?: string
-          maximum?: string | null
-          isArray: boolean
-          options?: string[]
-        }>
-      }
-      exit: {
-        fields: Array<{
-          name: string
-          type: string
-          label: string
-          description: string
-          required: boolean
-          placeholder: string
-          minimum?: string
-          maximum?: string | null
-          isArray: boolean
-        }>
-      }
-    }
-    possibleFeeTakingMechanisms: {
-      depositFee: boolean
-      managementFee: boolean
-      performanceFee: boolean
-      validatorRebates: boolean
-    }
-  }
-  providerId: string
-  outputToken: {
-    address: string
-    symbol: string
-    name: string
-    decimals: number
-    logoURI: string
-    network: string
-    isPoints: boolean
-  }
-  statistics?: {
-    tvlUsd: string
-    tvl: string
-    uniqueUsers: string | null
-    averagePositionSizeUsd: string | null
-    averagePositionSize: string | null
-  }
-  tags: string[]
-}
+// Re-export SDK types for use in UI
+export type {
+  YieldDto,
+  YieldBalancesRequestDto,
+  YieldBalancesDto,
+  BalancesRequestDto,
+  BalancesResponseDto,
+  CreateActionDto,
+  CreateManageActionDto,
+  ActionDto,
+  TransactionDto,
+  SubmitHashDto,
+  NetworkDto,
+  ProviderDto,
+  HealthStatusDto,
+  YieldsControllerGetYieldsParams,
+  Networks,
+  BalanceDto,
+  TokenDto,
+} from "@yieldxyz/sdk"
 
 export type YieldProductsFilter = {
   tokenId?: string
@@ -294,15 +185,15 @@ export interface YieldBalancesResponse {
 
 export type YieldStatusResponse = YieldTransaction
 
-export interface YieldPositionWithProduct extends YieldPositionItem {
-  product?: YieldProduct
+export interface YieldBalancesDtoWithProduct extends YieldBalancesDto {
+  product?: YieldDto
 }
 
 // Re-export grouped types
 export type { YieldPositionGroup } from "./groupYieldBalances"
 
 // UI subscription response type (store-backed), mirroring DeFi
-export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldPositionWithProduct[]>
+export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldBalancesDtoWithProduct[]>
 export type YieldPositionsGroupedResponse = import("@talismn/util").Loadable<YieldPositionGroup[]>
 
 // Message type augmentation for handler routing

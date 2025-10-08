@@ -1,117 +1,64 @@
-import { log, YIELD_API_BASE_URL, YIELD_API_KEY } from "extension-shared"
+import { Networks, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
+import { log } from "extension-shared"
 
-import { YieldProduct, YieldProductsFilter } from "./types"
+import { YieldDto } from "./types"
+import { yieldSdk } from "./yieldSdk"
 
 /**
- * Fetches yield products from yield.xyz API
+ * Fetches yield products from yield.xyz API using SDK
  */
-export const fetchYieldProducts = async (filter?: YieldProductsFilter): Promise<YieldProduct[]> => {
+export const fetchYieldProducts = async (
+  filter?: YieldsControllerGetYieldsParams,
+): Promise<YieldDto[]> => {
   try {
-    log.debug("[Yield] Fetching yield products", { filter })
+    log.debug("[Yield] Fetching yield products via SDK", { filter })
 
-    // If no API key is configured, return empty array
-    if (!YIELD_API_KEY) {
-      log.error("[Yield] No API key configured")
-      return []
+    // Build SDK parameters
+    const params: YieldsControllerGetYieldsParams = {}
+
+    if (filter?.inputToken) {
+      params.inputToken = filter.inputToken
     }
 
-    const url = new URL(`${YIELD_API_BASE_URL}/yields`)
-
-    // Add filtering based on the API documentation
-    if (filter?.tokenSymbol) {
-      url.searchParams.set("inputTokens", filter.tokenSymbol)
+    if (filter?.network) {
+      params.network = filter.network as Networks
     }
+    const response = await yieldSdk.getYields(params)
 
-    if (filter?.networkName) {
-      url.searchParams.set("network", filter?.networkName)
-    }
-
-    if (filter?.yieldIds && filter.yieldIds.length > 0) {
-      url.searchParams.set("yieldIds", filter.yieldIds.join(","))
-    }
-
-    const headers: HeadersInit = {}
-
-    // Add API key to headers - yield.xyz uses X-API-Key
-    if (YIELD_API_KEY) {
-      headers["X-API-Key"] = YIELD_API_KEY
-    }
-
-    log.debug("[Yield] Making API request", { url: url.toString() })
-
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers,
+    log.debug("[Yield] SDK yields response", {
+      count: response?.items?.length || 0,
+      firstItem: response?.items?.[0],
     })
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "Unknown error")
-      throw new Error(`Yield API error: ${response.status} ${response.statusText} - ${errorText}`)
-    }
+    // SDK returns array directly, no transformation needed
+    const products = response.items || []
 
-    const data = await response.json()
-    log.debug("[Yield] API response received", {
-      count: data?.items?.length || data?.length || 0,
-      total: data?.total,
-      dataType: Array.isArray(data) ? "array" : typeof data,
-      firstItem: Array.isArray(data) ? data[0] : data?.items?.[0],
-      keys: typeof data === "object" ? Object.keys(data) : [],
-    })
-
-    const transformed = transformYieldApiResponse(data)
-
-    // If specific input token symbols were requested, filter out any product
-    // that includes input tokens not present in the requested set.
-    if (filter?.tokenSymbol) {
+    // If specific input token symbols were requested, filter client-side
+    if (filter?.inputToken) {
       const requestedSymbols = new Set(
-        filter.tokenSymbol
+        filter.inputToken
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean)
           .map((s) => s.toLowerCase()),
       )
 
-      const filtered = transformed.filter((product) =>
-        product.inputTokens.every((t) => requestedSymbols.has((t.symbol || "").toLowerCase())),
+      const filtered = products.filter((product) =>
+        product.inputTokens?.every((t) => requestedSymbols.has((t.symbol || "").toLowerCase())),
       )
 
-      log.debug("[Yield] Transformed and client-filtered data", {
-        before: transformed.length,
+      log.debug("[Yield] Client-filtered products", {
+        before: products.length,
         after: filtered.length,
         requested: Array.from(requestedSymbols.values()),
-        firstFiltered: filtered[0],
       })
 
       return filtered
     }
 
-    log.debug("[Yield] Transformed data", {
-      count: transformed.length,
-      firstTransformed: transformed[0],
-    })
-
-    return transformed
+    return products
   } catch (error) {
-    log.error("[Yield] Failed to fetch yield products", { error, filter })
-
-    // Return empty array on error - UI will show appropriate error message
-    log.warn("[Yield] Returning empty array due to API error")
+    log.error("[Yield] Failed to fetch yield products via SDK", { error, filter })
     return []
   }
-}
-
-// Type definitions for yield.xyz API response
-interface YieldApiResponse {
-  items?: YieldProduct[]
-  total?: number
-  offset?: number
-  limit?: number
-}
-
-/**
- * Pass through yield.xyz API response without transformation
- */
-const transformYieldApiResponse = (apiData: YieldApiResponse | YieldProduct[]): YieldProduct[] => {
-  // Handle both array and object responses - pass through as-is
-  return Array.isArray(apiData) ? apiData : apiData?.items || []
 }

@@ -1,4 +1,10 @@
-import { YieldBalanceQuery, YieldPositionBalance, YieldPositionWithProduct } from "extension-core"
+import {
+  BalanceDto,
+  TokenDto,
+  YieldBalanceQuery,
+  YieldBalancesDtoWithProduct,
+  YieldDto,
+} from "extension-core"
 import { useMemo } from "react"
 
 import { useAccounts, useBalances, useNetworksMapById, useTokens } from "@ui/state"
@@ -66,7 +72,7 @@ export const useYieldBalances = () => {
     if (!yieldBalancesLoadable?.data) return { items: [], errors: [] }
     // Core observable emits items[] already; align to UI expectations
     return {
-      items: yieldBalancesLoadable.data as YieldPositionWithProduct[],
+      items: yieldBalancesLoadable.data as YieldBalancesDtoWithProduct[],
       errors: [] as unknown[],
     }
   }, [yieldBalancesLoadable])
@@ -87,16 +93,16 @@ export const useYieldBalances = () => {
         }
       }
 
-      const positionsByAddress = new Map<string, YieldPositionBalance[]>()
-      const allBalances: YieldPositionBalance[] = []
+      const positionsByAddress = new Map<string, BalanceDto[]>()
+      const allBalances: BalanceDto[] = []
       const groupedByToken = new Map<
         string,
         {
-          token: YieldPositionBalance["token"]
+          token: TokenDto
           positions: Array<{
-            balance: YieldPositionBalance
+            balance: BalanceDto
             yieldId: string
-            product?: YieldPositionWithProduct["product"]
+            product?: YieldDto
           }>
           totalAmount: string
           totalAmountUsd: string
@@ -105,10 +111,10 @@ export const useYieldBalances = () => {
       >()
       let totalUsdValue = 0
 
-      yieldBalancesResponse.items.forEach((item: YieldPositionWithProduct) => {
-        item.balances.forEach((balance: YieldPositionBalance) => {
+      yieldBalancesResponse.items.forEach((item: YieldBalancesDtoWithProduct) => {
+        item.balances.forEach((balance: BalanceDto) => {
           allBalances.push(balance)
-          totalUsdValue += parseFloat(balance.amountUsd) || 0
+          totalUsdValue += parseFloat(balance.amountUsd || "0")
 
           const existing = positionsByAddress.get(balance.address) || []
           positionsByAddress.set(balance.address, [...existing, balance])
@@ -120,7 +126,7 @@ export const useYieldBalances = () => {
           if (existingGroup) {
             existingGroup.positions.push({ balance, yieldId: item.yieldId, product: item.product })
             existingGroup.totalAmountUsd = (
-              parseFloat(existingGroup.totalAmountUsd) + parseFloat(balance.amountUsd)
+              parseFloat(existingGroup.totalAmountUsd) + parseFloat(balance.amountUsd || "0")
             ).toString()
             existingGroup.holdingsCount = existingGroup.positions.length
           } else {
@@ -128,7 +134,7 @@ export const useYieldBalances = () => {
               token: balance.token,
               positions: [{ balance, yieldId: item.yieldId, product: item.product }],
               totalAmount: balance.amount,
-              totalAmountUsd: balance.amountUsd,
+              totalAmountUsd: balance.amountUsd || "0",
               holdingsCount: 1,
             })
           }

@@ -1,14 +1,14 @@
 import { classNames } from "@talismn/util"
-import { YieldProduct } from "extension-core"
+import { YieldDto } from "extension-core"
 import { FC } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 
 interface ProductItemProps {
-  product: YieldProduct
+  product: YieldDto
   tokenId: string
-  onClick: (product: YieldProduct) => void
+  onClick: (product: YieldDto) => void
 }
 
 const ProductTokenLogo: FC<{

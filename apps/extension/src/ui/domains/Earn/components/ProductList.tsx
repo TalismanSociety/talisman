@@ -1,16 +1,16 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { YieldProduct } from "extension-core"
+import { YieldDto } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ProductItem } from "./ProductItem"
 
 interface ProductListProps {
-  products: YieldProduct[]
+  products: YieldDto[]
   tokenId: TokenId
   isLoading: boolean
   error: Error | null
-  onProductClick: (product: YieldProduct) => void
+  onProductClick: (product: YieldDto) => void
 }
 
 export const ProductList: FC<ProductListProps> = ({

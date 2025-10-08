@@ -1,5 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { YieldProduct, YieldValidator } from "extension-core"
+import { YieldDto, YieldValidator } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useEffect, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -35,7 +35,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<YieldProduct | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
   const [selectedValidatorAddress, setSelectedValidatorAddress] = useState<string | null>(null)
 
   // In popup mode, use the portfolio navigation system to get the selected account
@@ -74,12 +74,12 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     isLoading,
     error,
   } = useYieldProducts({
-    tokenId,
-    tokenSymbol: token?.symbol,
-    networkName: mappedNetworkName || undefined,
+    token: tokenId as string,
+    inputToken: token?.symbol,
+    network: mappedNetworkName || undefined,
   })
 
-  const handleProductClick = (product: YieldProduct) => {
+  const handleProductClick = (product: YieldDto) => {
     // Check if we have a selected account from portfolio or earn wizard
     const currentAccount = IS_POPUP
       ? initialPopupAccount

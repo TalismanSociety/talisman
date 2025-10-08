@@ -1,6 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { ChevronDownIcon, ChevronUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Networks } from "extension-core"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -40,9 +41,9 @@ export const EarnTokenRow: FC<{
     isLoading: isLoadingProducts,
     error: productsError,
   } = useYieldProducts({
-    tokenId: token?.id,
-    tokenSymbol: token?.symbol,
-    networkName: network?.platform,
+    token: token?.id as string,
+    inputToken: token?.symbol,
+    network: network?.platform as Networks,
   })
 
   const handleToggleExpand = useCallback(() => {

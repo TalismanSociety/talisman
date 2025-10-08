@@ -1,3 +1,5 @@
+import { Networks } from "extension-core"
+
 /**
  * Maps network platform and chain ID to Yield.xyz compatible network names
  *
@@ -6,7 +8,7 @@
  * @returns The Yield.xyz compatible network name
  * @throws Error if the chain ID is not supported for the given platform
  */
-export function mapToYieldNetwork(platform: string, chainId: string): string {
+export function mapToYieldNetwork(platform: Networks, chainId: string): Networks {
   if (platform === "ethereum") {
     switch (chainId) {
       case "1":
@@ -29,8 +31,8 @@ export function mapToYieldNetwork(platform: string, chainId: string): string {
  * @returns The Yield.xyz compatible network name, or null if network is not available
  */
 export function mapNetworkToYieldNetwork(
-  network: { platform: string; id: string } | null | undefined,
-): string | null {
+  network: { platform: Networks; id: string } | null | undefined,
+): Networks | null {
   if (!network) {
     return null
   }

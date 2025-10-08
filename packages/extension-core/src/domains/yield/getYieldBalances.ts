@@ -1,4 +1,5 @@
 import { getLoadable$, getSharedObservable, keepAlive, Loadable } from "@talismn/util"
+import { BalancesQueryDto, Networks } from "@yieldxyz/sdk"
 import { isEqual } from "lodash-es"
 import { distinctUntilChanged, firstValueFrom, map, shareReplay, switchMap, take, tap } from "rxjs"
 
@@ -11,12 +12,7 @@ import { fetchYieldProducts } from "./getYieldProducts"
 import { groupYieldBalances } from "./groupYieldBalances"
 import { mapToYieldNetwork } from "./networkMapping"
 import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
-import {
-  YieldBalanceQuery,
-  YieldPositionItem,
-  YieldPositionWithProduct,
-  YieldProduct,
-} from "./types"
+import { YieldBalancesDtoWithProduct, YieldDto, YieldPositionItem } from "./types"
 
 const REFRESH_INTERVAL = 30_000
 
@@ -63,12 +59,18 @@ const getBalances$ = (addresses: string[], storage: YieldPositionItem[]) =>
   getSharedObservable("yield-balances", { addresses, REFRESH_INTERVAL }, () =>
     getLoadable$(
       async () => {
+        const products: YieldDto[] = []
         const q = await buildQueries(addresses)
-        const balancesResp = await fetchYieldBalances(q)
-        const yieldIds = Array.from(new Set(balancesResp.items.map((i) => i.yieldId)))
-        const products = yieldIds.length ? await fetchYieldProducts({ yieldIds }) : []
-        const productById = new Map<string, YieldProduct>(products.map((p) => [p.id, p]))
-        const enriched: YieldPositionWithProduct[] = balancesResp.items.map((item) => ({
+        const balancesResp = await fetchYieldBalances({ queries: q })
+        const yieldIds = Array.from(new Set(balancesResp.map((i) => i.yieldId)))
+        const allYields = yieldIds.length ? await fetchYieldProducts() : []
+        allYields.forEach((p) => {
+          if (yieldIds.includes(p.id)) {
+            products.push(p)
+          }
+        })
+        const productById = new Map<string, YieldDto>(products.map((p) => [p.id, p]))
+        const enriched: YieldBalancesDtoWithProduct[] = balancesResp.map((item) => ({
           ...item,
           product: productById.get(item.yieldId),
         }))
@@ -81,27 +83,27 @@ const getBalances$ = (addresses: string[], storage: YieldPositionItem[]) =>
   ).pipe(
     map((loadable) => ({
       ...loadable,
-      data: (loadable.data?.items as YieldPositionWithProduct[]) ?? storage,
+      data: (loadable.data?.items as YieldBalancesDtoWithProduct[]) ?? storage,
     })),
-    distinctUntilChanged<Loadable<YieldPositionWithProduct[]>>(isEqual),
+    distinctUntilChanged<Loadable<YieldBalancesDtoWithProduct[]>>(isEqual),
   )
 
-const buildQueries = async (addresses: string[]): Promise<YieldBalanceQuery[]> => {
+const buildQueries = async (addresses: string[]): Promise<BalancesQueryDto[]> => {
   const networksMap = await chaindataProvider.getNetworksMapById()
   const allBalances = (await firstValueFrom(balancesStore$)).balances
 
-  const queries: YieldBalanceQuery[] = []
+  const queries: BalancesQueryDto[] = []
   const seen = new Set<string>()
 
   for (const address of addresses) {
     const addressBalances = allBalances.filter((b) => b.address === address)
-    const networks = new Set<string>()
+    const networks = new Set<Networks>()
 
     for (const bal of addressBalances) {
       const net = networksMap[bal.networkId]
       if (!net) continue
       const yieldNet = mapToYieldNetwork(net.platform, net.id)
-      if (yieldNet) networks.add(yieldNet)
+      if (yieldNet) networks.add(yieldNet as Networks)
     }
 
     for (const network of networks) {

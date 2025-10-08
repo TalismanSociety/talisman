@@ -1,6 +1,6 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { YieldProduct } from "extension-core"
+import { YieldDto } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccountByAddress, useBalance, useNetworkById, useToken, useTokenRates } from "@ui/state"
@@ -17,7 +17,7 @@ interface TDepositFunds {
   token: ReturnType<typeof useToken>
   tokenId: string | undefined
   network: ReturnType<typeof useNetworkById>
-  product: YieldProduct | null
+  product: YieldDto | null
   balance: ReturnType<typeof useBalance>
   tokenRates: ReturnType<typeof useTokenRates>
 
@@ -61,9 +61,9 @@ export const useDepositFunds = (): TDepositFunds => {
 
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
-    tokenId: tokenId as TokenId,
-    tokenSymbol: token?.symbol,
-    networkName: mappedNetworkName || undefined,
+    token: tokenId as string,
+    inputToken: token?.symbol,
+    network: mappedNetworkName || undefined,
   })
 
   const product = useMemo(() => {

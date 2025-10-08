@@ -1,12 +1,12 @@
 import { tokensToPlanck } from "@talismn/util"
-import { YieldProduct } from "extension-core"
+import { YieldDto } from "extension-core"
 import { useMemo } from "react"
 
 import { useBalance, useToken } from "@ui/state"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 
-export const useDepositValidation = (product: YieldProduct | null) => {
+export const useDepositValidation = (product: YieldDto | null) => {
   const { account, tokenId, amount } = useDepositWizard()
   const token = useToken(tokenId as string)
   const balance = useBalance(account as string, tokenId as string)
@@ -41,18 +41,24 @@ export const useDepositValidation = (product: YieldProduct | null) => {
     if (amount && product && token) {
       // Convert decimal strings to planck units before converting to BigInt
       const minAmount = BigInt(
-        tokensToPlanck(product.mechanics.entryLimits.minimum, token?.decimals || 18),
+        tokensToPlanck(product?.mechanics?.entryLimits?.minimum || "0", token?.decimals || 18),
       )
-      const maxAmount = product.mechanics.entryLimits.maximum
-        ? BigInt(tokensToPlanck(product.mechanics.entryLimits.maximum, token?.decimals || 18))
-        : null
+      const maxAmount = product?.mechanics?.entryLimits?.maximum
+        ? BigInt(
+            tokensToPlanck(product?.mechanics?.entryLimits?.maximum || "0", token?.decimals || 18),
+          )
+        : undefined
 
       if (BigInt(amount) < minAmount) {
-        errors.push(`Minimum deposit: ${product.mechanics.entryLimits.minimum} ${token?.symbol}`)
+        errors.push(
+          `Minimum deposit: ${product?.mechanics?.entryLimits?.minimum || "0"} ${token?.symbol}`,
+        )
       }
 
       if (maxAmount && BigInt(amount) > maxAmount) {
-        errors.push(`Maximum deposit: ${product.mechanics.entryLimits.maximum} ${token?.symbol}`)
+        errors.push(
+          `Maximum deposit: ${product?.mechanics?.entryLimits?.maximum || "0"} ${token?.symbol}`,
+        )
       }
     }
 
