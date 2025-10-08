@@ -1,9 +1,9 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 import { Button, Drawer } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -27,11 +27,9 @@ export const SeekGetFeeDiscountsDrawer = ({
   onCloseModal,
 }: SeekGetFeeDiscountsDrawerProps) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const remoteConfig = useRemoteConfig()
 
-  const { tokenId } = remoteConfig.seek
-  // const token = useToken(remoteConfig.seek.tokenId) // TODO: Uncomment this once remote config is updated
+  const { tokenId, webAppStakingPath, buyUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
 
@@ -120,7 +118,7 @@ export const SeekGetFeeDiscountsDrawer = ({
         <div className="grid w-full grid-cols-2 gap-8">
           <Button
             onClick={() => {
-              navigate(`/portfolio/tokens/${tokenSymbol}`)
+              open(`${TALISMAN_WEB_APP_URL}${webAppStakingPath}`, "_blank", "noopener,noreferrer")
               onCloseModal()
             }}
           >
@@ -130,7 +128,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             className="px-2"
             primary
             onClick={() => {
-              open("https://talisman.xyz/", "_blank", "noopener,noreferrer")
+              open(buyUrl, "_blank", "noopener,noreferrer")
             }}
           >
             {t("Buy")} {tokenSymbol}
