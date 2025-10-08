@@ -1,5 +1,28 @@
 # @talismn/sapi
 
+## 0.0.12
+
+### Patch Changes
+
+- 16c2ee4: set max metadata version to 15
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/scale@0.2.2
+
+## 0.0.11
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/scale@0.2.1
+
+## 0.0.10
+
+### Patch Changes
+
+- f0a103b: feat: updates for solana
+
 ## 0.0.9
 
 ### Patch Changes

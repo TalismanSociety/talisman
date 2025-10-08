@@ -1,5 +1,32 @@
 # @talismn/util
 
+## 0.5.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
+## 0.5.3
+
+### Patch Changes
+
+- f2d3cf5: getQuery$
+- f2d3cf5: pin @types/lodash-es version
+
+## 0.5.2
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
+## 0.5.1
+
+### Patch Changes
+
+- dfe2992: getLoadable$
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+
 ## 0.5.0
 
 ### Minor Changes

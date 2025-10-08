@@ -23,6 +23,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   },
   swaps: {
     questApi: "",
+    lifiApiKey: "",
     simpleswapApiKey: "",
     simpleswapApiKeyDiscounted: "",
     simpleswapDiscountedCurrencies: [],
@@ -48,9 +49,14 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     unifiedAddressDocsUrl:
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
   },
-  // coinsApi: {
-  //   apiUrl: "http://localhost:8787",
-  // },
+  seek: {
+    tokenId: "",
+    stakingUrl: "",
+    docsUrl: "",
+    tradeUrl: "",
+    stakingContractNetworkId: "",
+    stakingContractAddress: "0x",
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -65,20 +71,13 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         // safety measure, most likely always an object
         if (!config) return
 
-        // dev mode overrides
-        if (DEBUG) {
-          if (process.env.COINGECKO_API_URL) config.coingecko.apiUrl = process.env.COINGECKO_API_URL
-          if (process.env.COINGECKO_API_KEY_NAME)
-            config.coingecko.apiKeyName = process.env.COINGECKO_API_KEY_NAME
-          if (process.env.COINGECKO_API_KEY_VALUE)
-            config.coingecko.apiKeyValue = process.env.COINGECKO_API_KEY_VALUE
-        }
-
         // as per 2.8.0 we dont want this address to be the default validator anymore.
         // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime
         config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
+
+        if (DEBUG) config.featureFlags.SEEK_BENEFITS = true
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))

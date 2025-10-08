@@ -88,6 +88,7 @@ export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
   ethChainId: EthNetworkId
   method: EthSignMessageMethod
+  params: unknown[]
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {

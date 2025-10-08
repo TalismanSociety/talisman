@@ -1,5 +1,6 @@
 import "@common/enableAnyloggerLogsInDevelopment"
 import "@common/i18nConfig"
+import "@common/zodConfig"
 
 import { appStore } from "extension-core"
 import { IS_FIREFOX, log } from "extension-shared"

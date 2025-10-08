@@ -20,17 +20,12 @@ export const getPayloadWithMetadataHash = (
   try {
     const { decimals, symbol: tokenSymbol } = chain.token
     const { base58Prefix, specName, specVersion } = chainInfo
+    const metadataHashInputs = { tokenSymbol, decimals, base58Prefix, specName, specVersion }
 
     // since ultimately this needs a V15 object, would be nice if this accepted one directly as input
-    const merkleizedMetadata = merkleizeMetadata(chain.hexMetadata, {
-      tokenSymbol,
-      decimals,
-      base58Prefix,
-      specName,
-      specVersion,
-    })
-
+    const merkleizedMetadata = merkleizeMetadata(chain.hexMetadata, metadataHashInputs)
     const metadataHash = toHex(merkleizedMetadata.digest()) as `0x${string}`
+    log.log("metadataHash", metadataHash, metadataHashInputs)
 
     const payloadWithMetadataHash = {
       ...payload,

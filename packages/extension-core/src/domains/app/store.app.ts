@@ -43,6 +43,7 @@ export type AppStoreData = {
   // dismissed banners
   hideUnifiedAddressBanner?: boolean
   hideAutonomysQuestBanner?: boolean
+  hideSeekBenefitsBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
@@ -123,6 +124,7 @@ if (DEBUG) {
       hideGetStarted: false,
       hideUnifiedAddressBanner: false,
       hideAutonomysQuestBanner: false,
+      hideSeekBenefitsBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

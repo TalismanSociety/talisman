@@ -1,5 +1,55 @@
 # @talismn/on-chain-id
 
+## 0.1.26
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/balances@1.0.7
+  - @talismn/crypto@0.2.3
+  - @talismn/util@0.5.4
+
+## 0.1.25
+
+### Patch Changes
+
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/balances@1.0.6
+  - @talismn/util@0.5.3
+
+## 0.1.24
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/balances@1.0.5
+  - @talismn/crypto@0.2.2
+  - @talismn/util@0.5.2
+
+## 0.1.23
+
+### Patch Changes
+
+- @talismn/balances@1.0.4
+
+## 0.1.22
+
+### Patch Changes
+
+- f0a103b: feat: updates for solana
+- Updated dependencies [daacbf1]
+- Updated dependencies [dfe2992]
+- Updated dependencies [af7cb29]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/balances@1.0.3
+  - @talismn/util@0.5.1
+  - @talismn/crypto@0.2.1
+
 ## 0.1.21
 
 ### Patch Changes

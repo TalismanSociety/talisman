@@ -522,7 +522,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return signEth(url, method, message, site.ethChainId.toString(), account, port)
+    return signEth(url, method, params, message, site.ethChainId.toString(), account, port)
   }
 
   private addWatchAssetRequest = async (

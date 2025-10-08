@@ -18,7 +18,6 @@ const {
   getSentryPlugin,
 } = require("./utils")
 const { SourceMapDevToolPlugin } = require("webpack")
-const SimpleLocalizeDownloadPlugin = require("./plugins/SimpleLocalizeDownloadPlugin")
 
 const faviconsSrcPath = path.join(__dirname, "..", "public", "favicon*.*")
 
@@ -86,7 +85,6 @@ const config = (env) => {
         // set the current working directory for displaying module paths
         cwd: process.cwd(),
       }),
-      new SimpleLocalizeDownloadPlugin(),
       // Do not include source maps in the zip file
       new ZipPlugin({ folder: distDir, filename: getArchiveFileName(env) }),
       new BundleAnalyzerPlugin({
@@ -99,6 +97,7 @@ const config = (env) => {
       minimize: true,
       minimizer: [
         new TerserPlugin({
+          parallel: 1,
           terserOptions: {
             compress: {
               defaults: true,

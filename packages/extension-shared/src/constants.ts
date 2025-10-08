@@ -12,10 +12,7 @@ export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_CONFIG_URL = "https://talismansociety.github.io/talisman-config/config.toml"
 
-export const BLOWFISH_BASE_PATH = process.env.BLOWFISH_BASE_PATH || "https://bfp.talisman.xyz"
-export const BLOWFISH_API_KEY = process.env.BLOWFISH_API_KEY
-export const NFTS_API_KEY = process.env.NFTS_API_KEY
-export const NFTS_API_BASE_PATH = process.env.NFTS_API_BASE_PATH || "https://nfts-api.talisman.xyz"
+export const BLOCKAID_API_URL = "https://bap.talisman.xyz"
 export const TAOSTATS_BASE_PATH = process.env.TAOSTATS_BASE_PATH || "https://tsp.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
 export const RAMPS_COINBASE_PAY_URL = "https://pay.coinbase.com"
@@ -38,13 +35,7 @@ export const SIGNET_APP_URL = "https://signet.talisman.xyz"
 // Wallet-specific invite link
 export const DISCORD_TALISMAN_URL = "https://discord.gg/EF3Zf4R5bD"
 
-// Used for testing the full buying flow
-// The tokens available at this endpoint are not in sync with the production endpoint
-// export const BANXA_URL = "https://talisman.banxa-sandbox.com/"
-export const BANXA_URL = "https://checkout.banxa.com/"
-
 // Docs URLs
-
 export const TALISMAN_DOCS_URL_PREFIX = "https://docs.talisman.xyz/talisman"
 export const POLKADOT_VAULT_DOCS_URL = `${TALISMAN_DOCS_URL_PREFIX}/start/importing-external-wallets/import-from-polkadot-vault`
 export const RELEASE_NOTES_URL = `${TALISMAN_DOCS_URL_PREFIX}/about/wallet-release-notes`

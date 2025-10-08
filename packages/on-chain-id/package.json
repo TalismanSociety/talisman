@@ -1,6 +1,6 @@
 {
   "name": "@talismn/on-chain-id",
-  "version": "0.1.21",
+  "version": "0.1.26",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -18,7 +18,7 @@
     "/dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "test": "jest",

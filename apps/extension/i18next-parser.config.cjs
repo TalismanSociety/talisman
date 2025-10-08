@@ -2,14 +2,13 @@
 
 // The key is the `locale` as passed to i18next.
 // The value is the `human-readable name` as passed to the language settings UI in the wallet.
-// This config is only used for generating translations for development builds
-// Production builds will pull translations from SimpleLocalize, and then set the
-//`process.env.SUPPORTED_LANGUAGES` variable as used by the extension i18n config
+// This config is only used for generating translations during CI, prior to upload new keys to SimpleLocalize.
 const languages = { en: "English" }
 
 module.exports = {
   // use `common` instead of `translation` as the default namespace
   defaultNamespace: "common",
+  ns: ["common"], // consider only the `common` namespace
 
   // natural language keys
   namespaceSeparator: false,
@@ -48,7 +47,7 @@ module.exports = {
     // wallet @talisman components
     "src/@talisman/**/*.{ts,tsx}",
   ],
-  output: "public/locales/$LOCALE/$NAMESPACE.json",
+  output: ".i18next-parser/locales/$LOCALE/$NAMESPACE.json", // this should not be commited
 
   lexers: {
     md: [

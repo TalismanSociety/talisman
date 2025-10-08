@@ -181,7 +181,10 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
             <AccountPlatformDropdown
               value={field.state.value}
               platforms={SUPPORTED_ACCOUNT_PLATFORMS}
-              onChange={(platform) => field.handleChange(platform)}
+              onChange={(platform) => {
+                field.handleChange(platform)
+                field.form.validateField("privateKey", "change")
+              }}
               className="h-28"
             />
           )}
@@ -241,6 +244,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           validators={{
             onChange: ({ value, fieldApi }) => {
               const platform = fieldApi.form.getFieldValue("platform")
+              if (!platform) return null // don't validate until a platform is chosen
               const address = privateKeyToAddress(value, platform)
               if (value && !address) return t("Invalid private key")
               if (address && existingAccountAddresses.includes(address))

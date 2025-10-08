@@ -1,5 +1,50 @@
 # @talismn/connection-meta
 
+## 0.2.25
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+
+## 0.2.24
+
+### Patch Changes
+
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+  - @talismn/chaindata-provider@1.1.3
+
+## 0.2.23
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [0d38ece]
+- Updated dependencies [e399b86]
+  - @talismn/chaindata-provider@1.1.2
+
+## 0.2.22
+
+### Patch Changes
+
+- Updated dependencies [9869029]
+  - @talismn/chaindata-provider@1.1.1
+
+## 0.2.21
+
+### Patch Changes
+
+- Updated dependencies [7b41204]
+- Updated dependencies [f5e2f60]
+- Updated dependencies [0c9b3c7]
+- Updated dependencies [8a31f57]
+- Updated dependencies [f0a103b]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/chaindata-provider@1.1.0
+
 ## 0.2.20
 
 ### Patch Changes

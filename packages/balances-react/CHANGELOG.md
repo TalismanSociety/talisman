@@ -1,5 +1,86 @@
 # @talismn/balances-react
 
+## 1.0.7
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/chaindata-provider@1.1.4
+  - @talismn/chain-connectors@0.0.5
+  - @talismn/connection-meta@0.2.25
+  - @talismn/token-rates@3.0.7
+  - @talismn/balances@1.0.7
+  - @talismn/scale@0.2.2
+  - @talismn/util@0.5.4
+
+## 1.0.6
+
+### Patch Changes
+
+- f2d3cf5: pin @types/lodash-es version
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [cc3fa02]
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/balances@1.0.6
+  - @talismn/chaindata-provider@1.1.3
+  - @talismn/util@0.5.3
+  - @talismn/chain-connectors@0.0.4
+  - @talismn/connection-meta@0.2.24
+  - @talismn/token-rates@3.0.6
+
+## 1.0.5
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [0d38ece]
+- Updated dependencies [e399b86]
+  - @talismn/chaindata-provider@1.1.2
+  - @talismn/chain-connectors@0.0.3
+  - @talismn/connection-meta@0.2.23
+  - @talismn/token-rates@3.0.5
+  - @talismn/balances@1.0.5
+  - @talismn/scale@0.2.1
+  - @talismn/util@0.5.2
+
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [9869029]
+  - @talismn/chaindata-provider@1.1.1
+  - @talismn/balances@1.0.4
+  - @talismn/chain-connectors@0.0.2
+  - @talismn/connection-meta@0.2.22
+  - @talismn/token-rates@3.0.4
+
+## 1.0.3
+
+### Patch Changes
+
+- f5e2f60: chore: updated types & added sync hook for wallet swaps
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+- Updated dependencies [7b41204]
+- Updated dependencies [daacbf1]
+- Updated dependencies [f5e2f60]
+- Updated dependencies [dfe2992]
+- Updated dependencies [0c9b3c7]
+- Updated dependencies [52b851c]
+- Updated dependencies [af7cb29]
+- Updated dependencies [8a31f57]
+- Updated dependencies [f0a103b]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/chaindata-provider@1.1.0
+  - @talismn/balances@1.0.3
+  - @talismn/util@0.5.1
+  - @talismn/chain-connectors@0.0.1
+  - @talismn/connection-meta@0.2.21
+  - @talismn/token-rates@3.0.3
+
 ## 1.0.2
 
 ### Patch Changes

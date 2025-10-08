@@ -1,5 +1,24 @@
 # @talismn/crypto
 
+## 0.2.3
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
+## 0.2.2
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
+## 0.2.1
+
+### Patch Changes
+
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+
 ## 0.2.0
 
 ### Minor Changes

@@ -12,7 +12,14 @@ const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 
-const { browser, srcDir, distDir, getRelease, getGitShortHash } = require("./utils")
+const {
+  browser,
+  srcDir,
+  distDir,
+  getRelease,
+  getGitShortHash,
+  getSupportedLanguages,
+} = require("./utils")
 
 /** @type { import('webpack').Configuration } */
 const config = (env) => ({
@@ -173,45 +180,13 @@ const config = (env) => ({
       "process.env.EVM_LOGPROXY": JSON.stringify(
         env.build === "dev" ? process.env.EVM_LOGPROXY || "" : "",
       ),
-      "process.env.COINGECKO_API_URL": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_URL || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_NAME": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_NAME || "" : "",
-      ),
-      "process.env.COINGECKO_API_KEY_VALUE": JSON.stringify(
-        env.build === "dev" ? process.env.COINGECKO_API_KEY_VALUE || "" : "",
-      ),
       "process.env.TAOSTATS_BASE_PATH": JSON.stringify(
         env.build === "dev" ? process.env.TAOSTATS_BASE_PATH || "" : "",
-      ),
-      "process.env.BLOWFISH_BASE_PATH": JSON.stringify(
-        env.build === "dev" ? process.env.BLOWFISH_BASE_PATH || "" : "",
       ),
       "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
         env.build === "dev" || ["canary", "ci", "qa"].includes(env.build)
           ? process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
           : "",
-      ),
-      // prod build doesn't need an api key
-      // dev builds need one that should not change often
-      // canary/ci/qa builds need one that can be rotated easily and without impacting developers
-      "process.env.BLOWFISH_API_KEY": JSON.stringify(
-        env.build === "dev"
-          ? process.env.BLOWFISH_API_KEY || ""
-          : ["canary", "ci", "qa"].includes(env.build)
-            ? process.env.BLOWFISH_QA_API_KEY || ""
-            : "",
-      ),
-      "process.env.NFTS_API_KEY": JSON.stringify(
-        env.build === undefined
-          ? process.env.NFTS_API_KEY || ""
-          : ["canary", "ci", "qa"].includes(env.build)
-            ? process.env.NFTS_QA_API_KEY || ""
-            : "",
-      ),
-      "process.env.NFTS_API_BASE_PATH": JSON.stringify(
-        env.build === undefined ? process.env.NFTS_API_BASE_PATH || "" : "",
       ),
       // computed values
       "process.env.DEBUG": JSON.stringify(
@@ -228,6 +203,7 @@ const config = (env) => ({
       "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
       "process.env.BROWSER": JSON.stringify(browser),
+      "process.env.SUPPORTED_LANGUAGES": JSON.stringify(getSupportedLanguages()),
     }),
     ...[
       { title: "Talisman", entrypoint: "popup" },

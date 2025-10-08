@@ -4,7 +4,7 @@ import { u32, Vector } from "scale-ts"
 const MAGIC_NUMBER = 1635018093
 
 // it's important to set a max because some chains also return high invalid version numbers in the metadata_versions list (ex on Polkadot, related to JAM?)
-const MAX_SUPPORTED_METADATA_VERSION = 16
+export const MAX_SUPPORTED_METADATA_VERSION = 15 // v16 sometimes outputs different metadata hashes, ignore v16 until that is fixed in PAPI
 
 type RpcSendFunc = <T>(method: string, params: unknown[], isCacheable?: boolean) => Promise<T>
 

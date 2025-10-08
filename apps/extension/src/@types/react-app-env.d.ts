@@ -9,21 +9,12 @@ declare namespace NodeJS {
     readonly POSTHOG_AUTH_TOKEN?: string
     readonly SENTRY_DSN?: string
     readonly SENTRY_AUTH_TOKEN?: string
-    readonly SIMPLE_LOCALIZE_API_KEY?: string
-    readonly SIMPLE_LOCALIZE_PROJECT_TOKEN?: string
     readonly BUILD?: "production" | "canary" | "ci" | "qa" | "dev"
 
     // dev utilities
     readonly PASSWORD?: string
     readonly TEST_MNEMONIC?: string
     readonly EVM_LOGPROXY?: string
-    readonly COINGECKO_API_URL?: string
-    readonly COINGECKO_API_KEY_NAME?: string
-    readonly COINGECKO_API_KEY_VALUE?: string
-    readonly BLOWFISH_BASE_PATH?: string
-    readonly BLOWFISH_API_KEY?: string
-    readonly NFTS_API_KEY?: string
-    readonly NFTS_API_BASE_PATH?: string
     readonly LOG_SUBSCRIPTION_CALLBACKS?: string
   }
 }

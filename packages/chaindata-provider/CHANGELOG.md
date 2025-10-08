@@ -1,5 +1,57 @@
 # @talismn/chaindata-provider
 
+## 1.1.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/util@0.5.4
+
+## 1.1.3
+
+### Patch Changes
+
+- cc3fa02: generate init data
+- f2d3cf5: pin @types/lodash-es version
+- Updated dependencies [f2d3cf5]
+- Updated dependencies [f2d3cf5]
+  - @talismn/util@0.5.3
+
+## 1.1.2
+
+### Patch Changes
+
+- 0d38ece: generate init data
+- e399b86: chore: bump min nodejs version to 20
+- Updated dependencies [e399b86]
+  - @talismn/util@0.5.2
+
+## 1.1.1
+
+### Patch Changes
+
+- 9869029: generate init data
+
+## 1.1.0
+
+### Minor Changes
+
+- f0a103b: add getBlockExplorerUrls and getBlockExplorerLabel
+
+### Patch Changes
+
+- 7b41204: update init data
+- f5e2f60: chore: updated types & added sync hook for wallet swaps
+- 0c9b3c7: generate init data
+- 8a31f57: generate init data
+- a922bed: feat: swappable chaindata storage
+- f0a103b: feat: updates for solana
+- Updated dependencies [dfe2992]
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/util@0.5.1
+
 ## 1.0.2
 
 ### Patch Changes

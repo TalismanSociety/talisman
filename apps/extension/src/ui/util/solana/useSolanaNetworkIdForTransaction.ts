@@ -37,7 +37,10 @@ export const useSolanaNetworkIdForTransaction = (
               try {
                 const connection = getFrontEndSolanaConnection(network.id)
                 if (!connection) return null
-                return (await connection.isBlockhashValid(recentBlockhash)) ? network.id : null
+                const result = await connection.isBlockhashValid(recentBlockhash, {
+                  commitment: "processed", // Fastest, but may include blocks that could be rolled back.
+                })
+                return result.value ? network.id : null
               } catch (err) {
                 return null
               }

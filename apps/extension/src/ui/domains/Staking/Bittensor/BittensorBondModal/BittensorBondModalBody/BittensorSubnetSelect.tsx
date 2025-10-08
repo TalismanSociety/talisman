@@ -1,7 +1,6 @@
 import { classNames } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
@@ -34,7 +33,6 @@ export const BittensorSubnetSelect = () => {
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
   const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[]>([])
   const { setStep, setNetuid, netuid } = useBittensorBondWizard()
-  const [selectedNetuid, setSelectedNetuid] = useState<number | null>(netuid)
 
   const { t } = useTranslation()
 
@@ -108,12 +106,13 @@ export const BittensorSubnetSelect = () => {
     [handleSearchClear, subnets],
   )
 
-  const handleSubmit = useCallback(() => {
-    setStep("subnet-form")
-    if (selectedNetuid) {
-      setNetuid(selectedNetuid)
-    }
-  }, [selectedNetuid, setNetuid, setStep])
+  const handleSubmit = useCallback(
+    (netuid: number) => {
+      setStep("subnet-form")
+      setNetuid(netuid)
+    },
+    [setNetuid, setStep],
+  )
 
   return (
     <div className="flex h-full flex-col gap-y-[16px] pt-8">
@@ -151,7 +150,7 @@ export const BittensorSubnetSelect = () => {
           <div>{t("Name")}</div>
           <div>{t("Emission")}</div>
         </div>
-        <ScrollContainer className="h-[29.5rem]" innerClassName="space-y-[0.8rem]">
+        <ScrollContainer className="h-[40rem]" innerClassName="space-y-[0.8rem]">
           {isLoading && sortedOrFilteredSubnets.length === 0
             ? Array(6)
                 .fill(null)
@@ -162,28 +161,20 @@ export const BittensorSubnetSelect = () => {
                 <BittensorSubnetOption
                   key={option.netuid!}
                   option={option}
-                  selectedNetuid={selectedNetuid}
+                  selectedNetuid={netuid}
                   tokenId={BITTENSOR_TOKEN_ID}
-                  handleSelectSubnet={setSelectedNetuid}
+                  handleSelectSubnet={handleSubmit}
                   isSubnetsLoading={isSubnetsLoading}
                   isSubnetsError={isSubnetsError}
                 />
               ))}
           {isError && (
-            <div className="text-alert-error ite`ms-center flex h-full justify-center">
+            <div className="text-alert-error flex h-full items-center justify-center">
               {t("Unable to fetch subnets")}
             </div>
           )}
         </ScrollContainer>
       </div>
-      <Button
-        primary
-        className="mt-auto w-full"
-        onClick={handleSubmit}
-        disabled={!selectedNetuid || selectedNetuid === netuid}
-      >
-        {t("Select Subnet")}
-      </Button>
     </div>
   )
 }

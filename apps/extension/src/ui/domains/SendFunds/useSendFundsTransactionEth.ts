@@ -1,12 +1,12 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { getEthTransferTransactionBase } from "extension-core"
+import { getEthTransferTransactionBase, isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
-import { useBalance, useNetworkById, useToken } from "@ui/state"
+import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
-import { useEvmTransactionRiskAnalysis } from "../Sign/Ethereum/riskAnalysis"
+import { useEvmTransactionRiskAnalysis } from "../Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionEth = ({
@@ -46,10 +46,15 @@ export const useSendFundsTransactionEth = ({
 
   const result = useEthTransaction(tx, token?.networkId, isLocked, false)
 
+  // force a risk analysis scan if the account isnt owned
+  const targetAccount = useAccountByAddress(to)
+  const isScanRequired = useMemo(() => !!to && !isAccountOwned(targetAccount), [targetAccount, to])
+
   const riskAnalysis = useEvmTransactionRiskAnalysis({
-    evmNetworkId: token?.networkId,
+    networkId: token?.networkId,
     tx,
-    disableAutoRiskScan: true,
+    disableAutoRiskScan: !isScanRequired,
+    disableCriticalPane: true,
   })
 
   const maxAmount = useMemo(() => {

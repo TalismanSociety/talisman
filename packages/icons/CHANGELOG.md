@@ -1,5 +1,23 @@
 # @talismn/icons
 
+## 0.1.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+
+## 0.1.3
+
+### Patch Changes
+
+- e399b86: chore: bump min nodejs version to 20
+
+## 0.1.2
+
+### Patch Changes
+
+- dfe2992: protocol icon
+
 ## 0.1.1
 
 ### Patch Changes

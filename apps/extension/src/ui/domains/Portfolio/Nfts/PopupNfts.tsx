@@ -1,5 +1,5 @@
 import { StarIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, isNotNil } from "@talismn/util"
 import { NftCollection, NftData } from "extension-core"
 import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,7 +20,7 @@ import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
 import { NftTile } from "../NftTile"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
-import { getNftCollectionFloorUsd, getPortfolioNftCollectionPreviewUrl } from "./helpers"
+import { getPortfolioNftCollectionPreviewUrl } from "./helpers"
 import { NftsUnavailable } from "./NftsUnavailable"
 
 const NoNftFound = () => {
@@ -42,7 +42,7 @@ const NoNftFound = () => {
 }
 
 export const PopupNfts = () => {
-  const showNfts = useFeatureFlag("NFTS")
+  const showNfts = useFeatureFlag("NFTS_V2")
   return showNfts ? <PopupNftsInner /> : <NftsUnavailable />
 }
 
@@ -80,9 +80,12 @@ const NftCollectionRowInner: FC<{
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
   }, [collection, nfts])
 
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
+  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
-  const floorUsdValue = useMemo(() => getNftCollectionFloorUsd(collection), [collection])
+  const value = useMemo(() => {
+    const values = nfts.map((nft) => nft.price).filter(isNotNil)
+    return values.length ? values.reduce((acc, price) => acc + price, 0) : null
+  }, [nfts])
 
   const { t } = useTranslation()
 
@@ -92,16 +95,15 @@ const NftCollectionRowInner: FC<{
     else navigate(`/portfolio/nfts/${collection.id}`)
   }, [collection.id, navigate, nfts, onNftClick])
 
-  const evmNetworksMap = useNetworksMapById({
-    platform: "ethereum",
+  const allNetworksMap = useNetworksMapById({
     activeOnly: true,
     includeTestnets: true,
   })
   const networkName = useMemo(() => {
     if (networkIds.length !== 1) return null
-    const network = evmNetworksMap[networkIds[0]]
+    const network = allNetworksMap[networkIds[0]]
     return network?.name ?? null
-  }, [evmNetworksMap, networkIds])
+  }, [allNetworksMap, networkIds])
 
   // favorites are the first ones in the list, can check just the first one
   const isFavorite = useIsFavoriteNft(nfts[0].id)
@@ -132,19 +134,39 @@ const NftCollectionRowInner: FC<{
         <div
           className={classNames(
             "text-body-secondary",
-            floorUsdValue === null && "select-none text-transparent",
+            value === null && "select-none text-transparent",
           )}
         >
-          {floorUsdValue !== null ? (
-            <Fiat amount={floorUsdValue} forceCurrency="usd" noCountUp />
-          ) : (
-            "N/A"
-          )}
+          {value !== null ? <Fiat amount={value} forceCurrency="usd" noCountUp /> : "N/A"}
         </div>
       </div>
     </button>
   )
 }
+
+const NftCollectionRowSkeleton = () => (
+  <div className="bg-grey-900 flex h-32 items-center justify-between gap-8 rounded-sm px-8">
+    <div className="flex items-center gap-6">
+      <div className="bg-grey-800 animated-pulse size-16 rounded-sm"></div>
+      <div className="flex grow flex-col gap-2 overflow-hidden">
+        <div className="flex w-full gap-2 overflow-hidden text-base">
+          <span className="text-grey-800 bg-grey-800 animate-pulse truncate rounded-sm font-bold">
+            AAAAAAAAAAA AAAA
+          </span>
+        </div>
+        <div className="flex w-full gap-2 overflow-hidden text-base">
+          <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm text-sm">
+            NNNNNNNNNNN
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div className="text-right">
+      <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm">1 NFT</span>
+    </div>
+  </div>
+)
 
 const NftCollectionRow: FC<{
   collection: NftCollection
@@ -178,6 +200,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
           onNftClick={onNftClick}
         />
       ))}
+      {data.status === "loading" && <NftCollectionRowSkeleton />}
     </div>
   )
 }
@@ -199,7 +222,7 @@ const NftCollectionTileInner: FC<{
     return getPortfolioNftCollectionPreviewUrl(collection, nfts)
   }, [collection, nfts])
 
-  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.evmNetworkId))], [nfts])
+  const networkIds = useMemo(() => [...new Set(nfts.map((nft) => nft.networkId))], [nfts])
 
   const navigate = useNavigateWithQuery()
   const handleClick = useCallback(() => {
@@ -237,6 +260,12 @@ const NftCollectionTile: FC<{
   )
 }
 
+const NftCollectionTileSkeleton = () => (
+  <div className="w-[16.7rem]">
+    <div className="bg-grey-800 size-[16.7rem] animate-pulse rounded-sm"></div>
+  </div>
+)
+
 const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => void }> = ({
   data,
   onNftClick,
@@ -251,6 +280,7 @@ const NftCollectionsTiles: FC<{ data: NftData; onNftClick: (nftId: string) => vo
           onNftClick={onNftClick}
         />
       ))}
+      {data.status === "loading" && <NftCollectionTileSkeleton />}
     </div>
   )
 }

@@ -12,12 +12,23 @@ import { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { atom, ExtractAtomValue, Getter } from "jotai"
-import { withAtomEffect } from "jotai-effect"
+import { atom, ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
+import {
+  catchError,
+  defer,
+  interval,
+  Observable,
+  of,
+  retry,
+  startWith,
+  switchMap,
+  takeWhile,
+} from "rxjs"
 import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
 import {
   arbitrum,
+  arbitrumNova,
   base,
   blast,
   bsc,
@@ -25,14 +36,16 @@ import {
   manta,
   moonbeam,
   moonriver,
+  opBNB,
   optimism,
   polygon,
   sonic,
+  zksync,
 } from "viem/chains"
 
 import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 
-import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
+import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
@@ -55,7 +68,7 @@ import {
 } from "./common.swap-module"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
-export const PROTOCOL = "simpleswap"
+export const PROTOCOL: SupportedSwapProtocol = "simpleswap"
 export const PROTOCOL_NAME = "SimpleSwap"
 const DECENTRALISATION_SCORE = 1
 const TALISMAN_FEE = 0.015
@@ -79,6 +92,7 @@ type SimpleSwapCurrency = {
   name: string
   network: string
   symbol: string
+  precision: number | null
   contract_address: string | null
   extra_id: string
   has_extra_id: boolean
@@ -93,18 +107,22 @@ type SimpleSwapAssetContext = {
 }
 
 const supportedEvmChains: Record<string, ViemChain | undefined> = {
-  eth: mainnet,
-  bsc,
-  base,
   arbitrum,
-  optimism,
+  arbnova: arbitrumNova,
+  base,
   blast,
-  polygon,
-  manta,
-  movr: moonriver,
+  bsc,
+  eth: mainnet,
   glmr: moonbeam,
+  manta,
+  matic: polygon,
+  movr: moonriver,
+  opbnb: opBNB,
+  optimism,
+  polygon,
   s: sonic,
   vana: vanaMainnet,
+  zksync,
 }
 
 /**
@@ -468,6 +486,11 @@ const simpleswapAssetsAtom = atom(async (get) => {
           id,
           name: polkadotAsset?.name ?? currency.name,
           symbol: polkadotAsset?.symbol ?? currency.symbol,
+          decimals:
+            polkadotAsset?.decimals ??
+            evmChain?.nativeCurrency?.decimals ??
+            currency.precision ??
+            undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,
@@ -884,37 +907,35 @@ export const simpleswapSwapModule: SwapModule = {
   decentralisationScore: DECENTRALISATION_SCORE,
 }
 
-export const retryStatus = async (
-  get: Getter,
-  id: string,
-  attempts = 0,
-): Promise<{ status: Exchange["status"] }> => {
-  try {
-    const exchange = await simpleSwapSdk.getExchange(id)
+export const swapStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>
+  retryStatus$(id).pipe(
+    switchMap((status) => {
+      if (status === undefined) return of(undefined)
 
-    if (!["finished", "failed"].includes(exchange.status) && exchange.code !== 401) {
-      get(refreshSwapStatusAtom)
-    }
+      const shouldRefresh = (status: Exchange["status"] | undefined) =>
+        !(status && ["finished", "failed", "expired", "refunded"].includes(status))
 
-    return { status: exchange.status }
-  } catch (cause) {
-    const error = cause as Error & { response?: { status?: number } }
-    // because we're using a broker, the tx isnt always available immediately in their api service
-    // so we wait a bit and retry
-    if (error.name === "AxiosError" && error?.response?.status === 404 && attempts < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      return retryStatus(get, id, attempts + 1)
-    }
-    throw cause
-  }
-}
-
-const _refreshSwapStatusAtom = atom(0)
-const refreshSwapStatusAtom = withAtomEffect(_refreshSwapStatusAtom, (_get, set) => {
-  const intervalId = setInterval(
-    // increment _refreshSwapStatus by 1 every 20s
-    () => set(_refreshSwapStatusAtom, (i) => (i + 1) % Number.MAX_SAFE_INTEGER),
-    20_000,
+      // refresh every 20s if status isn't final
+      if (shouldRefresh(status)) {
+        return interval(20_000).pipe(
+          startWith(-1),
+          switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
+          takeWhile((status) => shouldRefresh(status), true),
+        )
+      }
+      return of(status)
+    }),
   )
-  return () => clearInterval(intervalId)
-})
+
+const retryStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>
+  defer(() => simpleSwapSdk.getExchange(id).then((exchange) => exchange.status)).pipe(
+    // retry up to 10 times, wait 5s between each retry
+    retry({ count: 10, delay: 5_000 }),
+
+    // log when all retries failed, and return undefined
+    catchError((error) => {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to fetch exchange status for '${id}'`, error)
+      return of(undefined)
+    }),
+  )

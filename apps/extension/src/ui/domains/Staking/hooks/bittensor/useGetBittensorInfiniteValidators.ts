@@ -9,18 +9,17 @@ const MAX_PAGE_SIZE = 100
 
 const fetchBittensorInfiniteValidators = async (page: number = 1): Promise<ValidatorsData> => {
   try {
-    const response = await (
-      await fetch(
-        `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
+    const res = await fetch(
+      `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-      )
-    ).json()
-    return response
+      },
+    )
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+    return await res.json()
   } catch (cause) {
     throw new Error("Failed to fetch TAO stats", { cause })
   }

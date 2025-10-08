@@ -1,6 +1,6 @@
 {
   "name": "@talismn/keyring",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "GPL-3.0-or-later",
@@ -18,7 +18,7 @@
     "/dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "test": "jest",

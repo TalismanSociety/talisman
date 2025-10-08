@@ -12,6 +12,7 @@ import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
   db,
+  isTxInfoApproval,
   isTxInfoSwap,
   isTxInfoTransfer,
   TransactionStatus,
@@ -302,13 +303,14 @@ const EvmTxActions: FC<{
 
   const swapHref = useMemo(() => {
     if (!isTxInfoSwap(txInfo)) return
-    if (!txInfo.exchangeId) return
-    if (txInfo.type === "swap-simpleswap")
+    if (txInfo.type === "swap-simpleswap" && txInfo.exchangeId)
       return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
-    if (txInfo.type === "swap-stealthex")
+    if (txInfo.type === "swap-stealthex" && txInfo.exchangeId)
       return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
+    if (txInfo.type === "swap-lifi") return `https://scan.li.fi/tx/${tx.hash}`
+
     return
-  }, [txInfo])
+  }, [tx.hash, txInfo])
   const handleSwapClick = useCallback(() => {
     if (!swapHref) return
     window.open(swapHref, "_blank")
@@ -466,15 +468,18 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
 
 const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()
-  const swapStatus = useSwapStatus(
-    tx.txInfo?.type,
-    isTxInfoSwap(tx.txInfo) ? tx.txInfo.exchangeId : undefined,
-  )
+  const swapExchangeId =
+    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
+  const swapLifiHash =
+    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi" && tx.platform === "ethereum"
+      ? tx.hash
+      : undefined
+  const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
 
   // show regular tx status while tx is still submitting
   if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
 
-  switch (swapStatus?.status) {
+  switch (swapStatus) {
     case "waiting":
     case "confirming":
     case "exchanging":
@@ -482,17 +487,18 @@ const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
     case "verifying":
       return (
         <>
-          {swapStatus?.status === "waiting" ? <span>{t("Depositing funds")} </span> : null}
-          {swapStatus?.status === "confirming" ? <span>{t("Confirming")} </span> : null}
-          {swapStatus?.status === "exchanging" ? <span>{t("Exchanging")} </span> : null}
-          {swapStatus?.status === "sending" ? <span>{t("Sending")} </span> : null}
-          {swapStatus?.status === "verifying" ? <span>{t("Verifying")} </span> : null}
+          {swapStatus === "waiting" ? <span>{t("Depositing funds")} </span> : null}
+          {swapStatus === "confirming" ? <span>{t("Confirming")} </span> : null}
+          {swapStatus === "exchanging" ? <span>{t("Exchanging")} </span> : null}
+          {swapStatus === "sending" ? <span>{t("Sending")} </span> : null}
+          {swapStatus === "verifying" ? <span>{t("Verifying")} </span> : null}
           <LoaderIcon className="animate-spin-slow text-body-disabled" />
         </>
       )
     case "failed":
     case "refunded":
     case "expired":
+    case "invalid":
       return <TransactionStatusLabel status="error" />
     case "finished":
       return <TransactionStatusLabel status={tx.status} />
@@ -579,8 +585,9 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const txApproval = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
 
-  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || txApproval?.tokenId
 
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -759,11 +766,11 @@ const TxActionsDefault: FC<{
 
   const swapHref = useMemo(() => {
     if (!isTxInfoSwap(txInfo)) return
-    if (!txInfo.exchangeId) return
-    if (txInfo.type === "swap-simpleswap")
+    if (txInfo.type === "swap-simpleswap" && txInfo.exchangeId)
       return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
-    if (txInfo.type === "swap-stealthex")
+    if (txInfo.type === "swap-stealthex" && txInfo.exchangeId)
       return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
+    // NOTE: Lifi doesn't support substrate, we don't need to handle it here
     return
   }, [txInfo])
   const handleSwapClick = useCallback(() => {
@@ -1001,8 +1008,9 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({
 }) => {
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const txApproval = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
 
-  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || txApproval?.tokenId
 
   const chain = useNetworkById(tx.networkId, "solana")
   const token = useToken(tokenId)

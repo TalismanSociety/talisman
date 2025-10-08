@@ -14,13 +14,14 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
   const location = useLocation()
   const navigate = useNavigateWithQuery()
 
-  const tabs = useMemo(() => {
-    const resTabs = [{ label: t("Tokens"), value: URL_TAB_TOKENS }]
-    resTabs.push({ label: t("NFTs"), value: URL_TAB_NFTS })
-    resTabs.push({ label: t("DeFi"), value: URL_TAB_DEFI })
-
-    return resTabs
-  }, [t])
+  const tabs = useMemo(
+    () => [
+      { label: t("Tokens"), value: URL_TAB_TOKENS },
+      { label: t("NFTs"), value: URL_TAB_NFTS },
+      { label: t("DeFi"), value: URL_TAB_DEFI },
+    ],
+    [t],
+  )
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),

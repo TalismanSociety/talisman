@@ -1,15 +1,15 @@
-import Identicon from "@polkadot/react-identicon"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
 import { IdenticonType } from "extension-core"
 import { renderToString } from "react-dom/server"
 
+import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon"
+
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {
     const component =
       iconType === "polkadot-identicon" ? (
-        <Identicon value={address} theme={isEthereumAddress(address) ? "ethereum" : "polkadot"} />
+        <PolkadotAvatar seed={address} />
       ) : (
         <TalismanOrb seed={address} />
       )

@@ -1,5 +1,29 @@
 # @talismn/orb
 
+## 0.3.4
+
+### Patch Changes
+
+- 72acc04: chore: tidied up tsconfig.json
+- Updated dependencies [72acc04]
+  - @talismn/crypto@0.2.3
+
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [e399b86]
+  - @talismn/crypto@0.2.2
+
+## 0.3.2
+
+### Patch Changes
+
+- f0a103b: feat: updates for solana
+- Updated dependencies [a922bed]
+- Updated dependencies [f0a103b]
+  - @talismn/crypto@0.2.1
+
 ## 0.3.1
 
 ### Patch Changes

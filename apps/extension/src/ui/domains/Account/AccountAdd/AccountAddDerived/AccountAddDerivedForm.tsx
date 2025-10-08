@@ -5,6 +5,7 @@ import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import {
   getDefaultCurveForAccountPlatform,
+  getDerivationPathForCurve,
   RequestAddAccountDerive,
   SUPPORTED_ACCOUNT_PLATFORMS,
 } from "extension-core"
@@ -45,10 +46,10 @@ const useNextAvailableDerivationPath = (mnemonicId: string | null, curve: Keypai
   return useQuery({
     queryKey: ["useNextAvailableDerivationPath", mnemonicId, curve],
     queryFn: () => {
-      if (!mnemonicId || !curve) return null
+      if (!curve) return null
+      if (!mnemonicId) return getDerivationPathForCurve(curve)
       return api.getNextDerivationPath(mnemonicId, curve)
     },
-    enabled: !!mnemonicId,
     refetchInterval: false,
     retry: false,
   })

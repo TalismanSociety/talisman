@@ -10,10 +10,20 @@ import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/cr
 import { ScaleApi } from "@talismn/sapi"
 import BigNumber from "bignumber.js"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { atom, ExtractAtomValue, Getter } from "jotai"
-import { withAtomEffect } from "jotai-effect"
+import { atom, ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import createClient from "openapi-fetch"
+import {
+  catchError,
+  defer,
+  interval,
+  Observable,
+  of,
+  retry,
+  startWith,
+  switchMap,
+  takeWhile,
+} from "rxjs"
 import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
 import {
   arbitrum,
@@ -81,7 +91,7 @@ const getTalismanTotalFee = ({ fromAsset, toAsset }: FeeProps) => {
 
   const isToOrFromBtc = fromAsset.networkType === "btc" || toAsset.networkType === "btc"
 
-  if (isSubToOrFromEvm) return 0.015 // 1.5% total fee for sub<>evm
+  if (isSubToOrFromEvm) return 0.006 // 0.6% total fee for sub<>evm
   if (isSubToOrFromSub) return 0.005 // 0.5% total fee for sub<>sub
   if (isEvmToOrFromEvm) return 0.002 // 0.2% total fee for evm<>evm (NOTE: will actually be 0.4%, as that is the minimum we can set via stealthex for now)
   if (isToOrFromBtc) return 0.015 // 1.5% total fee for any<>btc
@@ -121,8 +131,8 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
   opbnb: opBNB,
   optimism,
   theta,
-  zksync,
   vana: vanaMainnet,
+  zksync,
 }
 
 /**
@@ -448,6 +458,11 @@ const assetsAtom = atom(async (get) => {
           id,
           name: specialAsset?.name ?? currency.name,
           symbol: specialAsset?.symbol ?? currency.symbol,
+          decimals:
+            specialAsset?.decimals ??
+            evmChain?.nativeCurrency?.decimals ??
+            currency?.precision ??
+            undefined,
           chainId,
           contractAddress: currency.contract_address ? currency.contract_address : undefined,
           image,
@@ -861,37 +876,35 @@ export const stealthexSwapModule: SwapModule = {
   decentralisationScore: DECENTRALISATION_SCORE,
 }
 
-export const retryStatus = async (
-  get: Getter,
-  id: string,
-  attempts = 0,
-): Promise<{ status: StealthexExchange["status"] }> => {
-  try {
-    const exchange = await stealthexSdk.getExchange(id)
+export const swapStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>
+  retryStatus$(id).pipe(
+    switchMap((status) => {
+      if (status === undefined) return of(undefined)
 
-    if (!["finished", "failed"].includes(exchange.status)) {
-      get(refreshSwapStatusAtom)
-    }
+      const shouldRefresh = (status: StealthexExchange["status"] | undefined) =>
+        !(status && ["finished", "failed", "expired", "refunded"].includes(status))
 
-    return { status: exchange.status }
-  } catch (cause) {
-    const error = cause as Error & { response?: { status?: number } }
-    // because we're using a broker, the tx isnt always available immediately in their api service
-    // so we wait a bit and retry
-    if (error.name === "AxiosError" && error?.response?.status === 404 && attempts < 10) {
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      return retryStatus(get, id, attempts + 1)
-    }
-    throw cause
-  }
-}
-
-const _refreshSwapStatusAtom = atom(0)
-const refreshSwapStatusAtom = withAtomEffect(_refreshSwapStatusAtom, (_get, set) => {
-  const intervalId = setInterval(
-    // increment _refreshSwapStatus by 1 every 20s
-    () => set(_refreshSwapStatusAtom, (i) => (i + 1) % Number.MAX_SAFE_INTEGER),
-    20_000,
+      // refresh every 20s if status isn't final
+      if (shouldRefresh(status)) {
+        return interval(20_000).pipe(
+          startWith(-1),
+          switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
+          takeWhile((status) => shouldRefresh(status), true),
+        )
+      }
+      return of(status)
+    }),
   )
-  return () => clearInterval(intervalId)
-})
+
+const retryStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>
+  defer(() => stealthexSdk.getExchange(id).then((exchange) => exchange.status)).pipe(
+    // retry up to 10 times, wait 5s between each retry
+    retry({ count: 10, delay: 5_000 }),
+
+    // log when all retries failed, and return undefined
+    catchError((error) => {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to fetch exchange status for '${id}'`, error)
+      return of(undefined)
+    }),
+  )
