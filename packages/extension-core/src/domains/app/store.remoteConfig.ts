@@ -55,6 +55,28 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     tradeUrl: "",
     stakingContractNetworkId: "",
     stakingContractAddress: "0x",
+    discountTiers: [
+      {
+        tier: 0,
+        min: "0",
+        discount: 0,
+      },
+      {
+        tier: 1,
+        min: "100000000000000000000", // 100 * 10^18
+        discount: 0.01,
+      },
+      {
+        tier: 2,
+        min: "1000000000000000000000", // 1,000 * 10^18
+        discount: 0.02,
+      },
+      {
+        tier: 3,
+        min: "10000000000000000000000", // 10,000 * 10^18
+        discount: 0.03,
+      },
+    ],
   },
 }
 

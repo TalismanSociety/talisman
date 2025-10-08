@@ -42,6 +42,11 @@ export type RemoteConfigStoreData = {
     tradeUrl: string
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
+    discountTiers: Array<{
+      tier: number
+      min: string
+      discount: number
+    }>
   }
 }
 
