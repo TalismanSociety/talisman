@@ -8,7 +8,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
-import { useAppState } from "@ui/state"
+import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -33,6 +33,7 @@ export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
   const [hideWarning] = useAppState("hideBittensorSubnetStakeWarning")
   const [hasAckWarning, setHasAckWarning] = useState<boolean>(hideWarning || false)
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
     token,
@@ -220,9 +221,11 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {discount > 0 && (
+              {discount > 0 && isSeekTaoDiscountEnabled && (
                 <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
-                  <div className="text-[1rem] text-[#D5FF5C]">{discountPercent} Off Fees</div>
+                  <div className="text-[1rem] text-[#D5FF5C]">
+                    {discountPercent} {t("Off Fees")}
+                  </div>
                 </div>
               )}
             </div>
@@ -231,7 +234,7 @@ export const BittensorSubnetBondReview = () => {
               tokenId={feeToken?.id}
               isLoading={isDynamicInfoLoading}
               error={isDynamicInfoError}
-              tokensClassName={discount > 0 ? "text-[#D5FF5C]" : ""}
+              tokensClassName={discount > 0 && isSeekTaoDiscountEnabled ? "text-[#D5FF5C]" : ""}
               noCountUp
               noFiat
             />
