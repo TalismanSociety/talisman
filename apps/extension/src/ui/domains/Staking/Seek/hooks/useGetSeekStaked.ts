@@ -1,35 +1,33 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
 import { isAccountAddressEthereum } from "extension-core"
-import { formatUnits } from "viem"
 
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAccounts } from "@ui/state"
+import { useAccounts, useRemoteConfig } from "@ui/state"
 
-import { CHAIN_ID, DECIMALS, DEEK_SINGLE_POOL_STAKING_ADDRESS } from "../constants"
+import { DECIMALS } from "../constants"
 import seekSinglePoolStakingAbi from "../seekSinglePoolStakingAbi"
 
 export const useGetSeekStaked = (): {
   data: {
     balances: {
       address: string
-      amount: bigint
-      amountFormatted: string
+      balance: BalanceFormatter
     }[]
-    totalStaked: {
-      amount: bigint
-      amountFormatted: string
-    }
+    totalStaked: BalanceFormatter
   }
   isLoading: boolean
   isError: boolean
   refetch: () => void
 } => {
+  const remoteConfig = useRemoteConfig()
   const accounts = useAccounts("owned")
   const ethAccounts = accounts.filter(isAccountAddressEthereum)
-  const publicClient = usePublicClient(CHAIN_ID.toString())
+  const { stakingContractNetworkId, stakingContractAddress } = remoteConfig.seek
+  const publicClient = usePublicClient(stakingContractNetworkId)
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["useGetSeekStaked", CHAIN_ID, ethAccounts.map((a) => a.address)],
+    queryKey: ["useGetSeekStaked", stakingContractNetworkId, ethAccounts.map((a) => a.address)],
     queryFn: async () => {
       if (!publicClient || ethAccounts.length === 0) return []
 
@@ -37,7 +35,7 @@ export const useGetSeekStaked = (): {
       const balancePromises = ethAccounts.map(async (account) => {
         try {
           const balance = await publicClient.readContract({
-            address: DEEK_SINGLE_POOL_STAKING_ADDRESS,
+            address: stakingContractAddress,
             abi: seekSinglePoolStakingAbi,
             functionName: "balanceOf",
             args: [account.address],
@@ -59,17 +57,13 @@ export const useGetSeekStaked = (): {
   const balances = data
     ? ethAccounts.map((account, i) => ({
         address: account.address,
-        amount: data[i] || 0n,
-        amountFormatted: formatUnits(data[i] || 0n, DECIMALS),
+        balance: new BalanceFormatter(data[i] || 0n, DECIMALS),
       }))
     : []
 
-  const totalStakedAmount = balances.reduce((total, account) => total + account.amount, 0n)
+  const totalStakedAmount = balances.reduce((total, account) => total + account.balance.planck, 0n)
 
-  const totalStaked = {
-    amount: totalStakedAmount,
-    amountFormatted: formatUnits(totalStakedAmount, DECIMALS),
-  }
+  const totalStaked = new BalanceFormatter(totalStakedAmount, DECIMALS)
 
   return { data: { balances, totalStaked }, isLoading, isError, refetch }
 }

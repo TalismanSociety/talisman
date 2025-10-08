@@ -1,15 +1,14 @@
+import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
-import { cn, formatDecimals } from "@talismn/util"
-import { isAccountAddressEthereum } from "extension-core"
+import { cn } from "@talismn/util"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Drawer } from "talisman-ui"
-import { formatUnits } from "viem"
 
-import { useAccounts, usePortfolioBalances } from "@ui/state"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 
-import { DECIMALS, DEEK_TICKER, DEEK_TOKEN_ADDRESS } from "./constants"
 import { useGetSeekDiscount } from "./hooks/useGetSeekDiscount"
 import { useGetSeekStaked } from "./hooks/useGetSeekStaked"
 import seekLogo from "./seek.svg?url"
@@ -29,33 +28,32 @@ export const SeekGetFeeDiscountsDrawer = ({
 }: SeekGetFeeDiscountsDrawerProps) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const portfolioBalances = usePortfolioBalances()
+  const remoteConfig = useRemoteConfig()
 
-  const { allBalances } = portfolioBalances
+  const { tokenId } = remoteConfig.seek
+  // const token = useToken(remoteConfig.seek.tokenId) // TODO: Uncomment this once remote config is updated
+  const token = useToken(tokenId)
+  const balances = useBalances()
 
   const accounts = useAccounts("owned")
-  const ethAccounts = accounts.filter(isAccountAddressEthereum)
 
-  const seekBalances = allBalances.find((b) => b.tokenId === `137:evm-erc20:${DEEK_TOKEN_ADDRESS}`)
-
-  const totalAvailable = useMemo(
-    () =>
-      seekBalances?.each.reduce((acc, t) => {
-        if (!ethAccounts.find((a) => a.address === t.address)) return acc
-        return acc + t.total.planck
-      }, 0n) ?? 0n,
-    [seekBalances, ethAccounts],
-  )
+  const totalOwned = useMemo(() => {
+    if (!balances.count || !accounts.length || !token) return null
+    const addresses = accounts.map((a) => a.address)
+    const filtered = balances.find((b) => b.tokenId === token.id && addresses.includes(b.address))
+    return new BalanceFormatter(filtered.sum.planck.transferable, token?.decimals)
+  }, [balances, accounts, token])
 
   const {
     data: { totalStaked },
   } = useGetSeekStaked()
   const { tier } = useGetSeekDiscount()
 
-  const hasSeekStaked = totalStaked.amount > 0n
+  const hasSeekStaked = totalStaked.planck > 0n
 
-  const totalAvailableFormatted = formatDecimals(formatUnits(totalAvailable, DECIMALS))
   const discountPercent = `${tier.discount * 100}%`
+
+  const tokenSymbol = token?.symbol || "SEEK"
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
@@ -68,7 +66,7 @@ export const SeekGetFeeDiscountsDrawer = ({
         </div>
         <div className="text-body-secondary flex flex-col gap-6 text-sm">
           <div>
-            {t(`Stake ${DEEK_TICKER} to enjoy fee discounts on your subnet staking transactions. `)}
+            {t(`Stake ${tokenSymbol} to enjoy fee discounts on your subnet staking transactions. `)}
             <a
               className="inline-flex items-center justify-center gap-1 text-white"
               href="https://talisman.xyz/"
@@ -82,28 +80,31 @@ export const SeekGetFeeDiscountsDrawer = ({
           <div className="flex justify-between rounded-[10px] border-[1px] border-solid border-[text-body-disabled] p-6">
             <div className="flex items-center gap-4">
               <img
-                src={seekLogo}
+                src={token?.logo ?? seekLogo}
                 alt={"seek logo"}
                 className="inline-block size-[4rem] overflow-hidden"
               />
               <div>
-                <div className="text-white">{DEEK_TICKER}</div>
+                <div className="text-white">{tokenSymbol}</div>
                 <div className="text-[14px]">
-                  Available: {totalAvailableFormatted} {DEEK_TICKER}
+                  {t("Available")}:{" "}
+                  <Tokens amount={totalOwned?.tokens || 0} decimals={token?.decimals} />
                 </div>
               </div>
             </div>
             {hasSeekStaked && (
               <div>
                 <div className="text-white">
-                  {totalStaked.amountFormatted} {DEEK_TICKER}
+                  <Tokens amount={totalStaked.tokens} decimals={token?.decimals} /> {tokenSymbol}
                 </div>
-                <div className="text-end text-[14px]">Staked</div>
+                <div className="text-end text-[14px]">{t("Staked")}</div>
               </div>
             )}
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-white">{hasSeekStaked ? "Applied Discount" : "Get Discounts"}</div>
+            <div className="text-white">
+              {hasSeekStaked ? t("Applied Discount") : t("Get Discounts")}
+            </div>
             <div
               className={cn(
                 "rounded-[43px] px-4 py-2",
@@ -111,7 +112,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               )}
             >
               <div className="text-[14px] text-[#D5FF5C]">
-                {hasSeekStaked ? discountPercent : "Up to 25%"} off fees
+                {hasSeekStaked ? discountPercent : t("Up to 25%")} {t("off fees")}
               </div>
             </div>
           </div>
@@ -119,11 +120,11 @@ export const SeekGetFeeDiscountsDrawer = ({
         <div className="grid w-full grid-cols-2 gap-8">
           <Button
             onClick={() => {
-              navigate(`/portfolio/tokens/${DEEK_TICKER}`)
+              navigate(`/portfolio/tokens/${tokenSymbol}`)
               onCloseModal()
             }}
           >
-            Stake {DEEK_TICKER}
+            {t("Stake")} {tokenSymbol}
           </Button>
           <Button
             className="px-2"
@@ -132,7 +133,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               open("https://talisman.xyz/", "_blank", "noopener,noreferrer")
             }}
           >
-            Buy {DEEK_TICKER}
+            {t("Buy")} {tokenSymbol}
           </Button>
         </div>
       </div>

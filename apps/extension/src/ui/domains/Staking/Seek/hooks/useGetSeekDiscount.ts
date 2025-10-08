@@ -12,7 +12,7 @@ export const useGetSeekDiscount = () => {
     return DISCOUNT_TIERS.findLast((tier) => amount >= tier.min) || DISCOUNT_TIERS[0]
   }
 
-  const tier = getTier({ amount: data.totalStaked.amount })
+  const tier = getTier({ amount: data.totalStaked.planck })
 
   return { tier, isLoading, isError, refetch }
 }
