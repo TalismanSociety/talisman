@@ -72,35 +72,67 @@ const btcTokens = {
 
 const tAtom = atomWithObservable(() => t$)
 
-const getTokensByChainId = async (
+const getAssetsByChainId = async (
   get: Getter,
-  allTokensSelector: Atom<
+  allAssetsSelector: Atom<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Promise<SwappableAssetBaseType<Partial<Record<SupportedSwapProtocol, any>>>[]>
   >[],
+  signal: AbortSignal,
 ) => {
+  const withRetry = async <T>(fn: () => Promise<T>, retries = 3): Promise<T | never[]> => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      if (signal.aborted) return []
+
+      try {
+        return await fn()
+      } catch (cause) {
+        if (signal.aborted) return []
+
+        if (attempt === retries) {
+          // eslint-disable-next-line no-console
+          console.warn(`assetsSelectorAtom failed ${retries} times, ignoring`, cause)
+          return []
+        }
+        // delay before retrying
+        await new Promise((resolve) => setTimeout(resolve, 100 * attempt))
+      }
+    }
+    return []
+  }
+
   const knownTokens = await get(atomWithObservable(() => getTokensMap$()))
-  const tokens = (await Promise.all(allTokensSelector.map(get))).flat()
-  return tokens.reduce(
+
+  // NOTE: If one module fails to fetch tokens, retry it a few times,
+  // if it still fails, move on so we can at least see the tokens from the non-failing modules
+  const assets = (
+    await Promise.all(
+      allAssetsSelector.map((assetSelectorAtom) => {
+        return withRetry(() => get(assetSelectorAtom))
+      }),
+    )
+  ).flat()
+
+  return assets.reduce(
     (acc, cur) => {
-      const tokens = acc[cur.chainId.toString()] ?? {}
+      const assets = acc[cur.chainId.toString()] ?? {}
       const tokenDetails = knownTokens[cur.id] ?? btcTokens[cur.id as "btc-native"]
 
       const symbol = tokenDetails?.symbol ?? cur.symbol
       const decimals = tokenDetails?.decimals ?? cur.decimals
       const image = symbol?.toLowerCase() === "eth" ? ETH_LOGO : cur.image
       if (!symbol || !decimals) return acc
-      tokens[cur.id] = {
+      assets[cur.id] = {
         ...cur,
         symbol,
         decimals,
         image,
         context: {
-          ...tokens[cur.id]?.context,
+          ...assets[cur.id]?.context,
           ...cur.context,
         },
       }
-      acc[cur.chainId.toString()] = tokens
+      acc[cur.chainId.toString()] = assets
       return acc
     },
     {} as Record<string, Record<string, SwappableAssetWithDecimals>>,
@@ -450,12 +482,12 @@ const filterAndSortTokens = async (
  * Users should later be able to paste any arbitrary address to swap any token
  * This will happen when we support other protocols like uniswap, sushiswap, etc
  */
-export const fromAssetsAtom = atom(async (get) => {
-  const allTokensSelector = swapModules.map((module) => module.fromAssetsSelector)
-  const tokensByChains = await getTokensByChainId(get, allTokensSelector)
+export const fromAssetsAtom = atom(async (get, { signal }) => {
+  const allAssetsSelector = swapModules.map((module) => module.fromAssetsSelector)
+  const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
   const search = get(swapFromSearchAtom)
 
-  const tokens = Object.values(tokensByChains)
+  const tokens = Object.values(assetsByChains)
     .map((tokens) =>
       Object.values(tokens).sort((a, b) =>
         a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),
@@ -468,17 +500,17 @@ export const fromAssetsAtom = atom(async (get) => {
   return filteredTokens.filter((t) => t.networkType !== "btc")
 })
 
-export const toAssetsAtom = atom(async (get) => {
+export const toAssetsAtom = atom(async (get, { signal }) => {
   const fromAsset = get(fromAssetAtom)
   const search = get(swapToSearchAtom)
 
   // only select from the protocols that fromAsset support
-  const allTokensSelector = swapModules
+  const allAssetsSelector = swapModules
     .filter((m) => (fromAsset ? fromAsset.context[m.protocol] : true))
     .map((module) => module.toAssetsSelector)
 
-  const tokensByChains = await getTokensByChainId(get, allTokensSelector)
-  const tokens = Object.values(tokensByChains)
+  const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
+  const tokens = Object.values(assetsByChains)
     .map((tokens) =>
       Object.values(tokens).sort((a, b) =>
         a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),

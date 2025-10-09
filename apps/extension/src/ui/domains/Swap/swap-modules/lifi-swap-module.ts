@@ -41,6 +41,21 @@ const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
 const TALISMAN_FEE = 0.002 // We take a fee of 0.2%
+const LIFI_FEE = 0.0025 // lifi takes a fee of 0.25%
+
+type RouteProps = {
+  fromAssetId?: string
+  toAssetId?: string
+}
+const discountedRoute = async ({ fromAssetId, toAssetId }: RouteProps) => {
+  const lifiTalismanTokens = (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []
+  return (
+    (fromAssetId && lifiTalismanTokens.includes(fromAssetId)) ||
+    (toAssetId && lifiTalismanTokens.includes(toAssetId))
+  )
+}
+const getTalismanFee = async (route: RouteProps) =>
+  (await discountedRoute(route)) ? 0 : TALISMAN_FEE
 
 let apiKey: string | undefined
 const getSdk = async () => {
@@ -56,12 +71,18 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
   const allSdkTokens = (await sdk.getTokens({ chainTypes: [sdk.ChainType.EVM, sdk.ChainType.SVM] }))
     ?.tokens
 
-  const deek = await sdk.getToken(137, "0x2a69b0383759572081c09f0a68d3a8a955751dde")
-  allSdkTokens[deek.chainId]?.push?.(deek)
-  // const seek = await sdk.getToken(1, "0x1fB35614aA19c80eb997adad5F71520e915003C0")
-  // seek.logoURI =
-  //   "https://raw.githubusercontent.com/TalismanSociety/chaindata/refs/heads/main/assets/tokens/seek.svg"
-  // allSdkTokens[seek.chainId]?.push?.(seek)
+  for (const talismanTokenId of (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []) {
+    const [chainId, type, contractAddress] = talismanTokenId.split(":")
+    if (type !== "evm-erc20") continue
+
+    try {
+      const token = await sdk.getToken(parseInt(chainId, 10), contractAddress)
+      allSdkTokens[token?.chainId]?.push?.(token)
+    } catch (cause) {
+      // eslint-disable-next-line no-console
+      console.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
+    }
+  }
 
   const knownEvmNetworks = await get(
     atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
@@ -119,6 +140,7 @@ const routesAtom = atom(async (get) => {
     get(swapQuoteRefresherAtom)
 
     const sdk = await getSdk()
+    const fee = await getTalismanFee({ fromAssetId: fromAsset?.id, toAssetId: toAsset?.id })
     return await sdk.getRoutes({
       fromAddress,
       toAddress,
@@ -127,12 +149,11 @@ const routesAtom = atom(async (get) => {
       fromAmount: fromAmount.planck.toString(),
       fromTokenAddress: fromAsset.contractAddress ?? zeroAddress,
       toTokenAddress: toAsset.contractAddress ?? zeroAddress,
-      options: {
-        integrator: "talisman",
-        fee: TALISMAN_FEE,
-      },
+      options: { integrator: "talisman", fee },
     })
-  } catch (e) {
+  } catch (cause) {
+    // eslint-disable-next-line no-console
+    console.warn("Failed to fetch lifi routes", cause)
     return {
       routes: [],
       unavailableRoutes: { failed: [], filteredOut: [] },
@@ -165,6 +186,7 @@ const routeQuoteAtom = atomFamily((id: string) =>
       if (!transaction?.transactionRequest) return null
 
       const fromAsset = get(fromAssetAtom)
+      const toAsset = get(toAssetAtom)
       if (!fromAsset) return null
 
       const fees =
@@ -191,13 +213,32 @@ const routeQuoteAtom = atomFamily((id: string) =>
       }
 
       // add talisman fee
+      const talismanFee = await getTalismanFee({
+        fromAssetId: fromAsset?.id,
+        toAssetId: toAsset?.id,
+      })
       fees.push({
         amount: BigNumber(step.estimate.fromAmount.toString())
           .times(10 ** -fromAsset.decimals)
-          .times(TALISMAN_FEE),
+          .times(Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000),
         name: "Talisman Fee",
         tokenId: fromAsset.id,
       })
+
+      const totalGasLimit =
+        fromAsset?.networkType === "evm" && fromAsset?.contractAddress === undefined
+          ? route.steps
+              .flatMap((step) =>
+                (step.estimate.gasCosts ?? []).flatMap((gas) =>
+                  String(gas.token.chainId) === String(fromAsset?.chainId) &&
+                  gas.token.address === zeroAddress
+                    ? gas.limit
+                    : "0",
+                ),
+              )
+              .reduce((a, c) => a.plus(c), BigNumber(0))
+              .toString()
+          : undefined
 
       return {
         decentralisationScore: DECENTRALISATION_SCORE,
@@ -209,8 +250,9 @@ const routeQuoteAtom = atomFamily((id: string) =>
         fees,
         providerLogo: step.toolDetails.logoURI,
         providerName: step.toolDetails.name,
-        talismanFee: TALISMAN_FEE,
+        talismanFee: Math.round((LIFI_FEE + talismanFee) * 10_000) / 10_000,
         data: { ...route, transactionRequest: transaction.transactionRequest },
+        maxNativeTokenGasBuffer: totalGasLimit,
       }
     }),
   ),

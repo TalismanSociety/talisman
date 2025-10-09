@@ -68,6 +68,9 @@ export type BaseQuote<TData = any> = {
   timeInSec: number
   providerLogo: string
   providerName: string
+
+  /** If defined, the UI must account for a gas buffer of `maxNativeTokenGasBuffer` wei to be used for the swap */
+  maxNativeTokenGasBuffer?: string
 }
 
 export type QuoteResponse = {
