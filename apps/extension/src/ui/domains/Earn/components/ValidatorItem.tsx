@@ -1,10 +1,10 @@
 import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { YieldValidator } from "extension-core"
+import { ValidatorDto } from "extension-core"
 import { FC } from "react"
 
 interface ValidatorItemProps {
-  validator: YieldValidator
+  validator: ValidatorDto
   isSelected: boolean
   onClick: () => void
 }

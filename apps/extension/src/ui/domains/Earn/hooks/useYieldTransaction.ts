@@ -1,4 +1,4 @@
-import type { TransactionDto, YieldEnterResponse } from "extension-core"
+import type { ActionDto, TransactionDto } from "extension-core"
 import { planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -55,7 +55,7 @@ export const useYieldTransaction = () => {
     refetch,
   } = useQuery({
     queryKey: ["yieldTransaction", account, tokenId, productId, amount, depositMax],
-    queryFn: async (): Promise<YieldEnterResponse> => {
+    queryFn: async (): Promise<ActionDto> => {
       if (!account || !productId || (!amount && !depositMax)) {
         throw new Error("Missing required parameters")
       }

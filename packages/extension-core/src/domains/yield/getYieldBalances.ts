@@ -30,7 +30,7 @@ export const yieldBalances$ = walletReady$.pipe(
   }),
   tap((loadable) => {
     if (loadable.status === "success")
-      updateYieldBalancesStore(loadable.data as unknown as YieldPositionItem[])
+      updateYieldBalancesStore(loadable.data as YieldPositionItem[])
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000),

@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { YieldValidator } from "extension-core"
+import { ValidatorDto } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
@@ -17,7 +17,7 @@ interface ValidatorPickerProps {
   isOpen: boolean
   yieldId: string
   onDismiss: () => void
-  onSelect: (validator: YieldValidator) => void
+  onSelect: (validator: ValidatorDto) => void
 }
 
 export const ValidatorPicker: FC<ValidatorPickerProps> = ({
@@ -36,14 +36,14 @@ export const ValidatorPicker: FC<ValidatorPickerProps> = ({
   // Sort and filter validators
   const filteredValidators = useMemo(() => {
     const filtered = validators.filter((validator) =>
-      validator.name.toLowerCase().includes(search.toLowerCase()),
+      validator?.name?.toLowerCase().includes(search.toLowerCase()),
     )
 
     // Sort validators
     filtered.sort((a, b) => {
       switch (sortMethod) {
         case "name":
-          return a.name.localeCompare(b.name)
+          return a.name?.localeCompare(b.name ?? "") ?? 0
         case "tvl":
           return parseFloat(b.tvl || "0") - parseFloat(a.tvl || "0")
         case "rewardRate":
@@ -59,7 +59,7 @@ export const ValidatorPicker: FC<ValidatorPickerProps> = ({
   }, [validators, search, sortMethod])
 
   const handleSelect = useCallback(
-    (validator: YieldValidator) => {
+    (validator: ValidatorDto) => {
       onSelect(validator)
       // Don't call onDismiss here - let the parent handle closing after onSelect
     },

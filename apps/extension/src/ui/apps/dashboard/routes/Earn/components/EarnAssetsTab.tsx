@@ -131,7 +131,7 @@ const DefiTokenRow: FC<{
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
     return tokenData.positions.reduce(
-      (total: number, { balance }: { balance: import("extension-core").YieldPositionGroup }) => {
+      (total: number, { balance }: { balance: YieldPositionGroup }) => {
         return total + balance.totalAmountUsd
       },
       0,
@@ -323,7 +323,7 @@ export const EarnAssetsTab = () => {
     const groupedBySymbol = new Map<
       string,
       Array<{
-        balance: import("extension-core").YieldPositionGroup
+        balance: YieldPositionGroup
         yieldId: string
         product?: YieldDto
         amountUsd: number

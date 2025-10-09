@@ -1,6 +1,4 @@
-import { ActionDto, BalanceDto, CreateActionDto, YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
-
-import { YieldPositionGroup } from "./groupYieldBalances"
+import { BalanceDto, YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
 
 // Re-export SDK types for use in UI
 export type {
@@ -21,143 +19,57 @@ export type {
   Networks,
   BalanceDto,
   TokenDto,
+  ValidatorDto,
+  YieldsControllerGetYieldValidators200,
 } from "@yieldxyz/sdk"
-
-export type YieldProductsFilter = {
-  tokenId?: string
-  tokenSymbol?: string
-  networkName?: string
-  protocolIds?: string[]
-  yieldIds?: string[]
-}
-
-// API Request/Response Types - using SDK types
-export type YieldEnterRequest = CreateActionDto
-
-export interface YieldTransaction {
-  id: string
-  title: string
-  network: string
-  status: "PENDING" | "CONFIRMED" | "FAILED" | "SKIPPED" | "BROADCASTED" | "CREATED"
-  type: string
-  hash?: string
-  createdAt: string
-  broadcastedAt?: string
-  signedTransaction?: string
-  unsignedTransaction: string
-  annotatedTransaction: {
-    method: string
-    inputs: Record<string, string | number | boolean | string[] | undefined>
-  }
-  structuredTransaction: Record<string, unknown>
-  stepIndex: number
-  description: string
-  error?: string
-  gasEstimate:
-    | string
-    | {
-        amount: string
-        gasLimit: string
-        token: {
-          network: string
-          name: string
-          symbol: string
-          decimals: number
-          coinGeckoId: string
-          logoURI: string
-        }
-      }
-  explorerUrl?: string
-  isMessage: boolean
-}
-
-export type YieldEnterResponse = ActionDto
-
-export interface YieldSubmitHashRequest {
-  hash: string
-}
-
-export interface YieldBalanceQuery {
-  address: string
-  network: string
-}
-
-export interface YieldValidator {
-  address: string
-  preferred: boolean
-  name: string
-  logoURI: string
-  website?: string
-  commission?: number
-  votingPower?: number
-  nominatorCount?: number
-  status: "active" | "inactive"
-  providerId?: string
-  tvl: string
-  provider?: {
-    id: string
-    createdAt: string
-    updatedAt: string
-    name: string
-    uniqueId: string
-    website: string
-    rank: number
-    preferred: boolean
-    revshare: {
-      pro: { maxRevShare: number; minRevShare: number }
-      trial: { maxRevShare: number; minRevShare: number }
-      standard: { maxRevShare: number; minRevShare: number }
-    }
-  }
-  rewardRate: {
-    total: number
-    rateType: "APR" | "APY"
-    components: unknown[]
-  }
-}
-
-export interface YieldValidatorsResponse {
-  items: YieldValidator[]
-}
-
-export interface YieldBalanceRequest {
-  queries: YieldBalanceQuery[]
-}
-
-export interface YieldToken {
-  address: string
-  symbol: string
-  name: string
-  decimals: number
-  logoURI: string
-  coinGeckoId: string
-  network: string
-  isPoints: boolean
-}
 
 export interface YieldPositionItem {
   yieldId: string
   balances: BalanceDto[]
 }
-
-export interface YieldError {
-  yieldId: string
-  error: string
-}
-
-export interface YieldBalancesResponse {
-  items: YieldPositionItem[]
-  errors: YieldError[]
-}
-
-export type YieldStatusResponse = YieldTransaction
-
 export interface YieldBalancesDtoWithProduct extends YieldBalancesDto {
   product?: YieldDto
 }
 
-// Re-export grouped types
-export type { YieldPositionGroup } from "./groupYieldBalances"
+export interface YieldPositionGroup {
+  yieldId: string
+  address: string
+  product?: YieldDto
+
+  // Grouped balances by lifecycle type
+  activeBalances: BalanceDto[]
+  claimableBalances: BalanceDto[]
+  otherBalances: BalanceDto[] // entering, exiting, withdrawable, locked
+
+  // Aggregated data
+  totalAmountUsd: number
+  totalActiveAmountUsd: number
+  totalClaimableAmountUsd: number
+  totalOtherAmountUsd: number
+
+  // Primary token info (from first active balance)
+  primaryToken: BalanceDto["token"]
+
+  // Validator info (support multiple validators)
+  validators?: Array<{
+    name?: string
+    logoURI?: string
+    address?: string
+  }>
+
+  // Combined pending actions from all balances
+  allPendingActions: unknown[]
+
+  // Position status
+  isEarning: boolean
+  hasClaimableRewards: boolean
+  hasOtherBalances: boolean
+
+  // UI-ready calculated fields
+  rewardPercentage: number
+  displayName: string
+  networkId: string
+}
 
 // UI subscription response type (store-backed), mirroring DeFi
 export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldBalancesDtoWithProduct[]>

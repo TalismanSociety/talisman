@@ -1,5 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { YieldDto, YieldValidator } from "extension-core"
+import { ValidatorDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useEffect, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -74,7 +74,6 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     isLoading,
     error,
   } = useYieldProducts({
-    token: tokenId as string,
     inputToken: token?.symbol,
     network: mappedNetworkName || undefined,
   })
@@ -138,7 +137,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     }
   }
 
-  const handleValidatorSelect = (validator: YieldValidator) => {
+  const handleValidatorSelect = (validator: ValidatorDto) => {
     setIsValidatorPickerOpen(false)
     setSelectedValidatorAddress(validator.address)
 

@@ -2,6 +2,7 @@ import {
   ActionArgumentsDto,
   BalancesRequestDto,
   sdk,
+  SubmitHashDto,
   YieldBalancesRequestDto,
   YieldsControllerGetYieldsParams,
 } from "@yieldxyz/sdk"
@@ -68,6 +69,11 @@ class YieldSDKService {
     return sdk.api.getYield(yieldId)
   }
 
+  async getTransaction(transactionId: string) {
+    this.ensureConfigured()
+    return sdk.api.getTransaction(transactionId)
+  }
+
   /**
    * Get validators for a specific yield
    */
@@ -86,6 +92,11 @@ class YieldSDKService {
       address,
       arguments: args,
     })
+  }
+
+  async submitTransactionHash(transactionId: string, hash: SubmitHashDto) {
+    this.ensureConfigured()
+    return sdk.api.submitTransactionHash(transactionId, hash)
   }
 }
 

@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { YieldValidator } from "extension-core"
+import { ValidatorDto } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -30,14 +30,14 @@ export const ValidatorPickerPage = () => {
   // Sort and filter validators
   const filteredValidators = useMemo(() => {
     const filtered = validators.filter((validator) =>
-      validator.name.toLowerCase().includes(search.toLowerCase()),
+      validator?.name?.toLowerCase().includes(search.toLowerCase()),
     )
 
     // Sort validators
     filtered.sort((a, b) => {
       switch (sortMethod) {
         case "name":
-          return a.name.localeCompare(b.name)
+          return a.name?.localeCompare(b.name ?? "") ?? 0
         case "tvl":
           return parseFloat(b.tvl || "0") - parseFloat(a.tvl || "0")
         case "rewardRate":
@@ -53,7 +53,7 @@ export const ValidatorPickerPage = () => {
   }, [validators, search, sortMethod])
 
   const handleValidatorSelect = useCallback(
-    (validator: YieldValidator) => {
+    (validator: ValidatorDto) => {
       // Check if we have a selected account from URL params
       const urlParams = new URLSearchParams(window.location.search)
       const account = urlParams.get("account")

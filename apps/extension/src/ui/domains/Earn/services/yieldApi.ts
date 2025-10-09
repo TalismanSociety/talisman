@@ -1,65 +1,20 @@
 import type {
-  YieldBalanceRequest,
-  YieldBalancesResponse,
-  YieldEnterRequest,
-  YieldEnterResponse,
-  YieldStatusResponse,
-  YieldSubmitHashRequest,
-  YieldValidatorsResponse,
+  ActionDto,
+  BalancesRequestDto,
+  BalancesResponseDto,
+  CreateActionDto,
+  SubmitHashDto,
+  TransactionDto,
+  YieldsControllerGetYieldValidators200,
 } from "extension-core"
 import { yieldSdk } from "extension-core"
 import { log } from "extension-shared"
 
 class YieldApiService {
-  private baseUrl = "https://api.yield.xyz/v1"
-  private apiKey: string | null = null
-
-  constructor() {
-    // TODO: Get API key from remote config or environment
-    this.apiKey = process.env.YIELD_API_KEY || null
-  }
-
-  private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    if (!this.apiKey) {
-      throw new Error("Yield.xyz API key not configured")
-    }
-
-    const url = `${this.baseUrl}${endpoint}`
-    const headers = {
-      "Content-Type": "application/json",
-      "X-API-KEY": this.apiKey,
-      ...options.headers,
-    }
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        let errorData
-        try {
-          errorData = JSON.parse(errorText)
-        } catch {
-          errorData = { message: errorText }
-        }
-
-        throw new Error(`Yield.xyz API error: ${response.status} ${JSON.stringify(errorData)}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      log.error("Yield.xyz API request failed", { endpoint, error })
-      throw error
-    }
-  }
-
   /**
    * Initiate a yield action (enter/exit) and get unsigned transactions
    */
-  async enter(request: YieldEnterRequest): Promise<YieldEnterResponse> {
+  async enter(request: CreateActionDto): Promise<ActionDto> {
     try {
       log.debug("[Yield API] Creating intent via SDK", { yieldId: request.yieldId })
 
@@ -70,7 +25,7 @@ class YieldApiService {
       )
 
       log.debug("[Yield API] Intent created", { result })
-      return result as YieldEnterResponse
+      return result as ActionDto
     } catch (error) {
       log.error("[Yield API] Failed to create intent", { error, request })
       throw error
@@ -80,40 +35,69 @@ class YieldApiService {
   /**
    * Submit transaction hash after broadcasting
    */
-  async submitHash(
-    transactionId: string,
-    request: YieldSubmitHashRequest,
-  ): Promise<YieldStatusResponse> {
-    return this.makeRequest<YieldStatusResponse>(`/transactions/${transactionId}/submit-hash`, {
-      method: "PUT",
-      body: JSON.stringify(request),
-    })
+  async submitHash(transactionId: string, request: SubmitHashDto): Promise<TransactionDto> {
+    try {
+      log.debug("[Yield API] Submitting transaction hash via SDK", { transactionId })
+
+      const result = await yieldSdk.submitTransactionHash(transactionId, request)
+
+      log.debug("[Yield API] Transaction hash submitted", { result })
+      return result as TransactionDto
+    } catch (error) {
+      log.error("[Yield API] Failed to submit transaction hash", { error, transactionId, request })
+      throw error
+    }
   }
 
   /**
    * Fetch user yield balances across networks
    */
-  async getYieldBalances(request: YieldBalanceRequest): Promise<YieldBalancesResponse> {
-    return this.makeRequest<YieldBalancesResponse>("/yields/balances", {
-      method: "POST",
-      body: JSON.stringify(request),
-    })
+  async getYieldBalances(request: BalancesRequestDto): Promise<BalancesResponseDto> {
+    try {
+      log.debug("[Yield API] Fetching balances via SDK", { request })
+
+      const result = await yieldSdk.getAggregateBalances(request)
+
+      log.debug("[Yield API] Balances fetched", { result })
+      return result as BalancesResponseDto
+    } catch (error) {
+      log.error("[Yield API] Failed to fetch balances", { error, request })
+      throw error
+    }
   }
 
   /**
    * Fetch validators for a specific yield product
    */
-  async getValidators(yieldId: string): Promise<YieldValidatorsResponse> {
-    return this.makeRequest<YieldValidatorsResponse>(`/yields/${yieldId}/validators`, {
-      method: "GET",
-    })
+  async getValidators(yieldId: string): Promise<YieldsControllerGetYieldValidators200> {
+    try {
+      log.debug("[Yield API] Fetching validators via SDK", { yieldId })
+
+      const result = await yieldSdk.getValidators(yieldId)
+
+      log.debug("[Yield API] Validators fetched", { result })
+      return result as YieldsControllerGetYieldValidators200
+    } catch (error) {
+      log.error("[Yield API] Failed to fetch validators", { error, yieldId })
+      throw error
+    }
   }
 
   /**
    * Get transaction status
    */
-  async getStatus(transactionId: string): Promise<YieldStatusResponse> {
-    return this.makeRequest<YieldStatusResponse>(`/transactions/${transactionId}`)
+  async getStatus(transactionId: string): Promise<TransactionDto> {
+    try {
+      log.debug("[Yield API] Getting transaction status via SDK", { transactionId })
+
+      const result = await yieldSdk.getTransaction(transactionId)
+
+      log.debug("[Yield API] Transaction status fetched", { result })
+      return result as TransactionDto
+    } catch (error) {
+      log.error("[Yield API] Failed to get transaction status", { error, transactionId })
+      throw error
+    }
   }
 
   /**
@@ -121,10 +105,10 @@ class YieldApiService {
    */
   async pollStatus(
     transactionId: string,
-    onStatusUpdate?: (status: YieldStatusResponse) => void,
+    onStatusUpdate?: (status: TransactionDto) => void,
     intervalMs: number = 1000,
     timeoutMs: number = 300000, // 5 minutes timeout
-  ): Promise<YieldStatusResponse> {
+  ): Promise<TransactionDto> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
 
@@ -137,14 +121,15 @@ class YieldApiService {
             return
           }
 
-          const status = await this.getStatus(transactionId)
+          // Use SDK getTransaction instead of custom getStatus
+          const status = await yieldSdk.getTransaction(transactionId)
 
           if (onStatusUpdate) {
-            onStatusUpdate(status)
+            onStatusUpdate(status as TransactionDto)
           }
 
           if (status.status === "CONFIRMED") {
-            resolve(status)
+            resolve(status as TransactionDto)
           }
           // else if (status.status === "BROADCASTED") {
           //   // Transaction has been successfully broadcasted to the network

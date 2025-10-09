@@ -1,6 +1,6 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
-import { YieldDto } from "extension-core"
+import { YieldDto, YieldPositionGroup } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,7 +20,7 @@ interface GroupedTokenData {
   tokenSymbol: string
   totalAmountUsd: number
   positions: Array<{
-    balance: import("extension-core").YieldPositionGroup
+    balance: YieldPositionGroup
     yieldId: string
     amountUsd: number
     product?: YieldDto
@@ -30,7 +30,7 @@ interface GroupedTokenData {
 
 // YieldPositionRow for yield balances - clickable like dashboard
 const PopupYieldPositionRow: FC<{
-  balance: import("extension-core").YieldPositionGroup
+  balance: YieldPositionGroup
   yieldId: string
   product?: YieldDto
 }> = ({ balance, yieldId, product }) => {
@@ -189,7 +189,7 @@ const PopupEarnTokenRow: FC<{
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
     return tokenData.positions.reduce(
-      (total: number, { balance }: { balance: import("extension-core").YieldPositionGroup }) => {
+      (total: number, { balance }: { balance: YieldPositionGroup }) => {
         return total + parseFloat(balance.totalAmountUsd.toString())
       },
       0,
