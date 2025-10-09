@@ -113,18 +113,20 @@ export const GetStarted = () => {
       )}
 
       {IS_POPUP ? (
-        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-2")}>
-          <GetStartedActionButton
-            label={t("Trade")}
-            iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
-            onClick={onTradeClick}
-          />
+        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
           {showSeekBenefits && (
-            <GetStartedActionButton
-              label={t("Get SEEK")}
-              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-              onClick={onSeekClick}
-            />
+            <>
+              <GetStartedActionButton
+                label={t("Trade")}
+                iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
+                onClick={onTradeClick}
+              />
+              <GetStartedActionButton
+                label={t("Get SEEK")}
+                iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+                onClick={onSeekClick}
+              />
+            </>
           )}
           <GetStartedActionButton
             label={t("Learn More")}
@@ -133,18 +135,20 @@ export const GetStarted = () => {
           />
         </div>
       ) : (
-        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-2")}>
-          <GetStartedActionButton
-            label={t("Trade on Bitget")}
-            iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
-            onClick={onTradeClick}
-          />
+        <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
           {showSeekBenefits && (
-            <GetStartedActionButton
-              label={t("Get Talisman SEEK")}
-              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-              onClick={onSeekClick}
-            />
+            <>
+              <GetStartedActionButton
+                label={t("Trade on Bitget")}
+                iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
+                onClick={onTradeClick}
+              />
+              <GetStartedActionButton
+                label={t("Get Talisman SEEK")}
+                iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+                onClick={onSeekClick}
+              />
+            </>
           )}
           <GetStartedActionButton
             label={t("Learn More")}
