@@ -8,11 +8,11 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
 import { fetchYieldBalances } from "./fetchYieldBalances"
-import { fetchYieldProducts } from "./getYieldProducts"
 import { groupYieldBalances } from "./groupYieldBalances"
 import { mapToYieldNetwork } from "./networkMapping"
 import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
 import { YieldBalancesDtoWithProduct, YieldDto, YieldPositionItem } from "./types"
+import { yieldSdk } from "./yieldSdk"
 
 const REFRESH_INTERVAL = 30_000
 
@@ -63,12 +63,13 @@ const getBalances$ = (addresses: string[], storage: YieldPositionItem[]) =>
         const q = await buildQueries(addresses)
         const balancesResp = await fetchYieldBalances({ queries: q })
         const yieldIds = Array.from(new Set(balancesResp.map((i) => i.yieldId)))
-        const allYields = yieldIds.length ? await fetchYieldProducts() : []
-        allYields.forEach((p) => {
-          if (yieldIds.includes(p.id)) {
-            products.push(p)
-          }
-        })
+
+        await Promise.all(
+          yieldIds.map(async (p) => {
+            const product = await yieldSdk.getYield(p)
+            products.push(product)
+          }),
+        )
         const productById = new Map<string, YieldDto>(products.map((p) => [p.id, p]))
         const enriched: YieldBalancesDtoWithProduct[] = balancesResp.map((item) => ({
           ...item,

@@ -1,4 +1,5 @@
 import {
+  ActionArgumentsDto,
   BalancesRequestDto,
   sdk,
   YieldBalancesRequestDto,
@@ -62,12 +63,29 @@ class YieldSDKService {
     return sdk.api.getYields(params || {})
   }
 
+  async getYield(yieldId: string) {
+    this.ensureConfigured()
+    return sdk.api.getYield(yieldId)
+  }
+
   /**
    * Get validators for a specific yield
    */
   async getValidators(yieldId: string) {
     this.ensureConfigured()
     return sdk.api.getYieldValidators(yieldId)
+  }
+
+  /**
+   * Create an intent for yield actions (enter/exit/manage)
+   */
+  async createIntent(yieldId: string, address: string, args: ActionArgumentsDto | undefined) {
+    this.ensureConfigured()
+    return sdk.api.enterYield({
+      yieldId,
+      address,
+      arguments: args,
+    })
   }
 }
 

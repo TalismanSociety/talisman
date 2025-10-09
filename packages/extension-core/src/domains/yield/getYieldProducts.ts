@@ -1,4 +1,4 @@
-import { Networks, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
+import { YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
 import { log } from "extension-shared"
 
 import { YieldDto } from "./types"
@@ -13,17 +13,7 @@ export const fetchYieldProducts = async (
   try {
     log.debug("[Yield] Fetching yield products via SDK", { filter })
 
-    // Build SDK parameters
-    const params: YieldsControllerGetYieldsParams = {}
-
-    if (filter?.inputToken) {
-      params.inputToken = filter.inputToken
-    }
-
-    if (filter?.network) {
-      params.network = filter.network as Networks
-    }
-    const response = await yieldSdk.getYields(params)
+    const response = await yieldSdk.getYields(filter)
 
     log.debug("[Yield] SDK yields response", {
       count: response?.items?.length || 0,

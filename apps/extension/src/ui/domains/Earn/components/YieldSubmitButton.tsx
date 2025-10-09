@@ -106,7 +106,10 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
           }
 
-          const unsignedTx = JSON.parse(currentTransaction.unsignedTransaction)
+          const unsignedTx =
+            typeof currentTransaction?.unsignedTransaction === "string"
+              ? JSON.parse(currentTransaction?.unsignedTransaction)
+              : currentTransaction?.unsignedTransaction
           const txRequest = {
             to: unsignedTx.to as `0x${string}`,
             value: BigInt(unsignedTx.value || "0"),
@@ -142,7 +145,10 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
           }
 
-          const signerPayload = JSON.parse(currentTransaction.unsignedTransaction)
+          const signerPayload =
+            typeof currentTransaction?.unsignedTransaction === "string"
+              ? JSON.parse(currentTransaction?.unsignedTransaction)
+              : currentTransaction?.unsignedTransaction
 
           const result = await api.subSubmit(signerPayload?.tx as SignerPayloadJSON)
 
@@ -154,7 +160,10 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             throw new Error(`No unsigned transaction data available for transaction ${i + 1}`)
           }
 
-          const transactionData = JSON.parse(currentTransaction.unsignedTransaction)
+          const transactionData =
+            typeof currentTransaction?.unsignedTransaction === "string"
+              ? JSON.parse(currentTransaction?.unsignedTransaction)
+              : currentTransaction?.unsignedTransaction
 
           const result = await api.solSubmit(token.networkId, transactionData)
 

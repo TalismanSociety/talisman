@@ -7,6 +7,7 @@ import type {
   YieldSubmitHashRequest,
   YieldValidatorsResponse,
 } from "extension-core"
+import { yieldSdk } from "extension-core"
 import { log } from "extension-shared"
 
 class YieldApiService {
@@ -59,10 +60,21 @@ class YieldApiService {
    * Initiate a yield action (enter/exit) and get unsigned transactions
    */
   async enter(request: YieldEnterRequest): Promise<YieldEnterResponse> {
-    return this.makeRequest<YieldEnterResponse>("/actions/enter", {
-      method: "POST",
-      body: JSON.stringify(request),
-    })
+    try {
+      log.debug("[Yield API] Creating intent via SDK", { yieldId: request.yieldId })
+
+      const result = await yieldSdk.createIntent(
+        request.yieldId,
+        request.address,
+        request.arguments,
+      )
+
+      log.debug("[Yield API] Intent created", { result })
+      return result as YieldEnterResponse
+    } catch (error) {
+      log.error("[Yield API] Failed to create intent", { error, request })
+      throw error
+    }
   }
 
   /**

@@ -55,9 +55,17 @@ export const useDepositFundsTransactionDot = () => {
 
   return {
     platform: "polkadot" as const,
-    tx: tx?.unsignedTransaction ? JSON.parse(tx.unsignedTransaction) : undefined,
+    tx: tx?.unsignedTransaction
+      ? typeof tx?.unsignedTransaction === "string"
+        ? JSON.parse(tx?.unsignedTransaction)
+        : tx?.unsignedTransaction
+      : undefined,
     txDetails: {
-      payload: tx?.unsignedTransaction ? JSON.parse(tx.unsignedTransaction) : undefined,
+      payload: tx?.unsignedTransaction
+        ? typeof tx?.unsignedTransaction === "string"
+          ? JSON.parse(tx?.unsignedTransaction)
+          : tx?.unsignedTransaction
+        : undefined,
       estimatedFee: tx?.gasEstimate?.toString() || null,
     },
     priority: null, // Polkadot doesn't use priority like Ethereum

@@ -60,7 +60,10 @@ const PopupYieldPositionRow: FC<{
             <div className="truncate text-white" title={balance.displayName}>
               {balance.displayName}
             </div>
-            <NetworkLogo networkId={balance.networkId} className="inline-block" />
+            <NetworkLogo
+              networkId={mapYieldNetworkToNetworkId(balance.networkId) || balance.networkId}
+              className="inline-block"
+            />
             {balance.hasClaimableRewards && (
               <div className="text-[10px] font-medium text-green-400">
                 +{balance.rewardPercentage.toFixed(1)}% rewards
@@ -221,7 +224,7 @@ const PopupEarnTokenRow: FC<{
               </Tooltip>
               <NetworkLogo
                 networkId={
-                  mapYieldNetworkToNetworkId(tokenData.positions[0]?.product?.network) ||
+                  mapYieldNetworkToNetworkId(tokenData.positions[0]?.balance.networkId) ||
                   tokenData.positions[0]?.balance.networkId
                 }
                 className="shrink-0 text-[1rem]"

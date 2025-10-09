@@ -1,4 +1,4 @@
-import type { YieldEnterResponse, YieldTransaction } from "extension-core"
+import type { TransactionDto, YieldEnterResponse } from "extension-core"
 import { planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -104,7 +104,7 @@ export const useYieldTransaction = () => {
   })
 
   // Get all non-skipped transactions for sequential execution
-  const allTransactions = useMemo((): YieldTransaction[] => {
+  const allTransactions = useMemo((): TransactionDto[] => {
     if (!yieldResponse?.transactions) return []
 
     // Return all non-skipped transactions in order
@@ -118,7 +118,10 @@ export const useYieldTransaction = () => {
 
     try {
       // Parse the unsigned transaction JSON string
-      const unsignedTx = JSON.parse(firstTransaction.unsignedTransaction)
+      const unsignedTx =
+        typeof firstTransaction?.unsignedTransaction === "string"
+          ? JSON.parse(firstTransaction?.unsignedTransaction)
+          : firstTransaction?.unsignedTransaction
 
       // Validate required fields
       if (!unsignedTx.to || !unsignedTx.data) {

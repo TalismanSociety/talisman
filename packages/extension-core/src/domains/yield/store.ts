@@ -6,7 +6,11 @@ import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
 import { YieldPositionItem } from "./types"
 
+// Data version to force refresh on schema changes
+const YIELD_DATA_VERSION = 3
+
 type YieldBalancesStoreData = {
+  version?: number
   items: YieldPositionItem[]
 }
 
@@ -16,9 +20,24 @@ const DEFAULT_DATA: YieldPositionItem[] = []
 
 const subjectYieldBalancesStore$ = new ReplaySubject<YieldPositionItem[]>(1)
 
+// Check if stored data version matches current version
+const checkVersion = (data: YieldBalancesStoreData | null): boolean => {
+  if (!data) return false
+  return data.version === YIELD_DATA_VERSION
+}
+
 walletReady.then(async () => {
   try {
     const data = await blobStore.get()
+
+    // Force refresh if version mismatch
+    if (!checkVersion(data)) {
+      log.log("Yield data version mismatch, clearing cache")
+      await blobStore.set({ items: [], version: YIELD_DATA_VERSION })
+      subjectYieldBalancesStore$.next(DEFAULT_DATA)
+      return
+    }
+
     subjectYieldBalancesStore$.next(data ? data.items : DEFAULT_DATA)
   } catch (error) {
     log.error("Error fetching yield balances:", error)
@@ -30,7 +49,7 @@ walletReady.then(async () => {
 subjectYieldBalancesStore$
   .pipe(skip(1), debounceTime(200), distinctUntilChanged<YieldPositionItem[]>(isEqual))
   .subscribe((items) => {
-    blobStore.set({ items })
+    blobStore.set({ version: YIELD_DATA_VERSION, items })
   })
 
 export const yieldBalancesStore$ = subjectYieldBalancesStore$.asObservable()

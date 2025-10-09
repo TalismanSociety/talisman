@@ -1,5 +1,5 @@
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
-import { YieldPositionBalance } from "extension-core"
+import { BalanceDto } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,8 +8,8 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 interface DefiAssetRowProps {
   tokenSymbol: string
   tokenData: {
-    token: YieldPositionBalance["token"]
-    positions: Array<{ balance: YieldPositionBalance; yieldId: string }>
+    token: BalanceDto["token"]
+    positions: Array<{ balance: BalanceDto; yieldId: string }>
     totalAmount: string
     totalAmountUsd: string
     holdingsCount: number
@@ -107,7 +107,7 @@ export const DefiAssetRow: FC<DefiAssetRowProps> = ({ tokenSymbol: _tokenSymbol,
         <div className="border-grey-700 border-t">
           {tokenData.positions.map((position, index) => {
             const protocolName = getProtocolName(position.yieldId)
-            const positionAmountUsd = parseFloat(position.balance.amountUsd) || 0
+            const positionAmountUsd = parseFloat(position.balance.amountUsd || "0") || 0
 
             return (
               <div

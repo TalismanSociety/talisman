@@ -1,4 +1,4 @@
-import { YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
+import { ActionDto, BalanceDto, CreateActionDto, YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
 
 import { YieldPositionGroup } from "./groupYieldBalances"
 
@@ -31,15 +31,8 @@ export type YieldProductsFilter = {
   yieldIds?: string[]
 }
 
-// API Request/Response Types
-export interface YieldEnterRequest {
-  yieldId: string
-  address: string
-  arguments: {
-    amount: string
-    [key: string]: string | number | boolean | string[] | undefined
-  }
-}
+// API Request/Response Types - using SDK types
+export type YieldEnterRequest = CreateActionDto
 
 export interface YieldTransaction {
   id: string
@@ -78,22 +71,7 @@ export interface YieldTransaction {
   isMessage: boolean
 }
 
-export interface YieldEnterResponse {
-  id: string
-  intent: string
-  type: string
-  yieldId: string
-  address: string
-  amount: string
-  amountRaw: string
-  amountUsd: string
-  transactions: YieldTransaction[]
-  executionPattern: "synchronous" | "asynchronous"
-  rawArguments: Record<string, string | number | boolean | string[] | undefined>
-  createdAt: string
-  completedAt?: string
-  status: "PENDING" | "CONFIRMED" | "FAILED" | "CANCELED" | "CREATED"
-}
+export type YieldEnterResponse = ActionDto
 
 export interface YieldSubmitHashRequest {
   hash: string
@@ -157,20 +135,9 @@ export interface YieldToken {
   isPoints: boolean
 }
 
-export interface YieldPositionBalance {
-  address: string
-  amount: string
-  amountRaw: string
-  type: string
-  token: YieldToken
-  pendingActions: unknown[]
-  amountUsd: string
-  isEarning: boolean
-}
-
 export interface YieldPositionItem {
   yieldId: string
-  balances: YieldPositionBalance[]
+  balances: BalanceDto[]
 }
 
 export interface YieldError {

@@ -117,10 +117,15 @@ export const useDepositFunds = (): TDepositFunds => {
           }
         } else if (
           typeof transaction.yieldTransaction.gasEstimate === "object" &&
-          transaction.yieldTransaction.gasEstimate.amount
+          transaction.yieldTransaction.gasEstimate &&
+          "amount" in transaction.yieldTransaction.gasEstimate
         ) {
-          gasEstimateValue = transaction.yieldTransaction.gasEstimate.amount
-          feeTokenDecimals = transaction.yieldTransaction.gasEstimate.token?.decimals || 18
+          const gasEstimate = transaction.yieldTransaction.gasEstimate as {
+            amount: string
+            token?: { decimals: number }
+          }
+          gasEstimateValue = gasEstimate.amount
+          feeTokenDecimals = gasEstimate.token?.decimals || 18
         } else {
           gasEstimateValue = "0"
           feeTokenDecimals = 18

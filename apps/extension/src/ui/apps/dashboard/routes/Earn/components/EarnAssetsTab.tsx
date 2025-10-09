@@ -1,7 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { classNames, LoadableStatus } from "@talismn/util"
-import { YieldDto } from "extension-core"
+import { YieldDto, YieldPositionGroup } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +23,7 @@ interface GroupedTokenData {
   tokenSymbol: string
   totalAmountUsd: number
   positions: Array<{
-    balance: import("extension-core").YieldPositionGroup
+    balance: YieldPositionGroup
     yieldId: string
     amountUsd: number
     product?: YieldDto
@@ -33,7 +33,7 @@ interface GroupedTokenData {
 
 // YieldPositionRow for yield balances
 const YieldPositionRow: FC<{
-  balance: import("extension-core").YieldPositionGroup
+  balance: YieldPositionGroup
   yieldId: string
   product?: YieldDto
   status: LoadableStatus
@@ -64,7 +64,7 @@ const YieldPositionRow: FC<{
               {validator?.name || product?.metadata.name}
             </div>
             <NetworkLogo
-              networkId={mapYieldNetworkToNetworkId(product?.network) || balance.networkId}
+              networkId={mapYieldNetworkToNetworkId(balance.networkId) || balance.networkId}
               className="inline-block"
             />
             <div className="text-body-secondary border-grey-500 rounded-xs border-[0.2rem] px-2 py-1 text-[0.8rem]">
@@ -137,6 +137,7 @@ const DefiTokenRow: FC<{
       0,
     )
   }, [tokenData.positions])
+
   return (
     <div className="bg-grey-850 flex w-full flex-col gap-3">
       {/* Token Row - matching DashboardAssetRow style */}
@@ -160,7 +161,7 @@ const DefiTokenRow: FC<{
               {tokenData.tokenSymbol}
               <NetworkLogo
                 networkId={
-                  mapYieldNetworkToNetworkId(tokenData.positions[0]?.product?.network) ||
+                  mapYieldNetworkToNetworkId(tokenData.positions[0]?.balance.networkId) ||
                   tokenData.positions[0]?.balance.networkId
                 }
                 className="text-[1rem]"

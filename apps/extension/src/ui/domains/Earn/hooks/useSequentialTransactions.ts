@@ -1,4 +1,4 @@
-import { YieldTransaction } from "extension-core"
+import { TransactionDto } from "extension-core"
 import { useCallback, useState } from "react"
 import { TransactionRequest } from "viem"
 
@@ -6,7 +6,7 @@ import { yieldApi } from "../services/yieldApi"
 
 export interface TransactionStep {
   index: number
-  transaction: YieldTransaction
+  transaction: TransactionDto
   status: "pending" | "signing" | "submitting" | "polling" | "confirmed" | "failed"
   hash?: string
   error?: string
@@ -31,7 +31,7 @@ export const useSequentialTransactions = () => {
     overallProgress: 0,
   })
 
-  const initializeSteps = useCallback((transactions: YieldTransaction[]) => {
+  const initializeSteps = useCallback((transactions: TransactionDto[]) => {
     const steps: TransactionStep[] = transactions
       .filter((tx) => tx.status !== "SKIPPED")
       .map((transaction, index) => ({
@@ -64,7 +64,7 @@ export const useSequentialTransactions = () => {
 
   const executeSequentialTransactions = useCallback(
     async (
-      transactions: YieldTransaction[],
+      transactions: TransactionDto[],
       signTransaction: (tx: TransactionRequest) => Promise<{ hash: string }>,
       _broadcastTransaction: (signedTx: { hash: string }) => Promise<{ hash: string }>,
       onFirstTransactionComplete?: (networkId: string, txId: string) => void,
@@ -86,7 +86,10 @@ export const useSequentialTransactions = () => {
           try {
             // Step 1: Sign and broadcast transaction (ethSignAndSend does both)
             updateStepStatus(i, "signing")
-            const unsignedTx = JSON.parse(transaction.unsignedTransaction)
+            const unsignedTx =
+              typeof transaction?.unsignedTransaction === "string"
+                ? JSON.parse(transaction?.unsignedTransaction)
+                : transaction?.unsignedTransaction
             const result = await signTransaction(unsignedTx)
 
             // Step 2: Submit hash to Yield.xyz
