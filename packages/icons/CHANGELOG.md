@@ -1,5 +1,11 @@
 # @talismn/icons
 
+## 0.1.5
+
+### Patch Changes
+
+- ac8a54d: new icons
+
 ## 0.1.4
 
 ### Patch Changes
