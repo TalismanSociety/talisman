@@ -12,7 +12,6 @@ import { IS_POPUP } from "@ui/util/constants"
 import { DepositDetails } from "./components/DepositDetails"
 import { DepositProgressBar } from "./components/DepositProgressBar"
 import { useDepositFunds } from "./components/useDepositFunds"
-import { YieldSubmitButton } from "./components/YieldSubmitButton"
 import { DepositWizardProvider, useDepositWizard } from "./context/DepositWizardContext"
 
 const DepositSubmitButton = ({
@@ -57,19 +56,6 @@ const DepositSubmitButton = ({
 
     return null
   }, [account, token, product, deposit, transaction])
-
-  // Use Yield.xyz submit button if we have a yield transaction
-  if (transaction?.isYieldTransaction) {
-    return (
-      <YieldSubmitButton
-        label={isSubmitting ? t("Depositing...") : t("Deposit")}
-        onSuccess={(txId) => {
-          if (token) onTxSubmitted?.({ networkId: token.networkId, txId })
-        }}
-        onError={(_error) => {}}
-      />
-    )
-  }
 
   if (!txTransaction) return null
 

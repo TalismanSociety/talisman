@@ -7,7 +7,6 @@ import { DepositDetails } from "@ui/domains/Earn/components/DepositDetails"
 import { DepositProgressBar } from "@ui/domains/Earn/components/DepositProgressBar"
 import { SequentialTransactionExecutor } from "@ui/domains/Earn/components/SequentialTransactionExecutor"
 import { useDepositFunds } from "@ui/domains/Earn/components/useDepositFunds"
-import { YieldSubmitButton } from "@ui/domains/Earn/components/YieldSubmitButton"
 import {
   DepositWizardProvider,
   useDepositWizard,
@@ -58,19 +57,6 @@ const DepositSubmitButton = ({
 
     return null
   }, [account, token, product, deposit, transaction])
-
-  // Use Yield.xyz submit button if we have a yield transaction
-  if (transaction?.isYieldTransaction) {
-    return (
-      <YieldSubmitButton
-        label={isSubmitting ? t("Depositing...") : t("Deposit")}
-        onSuccess={(txId) => {
-          if (token) onTxSubmitted?.({ networkId: token.networkId, txId })
-        }}
-        onError={(_error) => {}}
-      />
-    )
-  }
 
   if (!txTransaction) return null
 

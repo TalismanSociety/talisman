@@ -1,30 +1,29 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
+import { getEthTransferTransactionBase } from "extension-core"
 import { useMemo, useState } from "react"
 
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
-import { useBalance, useNetworkById, useToken } from "@ui/state"
+import { useBalance, useToken } from "@ui/state"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { useYieldTransaction } from "../hooks/useYieldTransaction"
 
 export const useDepositFundsTransactionEth = () => {
   const [isLocked, setIsLocked] = useState(false)
-  const { account, tokenId } = useDepositWizard()
+  const { account, tokenId, amount } = useDepositWizard()
   const token = useToken(tokenId)
-  const network = useNetworkById(token?.networkId, "ethereum")
-  const _feeToken = useToken(network?.nativeTokenId)
   const balance = useBalance(account as string, tokenId as string)
 
-  // Get real transaction data from Yield.xyz API
+  // Get Yield API transaction data for the actual transaction
   const {
-    transaction: yieldTransaction,
+    allTransactions,
     maxAmount: yieldMaxAmount,
     isLoading: isYieldLoading,
     error: yieldError,
   } = useYieldTransaction()
 
-  // Use Yield.xyz transaction data only
+  // Use Yield API transaction data if available, otherwise fallback to standard transfer
   const [tx, error] = useMemo(() => {
     if (
       !isTokenEth(token) ||
@@ -36,29 +35,59 @@ export const useDepositFundsTransactionEth = () => {
       return [undefined, undefined]
     }
 
-    if (yieldTransaction) {
-      return [yieldTransaction, yieldError]
+    // Get all transactions from Yield API and parse them
+    if (allTransactions.length > 0) {
+      const parsedTransactions = allTransactions
+        .filter((tx) => tx.unsignedTransaction)
+        .map((tx) => parseUnsignedTransaction(tx.unsignedTransaction))
+        .filter(Boolean)
+
+      if (parsedTransactions.length > 0) {
+        // For now, return the first transaction for fee estimation
+        // The SequentialTransactionExecutor will handle all transactions
+        return [parsedTransactions[0], yieldError]
+      }
     }
 
-    // No fallback - return undefined if no Yield.xyz data
-    return [undefined, yieldError]
-  }, [account, token, yieldTransaction, yieldError])
+    // Fallback to standard transfer (this shouldn't happen for yield operations)
+    try {
+      return [
+        getEthTransferTransactionBase(
+          token.networkId,
+          account,
+          account,
+          token,
+          BigInt(amount || "0"),
+        ),
+        yieldError,
+      ]
+    } catch (err) {
+      return [undefined, err as Error]
+    }
+  }, [account, token, amount, allTransactions, yieldError])
 
-  const result = useEthTransaction(tx, token?.networkId, isLocked, false)
+  // Only estimate fees when we have the Yield API transaction data
+  const shouldEstimateFees = !isYieldLoading && allTransactions.length > 0
+  const result = useEthTransaction(
+    // Only pass transaction if Yield API has responded
+    shouldEstimateFees ? tx : undefined,
+    token?.networkId,
+    isLocked,
+    false,
+  )
 
   const maxAmount = useMemo(() => {
-    // Use Yield.xyz max amount if available
+    // Use Yield API max amount if available
     if (yieldMaxAmount) {
       return yieldMaxAmount
     }
 
-    // Fallback to balance-based calculation
-    if (!balance || !isTokenEth(token) || !result.txDetails?.estimatedFee) return null
+    if (!balance || !isTokenEth(token) || !result.txDetails?.maxFee) return null
 
-    // For deposits, max amount is balance minus estimated fee
-    const val = balance.transferable.planck - BigInt(result.txDetails.estimatedFee)
+    // For deposits, max amount is balance minus max fee
+    const val = balance.transferable.planck - result.txDetails.maxFee
     return String(val > 0n ? val : 0n)
-  }, [yieldMaxAmount, balance, token, result.txDetails?.estimatedFee])
+  }, [yieldMaxAmount, balance, token, result.txDetails?.maxFee])
 
   if (!isTokenEth(token)) return null
 
@@ -74,13 +103,30 @@ export const useDepositFundsTransactionEth = () => {
     estimatedFee: result.txDetails?.estimatedFee,
     maxFee: result.txDetails?.maxFee,
     maxAmount,
-    isLoading: result.isLoading || isYieldLoading,
+    isLoading: isYieldLoading || result.isLoading,
     error: error || result.error,
     isLocked,
     setIsLocked,
-
-    // Yield.xyz specific data
-    yieldTransaction: yieldTransaction,
-    isYieldTransaction: !!yieldTransaction,
+    // Yield API specific data for SequentialTransactionExecutor
+    allTransactions: allTransactions,
+    parsedTransactions: allTransactions
+      .filter((tx) => tx.unsignedTransaction)
+      .map((tx) => parseUnsignedTransaction(tx.unsignedTransaction))
+      .filter(Boolean),
   }
+}
+
+// Helper function to safely parse unsigned transaction
+const parseUnsignedTransaction = (unsignedTx: unknown) => {
+  if (!unsignedTx) return undefined
+
+  if (typeof unsignedTx === "string") {
+    try {
+      return JSON.parse(unsignedTx)
+    } catch {
+      return unsignedTx
+    }
+  }
+
+  return unsignedTx
 }
