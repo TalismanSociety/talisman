@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.5.5
+
+### Patch Changes
+
+- 1cb2c51: feat: comments for getQuery$
+
 ## 0.5.4
 
 ### Patch Changes
