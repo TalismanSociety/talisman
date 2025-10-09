@@ -163,6 +163,7 @@ const getBondableBalance = (
     const meta = entry?.meta as SubtensorMeta
 
     // on bittensor asset details the first button is staketype agnostic
+    // we need to know if we're staking TAO anywhere to display the appropriate icon
     const isBondingAny =
       !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
 
@@ -192,6 +193,7 @@ const getBondableBalance = (
       // the space is intentional
       return null
 
+    // if already staking in a pool, reuse that poolId
     type NomPoolMeta = { poolId?: number } | undefined
     const entry = balance.nompools.find((b) => !!(b.meta as NomPoolMeta)?.poolId)
     const meta = entry?.meta as NomPoolMeta
