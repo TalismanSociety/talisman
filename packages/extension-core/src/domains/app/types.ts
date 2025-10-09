@@ -1,4 +1,4 @@
-import { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
@@ -30,7 +30,7 @@ export type RemoteConfigStoreData = {
     apiUrl: string
   }
   nominationPools: Record<DotNetworkId, number[]>
-  stakingPools: Record<DotNetworkId, (number | string)[]>
+  stakingPools: Record<DotNetworkId | EthNetworkId, (number | string)[]>
   postHogUrl: string
   documentation: {
     unifiedAddressDocsUrl: string
@@ -43,6 +43,7 @@ export type RemoteConfigStoreData = {
     tradeUrl: string
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
+    webAppStakingPath: string
   }
 }
 

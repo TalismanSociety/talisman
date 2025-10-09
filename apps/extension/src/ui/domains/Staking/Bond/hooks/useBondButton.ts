@@ -1,6 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
+import { log, TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -29,6 +29,7 @@ export const useBondButton = ({
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
 
+  const seekStakingPath = remoteConfig.seek.webAppStakingPath
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
   // accounts that are solo-staking cannot stake in nomination pools
@@ -57,15 +58,28 @@ export const useBondButton = ({
   const address = sorted[0]?.address
 
   const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
-    if (!balances || !tokenId || token?.type !== "substrate-native") return [null, false]
+    const isStakingEnableForToken = Boolean(
+      token?.networkId &&
+        token?.symbol &&
+        remoteConfig.stakingPools[token.networkId]?.includes(token.symbol),
+    )
+
+    if (
+      !token ||
+      !tokenId ||
+      !balances ||
+      (token?.type !== "substrate-native" && !isStakingEnableForToken)
+    )
+      return [null, false]
     try {
       const poolId =
         remoteConfig.stakingPools[token.networkId]?.[0] ||
-        remoteConfig.nominationPools[token.networkId]?.[0]
+        remoteConfig.nominationPools[token.networkId]?.[0] ||
+        "SeekPoolId"
 
       const isStakingEnabled = !!remoteConfig.stakingPools[token.networkId]
 
-      if (!poolId && !isStakingEnabled) return [null, false]
+      if (!poolId && !isStakingEnabled && !isStakingEnableForToken) return [null, false]
 
       // if a watch-only or solo-staking account is selected, array will be empty
       if (!sorted.length) return [null, false]
@@ -127,12 +141,24 @@ export const useBondButton = ({
           step: stakeType === "root" ? "form" : "subnet-form",
           netuid,
         })
+      } else if (token?.symbol === "SEEK") {
+        window.open(`${TALISMAN_WEB_APP_URL}${seekStakingPath}`, "_blank", "noopener")
       } else {
         open(openArgs)
       }
       genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
-    [openArgs, token?.networkId, genericEvent, handleOpenBittensorModal, stakeType, open, netuid],
+    [
+      openArgs,
+      token?.networkId,
+      token?.symbol,
+      genericEvent,
+      handleOpenBittensorModal,
+      stakeType,
+      netuid,
+      seekStakingPath,
+      open,
+    ],
   )
 
   return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }
