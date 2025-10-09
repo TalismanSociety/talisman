@@ -40,12 +40,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     // "vara-testnet": [1],
     // "aleph-zero-testnet": [1],
   },
-  stakingPools: {
-    // uncomment for testing on testnets
-    // "avail-turing-testnet": [1],
-    // "vara-testnet": [1],
-    // "aleph-zero-testnet": [1],
-  },
+  stakingPools: {},
   documentation: {
     unifiedAddressDocsUrl:
       "https://polkadot-ux-bounty.notion.site/UXB-1-User-Wiki-Page-188e1c2781f380259c4ef29041bacc49",
