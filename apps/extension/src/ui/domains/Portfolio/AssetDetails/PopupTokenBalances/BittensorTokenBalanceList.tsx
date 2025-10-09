@@ -198,18 +198,11 @@ export const TokenBalancesList = ({
             {networkType && <div>{networkType}</div>}
           </div>
         </div>
-        {tokenId && (
-          <div className="size-[3.8rem] shrink-0 empty:hidden">
-            <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <BondButton
-                tokenId={tokenId}
-                balances={balances}
-                stakeType={stakeType}
-                netuid={netuid}
-              />
-            </Suspense>
-          </div>
-        )}
+        <div className="size-[3.8rem] shrink-0 empty:hidden">
+          <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
+            <BondButton balances={balances} stakeType={stakeType} netuid={netuid} />
+          </Suspense>
+        </div>
         {tokenId && shouldDisplayActionBtns && (
           <TokenContextMenu
             tokenId={tokenId}
