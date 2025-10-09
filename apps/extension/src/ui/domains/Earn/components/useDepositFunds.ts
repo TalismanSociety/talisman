@@ -61,7 +61,6 @@ export const useDepositFunds = (): TDepositFunds => {
 
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
-    token: tokenId as string,
     inputToken: token?.symbol,
     network: mappedNetworkName || undefined,
   })

@@ -53,19 +53,29 @@ export const useDepositFundsTransactionSol = () => {
 
   if (!isTokenSol(token)) return null
 
+  // Helper function to safely parse unsigned transaction
+  const parseUnsignedTransaction = (unsignedTx: unknown) => {
+    if (!unsignedTx) return undefined
+
+    if (typeof unsignedTx === "string") {
+      try {
+        // Try to parse as JSON first
+        return JSON.parse(unsignedTx)
+      } catch {
+        // If JSON parsing fails, return the string as-is
+        return unsignedTx
+      }
+    }
+
+    // If it's already an object or number, return as-is
+    return unsignedTx
+  }
+
   return {
     platform: "solana" as const,
-    tx: tx?.unsignedTransaction
-      ? typeof tx?.unsignedTransaction === "string"
-        ? JSON.parse(tx?.unsignedTransaction)
-        : tx?.unsignedTransaction
-      : undefined,
+    tx: parseUnsignedTransaction(tx?.unsignedTransaction),
     txDetails: {
-      payload: tx?.unsignedTransaction
-        ? typeof tx?.unsignedTransaction === "string"
-          ? JSON.parse(tx?.unsignedTransaction)
-          : tx?.unsignedTransaction
-        : undefined,
+      payload: parseUnsignedTransaction(tx?.unsignedTransaction),
       estimatedFee: tx?.gasEstimate?.toString() || null,
     },
     priority: null, // Solana doesn't use priority like Ethereum
