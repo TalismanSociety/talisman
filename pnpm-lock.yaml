@@ -1518,6 +1518,9 @@ importers:
       '@talismn/util':
         specifier: workspace:*
         version: link:../util
+      '@yieldxyz/sdk':
+        specifier: ^0.0.4
+        version: 0.0.4
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
