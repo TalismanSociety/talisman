@@ -8,16 +8,16 @@ import { useBabeNetwork } from "./useBabeNetwork"
 
 export const useStakingBondingDuration = (chainId: DotNetworkId | null | undefined) => {
   const babeNetwork = useBabeNetwork(chainId)
+  const { data: stakingSapi } = useScaleApi(chainId)
   const { data: babeSapi } = useScaleApi(babeNetwork?.id)
 
   return useQuery({
-    queryKey: ["useStakingBondingDuration", babeSapi?.id],
+    queryKey: ["useStakingBondingDuration", babeSapi?.id, stakingSapi?.id],
     queryFn: () => {
-      if (!babeSapi) return null
-
-      return getStakingBondingDurationMs(babeSapi)
+      if (!babeSapi || !stakingSapi) return null
+      return getStakingBondingDurationMs(stakingSapi, babeSapi)
     },
-    enabled: !!babeSapi,
+    enabled: !!stakingSapi && !!babeSapi,
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

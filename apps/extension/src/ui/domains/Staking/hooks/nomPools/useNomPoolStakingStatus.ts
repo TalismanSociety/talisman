@@ -22,7 +22,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const babeNetwork = useBabeNetwork(poolId ? token?.networkId : null)
   const ownedBalances = useBalances("owned")
 
-  const { data: sapi } = useScaleApi(network?.id)
+  const { data: stakingSapi } = useScaleApi(network?.id)
   const { data: babeSapi } = useScaleApi(babeNetwork?.id)
   const { data: minJoinBond } = useNomPoolsMinJoinBond({ chainId: network?.id })
   const { selectedAccount: account } = usePortfolioNavigation()
@@ -37,9 +37,17 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   }, [account, minJoinBond, ownedBalances, token])
 
   return useQuery({
-    queryKey: ["useNomPoolStakingStatus", sapi?.id, babeSapi?.id, token?.id, poolId, balancesKey],
+    queryKey: [
+      "useNomPoolStakingStatus",
+      stakingSapi?.id,
+      babeSapi?.id,
+      token?.id,
+      poolId,
+      balancesKey,
+    ],
     queryFn: async () => {
-      if (!sapi || !babeSapi || !token || !poolId || !minJoinBond || !balances.length) return null
+      if (!stakingSapi || !babeSapi || !token || !poolId || !minJoinBond || !balances.length)
+        return null
 
       const addresses = balances
         .sort((a, b) => {
@@ -50,13 +58,13 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         .map((b) => b.address)
 
       const [currentEra, soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
-        sapi.getStorage<number>("Staking", "CurrentEra", []),
+        stakingSapi.getStorage<number>("Staking", "CurrentEra", []),
 
         Object.fromEntries(
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              !!(await sapi.getStorage("Staking", "Bonded", [address])),
+              !!(await stakingSapi.getStorage("Staking", "Bonded", [address])),
             ]),
           ),
         ) as Record<string, boolean>,
@@ -65,7 +73,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              await sapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
+              await stakingSapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
                 address,
               ]),
             ]),
@@ -92,22 +100,22 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
             canUnstake: nomPoolStakingByAddress[address]?.points,
             canWithdraw: maxUnbondingEra <= currentEra,
-            canWithdrawIn: getWithdrawWaitDuration(babeSapi, erasToUnbonding),
+            canWithdrawIn: getWithdrawWaitDuration(stakingSapi, babeSapi, erasToUnbonding),
           }
         }),
       )
 
       return { accounts, poolId }
     },
-    enabled: !!sapi && !!babeSapi,
+    enabled: !!stakingSapi && !!babeSapi,
   })
 }
 
-const getWithdrawWaitDuration = (babeSapi: ScaleApi, eras: number) => {
+const getWithdrawWaitDuration = (stakingSapi: ScaleApi, babeSapi: ScaleApi, eras: number) => {
   if (eras <= 0) return 0
 
   try {
-    const eraDuration = getStakingEraDurationMs(babeSapi)
+    const eraDuration = getStakingEraDurationMs(stakingSapi, babeSapi)
     return eras * Number(eraDuration)
   } catch (err) {
     log.error("Failed to get era duration", err)
