@@ -1,5 +1,4 @@
 import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
@@ -8,12 +7,11 @@ import { useTranslation } from "react-i18next"
 import { useBondButton } from "./hooks/useBondButton"
 
 export const BondPillButton: FC<{
-  tokenId: TokenId
   balances: Balances
   className?: string
-}> = ({ tokenId, balances, className }) => {
+}> = ({ balances, className }) => {
   const { t } = useTranslation()
-  const { onClick } = useBondButton({ tokenId, balances })
+  const { onClick } = useBondButton({ balances })
 
   if (!onClick) return null
 

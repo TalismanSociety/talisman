@@ -30,7 +30,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
-      <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
+      <header className="z-10 flex w-full items-center justify-between gap-8 overflow-hidden p-10">
         {!!centerTitle && !!onClose && (
           // placeholder to keep the title centered
           <IconButton className="invisible">

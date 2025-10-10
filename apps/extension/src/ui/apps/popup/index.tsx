@@ -23,6 +23,7 @@ import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { EarnAccountPickerPage } from "@ui/domains/Earn/components/EarnAccountPickerPage"
 import { ProductSelectionModal } from "@ui/domains/Earn/components/ProductSelectionModal/ProductSelectionModal"
 import { ProductSelectionPage } from "@ui/domains/Earn/components/ProductSelectionPage"
+import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
@@ -133,6 +134,7 @@ const Popup = () => {
         <RampsModal />
         <SwapTokensModal />
         <UnbondModal />
+        <SeekBenefitsModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

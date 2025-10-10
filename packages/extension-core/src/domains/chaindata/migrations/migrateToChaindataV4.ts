@@ -133,7 +133,11 @@ const migrateTransactions = async (oldToNewTokenId: Record<string, string | null
 
     const txInfo = newTx.txInfo
     // note: using isTxInfoSwap here would cause a circular dependency
-    if (txInfo?.type === "swap-simpleswap" || txInfo?.type === "swap-stealthex") {
+    if (
+      txInfo?.type === "swap-simpleswap" ||
+      txInfo?.type === "swap-stealthex" ||
+      txInfo?.type === "swap-lifi"
+    ) {
       if (txInfo.fromTokenId && oldToNewTokenId[txInfo.fromTokenId])
         txInfo.fromTokenId = oldToNewTokenId[txInfo.fromTokenId]!
       if (txInfo.toTokenId && oldToNewTokenId[txInfo.toTokenId])

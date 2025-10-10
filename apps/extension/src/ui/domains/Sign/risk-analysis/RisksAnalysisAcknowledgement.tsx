@@ -2,9 +2,9 @@ import { t } from "i18next"
 import { ChangeEventHandler, FC, useCallback } from "react"
 import { Checkbox } from "talisman-ui"
 
-import { EvmRiskAnalysis } from "./types"
+import { RiskAnalysis } from "./types"
 
-export const RisksAnalysisAcknowledgement: FC<{ riskAnalysis: EvmRiskAnalysis }> = ({
+export const RisksAnalysisAcknowledgement: FC<{ riskAnalysis: RiskAnalysis }> = ({
   riskAnalysis,
 }) => {
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(

@@ -12,7 +12,7 @@ import { copyAddress } from "@ui/util/copyAddress"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { Decimal } from "../swaps-port/Decimal"
-import { uniswapExtendedTokensList, uniswapSafeTokensList } from "../swaps.api"
+import { safeTokensSetAtom } from "../swaps.api"
 
 type Props = {
   asset: SwappableAssetWithDecimals
@@ -40,24 +40,14 @@ export const SelectTokenRow: React.FC<Props> = ({
   const currency = useSelectedCurrency()
   const rates = useTokenRatesMap()
   const tokens = useTokensMap()
-  const uniswapSafeList = useAtomValue(loadable(uniswapSafeTokensList))
-  const uniswapExtendedList = useAtomValue(loadable(uniswapExtendedTokensList))
+  const safeList = useAtomValue(loadable(safeTokensSetAtom))
 
   const isSafe = useMemo(
     () =>
-      uniswapSafeList.state === "hasData"
-        ? uniswapSafeList.data.some((t) => t.address.toLowerCase() === erc20Address?.toLowerCase())
+      safeList.state === "hasData"
+        ? safeList.data.has(`${asset.chainId}:${erc20Address?.toLowerCase()}`)
         : false,
-    [erc20Address, uniswapSafeList],
-  )
-  const isExtended = useMemo(
-    () =>
-      uniswapExtendedList.state === "hasData"
-        ? uniswapExtendedList.data.some(
-            (t) => t.address.toLowerCase() === erc20Address?.toLowerCase(),
-          )
-        : false,
-    [erc20Address, uniswapExtendedList],
+    [asset.chainId, erc20Address, safeList],
   )
 
   const bestGuessRate = useMemo(() => {
@@ -68,8 +58,8 @@ export const SelectTokenRow: React.FC<Props> = ({
   const rate = useMemo(() => rates?.[asset.id] ?? bestGuessRate, [asset.id, bestGuessRate, rates])
 
   const shouldShowWarning = useMemo(
-    () => !isExtended && !isSafe && erc20Address !== undefined,
-    [erc20Address, isExtended, isSafe],
+    () => !isSafe && erc20Address !== undefined,
+    [erc20Address, isSafe],
   )
 
   const handleClick = useCallback(() => {

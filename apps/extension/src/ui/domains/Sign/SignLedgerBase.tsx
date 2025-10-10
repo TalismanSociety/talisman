@@ -6,6 +6,7 @@ import { Button } from "talisman-ui"
 import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
+import { SignApproveButton } from "./SignApproveButton"
 
 export const SignLedgerBase: FC<{
   isProcessing: boolean
@@ -37,7 +38,7 @@ export const SignLedgerBase: FC<{
       )}
     >
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}
-      <Button
+      <SignApproveButton
         primary
         processing={isProcessing}
         disabled={disabled}
@@ -45,7 +46,7 @@ export const SignLedgerBase: FC<{
         className="px-4"
       >
         {t("Sign on Ledger")}
-      </Button>
+      </SignApproveButton>
       <ErrorMessageDrawer
         name={error?.name}
         message={error?.message}

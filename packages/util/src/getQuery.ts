@@ -23,6 +23,26 @@ type QueryOptions<Output, Args> = {
   serializer?: (args: Args) => string
 }
 
+/**
+ * Creates a shared observable for executing queries with caching, loading states, and automatic refresh capabilities.
+ *
+ * @example
+ * ```typescript
+ * const userQuery$ = getQuery$({
+ *   namespace: 'users',
+ *   args: { userId: 123 },
+ *   queryFn: async ({ userId }) => fetchUser(userId),
+ *   defaultValue: null,
+ *   refreshInterval: 30000
+ * });
+ *
+ * userQuery$.subscribe(result => {
+ *   if (result.status === 'loaded') {
+ *     console.log(result.data);
+ *   }
+ * });
+ * ```
+ */
 export const getQuery$ = <Output, Args>({
   namespace,
   args,

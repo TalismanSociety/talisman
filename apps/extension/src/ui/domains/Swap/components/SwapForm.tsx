@@ -153,6 +153,12 @@ export const SwapForm = ({
           stayAliveBalance={fastBalance?.balance?.stayAlive}
           onChangeAsset={handleChangeFromAsset}
           disableBtc
+          maxNativeTokenGasBuffer={
+            (quote?.state === "hasData" &&
+              quote?.data?.quote?.state === "hasData" &&
+              quote?.data?.quote?.data?.maxNativeTokenGasBuffer) ||
+            undefined
+          }
         />
         <ReverseButton />
         <TokenAmountInput
@@ -199,6 +205,8 @@ export const SwapForm = ({
               !fromAddress ||
               !toAddress ||
               insufficientBalance !== false ||
+              quotes.state !== "hasData" ||
+              quotes.data?.some((d) => d.state === "loading") ||
               approvalLoading
             }
             onClick={() => {

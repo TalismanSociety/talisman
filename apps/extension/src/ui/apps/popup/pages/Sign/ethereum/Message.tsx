@@ -11,7 +11,7 @@ import {
   PopupLayout,
 } from "@ui/apps/popup/Layout/PopupLayout"
 import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
-import { RiskAnalysisProvider } from "@ui/domains/Sign/Ethereum/riskAnalysis"
+import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"

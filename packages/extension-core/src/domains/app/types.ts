@@ -1,4 +1,4 @@
-import { DotNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
@@ -14,6 +14,8 @@ export type RemoteConfigStoreData = {
   }
   swaps: {
     questApi?: string
+    lifiApiKey?: string
+    lifiTalismanTokens?: string[]
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
     simpleswapDiscountedCurrencies?: string[]
@@ -28,12 +30,21 @@ export type RemoteConfigStoreData = {
     apiUrl: string
   }
   nominationPools: Record<DotNetworkId, number[]>
-  stakingPools: Record<DotNetworkId, (number | string)[]>
+  stakingPools: Record<DotNetworkId | EthNetworkId, (number | string)[]>
   postHogUrl: string
   documentation: {
     unifiedAddressDocsUrl: string
   }
   recommendedNetworks?: string[] // sorted ids of most famous networks, sort others alphabetically
+  seek: {
+    tokenId: string
+    stakingUrl: string
+    docsUrl: string
+    tradeUrl: string
+    stakingContractNetworkId: string
+    stakingContractAddress: `0x${string}`
+    webAppStakingPath: string
+  }
 }
 
 export interface RequestOnboardCreatePassword {
@@ -65,13 +76,13 @@ export interface AnalyticsCaptureRequest {
 export type FeatureFlags = Partial<{
   BUY_CRYPTO: boolean
   LINK_STAKING: boolean
-  RISK_ANALYSIS: boolean
+  RISK_ANALYSIS_V2: boolean
   NEW_FEATURES_HOME_BANNER: boolean
   SWAPS: boolean
   QUEST_LINK: boolean
   UNIFIED_ADDRESS_BANNER: boolean
-  AUTONOMYS_QUEST_BANNER: boolean
   NFTS_V2: boolean
+  SEEK_BENEFITS: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 
