@@ -61,7 +61,12 @@ class YieldSDKService {
    */
   async getYields(params?: YieldsControllerGetYieldsParams) {
     this.ensureConfigured()
-    return sdk.api.getYields(params || {})
+    // Add high limit to get more than default 20 results
+    const enhancedParams = {
+      ...params,
+      limit: params?.limit || 100,
+    }
+    return sdk.api.getYields(enhancedParams)
   }
 
   async getYield(yieldId: string) {
@@ -77,9 +82,14 @@ class YieldSDKService {
   /**
    * Get validators for a specific yield
    */
-  async getValidators(yieldId: string) {
+  async getValidators(yieldId: string, params?: Record<string, unknown>) {
     this.ensureConfigured()
-    return sdk.api.getYieldValidators(yieldId)
+    // Add high limit to get more than default 20 results
+    const enhancedParams = {
+      ...params,
+      limit: (params?.limit as number) || 100,
+    }
+    return sdk.api.getYieldValidators(yieldId, enhancedParams)
   }
 
   /**

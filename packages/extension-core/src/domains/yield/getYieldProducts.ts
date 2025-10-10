@@ -13,13 +13,7 @@ export const fetchYieldProducts = async (
   try {
     log.debug("[Yield] Fetching yield products via SDK", { filter })
 
-    // Set a higher limit to get more than the default 20 results
-    const params = {
-      ...filter,
-      limit: filter?.limit || 100, // Use provided limit or default to 100 (max allowed)
-    }
-
-    const response = await yieldSdk.getYields(params)
+    const response = await yieldSdk.getYields(filter)
 
     log.debug("[Yield] SDK yields response", {
       count: response?.items?.length || 0,
@@ -27,7 +21,7 @@ export const fetchYieldProducts = async (
     })
 
     // SDK returns array directly, no transformation needed
-    const products = response.items || []
+    const products = response?.items || []
 
     // If specific input token symbols were requested, filter client-side
     if (filter?.inputToken) {

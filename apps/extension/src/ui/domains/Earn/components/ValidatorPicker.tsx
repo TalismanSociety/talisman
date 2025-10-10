@@ -35,9 +35,19 @@ export const ValidatorPicker: FC<ValidatorPickerProps> = ({
 
   // Sort and filter validators
   const filteredValidators = useMemo(() => {
-    const filtered = validators.filter((validator) =>
-      validator?.name?.toLowerCase().includes(search.toLowerCase()),
-    )
+    const filtered = validators.filter((validator) => {
+      // Filter by search term
+      const matchesSearch = validator?.name?.toLowerCase().includes(search.toLowerCase())
+
+      // Filter out inactive validators based on status
+      const isActive =
+        !validator?.status ||
+        validator.status.toLowerCase() === "active" ||
+        validator.status.toLowerCase() === "bonded" ||
+        validator.status.toLowerCase() === "validating"
+
+      return matchesSearch && isActive
+    })
 
     // Sort validators
     filtered.sort((a, b) => {
