@@ -54,3 +54,31 @@ export const deserializeTransaction = (transaction: string): Transaction | Versi
     return Transaction.from(bytes)
   }
 }
+
+export const deserializeTransactionFromBase64 = (
+  transaction: string,
+): Transaction | VersionedTransaction | undefined => {
+  try {
+    // Try base64 first (Yield API uses this)
+    const rawTx = Buffer.from(transaction, "base64")
+
+    try {
+      return VersionedTransaction.deserialize(rawTx)
+    } catch {
+      return Transaction.from(rawTx)
+    }
+  } catch (base64Error) {
+    // Fallback if it's hex-encoded
+    try {
+      const rawTx = Buffer.from(transaction, "hex")
+
+      try {
+        return VersionedTransaction.deserialize(rawTx)
+      } catch {
+        return Transaction.from(rawTx)
+      }
+    } catch (hexError) {
+      return undefined
+    }
+  }
+}
