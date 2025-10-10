@@ -266,16 +266,9 @@ export const TokenBalancesList = ({
           />
         </div>
         <div className="flex items-center justify-end">
-          {tokenId && (
-            <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
-              <BondButton
-                tokenId={tokenId}
-                balances={balances}
-                stakeType={stakeType}
-                netuid={netuid}
-              />
-            </div>
-          )}
+          <div className={classNames(!shouldDisplayTotalAvailableBalance && "pr-8")}>
+            <BondButton balances={balances} stakeType={stakeType} netuid={netuid} />
+          </div>
           <AssetBalanceCellValue
             render={shouldDisplayTotalAvailableBalance}
             tokens={summary.availableTokens}

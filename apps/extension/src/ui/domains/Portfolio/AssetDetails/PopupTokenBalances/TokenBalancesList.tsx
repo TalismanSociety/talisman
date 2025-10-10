@@ -61,13 +61,11 @@ export const TokenBalancesList = ({
             </span>
           </div>
         </div>
-        {tokenId && (
-          <div className="size-[3.8rem] shrink-0 empty:hidden">
-            <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
-              <BondButton tokenId={tokenId} balances={balances} />
-            </Suspense>
-          </div>
-        )}
+        <div className="size-[3.8rem] shrink-0 empty:hidden">
+          <Suspense fallback={<SuspenseTracker name="StakeButton" />}>
+            <BondButton balances={balances} />
+          </Suspense>
+        </div>
         {tokenId && (
           <div className="size-[3.8rem] shrink-0">
             <TokenContextMenu

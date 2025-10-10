@@ -91,8 +91,8 @@ const AssetRow: FC<{
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
-  const showStakingButton = canBondNomPool && !locked
+  const { canBond } = useBondButton({ balances })
+  const showStakingButton = canBond && !locked
 
   if (!token || !summary || !network) return null
 
@@ -170,11 +170,7 @@ const AssetRow: FC<{
       </button>
       {showStakingButton && (
         <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
-          <BondPillButton
-            tokenId={token.id}
-            balances={balances}
-            className="[>svg]:text-[2rem] text-base"
-          />
+          <BondPillButton balances={balances} className="[>svg]:text-[2rem] text-base" />
         </div>
       )}
     </div>

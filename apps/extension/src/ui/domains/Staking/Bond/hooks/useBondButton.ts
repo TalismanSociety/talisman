@@ -1,165 +1,212 @@
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { log, TALISMAN_WEB_APP_URL } from "extension-shared"
+import { Balance, Balances } from "@talismn/balances"
+import { Token, TokenId } from "@talismn/chaindata-provider"
+import { isNotNil } from "@talismn/util"
+import { Address, RemoteConfigStoreData } from "extension-core"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
+import { useAccounts, useRemoteConfig, useTokensMap } from "@ui/state"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
+import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({
-  tokenId,
   balances,
-  stakeType = "root",
+  stakeType,
   netuid,
 }: {
-  tokenId: TokenId | null | undefined
   balances: Balances | null | undefined
   stakeType?: StakeType
   netuid?: number
 }) => {
   const { genericEvent } = useAnalytics()
-
+  const tokensMap = useTokensMap()
   const ownedAccounts = useAccounts("owned")
-  const token = useToken(tokenId)
+
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
 
-  const seekStakingPath = remoteConfig.seek.webAppStakingPath
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
-  // accounts that are solo-staking cannot stake in nomination pools
-  const soloStakingAddresses = useMemo(() => {
-    type SoloStakingMeta = { id?: string } | undefined
-    return (
-      balances?.each
-        .filter((b) => b.locks.some((l) => (l.meta as SoloStakingMeta)?.id === "staking ")) // yes, there is a space at the end :jean:
-        .map((b) => b.address) ?? []
-    )
-  }, [balances])
+  const [bestBondableBalance, isBonding] = useMemo<[BondableBalance | null, boolean]>(() => {
+    if (!balances?.each) return [null, false]
 
-  const sorted = useMemo(() => {
-    if (!balances || !tokenId) return []
-    return balances
-      .find({ tokenId })
-      .each.filter(
-        (b) => ownedAddresses.includes(b.address) && !soloStakingAddresses.includes(b.address),
-      )
-      .sort((a, b) => {
-        if (a.transferable.planck === b.transferable.planck) return 0
-        return a.transferable.planck > b.transferable.planck ? -1 : 1
-      })
-  }, [balances, ownedAddresses, soloStakingAddresses, tokenId])
+    const bondableBalances = balances.each
+      .filter((b) => ownedAddresses.includes(b.address))
+      .map((b) => getBondableBalance(b, tokensMap, remoteConfig, stakeType, netuid))
+      .filter(isNotNil)
+      .sort((a, b) => (a.amount === b.amount ? 0 : a.amount > b.amount ? -1 : 1))
 
-  const address = sorted[0]?.address
-
-  const [openArgs, isNomPoolStaking] = useMemo<[Parameters<typeof open>[0] | null, boolean]>(() => {
-    const isStakingEnableForToken = Boolean(
-      token?.networkId &&
-        token?.symbol &&
-        remoteConfig.stakingPools[token.networkId]?.includes(token.symbol),
-    )
-
-    if (
-      !token ||
-      !tokenId ||
-      !balances ||
-      (token?.type !== "substrate-native" && !isStakingEnableForToken)
-    )
-      return [null, false]
-    try {
-      const poolId =
-        remoteConfig.stakingPools[token.networkId]?.[0] ||
-        remoteConfig.nominationPools[token.networkId]?.[0] ||
-        "SeekPoolId"
-
-      const isStakingEnabled = !!remoteConfig.stakingPools[token.networkId]
-
-      if (!poolId && !isStakingEnabled && !isStakingEnableForToken) return [null, false]
-
-      // if a watch-only or solo-staking account is selected, array will be empty
-      if (!sorted.length) return [null, false]
-
-      // lookup existing poolId for that account
-      for (const balance of sorted.filter((b) => b.address === address)) {
-        switch (token.networkId) {
-          case "bittensor": {
-            type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
-            const entry = balance.subtensor.find(
-              (b) =>
-                !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
-            )
-
-            const meta = entry?.meta as SubtensorMeta
-            if (meta?.hotkey) {
-              return [{ tokenId, address, poolId: meta?.hotkey, netuid }, true]
-            }
-            break
-          }
-          default: {
-            // assume nomination pool staking, but there will be more in the future
-            type NomPoolMeta = { poolId?: number } | undefined
-            const entry = balance.nompools.find((b) => !!(b.meta as NomPoolMeta)?.poolId)
-            const meta = entry?.meta as NomPoolMeta
-            if (meta?.poolId) return [{ tokenId, address, poolId: meta.poolId }, true]
-            break
-          }
-        }
-      }
-
-      return [{ tokenId, address, poolId }, false]
-    } catch (err) {
-      log.error("Failed to compute staking modal open args", err)
-    }
-
-    return [null, false]
-  }, [
-    balances,
-    tokenId,
-    token,
-    remoteConfig.stakingPools,
-    remoteConfig.nominationPools,
-    sorted,
-    address,
-    netuid,
-  ])
+    return [
+      bondableBalances.length ? bondableBalances[0] : null,
+      bondableBalances.some((b) => b.isBonding),
+    ]
+  }, [balances, ownedAddresses, tokensMap, remoteConfig, stakeType, netuid])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
-      if (!openArgs) return
+      if (!bestBondableBalance) return
       e.stopPropagation()
 
-      if (token?.networkId === "bittensor") {
-        handleOpenBittensorModal({
-          ...openArgs,
-          stakeType,
-          isSelectStakeDrawerOpen: stakeType === "root",
-          step: stakeType === "root" ? "form" : "subnet-form",
-          netuid,
-        })
-      } else if (token?.symbol === "SEEK") {
-        window.open(`${TALISMAN_WEB_APP_URL}${seekStakingPath}`, "_blank", "noopener")
-      } else {
-        open(openArgs)
+      genericEvent("open inline staking modal", {
+        tokenId: bestBondableBalance.tokenId,
+        from: "portfolio",
+      })
+
+      switch (bestBondableBalance.type) {
+        case "bittensor": {
+          const { address, tokenId, hotkey, netuid } = bestBondableBalance
+          handleOpenBittensorModal({
+            address,
+            tokenId,
+            poolId: hotkey as string, // TODO fix typing issue on handler, in practice it's undefined by default
+            netuid,
+            stakeType,
+            isSelectStakeDrawerOpen: !stakeType,
+            step: stakeType !== "subnet" ? "form" : "subnet-form",
+          })
+          break
+        }
+        case "seek": {
+          const seekStakingPath = remoteConfig.seek.webAppStakingPath
+          window.open(`${TALISMAN_WEB_APP_URL}${seekStakingPath}`, "_blank", "noopener")
+          break
+        }
+        case "nominationPool": {
+          const { address, tokenId, poolId } = bestBondableBalance
+          open({ address, tokenId, poolId })
+          break
+        }
       }
-      genericEvent("open inline staking modal", { tokenId: openArgs.tokenId, from: "portfolio" })
     },
     [
-      openArgs,
-      token?.networkId,
-      token?.symbol,
+      bestBondableBalance,
       genericEvent,
       handleOpenBittensorModal,
       stakeType,
-      netuid,
-      seekStakingPath,
+      remoteConfig.seek.webAppStakingPath,
       open,
     ],
   )
 
-  return { canBondNomPool: !!openArgs, onClick: openArgs ? handleClick : null, isNomPoolStaking }
+  return {
+    canBond: !!bestBondableBalance,
+    onClick: bestBondableBalance ? handleClick : null,
+    isBonding,
+  }
+}
+
+type BondableBalance =
+  | {
+      type: "seek"
+      tokenId: TokenId
+      address: Address
+      amount: bigint
+      isBonding: boolean
+    }
+  | {
+      type: "bittensor"
+      tokenId: TokenId
+      address: Address
+      amount: bigint
+      hotkey?: string
+      netuid?: number
+      isBonding: boolean
+    }
+  | {
+      type: "nominationPool"
+      tokenId: TokenId
+      address: Address
+      amount: bigint
+      poolId: number
+      isBonding: boolean
+    }
+
+const getBondableBalance = (
+  balance: Balance,
+  tokensMap: Record<string, Token>,
+  remoteConfig: RemoteConfigStoreData,
+  stakeType: StakeType | undefined,
+  netuid: number | undefined,
+): BondableBalance | null => {
+  const token = tokensMap[balance.tokenId]
+  if (!token) return null
+
+  /**
+   * Seek Staking
+   */
+  if (token?.id === remoteConfig.seek.tokenId) {
+    return {
+      type: "seek",
+      tokenId: token.id,
+      address: balance.address,
+      amount: balance.transferable.planck,
+      isBonding: false, // TODO add meta to balance if already staking
+    }
+  }
+
+  /**
+   * Bittensor Native Staking
+   */
+  if (token?.id === BITTENSOR_TOKEN_ID) {
+    const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
+
+    // if user is already staking, reuse parameters
+    type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
+    const entry = balance.subtensor.find(
+      (b) => !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
+    )
+    const meta = entry?.meta as SubtensorMeta
+
+    // on bittensor asset details the first button is staketype agnostic
+    // we need to know if we're staking TAO anywhere to display the appropriate icon
+    const isBondingAny =
+      !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
+
+    return {
+      type: "bittensor",
+      tokenId: token.id,
+      address: balance.address,
+      hotkey: meta?.hotkey ?? defaultHotkey,
+      netuid,
+      amount: balance.transferable.planck,
+      isBonding: !!meta || isBondingAny,
+    }
+  }
+
+  /**
+   * Nomination Pool Staking
+   */
+  if (
+    token?.type === "substrate-native" &&
+    !!remoteConfig.nominationPools[token.networkId]?.length
+  ) {
+    const defaultPoolId = remoteConfig.nominationPools[token.networkId][0]
+
+    // cant stake in nom pools if solo staking
+    type SoloStakingMeta = { id?: string } | undefined
+    if (balance.locks.some((l) => (l.meta as SoloStakingMeta)?.id === "staking "))
+      // the space is intentional
+      return null
+
+    // if already staking in a pool, reuse that poolId
+    type NomPoolMeta = { poolId?: number } | undefined
+    const entry = balance.nompools.find((b) => !!(b.meta as NomPoolMeta)?.poolId)
+    const meta = entry?.meta as NomPoolMeta
+
+    return {
+      type: "nominationPool",
+      tokenId: token.id,
+      address: balance.address,
+      poolId: meta?.poolId ?? defaultPoolId,
+      amount: balance.transferable.planck,
+      isBonding: !!meta,
+    }
+  }
+
+  return null
 }
