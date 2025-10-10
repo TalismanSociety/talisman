@@ -1,4 +1,5 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
+import { formatDecimals } from "@talismn/util"
 import { BalanceDto, YieldPositionGroup } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
@@ -75,10 +76,10 @@ const YieldPositionHeader: FC<{ position: YieldPositionGroup }> = ({ position })
   }, [network, position.address])
 
   const coingeckoUrl = useMemo(() => {
-    const inputToken = position.product?.inputTokens?.[0]
-    if (!inputToken?.coinGeckoId) return null
-    return urlJoin("https://coingecko.com/en/coins/", inputToken.coinGeckoId)
-  }, [position.product])
+    // Use coinGeckoId from the primary token in the position
+    if (!position.primaryToken?.coinGeckoId) return null
+    return urlJoin("https://coingecko.com/en/coins/", position.primaryToken.coinGeckoId)
+  }, [position.primaryToken])
 
   // Event handlers
   const handleViewOnExplorerClick = useCallback(() => {
@@ -239,7 +240,7 @@ const YieldPositionItemRow: FC<{
         <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="grow truncate">{balance.token.symbol}</div>
           <div className="max-w-[50%] truncate">
-            {balance.amount} {balance.token.symbol}
+            {formatDecimals(balance.amount)} {balance.token.symbol}
           </div>
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-xs font-normal">

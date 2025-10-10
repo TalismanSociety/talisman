@@ -132,7 +132,20 @@ const DefiTokenRow: FC<{
   const totalTokenAmount = useMemo(() => {
     return tokenData.positions.reduce(
       (total: number, { balance }: { balance: YieldPositionGroup }) => {
-        return total + balance.totalAmountUsd
+        // Sum up token amounts from all balance types (active, claimable, other)
+        const activeAmount = balance.activeBalances.reduce(
+          (sum, b) => sum + parseFloat(b.amount || "0"),
+          0,
+        )
+        const claimableAmount = balance.claimableBalances.reduce(
+          (sum, b) => sum + parseFloat(b.amount || "0"),
+          0,
+        )
+        const otherAmount = balance.otherBalances.reduce(
+          (sum, b) => sum + parseFloat(b.amount || "0"),
+          0,
+        )
+        return total + activeAmount + claimableAmount + otherAmount
       },
       0,
     )

@@ -84,6 +84,7 @@ const getBalances$ = (addresses: string[], storage: YieldPositionItem[]) =>
   ).pipe(
     map((loadable) => ({
       ...loadable,
+      // fallback to storage - this ensures cached data is shown immediately
       data: (loadable.data?.items as YieldBalancesDtoWithProduct[]) ?? storage,
     })),
     distinctUntilChanged<Loadable<YieldBalancesDtoWithProduct[]>>(isEqual),

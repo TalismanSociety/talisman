@@ -67,8 +67,11 @@ export const groupYieldBalances = (
 
   for (const position of positions) {
     for (const balance of position.balances) {
-      // Group by yieldId, address, token symbol, and network for same yield positions
-      const key = `${position.yieldId}-${balance.address}-${balance.token.symbol}-${balance.token.network}`
+      // Group by yieldId, address, token symbol, network, and validator for same yield positions
+      const validatorAddress =
+        (balance as unknown as { validator?: { address?: string } }).validator?.address ||
+        "no-validator"
+      const key = `${position.yieldId}-${balance.address}-${balance.token.symbol}-${balance.token.network}-${validatorAddress}`
 
       if (!groups.has(key)) {
         groups.set(key, {
@@ -97,18 +100,21 @@ export const groupYieldBalances = (
       const group = groups.get(key)!
 
       // Categorize balance by lifecycle type
-      if (balance.type === "active") {
+      if (balance.type === "active" && balance.isEarning === true) {
+        // Active and earning -> supplied
         group.activeBalances.push(balance)
         group.totalActiveAmountUsd += parseFloat(balance.amountUsd || "0")
         group.isEarning = group.isEarning || balance.isEarning
       } else if (balance.type === "claimable") {
+        // Claimable -> rewards
         group.claimableBalances.push(balance)
         group.totalClaimableAmountUsd += parseFloat(balance.amountUsd || "0")
         group.hasClaimableRewards = true
       } else if (["entering", "exiting", "withdrawable", "locked"].includes(balance.type)) {
-        group.otherBalances.push(balance)
-        group.totalOtherAmountUsd += parseFloat(balance.amountUsd || "0")
-        group.hasOtherBalances = true
+        // Other types -> supplied
+        group.activeBalances.push(balance)
+        group.totalActiveAmountUsd += parseFloat(balance.amountUsd || "0")
+        group.isEarning = group.isEarning || balance.isEarning
       }
 
       // Update total
@@ -118,7 +124,7 @@ export const groupYieldBalances = (
       group.allPendingActions.push(...balance.pendingActions)
 
       // Extract validator info (support multiple validators)
-      if (balance.type === "active") {
+      if (balance.type === "active" || balance.type === "entering") {
         // Handle single validator
         if (
           (
@@ -157,9 +163,13 @@ export const groupYieldBalances = (
     }
   }
 
-  // Calculate UI-ready fields and filter to only yield positions (at least one active balance AND earning)
+  // Calculate UI-ready fields and filter to only yield positions (show actual tokens, not reward/points tokens)
   return Array.from(groups.values())
-    .filter((group) => group.activeBalances.length > 0 && group.isEarning === true)
+    .filter((group) => {
+      // Show positions where the token is NOT a points/reward token
+      const isPointsToken = group.primaryToken.isPoints === true
+      return !isPointsToken && group.activeBalances.length > 0
+    })
     .map((group) => ({
       ...group,
       rewardPercentage:

@@ -13,7 +13,13 @@ export const fetchYieldProducts = async (
   try {
     log.debug("[Yield] Fetching yield products via SDK", { filter })
 
-    const response = await yieldSdk.getYields(filter)
+    // Set a higher limit to get more than the default 20 results
+    const params = {
+      ...filter,
+      limit: filter?.limit || 100, // Use provided limit or default to 100 (max allowed)
+    }
+
+    const response = await yieldSdk.getYields(params)
 
     log.debug("[Yield] SDK yields response", {
       count: response?.items?.length || 0,
