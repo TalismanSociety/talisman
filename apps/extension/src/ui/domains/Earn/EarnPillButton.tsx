@@ -1,4 +1,4 @@
-import { EarnIcon } from "@talismn/icons"
+import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,7 +32,7 @@ export const EarnPillButton: FC<EarnPillButtonProps> = ({ tokenId, onClick, clas
       onClick={handleClick}
     >
       <div className="flex items-center gap-2">
-        <EarnIcon className="shrink-0 text-base" />
+        <ZapFastIcon className="shrink-0 text-base" />
         <div>{t("Earn")}</div>
       </div>
     </button>
