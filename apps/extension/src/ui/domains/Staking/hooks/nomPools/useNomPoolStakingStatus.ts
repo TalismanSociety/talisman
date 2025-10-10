@@ -6,23 +6,25 @@ import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useBalances, useToken } from "@ui/state"
+import { useBalances, useNetworkById, useToken } from "@ui/state"
 
 import { getStakingEraDurationMs } from "../../helpers"
 import { NomPoolMember } from "../../types"
+import { useBabeNetwork } from "./useBabeNetwork"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
 
 export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   const token = useToken(tokenId)
   const poolId = useDetaultNomPoolId(token?.networkId)
+  // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
+  const network = useNetworkById(poolId ? token?.networkId : null)
+  const babeNetwork = useBabeNetwork(poolId ? token?.networkId : null)
   const ownedBalances = useBalances("owned")
 
-  // dont get sapi if we dont have a poolId, it would fetch metadata for nothing
-  const { data: sapi } = useScaleApi(poolId ? token?.networkId : null)
-  const { data: minJoinBond } = useNomPoolsMinJoinBond({
-    chainId: poolId ? token?.networkId : null,
-  })
+  const { data: stakingSapi } = useScaleApi(network?.id)
+  const { data: babeSapi } = useScaleApi(babeNetwork?.id)
+  const { data: minJoinBond } = useNomPoolsMinJoinBond({ chainId: network?.id })
   const { selectedAccount: account } = usePortfolioNavigation()
 
   const [balances, balancesKey] = useMemo(() => {
@@ -35,9 +37,17 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
   }, [account, minJoinBond, ownedBalances, token])
 
   return useQuery({
-    queryKey: ["useNomPoolStakingStatus", sapi?.id, token?.id, poolId, balancesKey],
+    queryKey: [
+      "useNomPoolStakingStatus",
+      stakingSapi?.id,
+      babeSapi?.id,
+      token?.id,
+      poolId,
+      balancesKey,
+    ],
     queryFn: async () => {
-      if (!sapi || !token || !poolId || !minJoinBond || !balances.length) return null
+      if (!stakingSapi || !babeSapi || !token || !poolId || !minJoinBond || !balances.length)
+        return null
 
       const addresses = balances
         .sort((a, b) => {
@@ -48,13 +58,13 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
         .map((b) => b.address)
 
       const [currentEra, soloStakingByAddress, nomPoolStakingByAddress] = await Promise.all([
-        sapi.getStorage<number>("Staking", "CurrentEra", []),
+        stakingSapi.getStorage<number>("Staking", "CurrentEra", []),
 
         Object.fromEntries(
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              !!(await sapi.getStorage("Staking", "Bonded", [address])),
+              !!(await stakingSapi.getStorage("Staking", "Bonded", [address])),
             ]),
           ),
         ) as Record<string, boolean>,
@@ -63,7 +73,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
           await Promise.all(
             addresses.map(async (address) => [
               address,
-              await sapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
+              await stakingSapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
                 address,
               ]),
             ]),
@@ -90,22 +100,22 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             canBondNomPool: !soloStakingByAddress[address] && !!transferableByAddress[address],
             canUnstake: nomPoolStakingByAddress[address]?.points,
             canWithdraw: maxUnbondingEra <= currentEra,
-            canWithdrawIn: await getWithdrawWaitDuration(sapi, erasToUnbonding),
+            canWithdrawIn: getWithdrawWaitDuration(stakingSapi, babeSapi, erasToUnbonding),
           }
         }),
       )
 
       return { accounts, poolId }
     },
-    enabled: !!sapi,
+    enabled: !!stakingSapi && !!babeSapi,
   })
 }
 
-const getWithdrawWaitDuration = async (sapi: ScaleApi, eras: number) => {
+const getWithdrawWaitDuration = (stakingSapi: ScaleApi, babeSapi: ScaleApi, eras: number) => {
   if (eras <= 0) return 0
 
   try {
-    const eraDuration = await getStakingEraDurationMs(sapi)
+    const eraDuration = getStakingEraDurationMs(stakingSapi, babeSapi)
     return eras * Number(eraDuration)
   } catch (err) {
     log.error("Failed to get era duration", err)
