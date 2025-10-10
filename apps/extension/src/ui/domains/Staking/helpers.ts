@@ -7,44 +7,44 @@ import { Binary } from "polkadot-api"
 import { type StakeType } from "./Bittensor/hooks/useBittensorBondWizard"
 import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./Bittensor/utils/constants"
 
-export const getStakingErasPerYear = (sapi: ScaleApi) => {
+export const getStakingErasPerYear = (babeSapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
-  const eraDuration = getStakingEraDurationMs(sapi)
+  const eraDuration = getStakingEraDurationMs(babeSapi)
 
   return MS_PER_YEAR / eraDuration
 }
 
-export const getStakingEraDurationMs = (sapi: ScaleApi) => {
-  const isAlephZero = ["aleph-zero", "aleph-zero-testnet"].includes(sapi.chainId)
+export const getStakingEraDurationMs = (babeSapi: ScaleApi) => {
+  const isAlephZero = ["aleph-zero", "aleph-zero-testnet"].includes(babeSapi.chainId)
 
   // on Polkadot, 6000n (6000ms=6s)
-  const blockTime = isAlephZero ? 1000n : sapi.getConstant<bigint>("Babe", "ExpectedBlockTime")
+  const blockTime = isAlephZero ? 1000n : babeSapi.getConstant<bigint>("Babe", "ExpectedBlockTime")
 
   // on Polkadot, 2400n
   const epochDuration = isAlephZero
     ? 60n * 15n // 15 minutes
-    : sapi.getConstant<bigint>("Babe", "EpochDuration")
+    : babeSapi.getConstant<bigint>("Babe", "EpochDuration")
 
   // on Polkadot, 6
-  const sessionsPerEra = sapi.getConstant<number>("Staking", "SessionsPerEra")
+  const sessionsPerEra = babeSapi.getConstant<number>("Staking", "SessionsPerEra")
 
   // on Polkadot, 6000n * 6n * 2400n = 86,400,000ms = 24 hours
   return blockTime * BigInt(sessionsPerEra) * epochDuration
 }
 
-export const getStakingBondingDurationMs = (sapi: ScaleApi) => {
+export const getStakingBondingDurationMs = (babeSapi: ScaleApi) => {
   // returns a number of eras
   // on Polkadot, 28
-  const bondingDuration = sapi.getConstant<number>("Staking", "BondingDuration")
+  const bondingDuration = babeSapi.getConstant<number>("Staking", "BondingDuration")
 
-  const eraDuration = getStakingEraDurationMs(sapi)
+  const eraDuration = getStakingEraDurationMs(babeSapi)
 
   return BigInt(bondingDuration) * eraDuration
 }
 
 export const STAKING_APR_UNAVAILABLE = "APR Unavailable"
 
-export const getStakingAPR = async (sapi: ScaleApi) => {
+export const getStakingAPR = async (sapi: ScaleApi, babeSapi: ScaleApi) => {
   const historyDepth = sapi.getConstant<number>("Staking", "HistoryDepth")
 
   const currentEra = await sapi.getStorage<number>("Staking", "CurrentEra", [])
@@ -60,7 +60,7 @@ export const getStakingAPR = async (sapi: ScaleApi) => {
     Promise.all(eras.map((era) => sapi.getStorage<bigint>("Staking", "ErasTotalStake", [era]))),
   ])
 
-  const erasPerYear = getStakingErasPerYear(sapi)
+  const erasPerYear = getStakingErasPerYear(babeSapi)
   const RATIO_DIGITS = 10000n
 
   if (!eraRewards.some((reward) => reward !== null)) throw new Error(STAKING_APR_UNAVAILABLE)
