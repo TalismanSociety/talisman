@@ -82,3 +82,21 @@ export const deserializeTransactionFromBase64 = (
     }
   }
 }
+
+export const deserializeTransactionFromHex = (
+  transactionHex: string,
+): Transaction | VersionedTransaction | undefined => {
+  try {
+    // Convert hex → bytes
+    const rawBytes = Buffer.from(transactionHex, "hex")
+
+    // Try versioned first
+    try {
+      return VersionedTransaction.deserialize(rawBytes)
+    } catch {
+      return Transaction.from(rawBytes)
+    }
+  } catch {
+    return undefined
+  }
+}

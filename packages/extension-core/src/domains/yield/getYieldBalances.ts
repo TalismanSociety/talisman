@@ -23,7 +23,7 @@ import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
 import { YieldBalancesDtoWithProduct, YieldDto, YieldPositionItem } from "./types"
 import { yieldSdk } from "./yieldSdk"
 
-const REFRESH_INTERVAL = 30_000
+const REFRESH_INTERVAL = 10_000
 
 const accountAddresses$ = keyringStore.accounts$.pipe(
   map((accounts) => accounts.map((a) => a.address)),
