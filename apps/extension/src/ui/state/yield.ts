@@ -6,7 +6,7 @@ import {
   YieldBalancesDtoWithProduct,
   YieldsControllerGetYieldsParams,
 } from "extension-core"
-import { BehaviorSubject, Observable, ReplaySubject, shareReplay } from "rxjs"
+import { BehaviorSubject, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -15,22 +15,17 @@ const DEFAULT_YIELD_BALANCES: Loadable<YieldBalancesDtoWithProduct[]> = {
   data: [],
 }
 
-const subjectRawYieldBalances$ = new ReplaySubject<Loadable<YieldBalancesDtoWithProduct[]>>(1)
-
 const rawYieldBalances$ = new Observable<Loadable<YieldBalancesDtoWithProduct[]>>((subscriber) => {
-  const sub = subjectRawYieldBalances$.subscribe(subscriber)
-
   const unsubscribe = api.yieldBalancesSubscribe(
     (loadable: Loadable<YieldBalancesDtoWithProduct[]>) => {
-      subjectRawYieldBalances$.next(loadable)
+      subscriber.next(loadable)
     },
   )
 
   return () => {
-    sub.unsubscribe()
     unsubscribe()
   }
-})
+}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
 export const [useYieldRawBalances, yieldBalances$] = bind(
   rawYieldBalances$.pipe(shareReplay({ bufferSize: 1, refCount: true })),

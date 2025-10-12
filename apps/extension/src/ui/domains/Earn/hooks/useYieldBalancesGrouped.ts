@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { YieldPositionGroup } from "extension-core"
-import { Observable, ReplaySubject, shareReplay } from "rxjs"
+import { Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -10,19 +10,14 @@ const DEFAULT_YIELD_BALANCES_GROUPED: Loadable<YieldPositionGroup[]> = {
   data: [],
 }
 
-const subjectRawYieldBalancesGrouped$ = new ReplaySubject<Loadable<YieldPositionGroup[]>>(1)
-
 const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPositionGroup[]>>((subscriber) => {
-  const sub = subjectRawYieldBalancesGrouped$.subscribe(subscriber)
-
   const unsubscribe = api.yieldBalancesGroupedSubscribe(
     (loadable: Loadable<YieldPositionGroup[]>) => {
-      subjectRawYieldBalancesGrouped$.next(loadable)
+      subscriber.next(loadable)
     },
   )
 
   return () => {
-    sub.unsubscribe()
     unsubscribe()
   }
 })

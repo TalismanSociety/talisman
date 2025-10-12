@@ -1,7 +1,16 @@
 import { getLoadable$, getSharedObservable, keepAlive, Loadable } from "@talismn/util"
 import { BalancesQueryDto, Networks } from "@yieldxyz/sdk"
 import { isEqual } from "lodash-es"
-import { distinctUntilChanged, firstValueFrom, map, shareReplay, switchMap, take, tap } from "rxjs"
+import {
+  distinctUntilChanged,
+  firstValueFrom,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+  tap,
+} from "rxjs"
 
 import { walletReady$ } from "../../libs/isWalletReady"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -21,11 +30,30 @@ const accountAddresses$ = keyringStore.accounts$.pipe(
 )
 
 export const yieldBalances$ = walletReady$.pipe(
-  switchMap(() => accountAddresses$),
-  switchMap((addresses) => {
+  switchMap(() => {
+    // Emit cached data immediately, then fetch fresh data in background
     return yieldBalancesStore$.pipe(
       take(1),
-      switchMap((storage) => getBalances$(addresses, storage)),
+      switchMap((storage) => {
+        // If we have cached data, emit it immediately
+        if (storage.length > 0) {
+          return of({ status: "success", data: storage } as Loadable<YieldPositionItem[]>).pipe(
+            // Also fetch fresh data in the background
+            switchMap((cachedLoadable) => {
+              return accountAddresses$.pipe(
+                switchMap((addresses) => getBalances$(addresses, storage)),
+                // Merge with cached data to ensure we always have something to show
+                map((freshLoadable) => ({
+                  ...freshLoadable,
+                  data: freshLoadable.data || cachedLoadable.data,
+                })),
+              )
+            }),
+          )
+        }
+        // If no cached data, wait for account addresses and fetch fresh data
+        return accountAddresses$.pipe(switchMap((addresses) => getBalances$(addresses, storage)))
+      }),
     )
   }),
   tap((loadable) => {

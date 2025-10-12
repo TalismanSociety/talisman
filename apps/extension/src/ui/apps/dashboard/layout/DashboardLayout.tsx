@@ -1,10 +1,4 @@
-import {
-  HistoryIcon,
-  SettingsIcon,
-  TalismanHandIcon,
-  TrendingUpIcon,
-  ZapIcon,
-} from "@talismn/icons"
+import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
 import { classNames, isTruthy } from "@talismn/util"
 // import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
@@ -177,8 +171,7 @@ const HorizontalNav = () => {
       <NavButton
         label={t("Earn")}
         onClick={handleEarnClick}
-        icon={ZapIcon}
-        activeIcon={TrendingUpIcon}
+        icon={TrendingUpIcon}
         route="/earn/*"
       />
       <NavButton
