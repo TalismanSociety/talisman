@@ -84,30 +84,31 @@ const HeaderRow = () => {
   )
 }
 
-export const DashboardAssetsTable = () => {
+const NoAssetsFound = () => {
   const { t } = useTranslation()
-  const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
+
+  return (
+    <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
+      {selectedAccount
+        ? t("No assets were found on this account.")
+        : selectedFolder
+          ? t("No assets were found in this folder.")
+          : t("No assets were found.")}
+    </div>
+  )
+}
+
+export const DashboardAssetsTable = () => {
+  const { isInitialising } = usePortfolioGlobalData()
   const { symbolBalances } = usePortfolioSymbolBalancesByFilter("search")
-
   const location = useLocation()
-
-  if (!symbolBalances.length && !isInitialising) {
-    return (
-      <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
-        {selectedAccount
-          ? t("No assets were found on this account.")
-          : selectedFolder
-            ? t("No assets were found in this folder.")
-            : t("No assets were found.")}
-      </div>
-    )
-  }
 
   return (
     <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
       <SeekBenefitsBanner className="mb-2" variant="large" />
       <SeekPresaleBanner className="mb-2" variant="large" />
+      {!symbolBalances.length && !isInitialising && <NoAssetsFound />}
       {!!symbolBalances.length && <HeaderRow />}
       <VirtualizedRows symbolBalances={symbolBalances} />
       {isInitialising && <AssetRowSkeleton />}
