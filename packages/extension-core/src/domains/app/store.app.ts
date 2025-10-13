@@ -44,6 +44,7 @@ export type AppStoreData = {
   hideUnifiedAddressBanner?: boolean
   hideAutonomysQuestBanner?: boolean
   hideSeekBenefitsBanner?: boolean
+  hideSeekPresaleBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
