@@ -31,49 +31,19 @@ export interface YieldBalancesDtoWithProduct extends YieldBalancesDto {
   product?: YieldDto
 }
 
-export interface YieldPositionGroup {
-  yieldId: string
-  address: string
-  product?: YieldDto
-
-  // Grouped balances by lifecycle type
-  activeBalances: BalanceDto[]
-  claimableBalances: BalanceDto[]
-  otherBalances: BalanceDto[] // entering, exiting, withdrawable, locked
-
-  // Aggregated data
-  totalAmountUsd: number
-  totalActiveAmountUsd: number
-  totalClaimableAmountUsd: number
-  totalOtherAmountUsd: number
-
-  // Primary token info (from first active balance)
-  primaryToken: BalanceDto["token"]
-
-  // Validator info (support multiple validators)
-  validators?: Array<{
-    name?: string
-    logoURI?: string
-    address?: string
-  }>
-
-  // Combined pending actions from all balances
-  allPendingActions: unknown[]
-
-  // Position status
-  isEarning: boolean
-  hasClaimableRewards: boolean
-  hasOtherBalances: boolean
-
-  // UI-ready calculated fields
-  rewardPercentage: number
+// Simplified yield position with validator grouping
+export interface YieldPosition extends YieldBalancesDtoWithProduct {
+  // Validator address if applicable
+  validatorAddress?: string
+  // Display-ready fields
   displayName: string
+  totalAmountUsd: number
   networkId: string
 }
 
 // UI subscription response type (store-backed), mirroring DeFi
 export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldBalancesDtoWithProduct[]>
-export type YieldPositionsGroupedResponse = import("@talismn/util").Loadable<YieldPositionGroup[]>
+export type YieldPositionsGroupedResponse = import("@talismn/util").Loadable<YieldPosition[]>
 
 // Message type augmentation for handler routing
 export interface YieldMessages {

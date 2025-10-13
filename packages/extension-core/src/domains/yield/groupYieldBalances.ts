@@ -1,4 +1,4 @@
-import { YieldBalancesDtoWithProduct, YieldPositionGroup } from "./types"
+import { YieldBalancesDtoWithProduct, YieldPosition } from "./types"
 
 // Helper function to map Yield.xyz network to Talisman network ID
 function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
@@ -42,7 +42,7 @@ function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
     case "westend":
       return "westend"
     case "solana":
-      return "solana"
+      return "solana-mainnet"
     case "near":
       return "near"
     case "cardano":
@@ -60,123 +60,48 @@ function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
   }
 }
 
-export const groupYieldBalances = (
-  positions: YieldBalancesDtoWithProduct[],
-): YieldPositionGroup[] => {
-  const groups = new Map<string, YieldPositionGroup>()
+export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): YieldPosition[] => {
+  const positions: YieldPosition[] = []
 
-  for (const position of positions) {
-    for (const balance of position.balances) {
-      // Group by yieldId, address, token symbol, network, and validator for same yield positions
-      const validatorAddress =
-        (balance as unknown as { validator?: { address?: string } }).validator?.address ||
-        "no-validator"
-      const key = `${position.yieldId}-${balance.address}-${balance.token.symbol}-${balance.token.network}-${validatorAddress}`
+  // Group items by yieldId to combine multi-validator stakes
+  const itemsByYieldId = new Map<string, YieldBalancesDtoWithProduct[]>()
 
-      if (!groups.has(key)) {
-        groups.set(key, {
-          yieldId: position.yieldId, // Use the first yieldId found
-          address: balance.address,
-          product: position.product,
-          activeBalances: [],
-          claimableBalances: [],
-          otherBalances: [],
-          totalAmountUsd: 0,
-          totalActiveAmountUsd: 0,
-          totalClaimableAmountUsd: 0,
-          totalOtherAmountUsd: 0,
-          primaryToken: balance.token,
-          validators: [],
-          allPendingActions: [],
-          isEarning: false,
-          hasClaimableRewards: false,
-          hasOtherBalances: false,
-          rewardPercentage: 0,
-          displayName: "",
-          networkId: mapYieldNetworkToNetworkId(balance.token.network) || balance.token.network,
-        })
-      }
-
-      const group = groups.get(key)!
-
-      // Categorize balance by lifecycle type
-      if (balance.type === "active" && balance.isEarning === true) {
-        // Active and earning -> supplied
-        group.activeBalances.push(balance)
-        group.totalActiveAmountUsd += parseFloat(balance.amountUsd || "0")
-        group.isEarning = group.isEarning || balance.isEarning
-      } else if (balance.type === "claimable") {
-        // Claimable -> rewards
-        group.claimableBalances.push(balance)
-        group.totalClaimableAmountUsd += parseFloat(balance.amountUsd || "0")
-        group.hasClaimableRewards = true
-      } else if (["entering", "exiting", "withdrawable", "locked"].includes(balance.type)) {
-        // Other types -> supplied
-        group.activeBalances.push(balance)
-        group.totalActiveAmountUsd += parseFloat(balance.amountUsd || "0")
-        group.isEarning = group.isEarning || balance.isEarning
-      }
-
-      // Update total
-      group.totalAmountUsd += parseFloat(balance.amountUsd || "0")
-
-      // Collect pending actions
-      group.allPendingActions.push(...balance.pendingActions)
-
-      // Extract validator info (support multiple validators)
-      if (balance.type === "active" || balance.type === "entering") {
-        // Handle single validator
-        if (
-          (
-            balance as unknown as {
-              validator?: { name?: string; logoURI?: string; address?: string }
-            }
-          ).validator
-        ) {
-          const validator = (
-            balance as unknown as {
-              validator: { name?: string; logoURI?: string; address?: string }
-            }
-          ).validator
-          group.validators!.push({
-            name: validator.name,
-            logoURI: validator.logoURI,
-            address: validator.address,
-          })
-        }
-        // Handle multiple validators
-        if (
-          (
-            balance as unknown as {
-              validators?: Array<{ name?: string; logoURI?: string; address?: string }>
-            }
-          ).validators
-        ) {
-          const validators = (
-            balance as unknown as {
-              validators: Array<{ name?: string; logoURI?: string; address?: string }>
-            }
-          ).validators
-          group.validators!.push(...validators)
-        }
-      }
+  for (const item of items) {
+    if (!itemsByYieldId.has(item.yieldId)) {
+      itemsByYieldId.set(item.yieldId, [])
     }
+    itemsByYieldId.get(item.yieldId)!.push(item)
   }
 
-  // Calculate UI-ready fields and filter to only yield positions (show actual tokens, not reward/points tokens)
-  return Array.from(groups.values())
-    .filter((group) => {
-      // Show positions where the token is NOT a points/reward token
-      const isPointsToken = group.primaryToken.isPoints === true
-      return !isPointsToken && group.activeBalances.length > 0
+  for (const [_yieldId, yieldItems] of itemsByYieldId) {
+    // Combine all balances from all items with the same yieldId
+    const allBalances = yieldItems
+      .flatMap((item) => item.balances)
+      .filter((balance) => !balance.token.isPoints)
+
+    // Must have at least one non-claimable balance to show position
+    const hasActiveBalance = allBalances.some((b) => b.type !== "claimable")
+    if (!hasActiveBalance) continue
+
+    const firstBalance = allBalances[0]
+    const firstItem = yieldItems[0]
+
+    // Calculate total USD
+    const totalAmountUsd = allBalances.reduce((sum, b) => sum + parseFloat(b.amountUsd || "0"), 0)
+
+    // Get display name - always use product metadata name
+    const displayName = firstItem.product?.metadata.name || "Yield Position"
+
+    positions.push({
+      ...firstItem,
+      balances: allBalances,
+      validatorAddress: undefined, // No specific validator for multi-validator positions
+      displayName,
+      totalAmountUsd,
+      networkId:
+        mapYieldNetworkToNetworkId(firstBalance.token.network) || firstBalance.token.network,
     })
-    .map((group) => ({
-      ...group,
-      rewardPercentage:
-        group.totalClaimableAmountUsd > 0 && group.totalActiveAmountUsd > 0
-          ? (group.totalClaimableAmountUsd / group.totalActiveAmountUsd) * 100
-          : 0,
-      displayName: group.validators?.[0]?.name || group.product?.metadata.name || "Yield Position",
-      networkId: group.primaryToken.network,
-    }))
+  }
+
+  return positions
 }

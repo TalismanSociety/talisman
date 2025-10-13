@@ -17,7 +17,7 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
 import { fetchYieldBalances } from "./fetchYieldBalances"
-import { groupYieldBalances } from "./groupYieldBalances"
+import { createYieldPositions } from "./groupYieldBalances"
 import { mapToYieldNetwork } from "./networkMapping"
 import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
 import { YieldBalancesDtoWithProduct, YieldDto, YieldPositionItem } from "./types"
@@ -68,10 +68,10 @@ export const yieldBalances$ = walletReady$.pipe(
 export const yieldBalancesGrouped$ = yieldBalances$.pipe(
   map((loadable) => {
     if (loadable.status === "success" && loadable.data) {
-      const grouped = groupYieldBalances(loadable.data)
+      const positions = createYieldPositions(loadable.data)
       return {
         ...loadable,
-        data: grouped,
+        data: positions,
       }
     }
     return {

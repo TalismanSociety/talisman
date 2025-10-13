@@ -45,18 +45,17 @@ const YieldPositionHeader: FC<{ yieldId: string | undefined }> = ({ yieldId }) =
         </IconButton>
         <AssetLogo
           url={
-            position.validators?.[0]?.logoURI ||
+            (position.balances[0] as unknown as { validator?: { logoURI?: string } })?.validator
+              ?.logoURI ||
             position.product?.metadata.logoURI ||
-            position.primaryToken.logoURI
+            position.balances[0]?.token.logoURI
           }
           className="size-[3.6rem]"
         />
         <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="text-body truncate text-sm font-bold">
-            {position.validators?.[0]?.name || position.product?.metadata.name || "Yield Position"}
-          </div>
+          <div className="text-body truncate text-sm font-bold">{position.displayName}</div>
           <div className="text-body-secondary truncate text-xs">
-            <PortfolioAccount address={position.address} />
+            <PortfolioAccount address={position.balances[0]?.address} />
           </div>
         </div>
         <div className="flex shrink-0 flex-col gap-2 text-right">

@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { BalanceDto, YieldPositionGroup } from "extension-core"
+import { BalanceDto, YieldPosition } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 import urlJoin from "url-join"
@@ -19,14 +19,24 @@ import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
   const position = useYieldPosition(yieldId)
 
+  // Categorize balances on-the-fly
+  const suppliedBalances = useMemo(
+    () => position?.balances.filter((b) => b.type !== "claimable") || [],
+    [position],
+  )
+
+  const rewardBalances = useMemo(
+    () => position?.balances.filter((b) => b.type === "claimable") || [],
+    [position],
+  )
+
   if (!position) return null
 
   return (
     <div className="flex w-full max-w-full flex-col gap-4 overflow-hidden">
       <YieldPositionHeader position={position} />
-      <YieldPositionSection position={position} type="supplied" />
-      <YieldPositionSection position={position} type="rewards" />
-      <YieldPositionSection position={position} type="other" />
+      <YieldPositionSection balances={suppliedBalances} title="Supplied" />
+      <YieldPositionSection balances={rewardBalances} title="Rewards" />
       <div className="flex w-full justify-end">
         <YieldPositionActionButtons position={position} />
       </div>
@@ -34,27 +44,28 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
   )
 }
 
-const YieldPositionHeader: FC<{ position: YieldPositionGroup }> = ({ position }) => {
+const YieldPositionHeader: FC<{ position: YieldPosition }> = ({ position }) => {
   const { genericEvent } = useAnalytics()
   const networkId = mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
   const network = useNetworkById(networkId)
 
   const hasClaimableRewards = useMemo(() => {
-    return position.allPendingActions.some(
-      (action: unknown) =>
-        typeof action === "object" &&
-        action !== null &&
-        "type" in action &&
-        (action as { type: string }).type === "CLAIM_REWARDS",
+    return position.balances.some((balance) =>
+      balance.pendingActions?.some(
+        (action: unknown) =>
+          typeof action === "object" &&
+          action !== null &&
+          "type" in action &&
+          (action as { type: string }).type === "CLAIM_REWARDS",
+      ),
     )
-  }, [position.allPendingActions])
+  }, [position.balances])
 
   const claimableTokenAmount = useMemo(() => {
-    return position.claimableBalances.reduce(
-      (total, balance) => total + parseFloat(balance.amount),
-      0,
-    )
-  }, [position.claimableBalances])
+    return position.balances
+      .filter((b) => b.type === "claimable")
+      .reduce((total, balance) => total + parseFloat(balance.amount), 0)
+  }, [position.balances])
 
   const tokenList = useMemo(() => {
     const tokens = []
@@ -67,17 +78,23 @@ const YieldPositionHeader: FC<{ position: YieldPositionGroup }> = ({ position })
     return tokens.join(" / ")
   }, [position.product])
 
+  // Get first balance for address info
+  const firstBalance = position.balances[0]
+
+  // Use product metadata for primary token info (more reliable than balances[0])
+  const primaryToken = position.product?.inputTokens?.[0] || firstBalance?.token
+
   // Generate URLs for external links
   const blockExplorerUrl = useMemo(() => {
-    if (!network?.blockExplorerUrls.length || !position.address) return null
-    return urlJoin(network.blockExplorerUrls[0], "address", position.address)
-  }, [network, position.address])
+    if (!network?.blockExplorerUrls.length || !firstBalance?.address) return null
+    return urlJoin(network.blockExplorerUrls[0], "address", firstBalance.address)
+  }, [network, firstBalance?.address])
 
   const coingeckoUrl = useMemo(() => {
     // Use coinGeckoId from the primary token in the position
-    if (!position.primaryToken?.coinGeckoId) return null
-    return urlJoin("https://coingecko.com/en/coins/", position.primaryToken.coinGeckoId)
-  }, [position.primaryToken])
+    if (!primaryToken?.coinGeckoId) return null
+    return urlJoin("https://coingecko.com/en/coins/", primaryToken.coinGeckoId)
+  }, [primaryToken?.coinGeckoId])
 
   // Event handlers
   const handleViewOnExplorerClick = useCallback(() => {
@@ -122,7 +139,7 @@ const YieldPositionHeader: FC<{ position: YieldPositionGroup }> = ({ position })
                   // TODO: Implement claim
                 }}
               >
-                Claim {claimableTokenAmount.toFixed(4)} {position.primaryToken.symbol}
+                Claim {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
               </ContextMenuItem>
             )}
             <ContextMenuItem
@@ -149,24 +166,27 @@ const YieldPositionHeader: FC<{ position: YieldPositionGroup }> = ({ position })
   )
 }
 
-const YieldPositionActionButtons: FC<{ position: YieldPositionGroup }> = ({ position }) => {
+const YieldPositionActionButtons: FC<{ position: YieldPosition }> = ({ position }) => {
   // Check if there are claimable rewards with CLAIM_REWARDS action
   const hasClaimableRewards = useMemo(() => {
-    return position.allPendingActions.some(
-      (action: unknown) =>
-        typeof action === "object" &&
-        action !== null &&
-        "type" in action &&
-        (action as { type: string }).type === "CLAIM_REWARDS",
+    return position.balances.some((balance) =>
+      balance.pendingActions?.some(
+        (action: unknown) =>
+          typeof action === "object" &&
+          action !== null &&
+          "type" in action &&
+          (action as { type: string }).type === "CLAIM_REWARDS",
+      ),
     )
-  }, [position.allPendingActions])
+  }, [position.balances])
 
   const claimableTokenAmount = useMemo(() => {
-    return position.claimableBalances.reduce(
-      (total, balance) => total + parseFloat(balance.amount),
-      0,
-    )
-  }, [position.claimableBalances])
+    return position.balances
+      .filter((b) => b.type === "claimable")
+      .reduce((total, balance) => total + parseFloat(balance.amount), 0)
+  }, [position.balances])
+
+  const primaryToken = position.balances[0]?.token
 
   return (
     <div className="flex w-full max-w-full gap-4 overflow-hidden">
@@ -189,7 +209,7 @@ const YieldPositionActionButtons: FC<{ position: YieldPositionGroup }> = ({ posi
         >
           <div className="truncate font-medium text-black">Claim</div>
           <div className="text-grey-800 truncate text-sm font-light">
-            {claimableTokenAmount.toFixed(4)} {position.primaryToken.symbol}
+            {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
           </div>
         </button>
       )}
@@ -198,30 +218,17 @@ const YieldPositionActionButtons: FC<{ position: YieldPositionGroup }> = ({ posi
 }
 
 const YieldPositionSection: FC<{
-  position: YieldPositionGroup
-  type: "supplied" | "rewards" | "other"
-}> = ({ position, type }) => {
-  const items = useMemo(() => {
-    switch (type) {
-      case "supplied":
-        return position.activeBalances
-      case "rewards":
-        return position.claimableBalances
-      case "other":
-        return position.otherBalances
-    }
-  }, [position, type])
-
-  if (!items.length) return null
+  balances: BalanceDto[]
+  title: string
+}> = ({ balances, title }) => {
+  if (!balances.length) return null
 
   return (
     <div className="bg-black-secondary rounded-sm">
       <div className="flex h-24 w-full max-w-full items-center overflow-hidden">
-        <div className="truncate px-8 text-base font-bold text-white">
-          {type === "supplied" ? "Supplied" : type === "rewards" ? "Rewards" : "Other"}
-        </div>
+        <div className="truncate px-8 text-base font-bold text-white">{title}</div>
       </div>
-      {items.map((balance, idx) => (
+      {balances.map((balance, idx) => (
         <YieldPositionItemRow key={idx} balance={balance} />
       ))}
     </div>

@@ -55,7 +55,7 @@ import {
   ValidRequests,
   WalletTransactionInfo,
   WatchAssetRequestId,
-  YieldPositionGroup,
+  YieldPosition,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
@@ -281,6 +281,6 @@ export default interface MessageTypes {
     cb: (positions: Loadable<import("extension-core").YieldBalancesDtoWithProduct[]>) => void,
   ) => UnsubscribeFn
   yieldBalancesGroupedSubscribe: (
-    cb: (positions: Loadable<YieldPositionGroup[]>) => void,
+    cb: (positions: Loadable<YieldPosition[]>) => void,
   ) => UnsubscribeFn
 }
