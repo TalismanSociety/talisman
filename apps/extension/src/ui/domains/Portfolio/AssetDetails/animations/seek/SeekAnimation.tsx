@@ -40,7 +40,7 @@ export const SeekAnimation = () => {
   return createPortal(
     <div
       className={cn(
-        "bg-black-primary/30 absolute left-0 top-0 size-full opacity-0 transition-opacity duration-500 ease-out",
+        "bg-black-primary/70 absolute left-0 top-0 size-full opacity-0 transition-opacity duration-500 ease-out",
         state === "visible" && "opacity-100",
         state === "hiding" && "opacity-0",
         state === "hidden" && "hidden",
