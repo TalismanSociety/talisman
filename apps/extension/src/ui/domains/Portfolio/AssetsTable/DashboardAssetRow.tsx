@@ -14,8 +14,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import { useNetworkById } from "@ui/state"
-import { EARN_TOKEN_IDS } from "@ui/util/constants"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -46,7 +45,11 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const showEarnButton = useMemo(() => token?.id && EARN_TOKEN_IDS.includes(token.id), [token?.id])
+  const remoteConfig = useRemoteConfig()
+  const showEarnButton = useMemo(
+    () => token?.id && remoteConfig.earn.earnButtonTokenIds.includes(token.id),
+    [token?.id, remoteConfig.earn.earnButtonTokenIds],
+  )
   const { canBond } = useBondButton({ balances })
 
   if (!token || !network || !summary) return null
