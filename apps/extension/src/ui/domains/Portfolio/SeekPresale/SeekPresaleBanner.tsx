@@ -37,7 +37,7 @@ export const SeekPresaleBanner: FC<{ variant: "small" | "large"; className?: str
         <div className="from-black-secondary relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% to-[#3F3F0C]/50">
           <div
             className={cn(
-              "flex size-full flex-col justify-center gap-2 px-8",
+              "absolute left-0 top-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
               variant === "large" && "gap-3",
               variant === "small" && "gap-2",
             )}

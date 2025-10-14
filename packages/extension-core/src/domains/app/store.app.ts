@@ -126,6 +126,7 @@ if (DEBUG) {
       hideUnifiedAddressBanner: false,
       hideAutonomysQuestBanner: false,
       hideSeekBenefitsBanner: false,
+      hideSeekPresaleBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {
