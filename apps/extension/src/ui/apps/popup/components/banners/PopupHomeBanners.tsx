@@ -1,4 +1,5 @@
 import { SeekBenefitsBanner } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsBanner"
+import { SeekPresaleBanner } from "@ui/domains/Portfolio/SeekPresale/SeekPresaleBanner"
 
 import { NewFeaturesButton } from "../NewFeaturesButton"
 import { BackupReminderBanner } from "./BackupReminderBanner"
@@ -11,6 +12,7 @@ export const PopupHomeBanners = () => {
       <NewFeaturesButton />
       <UnifiedAddressInfoBanner />
       <SeekBenefitsBanner variant="small" />
+      <SeekPresaleBanner variant="small" />
     </>
   )
 }
