@@ -42,7 +42,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  const { canBondNomPool } = useBondButton({ tokenId: token?.id, balances })
+  const { canBond } = useBondButton({ balances })
 
   if (!token || !network || !summary) return null
 
@@ -108,21 +108,17 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
-              canBondNomPool && "group-hover:hidden",
+              canBond && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
             noCountUp={noCountUp}
           />
         </div>
       </button>
-      {canBondNomPool && (
+      {canBond && (
         <>
           <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
-            <BondPillButton
-              tokenId={token.id}
-              balances={balances}
-              className="[>svg]:text-[2rem] text-base"
-            />
+            <BondPillButton balances={balances} className="[>svg]:text-[2rem] text-base" />
           </div>
           <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
             <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">

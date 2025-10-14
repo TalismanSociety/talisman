@@ -1,5 +1,5 @@
 import { HelpCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, tokensToPlanck } from "@talismn/util"
 import { useAtomValue } from "jotai"
 import { FC, ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -29,11 +29,12 @@ type Props = {
   hideBalance?: boolean
   disableBtc?: boolean
   usdOverride?: number
+  maxNativeTokenGasBuffer?: string
 }
 
 const hardcodedGasBufferByTokenSymbol: Record<string, number> = {
   dot: 0.03,
-  eth: 0.01, // same as uniswap, they give a fixed 0.01 ETH buffer regardless of the chain
+  eth: 0.0005,
   s: 0.01,
 }
 
@@ -52,6 +53,7 @@ export const TokenAmountInput: FC<Props> = ({
   stayAliveBalance,
   disabled = false,
   usdOverride,
+  maxNativeTokenGasBuffer,
 }) => {
   const { t } = useTranslation()
 
@@ -123,22 +125,24 @@ export const TokenAmountInput: FC<Props> = ({
     if (!selectedAsset || !availableBalance) return null
     const idParts = selectedAsset.id.split("-")
     const assetType = idParts[idParts.length - 1]
-    const gasBuffer = hardcodedGasBufferByTokenSymbol[selectedAsset.symbol.toLowerCase()]
-    if (assetType === "native" && gasBuffer) {
-      const gasBufferDecimal = Decimal.fromUserInputOrUndefined(
-        gasBuffer?.toString(),
-        availableBalance.decimals,
-        { currency: availableBalance.currency },
+
+    if (assetType === "native") {
+      const { decimals, currency } = availableBalance
+
+      const swapGasBufferWei = maxNativeTokenGasBuffer ? BigInt(maxNativeTokenGasBuffer) : 0n
+      const hardcodedGasBufferWei = BigInt(
+        tokensToPlanck(
+          String(hardcodedGasBufferByTokenSymbol[selectedAsset.symbol.toLowerCase()] ?? 0),
+          decimals,
+        ),
       )
-      return Decimal.fromPlanck(
-        availableBalance.planck - (gasBufferDecimal?.planck ?? 0n),
-        availableBalance.decimals,
-        { currency: availableBalance.currency },
-      )
+
+      const totalBufferWei = availableBalance.planck - hardcodedGasBufferWei - swapGasBufferWei
+      return Decimal.fromPlanck(totalBufferWei, decimals, { currency })
     }
 
     return availableBalance
-  }, [availableBalance, selectedAsset])
+  }, [availableBalance, maxNativeTokenGasBuffer, selectedAsset])
   const onSetMaxAmount = useCallback(() => {
     if (!maxAfterGas || maxAfterGas.planck <= 0) return
     const { planck, decimals, currency } = maxAfterGas
@@ -163,17 +167,17 @@ export const TokenAmountInput: FC<Props> = ({
     if (!shouldDisplayBalance) return null
     if (!maxAfterGas) return <LoaderIcon className="animate-spin-slow" />
 
-    const amount = maxAfterGas.planck <= 0 ? "0" : maxAfterGas.toString()
+    const maxAfterGasAmount = maxAfterGas.planck <= 0 ? "0" : maxAfterGas.toString()
     const decimals = maxAfterGas.decimals ?? selectedAsset?.decimals
     const symbol = maxAfterGas.currency ?? selectedAsset?.symbol
 
     if (!availableBalance || availableBalance.planck <= 0)
       return <div>{t("Selected account has no {{symbol}}", { symbol })}</div>
-    if (amount === "0")
-      return <div>{t("Insufficient {{symbol}} balance for fees", { symbol })}</div>
+    if (maxAfterGasAmount === "0")
+      return <div>{t("Insufficient {{symbol}} balance for gas", { symbol })}</div>
     return (
       <div>
-        {t("Available:")} <Tokens amount={amount} decimals={decimals} symbol={symbol} />
+        {t("Available:")} <Tokens amount={maxAfterGasAmount} decimals={decimals} symbol={symbol} />
       </div>
     )
   }, [availableBalance, maxAfterGas, selectedAsset, shouldDisplayBalance, t])

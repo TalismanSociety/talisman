@@ -4,18 +4,20 @@ import { useQuery } from "@tanstack/react-query"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getStakingBondingDurationMs } from "../../helpers"
+import { useBabeNetwork } from "./useBabeNetwork"
 
 export const useStakingBondingDuration = (chainId: DotNetworkId | null | undefined) => {
-  const { data: sapi } = useScaleApi(chainId)
+  const babeNetwork = useBabeNetwork(chainId)
+  const { data: stakingSapi } = useScaleApi(chainId)
+  const { data: babeSapi } = useScaleApi(babeNetwork?.id)
 
   return useQuery({
-    queryKey: ["useStakingBondingDuration", sapi?.id],
+    queryKey: ["useStakingBondingDuration", babeSapi?.id, stakingSapi?.id],
     queryFn: () => {
-      if (!sapi) return null
-
-      return getStakingBondingDurationMs(sapi)
+      if (!babeSapi || !stakingSapi) return null
+      return getStakingBondingDurationMs(stakingSapi, babeSapi)
     },
-    enabled: !!sapi,
+    enabled: !!stakingSapi && !!babeSapi,
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

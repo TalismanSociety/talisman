@@ -1,5 +1,20 @@
 # @talismn/balances-react
 
+## 1.0.8
+
+### Patch Changes
+
+- Updated dependencies [695a4a9]
+- Updated dependencies [1cb2c51]
+- Updated dependencies [af411b9]
+- Updated dependencies [4493b28]
+  - @talismn/chaindata-provider@1.1.5
+  - @talismn/util@0.5.5
+  - @talismn/balances@1.0.8
+  - @talismn/chain-connectors@0.0.6
+  - @talismn/connection-meta@0.2.26
+  - @talismn/token-rates@3.0.8
+
 ## 1.0.7
 
 ### Patch Changes
