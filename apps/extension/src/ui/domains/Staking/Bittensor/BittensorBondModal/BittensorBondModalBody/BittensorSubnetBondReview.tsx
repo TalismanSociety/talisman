@@ -8,6 +8,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -63,6 +64,7 @@ export const BittensorSubnetBondReview = () => {
   } = useBittensorBondWizard()
   const { t } = useTranslation()
   const { tier } = useGetSeekDiscount()
+  const { open: openSwapTokensModal } = useSwapTokensModal()
 
   const { discount } = tier
   const discountPercent = `${tier.discount * 100}%`
@@ -221,13 +223,21 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {discount > 0 && isSeekTaoDiscountEnabled && (
-                <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
-                  <div className="text-[1rem] text-[#D5FF5C]">
-                    {discountPercent} {t("Off Fees")}
+              {isSeekTaoDiscountEnabled &&
+                (discount > 0 ? (
+                  <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
+                    <div className="text-[1rem] text-[#D5FF5C]">
+                      {discountPercent} {t("Off Fees")}
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <button
+                    className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
+                    onClick={openSwapTokensModal}
+                  >
+                    <div className="text-[1rem] text-[#D5FF5C]">{t("Get Discount")}</div>
+                  </button>
+                ))}
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}
