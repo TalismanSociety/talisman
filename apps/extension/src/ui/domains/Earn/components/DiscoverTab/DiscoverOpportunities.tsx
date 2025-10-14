@@ -1,11 +1,10 @@
-import { useQuery } from "@tanstack/react-query"
-import { fetchYieldProducts, Networks, YieldDto } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { Networks, YieldDto } from "extension-core"
+import { FC, useCallback, useMemo, useState } from "react"
 
-import { DISCOVER_NETWORKS } from "@ui/domains/Earn/config/discoverNetworks"
 import { useDepositNavigation } from "@ui/domains/Earn/hooks/useDepositNavigation"
-import { useAccounts } from "@ui/state"
+import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
+import { useAccounts, useRemoteConfig } from "@ui/state"
+import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
 
@@ -13,66 +12,160 @@ interface DiscoverOpportunitiesProps {
   isPopup?: boolean
 }
 
+// Component for individual token discovery with its yield products
+const TokenDiscovery: FC<{
+  tokenSymbol: string
+  network: Networks
+  onProductClick: (product: YieldDto) => void
+  isPopup?: boolean
+  onMaxRewardRateUpdate?: (tokenKey: string, maxRewardRate: number) => void
+}> = ({ tokenSymbol, network, onProductClick, isPopup, onMaxRewardRateUpdate }) => {
+  const [visibleProductCount, setVisibleProductCount] = useState(20)
+
+  const { data, isLoading } = useInfiniteYieldProductsForToken(tokenSymbol, network)
+
+  // Flatten all pages and filter for exact token match
+  const allYieldProducts = useMemo(() => {
+    const allProducts = data?.pages.flat() || []
+    // Filter out products that don't match the requested inputToken exactly
+    return allProducts.filter((product) =>
+      product.inputTokens?.some(
+        (token) => token.symbol?.toLowerCase() === tokenSymbol.toLowerCase(),
+      ),
+    )
+  }, [data, tokenSymbol])
+
+  // Slice products for display (max 100)
+  const visibleYieldProducts = useMemo(
+    () => allYieldProducts.slice(0, Math.min(visibleProductCount, 100)),
+    [allYieldProducts, visibleProductCount],
+  )
+
+  // Calculate and report max reward rate
+  const maxRewardRate = useMemo(() => {
+    if (allYieldProducts.length === 0) return 0
+    const maxRate = Math.max(...allYieldProducts.map((p) => p.rewardRate?.total || 0))
+    return maxRate
+  }, [allYieldProducts])
+
+  // Report max reward rate to parent
+  useMemo(() => {
+    if (onMaxRewardRateUpdate && maxRewardRate > 0) {
+      const tokenKey = `${tokenSymbol}-${network}`
+      onMaxRewardRateUpdate(tokenKey, maxRewardRate)
+    }
+  }, [onMaxRewardRateUpdate, tokenSymbol, network, maxRewardRate])
+
+  // Update show more handler
+  const handleShowMore = useCallback(() => {
+    setVisibleProductCount((prev) => Math.min(prev + 20, 100))
+  }, [])
+
+  // Determine if show more should be visible
+  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < allYieldProducts.length
+
+  // Don't render if no products found
+  if (!isLoading && allYieldProducts.length === 0) {
+    return null
+  }
+
+  // Map yield network to network ID
+  const networkId = mapYieldNetworkToNetworkId(network) || network
+
+  return (
+    <DiscoverTokenRow
+      tokenSymbol={tokenSymbol}
+      tokenLogoURI={visibleYieldProducts[0]?.inputTokens?.[0]?.logoURI}
+      networkId={networkId}
+      products={visibleYieldProducts}
+      onProductClick={onProductClick}
+      isPopup={isPopup}
+      isLoading={isLoading}
+      hasMoreProducts={shouldShowMore}
+      onShowMore={handleShowMore}
+    />
+  )
+}
+
 export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup = false }) => {
-  const { t } = useTranslation()
   const { navigateToDeposit } = useDepositNavigation()
   const accounts = useAccounts("owned")
+  const remoteConfig = useRemoteConfig()
+  const [tokenMaxRewardRates, setTokenMaxRewardRates] = useState<Map<string, number>>(new Map())
 
-  // Fetch yield products for all discover networks
-  const {
-    data: yieldProducts = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["yieldProducts", "discover"],
-    queryFn: async () => {
-      const results = await Promise.all(
-        DISCOVER_NETWORKS.map((network) =>
-          fetchYieldProducts({ network } as { network: Networks }),
-        ),
-      )
-      return results.flat()
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute
-  })
+  // Get allowed yield networks from remote config
+  const allowedNetworks = useMemo(() => {
+    const networks = Object.keys(remoteConfig.earn?.yieldxyzNetworks || {})
+    // Fallback to default networks if none configured
+    return networks.length > 0 ? networks : []
+  }, [remoteConfig.earn?.yieldxyzNetworks])
 
-  // Group products by input token symbol
-  const tokensWithProducts = useMemo(() => {
-    const tokenMap = new Map<
-      string,
-      {
-        tokenSymbol: string
-        tokenLogoURI?: string
-        networkId: string
-        totalBalance: number
-        totalBalanceUsd: number
-        products: YieldDto[]
+  // Define tokens to discover for each network
+  const tokensToDiscover = useMemo(() => {
+    const tokens = []
+    for (const network of allowedNetworks) {
+      // Add common tokens for each network
+      switch (network) {
+        case "ethereum":
+          tokens.push({ symbol: "ETH", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          tokens.push({ symbol: "USDT", network: network as Networks })
+          break
+        case "polkadot":
+          tokens.push({ symbol: "DOT", network: network as Networks })
+          break
+        case "solana":
+          tokens.push({ symbol: "SOL", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          break
+        case "base":
+          tokens.push({ symbol: "ETH", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          break
+        case "arbitrum":
+          tokens.push({ symbol: "ETH", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          break
+        case "optimism":
+          tokens.push({ symbol: "ETH", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          break
+        case "polygon":
+          tokens.push({ symbol: "MATIC", network: network as Networks })
+          tokens.push({ symbol: "USDC", network: network as Networks })
+          break
       }
-    >()
+    }
+    return tokens
+  }, [allowedNetworks])
 
-    yieldProducts.forEach((product) => {
-      const inputToken = product.inputTokens?.[0]
-      if (!inputToken?.symbol) return
-
-      const existing = tokenMap.get(inputToken.symbol)
-      if (existing) {
-        existing.products.push(product)
-      } else {
-        tokenMap.set(inputToken.symbol, {
-          tokenSymbol: inputToken.symbol,
-          tokenLogoURI: inputToken.logoURI,
-          networkId: product.network, // This will need to be mapped to actual networkId
-          totalBalance: 0, // No balance for discover opportunities
-          totalBalanceUsd: 0,
-          products: [product],
-        })
-      }
+  // Callback to update max reward rate for a token
+  const updateTokenMaxRewardRate = useCallback((tokenSymbol: string, maxRewardRate: number) => {
+    setTokenMaxRewardRates((prev) => {
+      const newMap = new Map(prev)
+      newMap.set(tokenSymbol, maxRewardRate)
+      return newMap
     })
+  }, [])
 
-    // Convert to array and sort by number of products
-    return Array.from(tokenMap.values()).sort((a, b) => b.products.length - a.products.length)
-  }, [yieldProducts])
+  // Sort tokens by their max reward rate
+  const sortedTokensToDiscover = useMemo(() => {
+    return [...tokensToDiscover].sort((a, b) => {
+      const aKey = `${a.symbol}-${a.network}`
+      const bKey = `${b.symbol}-${b.network}`
+      const aMaxRate = tokenMaxRewardRates.get(aKey) || 0
+      const bMaxRate = tokenMaxRewardRates.get(bKey) || 0
+
+      // Sort by max reward rate (highest first), then by network and symbol as fallback
+      if (aMaxRate !== bMaxRate) {
+        return bMaxRate - aMaxRate
+      }
+      if (a.network !== b.network) {
+        return a.network.localeCompare(b.network)
+      }
+      return a.symbol.localeCompare(b.symbol)
+    })
+  }, [tokensToDiscover, tokenMaxRewardRates])
 
   const handleProductClick = useCallback(
     (product: YieldDto) => {
@@ -102,45 +195,16 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
     [navigateToDeposit, accounts],
   )
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-grey-700 h-20 w-full animate-pulse rounded"></div>
-        ))}
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-        {t("Failed to load earning products.")}
-      </div>
-    )
-  }
-
-  if (!tokensWithProducts.length) {
-    return (
-      <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-        {t("No earning products available.")}
-      </div>
-    )
-  }
-
   return (
     <div className="flex w-full flex-col gap-4">
-      {tokensWithProducts.map((tokenData) => (
-        <DiscoverTokenRow
-          key={tokenData.tokenSymbol}
-          tokenSymbol={tokenData.tokenSymbol}
-          tokenLogoURI={tokenData.tokenLogoURI}
-          networkId={tokenData.networkId}
-          totalBalance={tokenData.totalBalance}
-          totalBalanceUsd={tokenData.totalBalanceUsd}
-          products={tokenData.products}
+      {sortedTokensToDiscover.map(({ symbol, network }) => (
+        <TokenDiscovery
+          key={`${symbol}-${network}`}
+          tokenSymbol={symbol}
+          network={network}
           onProductClick={handleProductClick}
           isPopup={isPopup}
+          onMaxRewardRateUpdate={updateTokenMaxRewardRate}
         />
       ))}
     </div>

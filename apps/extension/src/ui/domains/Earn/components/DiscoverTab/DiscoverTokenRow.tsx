@@ -1,37 +1,40 @@
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
 import { YieldDto } from "extension-core"
-import { FC, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { FC, useCallback, useMemo, useState } from "react"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useNetworkById } from "@ui/state"
 
-import { DiscoverProductCard } from "./DiscoverProductCard"
+import { ProductItem } from "../ProductItem"
+import { ShowMoreButton } from "./ShowMoreButton"
 
 interface DiscoverTokenRowProps {
   tokenSymbol: string
   tokenLogoURI?: string
   networkId: string
-  totalBalance: number
-  totalBalanceUsd: number
   products: YieldDto[]
   onProductClick: (product: YieldDto) => void
   isPopup?: boolean
+  // Client-side pagination props
+  isLoading?: boolean
+  hasMoreProducts?: boolean
+  onShowMore?: () => void
 }
 
 export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
   tokenSymbol,
   tokenLogoURI,
   networkId,
-  totalBalance,
-  totalBalanceUsd,
   products,
   onProductClick,
   isPopup = false,
+  isLoading = false,
+  hasMoreProducts,
+  onShowMore,
 }) => {
-  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
+  const network = useNetworkById(networkId)
 
   const handleToggle = useCallback(() => {
     setIsExpanded(!isExpanded)
@@ -43,6 +46,12 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
     },
     [onProductClick],
   )
+
+  const maxRewardRate = useMemo(() => {
+    return products.length > 0
+      ? Math.max(...products.map((p) => p.rewardRate?.total || 0)) * 100
+      : 0
+  }, [products])
 
   return (
     <div className="bg-grey-850 flex w-full flex-col gap-3">
@@ -66,23 +75,22 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
               </div>
               <NetworkLogo networkId={networkId} className="shrink-0 text-[1rem]" />
             </div>
-            <div className="text-body-secondary text-xs">
-              {products.length}{" "}
-              {products.length === 1 ? t("Available product") : t("Available products")}
-            </div>
+            <div className="text-body-secondary text-xs">{network?.name || networkId}</div>
           </div>
         </div>
 
-        {/* Right section - Balance and Expand Icon */}
+        {/* Right section - APY and Expand Icon */}
         <div className="flex min-w-0 flex-shrink-0 items-center gap-4">
           <div className="flex min-w-0 flex-col items-end gap-1">
-            {/* Token Amount */}
+            {/* Max APY */}
             <div className="text-body-secondary truncate text-right text-xs">
-              {totalBalance.toLocaleString()} {tokenSymbol}
-            </div>
-            {/* Fiat Amount */}
-            <div className="text-body truncate text-right text-sm font-bold">
-              <Fiat amount={totalBalanceUsd} forceCurrency="usd" />
+              {products.length > 0 ? (
+                <>
+                  APY up to <span className="text-primary">{maxRewardRate.toFixed(2)}%</span>
+                </>
+              ) : (
+                "No yields available"
+              )}
             </div>
           </div>
           <div className="flex shrink-0 items-center">
@@ -100,14 +108,22 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
         <div
           className={`bg-grey-850 flex flex-col gap-4 pb-4 ${isPopup ? "pl-6 pr-6" : "pl-8 pr-8"}`}
         >
-          {products.map((product) => (
-            <DiscoverProductCard
-              key={product.id}
-              product={product}
-              onProductClick={handleProductClick}
-              isPopup={isPopup}
-            />
-          ))}
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-grey-700 h-16 w-full animate-pulse rounded"></div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {products.map((product) => (
+                <ProductItem key={product.id} product={product} onClick={handleProductClick} />
+              ))}
+              {hasMoreProducts && onShowMore && (
+                <ShowMoreButton onClick={onShowMore} isFetching={false} isPopup={isPopup} />
+              )}
+            </>
+          )}
         </div>
       )}
     </div>

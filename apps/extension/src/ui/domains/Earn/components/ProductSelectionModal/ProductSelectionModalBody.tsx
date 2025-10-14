@@ -1,12 +1,12 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { ValidatorDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useToken } from "@ui/state"
-import { useYieldProducts } from "@ui/state/yield"
+import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../../ConfirmDepositModal"
@@ -37,6 +37,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
   const [selectedValidatorAddress, setSelectedValidatorAddress] = useState<string | null>(null)
+  const [visibleProductCount, setVisibleProductCount] = useState(20)
 
   // In popup mode, use the portfolio navigation system to get the selected account
   const portfolioAccount = usePortfolioNavigation().selectedAccount
@@ -68,15 +69,36 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   // Get the mapped network name
   const mappedNetworkName = mapNetworkToYieldNetwork(network)
 
-  // Fetch yield products filtered by token symbol
-  const {
-    data: yieldProducts = [],
-    isLoading,
-    error,
-  } = useYieldProducts({
-    inputToken: token?.symbol,
-    network: mappedNetworkName || undefined,
-  })
+  // Fetch yield products with infinite pagination
+  const { data, isLoading, error } = useInfiniteYieldProductsForToken(
+    token?.symbol || "",
+    mappedNetworkName || undefined,
+  )
+
+  // Flatten all pages and filter for exact token match
+  const allYieldProducts = useMemo(() => {
+    const allProducts = data?.pages.flat() || []
+    // Filter out products that don't match the requested inputToken exactly
+    return allProducts.filter((product) =>
+      product.inputTokens?.some(
+        (inputToken) => inputToken.symbol?.toLowerCase() === (token?.symbol || "").toLowerCase(),
+      ),
+    )
+  }, [data, token?.symbol])
+
+  // Slice products for display (max 100)
+  const visibleYieldProducts = useMemo(
+    () => allYieldProducts.slice(0, Math.min(visibleProductCount, 100)),
+    [allYieldProducts, visibleProductCount],
+  )
+
+  // Update show more handler
+  const handleShowMore = useCallback(() => {
+    setVisibleProductCount((prev) => Math.min(prev + 20, 100))
+  }, [])
+
+  // Determine if show more should be visible
+  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < allYieldProducts.length
 
   const handleProductClick = (product: YieldDto) => {
     // Check if we have a selected account from portfolio or earn wizard
@@ -217,11 +239,13 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       <div className="flex h-full flex-col gap-4 overflow-hidden">
         <TokenDetails tokenId={tokenId} tokenSymbol={token?.symbol} networkId={network?.id} />
         <ProductList
-          products={yieldProducts}
+          products={visibleYieldProducts}
           tokenId={tokenId}
           isLoading={isLoading}
           error={error}
           onProductClick={handleProductClick}
+          hasMoreProducts={shouldShowMore}
+          onShowMore={handleShowMore}
         />
       </div>
 

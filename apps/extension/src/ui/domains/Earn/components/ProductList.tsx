@@ -3,6 +3,7 @@ import { YieldDto } from "extension-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { ShowMoreButton } from "./DiscoverTab/ShowMoreButton"
 import { ProductItem } from "./ProductItem"
 
 interface ProductListProps {
@@ -11,6 +12,8 @@ interface ProductListProps {
   isLoading: boolean
   error: Error | null
   onProductClick: (product: YieldDto) => void
+  hasMoreProducts?: boolean
+  onShowMore?: () => void
 }
 
 export const ProductList: FC<ProductListProps> = ({
@@ -19,6 +22,8 @@ export const ProductList: FC<ProductListProps> = ({
   isLoading,
   error,
   onProductClick,
+  hasMoreProducts,
+  onShowMore,
 }) => {
   const { t } = useTranslation()
 
@@ -88,6 +93,9 @@ export const ProductList: FC<ProductListProps> = ({
             onClick={onProductClick}
           />
         ))}
+        {hasMoreProducts && onShowMore && (
+          <ShowMoreButton onClick={onShowMore} isFetching={false} isPopup={false} />
+        )}
       </div>
     </div>
   )

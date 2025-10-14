@@ -43,10 +43,20 @@ export const fetchYieldProducts = async (
         requested: Array.from(requestedSymbols.values()),
       })
 
-      return filtered
+      // Sort filtered products by reward rate (highest first)
+      const sortedFiltered = filtered.sort(
+        (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+      )
+
+      return sortedFiltered
     }
 
-    return products
+    // Sort products by reward rate (highest first)
+    const sortedProducts = products.sort(
+      (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+    )
+
+    return sortedProducts
   } catch (error) {
     log.error("[Yield] Failed to fetch yield products via SDK", { error, filter })
     return []

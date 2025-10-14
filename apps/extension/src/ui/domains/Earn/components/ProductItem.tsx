@@ -7,13 +7,13 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 
 interface ProductItemProps {
   product: YieldDto
-  tokenId: string
+  tokenId?: string
   onClick: (product: YieldDto) => void
 }
 
 const ProductTokenLogo: FC<{
   protocolLogo: string | null
-  tokenId: string
+  tokenId?: string
   className?: string
 }> = ({ protocolLogo, tokenId, className }) => {
   return (
@@ -61,24 +61,42 @@ export const ProductItem: FC<ProductItemProps> = ({ product, tokenId, onClick })
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <div className="shrink-0">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-600">
-            <ProductTokenLogo protocolLogo={protocolLogo} tokenId={tokenId} className="h-14 w-14" />
+            <ProductTokenLogo
+              protocolLogo={protocolLogo}
+              tokenId={tokenId || undefined}
+              className="h-14 w-14"
+            />
           </div>
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
           <div className="flex items-center gap-2">
-            <div className="truncate text-sm font-bold text-white">{name}</div>
+            <div className="max-w-[200px] truncate text-sm font-bold text-white" title={name}>
+              {name}
+            </div>
           </div>
-          <div className="text-grey-600 truncate text-xs">{description}</div>
+          <div className="text-grey-600 max-w-[200px] truncate text-xs" title={description}>
+            {description}
+          </div>
         </div>
       </div>
       <div className="flex shrink-0 flex-col items-end justify-center">
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">APY</span>
-          <span className="text-primary text-xs font-normal">{apy.toFixed(2)}%</span>
+          <span
+            className="text-primary max-w-[80px] truncate text-xs font-normal"
+            title={`${apy.toFixed(2)}%`}
+          >
+            {apy.toFixed(2)}%
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">TVL</span>
-          <span className="text-xs font-normal text-white">{formatTvl()}</span>
+          <span
+            className="max-w-[80px] truncate text-xs font-normal text-white"
+            title={formatTvl()}
+          >
+            {formatTvl()}
+          </span>
         </div>
       </div>
     </button>

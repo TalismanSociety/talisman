@@ -165,7 +165,7 @@ export const ValidatorPickerPage = () => {
         </div>
 
         {/* Validators List */}
-        <div className="flex h-full flex-col gap-8 overflow-y-auto">
+        <div className="flex h-full flex-col gap-8 overflow-y-auto pb-8">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-grey-400">{t("Loading validators...")}</div>
