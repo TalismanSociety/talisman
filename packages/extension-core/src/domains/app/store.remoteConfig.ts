@@ -50,7 +50,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingUrl: "",
     docsUrl: "",
     tradeUrl: "",
-    buyUrl: "",
     stakingContractNetworkId: "",
     stakingContractAddress: "0x",
     webAppStakingPath: "",

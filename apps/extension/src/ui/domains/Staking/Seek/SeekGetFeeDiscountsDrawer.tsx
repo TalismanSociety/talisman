@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 
 import { useGetSeekDiscount } from "./hooks/useGetSeekDiscount"
@@ -28,8 +29,8 @@ export const SeekGetFeeDiscountsDrawer = ({
 }: SeekGetFeeDiscountsDrawerProps) => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
-
-  const { tokenId, webAppStakingPath, buyUrl } = remoteConfig.seek
+  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { tokenId, webAppStakingPath } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
 
@@ -128,7 +129,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             className="px-2"
             primary
             onClick={() => {
-              open(buyUrl, "_blank", "noopener,noreferrer")
+              openSwapTokensModal()
             }}
           >
             {t("Buy")} {tokenSymbol}
