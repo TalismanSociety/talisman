@@ -1,4 +1,4 @@
-import { DotNetworkId, EthNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
@@ -44,6 +44,10 @@ export type RemoteConfigStoreData = {
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
     webAppStakingPath: string
+  }
+  earn: {
+    earnButtonTokenIds: TokenId[]
+    yieldxyzNetworks: Record<string, NetworkId>
   }
 }
 
