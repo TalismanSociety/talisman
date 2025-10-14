@@ -412,9 +412,9 @@
         "wss://rpc-kusama.helixstreet.io",
         "wss://kusama.dotters.network",
         "wss://rpc-kusama.luckyfriday.io",
-        "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
         "wss://ksm-rpc.stakeworld.io",
-        "wss://kusama.public.curie.radiumblock.co/ws"
+        "wss://kusama.public.curie.radiumblock.co/ws",
+        "wss://rockx-ksm.w3node.com/polka-public-ksm/ws"
       ],
       "hasCheckMetadataHash": true,
       "topology": {
@@ -451,7 +451,6 @@
         "wss://statemine-rpc-tn.dwellir.com",
         "wss://asset-hub-kusama.dotters.network",
         "wss://rpc-asset-hub-kusama.luckyfriday.io",
-        "wss://kusama-asset-hub-rpc.polkadot.io",
         "wss://statemine.public.curie.radiumblock.co/ws",
         "wss://ksm-rpc.stakeworld.io/assethub"
       ],
