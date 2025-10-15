@@ -8,7 +8,8 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
+import { MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -64,7 +65,7 @@ export const BittensorSubnetBondReview = () => {
   } = useBittensorBondWizard()
   const { t } = useTranslation()
   const { tier } = useGetSeekDiscount()
-  const { open: openSwapTokensModal } = useSwapTokensModal()
+  const { seekDiscountDrawer } = useBittensorBondWizard()
 
   const { discount } = tier
   const discountPercent = `${tier.discount * 100}%`
@@ -233,7 +234,7 @@ export const BittensorSubnetBondReview = () => {
                 ) : (
                   <button
                     className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
-                    onClick={openSwapTokensModal}
+                    onClick={seekDiscountDrawer.open}
                   >
                     <div className="text-[1rem] text-[#D5FF5C]">{t("Get Discount")}</div>
                   </button>
@@ -269,6 +270,14 @@ export const BittensorSubnetBondReview = () => {
         ))}
       <BittensorSlippageDrawer />
       <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
+      <SeekGetFeeDiscountsDrawer
+        isOpen={seekDiscountDrawer.isOpen}
+        onDismiss={() => {
+          seekDiscountDrawer.close()
+        }}
+        onCloseModal={close}
+        containerId={MODAL_CONTENT_CONTAINER_ID}
+      />
     </div>
   )
 }
