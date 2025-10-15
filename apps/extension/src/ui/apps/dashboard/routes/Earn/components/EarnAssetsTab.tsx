@@ -313,10 +313,20 @@ export const EarnAssetsTab = () => {
     const selectedAddresses = new Set((selectedAccounts || []).map((a) => a.address))
 
     yieldBalancesGrouped.data
-      .filter((position) => ownedAddresses.has(position.balances[0]?.address))
-      .filter((position) =>
-        selectedAddresses.size ? selectedAddresses.has(position.balances[0]?.address) : true,
-      )
+      .filter((position) => {
+        // Check if any balance in the position belongs to owned addresses
+        const hasOwnedAddress = position.balances.some((balance) =>
+          ownedAddresses.has(balance.address),
+        )
+        return hasOwnedAddress
+      })
+      .filter((position) => {
+        // Check if any balance in the position belongs to selected addresses
+        const hasSelectedAddress = selectedAddresses.size
+          ? position.balances.some((balance) => selectedAddresses.has(balance.address))
+          : true
+        return hasSelectedAddress
+      })
       .filter((position) => {
         if (!lowerSearch) return true
         const haystack: string[] = [

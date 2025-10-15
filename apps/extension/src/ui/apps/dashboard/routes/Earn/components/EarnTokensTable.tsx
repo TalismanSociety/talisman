@@ -60,14 +60,16 @@ export const EarnTokensTable = () => {
         <div className="flex-shrink-0">
           <EarnTabs onTabChange={handleTabChange} />
         </div>
-        <div className="w-[28rem]">
-          <SearchInput
-            containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
-            placeholder={t("Search DeFi positions")}
-            onChange={setYieldSearch}
-            initialValue={search}
-          />
-        </div>
+        {selectedTab === "assets" && (
+          <div className="w-[28rem]">
+            <SearchInput
+              containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+              placeholder={t("Search DeFi positions")}
+              onChange={setYieldSearch}
+              initialValue={search}
+            />
+          </div>
+        )}
       </div>
 
       {/* Tab Content */}

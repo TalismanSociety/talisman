@@ -79,9 +79,8 @@ export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): Yiel
       .flatMap((item) => item.balances)
       .filter((balance) => !balance.token.isPoints)
 
-    // Must have at least one non-claimable balance to show position
-    const hasActiveBalance = allBalances.some((b) => b.type !== "claimable")
-    if (!hasActiveBalance) continue
+    // Show positions that have any balances (including claimable ones)
+    if (allBalances.length === 0) continue
 
     const firstBalance = allBalances[0]
     const firstItem = yieldItems[0]

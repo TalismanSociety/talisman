@@ -331,9 +331,13 @@ export const PopupEarnAssetsTab: FC = () => {
 
     const filtered = yieldBalancesGrouped.data
       // Filter by selected accounts
-      .filter((position) =>
-        selectedAddresses.size ? selectedAddresses.has(position.balances[0]?.address) : true,
-      )
+      .filter((position) => {
+        // Check if any balance in the position belongs to selected addresses
+        const hasSelectedAddress = selectedAddresses.size
+          ? position.balances.some((balance) => selectedAddresses.has(balance.address))
+          : true
+        return hasSelectedAddress
+      })
       // Filter by search
       .filter((position) => {
         if (!lowerSearch) return true
@@ -416,6 +420,7 @@ export const PopupEarnAssetsTab: FC = () => {
     return <PopupEarnAssetsSkeleton />
   }
 
+  // Debug information
   if (!groupedPositions.length) {
     return (
       <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">

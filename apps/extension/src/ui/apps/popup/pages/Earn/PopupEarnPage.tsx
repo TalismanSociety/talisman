@@ -64,14 +64,16 @@ export const PopupEarnPage: FC = () => {
       {/* Tabs and Search */}
       <div className="mb-6 flex flex-col gap-4">
         <PopupEarnTabs onTabChange={handleTabChange} />
-        <div className="w-full">
-          <SearchInput
-            containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
-            placeholder={t("Search DeFi positions")}
-            onChange={setYieldSearch}
-            initialValue={search}
-          />
-        </div>
+        {selectedTab === "assets" && (
+          <div className="w-full">
+            <SearchInput
+              containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+              placeholder={t("Search DeFi positions")}
+              onChange={setYieldSearch}
+              initialValue={search}
+            />
+          </div>
+        )}
       </div>
 
       {/* Tab Content */}
