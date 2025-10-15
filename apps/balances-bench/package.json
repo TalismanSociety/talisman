@@ -11,6 +11,7 @@
     "dev:azero": "tsx watch src/aleph-zero.ts",
     "dev:bittensor": "tsx watch src/bittensor.ts",
     "dev:polkadot": "tsx watch src/polkadot.ts",
+    "dev:neuroweb": "tsx watch src/neuroweb.ts",
     "dev:acala": "tsx watch src/acala.ts",
     "dev:centrifuge": "tsx watch src/centrifuge.ts",
     "dev:bifrost": "tsx watch src/bifrost.ts",

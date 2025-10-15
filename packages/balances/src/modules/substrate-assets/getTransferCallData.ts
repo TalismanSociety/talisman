@@ -30,6 +30,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 }
 
 const getTransferMethod = (type: BalanceTransferType) => {
+  // TODO handle the case where transfer_all does not exist
   switch (type) {
     case "keep-alive":
       return "transfer_keep_alive"
@@ -90,6 +91,11 @@ const getTransferEncodedArgs = (
       target: Enum("Id", to),
       amount: BigInt(value),
     }),
+    () => ({
+      id: BigInt(assetId), // for Neuroweb
+      target: to,
+      amount: BigInt(value),
+    }),
   ])
 }
 
@@ -103,6 +109,11 @@ const getTransferAllEncodedArgs = (assetId: string, to: string, codec: Codec<unk
     () => ({
       id: BigInt(assetId), // for Astar
       dest: Enum("Id", to),
+      keep_alive: false,
+    }),
+    () => ({
+      id: BigInt(assetId), // for Neuroweb (although transfer_all does not exist)
+      dest: to,
       keep_alive: false,
     }),
   ])
