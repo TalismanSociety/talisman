@@ -1,12 +1,17 @@
 import { YieldDto } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
-import { useDepositNavigation } from "@ui/domains/Earn/hooks/useDepositNavigation"
+import { EarnAccountPicker } from "@ui/domains/Earn/components/EarnAccountPicker"
+import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
+import { ConfirmDepositModal } from "@ui/domains/Earn/ConfirmDepositModal"
+import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { useUserTokensWithYield } from "@ui/domains/Earn/hooks/useUserTokensWithYield"
 import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
 import { useNetworkById, useRemoteConfig } from "@ui/state"
 import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
 import { ShowMoreButton } from "./ShowMoreButton"
@@ -20,6 +25,7 @@ const TokenWithYields: FC<{
   tokenSymbol: string
   tokenLogoURI?: string
   networkId: string
+  tokenId: string
   onProductClick: (product: YieldDto) => void
   isPopup?: boolean
   allowedNetworks: string[]
@@ -28,6 +34,7 @@ const TokenWithYields: FC<{
   tokenSymbol,
   tokenLogoURI,
   networkId,
+  tokenId,
   onProductClick,
   isPopup,
   allowedNetworks,
@@ -53,21 +60,29 @@ const TokenWithYields: FC<{
     )
   }, [data, tokenSymbol])
 
+  // Filter products based on status and availability (same as ProductList)
+  const availableProducts = useMemo(() => {
+    return allProducts.filter(
+      (product) =>
+        product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
+    )
+  }, [allProducts])
+
   // Slice products for display (max 100)
   const visibleProducts = useMemo(
-    () => allProducts.slice(0, Math.min(visibleProductCount, 100)),
-    [allProducts, visibleProductCount],
+    () => availableProducts.slice(0, Math.min(visibleProductCount, 100)),
+    [availableProducts, visibleProductCount],
   )
 
   // Calculate and report max reward rate
   const maxRewardRate = useMemo(() => {
-    if (allProducts.length === 0) return 0
-    const maxRate = Math.max(...allProducts.map((p) => p.rewardRate?.total || 0))
+    if (availableProducts.length === 0) return 0
+    const maxRate = Math.max(...availableProducts.map((p) => p.rewardRate?.total || 0))
     return maxRate
-  }, [allProducts])
+  }, [availableProducts])
 
   // Report max reward rate to parent
-  useMemo(() => {
+  useEffect(() => {
     if (onMaxRewardRateUpdate && maxRewardRate > 0) {
       onMaxRewardRateUpdate(tokenSymbol, maxRewardRate)
     }
@@ -79,7 +94,7 @@ const TokenWithYields: FC<{
   }, [])
 
   // Determine if show more should be visible
-  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < allProducts.length
+  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < availableProducts.length
 
   // Don't render if network is not in allowed networks
   if (!mappedNetwork || !allowedNetworks.includes(mappedNetwork)) {
@@ -96,6 +111,7 @@ const TokenWithYields: FC<{
       tokenSymbol={tokenSymbol}
       tokenLogoURI={tokenLogoURI}
       networkId={networkId}
+      tokenId={tokenId}
       products={visibleProducts}
       onProductClick={onProductClick}
       isPopup={isPopup}
@@ -109,10 +125,20 @@ const TokenWithYields: FC<{
 export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false }) => {
   const { t } = useTranslation()
   const { userTokens, isLoading } = useUserTokensWithYield()
-  const { navigateToDeposit } = useDepositNavigation()
+  const navigate = useNavigate()
   const remoteConfig = useRemoteConfig()
   const [visibleTokenCount, setVisibleTokenCount] = useState(20)
   const [tokenMaxRewardRates, setTokenMaxRewardRates] = useState<Map<string, number>>(new Map())
+
+  // Modal state management
+  const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
+  const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
+  const [selectedValidator, setSelectedValidator] = useState<string | null>(null)
+  const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
+  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
 
   // Get allowed yield networks from remote config
   const allowedNetworks = useMemo(() => {
@@ -131,6 +157,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
         tokenSymbol: string
         tokenLogoURI?: string
         networkId: string
+        tokenId: string
       }
     >()
 
@@ -143,6 +170,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
           tokenSymbol: token.symbol,
           tokenLogoURI: token.logoURI,
           networkId: token.networkId,
+          tokenId: token.tokenId,
         })
       }
     })
@@ -175,23 +203,113 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
 
   const handleProductClick = useCallback(
     (product: YieldDto) => {
-      // For now, use the first account from the first token
-      // In a real implementation, you'd want to handle account selection
-      const firstToken = userTokens[0]
-      const firstAccount = firstToken?.accounts[0]
-      if (!firstAccount || !firstToken) return
+      // Find the token that matches this product
+      const matchingToken = userTokens.find((token) =>
+        product.inputTokens?.some(
+          (inputToken) => inputToken.symbol?.toLowerCase() === token.symbol.toLowerCase(),
+        ),
+      )
 
-      navigateToDeposit({
-        account: firstAccount.address,
-        tokenId: firstToken.tokenId,
-        productId: product.id,
-      })
+      if (!matchingToken) return
+
+      setSelectedProduct(product)
+      setSelectedTokenId(matchingToken.tokenId)
+
+      // Check if this product requires validator selection
+      if (product?.mechanics?.requiresValidatorSelection) {
+        if (IS_POPUP) {
+          // Navigate to validator picker page in popup mode
+          const params = new URLSearchParams({
+            tokenId: matchingToken.tokenId,
+            productId: product.id,
+          })
+          navigate(`/select-product/select-validator?${params.toString()}`)
+        } else {
+          // Show validator picker modal in dashboard mode
+          setIsValidatorPickerOpen(true)
+        }
+        return
+      }
+
+      // Always show account picker (per user requirement)
+      if (IS_POPUP) {
+        // Navigate to account picker page in popup mode
+        navigate(
+          `/select-product/select-account?tokenId=${encodeURIComponent(matchingToken.tokenId)}&productId=${encodeURIComponent(product.id)}`,
+        )
+      } else {
+        // Show account picker modal in dashboard mode
+        setIsAccountPickerOpen(true)
+      }
     },
-    [navigateToDeposit, userTokens],
+    [navigate, userTokens],
   )
 
   const handleShowMore = useCallback(() => {
     setVisibleTokenCount((prev) => prev + 20)
+  }, [])
+
+  // Modal callbacks
+  const handleValidatorSelect = useCallback(
+    (validator: { address: string }) => {
+      setSelectedValidator(validator.address)
+      setIsValidatorPickerOpen(false)
+
+      // Always show account picker after validator selection
+      if (IS_POPUP) {
+        navigate(
+          `/select-product/select-account?tokenId=${encodeURIComponent(selectedTokenId || "")}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
+        )
+      } else {
+        setIsAccountPickerOpen(true)
+      }
+    },
+    [navigate, selectedTokenId, selectedProduct?.id],
+  )
+
+  const handleAccountSelect = useCallback(
+    (address: string) => {
+      setSelectedAccount(address)
+      setIsAccountPickerOpen(false)
+
+      if (IS_POPUP) {
+        // Navigate to deposit amount page
+        const params = new URLSearchParams({
+          account: address,
+          tokenId: selectedTokenId || "",
+          productId: selectedProduct?.id || "",
+        })
+        if (selectedValidator) {
+          params.set("validatorAddress", selectedValidator)
+        }
+        navigate(`/select-product/deposit/amount?${params.toString()}`)
+      } else {
+        // Open deposit modal in dashboard mode
+        setIsDepositModalOpen(true)
+      }
+    },
+    [navigate, selectedTokenId, selectedProduct?.id, selectedValidator],
+  )
+
+  const handleDepositNext = useCallback(() => {
+    setIsDepositModalOpen(false)
+    setIsConfirmModalOpen(true)
+  }, [])
+
+  const handleDepositClose = useCallback(() => {
+    setIsDepositModalOpen(false)
+    setSelectedProduct(null)
+    setSelectedValidator(null)
+    setSelectedAccount(null)
+    setSelectedTokenId(null)
+  }, [])
+
+  const handleConfirmClose = useCallback(() => {
+    setIsConfirmModalOpen(false)
+    setSelectedProduct(null)
+    setSelectedValidator(null)
+    setSelectedAccount(null)
+    setSelectedTokenId(null)
   }, [])
 
   if (isLoading) {
@@ -222,6 +340,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
           tokenSymbol={tokenData.tokenSymbol}
           tokenLogoURI={tokenData.tokenLogoURI}
           networkId={tokenData.networkId}
+          tokenId={tokenData.tokenId}
           onProductClick={handleProductClick}
           isPopup={isPopup}
           allowedNetworks={allowedNetworks}
@@ -234,6 +353,51 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
         totalItems={sortedTokensWithProducts.length}
         isPopup={isPopup}
       />
+
+      {/* Modals for dashboard mode */}
+      {!IS_POPUP && (
+        <>
+          <ValidatorPicker
+            isOpen={isValidatorPickerOpen}
+            yieldId={selectedProduct?.id || ""}
+            onDismiss={() => {
+              setIsValidatorPickerOpen(false)
+              setSelectedProduct(null)
+              setSelectedTokenId(null)
+            }}
+            onSelect={handleValidatorSelect}
+          />
+
+          <EarnAccountPicker
+            isOpen={isAccountPickerOpen}
+            tokenId={selectedTokenId || ""}
+            onDismiss={() => setIsAccountPickerOpen(false)}
+            onSelect={handleAccountSelect}
+          />
+
+          {selectedProduct && (
+            <DepositModal
+              isOpen={isDepositModalOpen}
+              onClose={handleDepositClose}
+              onNext={handleDepositNext}
+              account={selectedAccount || ""}
+              tokenId={selectedTokenId || ""}
+              productId={selectedProduct.id}
+              validatorAddress={selectedValidator || undefined}
+            />
+          )}
+
+          {selectedProduct && (
+            <ConfirmDepositModal
+              isOpen={isConfirmModalOpen}
+              onClose={handleConfirmClose}
+              account={selectedAccount || ""}
+              tokenId={selectedTokenId || ""}
+              productId={selectedProduct.id}
+            />
+          )}
+        </>
+      )}
     </div>
   )
 }

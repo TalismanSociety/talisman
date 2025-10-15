@@ -13,6 +13,7 @@ interface DiscoverTokenRowProps {
   tokenSymbol: string
   tokenLogoURI?: string
   networkId: string
+  tokenId?: string
   products: YieldDto[]
   onProductClick: (product: YieldDto) => void
   isPopup?: boolean
@@ -26,6 +27,7 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
   tokenSymbol,
   tokenLogoURI,
   networkId,
+  tokenId,
   products,
   onProductClick,
   isPopup = false,
@@ -117,7 +119,12 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
           ) : (
             <>
               {products.map((product) => (
-                <ProductItem key={product.id} product={product} onClick={handleProductClick} />
+                <ProductItem
+                  key={product.id}
+                  product={product}
+                  tokenId={tokenId}
+                  onClick={handleProductClick}
+                />
               ))}
               {hasMoreProducts && onShowMore && (
                 <ShowMoreButton onClick={onShowMore} isFetching={false} isPopup={isPopup} />

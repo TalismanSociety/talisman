@@ -74,7 +74,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
       if (isAccountPlatformEthereum(accountData)) {
         // For Ethereum, use standard transaction data
-        const serializedTx = serializeTransactionRequest(transaction.tx)
+        const serializedTx = serializeTransactionRequest(transaction.tx as Record<string, unknown>)
         const txHash = await api.ethSignAndSend(token.networkId, serializedTx)
         await handleTransactionCompletion(currentTransaction, isLastTransaction, txHash)
       } else if (isAccountPlatformPolkadot(accountData)) {
@@ -83,7 +83,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
         await handleTransactionCompletion(currentTransaction, isLastTransaction, result.hash)
       } else if (isAccountPlatformSolana(accountData)) {
         // For Solana, use standard transaction data
-        const result = await api.solSubmit(token.networkId, transaction.tx)
+        const result = await api.solSubmit(token.networkId, transaction.tx as string)
         await handleTransactionCompletion(currentTransaction, isLastTransaction, result.signature)
       } else {
         throw new Error("Unsupported account platform")

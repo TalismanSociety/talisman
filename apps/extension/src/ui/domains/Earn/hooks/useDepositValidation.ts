@@ -39,6 +39,10 @@ export const useDepositValidation = (product: YieldDto | null) => {
 
     // Amount validations
     if (amount && product && token) {
+      // Handle case where amount might be an object instead of string
+      const amountString =
+        typeof amount === "string" ? amount : (amount as { amount?: string })?.amount || "0"
+
       // Convert decimal strings to planck units before converting to BigInt
       const minAmount = BigInt(
         tokensToPlanck(product?.mechanics?.entryLimits?.minimum || "0", token?.decimals || 18),
@@ -49,13 +53,13 @@ export const useDepositValidation = (product: YieldDto | null) => {
           )
         : undefined
 
-      if (BigInt(amount) < minAmount) {
+      if (BigInt(amountString) < minAmount) {
         errors.push(
           `Minimum deposit: ${product?.mechanics?.entryLimits?.minimum || "0"} ${token?.symbol}`,
         )
       }
 
-      if (maxAmount && BigInt(amount) > maxAmount) {
+      if (maxAmount && BigInt(amountString) > maxAmount) {
         errors.push(
           `Maximum deposit: ${product?.mechanics?.entryLimits?.maximum || "0"} ${token?.symbol}`,
         )
@@ -63,8 +67,12 @@ export const useDepositValidation = (product: YieldDto | null) => {
     }
 
     // Balance validation
-    if (amount && balance && BigInt(amount) > balance.transferable.planck) {
-      errors.push("Insufficient balance")
+    if (amount && balance) {
+      const amountString =
+        typeof amount === "string" ? amount : (amount as { amount?: string })?.amount || "0"
+      if (BigInt(amountString) > balance.transferable.planck) {
+        errors.push("Insufficient balance")
+      }
     }
 
     return errors

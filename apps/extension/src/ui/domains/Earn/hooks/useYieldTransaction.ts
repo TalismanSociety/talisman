@@ -42,7 +42,11 @@ export const useYieldTransaction = () => {
     token &&
     (amount || depositMax) &&
     // Only fetch if user has actually entered an amount greater than zero
-    (amount ? BigInt(amount) > 0n : depositMax) &&
+    (amount
+      ? BigInt(
+          typeof amount === "string" ? amount : (amount as { amount?: string })?.amount || "0",
+        ) > 0n
+      : depositMax) &&
     // Only fetch if all validations pass
     isValid
   )
@@ -60,10 +64,14 @@ export const useYieldTransaction = () => {
       }
 
       // Check if user has sufficient balance
-      if (amount && balance && BigInt(amount) > balance.transferable.planck) {
-        throw new Error(
-          `Insufficient balance. You have ${planckToTokens(balance.transferable.planck.toString(), token?.decimals || 18)} ${token?.symbol || "tokens"}, but trying to deposit ${planckToTokens(amount, token?.decimals || 18)} ${token?.symbol || "tokens"}.`,
-        )
+      if (amount && balance) {
+        const amountString =
+          typeof amount === "string" ? amount : (amount as { amount?: string })?.amount || "0"
+        if (BigInt(amountString) > balance.transferable.planck) {
+          throw new Error(
+            `Insufficient balance. You have ${planckToTokens(balance.transferable.planck.toString(), token?.decimals || 18)} ${token?.symbol || "tokens"}, but trying to deposit ${planckToTokens(amountString, token?.decimals || 18)} ${token?.symbol || "tokens"}.`,
+          )
+        }
       }
 
       // For now, use productId as yieldId - in real implementation this would be mapped
@@ -72,7 +80,9 @@ export const useYieldTransaction = () => {
       // Convert amount from planck units (wei) back to decimal format for Yield.xyz API
       let depositAmount = "0"
       if (amount && token) {
-        depositAmount = planckToTokens(amount, token.decimals)
+        const amountString =
+          typeof amount === "string" ? amount : (amount as { amount?: string })?.amount || "0"
+        depositAmount = planckToTokens(amountString, token.decimals)
       }
 
       // Build arguments based on product requirements
