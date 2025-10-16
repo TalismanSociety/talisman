@@ -16,6 +16,7 @@ import {
 
 import { walletReady$ } from "../../libs/isWalletReady"
 import { chaindataProvider } from "../../rpcs/chaindata"
+import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
 import { balancesStore$ } from "../balances/store.balances"
 import { keyringStore } from "../keyring/store"
 import { fetchYieldBalances } from "./fetchYieldBalances"
@@ -162,6 +163,16 @@ const buildQueries = async (addresses: string[]): Promise<BalancesQueryDto[]> =>
     }
 
     for (const network of networks) {
+      // Only query if address is compatible with network
+      const networkObj =
+        networksMap[
+          Object.keys(networksMap).find((id) => {
+            const net = networksMap[id]
+            return net && mapToYieldNetwork(net.platform, net.id) === network
+          })!
+        ]
+      if (!networkObj || !isAddressCompatibleWithNetwork(networkObj, address)) continue
+
       const key = `${address}-${network}`
       if (seen.has(key)) continue
       seen.add(key)
