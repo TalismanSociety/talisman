@@ -43,6 +43,7 @@ export type RemoteConfigStoreData = {
     tradeUrl: string
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
+    stakingEarlyRewardBoost: string
     webAppStakingPath: string
     discountTiers: Array<{
       tier: number

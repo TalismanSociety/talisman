@@ -212,15 +212,10 @@ const StakeEarlyTitle = () => {
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
 
-  const bestDiscount = useMemo(() => {
-    if (!remoteConfig.seek) return null
-    return 0.05
-  }, [remoteConfig.seek])
+  if (!remoteConfig.seek.stakingEarlyRewardBoost) return t("Stake early for rewards boost")
 
-  if (bestDiscount === null) return t("Stake early for rewards boost")
-
-  return t("Stake early for {{bestDiscount}} rewards boost", {
-    bestDiscount: (bestDiscount * 100).toFixed(0),
+  return t("Stake early for {{boost}} rewards boost", {
+    boost: remoteConfig.seek.stakingEarlyRewardBoost,
   })
 }
 
