@@ -1,6 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
 import { isAccountAddressEthereum } from "extension-core"
+import { useMemo } from "react"
 
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
@@ -21,7 +22,7 @@ export const useGetSeekStaked = (): {
 } => {
   const remoteConfig = useRemoteConfig()
   const accounts = useAccounts("owned")
-  const ethAccounts = accounts.filter(isAccountAddressEthereum)
+  const ethAccounts = useMemo(() => accounts.filter(isAccountAddressEthereum), [accounts])
   const { stakingContractNetworkId, stakingContractAddress } = remoteConfig.seek
   const publicClient = usePublicClient(stakingContractNetworkId)
   const token = useToken(remoteConfig.seek.tokenId)
@@ -56,16 +57,25 @@ export const useGetSeekStaked = (): {
     refetchInterval: 60_000,
   })
 
-  const balances = data
-    ? ethAccounts.map((account, i) => ({
-        address: account.address,
-        balance: new BalanceFormatter(data[i] || 0n, tokenDecimals),
-      }))
-    : []
+  const balances = useMemo(
+    () =>
+      data
+        ? ethAccounts.map((account, i) => ({
+            address: account.address,
+            balance: new BalanceFormatter(data[i] || 0n, tokenDecimals),
+          }))
+        : [],
+    [data, ethAccounts, tokenDecimals],
+  )
+  const totalStakedAmount = useMemo(
+    () => balances.reduce((total, account) => total + account.balance.planck, 0n),
+    [balances],
+  )
 
-  const totalStakedAmount = balances.reduce((total, account) => total + account.balance.planck, 0n)
-
-  const totalStaked = new BalanceFormatter(totalStakedAmount, tokenDecimals)
+  const totalStaked = useMemo(
+    () => new BalanceFormatter(totalStakedAmount, tokenDecimals),
+    [totalStakedAmount, tokenDecimals],
+  )
 
   return { data: { balances, totalStaked }, isLoading, isError, refetch }
 }
