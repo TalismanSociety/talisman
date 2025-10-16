@@ -13,4 +13,4 @@ sudo docker run --rm --volume "$(pwd)/review":/review talisman-builder bash -c '
     rm -f /review/sources/apps/extension/.env.local
 '
 cd review
-zip -r source.zip ./sources/
+zip -qr source.zip ./sources/

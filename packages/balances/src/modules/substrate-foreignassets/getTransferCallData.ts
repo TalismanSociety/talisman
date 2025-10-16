@@ -87,6 +87,11 @@ const getTransferEncodedArgs = (
       target: Enum("Id", to),
       amount: BigInt(value),
     }),
+    () => ({
+      id: papiParse(onChainId), // for Neuroweb
+      target: to,
+      amount: BigInt(value),
+    }),
   ])
 }
 
@@ -95,6 +100,11 @@ const getTransferAllEncodedArgs = (onChainId: string, to: string, codec: Codec<u
     () => ({
       id: papiParse(onChainId), // for most networks
       dest: Enum("Id", to),
+      keep_alive: false,
+    }),
+    () => ({
+      id: papiParse(onChainId), // for Neuroweb
+      dest: to,
       keep_alive: false,
     }),
   ])
