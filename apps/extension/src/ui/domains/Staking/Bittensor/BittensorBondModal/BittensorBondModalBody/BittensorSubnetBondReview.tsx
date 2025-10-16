@@ -7,7 +7,10 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useAppState } from "@ui/state"
+import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
+import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
+import { MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -15,6 +18,7 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
   DEFAULT_USER_MAX_SLIPPAGE,
@@ -32,6 +36,7 @@ export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
   const [hideWarning] = useAppState("hideBittensorSubnetStakeWarning")
   const [hasAckWarning, setHasAckWarning] = useState<boolean>(hideWarning || false)
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
     token,
@@ -60,6 +65,12 @@ export const BittensorSubnetBondReview = () => {
     onSubmitted,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
+  const { tier } = useGetSeekDiscount()
+  const { seekDiscountDrawer } = useBittensorBondWizard()
+  const { close } = useBittensorBondModal()
+
+  const { discount } = tier
+  const discountPercent = `${tier.discount * 100}%`
 
   const { isLoading } = useCombinedSubnetData()
 
@@ -215,13 +226,30 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
+              {isSeekTaoDiscountEnabled &&
+                (discount > 0 ? (
+                  <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
+                    <div className="text-[1rem] text-[#D5FF5C]">
+                      {discountPercent} {t("Off Fees")}
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
+                    onClick={seekDiscountDrawer.open}
+                  >
+                    <div className="text-[1rem] text-[#D5FF5C]">{t("Get Discount")}</div>
+                  </button>
+                ))}
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}
               tokenId={feeToken?.id}
               isLoading={isDynamicInfoLoading}
               error={isDynamicInfoError}
+              tokensClassName={discount > 0 && isSeekTaoDiscountEnabled ? "text-[#D5FF5C]" : ""}
               noCountUp
+              noFiat
             />
           </div>
         </div>
@@ -244,6 +272,14 @@ export const BittensorSubnetBondReview = () => {
         ))}
       <BittensorSlippageDrawer />
       <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
+      <SeekGetFeeDiscountsDrawer
+        isOpen={seekDiscountDrawer.isOpen}
+        onDismiss={() => {
+          seekDiscountDrawer.close()
+        }}
+        onCloseModal={close}
+        containerId={MODAL_CONTENT_CONTAINER_ID}
+      />
     </div>
   )
 }

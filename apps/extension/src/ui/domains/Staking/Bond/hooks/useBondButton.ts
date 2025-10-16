@@ -6,7 +6,7 @@ import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useRemoteConfig, useTokensMap } from "@ui/state"
+import { useAccounts, useFeatureFlag, useRemoteConfig, useTokensMap } from "@ui/state"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
@@ -29,6 +29,7 @@ export const useBondButton = ({
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -66,7 +67,8 @@ export const useBondButton = ({
             poolId: hotkey as string, // TODO fix typing issue on handler, in practice it's undefined by default
             netuid,
             stakeType,
-            isSelectStakeDrawerOpen: !stakeType,
+            isSeekDiscountDrawerOpen: isSeekTaoDiscountEnabled,
+            isSelectStakeDrawerOpen: !stakeType && !isSeekTaoDiscountEnabled,
             step: stakeType !== "subnet" ? "form" : "subnet-form",
           })
           break
@@ -88,6 +90,7 @@ export const useBondButton = ({
       genericEvent,
       handleOpenBittensorModal,
       stakeType,
+      isSeekTaoDiscountEnabled,
       remoteConfig.seek.webAppStakingPath,
       open,
     ],

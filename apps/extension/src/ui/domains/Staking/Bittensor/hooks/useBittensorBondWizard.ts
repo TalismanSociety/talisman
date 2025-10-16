@@ -48,6 +48,7 @@ type WizardState = {
   isSelectStakeDrawerOpen: boolean
   isSlippageDrawerOpen: boolean
   isWarningDrawerOpen: boolean
+  isSeekDiscountDrawerOpen: boolean
   hash: Hex | null
   stakeType: StakeType
   stakeDirection: StakeDirection
@@ -66,6 +67,7 @@ const DEFAULT_STATE: WizardState = {
   isSelectStakeDrawerOpen: false,
   isSlippageDrawerOpen: false,
   isWarningDrawerOpen: false,
+  isSeekDiscountDrawerOpen: false,
   hash: null,
   stakeType: "root",
   stakeDirection: "bond",
@@ -86,6 +88,8 @@ type innerOpenCloseKey =
   | "isSelectStakeDrawerOpen"
   | "isSlippageDrawerOpen"
   | "isWarningDrawerOpen"
+  | "isSeekDiscountDrawerOpen"
+  | "isSelectStakeDrawerOpen"
 
 const useInnerOpenClose = (key: innerOpenCloseKey) => {
   const state = useWizardState()
@@ -116,6 +120,7 @@ export const useResetBittensorBondWizard = () => {
         | "tokenId"
         | "poolId"
         | "step"
+        | "isSeekDiscountDrawerOpen"
         | "isSelectStakeDrawerOpen"
         | "stakeType"
         | "netuid"
@@ -164,6 +169,7 @@ export const useBittensorBondWizard = () => {
   const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
   const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
   const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
+  const seekDiscountDrawer = useInnerOpenClose("isSeekDiscountDrawerOpen")
 
   const { data: sapi } = useScaleApi(token?.networkId)
 
@@ -514,6 +520,7 @@ export const useBittensorBondWizard = () => {
     selectStakeDrawer,
     slippageDrawer,
     warningDrawer,
+    seekDiscountDrawer,
     isFormValid,
     isSlippageValid,
     step,

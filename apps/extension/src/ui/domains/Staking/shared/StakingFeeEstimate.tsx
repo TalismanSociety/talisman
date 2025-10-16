@@ -1,6 +1,7 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 
@@ -10,21 +11,25 @@ export const StakingFeeEstimate: FC<{
   plancks: bigint | null | undefined
   tokenId: TokenId | null | undefined
   noCountUp?: boolean
+  noFiat?: boolean
   className?: string
-}> = ({ error, isLoading, plancks, tokenId, noCountUp, className }) => {
+  tokensClassName?: string
+}> = ({ error, isLoading, plancks, tokenId, noCountUp, noFiat, className, tokensClassName }) => {
+  const { t } = useTranslation()
   return (
     <>
       {error ? (
         <div className={classNames("text-alert-error truncate", className)}>
-          Failed to estimate fee
+          {t("Failed to estimate fee")}
         </div>
       ) : (plancks || plancks === 0n) && tokenId ? (
         <TokensAndFiat
           tokenId={tokenId}
           planck={plancks}
-          tokensClassName="text-body"
+          tokensClassName={classNames("text-body", tokensClassName)}
           fiatClassName="text-body-secondary"
           noCountUp={noCountUp}
+          noFiat={noFiat}
           className={classNames(isLoading && "animate-pulse", className)}
         />
       ) : isLoading ? (
