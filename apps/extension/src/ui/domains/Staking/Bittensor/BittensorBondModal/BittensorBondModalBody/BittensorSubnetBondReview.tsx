@@ -18,6 +18,7 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
   DEFAULT_USER_MAX_SLIPPAGE,
@@ -66,6 +67,7 @@ export const BittensorSubnetBondReview = () => {
   const { t } = useTranslation()
   const { tier } = useGetSeekDiscount()
   const { seekDiscountDrawer } = useBittensorBondWizard()
+  const { close } = useBittensorBondModal()
 
   const { discount } = tier
   const discountPercent = `${tier.discount * 100}%`
