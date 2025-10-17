@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 1.1.6
+
+### Patch Changes
+
+- 8266e9c: init data
+- ceaf004: init chaindata
+
 ## 1.1.5
 
 ### Patch Changes
