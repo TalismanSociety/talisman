@@ -1,9 +1,10 @@
+import TtlCache from "@isaacs/ttlcache"
 import { BLOCKAID_API_URL, log } from "extension-shared"
 import PQueue from "p-queue"
 
 import { isFeatureFlagEnabled } from "../store.remoteConfig"
 
-const CACHE = new Map<string, boolean>()
+const CACHE = new TtlCache<string, boolean>({ max: 100, ttl: 1000 * 60 * 5 }) // 5 minutes
 
 // front end may be spamming requests for same url, queue them to avoid duplicate queries
 const POOL = new PQueue({ concurrency: 1 })
