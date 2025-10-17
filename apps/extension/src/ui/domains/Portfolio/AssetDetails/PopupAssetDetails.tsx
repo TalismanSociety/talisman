@@ -12,6 +12,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
 
 import { MonadAnimation } from "./animations/monad/MonadAnimation"
+import { SeekAnimation } from "./animations/seek/SeekAnimation"
 import { PopupTokenBalances } from "./PopupTokenBalances"
 import { useAssetDetails } from "./useAssetDetails"
 
@@ -81,6 +82,7 @@ export const PopupAssetDetails: FC<{
         ))}
       </div>
       {symbol === "MON" && <MonadAnimation />}
+      {symbol === "SEEK" && <SeekAnimation />}
     </FadeIn>
   )
 }
