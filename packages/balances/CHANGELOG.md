@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 1.0.9
+
+### Patch Changes
+
+- b18f5f1: fix transfers on NeuroWeb
+- Updated dependencies [8266e9c]
+- Updated dependencies [ceaf004]
+  - @talismn/chaindata-provider@1.1.6
+  - @talismn/chain-connectors@0.0.7
+  - @talismn/token-rates@3.0.9
+
 ## 1.0.8
 
 ### Patch Changes
