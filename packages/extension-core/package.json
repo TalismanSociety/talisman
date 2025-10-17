@@ -19,6 +19,7 @@
     "clean": "rm -rf dist background/dist .turbo node_modules"
   },
   "dependencies": {
+    "@isaacs/ttlcache": "1.4.1",
     "@metamask/browser-passworder": "5.0.1",
     "@metamask/eth-sig-util": "8.0.0",
     "@polkadot-api/merkleize-metadata": "1.1.18",

@@ -117,3 +117,13 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 }
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
+
+export const isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
+  try {
+    const featureFlags = await remoteConfigStore.get("featureFlags")
+    return !!featureFlags[flag]
+  } catch (err) {
+    log.error("Error checking feature flag:", { flag, err })
+    return false
+  }
+}
