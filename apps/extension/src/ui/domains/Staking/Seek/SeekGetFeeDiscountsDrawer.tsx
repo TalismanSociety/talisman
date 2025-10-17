@@ -30,7 +30,7 @@ export const SeekGetFeeDiscountsDrawer = ({
   const { t } = useTranslation()
   const remoteConfig = useRemoteConfig()
   const { open: openSwapTokensModal } = useSwapTokensModal()
-  const { tokenId, webAppStakingPath } = remoteConfig.seek
+  const { tokenId, webAppStakingPath, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
 
@@ -68,7 +68,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             {t(`Stake ${tokenSymbol} to enjoy fee discounts on your subnet staking transactions. `)}
             <a
               className="inline-flex items-center justify-center gap-1 text-white"
-              href="https://talisman.xyz/"
+              href={docsUrl}
               target="_blank"
               rel="noreferrer"
             >
@@ -116,15 +116,22 @@ export const SeekGetFeeDiscountsDrawer = ({
             </div>
           </div>
         </div>
-        <div className="grid w-full grid-cols-2 gap-8">
-          <Button
-            onClick={() => {
-              open(`${TALISMAN_WEB_APP_URL}${webAppStakingPath}`, "_blank", "noopener,noreferrer")
-              onCloseModal()
-            }}
-          >
-            {t("Stake")} {tokenSymbol}
-          </Button>
+        <div
+          className={cn(
+            "grid w-full grid-cols-2 gap-8",
+            totalOwned && totalOwned.planck > 0n ? "grid-cols-2" : "grid-cols-1",
+          )}
+        >
+          {totalOwned && totalOwned.planck > 0n && (
+            <Button
+              onClick={() => {
+                open(`${TALISMAN_WEB_APP_URL}${webAppStakingPath}`, "_blank", "noopener,noreferrer")
+                onCloseModal()
+              }}
+            >
+              {t("Stake")} {tokenSymbol}
+            </Button>
+          )}
           <Button
             className="px-2"
             primary
