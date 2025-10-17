@@ -99,6 +99,7 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         if (DEBUG) {
           config.featureFlags.SEEK_BENEFITS = true
           config.featureFlags.SEEK_TAO_DISCOUNT = true
+          config.featureFlags.BLOCKAID_DAPP_SCAN = false
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
@@ -117,3 +118,13 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 }
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
+
+export const isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
+  try {
+    const featureFlags = await remoteConfigStore.get("featureFlags")
+    return !!featureFlags[flag]
+  } catch (err) {
+    log.error("Error checking feature flag:", { flag, err })
+    return false
+  }
+}
