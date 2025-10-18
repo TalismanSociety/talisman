@@ -6,6 +6,7 @@ import { EvmUniswapV2TokenIdSpecs, EvmUniswapV2TokenSchema } from "./EvmUniswapV
 import { SolNativeToken, SolNativeTokenSchema } from "./SolNativeToken"
 import { SolSplToken, SolSplTokenSchema } from "./SolSplToken"
 import { SubAssetsTokenSchema, SubAssetTokenIdSpecs } from "./SubstrateAssetsToken"
+import { SubDTaoTokenIdSpecs, SubDTaoTokenSchema } from "./SubstrateDTaoToken"
 import {
   ForeignAssetsTokenIdSpecs,
   SubForeignAssetsTokenSchema,
@@ -23,6 +24,7 @@ export const TokenSchemaBase = z.discriminatedUnion("type", [
   EvmNativeTokenSchema,
   EvmUniswapV2TokenSchema,
   SubAssetsTokenSchema,
+  SubDTaoTokenSchema,
   SubForeignAssetsTokenSchema,
   SubNativeTokenSchema,
   SubPsp22TokenSchema,
@@ -50,21 +52,23 @@ export type TokenIdSpecs<T extends TokenType> = T extends "evm-erc20"
       ? EvmUniswapV2TokenIdSpecs
       : T extends "substrate-assets"
         ? SubAssetTokenIdSpecs
-        : T extends "substrate-foreignassets"
-          ? ForeignAssetsTokenIdSpecs
-          : T extends "substrate-native"
-            ? SubNativeTokenIdSpecs
-            : T extends "substrate-psp22"
-              ? SubPsp22TokenIdSpecs
-              : T extends "substrate-tokens"
-                ? SubTokensTokenIdSpecs
-                : T extends "substrate-hydration"
-                  ? SubHydrationToken
-                  : T extends "sol-native"
-                    ? SolNativeToken
-                    : T extends "sol-spl"
-                      ? SolSplToken
-                      : never
+        : T extends "substrate-dtao"
+          ? SubDTaoTokenIdSpecs
+          : T extends "substrate-foreignassets"
+            ? ForeignAssetsTokenIdSpecs
+            : T extends "substrate-native"
+              ? SubNativeTokenIdSpecs
+              : T extends "substrate-psp22"
+                ? SubPsp22TokenIdSpecs
+                : T extends "substrate-tokens"
+                  ? SubTokensTokenIdSpecs
+                  : T extends "substrate-hydration"
+                    ? SubHydrationToken
+                    : T extends "sol-native"
+                      ? SolNativeToken
+                      : T extends "sol-spl"
+                        ? SolSplToken
+                        : never
 
 // transform to control in which order properties are output as JSON when parsed from schema
 export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {

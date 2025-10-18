@@ -3,6 +3,7 @@ import z from "zod/v4"
 import { HexStringSchema } from "../shared"
 import {
   SubAssetsBalancesConfigSchema,
+  SubDTaoBalancesConfigSchema,
   SubForeignAssetsBalancesConfigSchema,
   SubHydrationBalancesConfigSchema,
   SubNativeBalancesConfigSchema,
@@ -18,6 +19,7 @@ export const DotNetworkBalancesConfigSchema = z.strictObject({
   "substrate-tokens": SubTokensBalancesConfigSchema.optional(),
   "substrate-foreignassets": SubForeignAssetsBalancesConfigSchema.optional(),
   "substrate-hydration": SubHydrationBalancesConfigSchema.optional(),
+  "substrate-dtao": SubDTaoBalancesConfigSchema.optional(),
 })
 
 export type DotNetworkBalancesConfig = z.infer<typeof DotNetworkBalancesConfigSchema>

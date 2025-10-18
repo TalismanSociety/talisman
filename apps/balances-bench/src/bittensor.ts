@@ -18,7 +18,12 @@ const NETWORK_CONFIG = {
   tokens: {},
 }
 
-testNetworkDot(NETWORK_CONFIG, { modules: ["substrate-native"] })
+testNetworkDot(NETWORK_CONFIG, {
+  modules: [
+    //"substrate-native",
+    "substrate-dtao",
+  ],
+})
   .then(() => {
     log.log("Balances testbench completed successfully")
     process.exit(0)
