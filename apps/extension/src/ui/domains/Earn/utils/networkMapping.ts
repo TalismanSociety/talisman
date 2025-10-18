@@ -1,27 +1,56 @@
 import { Networks } from "extension-core"
 
 /**
+ * Mapping of chain IDs to Yield.xyz network names
+ * This data is sourced from Yield.xyz's supported networks list
+ */
+const yieldNetworkMapping: Record<string, string> = {
+  "1": "ethereum",
+  "8453": "base",
+  "137": "polygon",
+  "42161": "arbitrum",
+  "10": "optimism",
+  "100": "gnosis",
+  "43114": "avalanche-c",
+  "56": "binance",
+  "250": "fantom",
+  "42220": "celo",
+  "1285": "moonriver",
+  "1666600000": "harmony",
+  "66": "okc",
+  "1116": "core",
+  "146": "sonic",
+  "1807": "katana",
+  "polkadot": "polkadot",
+  "kusama": "kusama",
+  "westend": "westend",
+  "solana": "solana",
+  "near": "near",
+  "cardano": "cardano",
+  "stellar": "stellar",
+  "tezos": "tezos",
+  "tron": "tron",
+  "ton": "ton",
+}
+
+/**
  * Maps network platform and chain ID to Yield.xyz compatible network names
+ * Uses dynamic mapping from Yield.xyz supported networks
  *
  * @param platform - The network platform (e.g., 'ethereum', 'polkadot', 'solana')
  * @param chainId - The chain ID as a string (e.g., '1', '8453')
- * @returns The Yield.xyz compatible network name
- * @throws Error if the chain ID is not supported for the given platform
+ * @returns The Yield.xyz compatible network name, or null if not supported
  */
-export function mapToYieldNetwork(platform: Networks, chainId: string): Networks {
+export function mapToYieldNetwork(platform: Networks, chainId: string): Networks | null {
+  // For EVM networks, use the mapping from chaindata
   if (platform === "ethereum") {
-    switch (chainId) {
-      case "1":
-        return "ethereum" // Ethereum Mainnet
-      case "8453":
-        return "base" // Base Layer 2
-      default:
-        throw new Error(`Unsupported Ethereum chain ID: ${chainId}`)
-    }
+    const yieldNetwork = yieldNetworkMapping[chainId]
+    return (yieldNetwork as Networks) || null
   }
 
-  // For other platforms (polkadot, solana, etc.), return the platform as-is
-  return platform
+  // For other platforms (polkadot, solana, etc.), check if they're supported
+  const yieldNetwork = yieldNetworkMapping[platform]
+  return (yieldNetwork as Networks) || null
 }
 
 /**

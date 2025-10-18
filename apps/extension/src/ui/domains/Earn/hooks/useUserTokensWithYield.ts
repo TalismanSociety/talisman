@@ -29,7 +29,7 @@ export const useUserTokensWithYield = () => {
   const isBalancesInitializing = useIsBalanceInitializing()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
-  const accounts = useAccounts("owned")
+  const ownedAccounts = useAccounts("owned")
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
   const selectedAccounts = useMemo(() => {
@@ -55,10 +55,10 @@ export const useUserTokensWithYield = () => {
     return portfolioAccounts
   }, [allAccounts, portfolioAccounts, catalog, searchParams])
 
-  // Get owned account addresses to filter out watched accounts
+  // Get owned account addresses only - for "Earn on your assets" we only want owned accounts
   const ownedAddresses = useMemo(() => {
-    return new Set(accounts.map((account) => account.address))
-  }, [accounts])
+    return new Set(ownedAccounts.map((account) => account.address))
+  }, [ownedAccounts])
 
   // Get tokens with non-zero balances
   const userTokens = useMemo(() => {
@@ -66,7 +66,7 @@ export const useUserTokensWithYield = () => {
 
     // Filter balances by selected accounts and owned addresses
     const relevantBalances = balances.each.filter((balance) => {
-      // Only include balances from owned accounts
+      // Only include balances from owned accounts for "Earn on your assets"
       if (!ownedAddresses.has(balance.address)) return false
 
       // Filter by selected accounts if any

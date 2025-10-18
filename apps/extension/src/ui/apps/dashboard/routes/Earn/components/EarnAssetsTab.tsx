@@ -15,7 +15,7 @@ import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellVal
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useAccounts, usePortfolioGlobalData } from "@ui/state"
+import { usePortfolioGlobalData } from "@ui/state"
 import { useYieldSearch } from "@ui/state/yield"
 
 interface GroupedTokenData {
@@ -267,7 +267,6 @@ export const EarnAssetsTab = () => {
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
   const yieldBalancesGrouped = useYieldBalancesGrouped()
   const isLoading = yieldBalancesGrouped.status === "loading"
-  const accounts = useAccounts("owned")
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
@@ -298,10 +297,10 @@ export const EarnAssetsTab = () => {
 
   const location = useLocation()
 
-  // Get owned account addresses to filter out watched accounts
-  const ownedAddresses = useMemo(() => {
-    return new Set(accounts.map((account) => account.address))
-  }, [accounts])
+  // Get portfolio account addresses (owned + portfolio watch accounts) to match portfolio behavior
+  const portfolioAddresses = useMemo(() => {
+    return new Set(portfolioAccounts.map((account) => account.address))
+  }, [portfolioAccounts])
 
   // Convert yield balances to token-to-position mapping
   const convertedGroupedByToken = useMemo(() => {
@@ -314,11 +313,11 @@ export const EarnAssetsTab = () => {
 
     yieldBalancesGrouped.data
       .filter((position) => {
-        // Check if any balance in the position belongs to owned addresses
-        const hasOwnedAddress = position.balances.some((balance) =>
-          ownedAddresses.has(balance.address),
+        // Check if any balance in the position belongs to portfolio addresses (owned + portfolio watch accounts)
+        const hasPortfolioAddress = position.balances.some((balance) =>
+          portfolioAddresses.has(balance.address),
         )
-        return hasOwnedAddress
+        return hasPortfolioAddress
       })
       .filter((position) => {
         // Check if any balance in the position belongs to selected addresses
@@ -394,7 +393,7 @@ export const EarnAssetsTab = () => {
       })
 
     return converted
-  }, [yieldBalancesGrouped, ownedAddresses, search, selectedAccounts])
+  }, [yieldBalancesGrouped, portfolioAddresses, search, selectedAccounts])
 
   // Show grouped assets instead of individual positions
   const hasDefiAssets = convertedGroupedByToken.size > 0
