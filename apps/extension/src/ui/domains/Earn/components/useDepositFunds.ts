@@ -30,6 +30,8 @@ interface TDepositFunds {
 
   // Transaction data
   transaction: ReturnType<typeof useDepositFundsTransaction>
+  allTransactions: unknown[] // All transactions from Yield.xyz
+  parsedTransactions: unknown[] // Parsed transaction objects
 
   // State
   isLoading: boolean
@@ -137,6 +139,9 @@ export const useDepositFunds = (): TDepositFunds => {
 
     // Transaction data (similar to SendFunds)
     transaction,
+    allTransactions: (transaction as { allTransactions?: unknown[] })?.allTransactions || [],
+    parsedTransactions:
+      (transaction as { parsedTransactions?: unknown[] })?.parsedTransactions || [],
 
     // State
     isLoading,

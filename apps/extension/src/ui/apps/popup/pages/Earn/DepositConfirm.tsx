@@ -1,85 +1,21 @@
-import { Suspense, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Suspense, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { DepositDetails } from "@ui/domains/Earn/components/DepositDetails"
 import { DepositProgressBar } from "@ui/domains/Earn/components/DepositProgressBar"
-import { SequentialTransactionExecutor } from "@ui/domains/Earn/components/SequentialTransactionExecutor"
 import { useDepositFunds } from "@ui/domains/Earn/components/useDepositFunds"
+import { YieldSubmitButton } from "@ui/domains/Earn/components/YieldSubmitButton"
 import {
   DepositWizardProvider,
   useDepositWizard,
 } from "@ui/domains/Earn/context/DepositWizardContext"
-import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
-import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
-import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
-
-const DepositSubmitButton = ({
-  onTxSubmitted,
-}: {
-  onTxSubmitted?: (params: { networkId: string; txId: string }) => void
-}) => {
-  const { t } = useTranslation()
-  const { account, token, product, deposit, transaction } = useDepositFunds()
-  const [isSubmitting, _setIsSubmitting] = useState(false)
-
-  // No fallback transaction - only use real transaction data
-  const txTransaction: TxSubmitButtonTransaction | null = useMemo(() => {
-    // Only proceed if we have real transaction data
-    if (!account || !token || !product || !deposit || !transaction?.tx) return null
-
-    // Handle different platforms based on the transaction platform
-    const platform = transaction.platform as "ethereum" | "polkadot" | "solana"
-
-    if (platform === "ethereum") {
-      return {
-        platform: "ethereum" as const,
-        networkId: token.networkId as `0x${string}`,
-        payload: transaction.tx as import("viem").TransactionRequest,
-      }
-    } else if (platform === "polkadot") {
-      return {
-        platform: "polkadot" as const,
-        payload: transaction.tx as import("extension-core").SignerPayloadJSON,
-        txMetadata: (transaction.txDetails as { shortMetadata?: Uint8Array | `0x${string}` })
-          ?.shortMetadata,
-      }
-    } else if (platform === "solana") {
-      return {
-        platform: "solana" as const,
-        networkId: token.networkId as `0x${string}`,
-        payload: transaction.tx as
-          | import("@solana/web3.js").Transaction
-          | import("@solana/web3.js").VersionedTransaction,
-      }
-    }
-
-    return null
-  }, [account, token, product, deposit, transaction])
-
-  if (!txTransaction) return null
-
-  return (
-    <TxSubmitButton
-      tx={txTransaction}
-      label={isSubmitting ? t("Depositing...") : t("Deposit")}
-      disabled={isSubmitting}
-      onSubmit={(txId) => {
-        if (token) onTxSubmitted?.({ networkId: token.networkId as string, txId })
-      }}
-    />
-  )
-}
 
 const DepositConfirmContent = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [currentStep, setCurrentStep] = useState<"confirm" | "execute" | "progress">("confirm")
-  const [transactionStep, setTransactionStep] = useState<1 | 2>(1)
-  const { set, resetUserInput } = useDepositWizard()
+  const { set, resetUserInput, gotoProgress } = useDepositWizard()
   const { token } = useDepositFunds()
-  const [progress, setProgress] = useState<{ networkId: string; txId: string } | null>(null)
 
   // Get parameters from URL
   const account = searchParams.get("account") || ""
@@ -95,25 +31,12 @@ const DepositConfirmContent = () => {
     }
   }, [account, tokenId, productId, set])
 
-  const handleExecutionComplete = (networkId: string, txId: string) => {
-    setCurrentStep("progress")
-    setProgress({ networkId, txId })
-  }
-
-  const handleExecutionError = (_error: Error) => {
+  const handleTransactionError = (_error: Error) => {
     // Could show error state or go back to confirm
-    setCurrentStep("confirm")
-  }
-
-  const handleTransactionComplete = (networkId: string, txId: string) => {
-    setProgress({ networkId, txId })
-    if (transactionStep === 1) {
-      setTransactionStep(2)
-    }
+    // For now, just log the error
   }
 
   const handleClose = () => {
-    setCurrentStep("confirm")
     resetUserInput()
     // Navigate back to deposit amount page with preserved parameters
     const params = new URLSearchParams()
@@ -139,45 +62,22 @@ const DepositConfirmContent = () => {
       <div className="flex flex-col gap-16 px-10 pb-4">
         <div className="text-body text-center text-lg font-bold">You're approving staking</div>
         <div className="flex flex-col gap-32">
-          <DepositProgressBar
-            currentStep={transactionStep}
-            tokenSymbol={token?.symbol || "Token"}
-          />
+          <DepositProgressBar currentStep={1} tokenSymbol={token?.symbol || "Token"} />
           <DepositDetails />
         </div>
       </div>
 
       <div className="grow overflow-hidden pt-0">
-        {currentStep === "confirm" && (
-          <div className="flex h-full w-full flex-col px-12 pb-8">
-            <div className="mt-auto">
-              <DepositSubmitButton
-                onTxSubmitted={({
-                  networkId: _networkId,
-                  txId: _txId,
-                }: {
-                  networkId: string
-                  txId: string
-                }) => {
-                  // switch to sequential execution
-                  setCurrentStep("execute")
-                }}
-              />
-            </div>
+        <div className="flex h-full w-full flex-col px-12 pb-8">
+          <div className="mt-auto">
+            <YieldSubmitButton
+              onError={handleTransactionError}
+              onTxSubmitted={({ networkId, txId }) => {
+                gotoProgress({ networkId, txId })
+              }}
+            />
           </div>
-        )}
-        {currentStep === "execute" && (
-          <SequentialTransactionExecutor
-            onComplete={handleExecutionComplete}
-            onError={handleExecutionError}
-            onTransactionComplete={handleTransactionComplete}
-          />
-        )}
-        {currentStep === "progress" && progress && (
-          <div className="h-full w-full">
-            <SendFundsProgress networkId={progress.networkId} txId={progress.txId} />
-          </div>
-        )}
+        </div>
       </div>
     </div>
   )

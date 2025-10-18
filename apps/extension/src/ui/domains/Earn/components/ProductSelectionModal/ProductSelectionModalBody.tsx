@@ -9,7 +9,7 @@ import { useNetworkById, useToken } from "@ui/state"
 import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ConfirmDepositModal } from "../../ConfirmDepositModal"
+import { ConfirmDepositModal } from "../.."
 import { DepositModal } from "../../DepositModal"
 import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
 import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"

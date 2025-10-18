@@ -104,7 +104,10 @@ const useDepositWizardProvider = () => {
 
   const gotoProgress = useCallback(
     ({ networkId, txId }: { networkId: string; txId: string }) => {
-      navigate(`/select-product/deposit/progress?networkId=${networkId}&txId=${txId}`)
+      const qs = new URLSearchParams()
+      qs.set("txId", txId)
+      qs.set("networkId", networkId)
+      navigate(`/select-product/deposit/submitted?${qs.toString()}`)
     },
     [navigate],
   )

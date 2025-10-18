@@ -14,6 +14,7 @@ import { useTip } from "@ui/hooks/useTip"
 import { useBalance, useNetworkById, useToken } from "@ui/state"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
+import { useYieldTransaction } from "../hooks/useYieldTransaction"
 
 // Helper functions (same as SendFunds)
 const usePayload = ({
@@ -102,6 +103,9 @@ export const useDepositFundsTransactionDot = () => {
   const balance = useBalance(account as string, tokenId as string)
   const tipToken = useToken(network?.nativeTokenId)
 
+  // Get Yield.xyz transaction data
+  const { allTransactions, isLoading: isYieldLoading, error: yieldError } = useYieldTransaction()
+
   // Standard Polkadot fee calculation hooks (same as SendFunds)
   const qTip = useTip(token?.networkId, !isLocked)
   const qSapi = useScaleApi(token?.networkId)
@@ -181,10 +185,27 @@ export const useDepositFundsTransactionDot = () => {
     estimatedFee,
     maxFee: null, // Not applicable for Polkadot
     maxAmount,
-    isLoading,
+    isLoading: isLoading || isYieldLoading,
     isRefetching,
-    error,
+    error: error || yieldError,
     isLocked,
     setIsLocked,
+
+    // Yield.xyz specific data
+    allTransactions: allTransactions,
+    parsedTransactions: allTransactions
+      .filter((tx) => tx.unsignedTransaction)
+      .map((tx) => {
+        try {
+          const unsignedTx =
+            typeof tx.unsignedTransaction === "string"
+              ? JSON.parse(tx.unsignedTransaction)
+              : tx.unsignedTransaction
+          return unsignedTx
+        } catch {
+          return null
+        }
+      })
+      .filter(Boolean),
   }
 }

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom"
 
 import { EarnAccountPicker } from "@ui/domains/Earn/components/EarnAccountPicker"
 import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
-import { ConfirmDepositModal } from "@ui/domains/Earn/ConfirmDepositModal"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { useUserTokensWithYield } from "@ui/domains/Earn/hooks/useUserTokensWithYield"
 import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
@@ -13,6 +12,7 @@ import { useNetworkById, useRemoteConfig } from "@ui/state"
 import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { ConfirmDepositModal } from "../.."
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
 import { ShowMoreButton } from "./ShowMoreButton"
 

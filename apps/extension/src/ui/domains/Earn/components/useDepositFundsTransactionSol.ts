@@ -126,5 +126,20 @@ export const useDepositFundsTransactionSol = () => {
     // Yield.xyz specific data
     yieldTransaction: tx,
     isYieldTransaction: !!tx,
+    allTransactions: allTransactions,
+    parsedTransactions: allTransactions
+      .filter((tx) => tx.unsignedTransaction)
+      .map((tx) => {
+        try {
+          const unsignedTx =
+            typeof tx.unsignedTransaction === "string"
+              ? tx.unsignedTransaction
+              : JSON.stringify(tx.unsignedTransaction)
+          return deserializeTransactionFromHex(unsignedTx)
+        } catch {
+          return null
+        }
+      })
+      .filter(Boolean),
   }
 }
