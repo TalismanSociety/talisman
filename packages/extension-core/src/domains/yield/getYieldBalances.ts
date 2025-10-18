@@ -1,6 +1,7 @@
 import { getQuery$, keepAlive } from "@talismn/util"
 import { BalancesQueryDto, Networks } from "@yieldxyz/sdk"
-import { firstValueFrom, map, shareReplay, switchMap } from "rxjs"
+import chunk from "lodash-es/chunk"
+import { combineLatest, firstValueFrom, from, map, shareReplay, switchMap } from "rxjs"
 
 import { walletReady$ } from "../../libs/isWalletReady"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -15,6 +16,9 @@ import { yieldSdk } from "./yieldSdk"
 
 const REFRESH_INTERVAL = 10_000
 
+// Shared product cache to deduplicate product fetches across batches
+const productCache = new Map<string, Promise<YieldDto>>()
+
 const accountAddresses$ = keyringStore.accounts$.pipe(
   map((accounts) => {
     const addresses = accounts.map((a) => a.address)
@@ -22,29 +26,54 @@ const accountAddresses$ = keyringStore.accounts$.pipe(
   }),
 )
 
-// Simplified version using getQuery$
-const fetchYieldBalancesForAddresses = async (
-  addresses: string[],
+// Fetch a single batch of queries with shared product caching
+const fetchBatchWithProducts = async (
+  queries: BalancesQueryDto[],
   signal: AbortSignal,
 ): Promise<YieldBalancesDtoWithProduct[]> => {
-  const products: YieldDto[] = []
-  const q = await buildQueries(addresses)
-  const balancesResp = await fetchYieldBalances({ queries: q })
+  const balancesResp = await fetchYieldBalances({ queries })
   const yieldIds = Array.from(new Set(balancesResp.map((i) => i.yieldId)))
 
-  await Promise.all(
-    yieldIds.map(async (p) => {
-      if (signal.aborted) return
-      const product = await yieldSdk.getYield(p)
-      products.push(product)
+  // Use shared cache for products to avoid duplicate fetches across batches
+  const products = await Promise.all(
+    yieldIds.map(async (yieldId) => {
+      if (signal.aborted) return null
+      if (!productCache.has(yieldId)) {
+        productCache.set(yieldId, yieldSdk.getYield(yieldId))
+      }
+      return productCache.get(yieldId)!
     }),
   )
 
-  const productById = new Map<string, YieldDto>(products.map((p) => [p.id, p]))
+  const productById = new Map(
+    products.filter((p): p is YieldDto => p !== null).map((p) => [p.id, p]),
+  )
   return balancesResp.map((item) => ({
     ...item,
     product: productById.get(item.yieldId),
   }))
+}
+
+// Main function that handles batching and parallel execution
+const fetchYieldBalancesForAddresses = async (
+  addresses: string[],
+  signal: AbortSignal,
+): Promise<YieldBalancesDtoWithProduct[]> => {
+  // Clear product cache at start of each polling cycle to ensure fresh data
+  productCache.clear()
+
+  const queries = await buildQueries(addresses)
+  const batches = chunk(queries, 1)
+
+  if (batches.length === 0) return []
+  if (batches.length === 1) return fetchBatchWithProducts(batches[0], signal)
+
+  // Parallel execution with combineLatest
+  const results = await firstValueFrom(
+    combineLatest(batches.map((batch) => from(fetchBatchWithProducts(batch, signal)))),
+  )
+
+  return results.flat()
 }
 
 export const yieldBalancesGrouped$ = walletReady$.pipe(
