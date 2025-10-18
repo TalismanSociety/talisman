@@ -109,9 +109,15 @@ const ConfirmDepositModalContent = ({
           </div>
         )}
         {currentStep === "progress" && progress && (
-          <div className="h-full w-full">
-            <SendFundsProgress networkId={progress.networkId} txId={progress.txId} />
-          </div>
+          <Modal containerId="main" isOpen={true} onDismiss={onClose}>
+            <div className="relative h-full w-[40rem] bg-black px-12 py-8">
+              <SendFundsProgress
+                networkId={progress.networkId}
+                txId={progress.txId}
+                onClose={onClose}
+              />
+            </div>
+          </Modal>
         )}
       </div>
     </div>
