@@ -2,6 +2,7 @@ import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { getEthTransferTransactionBase } from "extension-core"
 import { useMemo, useState } from "react"
+import { TransactionRequest } from "viem"
 
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useBalance, useToken } from "@ui/state"
@@ -117,16 +118,47 @@ export const useDepositFundsTransactionEth = () => {
 }
 
 // Helper function to safely parse unsigned transaction
-const parseUnsignedTransaction = (unsignedTx: unknown) => {
+const parseUnsignedTransaction = (unsignedTx: unknown): TransactionRequest | undefined => {
   if (!unsignedTx) return undefined
 
+  let parsedTx
   if (typeof unsignedTx === "string") {
     try {
-      return JSON.parse(unsignedTx)
+      parsedTx = JSON.parse(unsignedTx)
     } catch {
-      return unsignedTx
+      return undefined
     }
+  } else {
+    parsedTx = unsignedTx
   }
 
-  return unsignedTx
+  // Validate required fields
+  if (!parsedTx.to || !parsedTx.data || !parsedTx.from) {
+    return undefined
+  }
+
+  // Convert to proper transaction format with correct types
+  return {
+    to: parsedTx.to as `0x${string}`,
+    value: BigInt(parsedTx.value || "0"),
+    data: parsedTx.data as `0x${string}`,
+    from: parsedTx.from as `0x${string}`,
+    gas: parsedTx.gas ? BigInt(parsedTx.gas) : undefined,
+    nonce: parsedTx.nonce,
+    // Handle EIP-1559 vs legacy gas pricing
+    ...(parsedTx.maxFeePerGas && parsedTx.maxPriorityFeePerGas
+      ? {
+          type: "eip1559" as const,
+          maxFeePerGas: BigInt(parsedTx.maxFeePerGas),
+          maxPriorityFeePerGas: BigInt(parsedTx.maxPriorityFeePerGas),
+        }
+      : parsedTx.gasPrice
+        ? {
+            type: "legacy" as const,
+            gasPrice: BigInt(parsedTx.gasPrice),
+          }
+        : {
+            type: "legacy" as const,
+          }),
+  }
 }
