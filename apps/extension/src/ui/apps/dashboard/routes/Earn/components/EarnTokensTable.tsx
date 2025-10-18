@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { useAccounts } from "@ui/state"
 import { setYieldSearch, useYieldSearch } from "@ui/state/yield"
 
@@ -13,7 +13,7 @@ import { EarnTabs } from "./EarnTabs"
 
 const EarnHeaderRow = () => {
   const { t } = useTranslation()
-  const { totalUsd, isLoading } = useYieldBalances()
+  const yieldBalancesGrouped = useYieldBalancesGrouped()
   const accounts = useAccounts("owned")
 
   // Get owned account addresses to filter out watched accounts (kept for parity; not used)
@@ -21,9 +21,20 @@ const EarnHeaderRow = () => {
 
   // Calculate total from Yield balances (excluding watch-only accounts)
   const displayTotal = useMemo(() => {
-    // totalUsd is already aggregated across all accounts from useYieldBalances
-    return Number(totalUsd || 0)
-  }, [totalUsd])
+    if (yieldBalancesGrouped.status === "success" && yieldBalancesGrouped.data) {
+      return yieldBalancesGrouped.data.reduce((total, position) => {
+        return (
+          total +
+          position.balances.reduce((posTotal, balance) => {
+            return posTotal + parseFloat(balance.amountUsd || "0")
+          }, 0)
+        )
+      }, 0)
+    }
+    return 0
+  }, [yieldBalancesGrouped])
+
+  const isLoading = yieldBalancesGrouped.status === "loading"
 
   return (
     <div className="text-body-secondary bg-grey-850 border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">

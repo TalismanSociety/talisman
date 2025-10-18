@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldBalances } from "@ui/domains/Earn/hooks/useYieldBalances"
+import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { setYieldSearch, useYieldSearch } from "@ui/state/yield"
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
@@ -22,11 +22,23 @@ const PageHeader = () => {
 
 const PopupEarnHeader = () => {
   const { t } = useTranslation()
-  const { totalUsd, isLoading } = useYieldBalances()
+  const yieldBalancesGrouped = useYieldBalancesGrouped()
 
   const displayTotal = useMemo(() => {
-    return Number(totalUsd || 0)
-  }, [totalUsd])
+    if (yieldBalancesGrouped.status === "success" && yieldBalancesGrouped.data) {
+      return yieldBalancesGrouped.data.reduce((total, position) => {
+        return (
+          total +
+          position.balances.reduce((posTotal, balance) => {
+            return posTotal + parseFloat(balance.amountUsd || "0")
+          }, 0)
+        )
+      }, 0)
+    }
+    return 0
+  }, [yieldBalancesGrouped])
+
+  const isLoading = yieldBalancesGrouped.status === "loading"
 
   return (
     <div className="text-body-secondary bg-grey-850 border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">

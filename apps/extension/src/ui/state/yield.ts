@@ -1,36 +1,26 @@
 import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
-import {
-  fetchYieldProducts,
-  YieldBalancesDtoWithProduct,
-  YieldsControllerGetYieldsParams,
-} from "extension-core"
+import { fetchYieldProducts, YieldPosition, YieldsControllerGetYieldsParams } from "extension-core"
 import { BehaviorSubject, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
-const DEFAULT_YIELD_BALANCES: Loadable<YieldBalancesDtoWithProduct[]> = {
-  status: "loading",
-  data: [],
-}
-
-const rawYieldBalances$ = new Observable<Loadable<YieldBalancesDtoWithProduct[]>>((subscriber) => {
-  const unsubscribe = api.yieldBalancesSubscribe(
-    (loadable: Loadable<YieldBalancesDtoWithProduct[]>) => {
-      subscriber.next(loadable)
-    },
-  )
+// Add new observable for grouped yield balances using bind()
+const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subscriber) => {
+  const unsubscribe = api.yieldBalancesGroupedSubscribe((loadable: Loadable<YieldPosition[]>) => {
+    subscriber.next(loadable)
+  })
 
   return () => {
     unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const [useYieldRawBalances, yieldBalances$] = bind(
-  rawYieldBalances$.pipe(shareReplay({ bufferSize: 1, refCount: true })),
-  DEFAULT_YIELD_BALANCES,
-)
+export const [useYieldBalancesGrouped, yieldBalancesGrouped$] = bind(rawYieldBalancesGrouped$, {
+  status: "loading",
+  data: [],
+})
 
 /**
  * Hook to fetch yield products for earning opportunities
