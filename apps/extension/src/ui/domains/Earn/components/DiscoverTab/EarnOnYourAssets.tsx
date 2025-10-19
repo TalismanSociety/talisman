@@ -149,36 +149,17 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
   // We'll filter them in the TokenWithYields component instead
   const filteredUserTokens = userTokens
 
-  // Group filtered tokens by symbol
+  // Create separate entries for each token-network pair
   const tokensWithProducts = useMemo(() => {
-    const tokenMap = new Map<
-      string,
-      {
-        tokenSymbol: string
-        tokenLogoURI?: string
-        networkId: string
-        tokenId: string
-      }
-    >()
-
-    filteredUserTokens.forEach((token) => {
-      const existing = tokenMap.get(token.symbol)
-      if (existing) {
-        // Merge with existing token
-      } else {
-        tokenMap.set(token.symbol, {
-          tokenSymbol: token.symbol,
-          tokenLogoURI: token.logoURI,
-          networkId: token.networkId,
-          tokenId: token.tokenId,
-        })
-      }
-    })
-
-    return Array.from(tokenMap.values())
+    return filteredUserTokens.map((token) => ({
+      tokenSymbol: token.symbol,
+      tokenLogoURI: token.logoURI,
+      networkId: token.networkId,
+      tokenId: token.tokenId,
+    }))
   }, [filteredUserTokens])
 
-  // Callback to update max reward rate for a token
+  // Callback to update max reward rate for a token-network pair
   const updateTokenMaxRewardRate = useCallback((tokenSymbol: string, maxRewardRate: number) => {
     setTokenMaxRewardRates((prev) => {
       const newMap = new Map(prev)
@@ -193,11 +174,14 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
       const aMaxRate = tokenMaxRewardRates.get(a.tokenSymbol) || 0
       const bMaxRate = tokenMaxRewardRates.get(b.tokenSymbol) || 0
 
-      // Sort by max reward rate (highest first), then by symbol as fallback
+      // Sort by max reward rate (highest first), then by symbol, then by network
       if (aMaxRate !== bMaxRate) {
         return bMaxRate - aMaxRate
       }
-      return a.tokenSymbol.localeCompare(b.tokenSymbol)
+      if (a.tokenSymbol !== b.tokenSymbol) {
+        return a.tokenSymbol.localeCompare(b.tokenSymbol)
+      }
+      return a.networkId.localeCompare(b.networkId)
     })
   }, [tokensWithProducts, tokenMaxRewardRates])
 
@@ -336,7 +320,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
     <div className="flex w-full flex-col gap-4">
       {visibleTokens.map((tokenData) => (
         <TokenWithYields
-          key={tokenData.tokenSymbol}
+          key={`${tokenData.tokenSymbol}-${tokenData.networkId}`}
           tokenSymbol={tokenData.tokenSymbol}
           tokenLogoURI={tokenData.tokenLogoURI}
           networkId={tokenData.networkId}

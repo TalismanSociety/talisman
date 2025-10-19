@@ -6,11 +6,13 @@ import { BehaviorSubject } from "rxjs"
 interface EarnWizardState {
   tokenId?: TokenId
   selectedAccountAddress?: string
+  selectedNetworkId?: string
 }
 
 const DEFAULT_STATE: EarnWizardState = {
   tokenId: undefined,
   selectedAccountAddress: undefined,
+  selectedNetworkId: undefined,
 }
 
 const earnWizardState$ = new BehaviorSubject<EarnWizardState>(DEFAULT_STATE)
@@ -24,7 +26,7 @@ const [useEarnWizardState] = bind(earnWizardState$)
 
 export const useResetEarnWizard = () => {
   return useCallback(
-    (init: Pick<EarnWizardState, "tokenId" | "selectedAccountAddress">) =>
+    (init: Pick<EarnWizardState, "tokenId" | "selectedAccountAddress" | "selectedNetworkId">) =>
       setEarnWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )
@@ -36,11 +38,18 @@ export const useEarnWizard = () => {
   return {
     tokenId: state.tokenId,
     selectedAccountAddress: state.selectedAccountAddress,
+    selectedNetworkId: state.selectedNetworkId,
   }
 }
 
 export const useSetEarnWizardAccount = () => {
   return useCallback((selectedAccountAddress: string) => {
     setEarnWizardState({ ...earnWizardState$.value, selectedAccountAddress })
+  }, [])
+}
+
+export const useSetEarnWizardNetwork = () => {
+  return useCallback((selectedNetworkId: string) => {
+    setEarnWizardState({ ...earnWizardState$.value, selectedNetworkId })
   }, [])
 }

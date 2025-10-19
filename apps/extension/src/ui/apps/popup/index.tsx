@@ -9,7 +9,7 @@ import {
   WATCH_ASSET_PREFIX,
 } from "extension-core"
 import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes, useSearchParams } from "react-router-dom"
+import { Navigate, Route, Routes, useNavigate, useSearchParams } from "react-router-dom"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
@@ -21,6 +21,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { EarnAccountPickerPage } from "@ui/domains/Earn/components/EarnAccountPickerPage"
+import { EarnNetworkPickerPage } from "@ui/domains/Earn/components/EarnNetworkPickerPage"
 import { ProductSelectionModal } from "@ui/domains/Earn/components/ProductSelectionModal/ProductSelectionModal"
 import { ProductSelectionPage } from "@ui/domains/Earn/components/ProductSelectionPage"
 import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
@@ -71,6 +72,19 @@ const EarnAccountPickerPageWrapper = () => {
   )
 }
 
+const EarnNetworkPickerPageWrapper = () => {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const tokenSymbol = searchParams.get("tokenSymbol") || ""
+
+  const handleNetworkSelect = (tokenId: string) => {
+    // Navigate to product selection with the selected tokenId
+    navigate(`/select-product?tokenId=${encodeURIComponent(tokenId)}`)
+  }
+
+  return <EarnNetworkPickerPage tokenSymbol={tokenSymbol} onSelect={handleNetworkSelect} />
+}
+
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
 
@@ -112,6 +126,7 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
+          <Route path="select-network" element={<EarnNetworkPickerPageWrapper />} />
           <Route path="select-product" element={<ProductSelectionPage />} />
           <Route path="select-product/select-validator" element={<ValidatorPickerPage />} />
           <Route path="select-product/select-account" element={<EarnAccountPickerPageWrapper />} />
