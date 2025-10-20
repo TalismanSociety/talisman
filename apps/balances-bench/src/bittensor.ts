@@ -23,6 +23,7 @@ testNetworkDot(NETWORK_CONFIG, {
     //"substrate-native",
     "substrate-dtao",
   ],
+  transfer: false,
 })
   .then(() => {
     log.log("Balances testbench completed successfully")

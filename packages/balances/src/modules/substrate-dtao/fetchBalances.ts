@@ -1,4 +1,5 @@
-import { fromPairs, groupBy, uniq } from "lodash-es"
+import { SubDTaoToken, subDTaoTokenId } from "@talismn/chaindata-provider"
+import { keyBy, uniq } from "lodash-es"
 import { SS58String } from "polkadot-api"
 
 import log from "../../log"
@@ -82,33 +83,48 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       [addresses],
     )
 
-    const dicBalances = fromPairs(
-      res.map(([address, stakes]) => [address, groupBy(stakes, (s) => s.netuid)]),
+    const balances = res.flatMap(([address, stakes]) =>
+      stakes.map((stake) => ({
+        address,
+        tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
+        baseTokenId: subDTaoTokenId(networkId, stake.netuid),
+        stake: stake.stake,
+        hotkey: stake.hotkey,
+      })),
     )
 
-    const success: IBalance[] = balanceDefs.map((def) => {
-      const stakes = dicBalances[def.address][def.token.subnetId!] ?? []
-      const balance: IBalance = {
+    const tokensById = keyBy(
+      tokensWithAddresses.map(([token]) => token),
+      (t) => t.id,
+    )
+    const newTokens: SubDTaoToken[] = []
+
+    // register tokens that were not requested but have balances
+    for (const bal of balances) {
+      if (!balanceDefs.some((def) => def.token.id === bal.tokenId)) {
+        const baseToken = tokensById[bal.baseTokenId] as SubDTaoToken | undefined
+        // define a token specific to this staking hotkey
+        if (baseToken) newTokens.push({ ...baseToken, id: bal.tokenId, hotkey: bal.hotkey })
+      }
+    }
+
+    const success: IBalance[] = balanceDefs.map((def): IBalance => {
+      const stake = balances.find((b) => b.address === def.address && b.tokenId === def.token.id)
+
+      return {
         address: def.address,
         networkId,
         tokenId: def.token.id,
         source: MODULE_TYPE,
         status: "live",
-        values: stakes.map((stake) => ({
-          type: "free",
-          label: `Stake ${stake.netuid}`,
-          amount: stake.stake.toString(),
-          meta: {
-            hotkey: stake.hotkey,
-          },
-        })),
+        value: stake?.stake.toString() ?? "0",
       }
-      return balance
     })
 
     return {
-      success, //: balances,
+      success,
       errors: [],
+      newTokens,
     }
   } catch (err) {
     log.warn("Failed to fetch balances for substrate-dtao", err)

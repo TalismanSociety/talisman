@@ -70,6 +70,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
   )
 }

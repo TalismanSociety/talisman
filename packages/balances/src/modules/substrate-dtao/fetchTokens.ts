@@ -8,7 +8,7 @@ import { Binary } from "polkadot-api"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import { DEFAULT_DTAO_LOGO, MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
 type DynamicInfo = {
   netuid: number
@@ -46,7 +46,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         isDefault: true,
         symbol: "dTAO",
         decimals: 9,
-        logo: "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/bittensor.webp", // TODO make configurable?
+        logo: DEFAULT_DTAO_LOGO,
         name: info.subnet_identity?.subnet_name?.asText() || `Subnet ${info.netuid}`,
       }),
     )

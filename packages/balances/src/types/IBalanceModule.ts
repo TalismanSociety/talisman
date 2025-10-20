@@ -55,9 +55,10 @@ export type TokensWithAddresses = Array<[Token, Address[]]>
 
 export type FetchBalanceErrors = Array<{ tokenId: TokenId; address: Address; error: Error }>
 
-export type FetchBalanceResults = {
+export type FetchBalanceResults<T extends TokenType = TokenType> = {
   success: IBalance[]
   errors: FetchBalanceErrors
+  newTokens?: TokenOfType<T>[]
 }
 
 export interface IBalanceModule<
@@ -115,7 +116,7 @@ export interface IBalanceModule<
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
         },
-  ) => Promise<FetchBalanceResults>
+  ) => Promise<FetchBalanceResults<Type>>
 
   subscribeBalances: (
     arg: TokenPlatform<Type> extends "polkadot"

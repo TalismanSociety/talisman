@@ -45,7 +45,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 const fetchWithoutMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-): Promise<FetchBalanceResults> => {
+): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   const results = await Promise.allSettled(
@@ -87,7 +87,7 @@ const fetchWithoutMulticall = async (
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
   )
 }
 
@@ -95,7 +95,7 @@ const fetchWithMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
   multicall3Address: `0x${string}`,
-): Promise<FetchBalanceResults> => {
+): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   try {
@@ -134,7 +134,7 @@ const fetchWithMulticall = async (
         }
         return acc
       },
-      { success: [], errors: [] } as FetchBalanceResults,
+      { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
     )
   } catch (err) {
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({

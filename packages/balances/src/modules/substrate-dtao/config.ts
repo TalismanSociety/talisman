@@ -9,3 +9,5 @@ export const PLATFORM = SubDTaoTokenSchema.shape.platform.value
 export type TokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 // export const BITTENSOR_NETWORK_ID = "bittensor"
+export const DEFAULT_DTAO_LOGO =
+  "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/bittensor.webp"

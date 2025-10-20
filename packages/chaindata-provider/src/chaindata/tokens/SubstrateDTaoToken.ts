@@ -12,6 +12,8 @@ export const SubDTaoTokenSchema = TokenBaseSchema.extend({
   platform: z.literal("polkadot"),
   // number when used with papi - uint32 in theory (on asset hubs) but astar implemented it to u128 which makes it incompatible with number type
   subnetId: z.number().int().positive(),
+  // hotkey is set for tokens provisionned at runtime
+  hotkey: z.string().optional(),
 })
 export type SubDTaoToken = z.infer<typeof SubDTaoTokenSchema>
 
@@ -23,13 +25,16 @@ export type SubDTaoTokenIdSpecs = {
   type: typeof TOKEN_TYPE
   networkId: NetworkId
   subnetId: number
+  hotkey?: string
 }
 
-export const subDTaoTokenId = (networkId: NetworkId, subnetId: number) =>
-  generateTokenId(networkId, TOKEN_TYPE, String(subnetId))
+export const subDTaoTokenId = (networkId: NetworkId, subnetId: number, hotkey?: string) =>
+  hotkey
+    ? generateTokenId(networkId, TOKEN_TYPE, String(subnetId), hotkey)
+    : generateTokenId(networkId, TOKEN_TYPE, String(subnetId))
 
 export const parseSubDTaoTokenId = (tokenId: TokenId): SubDTaoTokenIdSpecs => {
-  const [networkId, type, subnetId] = tokenId.split(":")
+  const [networkId, type, subnetId, hotkey] = tokenId.split(":")
   if (!networkId || !subnetId) throw new Error(`Invalid SubDTaoToken ID: ${tokenId}`)
   if (type !== TOKEN_TYPE) throw new Error(`Invalid SubDTaoToken type: ${type}`)
 
@@ -37,5 +42,6 @@ export const parseSubDTaoTokenId = (tokenId: TokenId): SubDTaoTokenIdSpecs => {
     type,
     networkId,
     subnetId: SubDTaoTokenSchema.shape.subnetId.parse(subnetId),
+    hotkey,
   }
 }
