@@ -38,6 +38,7 @@ export * from "./substrate-foreignassets"
 export * from "./substrate-hydration"
 export * from "./substrate-psp22"
 export * from "./substrate-tokens"
+export * from "./substrate-dtao"
 
 export * from "./sol-native"
 export * from "./sol-spl"
