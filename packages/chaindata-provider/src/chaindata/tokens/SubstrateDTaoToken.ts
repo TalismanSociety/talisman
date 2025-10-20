@@ -41,7 +41,7 @@ export const parseSubDTaoTokenId = (tokenId: TokenId): SubDTaoTokenIdSpecs => {
   return {
     type,
     networkId,
-    subnetId: SubDTaoTokenSchema.shape.subnetId.parse(subnetId),
+    subnetId: SubDTaoTokenSchema.shape.subnetId.parse(Number(subnetId)),
     hotkey,
   }
 }
