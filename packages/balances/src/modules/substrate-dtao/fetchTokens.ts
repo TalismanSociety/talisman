@@ -46,7 +46,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         networkId,
         subnetId: info.netuid,
         isDefault: true,
-        symbol: "dTAO",
+        symbol,
         decimals: 9,
         logo: DEFAULT_DTAO_LOGO,
         name,
