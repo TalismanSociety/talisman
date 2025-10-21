@@ -37,11 +37,14 @@ import {
   toAssetAtom,
 } from "./common.swap-module"
 
+const apiUrl = "https://lifi.talisman.xyz/v1"
 const PROTOCOL: SupportedSwapProtocol = "lifi" as const
 const PROTOCOL_NAME = "LI.FI"
 const DECENTRALISATION_SCORE = 2
 const TALISMAN_FEE = 0.002 // We take a fee of 0.2%
 const LIFI_FEE = 0.0025 // lifi takes a fee of 0.25%
+
+lifiSdk.createConfig({ integrator: "talisman", apiUrl })
 
 type RouteProps = {
   fromAssetId?: string
@@ -57,26 +60,17 @@ const discountedRoute = async ({ fromAssetId, toAssetId }: RouteProps) => {
 const getTalismanFee = async (route: RouteProps) =>
   (await discountedRoute(route)) ? 0 : TALISMAN_FEE
 
-let apiKey: string | undefined
-const getSdk = async () => {
-  if (!apiKey) {
-    apiKey = (await remoteConfigStore.get("swaps")).lifiApiKey
-    lifiSdk.createConfig({ integrator: "talisman", apiKey })
-  }
-  return lifiSdk
-}
-
 const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
-  const sdk = await getSdk()
-  const allSdkTokens = (await sdk.getTokens({ chainTypes: [sdk.ChainType.EVM, sdk.ChainType.SVM] }))
-    ?.tokens
+  const allSdkTokens = (
+    await lifiSdk.getTokens({ chainTypes: [lifiSdk.ChainType.EVM, lifiSdk.ChainType.SVM] })
+  )?.tokens
 
   for (const talismanTokenId of (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []) {
     const [chainId, type, contractAddress] = talismanTokenId.split(":")
     if (type !== "evm-erc20") continue
 
     try {
-      const token = await sdk.getToken(parseInt(chainId, 10), contractAddress)
+      const token = await lifiSdk.getToken(parseInt(chainId, 10), contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
       // eslint-disable-next-line no-console
@@ -139,9 +133,8 @@ const routesAtom = atom(async (get) => {
 
     get(swapQuoteRefresherAtom)
 
-    const sdk = await getSdk()
     const fee = await getTalismanFee({ fromAssetId: fromAsset?.id, toAssetId: toAsset?.id })
-    return await sdk.getRoutes({
+    return await lifiSdk.getRoutes({
       fromAddress,
       toAddress,
       fromChainId: +fromAsset.chainId,
@@ -181,8 +174,7 @@ const routeQuoteAtom = atomFamily((id: string) =>
       const step = route?.steps[0]
       if (!step) return null
 
-      const sdk = await getSdk()
-      const transaction = await sdk.getStepTransaction(step)
+      const transaction = await lifiSdk.getStepTransaction(step)
       if (!transaction?.transactionRequest) return null
 
       const fromAsset = get(fromAssetAtom)
@@ -396,8 +388,7 @@ export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
 
 const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
   defer(async () => {
-    const sdk = await getSdk()
-    const status = (await sdk.getStatus({ txHash: id })).status
+    const status = (await lifiSdk.getStatus({ txHash: id })).status
     return statusMap[status] ?? "unknown"
   }).pipe(
     // retry up to 10 times, wait 5s between each retry
