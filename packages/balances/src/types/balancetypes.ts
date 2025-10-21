@@ -51,7 +51,14 @@ export type BalanceJsonList = Record<string, BalanceJson>
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "nompool" | "subtensor"
+export type BalanceStatusTypes =
+  | "free"
+  | "reserved"
+  | "locked"
+  | "extra"
+  | "nompool"
+  | "subtensor"
+  | "staked-tao"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {

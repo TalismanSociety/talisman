@@ -10,9 +10,11 @@ const TOKEN_TYPE = "substrate-dtao"
 export const SubDTaoTokenSchema = TokenBaseSchema.extend({
   type: z.literal(TOKEN_TYPE),
   platform: z.literal("polkadot"),
-  // number when used with papi - uint32 in theory (on asset hubs) but astar implemented it to u128 which makes it incompatible with number type
-  subnetId: z.number().int().positive(),
-  // hotkey is set for tokens provisionned at runtime
+  subnetId: z.number().int(),
+  subnetName: z.string().optional(),
+  tokenSymbol: z.string(),
+
+  // hotkey is set only for dynamic tokens (provisionned at runtime)
   hotkey: z.string().optional(),
 })
 export type SubDTaoToken = z.infer<typeof SubDTaoTokenSchema>

@@ -1,21 +1,18 @@
+import type { bittensor } from "@polkadot-api/descriptors"
 import {
   AnyMiniMetadata,
   SubDTaoToken,
   subDTaoTokenId,
   SubDTaoTokenSchema,
 } from "@talismn/chaindata-provider"
-import { Binary } from "polkadot-api"
+import { isNotNil } from "@talismn/util"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { DEFAULT_DTAO_LOGO, MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
-type DynamicInfo = {
-  netuid: number
-  subnet_identity?: {
-    subnet_name?: Binary
-  }
-}
+type GetDynamicInfosResult =
+  (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -25,7 +22,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const dynamicInfos: DynamicInfo[] = await fetchRuntimeCallResult(
+  const dynamicInfos = await fetchRuntimeCallResult<GetDynamicInfosResult>(
     connector,
     networkId,
     anyMiniMetadata.data,
@@ -35,9 +32,14 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   )
 
   return dynamicInfos
-    .filter((info) => !!info.netuid)
-    .map(
-      (info): SubDTaoToken => ({
+    .filter(isNotNil)
+    .map((info): SubDTaoToken => {
+      const tokenSymbol = new TextDecoder().decode(Uint8Array.from(info.token_symbol))
+      const subnetName =
+        info.subnet_identity?.subnet_name?.asText() ??
+        (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
+      const name = `${info.netuid} | ${subnetName || "Subnet"} ${tokenSymbol}`
+      return {
         id: subDTaoTokenId(networkId, info.netuid),
         type: MODULE_TYPE,
         platform: PLATFORM,
@@ -47,9 +49,12 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         symbol: "dTAO",
         decimals: 9,
         logo: DEFAULT_DTAO_LOGO,
-        name: info.subnet_identity?.subnet_name?.asText() || `Subnet ${info.netuid}`,
-      }),
-    )
+        name,
+        tokenSymbol,
+        subnetName,
+      }
+    })
+
     .filter((t) => {
       const parsed = SubDTaoTokenSchema.safeParse(t)
       return parsed.success

@@ -1,32 +1,26 @@
+import type { bittensor } from "@polkadot-api/descriptors"
 import {
   getCleanToken,
   SubDTaoToken,
   subDTaoTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
+import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
-import { SS58String } from "polkadot-api"
 
 import log from "../../log"
-import { IBalance } from "../../types"
+import { AmountWithLabel, IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { getBalanceDefs } from "../shared/types"
+import { getScaledAlphaPrice } from "./alphaPrice"
 import { MODULE_TYPE } from "./config"
+import { SubDTaoBalanceMeta } from "./types"
 
-type StakeInfo = {
-  netuid: number
-  emission: bigint
-  hotkey: SS58String
-  coldkey: SS58String
-  stake: bigint
-  locked: bigint
-  tao_emission: bigint
-  drain: bigint
-  is_registered: boolean
-}
-
-type StakeInfos = [SS58String, StakeInfo[]][]
+type GetStakeInfosResult =
+  (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
+type GetDynamicInfosResult =
+  (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -79,23 +73,46 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const addresses = uniq(balanceDefs.map((def) => def.address))
 
   try {
-    const res = await fetchRuntimeCallResult<StakeInfos>(
-      connector,
-      networkId,
-      miniMetadata.data!,
-      "StakeInfoRuntimeApi",
-      "get_stake_info_for_coldkeys",
-      [addresses],
-    )
+    const [stakeInfos, dynamicInfos] = await Promise.all([
+      fetchRuntimeCallResult<GetStakeInfosResult>(
+        connector,
+        networkId,
+        miniMetadata.data!,
+        "StakeInfoRuntimeApi",
+        "get_stake_info_for_coldkeys",
+        [addresses],
+      ),
+      fetchRuntimeCallResult<GetDynamicInfosResult>(
+        connector,
+        networkId,
+        miniMetadata.data!,
+        "SubnetInfoRuntimeApi",
+        "get_all_dynamic_info",
+        [],
+      ),
+    ])
 
-    const balances = res.flatMap(([address, stakes]) =>
-      stakes.map((stake) => ({
-        address,
-        tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
-        baseTokenId: subDTaoTokenId(networkId, stake.netuid),
-        stake: stake.stake,
-        hotkey: stake.hotkey,
-      })),
+    // console.log("SUB-DTAO stakeInfos", { stakeInfos, dynamicInfos })
+
+    const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
+
+    const balances = stakeInfos.flatMap(([address, stakes]) =>
+      stakes.map((stake) => {
+        const dynamicInfo = dynamicInfoByNetuid[stake.netuid]
+        const scaledAlphaPrice = dynamicInfo
+          ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
+          : 0n
+
+        return {
+          address,
+          tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
+          baseTokenId: subDTaoTokenId(networkId, stake.netuid),
+          stake: stake.stake,
+          hotkey: stake.hotkey,
+          netuid: stake.netuid,
+          scaledAlphaPrice,
+        }
+      }),
     )
 
     const tokensById = keyBy(
@@ -124,13 +141,22 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     const success: IBalance[] = balanceDefs.map((def): IBalance => {
       const stake = balances.find((b) => b.address === def.address && b.tokenId === def.token.id)
 
+      const balanceValue: AmountWithLabel<string> = {
+        type: "staked-tao",
+        label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
+        amount: stake?.stake.toString() ?? "0",
+        meta: {
+          scaledAlphaPrice: stake?.scaledAlphaPrice.toString() ?? "0",
+        } as SubDTaoBalanceMeta,
+      }
+
       return {
         address: def.address,
         networkId,
         tokenId: def.token.id,
         source: MODULE_TYPE,
         status: "live",
-        value: stake?.stake.toString() ?? "0",
+        values: [balanceValue],
       }
     })
 
@@ -140,7 +166,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       newTokens,
     }
   } catch (err) {
-    log.warn("Failed to fetch balances for substrate-dtao", err)
+    log.warn("Failed to fetch balances for substrate-dtao", { err })
 
     const errors = balanceDefs.map((def) => ({
       tokenId: def.token.id,
