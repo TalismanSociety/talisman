@@ -1,5 +1,5 @@
 import { isPromise, replaySubjectFrom } from "@talismn/util"
-import { isEqual } from "lodash-es"
+import { isEqual, keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
   firstValueFrom,
@@ -21,6 +21,7 @@ import {
   Token,
   TokenId,
   TokenOfType,
+  TokenSchema,
   TokenType,
 } from "../chaindata"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
@@ -51,23 +52,35 @@ const DEFAULT_STORAGE: ChaindataStorage = {
 export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
+  dynamicTokens$?: ReplaySubject<Token[]>
 }
 
 export class ChaindataProvider implements IChaindataProvider {
   #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
+  #dynamicTokens$: ReplaySubject<Token[]>
 
-  constructor({ persistedStorage, customChaindata$ }: ChaindataProviderOptions = {}) {
+  constructor({
+    persistedStorage,
+    customChaindata$,
+    dynamicTokens$,
+  }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
     // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
     const mergedStorage = isPromise(persistedStorage)
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
-
     this.#storage$ = replaySubjectFrom(mergedStorage)
     const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
-    this.#chaindata$ = getCombinedChaindata$(defaultChaindata$, customChaindata$)
+
+    this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
+
+    this.#chaindata$ = getCombinedChaindata$(
+      defaultChaindata$,
+      customChaindata$,
+      this.#dynamicTokens$,
+    )
   }
 
   /**
@@ -185,6 +198,30 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get token by id",
       this.getTokenById$(id, type),
     )) as R | null
+  }
+
+  /**
+   * Registers token dynamically a runtime. used for SPL and dTAO tokens.
+   * @param tokens
+   */
+  async registerDynamicTokens(tokens: Token[]) {
+    // check schema
+    tokens.forEach((t) => TokenSchema.parse(t))
+
+    const currentStorage = await firstValueFrom(this.#dynamicTokens$)
+    const currentById = keyBy<Token>(currentStorage, (t) => t.id)
+    const newById = keyBy<Token>(
+      tokens.filter((t) => TokenSchema.parse(t)),
+      (t) => t.id,
+    )
+    const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
+      a.id.localeCompare(b.id),
+    )
+
+    // update only if necessary
+    if (!isEqual(currentStorage, dynamicTokens)) {
+      this.#dynamicTokens$.next(dynamicTokens)
+    }
   }
 
   /**

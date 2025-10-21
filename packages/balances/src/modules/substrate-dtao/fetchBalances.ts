@@ -1,4 +1,9 @@
-import { SubDTaoToken, subDTaoTokenId } from "@talismn/chaindata-provider"
+import {
+  getCleanToken,
+  SubDTaoToken,
+  subDTaoTokenId,
+  TokenSchema,
+} from "@talismn/chaindata-provider"
 import { keyBy, uniq } from "lodash-es"
 import { SS58String } from "polkadot-api"
 
@@ -104,7 +109,15 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       if (!balanceDefs.some((def) => def.token.id === bal.tokenId)) {
         const baseToken = tokensById[bal.baseTokenId] as SubDTaoToken | undefined
         // define a token specific to this staking hotkey
-        if (baseToken) newTokens.push({ ...baseToken, id: bal.tokenId, hotkey: bal.hotkey })
+        if (baseToken) {
+          const cleanToken = getCleanToken(baseToken) as SubDTaoToken
+          const newToken = TokenSchema.parse({
+            ...cleanToken,
+            id: bal.tokenId,
+            hotkey: bal.hotkey,
+          }) as SubDTaoToken
+          newTokens.push(newToken)
+        }
       }
     }
 
