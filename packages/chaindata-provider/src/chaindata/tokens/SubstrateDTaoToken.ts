@@ -12,7 +12,6 @@ export const SubDTaoTokenSchema = TokenBaseSchema.extend({
   platform: z.literal("polkadot"),
   subnetId: z.number().int(),
   subnetName: z.string().optional(),
-  tokenSymbol: z.string(),
 
   // hotkey is set only for dynamic tokens (provisionned at runtime)
   hotkey: z.string().optional(),

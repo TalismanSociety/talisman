@@ -34,11 +34,11 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   return dynamicInfos
     .filter(isNotNil)
     .map((info): SubDTaoToken => {
-      const tokenSymbol = new TextDecoder().decode(Uint8Array.from(info.token_symbol))
+      const symbol = new TextDecoder().decode(Uint8Array.from(info.token_symbol))
       const subnetName =
         info.subnet_identity?.subnet_name?.asText() ??
         (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
-      const name = `${info.netuid} | ${subnetName || "Subnet"} ${tokenSymbol}`
+      const name = `${info.netuid} | ${subnetName} ${symbol}`
       return {
         id: subDTaoTokenId(networkId, info.netuid),
         type: MODULE_TYPE,
@@ -50,7 +50,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         decimals: 9,
         logo: DEFAULT_DTAO_LOGO,
         name,
-        tokenSymbol,
         subnetName,
       }
     })

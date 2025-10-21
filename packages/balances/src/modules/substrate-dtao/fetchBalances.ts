@@ -142,7 +142,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const stake = balances.find((b) => b.address === def.address && b.tokenId === def.token.id)
 
       const balanceValue: AmountWithLabel<string> = {
-        type: "staked-tao",
+        type: "free",
         label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
         amount: stake?.stake.toString() ?? "0",
         meta: {
