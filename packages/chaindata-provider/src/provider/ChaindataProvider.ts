@@ -205,6 +205,8 @@ export class ChaindataProvider implements IChaindataProvider {
    * @param tokens
    */
   async registerDynamicTokens(tokens: Token[]) {
+    if (!tokens.length) return
+
     // check schema
     tokens.forEach((t) => TokenSchema.parse(t))
 
