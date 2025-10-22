@@ -1,15 +1,13 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { YieldDto } from "extension-core"
+import { useQuery } from "@tanstack/react-query"
+import { YieldDto, yieldSdk } from "extension-core"
 import { useMemo } from "react"
 
 import { useAccountByAddress, useBalance, useNetworkById, useToken, useTokenRates } from "@ui/state"
-import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { useDepositValidation } from "../hooks/useDepositValidation"
-import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
-import { getTokenAddress } from "../utils/tokenUtils"
 import { useDepositFundsTransaction } from "./useDepositFundsTransaction"
 
 interface TDepositFunds {
@@ -59,24 +57,14 @@ export const useDepositFunds = (): TDepositFunds => {
   // Get balance for the account and token
   const balance = useBalance(account as string, tokenId as string)
 
-  // Get the mapped network name
-  const mappedNetworkName = mapNetworkToYieldNetwork(network)
-
-  // Get token address if available, fallback to symbol
-  const tokenIdentifier = useMemo(() => {
-    const address = getTokenAddress(token)
-    return address || token?.symbol || ""
-  }, [token])
-
-  // Get yield products to find the selected product
-  const { data: yieldProducts = [] } = useYieldProducts({
-    inputToken: tokenIdentifier,
-    network: mappedNetworkName || undefined,
+  // Fetch the selected product directly by ID to avoid filtering issues
+  const { data: product } = useQuery({
+    queryKey: ["yieldProduct", productId],
+    queryFn: () => yieldSdk.getYield(productId!),
+    enabled: !!productId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   })
-
-  const product = useMemo(() => {
-    return yieldProducts.find((p) => p.id === productId) || null
-  }, [yieldProducts, productId])
 
   // Get transaction data (similar to SendFunds)
   const transaction: ReturnType<typeof useDepositFundsTransaction> = useDepositFundsTransaction()
@@ -116,7 +104,7 @@ export const useDepositFunds = (): TDepositFunds => {
   const isEstimatingMaxAmount = depositMax && !transaction?.maxAmount
 
   // Use the validation hook
-  const { isValid, validationErrors } = useDepositValidation(product)
+  const { isValid, validationErrors } = useDepositValidation(product || null)
 
   // Actions
   const onDepositMaxClick = () => {
@@ -133,7 +121,7 @@ export const useDepositFunds = (): TDepositFunds => {
     token,
     tokenId,
     network,
-    product,
+    product: product || null,
     balance,
     tokenRates,
 

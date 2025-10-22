@@ -1,11 +1,11 @@
 import type { ActionDto, TransactionDto } from "extension-core"
 import { planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { yieldSdk } from "extension-core"
 import { useMemo } from "react"
 import { TransactionRequest } from "viem"
 
 import { useBalance, useNetworkById, useToken } from "@ui/state"
-import { useYieldProducts } from "@ui/state/yield"
 
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi } from "../services/yieldApi"
@@ -19,27 +19,26 @@ export const useYieldTransaction = () => {
   const balance = useBalance(account as string, tokenId as string)
   const network = useNetworkById(token?.networkId)
 
-  // Get the mapped network name
-  const mappedNetworkName = mapNetworkToYieldNetwork(network)
+  // Get the mapped network name (unused but kept for potential future use)
+  const _mappedNetworkName = mapNetworkToYieldNetwork(network)
 
-  // Get token address if available, fallback to symbol
-  const tokenIdentifier = useMemo(() => {
+  // Get token address if available, fallback to symbol (unused but kept for potential future use)
+  const _tokenIdentifier = useMemo(() => {
     const address = getTokenAddress(token)
     return address || token?.symbol || ""
   }, [token])
 
-  // Get yield products to find the selected product
-  const { data: yieldProducts = [] } = useYieldProducts({
-    inputToken: tokenIdentifier,
-    network: mappedNetworkName || undefined,
+  // Fetch the selected product directly by ID to avoid filtering issues
+  const { data: product } = useQuery({
+    queryKey: ["yieldProduct", productId],
+    queryFn: () => yieldSdk.getYield(productId!),
+    enabled: !!productId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   })
 
-  const product = useMemo(() => {
-    return yieldProducts.find((p) => p.id === productId) || null
-  }, [yieldProducts, productId])
-
   // Get validation state
-  const { isValid } = useDepositValidation(product)
+  const { isValid } = useDepositValidation(product || null)
 
   // Only call Yield.xyz API when we have all required data, user has entered an amount > 0, and validations pass
   const shouldFetch = !!(

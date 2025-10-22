@@ -10,6 +10,7 @@ export type DbBlobId =
   | "tokenRates"
   | "defi-positions"
   | "yield-balances"
+  | "yield-products"
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({

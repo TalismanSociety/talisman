@@ -93,25 +93,21 @@ export const EarnNetworkPicker: FC<EarnNetworkPickerProps> = ({
                     <div className="text-xl">
                       <TokenLogo tokenId={tokenId} />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-lg">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-white">{token.symbol}</span>
                         <img
                           src={network?.logo}
                           alt={network?.name}
-                          className="h-6 w-6 rounded-full"
+                          className="h-4 w-4 rounded-full"
                         />
+                        {network?.isTestnet && (
+                          <span className="bg-alert-warn/10 text-alert-warn rounded px-2 py-1 text-xs">
+                            {t("Testnet")}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-white">{token.symbol}</span>
-                          {network?.isTestnet && (
-                            <span className="bg-alert-warn/10 text-alert-warn rounded px-2 py-1 text-xs">
-                              {t("Testnet")}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-body-secondary text-sm">{network?.name}</div>
-                      </div>
+                      <div className="text-body-secondary text-sm">{network?.name}</div>
                     </div>
                   </div>
 

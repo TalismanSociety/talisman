@@ -1,4 +1,9 @@
-import { BalanceDto, YieldBalancesDto, YieldDto } from "@yieldxyz/sdk"
+import {
+  BalanceDto,
+  YieldBalancesDto,
+  YieldDto,
+  YieldsControllerGetYieldsParams,
+} from "@yieldxyz/sdk"
 
 // Re-export SDK types for use in UI
 export type {
@@ -22,6 +27,16 @@ export type {
   ValidatorDto,
   YieldsControllerGetYieldValidators200,
 } from "@yieldxyz/sdk"
+
+// Extend SDK params to support comma-separated inputToken values
+export interface YieldsControllerGetYieldsBatchParams extends YieldsControllerGetYieldsParams {
+  inputTokens?: string // Comma-separated token addresses/symbols
+}
+
+// Also extend the base SDK params to support inputTokens for backward compatibility
+export interface YieldsControllerGetYieldsParamsExtended extends YieldsControllerGetYieldsParams {
+  inputTokens?: string // Comma-separated token addresses/symbols
+}
 
 export interface YieldPositionItem {
   yieldId: string

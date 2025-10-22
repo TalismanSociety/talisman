@@ -8,6 +8,8 @@ import {
 } from "@yieldxyz/sdk"
 import { log, YIELD_API_BASE_URL, YIELD_API_KEY } from "extension-shared"
 
+import { YieldsControllerGetYieldsBatchParams } from "./types"
+
 /**
  * Yield.xyz SDK configuration and service
  * Centralized configuration for all Yield API interactions
@@ -67,6 +69,36 @@ class YieldSDKService {
       limit: params?.limit || 100,
     }
     return sdk.api.getYields(enhancedParams)
+  }
+
+  /**
+   * Get yields with direct API call supporting comma-separated inputToken
+   * Bypasses SDK wrapper to use full REST API capabilities
+   */
+  async getYieldsBatch(params?: YieldsControllerGetYieldsBatchParams) {
+    this.ensureConfigured()
+
+    // Build query params manually
+    const queryParams = new URLSearchParams()
+    if (params?.network) queryParams.append("network", params.network)
+    if (params?.inputTokens) queryParams.append("inputTokens", params.inputTokens)
+    if (params?.limit) queryParams.append("limit", params.limit.toString())
+    if (params?.offset) queryParams.append("offset", params.offset.toString())
+
+    // Make direct fetch call
+    const url = `${YIELD_API_BASE_URL}/yields?${queryParams.toString()}`
+    const response = await fetch(url, {
+      headers: {
+        "Authorization": `Bearer ${YIELD_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Yield API error: ${response.status}`)
+    }
+
+    return response.json()
   }
 
   async getYield(yieldId: string) {

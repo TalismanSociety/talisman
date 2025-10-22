@@ -48,7 +48,7 @@ export const EarnTokenRow: FC<{
     isLoading: isLoadingProducts,
     error: productsError,
   } = useYieldProducts({
-    inputToken: tokenIdentifier,
+    inputTokens: tokenIdentifier,
     network: network?.platform as Networks,
   })
 

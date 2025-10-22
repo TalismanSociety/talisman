@@ -1,22 +1,91 @@
+import type { TokenOfPlatform } from "@talismn/chaindata-provider"
 import { Networks, YieldDto } from "extension-core"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { EarnAccountPicker } from "@ui/domains/Earn/components/EarnAccountPicker"
 import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { ConfirmDepositModal } from "@ui/domains/Earn/ConfirmDepositModal"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
+import { useYieldProductsByNetwork } from "@ui/domains/Earn/hooks/useYieldProductsByNetwork"
 import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
 import { mapYieldTokenToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
 import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useAccounts, useRemoteConfig, useToken, useTokens } from "@ui/state"
-import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
 
 interface DiscoverOpportunitiesProps {
   isPopup?: boolean
+}
+
+// Network-level component that fetches once per network
+const NetworkTokensGroup: FC<{
+  network: string
+  tokens: Array<{
+    symbol: string
+    network: Networks
+    tokenId?: string
+  }>
+  onProductClick: (product: YieldDto) => void
+  isPopup?: boolean
+  allTokens: (
+    | TokenOfPlatform<"ethereum">
+    | TokenOfPlatform<"polkadot">
+    | TokenOfPlatform<"solana">
+  )[]
+}> = ({ network, tokens: networkTokens, onProductClick, isPopup, allTokens }) => {
+  // For discovery, we'll use token symbols as identifiers since we don't have specific addresses
+  // The API will handle symbol-based matching
+  const tokenIdentifiers = networkTokens.map((t) => t.symbol)
+
+  // Fetch products for all tokens on this network
+  const { data: networkProducts = [], isLoading: isLoadingNetworkProducts } =
+    useYieldProductsByNetwork(network as Networks, tokenIdentifiers)
+
+  // Sort tokens by highest APY
+  const sortedTokens = useMemo(() => {
+    if (!networkProducts.length) return networkTokens
+
+    return networkTokens
+      .map((token) => {
+        const tokenIdentifier = token.symbol.toLowerCase()
+        // Find max reward rate for this token
+        const maxRate = networkProducts.reduce((max, product) => {
+          const matches = product.inputTokens?.some((inputToken) => {
+            const symbol = inputToken.symbol?.toLowerCase()
+            return symbol === tokenIdentifier
+          })
+          if (matches) {
+            return Math.max(max, product.rewardRate?.total || 0)
+          }
+          return max
+        }, 0)
+        return { ...token, maxRate }
+      })
+      .sort((a, b) => b.maxRate - a.maxRate)
+  }, [networkTokens, networkProducts])
+
+  return (
+    <>
+      {sortedTokens.map((token) => {
+        const tokenId = mapYieldTokenToTokenId(token.symbol, token.network, allTokens)
+        return (
+          <TokenDiscovery
+            key={`${token.symbol}-${token.network}`}
+            tokenSymbol={token.symbol}
+            network={token.network}
+            tokenId={tokenId || undefined}
+            onProductClick={onProductClick}
+            isPopup={isPopup}
+            networkProducts={networkProducts}
+            isLoadingNetworkProducts={isLoadingNetworkProducts}
+          />
+        )
+      })}
+    </>
+  )
 }
 
 // Component for individual token discovery with its yield products
@@ -26,8 +95,17 @@ const TokenDiscovery: FC<{
   tokenId?: string
   onProductClick: (product: YieldDto) => void
   isPopup?: boolean
-  onMaxRewardRateUpdate?: (tokenKey: string, maxRewardRate: number) => void
-}> = ({ tokenSymbol, network, tokenId, onProductClick, isPopup, onMaxRewardRateUpdate }) => {
+  networkProducts?: YieldDto[] // Network-level products passed from parent
+  isLoadingNetworkProducts?: boolean // Loading state from network-level fetch
+}> = ({
+  tokenSymbol,
+  network,
+  tokenId,
+  onProductClick,
+  isPopup,
+  networkProducts = [],
+  isLoadingNetworkProducts = false,
+}) => {
   const [visibleProductCount, setVisibleProductCount] = useState(20)
   const token = useToken(tokenId)
 
@@ -37,14 +115,15 @@ const TokenDiscovery: FC<{
     return address || tokenSymbol
   }, [token, tokenSymbol])
 
-  const { data, isLoading } = useInfiniteYieldProductsForToken(tokenIdentifier, network)
-
-  // Flatten all pages and filter for exact token match
+  // Filter network-level products for this specific token
   const allYieldProducts = useMemo(() => {
-    const allProducts = data?.pages.flat() || []
+    if (!networkProducts.length) return []
+
     // Filter out products that don't match the requested inputToken exactly
-    return allProducts.filter((product) =>
-      product.inputTokens?.some((inputToken) => {
+    // Also ensure the product is available on the current network
+    return networkProducts.filter((product) => {
+      // Check if product matches the token identifier
+      const matchesToken = product.inputTokens?.some((inputToken) => {
         const symbol = inputToken.symbol?.toLowerCase()
         const address = inputToken.address?.toLowerCase()
         const identifier = tokenIdentifier.toLowerCase()
@@ -54,9 +133,14 @@ const TokenDiscovery: FC<{
           return address === identifier
         }
         return symbol === identifier
-      }),
-    )
-  }, [data, tokenIdentifier])
+      })
+
+      // Check if product is available on the current network
+      const matchesNetwork = product.network === network
+
+      return matchesToken && matchesNetwork
+    })
+  }, [networkProducts, tokenIdentifier, network])
 
   // Filter products based on status and availability (same as ProductList)
   const availableProducts = useMemo(() => {
@@ -66,26 +150,18 @@ const TokenDiscovery: FC<{
     )
   }, [allYieldProducts])
 
-  // Slice products for display (max 100)
-  const visibleYieldProducts = useMemo(
-    () => availableProducts.slice(0, Math.min(visibleProductCount, 100)),
-    [availableProducts, visibleProductCount],
-  )
-
-  // Calculate and report max reward rate
-  const maxRewardRate = useMemo(() => {
-    if (availableProducts.length === 0) return 0
-    const maxRate = Math.max(...availableProducts.map((p) => p.rewardRate?.total || 0))
-    return maxRate
+  // Sort products by reward rate (highest first)
+  const sortedProducts = useMemo(() => {
+    return [...availableProducts].sort(
+      (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+    )
   }, [availableProducts])
 
-  // Report max reward rate to parent
-  useEffect(() => {
-    if (onMaxRewardRateUpdate && maxRewardRate > 0) {
-      const tokenKey = `${tokenSymbol}-${network}`
-      onMaxRewardRateUpdate(tokenKey, maxRewardRate)
-    }
-  }, [onMaxRewardRateUpdate, tokenSymbol, network, maxRewardRate])
+  // Slice products for display (max 100)
+  const visibleYieldProducts = useMemo(
+    () => sortedProducts.slice(0, Math.min(visibleProductCount, 100)),
+    [sortedProducts, visibleProductCount],
+  )
 
   // Update show more handler
   const handleShowMore = useCallback(() => {
@@ -93,10 +169,10 @@ const TokenDiscovery: FC<{
   }, [])
 
   // Determine if show more should be visible
-  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < availableProducts.length
+  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < sortedProducts.length
 
   // Don't render if no products found
-  if (!isLoading && availableProducts.length === 0) {
+  if (!isLoadingNetworkProducts && availableProducts.length === 0) {
     return null
   }
 
@@ -112,7 +188,7 @@ const TokenDiscovery: FC<{
       products={visibleYieldProducts}
       onProductClick={onProductClick}
       isPopup={isPopup}
-      isLoading={isLoading}
+      isLoading={isLoadingNetworkProducts}
       hasMoreProducts={shouldShowMore}
       onShowMore={handleShowMore}
     />
@@ -124,7 +200,6 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
   const _accounts = useAccounts("owned")
   const tokens = useTokens()
   const remoteConfig = useRemoteConfig()
-  const [tokenMaxRewardRates, setTokenMaxRewardRates] = useState<Map<string, number>>(new Map())
 
   // Modal state management
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
@@ -143,72 +218,59 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
     return networks.length > 0 ? networks : []
   }, [remoteConfig.earn?.yieldxyzNetworks])
 
-  // Define tokens to discover for each network
-  const tokensToDiscover = useMemo(() => {
-    const tokens = []
+  // Group tokens by network for batched fetching
+  const tokensByNetwork = useMemo(() => {
+    const grouped: Record<
+      string,
+      Array<{
+        symbol: string
+        network: Networks
+        tokenId?: string
+      }>
+    > = {}
+
     for (const network of allowedNetworks) {
+      const networkTokens = []
+
       // Add common tokens for each network
       switch (network) {
         case "ethereum":
-          tokens.push({ symbol: "ETH", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
-          tokens.push({ symbol: "USDT", network: network as Networks })
+          networkTokens.push({ symbol: "ETH", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "USDT", network: network as Networks })
           break
         case "polkadot":
-          tokens.push({ symbol: "DOT", network: network as Networks })
+          networkTokens.push({ symbol: "DOT", network: network as Networks })
           break
         case "solana":
-          tokens.push({ symbol: "SOL", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "SOL", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
           break
         case "base":
-          tokens.push({ symbol: "ETH", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "ETH", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
           break
         case "arbitrum":
-          tokens.push({ symbol: "ETH", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "ETH", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
           break
         case "optimism":
-          tokens.push({ symbol: "ETH", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "ETH", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
           break
         case "polygon":
-          tokens.push({ symbol: "MATIC", network: network as Networks })
-          tokens.push({ symbol: "USDC", network: network as Networks })
+          networkTokens.push({ symbol: "MATIC", network: network as Networks })
+          networkTokens.push({ symbol: "USDC", network: network as Networks })
           break
       }
+
+      if (networkTokens.length > 0) {
+        grouped[network] = networkTokens
+      }
     }
-    return tokens
+
+    return grouped
   }, [allowedNetworks])
-
-  // Callback to update max reward rate for a token
-  const updateTokenMaxRewardRate = useCallback((tokenSymbol: string, maxRewardRate: number) => {
-    setTokenMaxRewardRates((prev) => {
-      const newMap = new Map(prev)
-      newMap.set(tokenSymbol, maxRewardRate)
-      return newMap
-    })
-  }, [])
-
-  // Sort tokens by their max reward rate
-  const sortedTokensToDiscover = useMemo(() => {
-    return [...tokensToDiscover].sort((a, b) => {
-      const aKey = `${a.symbol}-${a.network}`
-      const bKey = `${b.symbol}-${b.network}`
-      const aMaxRate = tokenMaxRewardRates.get(aKey) || 0
-      const bMaxRate = tokenMaxRewardRates.get(bKey) || 0
-
-      // Sort by max reward rate (highest first), then by network and symbol as fallback
-      if (aMaxRate !== bMaxRate) {
-        return bMaxRate - aMaxRate
-      }
-      if (a.network !== b.network) {
-        return a.network.localeCompare(b.network)
-      }
-      return a.symbol.localeCompare(b.symbol)
-    })
-  }, [tokensToDiscover, tokenMaxRewardRates])
 
   const handleProductClick = useCallback(
     (product: YieldDto) => {
@@ -316,22 +378,16 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
 
   return (
     <div className="flex w-full flex-col gap-4">
-      {sortedTokensToDiscover.map(({ symbol, network }) => {
-        // Get tokenId for this token using the proper mapping function
-        const tokenId = mapYieldTokenToTokenId(symbol, network, tokens)
-
-        return (
-          <TokenDiscovery
-            key={`${symbol}-${network}`}
-            tokenSymbol={symbol}
-            network={network}
-            tokenId={tokenId || undefined}
-            onProductClick={handleProductClick}
-            isPopup={isPopup}
-            onMaxRewardRateUpdate={updateTokenMaxRewardRate}
-          />
-        )
-      })}
+      {Object.entries(tokensByNetwork).map(([network, networkTokens]) => (
+        <NetworkTokensGroup
+          key={network}
+          network={network}
+          tokens={networkTokens}
+          onProductClick={handleProductClick}
+          isPopup={isPopup}
+          allTokens={tokens}
+        />
+      ))}
 
       {/* Modals for dashboard mode */}
       {!IS_POPUP && (

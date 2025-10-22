@@ -1,7 +1,11 @@
 import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
-import { fetchYieldProducts, YieldPosition, YieldsControllerGetYieldsParams } from "extension-core"
+import {
+  fetchYieldProducts,
+  YieldPosition,
+  YieldsControllerGetYieldsParamsExtended,
+} from "extension-core"
 import { BehaviorSubject, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
@@ -26,7 +30,7 @@ export const [useYieldBalancesGrouped, yieldBalancesGrouped$] = bind(rawYieldBal
  * Hook to fetch yield products for earning opportunities
  * Uses React Query for caching and error handling
  */
-export const useYieldProducts = (filter?: YieldsControllerGetYieldsParams) => {
+export const useYieldProducts = (filter?: YieldsControllerGetYieldsParamsExtended) => {
   return useQuery({
     queryKey: ["yieldProducts", filter],
     queryFn: () => fetchYieldProducts(filter),
@@ -43,7 +47,7 @@ export const useYieldProducts = (filter?: YieldsControllerGetYieldsParams) => {
  * Fetches 20 items per page for better performance
  */
 export const useInfiniteYieldProducts = (
-  filter?: Omit<YieldsControllerGetYieldsParams, "limit" | "offset">,
+  filter?: Omit<YieldsControllerGetYieldsParamsExtended, "limit" | "offset">,
 ) => {
   return useInfiniteQuery({
     queryKey: ["infiniteYieldProducts", filter],
@@ -76,14 +80,17 @@ export const useInfiniteYieldProducts = (
  */
 export const useInfiniteYieldProductsForToken = (
   tokenIdentifier: string,
-  network?: Omit<YieldsControllerGetYieldsParams, "limit" | "offset" | "inputToken">["network"],
+  network?: Omit<
+    YieldsControllerGetYieldsParamsExtended,
+    "limit" | "offset" | "inputTokens"
+  >["network"],
 ) => {
   return useInfiniteQuery({
     queryKey: ["infiniteYieldProductsForToken", tokenIdentifier, network],
     queryFn: ({ pageParam = 0 }) =>
       fetchYieldProducts({
         network,
-        inputToken: tokenIdentifier,
+        inputTokens: tokenIdentifier,
         limit: 100,
         offset: pageParam,
       }),

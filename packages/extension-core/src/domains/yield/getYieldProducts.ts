@@ -1,14 +1,13 @@
-import { YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
 import { log } from "extension-shared"
 
-import { YieldDto } from "./types"
+import { YieldDto, YieldsControllerGetYieldsParamsExtended } from "./types"
 import { yieldSdk } from "./yieldSdk"
 
 /**
  * Fetches yield products from yield.xyz API using SDK
  */
 export const fetchYieldProducts = async (
-  filter?: YieldsControllerGetYieldsParams,
+  filter?: YieldsControllerGetYieldsParamsExtended,
 ): Promise<YieldDto[]> => {
   try {
     log.debug("[Yield] Fetching yield products via SDK", { filter })
@@ -24,9 +23,9 @@ export const fetchYieldProducts = async (
     const products = response?.items || []
 
     // If specific input token identifiers were requested, filter client-side
-    if (filter?.inputToken) {
+    if (filter?.inputTokens) {
       const requestedIdentifiers = new Set(
-        filter.inputToken
+        filter.inputTokens
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean)

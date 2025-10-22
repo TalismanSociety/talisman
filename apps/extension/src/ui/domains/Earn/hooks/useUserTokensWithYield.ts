@@ -6,11 +6,14 @@ import { useSearchParams } from "react-router-dom"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useAccounts, useBalances, useIsBalanceInitializing } from "@ui/state"
 
+import { getTokenAddress } from "../utils/tokenUtils"
+
 export interface UserTokenWithYield {
   tokenId: TokenId
   symbol: string
   logoURI?: string
   networkId: string
+  tokenAddress?: string
   totalBalance: number
   totalBalanceUsd: number
   accounts: Array<{
@@ -101,6 +104,7 @@ export const useUserTokensWithYield = () => {
           symbol: balance.token.symbol,
           logoURI: balance.token.logo,
           networkId: balance.networkId,
+          tokenAddress: getTokenAddress(balance.token) || undefined,
           totalBalance: balanceTokens,
           totalBalanceUsd: balanceUsd,
           accounts: [
