@@ -93,8 +93,6 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           <div className="bg-grey-800 mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
             <div className="flex grow items-center justify-start gap-3 overflow-hidden">
               <div className="truncate">{t("Earn SEEK rewards")}</div>
-              {/* <div className="bg-grey-600 size-2 shrink-0 rounded-full"></div>
-                <div className="text-primary shrink-0 whitespace-nowrap">15% APY</div> */}
             </div>
             <button
               type="button"
