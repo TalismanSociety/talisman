@@ -1,5 +1,5 @@
 import { XIcon } from "@talismn/icons"
-import { isAccountPlatformPolkadot } from "extension-core"
+import { isAccountAddressSs58 } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, useOpenClose } from "talisman-ui"
@@ -17,7 +17,7 @@ export const AssetHubMigrationBanner = () => {
   const ocDialog = useOpenClose()
 
   const showBanner = useMemo(
-    () => !!allowBanner && !hideBanner && accounts.some(isAccountPlatformPolkadot),
+    () => !!allowBanner && !hideBanner && accounts.some(isAccountAddressSs58),
     [allowBanner, hideBanner, accounts],
   )
 
