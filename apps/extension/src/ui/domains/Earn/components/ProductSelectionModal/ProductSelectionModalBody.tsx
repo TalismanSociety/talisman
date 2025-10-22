@@ -13,6 +13,7 @@ import { ConfirmDepositModal } from "../.."
 import { DepositModal } from "../../DepositModal"
 import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
 import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"
+import { getTokenAddress } from "../../utils/tokenUtils"
 import { EarnAccountPicker } from "../EarnAccountPicker"
 import { ProductList } from "../ProductList"
 import { TokenDetails } from "../TokenDetails"
@@ -69,9 +70,15 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   // Get the mapped network name
   const mappedNetworkName = mapNetworkToYieldNetwork(network)
 
+  // Get token address if available, fallback to symbol
+  const tokenIdentifier = useMemo(() => {
+    const address = getTokenAddress(token)
+    return address || token?.symbol || ""
+  }, [token])
+
   // Fetch yield products with infinite pagination
   const { data, isLoading, error } = useInfiniteYieldProductsForToken(
-    token?.symbol || "",
+    tokenIdentifier,
     mappedNetworkName || undefined,
   )
 
@@ -80,11 +87,19 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     const allProducts = data?.pages.flat() || []
     // Filter out products that don't match the requested inputToken exactly
     return allProducts.filter((product) =>
-      product.inputTokens?.some(
-        (inputToken) => inputToken.symbol?.toLowerCase() === (token?.symbol || "").toLowerCase(),
-      ),
+      product.inputTokens?.some((inputToken) => {
+        const symbol = inputToken.symbol?.toLowerCase()
+        const address = inputToken.address?.toLowerCase()
+        const identifier = tokenIdentifier.toLowerCase()
+
+        // Match by address first if both have addresses, then fallback to symbol
+        if (address && identifier.startsWith("0x")) {
+          return address === identifier
+        }
+        return symbol === identifier
+      }),
     )
-  }, [data, token?.symbol])
+  }, [data, tokenIdentifier])
 
   // Slice products for display (max 100)
   const visibleYieldProducts = useMemo(

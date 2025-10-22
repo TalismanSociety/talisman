@@ -2,13 +2,14 @@ import { Balances } from "@talismn/balances"
 import { ChevronDownIcon, ChevronUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Networks } from "extension-core"
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { ProductList } from "@ui/domains/Earn/components/ProductList"
+import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioNetworksLogoStack } from "@ui/domains/Portfolio/AssetsTable/PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworkIds"
@@ -35,13 +36,19 @@ export const EarnTokenRow: FC<{
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
+  // Get token address if available, fallback to symbol
+  const tokenIdentifier = useMemo(() => {
+    const address = getTokenAddress(token)
+    return address || token?.symbol || ""
+  }, [token])
+
   // Fetch yield products for this token
   const {
     data: yieldProducts = [],
     isLoading: isLoadingProducts,
     error: productsError,
   } = useYieldProducts({
-    inputToken: token?.symbol,
+    inputToken: tokenIdentifier,
     network: network?.platform as Networks,
   })
 

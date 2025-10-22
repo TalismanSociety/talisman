@@ -23,9 +23,9 @@ export const fetchYieldProducts = async (
     // SDK returns array directly, no transformation needed
     const products = response?.items || []
 
-    // If specific input token symbols were requested, filter client-side
+    // If specific input token identifiers were requested, filter client-side
     if (filter?.inputToken) {
-      const requestedSymbols = new Set(
+      const requestedIdentifiers = new Set(
         filter.inputToken
           .split(",")
           .map((s) => s.trim())
@@ -34,13 +34,21 @@ export const fetchYieldProducts = async (
       )
 
       const filtered = products.filter((product) =>
-        product.inputTokens?.every((t) => requestedSymbols.has((t.symbol || "").toLowerCase())),
+        product.inputTokens?.every((t) => {
+          const symbol = (t.symbol || "").toLowerCase()
+          const address = (t.address || "").toLowerCase()
+
+          // Check if any requested identifier matches either symbol or address
+          return Array.from(requestedIdentifiers).some(
+            (identifier) => identifier === symbol || identifier === address,
+          )
+        }),
       )
 
       log.debug("[Yield] Client-filtered products", {
         before: products.length,
         after: filtered.length,
-        requested: Array.from(requestedSymbols.values()),
+        requested: Array.from(requestedIdentifiers.values()),
       })
 
       // Sort filtered products by reward rate (highest first)

@@ -5,6 +5,35 @@ import { useMemo } from "react"
 import { useBalances, useTokens } from "@ui/state"
 
 /**
+ * Extracts the contract/address field from a token based on its type
+ * @param token - The token to extract address from
+ * @returns The token address if available, null for native tokens
+ */
+export const getTokenAddress = (token: Token | null | undefined): string | null => {
+  if (!token) return null
+
+  switch (token.type) {
+    case "evm-erc20":
+    case "evm-uniswapv2":
+    case "substrate-psp22":
+      return "contractAddress" in token ? token.contractAddress || null : null
+    case "sol-spl":
+      return "mintAddress" in token ? token.mintAddress || null : null
+    case "evm-native":
+    case "substrate-native":
+    case "sol-native":
+    case "substrate-assets":
+    case "substrate-foreignassets":
+    case "substrate-tokens":
+    case "substrate-hydration":
+      // Native tokens don't have contract addresses
+      return null
+    default:
+      return null
+  }
+}
+
+/**
  * Gets all tokens with the same symbol across different networks
  * @param tokenSymbol - The token symbol to search for
  * @param allTokens - Array of all available tokens

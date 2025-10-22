@@ -7,8 +7,9 @@ import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { ConfirmDepositModal } from "@ui/domains/Earn/ConfirmDepositModal"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
-import { mapTokenSymbolToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
-import { useAccounts, useRemoteConfig, useTokens } from "@ui/state"
+import { mapYieldTokenToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
+import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
+import { useAccounts, useRemoteConfig, useToken, useTokens } from "@ui/state"
 import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -28,19 +29,34 @@ const TokenDiscovery: FC<{
   onMaxRewardRateUpdate?: (tokenKey: string, maxRewardRate: number) => void
 }> = ({ tokenSymbol, network, tokenId, onProductClick, isPopup, onMaxRewardRateUpdate }) => {
   const [visibleProductCount, setVisibleProductCount] = useState(20)
+  const token = useToken(tokenId)
 
-  const { data, isLoading } = useInfiniteYieldProductsForToken(tokenSymbol, network)
+  // Get token address if available, fallback to symbol
+  const tokenIdentifier = useMemo(() => {
+    const address = getTokenAddress(token)
+    return address || tokenSymbol
+  }, [token, tokenSymbol])
+
+  const { data, isLoading } = useInfiniteYieldProductsForToken(tokenIdentifier, network)
 
   // Flatten all pages and filter for exact token match
   const allYieldProducts = useMemo(() => {
     const allProducts = data?.pages.flat() || []
     // Filter out products that don't match the requested inputToken exactly
     return allProducts.filter((product) =>
-      product.inputTokens?.some(
-        (token) => token.symbol?.toLowerCase() === tokenSymbol.toLowerCase(),
-      ),
+      product.inputTokens?.some((inputToken) => {
+        const symbol = inputToken.symbol?.toLowerCase()
+        const address = inputToken.address?.toLowerCase()
+        const identifier = tokenIdentifier.toLowerCase()
+
+        // Match by address first if both have addresses, then fallback to symbol
+        if (address && identifier.startsWith("0x")) {
+          return address === identifier
+        }
+        return symbol === identifier
+      }),
     )
-  }, [data, tokenSymbol])
+  }, [data, tokenIdentifier])
 
   // Filter products based on status and availability (same as ProductList)
   const availableProducts = useMemo(() => {
@@ -201,7 +217,7 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
       // Get tokenId for this product
       const inputToken = product.inputTokens?.[0]
       const tokenId = inputToken
-        ? mapTokenSymbolToTokenId(inputToken.symbol, product.network, tokens)
+        ? mapYieldTokenToTokenId(inputToken.symbol, product.network, tokens)
         : null
       if (!tokenId) return
       setSelectedTokenId(tokenId)
@@ -302,7 +318,7 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
     <div className="flex w-full flex-col gap-4">
       {sortedTokensToDiscover.map(({ symbol, network }) => {
         // Get tokenId for this token using the proper mapping function
-        const tokenId = mapTokenSymbolToTokenId(symbol, network, tokens)
+        const tokenId = mapYieldTokenToTokenId(symbol, network, tokens)
 
         return (
           <TokenDiscovery

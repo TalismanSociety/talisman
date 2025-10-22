@@ -9,6 +9,7 @@ import { useYieldProducts } from "@ui/state/yield"
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { useDepositValidation } from "../hooks/useDepositValidation"
 import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
+import { getTokenAddress } from "../utils/tokenUtils"
 import { useDepositFundsTransaction } from "./useDepositFundsTransaction"
 
 interface TDepositFunds {
@@ -61,9 +62,15 @@ export const useDepositFunds = (): TDepositFunds => {
   // Get the mapped network name
   const mappedNetworkName = mapNetworkToYieldNetwork(network)
 
+  // Get token address if available, fallback to symbol
+  const tokenIdentifier = useMemo(() => {
+    const address = getTokenAddress(token)
+    return address || token?.symbol || ""
+  }, [token])
+
   // Get yield products to find the selected product
   const { data: yieldProducts = [] } = useYieldProducts({
-    inputToken: token?.symbol,
+    inputToken: tokenIdentifier,
     network: mappedNetworkName || undefined,
   })
 

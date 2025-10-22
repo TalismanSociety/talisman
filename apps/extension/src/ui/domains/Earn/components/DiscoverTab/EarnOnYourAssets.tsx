@@ -8,7 +8,8 @@ import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { useUserTokensWithYield } from "@ui/domains/Earn/hooks/useUserTokensWithYield"
 import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
-import { useNetworkById, useRemoteConfig } from "@ui/state"
+import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
+import { useNetworkById, useRemoteConfig, useToken } from "@ui/state"
 import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -41,11 +42,18 @@ const TokenWithYields: FC<{
   onMaxRewardRateUpdate,
 }) => {
   const network = useNetworkById(networkId)
+  const token = useToken(tokenId)
   const mappedNetwork = mapNetworkToYieldNetwork(network)
   const [visibleProductCount, setVisibleProductCount] = useState(20)
 
+  // Get token address if available, fallback to symbol
+  const tokenIdentifier = useMemo(() => {
+    const address = getTokenAddress(token)
+    return address || tokenSymbol
+  }, [token, tokenSymbol])
+
   const { data, isLoading } = useInfiniteYieldProductsForToken(
-    tokenSymbol,
+    tokenIdentifier,
     mappedNetwork || undefined,
   )
 
@@ -54,11 +62,19 @@ const TokenWithYields: FC<{
     const allProducts = data?.pages.flat() || []
     // Filter out products that don't match the requested inputToken exactly
     return allProducts.filter((product) =>
-      product.inputTokens?.some(
-        (token) => token.symbol?.toLowerCase() === tokenSymbol.toLowerCase(),
-      ),
+      product.inputTokens?.some((inputToken) => {
+        const symbol = inputToken.symbol?.toLowerCase()
+        const address = inputToken.address?.toLowerCase()
+        const identifier = tokenIdentifier.toLowerCase()
+
+        // Match by address first if both have addresses, then fallback to symbol
+        if (address && identifier.startsWith("0x")) {
+          return address === identifier
+        }
+        return symbol === identifier
+      }),
     )
-  }, [data, tokenSymbol])
+  }, [data, tokenIdentifier])
 
   // Filter products based on status and availability (same as ProductList)
   const availableProducts = useMemo(() => {

@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { useTokens } from "@ui/state"
 
 import { mapYieldNetworkToNetworkId } from "./networkMapping"
+import { getTokenAddress } from "./tokenUtils"
 
 /**
  * Maps a YieldDto input token to a chaindata tokenId
@@ -19,7 +20,7 @@ export const mapYieldInputTokenToTokenId = (
   if (!product.inputTokens?.[0] || !tokens) return null
 
   const inputToken = product.inputTokens[0]
-  const { symbol } = inputToken
+  const { symbol, address } = inputToken
 
   if (!symbol) return null
 
@@ -27,15 +28,32 @@ export const mapYieldInputTokenToTokenId = (
   const networkId = mapYieldNetworkToNetworkId(product.network)
   if (!networkId) return null
 
-  // Find tokens that match both symbol and networkId
-  const matchingTokens = tokens.filter(
+  // First try to match by address if both yield product and chaindata have addresses
+  if (address) {
+    const addressMatches = tokens.filter((token) => {
+      const tokenAddress = getTokenAddress(token)
+      return (
+        tokenAddress &&
+        tokenAddress.toLowerCase() === address.toLowerCase() &&
+        token.networkId === networkId
+      )
+    })
+
+    if (addressMatches.length > 0) {
+      // Prioritize exact address matches
+      return addressMatches[0].id
+    }
+  }
+
+  // Fallback to symbol matching
+  const symbolMatches = tokens.filter(
     (token) => token.symbol.toLowerCase() === symbol.toLowerCase() && token.networkId === networkId,
   )
 
-  if (matchingTokens.length === 0) return null
+  if (symbolMatches.length === 0) return null
 
   // Prioritize tokens: native tokens first, then tokens with logos, then any match
-  const sortedTokens = matchingTokens.sort((a, b) => {
+  const sortedTokens = symbolMatches.sort((a, b) => {
     // Native tokens first
     const aIsNative =
       a.type === "substrate-native" || a.type === "evm-native" || a.type === "sol-native"
@@ -59,33 +77,53 @@ export const mapYieldInputTokenToTokenId = (
 }
 
 /**
- * Maps a token symbol and network to a chaindata tokenId
+ * Maps a token identifier (address or symbol) and network to a chaindata tokenId
  *
- * @param symbol - The token symbol
+ * @param identifier - The token address or symbol
  * @param network - The yield network name
  * @param tokens - Array of all available tokens from chaindata
  * @returns The tokenId if found, null otherwise
  */
-export const mapTokenSymbolToTokenId = (
-  symbol: string,
+export const mapYieldTokenToTokenId = (
+  identifier: string,
   network: string,
   tokens: ReturnType<typeof useTokens>,
 ): string | null => {
-  if (!symbol || !network || !tokens) return null
+  if (!identifier || !network || !tokens) return null
 
   // Map yield network name to our networkId
   const networkId = mapYieldNetworkToNetworkId(network)
   if (!networkId) return null
 
-  // Find tokens that match both symbol and networkId
-  const matchingTokens = tokens.filter(
-    (token) => token.symbol.toLowerCase() === symbol.toLowerCase() && token.networkId === networkId,
+  // Check if identifier looks like an address (starts with 0x for EVM or matches address patterns)
+  const isAddress = identifier.startsWith("0x") || /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(identifier)
+
+  if (isAddress) {
+    // Try to match by address first
+    const addressMatches = tokens.filter((token) => {
+      const tokenAddress = getTokenAddress(token)
+      return (
+        tokenAddress &&
+        tokenAddress.toLowerCase() === identifier.toLowerCase() &&
+        token.networkId === networkId
+      )
+    })
+
+    if (addressMatches.length > 0) {
+      return addressMatches[0].id
+    }
+  }
+
+  // Fallback to symbol matching
+  const symbolMatches = tokens.filter(
+    (token) =>
+      token.symbol.toLowerCase() === identifier.toLowerCase() && token.networkId === networkId,
   )
 
-  if (matchingTokens.length === 0) return null
+  if (symbolMatches.length === 0) return null
 
   // Prioritize tokens: native tokens first, then tokens with logos, then any match
-  const sortedTokens = matchingTokens.sort((a, b) => {
+  const sortedTokens = symbolMatches.sort((a, b) => {
     // Native tokens first
     const aIsNative =
       a.type === "substrate-native" || a.type === "evm-native" || a.type === "sol-native"
@@ -107,6 +145,11 @@ export const mapTokenSymbolToTokenId = (
 
   return sortedTokens[0].id
 }
+
+/**
+ * @deprecated Use mapYieldTokenToTokenId instead
+ */
+export const mapTokenSymbolToTokenId = mapYieldTokenToTokenId
 
 /**
  * Hook to get tokenId for a yield product

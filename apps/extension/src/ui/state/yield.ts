@@ -75,15 +75,15 @@ export const useInfiniteYieldProducts = (
  * Fetches 20 items per page for better performance
  */
 export const useInfiniteYieldProductsForToken = (
-  tokenSymbol: string,
+  tokenIdentifier: string,
   network?: Omit<YieldsControllerGetYieldsParams, "limit" | "offset" | "inputToken">["network"],
 ) => {
   return useInfiniteQuery({
-    queryKey: ["infiniteYieldProductsForToken", tokenSymbol, network],
+    queryKey: ["infiniteYieldProductsForToken", tokenIdentifier, network],
     queryFn: ({ pageParam = 0 }) =>
       fetchYieldProducts({
         network,
-        inputToken: tokenSymbol,
+        inputToken: tokenIdentifier,
         limit: 100,
         offset: pageParam,
       }),
@@ -96,7 +96,7 @@ export const useInfiniteYieldProductsForToken = (
       // Return next offset (current offset + 100)
       return allPages.length * 100
     },
-    enabled: !!tokenSymbol && !!network, // Only fetch when token and network are available
+    enabled: !!tokenIdentifier && !!network, // Only fetch when token and network are available
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
     refetchOnWindowFocus: false,
