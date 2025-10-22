@@ -4,7 +4,6 @@ import {
   ClockIcon,
   CoinsHandIcon,
   ExternalLinkIcon,
-  TalismanHandIcon,
   XIcon,
   ZapFastIcon,
   ZapIcon,
@@ -20,7 +19,6 @@ import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { ReactComponent as BitgetLogo } from "./bitget.svg"
 import { ReactComponent as Background } from "./seek-benefits-page-bg.svg"
 import { useSeekStakingApr } from "./useSeekStakingApr"
 
@@ -130,7 +128,6 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="grid grid-cols-2 gap-8">
           <Button
             className="h-24 px-0 text-base [&>div>div]:text-base [&>div]:gap-3"
-            iconLeft={TalismanHandIcon}
             onClick={handleClickSwap}
           >
             {t("Swap SEEK")}
@@ -138,7 +135,6 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           <Button
             className="h-24 px-0 text-base [&>div>div]:text-base [&>div]:gap-3"
             icon={ExternalLinkIcon}
-            iconLeft={BitgetLogo}
             primary
             onClick={handleClickTrade}
           >
