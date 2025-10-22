@@ -9,7 +9,6 @@ import { decompressFromUTF16 } from "lz-string"
 import { sentry } from "../../../config/sentry"
 import { db } from "../../../db"
 import { getHostName } from "../helpers"
-import { fetchBlockaidIsMalicious } from "./fetchBlockaidIsMalicious"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
@@ -206,9 +205,6 @@ export default class ParaverseProtector {
     if (this.lists.talisman.allow.includes(host)) return false
     if (this.lists.talisman.deny.includes(host)) return true
 
-    // start fetching blockaid dapp scan check (async)
-    const isMaliciousPromise = fetchBlockaidIsMalicious(url)
-
     // then check polkadot, phishFort, and metamask lists
     const pdResult = checkHost(this.lists.polkadot.deny, host)
     if (pdResult) {
@@ -221,7 +217,7 @@ export default class ParaverseProtector {
       return true
     }
 
-    return await isMaliciousPromise
+    return false
   }
 
   addException(url: string) {
