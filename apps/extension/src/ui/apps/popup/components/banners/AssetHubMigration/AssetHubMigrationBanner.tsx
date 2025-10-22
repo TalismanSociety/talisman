@@ -1,20 +1,25 @@
 import { XIcon } from "@talismn/icons"
+import { isAccountPlatformPolkadot } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, useOpenClose } from "talisman-ui"
 
-import { useAppState, useFeatureFlag } from "@ui/state"
+import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 
 import { AssetHubMigrationModal } from "./AssetHubMigrationModal"
 import imgBackground from "./banner-bg.png"
 
 export const AssetHubMigrationBanner = () => {
   const { t } = useTranslation()
+  const accounts = useAccounts()
   const allowBanner = useFeatureFlag("ASSET_HUB_MIGRATION_BANNER")
   const [hideBanner, setHideBanner] = useAppState("hideAssetHubMigrationBanner")
   const ocDialog = useOpenClose()
 
-  const showBanner = useMemo(() => !!allowBanner && !hideBanner, [allowBanner, hideBanner])
+  const showBanner = useMemo(
+    () => !!allowBanner && !hideBanner && accounts.some(isAccountPlatformPolkadot),
+    [allowBanner, hideBanner, accounts],
+  )
 
   if (!showBanner) return null
 
