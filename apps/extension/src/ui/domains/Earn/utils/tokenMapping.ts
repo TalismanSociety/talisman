@@ -142,7 +142,6 @@ export const mapYieldTokenToTokenId = (
 
     return 0
   })
-
   return sortedTokens[0].id
 }
 

@@ -11,7 +11,11 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
 import { DepositModal } from "../../DepositModal"
-import { useEarnWizard, useSetEarnWizardAccount } from "../../hooks/useEarnWizard"
+import {
+  useEarnWizard,
+  useResetEarnWizard,
+  useSetEarnWizardAccount,
+} from "../../hooks/useEarnWizard"
 import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"
 import { getTokenAddress } from "../../utils/tokenUtils"
 import { EarnAccountPicker } from "../EarnAccountPicker"
@@ -27,8 +31,10 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
   const { selectedAccount } = usePortfolioNavigation()
-  const { selectedAccountAddress } = useEarnWizard()
+  const { selectedAccountAddress, productId, validatorAddress, isAddToPositionFlow } =
+    useEarnWizard()
   const setEarnWizardAccount = useSetEarnWizardAccount()
+  const reset = useResetEarnWizard()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -100,6 +106,62 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       }),
     )
   }, [data, tokenIdentifier])
+
+  // Handle pre-selected product (from Add to Position flow)
+  useEffect(() => {
+    if (!productId || !isAddToPositionFlow || !allYieldProducts.length) return
+
+    // If product is pre-selected, check if validator selection is needed
+    const product = allYieldProducts.find((p) => p.id === productId)
+    if (product?.mechanics?.requiresValidatorSelection) {
+      // Product requires validator selection - always show validator picker first
+      if (IS_POPUP) {
+        // Navigate to validator picker page in popup mode
+        const params = new URLSearchParams({
+          tokenId,
+          productId,
+        })
+        // Include validatorAddress if it exists (for pre-selection)
+        if (validatorAddress) {
+          params.set("validatorAddress", validatorAddress)
+        }
+        navigate(`/select-product/select-validator?${params.toString()}`)
+      } else {
+        // Show validator picker modal in dashboard mode
+        setIsValidatorPickerOpen(true)
+      }
+    } else {
+      // No validator selection needed - go directly to account selection
+      if (IS_POPUP) {
+        // Navigate to account selection page in popup mode
+        const params = new URLSearchParams({
+          tokenId,
+          productId,
+        })
+        navigate(`/select-product/select-account?${params.toString()}`)
+      } else {
+        // Open account picker modal in dashboard mode
+        setIsAccountPickerOpen(true)
+      }
+    }
+
+    // Clear the Add to Position flow flag after navigation
+    reset({ tokenId, productId, validatorAddress, isAddToPositionFlow: false })
+  }, [productId, tokenId, validatorAddress, navigate, allYieldProducts, isAddToPositionFlow, reset])
+
+  // Set the selected product when productId is pre-selected
+  useEffect(() => {
+    if (!productId || !allYieldProducts.length) return
+
+    // Find the product by ID
+    const product = allYieldProducts.find((p) => p.id === productId)
+    if (product) {
+      setSelectedProduct(product)
+      if (validatorAddress) {
+        setSelectedValidatorAddress(validatorAddress)
+      }
+    }
+  }, [productId, allYieldProducts, validatorAddress])
 
   // Slice products for display (max 100)
   const visibleYieldProducts = useMemo(
@@ -183,11 +245,14 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       ? initialPopupAccount
       : selectedAccountAddress || selectedAccount?.address
 
+    // Get the current product (either from state or pre-selected)
+    const currentProduct = selectedProduct || allYieldProducts.find((p) => p.id === productId)
+
     if (!currentAccount) {
       // No account selected, show account picker
       if (IS_POPUP) {
         navigate(
-          `/select-product/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
+          `/select-product/select-account?tokenId=${encodeURIComponent(tokenId)}&productId=${encodeURIComponent(currentProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
         )
         return
       }
@@ -197,7 +262,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
       const params = new URLSearchParams({
         account: currentAccount,
         tokenId,
-        productId: selectedProduct?.id || "",
+        productId: currentProduct?.id || "",
         validatorAddress: validator.address,
       })
 
@@ -213,37 +278,40 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
     setEarnWizardAccount(address)
     setIsAccountPickerOpen(false)
 
-    // If we have a product selected, open deposit modal
-    if (selectedProduct) {
-      // Check if this product requires validator selection
-      if (selectedProduct.mechanics?.requiresValidatorSelection && !selectedValidatorAddress) {
-        // This shouldn't happen - validator should be selected first
-        log.error("Account selected for validator-required product but no validator selected")
-        return
-      }
+    // If we have a product selected (either from state or pre-selected), open deposit modal
+    if (selectedProduct || productId) {
+      const currentProduct = selectedProduct || allYieldProducts.find((p) => p.id === productId)
 
-      // Open deposit modal with validator address if available
-      setIsDepositModalOpen(true)
-    } else {
-      // Fallback for URL params (popup mode)
-      const urlParams = new URLSearchParams(window.location.search)
-      const productId = urlParams.get("productId")
-      const validatorAddress = urlParams.get("validatorAddress")
+      if (currentProduct) {
+        // Check if this product requires validator selection
+        if (
+          currentProduct.mechanics?.requiresValidatorSelection &&
+          !selectedValidatorAddress &&
+          !validatorAddress
+        ) {
+          // This shouldn't happen - validator should be selected first
+          log.error("Account selected for validator-required product but no validator selected")
+          return
+        }
 
-      if (productId) {
+        // Navigate to deposit amount page with all parameters
         const params = new URLSearchParams({
           account: address,
           tokenId,
-          productId,
+          productId: currentProduct.id,
         })
 
         // Add validatorAddress if it exists
-        if (validatorAddress) {
-          params.set("validatorAddress", validatorAddress)
+        const currentValidatorAddress = selectedValidatorAddress || validatorAddress
+        if (currentValidatorAddress) {
+          params.set("validatorAddress", currentValidatorAddress)
         }
 
         if (IS_POPUP) {
           navigate(`/select-product/deposit/amount?${params.toString()}`)
+        } else {
+          // Open deposit modal in dashboard mode
+          setIsDepositModalOpen(true)
         }
       }
     }
@@ -251,18 +319,21 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
 
   return (
     <>
-      <div className="flex h-full flex-col gap-4 overflow-hidden">
-        <TokenDetails tokenId={tokenId} tokenSymbol={token?.symbol} networkId={network?.id} />
-        <ProductList
-          products={visibleYieldProducts}
-          tokenId={tokenId}
-          isLoading={isLoading}
-          error={error}
-          onProductClick={handleProductClick}
-          hasMoreProducts={shouldShowMore}
-          onShowMore={handleShowMore}
-        />
-      </div>
+      {/* Only show product selection UI if not in Add to Position flow */}
+      {!isAddToPositionFlow && (
+        <div className="flex h-full flex-col gap-4 overflow-hidden">
+          <TokenDetails tokenId={tokenId} tokenSymbol={token?.symbol} networkId={network?.id} />
+          <ProductList
+            products={visibleYieldProducts}
+            tokenId={tokenId}
+            isLoading={isLoading}
+            error={error}
+            onProductClick={handleProductClick}
+            hasMoreProducts={shouldShowMore}
+            onShowMore={handleShowMore}
+          />
+        </div>
+      )}
 
       <ValidatorPicker
         isOpen={isValidatorPickerOpen}

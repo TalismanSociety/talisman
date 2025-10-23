@@ -7,12 +7,18 @@ interface EarnWizardState {
   tokenId?: TokenId
   selectedAccountAddress?: string
   selectedNetworkId?: string
+  productId?: string
+  validatorAddress?: string
+  isAddToPositionFlow?: boolean
 }
 
 const DEFAULT_STATE: EarnWizardState = {
   tokenId: undefined,
   selectedAccountAddress: undefined,
   selectedNetworkId: undefined,
+  productId: undefined,
+  validatorAddress: undefined,
+  isAddToPositionFlow: undefined,
 }
 
 const earnWizardState$ = new BehaviorSubject<EarnWizardState>(DEFAULT_STATE)
@@ -26,8 +32,17 @@ const [useEarnWizardState] = bind(earnWizardState$)
 
 export const useResetEarnWizard = () => {
   return useCallback(
-    (init: Pick<EarnWizardState, "tokenId" | "selectedAccountAddress" | "selectedNetworkId">) =>
-      setEarnWizardState({ ...DEFAULT_STATE, ...init }),
+    (
+      init: Pick<
+        EarnWizardState,
+        | "tokenId"
+        | "selectedAccountAddress"
+        | "selectedNetworkId"
+        | "productId"
+        | "validatorAddress"
+        | "isAddToPositionFlow"
+      >,
+    ) => setEarnWizardState({ ...DEFAULT_STATE, ...init }),
     [],
   )
 }
@@ -39,6 +54,9 @@ export const useEarnWizard = () => {
     tokenId: state.tokenId,
     selectedAccountAddress: state.selectedAccountAddress,
     selectedNetworkId: state.selectedNetworkId,
+    productId: state.productId,
+    validatorAddress: state.validatorAddress,
+    isAddToPositionFlow: state.isAddToPositionFlow,
   }
 }
 

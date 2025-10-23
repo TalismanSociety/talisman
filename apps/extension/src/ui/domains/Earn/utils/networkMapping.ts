@@ -116,7 +116,7 @@ export function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | unde
     case "westend":
       return "westend"
     case "solana":
-      return "solana"
+      return "solana-mainnet"
     case "near":
       return "near"
     case "cardano":

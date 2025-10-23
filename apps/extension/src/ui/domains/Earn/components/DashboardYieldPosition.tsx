@@ -11,13 +11,17 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById, useTokens } from "@ui/state"
 
+import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldPosition } from "../hooks/useYieldPosition"
 import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
+import { mapYieldInputTokenToTokenId } from "../utils/tokenMapping"
 
 export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
   const position = useYieldPosition(yieldId)
+  const { open } = useEarnModal()
+  const tokens = useTokens()
 
   // Categorize balances on-the-fly
   const suppliedBalances = useMemo(
@@ -30,21 +34,40 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
     [position],
   )
 
+  // Handle Add to Position click
+  const handleAddToPosition = useCallback(() => {
+    if (!position?.product) return
+
+    // Get tokenId from the position's product
+    const tokenId = mapYieldInputTokenToTokenId(position.product, tokens)
+    if (!tokenId) return
+
+    // Open earn modal with pre-selected parameters
+    open({
+      tokenId,
+      productId: position.yieldId,
+      validatorAddress: position.validatorAddress,
+    })
+  }, [position, tokens, open])
+
   if (!position) return null
 
   return (
     <div className="flex w-full max-w-full flex-col gap-4 overflow-hidden">
-      <YieldPositionHeader position={position} />
+      <YieldPositionHeader position={position} onAddToPosition={handleAddToPosition} />
       <YieldPositionSection balances={suppliedBalances} title="Supplied" />
       <YieldPositionSection balances={rewardBalances} title="Rewards" />
       <div className="flex w-full justify-end">
-        <YieldPositionActionButtons position={position} />
+        <YieldPositionActionButtons position={position} onAddToPosition={handleAddToPosition} />
       </div>
     </div>
   )
 }
 
-const YieldPositionHeader: FC<{ position: YieldPosition }> = ({ position }) => {
+const YieldPositionHeader: FC<{ position: YieldPosition; onAddToPosition: () => void }> = ({
+  position,
+  onAddToPosition,
+}) => {
   const { genericEvent } = useAnalytics()
   const networkId = mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
   const network = useNetworkById(networkId)
@@ -126,13 +149,7 @@ const YieldPositionHeader: FC<{ position: YieldPosition }> = ({ position }) => {
             <MoreHorizontalIcon className="h-6 w-6" />
           </ContextMenuTrigger>
           <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-            <ContextMenuItem
-              onClick={() => {
-                // TODO: Implement add to position
-              }}
-            >
-              Add to position
-            </ContextMenuItem>
+            <ContextMenuItem onClick={onAddToPosition}>Add to position</ContextMenuItem>
             {hasClaimableRewards && (
               <ContextMenuItem
                 onClick={() => {
@@ -166,7 +183,10 @@ const YieldPositionHeader: FC<{ position: YieldPosition }> = ({ position }) => {
   )
 }
 
-const YieldPositionActionButtons: FC<{ position: YieldPosition }> = ({ position }) => {
+const YieldPositionActionButtons: FC<{ position: YieldPosition; onAddToPosition: () => void }> = ({
+  position,
+  onAddToPosition,
+}) => {
   // Check if there are claimable rewards with CLAIM_REWARDS action
   const hasClaimableRewards = useMemo(() => {
     return position.balances.some((balance) =>
@@ -193,9 +213,7 @@ const YieldPositionActionButtons: FC<{ position: YieldPosition }> = ({ position 
       <button
         type="button"
         className="hover:bg-grey-800/20 flex min-w-80 max-w-full flex-col items-center justify-center gap-2 rounded border-2 border-transparent border-white p-6"
-        onClick={() => {
-          // TODO: Implement add to position functionality
-        }}
+        onClick={onAddToPosition}
       >
         <span className="truncate">Add to Position</span>
       </button>

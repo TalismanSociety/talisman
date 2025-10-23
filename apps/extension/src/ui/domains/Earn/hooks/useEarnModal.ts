@@ -14,12 +14,24 @@ export const useEarnModal = () => {
   const navigate = useNavigate()
 
   const open = useCallback(
-    ({ tokenId }: { tokenId: TokenId }) => {
-      reset({ tokenId })
+    ({
+      tokenId,
+      productId,
+      validatorAddress,
+    }: {
+      tokenId: TokenId
+      productId?: string
+      validatorAddress?: string
+    }) => {
+      // Set isAddToPositionFlow flag if productId is provided (indicating Add to Position flow)
+      reset({ tokenId, productId, validatorAddress, isAddToPositionFlow: !!productId })
 
       if (IS_POPUP) {
         // Navigate to full page in popup mode
-        navigate(`/select-product?tokenId=${encodeURIComponent(tokenId)}`)
+        const params = new URLSearchParams({ tokenId })
+        if (productId) params.set("productId", productId)
+        if (validatorAddress) params.set("validatorAddress", validatorAddress)
+        navigate(`/select-product?${params.toString()}`)
       } else {
         // Open modal in dashboard mode
         innerOpen()
