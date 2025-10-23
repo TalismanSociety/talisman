@@ -88,9 +88,9 @@ export const ValidatorPicker: FC<ValidatorPickerProps> = ({
         </IconButton>
       </header>
 
-      <div className="grow overflow-hidden p-12 pt-0">
+      <div className="flex grow flex-col overflow-hidden p-12 pt-0">
         {/* Search Input */}
-        <div className="flex min-h-fit w-full items-center gap-8 pb-8">
+        <div className="flex w-full items-center gap-8 pb-8">
           <SearchInput onChange={setSearch} placeholder={t("Search for validator name")} />
         </div>
 
@@ -147,7 +147,7 @@ export const ValidatorPicker: FC<ValidatorPickerProps> = ({
         </div>
 
         {/* Validators List */}
-        <div className="flex h-full flex-col gap-8 overflow-y-auto">
+        <div className="flex flex-1 flex-col gap-8 overflow-y-auto pb-8">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-grey-400">{t("Loading validators...")}</div>

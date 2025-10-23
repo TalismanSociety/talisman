@@ -95,7 +95,7 @@ export const ValidatorPickerPage = () => {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden bg-black">
+    <div className="flex h-[60rem] max-h-[100dvh] w-full flex-col overflow-hidden bg-black">
       <header className="flex w-full items-center justify-between gap-8 overflow-hidden p-10">
         <IconButton onClick={handleDismiss}>
           <ChevronLeftIcon />
@@ -106,9 +106,9 @@ export const ValidatorPickerPage = () => {
         </IconButton>
       </header>
 
-      <div className="grow overflow-hidden p-12 pt-0">
+      <div className="flex grow flex-col overflow-hidden p-12 pt-0">
         {/* Search Input */}
-        <div className="flex min-h-fit w-full items-center gap-8 pb-8">
+        <div className="flex w-full items-center gap-8 pb-8">
           <SearchInput onChange={setSearch} placeholder={t("Search for validator name")} />
         </div>
 
@@ -165,7 +165,7 @@ export const ValidatorPickerPage = () => {
         </div>
 
         {/* Validators List */}
-        <div className="flex h-full flex-col gap-8 overflow-y-auto pb-8">
+        <div className="flex flex-1 flex-col gap-8 overflow-y-auto pb-8">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-grey-400">{t("Loading validators...")}</div>

@@ -41,7 +41,7 @@ export const ValidatorItem: FC<ValidatorItemProps> = ({ validator, isSelected, o
       )}
     >
       {/* First row: Name only */}
-      <div className="text-body text-xs font-medium">{validator.name}</div>
+      <div className="text-body w-60 truncate text-xs font-medium">{validator.name}</div>
 
       {/* Second row: TVL - Stakers - Reward Rate */}
       <div className="text-grey-400 flex items-center justify-between text-xs">
