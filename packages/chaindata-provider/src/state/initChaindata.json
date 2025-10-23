@@ -451,7 +451,6 @@
         "wss://statemine-rpc-tn.dwellir.com",
         "wss://asset-hub-kusama.dotters.network",
         "wss://rpc-asset-hub-kusama.luckyfriday.io",
-        "wss://kusama-asset-hub-rpc.polkadot.io",
         "wss://statemine.public.curie.radiumblock.co/ws",
         "wss://ksm-rpc.stakeworld.io/assethub"
       ],
@@ -566,7 +565,10 @@
       "blockExplorerUrls": ["https://explorer.solana.com"],
       "platform": "solana",
       "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
-      "rpcs": ["https://solana-mainnet.g.alchemy.com/v2/FlflUnY6iZ98J9likA0ZdLSMfa6SqMya"]
+      "rpcs": [
+        "https://svm.merkle.io/pk_mbs_1412a7392bd47753ca2b4bb3d123f6a1",
+        "https://solana-mainnet.g.alchemy.com/v2/FlflUnY6iZ98J9likA0ZdLSMfa6SqMya"
+      ]
     }
   ],
   "tokens": [
@@ -1871,7 +1873,7 @@
       "type": "substrate-hydration",
       "symbol": "CFG",
       "decimals": 18,
-      "name": "Centrifuge",
+      "name": "Centrifuge [OLD]",
       "coingeckoId": "centrifuge",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/centrifuge.webp",
       "isDefault": true,
@@ -2359,7 +2361,7 @@
       "onChainId": 39,
       "assetType": "Token",
       "isSufficient": true,
-      "existentialDeposit": "41209923349543"
+      "existentialDeposit": "2374169040836"
     },
     {
       "id": "hydradx:substrate-hydration:4",
@@ -2390,6 +2392,20 @@
       "assetType": "Token",
       "isSufficient": true,
       "existentialDeposit": "2651"
+    },
+    {
+      "id": "hydradx:substrate-hydration:41",
+      "platform": "polkadot",
+      "networkId": "hydradx",
+      "type": "substrate-hydration",
+      "symbol": "CFG",
+      "decimals": 18,
+      "name": "Centrifuge",
+      "isDefault": true,
+      "onChainId": 41,
+      "assetType": "Token",
+      "isSufficient": true,
+      "existentialDeposit": "36297640653357500"
     },
     {
       "id": "hydradx:substrate-hydration:420",

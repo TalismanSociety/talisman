@@ -14,7 +14,6 @@ export type RemoteConfigStoreData = {
   }
   swaps: {
     questApi?: string
-    lifiApiKey?: string
     lifiTalismanTokens?: string[]
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
@@ -44,6 +43,11 @@ export type RemoteConfigStoreData = {
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
     webAppStakingPath: string
+    discountTiers: Array<{
+      tier: number
+      min: string
+      discount: number
+    }>
   }
   earn: {
     earnButtonTokenIds: TokenId[]
@@ -87,6 +91,9 @@ export type FeatureFlags = Partial<{
   UNIFIED_ADDRESS_BANNER: boolean
   NFTS_V2: boolean
   SEEK_BENEFITS: boolean
+  SEEK_TAO_DISCOUNT: boolean
+  SEEK_PRESALE: boolean
+  BLOCKAID_DAPP_SCAN: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

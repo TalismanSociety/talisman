@@ -60,7 +60,7 @@ export const SeekBenefitsModal = () => {
     >
       <ModalDialog
         onClose={close}
-        title={"$SEEK Benefits"}
+        title={"SEEK Benefits"}
         className="[&>header>h1]:text-md relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%"
       >
         <Background className="absolute right-0 top-0 z-0 h-[20.7rem] w-[17rem]" />

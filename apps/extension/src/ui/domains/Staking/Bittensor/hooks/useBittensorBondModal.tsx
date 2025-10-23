@@ -17,16 +17,18 @@ export const useBittensorBondModal = () => {
       address,
       tokenId,
       poolId,
-      isSelectStakeDrawerOpen = false,
+      isSeekDiscountDrawerOpen = false,
       stakeType = "root",
       stakeDirection = "bond",
       step = "form",
       netuid = null,
+      isSelectStakeDrawerOpen = false,
     }: {
       address: Address
       tokenId: TokenId
       poolId: number | string
       isSelectStakeDrawerOpen?: boolean
+      isSeekDiscountDrawerOpen?: boolean
       stakeType?: StakeType
       stakeDirection?: StakeDirection
       step?: WizardStep
@@ -40,6 +42,7 @@ export const useBittensorBondModal = () => {
         stakeType,
         stakeDirection,
         isSelectStakeDrawerOpen,
+        isSeekDiscountDrawerOpen,
         netuid,
       })
 

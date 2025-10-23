@@ -23,7 +23,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   },
   swaps: {
     questApi: "",
-    lifiApiKey: "",
     lifiTalismanTokens: [],
     simpleswapApiKey: "",
     simpleswapApiKeyDiscounted: "",
@@ -53,6 +52,28 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingContractNetworkId: "",
     stakingContractAddress: "0x",
     webAppStakingPath: "",
+    discountTiers: [
+      {
+        tier: 0,
+        min: "0",
+        discount: 0,
+      },
+      {
+        tier: 1,
+        min: "100000000000000000000", // 100 * 10^18
+        discount: 0.01,
+      },
+      {
+        tier: 2,
+        min: "1000000000000000000000", // 1,000 * 10^18
+        discount: 0.02,
+      },
+      {
+        tier: 3,
+        min: "10000000000000000000000", // 10,000 * 10^18
+        discount: 0.03,
+      },
+    ],
   },
   earn: {
     earnButtonTokenIds: [
@@ -90,7 +111,10 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
           (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
         )
 
-        if (DEBUG) config.featureFlags.SEEK_BENEFITS = true
+        if (DEBUG) {
+          config.featureFlags.SEEK_BENEFITS = true
+          config.featureFlags.SEEK_TAO_DISCOUNT = true
+        }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated
         await this.mutate(() => merge({}, DEFAULT_REMOTE_CONFIG, config))
@@ -108,3 +132,13 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 }
 
 export const remoteConfigStore = new RemoteConfigStore("remoteConfig", DEFAULT_REMOTE_CONFIG)
+
+export const isFeatureFlagEnabled = async (flag: keyof RemoteConfigStoreData["featureFlags"]) => {
+  try {
+    const featureFlags = await remoteConfigStore.get("featureFlags")
+    return !!featureFlags[flag]
+  } catch (err) {
+    log.error("Error checking feature flag:", { flag, err })
+    return false
+  }
+}

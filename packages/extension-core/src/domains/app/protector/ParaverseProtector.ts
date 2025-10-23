@@ -9,14 +9,12 @@ import { decompressFromUTF16 } from "lz-string"
 import { sentry } from "../../../config/sentry"
 import { db } from "../../../db"
 import { getHostName } from "../helpers"
+import { fetchBlockaidIsMalicious } from "./fetchBlockaidIsMalicious"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
 const POLKADOT_REPO = "https://api.github.com/repos/polkadot-js/phishing"
 const POLKADOT_CONTENT_URL = "https://polkadot.js.org/phishing/all.json"
-const PHISHFORT_REPO = "https://api.github.com/repos/phishfort/phishfort-lists"
-const PHISHFORT_CONTENT_URL =
-  "https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json"
 const COMMIT_PATH = "/commits/master"
 
 const REFRESH_INTERVAL_MIN = 20
@@ -36,9 +34,9 @@ type MetaMaskDetectorConfig = {
   whitelist: string[]
 }
 
-export type ProtectorData = Record<"talisman" | "polkadot" | "phishfort", HostList>
+export type ProtectorData = Record<"talisman" | "polkadot", HostList>
 
-export type ProtectorSources = "polkadot" | "phishfort" | "metamask" // don't persist Talisman
+export type ProtectorSources = "polkadot" | "metamask" // don't persist Talisman
 
 export type ProtectorStorage = {
   source: ProtectorSources
@@ -52,14 +50,12 @@ export default class ParaverseProtector {
   #commits = {
     polkadot: "",
     metamask: "",
-    phishfort: "",
   }
   lists: ProtectorData = {
     talisman: { allow: DEFAULT_ALLOW, deny: [] },
     polkadot: { allow: [], deny: [] },
-    phishfort: { allow: [], deny: [] },
   }
-  #refreshTimer?: NodeJS.Timer
+  #refreshTimer?: ReturnType<typeof setInterval>
   #metamaskDetector = new MetamaskDetector(metamaskInitialData)
   #persistQueue?: Record<ProtectorSources, ProtectorStorage>
 
@@ -77,7 +73,7 @@ export default class ParaverseProtector {
       db.on(
         "ready",
         () => {
-          db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
+          db.phishing.bulkGet(["polkadot", "metamask"]).then((persisted) => {
             ;(persisted.filter(isNotNil) as ProtectorStorage[]).forEach(
               ({ source, compressedHostList, hostList, commitSha }) => {
                 const fullData = hostList
@@ -113,9 +109,7 @@ export default class ParaverseProtector {
   }
 
   async setRefreshTimer() {
-    await this.getMetamaskCommit()
-    await this.getPolkadotCommit()
-    await this.getPhishFortCommit()
+    await Promise.all([this.getMetamaskCommit(), this.getPolkadotCommit()])
     await this.persistAllData()
   }
 
@@ -124,7 +118,7 @@ export default class ParaverseProtector {
       const data = this.#persistQueue
       this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
 
-      db.phishing.bulkPut(Object.values(data)).catch((cause) => {
+      await db.phishing.bulkPut(Object.values(data)).catch((cause) => {
         // put it back
         this.#persistQueue = data
         // we can't do much about DatabaseClosedError errors
@@ -140,9 +134,9 @@ export default class ParaverseProtector {
   }
 
   private persistData(source: "metamask", commitSha: string, data: MetaMaskDetectorConfig): void
-  private persistData(source: "polkadot" | "phishfort", commitSha: string, data: HostList): void
+  private persistData(source: "polkadot", commitSha: string, data: HostList): void
   private persistData(
-    source: "polkadot" | "phishfort" | "metamask",
+    source: "polkadot" | "metamask",
     commitSha: string,
     data: HostList | MetaMaskDetectorConfig,
   ): void {
@@ -188,26 +182,9 @@ export default class ParaverseProtector {
     return await this.getData(POLKADOT_CONTENT_URL)
   }
 
-  async getPhishFortCommit() {
-    try {
-      const sha = await this.getCommitSha(`${PHISHFORT_REPO}${COMMIT_PATH}`)
-      if (sha !== this.#commits.phishfort) {
-        this.lists.phishfort.deny = await this.getPhishFortData()
-        this.#commits.phishfort = sha
-        this.persistData("phishfort", sha, this.lists.phishfort)
-      }
-    } catch (error) {
-      log.error("Error getting phishfort phishing commit and data", { error })
-    }
-  }
-
-  async getPhishFortData() {
-    return await this.getData(PHISHFORT_CONTENT_URL)
-  }
-
   private async getData(url: string) {
     const response = await fetch(url)
-    if (response.status === 200) {
+    if (response.ok) {
       return await response.json()
     }
     throw new Error(`Error fetching data from ${url}`)
@@ -229,14 +206,22 @@ export default class ParaverseProtector {
     if (this.lists.talisman.allow.includes(host)) return false
     if (this.lists.talisman.deny.includes(host)) return true
 
+    // start fetching blockaid dapp scan check (async)
+    const isMaliciousPromise = fetchBlockaidIsMalicious(url)
+
     // then check polkadot, phishFort, and metamask lists
     const pdResult = checkHost(this.lists.polkadot.deny, host)
-    if (pdResult) return true
-    const phishFortResult = this.lists.phishfort.deny.includes(host)
-    if (phishFortResult) return true
+    if (pdResult) {
+      log.warn(`Phishing site listed on Polkadot list: ${host}`)
+      return true
+    }
     const { result: mmResult } = this.#metamaskDetector.check(host)
-    if (mmResult) return true
-    return false
+    if (mmResult) {
+      log.warn(`Phishing site listed on MetaMask list: ${host}`)
+      return true
+    }
+
+    return await isMaliciousPromise
   }
 
   addException(url: string) {
