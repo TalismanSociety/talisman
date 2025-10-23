@@ -3,6 +3,7 @@ import { planckToTokens } from "@talismn/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -51,7 +52,7 @@ export const EarnAccountsList: FC<EarnAccountsListProps> = ({
             <div className="flex grow flex-col gap-2 overflow-hidden">
               <div className="text-body truncate">{account.name}</div>
               <div className="text-body-secondary truncate text-sm font-light">
-                {account.address}
+                {shortenAddress(account.address)}
               </div>
             </div>
             <div className="flex flex-col items-end">
