@@ -11,24 +11,23 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   to,
   value,
   token,
-  // type,
   metadataRpc,
 }) => {
   if (!isTokenOfType(token, MODULE_TYPE))
     throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
 
   const { subnetId, hotkey } = parseSubDTaoTokenId(token.id)
-  if (!hotkey) throw new Error(`Token ${token.id} does not have a hotkey specified.`)
+  if (!hotkey) throw new Error(`Missing hotkey`)
 
   const { builder } = parseMetadataRpc(metadataRpc)
   const { codec, location } = builder.buildCall("SubtensorModule", "transfer_stake")
 
   const args = codec.enc({
+    origin_netuid: subnetId,
+    hotkey,
     destination_coldkey: to,
     destination_netuid: subnetId,
     alpha_amount: value,
-    hotkey,
-    origin_netuid: subnetId,
   })
 
   const callData = Binary.fromBytes(mergeUint8([new Uint8Array(location), args]))
