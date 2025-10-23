@@ -16,6 +16,7 @@ import { BalanceSummary } from "../../useTokenBalancesSummary"
 import { CopyAddressButton } from "../CopyAddressIconButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
+import { BittensorValidatorName } from "./BittensorValidatorName"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
@@ -77,6 +78,13 @@ export const TokenBalancesList = ({
               <NetworkLogo networkId={chainOrNetworkId} />
               <span className="truncate text-sm">
                 <NetworkName networkId={chainOrNetworkId} />
+                {token.type === "substrate-dtao" && (
+                  <BittensorValidatorName
+                    hotkey={token.hotkey}
+                    prefix=" | "
+                    className="text-body-secondary text-sm"
+                  />
+                )}
               </span>
             </div>
           </div>

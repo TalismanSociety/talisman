@@ -21,6 +21,7 @@ import {
   AuthRequestId,
   AuthSolanaSignInApprove,
   BalanceSubscriptionResponse,
+  BittensorValidator,
   ChangePasswordStatusUpdate,
   DecryptRequestId,
   DefiPosition,
@@ -276,4 +277,8 @@ export default interface MessageTypes {
   nftsRefreshMetadata: (id: string) => Promise<boolean>
 
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
+
+  bittensorValidatorsSubscribe: (
+    cb: (validators: Loadable<BittensorValidator[]>) => void,
+  ) => UnsubscribeFn
 }

@@ -24,6 +24,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
+import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -198,6 +199,9 @@ const TokenRow: FC<TokenRowProps> = ({
             <div className="truncate" data-testid="picker-token-network">
               <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
               <NetworkName networkId={token.networkId} />
+              {token.type === "substrate-dtao" && (
+                <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+              )}
             </div>
           </div>
           <div className={classNames(isLoading && "animate-pulse")}>

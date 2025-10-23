@@ -10,6 +10,8 @@ export type DbBlobId =
   | "tokenRates"
   | "defi-positions"
   | "dynamic-tokens"
+  | "bittensor-validators"
+
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({

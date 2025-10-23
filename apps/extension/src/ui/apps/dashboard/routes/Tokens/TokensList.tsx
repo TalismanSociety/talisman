@@ -51,6 +51,7 @@ export const TokensList: FC<{
     const results = tokens
       .filter((t) => !!networksMap[t.networkId])
       .filter((t) => !networkId || t.networkId === networkId)
+      .filter((t) => t.type !== "substrate-dtao" || !t.hotkey) // hide validator-specific dtao tokens
 
     return sortBy(
       results,
