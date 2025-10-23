@@ -34,7 +34,6 @@ type TokenRowProps = {
   selected: boolean
   onClick?: () => void
   balances: Balances
-  hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
 
@@ -67,7 +66,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  hasFiatRate: boolean
 }
 
 const TokenRows: FC<{
@@ -115,7 +113,6 @@ const TokenRows: FC<{
                 selected={tokenData.token.id === selectedTokenId}
                 token={tokenData.token}
                 balances={tokenData.balances}
-                hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
               />
@@ -131,7 +128,6 @@ const TokenRow: FC<TokenRowProps> = ({
   token,
   selected,
   balances,
-  hasFiatRate,
   allowUntransferable,
   onClick,
 }) => {
@@ -148,6 +144,7 @@ const TokenRow: FC<TokenRowProps> = ({
 
   const currency = useSelectedCurrency()
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const hasFiatRate = useMemo(() => balances.each.some((b) => b.rates), [balances])
 
   return (
     <button
