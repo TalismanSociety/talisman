@@ -4,6 +4,7 @@ import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } f
 import BigNumber from "bignumber.js"
 
 import log from "../log"
+import { SubDTaoBalanceMeta } from "../modules"
 import {
   Amount,
   AmountWithLabel,
@@ -14,6 +15,7 @@ import {
   IBalance,
   LockedAmount,
 } from "./balancetypes"
+import { getDTaoTokenRates } from "./getDtaoTokenRates"
 
 type FormattedAmount<GenericAmount extends AmountWithLabel<TLabel>, TLabel extends string> = Omit<
   GenericAmount,
@@ -439,6 +441,18 @@ export class Balance {
       })
 
       return lpTokenRates
+    }
+
+    // dTAO balances need to be converted to the native token to compute their rate
+    if (this.token?.type === "substrate-dtao") {
+      if (!this.#db?.tokenRates) return null
+
+      const balances = this.#valueGetter.get("free")
+      if (!balances.length) return null
+      const balanceMeta = balances[0].meta as SubDTaoBalanceMeta | undefined
+      if (!balanceMeta?.scaledAlphaPrice) return null
+
+      return getDTaoTokenRates(this.token, this.#db.tokenRates, balanceMeta.scaledAlphaPrice)
     }
 
     // other tokens can just pick from the tokenRates db using the tokenId

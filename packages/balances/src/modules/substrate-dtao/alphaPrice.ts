@@ -1,4 +1,4 @@
-const TAO_DECIMALS = 9n
+export const TAO_DECIMALS = 9n
 
 // manipulating price as bigint requires using at least as many decimals as TAO itself
 export const ALPHA_PRICE_SCALE = 10n ** TAO_DECIMALS
