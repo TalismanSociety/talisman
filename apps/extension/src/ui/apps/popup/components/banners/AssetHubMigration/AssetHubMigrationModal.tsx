@@ -48,7 +48,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             />
           </p>
           <div className="text-body-secondary mt-16">{t("Why is this great?")}</div>
-          <ul className="text-body-secondary mt-4 list-inside list-disc space-y-2 text-sm">
+          <ul className="text-body-secondary mt-4 list-outside list-disc space-y-2 pl-[1.5rem] text-sm">
             <li>
               <Trans
                 t={t}
