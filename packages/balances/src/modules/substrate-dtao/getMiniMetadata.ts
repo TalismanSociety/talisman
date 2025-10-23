@@ -63,12 +63,18 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
       {
         runtimeApi: "StakeInfoRuntimeApi",
         methods: [
-          "get_stake_info_for_coldkey",
-          "get_all_metagraphs",
+          // "get_stake_info_for_coldkey",
+          // "get_all_metagraphs",
           "get_stake_info_for_coldkeys",
         ],
       },
-      { runtimeApi: "SubnetInfoRuntimeApi", methods: ["get_dynamic_info", "get_all_dynamic_info"] },
+      {
+        runtimeApi: "SubnetInfoRuntimeApi",
+        methods: [
+          // "get_dynamic_info",
+          "get_all_dynamic_info",
+        ],
+      },
     ],
   )
 
