@@ -5,6 +5,7 @@ import BigNumber from "bignumber.js"
 
 import log from "../log"
 import { SubDTaoBalanceMeta } from "../modules"
+import { getDTaoTokenRates } from "../modules/substrate-dtao"
 import {
   Amount,
   AmountWithLabel,
@@ -15,7 +16,6 @@ import {
   IBalance,
   LockedAmount,
 } from "./balancetypes"
-import { getDTaoTokenRates } from "./getDtaoTokenRates"
 
 type FormattedAmount<GenericAmount extends AmountWithLabel<TLabel>, TLabel extends string> = Omit<
   GenericAmount,

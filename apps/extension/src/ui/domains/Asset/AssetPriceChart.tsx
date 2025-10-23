@@ -127,7 +127,9 @@ export const AssetPriceChart: FC<{
                 formattedHoveredValue && "text-body",
               )}
             >
-              {formattedHoveredValue ?? <AssetPrice tokenId={selectedTokenId} noChange />}
+              {formattedHoveredValue ?? (
+                <AssetPrice tokenId={selectedTokenId} balances={null} noChange />
+              )}
             </div>
           )}
           <IconButton onClick={handleCoingeckoClick} className="text-base">
@@ -571,7 +573,7 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
         </div>
       </div>
       <div className="text-body flex gap-4 font-bold">
-        <AssetPrice tokenId={token.id} noTooltip noChange className="text-sm" />
+        <AssetPrice tokenId={token.id} balances={null} noTooltip noChange className="text-sm" />
         <CheckIcon
           className={classNames("text-primary text-base", selected ? "visible" : "invisible")}
         />

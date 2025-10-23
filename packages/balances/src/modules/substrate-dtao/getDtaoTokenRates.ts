@@ -6,7 +6,7 @@ import {
   TokenRatesList,
 } from "@talismn/token-rates"
 
-import { ALPHA_PRICE_SCALE, alphaToTao, TAO_DECIMALS } from "../modules/substrate-dtao/alphaPrice"
+import { ALPHA_PRICE_SCALE, alphaToTao, TAO_DECIMALS } from "./alphaPrice"
 
 const ONE_ALPHA = 10n ** TAO_DECIMALS
 

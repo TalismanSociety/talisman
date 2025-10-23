@@ -130,7 +130,9 @@ const AssetRow: FC<{
                 <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
+            {!isUniswapV2LpToken && (
+              <AssetPrice tokenId={token.id} balances={balances} className="text-xs" />
+            )}
           </div>
           <div
             className={classNames(

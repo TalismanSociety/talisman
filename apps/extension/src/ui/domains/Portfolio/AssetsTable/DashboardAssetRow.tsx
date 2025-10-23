@@ -81,7 +81,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
               </div>
             )}
             {!isUniswapV2LpToken && !!rate && (
-              <AssetPrice tokenId={token.id} className="text-body-secondary" />
+              <AssetPrice tokenId={token.id} className="text-body-secondary" balances={balances} />
             )}
           </div>
         </div>
