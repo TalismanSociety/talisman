@@ -30,7 +30,7 @@ export const activeTokensStore = new ActiveTokensStore()
 
 export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
   if (token.type === "substrate-dtao" && token.hotkey) {
-    const templateTokenId = subDTaoTokenId(token.networkId, token.subnetId)
+    const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
     return Boolean(activeTokens[templateTokenId] ?? token.isDefault ?? false)
   }
   return Boolean(activeTokens[token.id] ?? token.isDefault ?? false)

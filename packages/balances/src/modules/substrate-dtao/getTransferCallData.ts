@@ -16,7 +16,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
   if (!isTokenOfType(token, MODULE_TYPE))
     throw new Error(`Token type ${token.type} is not ${MODULE_TYPE}.`)
 
-  const { subnetId, hotkey } = parseSubDTaoTokenId(token.id)
+  const { netuid: subnetId, hotkey } = parseSubDTaoTokenId(token.id)
   if (!hotkey) throw new Error(`Missing hotkey`)
 
   const { builder } = parseMetadataRpc(metadataRpc)

@@ -333,7 +333,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
     for (const token of dynamicTokens) {
       if (token.type === "substrate-dtao") {
-        const templateTokenId = subDTaoTokenId(token.networkId, token.subnetId)
+        const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
         const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
         if (!templateToken) continue
         const updatedToken: SubDTaoToken = {

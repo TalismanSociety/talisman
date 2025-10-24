@@ -55,7 +55,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         type: MODULE_TYPE,
         platform: PLATFORM,
         networkId,
-        subnetId: info.netuid,
+        netuid: info.netuid,
         isDefault: true,
         symbol,
         decimals: 9,

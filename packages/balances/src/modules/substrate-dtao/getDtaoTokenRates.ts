@@ -20,7 +20,7 @@ export const getDTaoTokenRates = (
   if (taoTokenRates === undefined) return null
 
   // for root subnet, same rates as TAO
-  if (token.subnetId === 0) return structuredClone(taoTokenRates)
+  if (token.netuid === 0) return structuredClone(taoTokenRates)
 
   const alphaRates = newTokenRates()
   for (const [currency, taoRate] of Object.entries(taoTokenRates) as [
