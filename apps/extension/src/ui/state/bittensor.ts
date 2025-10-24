@@ -1,11 +1,12 @@
 import { bind } from "@react-rxjs/core"
 import { Loadable } from "@talismn/util"
 import { BittensorValidator } from "extension-core"
-import { keyBy } from "lodash-es"
+import { keyBy, uniq } from "lodash-es"
 import { map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
+import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"
 
 const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((subscriber) => {
@@ -49,4 +50,21 @@ export const [useBittensorValidator, getBittensorValidator$] = bind(
       }),
     ),
   { status: "loading", data: null },
+)
+
+export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
+  getTokens$({ platform: "polkadot" }).pipe(
+    map((tokens) =>
+      uniq(tokens.filter((t) => t.type === "substrate-dtao").map((t) => t.networkId)),
+    ),
+  ),
+  [],
+)
+
+export const [useIsBittensorNetwork, isBittensorNetwork$] = bind(
+  (networkId: string | null | undefined) =>
+    bittensorNetworkIds$.pipe(
+      map((networkIds) => (networkId ? networkIds.includes(networkId) : false)),
+    ),
+  false,
 )
