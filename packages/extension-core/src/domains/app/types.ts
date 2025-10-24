@@ -89,7 +89,6 @@ export type FeatureFlags = Partial<{
   SEEK_BENEFITS: boolean
   SEEK_TAO_DISCOUNT: boolean
   SEEK_PRESALE: boolean
-  BLOCKAID_DAPP_SCAN: boolean
   ASSET_HUB_MIGRATION_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
