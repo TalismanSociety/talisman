@@ -301,8 +301,8 @@
       "rpcs": [
         "wss://bifrost-polkadot.ibp.network",
         "wss://bifrost-polkadot.dotters.network",
-        "wss://hk.p.bifrost-rpc.liebi.com/ws",
-        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws"
+        "wss://eu.bifrost-polkadot-rpc.liebi.com/ws",
+        "wss://hk.p.bifrost-rpc.liebi.com/ws"
       ],
       "hasCheckMetadataHash": true,
       "topology": {
@@ -1171,7 +1171,7 @@
       "platform": "polkadot",
       "networkId": "bittensor",
       "type": "substrate-dtao",
-      "symbol": "Τ",
+      "symbol": "TAO",
       "decimals": 9,
       "name": "0 | Root Τ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
@@ -1459,11 +1459,11 @@
       "type": "substrate-dtao",
       "symbol": "ⲁ",
       "decimals": 9,
-      "name": "118 | Subnet 118 ⲁ",
+      "name": "118 | HODL ETF ⲁ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
       "subnetId": 118,
-      "subnetName": "Subnet 118"
+      "subnetName": "HODL ETF"
     },
     {
       "id": "bittensor:substrate-dtao:119",
@@ -2380,9 +2380,9 @@
       "platform": "polkadot",
       "networkId": "bittensor",
       "type": "substrate-dtao",
-      "symbol": "ط",
+      "symbol": "ⵋ",
       "decimals": 9,
-      "name": "67 | τenex ط",
+      "name": "67 | τenex ⵋ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
       "subnetId": 67,
@@ -2486,11 +2486,11 @@
       "type": "substrate-dtao",
       "symbol": "ل",
       "decimals": 9,
-      "name": "74 | Subnet 74 ل",
+      "name": "74 | Gittensor ل",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
       "subnetId": 74,
-      "subnetName": "Subnet 74"
+      "subnetName": "Gittensor"
     },
     {
       "id": "bittensor:substrate-dtao:75",

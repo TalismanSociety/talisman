@@ -47,7 +47,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const tokenLabel = useMemo(() => {
     switch (token.type) {
       case "substrate-dtao":
-        return token.name
+        return token.subnetId === 0 ? token.symbol : token.name
       default:
         return token.symbol
     }
