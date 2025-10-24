@@ -18,12 +18,15 @@ import {
   NetworkId,
   NetworkOfPlatform,
   NetworkPlatform,
+  SubDTaoToken,
+  subDTaoTokenId,
   Token,
   TokenId,
   TokenOfType,
   TokenSchema,
   TokenType,
 } from "../chaindata"
+import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
@@ -316,6 +319,38 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get network by genesisHash",
       this.getNetworkByGenesisHash$(genesisHash),
     )
+  }
+
+  // utils
+
+  /**
+   * dynamic tokens are created when they are first detected by the balance modules.
+   * this method syncs their metadata (name, symbol, logo) with custom logic specific to each token type
+   */
+  syncDynamicTokens = async () => {
+    const dynamicTokens = await firstValueFrom(this.#dynamicTokens$)
+    const updates: Token[] = []
+
+    for (const token of dynamicTokens) {
+      if (token.type === "substrate-dtao") {
+        const templateTokenId = subDTaoTokenId(token.networkId, token.subnetId)
+        const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
+        if (!templateToken) continue
+        const updatedToken: SubDTaoToken = {
+          ...token,
+          symbol: templateToken.symbol,
+          name: templateToken.name,
+          logo: templateToken.logo,
+          subnetName: templateToken.subnetName,
+        }
+        if (!isEqual(token, updatedToken)) updates.push(updatedToken)
+      }
+    }
+
+    if (updates.length) {
+      log.debug("[ChaindataProvider] syncDynamicTokens: updating tokens", updates)
+      this.#dynamicTokens$.next(updates)
+    }
   }
 }
 
