@@ -14,7 +14,6 @@ export type RemoteConfigStoreData = {
   }
   swaps: {
     questApi?: string
-    lifiApiKey?: string
     lifiTalismanTokens?: string[]
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
@@ -90,7 +89,7 @@ export type FeatureFlags = Partial<{
   SEEK_BENEFITS: boolean
   SEEK_TAO_DISCOUNT: boolean
   SEEK_PRESALE: boolean
-  BLOCKAID_DAPP_SCAN: boolean
+  ASSET_HUB_MIGRATION_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 
