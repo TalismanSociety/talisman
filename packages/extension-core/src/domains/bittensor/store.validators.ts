@@ -7,11 +7,10 @@ import { BittensorValidator } from "./types"
 
 const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators")
 
+const MAX_PAGE_SIZE = 100
 const REFRESH_INTERVAL = 600_000 // 10 mins
 
 let lastUpdatedAt = 0
-
-const MAX_PAGE_SIZE = 100
 
 type Pagination = {
   current_page: number
@@ -47,17 +46,14 @@ const fetchBittensorValidatorsPage = async (
 
 const fetchAllBittensorValidators = async (signal?: AbortSignal): Promise<BittensorValidator[]> => {
   const allValidators: BittensorValidator[] = []
+  let nextPage: number | null = 1
 
-  let nextPage = 1
   while (nextPage !== null) {
     const pageData = await fetchBittensorValidatorsPage(nextPage, signal)
     allValidators.push(...pageData.data)
-    if (pageData.pagination.next_page) {
-      nextPage = pageData.pagination.next_page
-    } else {
-      break
-    }
+    nextPage = pageData.pagination.next_page
   }
+
   return allValidators
 }
 
@@ -93,7 +89,7 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
     }
   }
 
-  // init loop: fetch from github every 5 mins
+  // init loop: fetch from github every 10 mins
   refresh()
 
   // init from storage
