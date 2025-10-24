@@ -20,7 +20,7 @@ import { Enum } from "polkadot-api"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
 const TEST_ADDRESS_SUB2 = "5G24oH9LoJkBDuR4Hm7EUWiy2rPrsUSCTzY7fRcmxQNu6R1C"
-// const TEST_ADDRESS_EMPTY = "14BbPtmnepvdw2t34CvUbNGDxXazc4iHJZPc8vS3MiCDFzpn"
+const TEST_ADDRESS_EMPTY = "14BbPtmnepvdw2t34CvUbNGDxXazc4iHJZPc8vS3MiCDFzpn"
 
 export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<DotNetwork["nativeCurrency"]>
@@ -51,7 +51,6 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null
-  // let balances: FetchBalanceResults<TokenType> | null = null
   let dryRun: any = null
 
   try {
@@ -131,10 +130,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
       if (!opts.fetchBalances) continue
 
-      const BALANCES_ADDRESSES = [
-        TEST_ADDRESS_SUB,
-        //  , TEST_ADDRESS_SUB2, TEST_ADDRESS_EMPTY
-      ]
+      const BALANCES_ADDRESSES = [TEST_ADDRESS_SUB, TEST_ADDRESS_SUB2, TEST_ADDRESS_EMPTY]
 
       let balances = await mod.fetchBalances({
         networkId,
@@ -241,6 +237,4 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     log.error(err)
     connector.asProvider(network.id).disconnect()
   }
-
-  // return { miniMetadatas, tokens, balances, dryRun }
 }

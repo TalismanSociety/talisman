@@ -1,4 +1,4 @@
-import { Loadable } from "@talismn/util"
+import { keepAlive, Loadable } from "@talismn/util"
 import { log, TAOSTATS_BASE_PATH } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
@@ -68,7 +68,7 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
 
   const refresh = async () => {
     try {
-      const delay = Math.max(0, lastUpdatedAt + 60_000 - Date.now())
+      const delay = Math.max(0, lastUpdatedAt + REFRESH_INTERVAL - Date.now())
       if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
       if (controller.signal.aborted) return
 
@@ -96,4 +96,8 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
   blobStore.get().then((blob) => {
     subscriber.next({ status: "success", data: blob || [] })
   })
-}).pipe(startWith({ status: "loading", data: [] }), shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(
+  startWith({ status: "loading", data: [] }),
+  shareReplay({ bufferSize: 1, refCount: true }),
+  keepAlive(2_000), // prevents rapid re-fetching on unsubscriptions
+)
