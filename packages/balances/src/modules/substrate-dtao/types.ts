@@ -1,11 +1,11 @@
-import { SubAssetsTokenSchema } from "@talismn/chaindata-provider"
+import { SubDTaoTokenSchema } from "@talismn/chaindata-provider"
 import z from "zod/v4"
 
 import { TokenConfigBaseSchema } from "../../types/tokens"
 
 // to be used by chaindata too
 export const SubDTaoTokenConfigSchema = z.strictObject({
-  assetId: SubAssetsTokenSchema.shape.assetId,
+  netuid: SubDTaoTokenSchema.shape.netuid,
   ...TokenConfigBaseSchema.shape,
 })
 
