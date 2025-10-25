@@ -40,7 +40,7 @@ export const UnbondButton: FC<{
       handleOpenBittensorModal({
         tokenId,
         address,
-        hotkey: poolIdOrHotkey || "",
+        hotkey: poolIdOrHotkey,
         netuid,
         stakeDirection: "unbond",
         stakeType: netuid ? "subnet" : "root",
