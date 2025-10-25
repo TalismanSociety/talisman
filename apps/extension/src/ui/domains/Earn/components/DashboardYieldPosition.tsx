@@ -1,7 +1,7 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { BalanceDto, YieldPosition } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
@@ -13,6 +13,8 @@ import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAc
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
 
+import { ClaimModal } from "../ClaimModal"
+import { ConfirmClaimModal } from "../ConfirmClaimModal"
 import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldPosition } from "../hooks/useYieldPosition"
 import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
@@ -22,6 +24,11 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
   const position = useYieldPosition(yieldId)
   const { open } = useEarnModal()
   const tokens = useTokens()
+
+  // Claim modal state
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false)
+  const [isConfirmClaimModalOpen, setIsConfirmClaimModalOpen] = useState(false)
+  const [claimBalance, setClaimBalance] = useState<BalanceDto | null>(null)
 
   // Categorize balances on-the-fly
   const suppliedBalances = useMemo(
@@ -50,24 +57,84 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
     })
   }, [position, tokens, open])
 
+  // Handle claim click
+  const handleClaimClick = useCallback(() => {
+    const balanceWithClaim = position?.balances.find((b) =>
+      b.pendingActions?.some((a) => a.type === "CLAIM_REWARDS"),
+    )
+    setClaimBalance(balanceWithClaim || null)
+    setIsClaimModalOpen(true)
+  }, [position?.balances])
+
+  // Handle claim modal next
+  const handleClaimNext = useCallback(() => {
+    setIsClaimModalOpen(false)
+    setIsConfirmClaimModalOpen(true)
+  }, [])
+
+  // Handle claim modal close
+  const handleClaimClose = useCallback(() => {
+    setIsClaimModalOpen(false)
+    setClaimBalance(null)
+  }, [])
+
+  // Handle confirm claim modal close
+  const handleConfirmClaimClose = useCallback(() => {
+    setIsConfirmClaimModalOpen(false)
+    setClaimBalance(null)
+  }, [])
+
   if (!position) return null
 
   return (
     <div className="flex w-full max-w-full flex-col gap-4 overflow-hidden">
-      <YieldPositionHeader position={position} onAddToPosition={handleAddToPosition} />
+      <YieldPositionHeader
+        position={position}
+        onAddToPosition={handleAddToPosition}
+        onClaimClick={handleClaimClick}
+      />
       <YieldPositionSection balances={suppliedBalances} title="Supplied" />
       <YieldPositionSection balances={rewardBalances} title="Rewards" />
       <div className="flex w-full justify-end">
-        <YieldPositionActionButtons position={position} onAddToPosition={handleAddToPosition} />
+        <YieldPositionActionButtons
+          position={position}
+          onAddToPosition={handleAddToPosition}
+          onClaimClick={handleClaimClick}
+        />
       </div>
+
+      {/* Claim Modals */}
+      {isClaimModalOpen && claimBalance && (
+        <ClaimModal
+          isOpen={isClaimModalOpen}
+          onClose={handleClaimClose}
+          onNext={handleClaimNext}
+          yieldId={position.yieldId}
+          account={claimBalance.address}
+          balance={claimBalance}
+          validatorAddress={position.validatorAddress}
+        />
+      )}
+
+      {isConfirmClaimModalOpen && claimBalance && (
+        <ConfirmClaimModal
+          isOpen={isConfirmClaimModalOpen}
+          onClose={handleConfirmClaimClose}
+          yieldId={position.yieldId}
+          account={claimBalance.address}
+          balance={claimBalance}
+          validatorAddress={position.validatorAddress}
+        />
+      )}
     </div>
   )
 }
 
-const YieldPositionHeader: FC<{ position: YieldPosition; onAddToPosition: () => void }> = ({
-  position,
-  onAddToPosition,
-}) => {
+const YieldPositionHeader: FC<{
+  position: YieldPosition
+  onAddToPosition: () => void
+  onClaimClick: () => void
+}> = ({ position, onAddToPosition, onClaimClick }) => {
   const { genericEvent } = useAnalytics()
   const networkId = mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
   const network = useNetworkById(networkId)
@@ -151,11 +218,7 @@ const YieldPositionHeader: FC<{ position: YieldPosition; onAddToPosition: () => 
           <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
             <ContextMenuItem onClick={onAddToPosition}>Add to position</ContextMenuItem>
             {hasClaimableRewards && (
-              <ContextMenuItem
-                onClick={() => {
-                  // TODO: Implement claim
-                }}
-              >
+              <ContextMenuItem onClick={onClaimClick}>
                 Claim {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
               </ContextMenuItem>
             )}
@@ -183,10 +246,11 @@ const YieldPositionHeader: FC<{ position: YieldPosition; onAddToPosition: () => 
   )
 }
 
-const YieldPositionActionButtons: FC<{ position: YieldPosition; onAddToPosition: () => void }> = ({
-  position,
-  onAddToPosition,
-}) => {
+const YieldPositionActionButtons: FC<{
+  position: YieldPosition
+  onAddToPosition: () => void
+  onClaimClick: () => void
+}> = ({ position, onAddToPosition, onClaimClick }) => {
   // Check if there are claimable rewards with CLAIM_REWARDS action
   const hasClaimableRewards = useMemo(() => {
     return position.balances.some((balance) =>
@@ -221,9 +285,7 @@ const YieldPositionActionButtons: FC<{ position: YieldPosition; onAddToPosition:
         <button
           type="button"
           className="flex min-w-80 max-w-full flex-col items-center justify-center gap-1 rounded border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
-          onClick={() => {
-            // TODO: Implement claim functionality
-          }}
+          onClick={onClaimClick}
         >
           <div className="truncate font-medium text-black">Claim</div>
           <div className="text-grey-800 truncate text-sm font-light">

@@ -7,21 +7,22 @@ import {
   SignerPayloadJSON,
 } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useCallback, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
+
+// import { IS_POPUP } from "@ui/util/constants"
 
 import { deserializeTransactionFromHex, serializeTransaction } from "../../../../inject/solana/util"
-import { useDepositWizard } from "../context/DepositWizardContext"
+import { useClaimWizard } from "../context/ClaimWizardContext"
 import { yieldApi } from "../services/yieldApi"
-import { useDepositFunds } from "./useDepositFunds"
+import { useClaim } from "./useClaim"
 
-interface YieldSubmitButtonProps {
+interface ClaimSubmitButtonProps {
   className?: string
   label?: string
   onSuccess?: (txHash: string) => void
@@ -29,7 +30,7 @@ interface YieldSubmitButtonProps {
   onTxSubmitted?: (params: { networkId: string; txId: string }) => void
 }
 
-export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
+export const ClaimSubmitButton: FC<ClaimSubmitButtonProps> = ({
   className,
   label,
   onSuccess,
@@ -37,15 +38,19 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   onTxSubmitted,
 }) => {
   const { t } = useTranslation()
-  const { account, token, product, deposit, allTransactions } = useDepositFunds()
-  const accountData = useAccountByAddress(account?.address)
-  const { gotoProgress } = useDepositWizard()
+  const { account, token, product, claimAmount, transaction } = useClaim()
+  const accountData = useAccountByAddress(account as string)
+  const allTransactions = useMemo(
+    () => transaction?.allTransactions || [],
+    [transaction?.allTransactions],
+  )
+  const { gotoProgress: _gotoProgress } = useClaimWizard()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentTransactionIndex, setCurrentTransactionIndex] = useState(0)
 
   const handleSubmit = useCallback(async () => {
-    if (!account || !token || !product || !deposit) {
+    if (!account || !token || !product || !claimAmount) {
       onError?.(new Error("Missing required data for transaction"))
       return
     }
@@ -69,7 +74,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
         }
         setCurrentTransactionIndex(i)
 
-        log.debug("Processing transaction", {
+        log.debug("Processing claim transaction", {
           index: i,
           total: allTransactions.length,
           transactionId: currentTransaction.id,
@@ -100,12 +105,12 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             // from the blockchain to avoid "nonce too low" errors
             try {
               const nonceCount = await api.ethGetTransactionsCount(
-                account?.address as `0x${string}`,
+                account as `0x${string}`,
                 token.networkId,
               )
               currentNonce = nonceCount
             } catch (error) {
-              // Fallback: increment the original nonce
+              // Fallback: increment the original nonce (same as deposit workflow)
               currentNonce = unsignedTx.nonce + i
               log.warn("Failed to fetch current nonce, using fallback", {
                 error,
@@ -114,7 +119,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             }
           }
 
-          // Convert to proper transaction format
+          // Convert to proper transaction format (same as deposit workflow)
           const baseTx = {
             to: unsignedTx.to,
             value: BigInt(unsignedTx.value || "0"),
@@ -124,7 +129,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             nonce: currentNonce,
           }
 
-          // Handle EIP-1559 vs legacy gas pricing
+          // Handle EIP-1559 vs legacy gas pricing (same as deposit workflow)
           let processedTx
           if (unsignedTx.maxFeePerGas && unsignedTx.maxPriorityFeePerGas) {
             // EIP-1559 transaction
@@ -150,15 +155,8 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
           }
 
           const serializedTx = serializeTransactionRequest(processedTx)
-
-          txHash = await api.ethSignAndSend(token.networkId, serializedTx)
-
-          // Call onTxSubmitted only for the last transaction, after it's submitted
-          const isLastTransaction = i === allTransactions.length - 1
-          if (isLastTransaction && onTxSubmitted && token) {
-            // Trigger progress screen after submitting the last transaction
-            onTxSubmitted({ networkId: token.networkId, txId: txHash })
-          }
+          const signedTx = await api.ethSignAndSend(token.networkId, serializedTx)
+          txHash = signedTx
         } else if (isAccountPlatformPolkadot(accountData)) {
           // Handle Polkadot transaction
           const unsignedTx =
@@ -171,15 +169,8 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
           const result = await api.subSubmit(payload as unknown as SignerPayloadJSON)
           txHash = result.hash
-
-          // Call onTxSubmitted only for the last transaction, after it's submitted
-          const isLastTransaction = i === allTransactions.length - 1
-          if (isLastTransaction && onTxSubmitted && token) {
-            // Trigger progress screen after submitting the last transaction
-            onTxSubmitted({ networkId: token.networkId, txId: txHash })
-          }
         } else if (isAccountPlatformSolana(accountData)) {
-          // Handle Solana transaction
+          // Handle Solana transaction (same as deposit workflow)
           const unsignedTx =
             typeof currentTransaction.unsignedTransaction === "string"
               ? currentTransaction.unsignedTransaction
@@ -203,110 +194,88 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
 
             const result = await api.solSubmit(token.networkId, serializedTx)
             txHash = result.signature
-
-            // Call onTxSubmitted only for the last transaction, after it's submitted
-            const isLastTransaction = i === allTransactions.length - 1
-            if (isLastTransaction && onTxSubmitted && token) {
-              // Trigger progress screen after submitting the last transaction
-              onTxSubmitted({ networkId: token.networkId, txId: txHash })
-            }
           } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error)
-            throw new Error(`Failed to process Solana transaction: ${errorMessage}`)
+            log.error("Solana transaction processing failed", { error })
+            throw new Error("Failed to process Solana transaction")
           }
         } else {
-          throw new Error("Unsupported account platform")
+          throw new Error(`Unsupported account type: ${accountData?.type}`)
         }
 
-        // Submit hash to Yield.xyz
-        await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
+        log.debug("Transaction signed and broadcasted", {
+          transactionId: currentTransaction.id,
+          txHash,
+          index: i,
+        })
 
-        // Wait for transaction confirmation before proceeding
+        // Submit transaction hash to Yield.xyz API
         try {
-          await yieldApi.pollStatus(
-            currentTransaction.id,
-            undefined,
-            2000, // Poll every 2 seconds
-            300000, // 5 minutes timeout
-          )
-        } catch (pollError) {
-          // Don't throw here - the transaction might still be successful
-          log.warn("Transaction polling failed", { error: pollError, txId: currentTransaction.id })
+          await yieldApi.submitHash(currentTransaction.id, { hash: txHash })
+          log.debug("Transaction hash submitted to Yield.xyz", {
+            transactionId: currentTransaction.id,
+            txHash,
+          })
+        } catch (error) {
+          log.error("Failed to submit hash to Yield.xyz", {
+            error,
+            transactionId: currentTransaction.id,
+          })
+          // Continue execution even if hash submission fails
+        }
+
+        // Notify about transaction submission
+        onTxSubmitted?.({ networkId: token.networkId, txId: txHash })
+
+        // Wait a bit before processing the next transaction
+        if (i < allTransactions.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000))
         }
       }
 
       // All transactions completed successfully
-      const lastTransaction = allTransactions[allTransactions.length - 1] as { id: string }
-      const lastTxHash = lastTransaction?.id || "completed"
-      onSuccess?.(lastTxHash)
-
-      if (IS_POPUP && token) {
-        gotoProgress({ networkId: token.networkId, txId: lastTxHash })
-      }
-    } catch (cause) {
-      log.error("Failed to submit yield transactions", { cause, product: product.id })
-      const error = cause as Error
-      onError?.(error)
-      notify({
-        title: "Transaction Failed",
-        type: "error",
-        subtitle: error.message,
-      })
+      const finalTxHash = allTransactions[allTransactions.length - 1]?.id || "unknown"
+      onSuccess?.(finalTxHash)
+      notify({ title: t("Claim successful"), type: "success" })
+    } catch (error) {
+      log.error("Claim transaction failed", { error })
+      onError?.(error as Error)
+      notify({ title: t("Claim failed"), type: "error" })
     } finally {
       setIsSubmitting(false)
-      setCurrentTransactionIndex(0)
     }
   }, [
     account,
     token,
     product,
-    deposit,
+    claimAmount,
     allTransactions,
     accountData,
     onError,
     onSuccess,
     onTxSubmitted,
-    gotoProgress,
+    t,
   ])
 
-  // Debug logging for account platform detection
-  log.debug("Account platform detection", {
-    accountType: accountData?.type,
-    isEthereum: isAccountPlatformEthereum(accountData),
-    isPolkadot: isAccountPlatformPolkadot(accountData),
-    isSolana: isAccountPlatformSolana(accountData),
-    allTransactions: allTransactions.length,
-  })
-
-  if (
-    !isAccountPlatformEthereum(accountData) &&
-    !isAccountPlatformPolkadot(accountData) &&
-    !isAccountPlatformSolana(accountData)
-  ) {
-    return (
-      <Button className={classNames("w-full", className)} disabled>
-        {t("Unsupported account type")}
-      </Button>
-    )
-  }
-
-  const buttonLabel = isSubmitting
-    ? allTransactions.length > 1
-      ? t("Processing transaction {{current}} of {{total}}", {
-          current: currentTransactionIndex + 1,
-          total: allTransactions.length,
-        })
-      : t("Processing...")
-    : label || t("Deposit")
+  const isDisabled =
+    isSubmitting || !account || !token || !product || !claimAmount || allTransactions.length === 0
 
   return (
     <Button
-      className={classNames("w-full", className)}
       primary
+      className={classNames("w-full", className)}
+      disabled={isDisabled}
       onClick={handleSubmit}
-      processing={isSubmitting}
     >
-      {buttonLabel}
+      {isSubmitting ? (
+        <span className="flex items-center gap-2">
+          <span>{t("Processing...")}</span>
+          <span className="text-xs opacity-75">
+            ({currentTransactionIndex + 1}/{allTransactions.length})
+          </span>
+        </span>
+      ) : (
+        label || t("Confirm Claim")
+      )}
     </Button>
   )
 }

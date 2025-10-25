@@ -26,6 +26,7 @@ export type {
   TokenDto,
   ValidatorDto,
   YieldsControllerGetYieldValidators200,
+  PendingActionDto,
 } from "@yieldxyz/sdk"
 
 // Extend SDK params to support comma-separated inputToken values

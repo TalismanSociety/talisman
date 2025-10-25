@@ -3,6 +3,7 @@ import type {
   BalancesRequestDto,
   BalancesResponseDto,
   CreateActionDto,
+  CreateManageActionDto,
   SubmitHashDto,
   TransactionDto,
   YieldsControllerGetYieldValidators200,
@@ -96,6 +97,32 @@ class YieldApiService {
       return result as TransactionDto
     } catch (error) {
       log.error("[Yield API] Failed to get transaction status", { error, transactionId })
+      throw error
+    }
+  }
+
+  /**
+   * Initiate a yield manage action (claim rewards, etc.) and get unsigned transactions
+   */
+  async manage(request: CreateManageActionDto): Promise<ActionDto> {
+    try {
+      log.debug("[Yield API] Creating manage action via SDK", {
+        yieldId: request.yieldId,
+        action: request.action,
+      })
+
+      const result = await yieldSdk.manageYield(
+        request.yieldId,
+        request.address,
+        request.action,
+        request.passthrough,
+        request.arguments,
+      )
+
+      log.debug("[Yield API] Manage action created", { result })
+      return result as ActionDto
+    } catch (error) {
+      log.error("[Yield API] Failed to create manage action", { error, request })
       throw error
     }
   }

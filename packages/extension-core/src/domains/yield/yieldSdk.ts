@@ -140,6 +140,26 @@ class YieldSDKService {
     this.ensureConfigured()
     return sdk.api.submitTransactionHash(transactionId, hash)
   }
+
+  /**
+   * Manage yield position (claim rewards, etc.)
+   */
+  async manageYield(
+    yieldId: string,
+    address: string,
+    action: string,
+    passthrough: string,
+    args?: ActionArgumentsDto,
+  ) {
+    this.ensureConfigured()
+    return sdk.api.manageYield({
+      yieldId,
+      address,
+      action: action as "CLAIM_REWARDS", // Type assertion for SDK compatibility
+      passthrough,
+      arguments: args,
+    })
+  }
 }
 
 export const yieldSdk = new YieldSDKService()
