@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
-import { BalanceFormatter } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { Balance, BalanceFormatter, Balances, getBalanceId } from "@talismn/balances"
+import { parseTokenId, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Address } from "extension-core"
 import { SetStateAction, useCallback, useEffect, useMemo } from "react"
@@ -8,21 +8,14 @@ import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
 
-import { useTokenBalances } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  useAccountByAddress,
-  useBalance,
-  usePortfolioBalances,
-  useToken,
-  useTokenRates,
-} from "@ui/state"
+import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
-import { BITTENSOR_TOKEN_ID, DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
+import { DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
 export type WizardStep =
@@ -40,7 +33,7 @@ type WizardState = {
   step: WizardStep
   address: Address | null
   tokenId: TokenId | null
-  poolId: number | string | null // rename to delegateHotkey & type string | null
+  hotkey: string | null
   netuid: number | null
   plancks: bigint | null
   displayMode: "token" | "fiat"
@@ -55,11 +48,23 @@ type WizardState = {
   userMaxSlippage: number
 }
 
+type WizardOpenOptions = {
+  stakeDirection: StakeDirection
+  step: WizardStep
+  tokenId: TokenId
+  netuid: number | null | undefined // known only if unstaking
+  address?: Address
+  hotkey?: string
+  isSeekDiscountDrawerOpen?: boolean
+  isSelectStakeDrawerOpen?: boolean
+  stakeType?: StakeType
+}
+
 const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
   tokenId: null,
-  poolId: null,
+  hotkey: null,
   netuid: null,
   plancks: null,
   displayMode: "token",
@@ -113,24 +118,30 @@ const useInnerOpenClose = (key: innerOpenCloseKey) => {
 
 export const useResetBittensorBondWizard = () => {
   const reset = useCallback(
-    (
-      init: Pick<
-        WizardState,
-        | "address"
-        | "tokenId"
-        | "poolId"
-        | "step"
-        | "isSeekDiscountDrawerOpen"
-        | "isSelectStakeDrawerOpen"
-        | "stakeType"
-        | "netuid"
-        | "stakeDirection"
-      >,
-    ) => setWizardState({ ...DEFAULT_STATE, ...init }),
+    (init: WizardOpenOptions) => setWizardState(Object.assign({}, DEFAULT_STATE, init)),
     [],
   )
 
   return reset
+}
+
+const useNativeTokenId = (dtaoTokenId: TokenId | null) => {
+  return useMemo(() => {
+    if (!dtaoTokenId) return null
+    const parsed = parseTokenId(dtaoTokenId)
+    return subNativeTokenId(parsed.networkId)
+  }, [dtaoTokenId])
+}
+
+const useBalance = (
+  allBalances: Balances,
+  address: Address | null | undefined,
+  tokenId: TokenId | null | undefined,
+): Balance | null => {
+  return useMemo(() => {
+    if (!address || !tokenId) return null
+    return allBalances.get(getBalanceId({ tokenId, address })) ?? null
+  }, [allBalances, address, tokenId])
 }
 
 export const useBittensorBondWizard = () => {
@@ -140,47 +151,36 @@ export const useBittensorBondWizard = () => {
 
   const { subnetData } = useCombinedSubnetData()
 
-  const tokenBalances = useTokenBalances({
-    tokenId: BITTENSOR_TOKEN_ID,
-    balances: allBalances,
-  })
-
   const {
-    poolId,
+    hotkey,
     netuid,
     step,
     stakeType,
     displayMode,
     hash,
-    tokenId,
+    tokenId: dTaoTokenId,
     address,
     plancks,
     userMaxSlippage,
     stakeDirection,
   } = useWizardState()
 
-  const balance = useBalance(address, tokenId)
+  const dtaoBalance = useBalance(allBalances, address, dTaoTokenId)
+  const nativeTokenId = useNativeTokenId(dTaoTokenId)
+  const nativeBalance = useBalance(allBalances, address, nativeTokenId)
   const account = useAccountByAddress(address)
-  const token = useToken(tokenId)
-  const feeToken = useFeeToken(token?.id)
-  const tokenRates = useTokenRates(tokenId)
-  const existentialDeposit = useExistentialDeposit(token?.id)
+  const nativeToken = useToken(nativeTokenId)
+  const dtaoToken = useToken(dTaoTokenId)
+  const feeToken = useFeeToken(nativeToken?.id)
+  const tokenRates = useTokenRates(nativeTokenId)
+  const existentialDeposit = useExistentialDeposit(nativeToken?.id)
   const accountPicker = useInnerOpenClose("isAccountPickerOpen")
   const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
   const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
   const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
   const seekDiscountDrawer = useInnerOpenClose("isSeekDiscountDrawerOpen")
 
-  const { data: sapi } = useScaleApi(token?.networkId)
-
-  // active stake position
-  const selectedStake = useMemo(
-    () =>
-      tokenBalances.detailRows.find(
-        ({ meta }) => meta?.hotkey === poolId && meta?.netuid === netuid,
-      ),
-    [netuid, poolId, tokenBalances.detailRows],
-  )
+  const { data: sapi } = useScaleApi(nativeToken?.networkId)
 
   const {
     payload,
@@ -190,7 +190,7 @@ export const useBittensorBondWizard = () => {
     feeEstimate,
     errorFeeEstimate,
     isLoadingFeeEstimate,
-    currentPoolId,
+    currentHotkey: currentPoolId,
     minJoinBond,
     minAlphaUnstake,
 
@@ -205,13 +205,13 @@ export const useBittensorBondWizard = () => {
   } = useGetBittensorStakeInfo({
     sapi,
     address,
-    poolId,
+    hotkey,
     netuid,
     plancks,
-    chainId: token?.networkId,
+    chainId: nativeToken?.networkId,
     stakeType,
     userMaxSlippage,
-    selectedStake,
+    //selectedStake,
     stakeDirection,
   })
 
@@ -229,33 +229,33 @@ export const useBittensorBondWizard = () => {
       typeof plancks === "bigint"
         ? new BalanceFormatter(
             isSubnetUnbond ? BigInt(Math.round(taoAmountFromAlpha)) : plancks,
-            token?.decimals,
+            nativeToken?.decimals,
             tokenRates,
           )
         : null,
-    [isSubnetUnbond, plancks, taoAmountFromAlpha, token?.decimals, tokenRates],
+    [isSubnetUnbond, plancks, taoAmountFromAlpha, nativeToken?.decimals, tokenRates],
   )
 
   const amountToStakeAlpha = useMemo(
     () =>
       typeof plancks === "bigint"
-        ? new BalanceFormatter(plancks, token?.decimals, tokenRates)
+        ? new BalanceFormatter(plancks, nativeToken?.decimals, tokenRates)
         : null,
-    [plancks, token?.decimals, tokenRates],
+    [plancks, nativeToken?.decimals, tokenRates],
   )
 
   // estimatedAmountToStakeInTao includes slippage
   const estimatedAmountToStake = useMemo(() => {
     const expectedTaoWithSlippagePlancks =
-      tokensToPlanck(String(expectedTaoWithSlippage), token?.decimals) || "0"
+      tokensToPlanck(String(expectedTaoWithSlippage), nativeToken?.decimals) || "0"
     return typeof plancks === "bigint"
       ? new BalanceFormatter(
           isSubnetUnbond ? BigInt(Math.round(parseFloat(expectedTaoWithSlippagePlancks))) : plancks,
-          token?.decimals,
+          nativeToken?.decimals,
           tokenRates,
         )
       : null
-  }, [expectedTaoWithSlippage, isSubnetUnbond, plancks, token?.decimals, tokenRates])
+  }, [expectedTaoWithSlippage, isSubnetUnbond, plancks, nativeToken?.decimals, tokenRates])
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
@@ -267,8 +267,8 @@ export const useBittensorBondWizard = () => {
     [],
   )
 
-  const setPoolId = useCallback(
-    (poolId: number | string) => setWizardState((prev) => ({ ...prev, poolId })),
+  const setHotkey = useCallback(
+    (hotkey: string) => setWizardState((prev) => ({ ...prev, hotkey })),
     [],
   )
   const setNetuid = useCallback(
@@ -301,14 +301,14 @@ export const useBittensorBondWizard = () => {
   const isStakeFormValid = useMemo(
     () =>
       !!account &&
-      !!token &&
-      !!poolId &&
+      !!nativeToken &&
+      !!hotkey &&
       (stakeType === "root" ? true : !!netuid) &&
       !!amountToStake &&
       typeof minJoinBond === "bigint" &&
       plancks &&
       plancks > 0n,
-    [account, amountToStake, minJoinBond, netuid, plancks, poolId, stakeType, token],
+    [account, amountToStake, minJoinBond, netuid, plancks, hotkey, stakeType, nativeToken],
   )
 
   const isUnstakeFormValid = useMemo(() => plancks && plancks > 0n, [plancks])
@@ -325,10 +325,10 @@ export const useBittensorBondWizard = () => {
      * if user is already staking in pool, set poolId to that pool
      * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
      */
-    if (!!currentPoolId && !poolId && currentPoolId !== poolId && stakeDirection === "bond") {
-      setWizardState((prev) => ({ ...prev, poolId: currentPoolId }))
+    if (!!currentPoolId && !hotkey && currentPoolId !== hotkey && stakeDirection === "bond") {
+      setWizardState((prev) => ({ ...prev, hotkey: currentPoolId }))
     }
-  }, [currentPoolId, poolId, stakeDirection, step, tokenId])
+  }, [currentPoolId, hotkey, stakeDirection, step])
 
   const setStep = useCallback(
     (step: WizardStep) => {
@@ -343,30 +343,32 @@ export const useBittensorBondWizard = () => {
 
   const onSubmitted = useCallback(
     (hash: Hex) => {
-      genericEvent("Bittensor Bond", { tokenId })
+      genericEvent("Bittensor Bond", { tokenId: nativeTokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId],
+    [genericEvent, nativeTokenId],
   )
 
   const totalStakedPlancks = useMemo(
-    () => BigInt(selectedStake?.meta.amountStaked || 0),
-    [selectedStake?.meta.amountStaked],
+    () => dtaoBalance?.free.planck ?? 0n, // dtaoBalance.sum.planck, // BigInt(selectedStake?.meta.amountStaked || 0),
+    [dtaoBalance?.free.planck],
   )
 
   const maxPlancks = useMemo(() => {
     if (stakeDirection === "unbond") {
       return totalStakedPlancks
     }
-    if (!balance || !existentialDeposit || !feeEstimate) return null
-    if (existentialDeposit.planck + feeEstimate * 11n > balance.transferable.planck) return null
-    const maxRootStake = balance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
+    if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
+    if (existentialDeposit.planck + feeEstimate * 11n > nativeBalance.transferable.planck)
+      return null
+    const maxRootStake =
+      nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
     if (stakeType === "subnet") {
       return maxRootStake - talismanFee
     }
     return maxRootStake
   }, [
-    balance,
+    nativeBalance,
     existentialDeposit,
     feeEstimate,
     stakeDirection,
@@ -382,7 +384,7 @@ export const useBittensorBondWizard = () => {
     if (stakeType === "subnet") {
       const expectedAlphaWithSlippagePlancks = BigInt(
         Math.round(
-          Number(tokensToPlanck(String(expectedAlphaWithSlippage), token?.decimals) || "0"),
+          Number(tokensToPlanck(String(expectedAlphaWithSlippage), nativeToken?.decimals) || "0"),
         ),
       )
 
@@ -394,40 +396,45 @@ export const useBittensorBondWizard = () => {
     plancks,
     stakeDirection,
     stakeType,
-    token?.decimals,
+    nativeToken?.decimals,
     totalStakedPlancks,
   ])
 
   const stakeInputErrorMessage = useMemo(() => {
     if (!amountToStake || typeof minJoinBond !== "bigint") return null
 
-    if (!!balance && !!amountToStake.planck && amountToStake.planck > balance.transferable.planck)
+    if (
+      !!nativeBalance &&
+      !!amountToStake.planck &&
+      amountToStake.planck > nativeBalance.transferable.planck
+    )
       return t("Insufficient balance")
 
     if (
-      !!balance &&
+      !!nativeBalance &&
       !!feeEstimate &&
       !!amountToStake.planck &&
-      amountToStake.planck + feeEstimate > balance.transferable.planck
+      amountToStake.planck + feeEstimate > nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee")
 
     if (
-      !!balance &&
+      !!nativeBalance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
       !!amountToStake.planck &&
-      existentialDeposit.planck + amountToStake.planck + feeEstimate > balance.transferable.planck
+      existentialDeposit.planck + amountToStake.planck + feeEstimate >
+        nativeBalance.transferable.planck
     )
       return t("Insufficient balance to cover fee and keep account alive")
 
     if (
-      !!balance &&
+      !!nativeBalance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
       !!amountToStake.planck &&
       existentialDeposit.planck + amountToStake.planck + feeEstimate * 10n >
-        balance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
+        nativeBalance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
@@ -435,8 +442,8 @@ export const useBittensorBondWizard = () => {
 
     if (amountToStake.planck < minJoinBond)
       return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minJoinBond, token?.decimals).tokens,
-        symbol: token?.symbol,
+        amount: new BalanceFormatter(minJoinBond, nativeToken?.decimals).tokens,
+        symbol: nativeToken?.symbol,
       })
 
     return null
@@ -444,19 +451,19 @@ export const useBittensorBondWizard = () => {
     t,
     amountToStake,
     minJoinBond,
-    balance,
+    nativeBalance,
     feeEstimate,
     existentialDeposit?.planck,
-    token?.decimals,
-    token?.symbol,
+    nativeToken?.decimals,
+    nativeToken?.symbol,
   ])
 
   const unstakeInputErrorMessage = useMemo(() => {
     if (
-      !!balance &&
+      !!nativeBalance &&
       !!feeEstimate &&
       !!existentialDeposit?.planck &&
-      existentialDeposit.planck + feeEstimate > balance.transferable.planck
+      existentialDeposit.planck + feeEstimate > nativeBalance.transferable.planck
     ) {
       return t("Insufficient balance to cover fee and keep account alive")
     }
@@ -474,19 +481,20 @@ export const useBittensorBondWizard = () => {
 
     if (
       plancks &&
-      Number(planckToTokens(plancks?.toString(), token?.decimals)) < minAlphaUnstake &&
+      Number(planckToTokens(plancks?.toString(), nativeToken?.decimals)) < minAlphaUnstake &&
       isSubnetUnbond
     ) {
       return t(
         `Minimum unstake amount is ${minAlphaUnstake.toFixed(4)} ${
-          selectedStake?.meta?.dynamicInfo?.tokenSymbol
+          dtaoBalance?.token?.symbol
+          // selectedStake?.meta?.dynamicInfo?.tokenSymbol
         }`,
       )
     }
 
     return null
   }, [
-    balance,
+    nativeBalance,
     feeEstimate,
     existentialDeposit?.planck,
     plancks,
@@ -494,10 +502,10 @@ export const useBittensorBondWizard = () => {
     newStakeTotal,
     minJoinBond,
     isSubnetUnbond,
-    token?.decimals,
+    nativeToken?.decimals,
     minAlphaUnstake,
     t,
-    selectedStake?.meta?.dynamicInfo?.tokenSymbol,
+    dtaoBalance?.token?.symbol,
   ])
 
   const inputErrorMessage = useMemo(
@@ -507,9 +515,10 @@ export const useBittensorBondWizard = () => {
 
   return {
     account,
-    token,
+    nativeToken,
+    dtaoToken,
     tokenRates,
-    poolId,
+    hotkey,
     netuid,
     plancks,
     amountToStake,
@@ -529,7 +538,8 @@ export const useBittensorBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
     stakeDirection,
-    selectedStake,
+    // selectedStake,
+    dtaoBalance,
     selectedSubnet,
     newStakeTotal,
     isSubnetUnbond,
@@ -557,7 +567,7 @@ export const useBittensorBondWizard = () => {
     setAddress,
     setTokenId,
     setNetuid,
-    setPoolId,
+    setHotkey,
     setPlancks,
     setStep,
     setStakeType,

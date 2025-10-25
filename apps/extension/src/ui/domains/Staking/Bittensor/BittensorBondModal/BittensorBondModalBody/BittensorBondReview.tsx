@@ -16,13 +16,13 @@ import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 export const BittensorBondReview = () => {
   const { t } = useTranslation()
   const {
-    token,
+    nativeToken,
     amountToStake,
     account,
     onSubmitted,
     payload,
     txMetadata,
-    poolId,
+    hotkey,
     stakeDirection,
     newStakeTotal,
   } = useBittensorBondWizard()
@@ -47,10 +47,10 @@ export const BittensorBondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2">
           <div className="whitespace-nowrap">{t("Amount")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
+            <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
             <TokensAndFiat
               isBalance
-              tokenId={token?.id}
+              tokenId={nativeToken?.id}
               planck={amountToStake?.planck}
               noCountUp
               tokensClassName="text-body"
@@ -61,7 +61,7 @@ export const BittensorBondReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2">
           <div className="whitespace-nowrap">{t("Account")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
+            <StakingAccountDisplay address={account.address} chainId={nativeToken?.networkId} />
           </div>
         </div>
         <div className="py-8">
@@ -70,22 +70,22 @@ export const BittensorBondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Validator")} </div>
           <div className="text-body truncate">
-            <BittensorDelegatorNameButton poolId={poolId} />
+            <BittensorDelegatorNameButton hotkey={hotkey} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
             <Tokens
-              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={token?.symbol}
+              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
+              symbol={nativeToken?.symbol}
             />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
           <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
           <div className="text-body truncate">
-            <StakingUnbondingPeriod chainId={token?.networkId} />
+            <StakingUnbondingPeriod chainId={nativeToken?.networkId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">

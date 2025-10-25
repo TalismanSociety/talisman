@@ -11,15 +11,16 @@ import { BITTENSOR_TOKEN_ID } from "../Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useUnbondModal } from "./useUnbondModal"
 
+// TODO: split into 2 components: one for bittensor and one for nompools
 export const UnbondButton: FC<{
   netuid?: number
   tokenId: TokenId
   address: string
   className?: string
   variant: "small" | "large"
-  poolId: number | string | undefined
+  poolIdOrHotkey: number | string | undefined
   isBittensorUnbond: boolean
-}> = ({ tokenId, address, className, variant, poolId, isBittensorUnbond, netuid }) => {
+}> = ({ tokenId, address, className, variant, poolIdOrHotkey, isBittensorUnbond, netuid }) => {
   const { t } = useTranslation()
   const { open } = useUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
@@ -35,19 +36,19 @@ export const UnbondButton: FC<{
   )
 
   const handleClick = useCallback(() => {
-    if (isBittensorUnbond) {
+    if (isBittensorUnbond && typeof poolIdOrHotkey === "string") {
       handleOpenBittensorModal({
         tokenId,
         address,
-        poolId: poolId || "",
-        netuid: netuid,
+        hotkey: poolIdOrHotkey || "",
+        netuid,
         stakeDirection: "unbond",
         stakeType: netuid ? "subnet" : "root",
         step: netuid ? "subnet-form" : "form",
       })
       return
     }
-    open({ tokenId, address, poolId })
+    open({ tokenId, address, poolId: poolIdOrHotkey })
     genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
   }, [
     address,
@@ -55,7 +56,7 @@ export const UnbondButton: FC<{
     handleOpenBittensorModal,
     isBittensorUnbond,
     open,
-    poolId,
+    poolIdOrHotkey,
     tokenId,
     netuid,
   ])

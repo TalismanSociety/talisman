@@ -9,8 +9,8 @@ import { BondOption as BondOptionType } from "../../hooks/bittensor/types"
 
 type BittensorBondOptionProps = {
   option: BondOptionType
-  selectedPoolId: number | string | null | undefined
-  handleSelectPoolId: (poolId: number | string) => void
+  selectedHotkey: string | null | undefined
+  handleSelectHotkey: (hotkey: string) => void
   tokenId: string
 }
 
@@ -34,18 +34,18 @@ export const BittensorBondOptionSkeleton = ({ isRecommended }: { isRecommended?:
 
 export const BittensorBondOption = ({
   option,
-  selectedPoolId,
-  handleSelectPoolId,
+  selectedHotkey,
+  handleSelectHotkey,
   tokenId,
 }: BittensorBondOptionProps) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
-  const isSelected = option.poolId === selectedPoolId
+  const isSelected = option.poolId === selectedHotkey
 
   return (
     <button
       key={option.poolId}
-      onClick={() => handleSelectPoolId(option.poolId)}
+      onClick={() => handleSelectHotkey(option.poolId)}
       className={classNames(
         "bg-black-tertiary text-body-secondary border-black-tertiary flex w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs",
         isSelected && "border-grey-400 text-grey-300",

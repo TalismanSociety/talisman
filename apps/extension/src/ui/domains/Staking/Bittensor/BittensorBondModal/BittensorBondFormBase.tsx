@@ -89,39 +89,39 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, stakeDirection, netuid, plancks } = useBittensorBondWizard()
+  const { nativeToken, stakeDirection, netuid, plancks } = useBittensorBondWizard()
 
   const tokenPlancks = useMemo(
-    () => planckToTokens(String(plancks || 0n), token?.decimals),
-    [plancks, token?.decimals],
+    () => planckToTokens(String(plancks || 0n), nativeToken?.decimals),
+    [plancks, nativeToken?.decimals],
   )
 
   const symbol = useMemo(() => {
     if (stakeDirection === "unbond" && netuid !== ROOT_NETUID) {
       return `SN${netuid}`
     }
-    return token?.symbol
-  }, [netuid, stakeDirection, token?.symbol])
+    return nativeToken?.symbol
+  }, [netuid, stakeDirection, nativeToken?.symbol])
 
-  if (!token) return null
+  if (!nativeToken) return null
 
   return (
     <DisplayContainer>
-      <Tokens amount={tokenPlancks} decimals={token.decimals} symbol={symbol} noCountUp />
+      <Tokens amount={tokenPlancks} decimals={nativeToken.decimals} symbol={symbol} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenInput = () => {
-  const { token, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
+  const { nativeToken, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
     useBittensorBondWizard()
 
   const symbol = useMemo(() => {
     if (isSubnetUnbond) {
       return `SN${netuid}`
     }
-    return token?.symbol
-  }, [isSubnetUnbond, netuid, token?.symbol])
+    return nativeToken?.symbol
+  }, [isSubnetUnbond, netuid, nativeToken?.symbol])
 
   const defaultValue = useMemo(
     () => (isSubnetUnbond ? amountToStakeAlpha?.tokens : (amountToStake?.tokens ?? "")),
@@ -131,9 +131,9 @@ const TokenInput = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token) {
+      if (nativeToken) {
         try {
-          const plancks = tokensToPlanck(e.target.value, token.decimals)
+          const plancks = tokensToPlanck(e.target.value, nativeToken.decimals)
 
           return setPlancks(BigInt(plancks))
         } catch (err) {
@@ -143,7 +143,7 @@ const TokenInput = () => {
 
       return setPlancks(null)
     },
-    [setPlancks, token],
+    [setPlancks, nativeToken],
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -176,7 +176,7 @@ const TokenInput = () => {
         {isSubnetUnbond ? (
           <AssetLogo className="text-lg" url={DTAO_LOGO} />
         ) : (
-          <TokenLogo className="text-lg" tokenId={token?.id} />
+          <TokenLogo className="text-lg" tokenId={nativeToken?.id} />
         )}
         <div>{symbol}</div>
       </div>
@@ -185,8 +185,14 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, amountToStake, setPlancks, isSubnetUnbond, taoToAlphaConversionRate } =
-    useBittensorBondWizard()
+  const {
+    nativeToken,
+    tokenRates,
+    amountToStake,
+    setPlancks,
+    isSubnetUnbond,
+    taoToAlphaConversionRate,
+  } = useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
@@ -196,19 +202,21 @@ const FiatInput = () => {
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && tokenRates?.[currency]?.price && e.target.value) {
+      if (nativeToken && tokenRates?.[currency]?.price && e.target.value) {
         try {
           const fiat = parseFloat(e.target.value)
           let tokens: string = (fiat / tokenRates[currency].price).toFixed(
-            Math.ceil(token.decimals / 3),
+            Math.ceil(nativeToken.decimals / 3),
           )
 
           if (isSubnetUnbond) {
             tokens = String(
-              (Number(tokens) * taoToAlphaConversionRate).toFixed(Math.ceil(token.decimals / 3)),
+              (Number(tokens) * taoToAlphaConversionRate).toFixed(
+                Math.ceil(nativeToken.decimals / 3),
+              ),
             )
           }
-          const plancks = tokensToPlanck(tokens, token.decimals)
+          const plancks = tokensToPlanck(tokens, nativeToken.decimals)
           return setPlancks(BigInt(plancks))
         } catch (err) {
           // invalid input, ignore
@@ -218,7 +226,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, token, tokenRates],
+    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, nativeToken, tokenRates],
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -260,7 +268,7 @@ const FiatInput = () => {
 export const AmountEdit = () => {
   const { t } = useTranslation()
   const {
-    token,
+    nativeToken: token,
     tokenRates,
     displayMode,
     toggleDisplayMode,
@@ -338,9 +346,9 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
   const {
     account,
     accountPicker,
-    token,
+    nativeToken,
     payload,
-    poolId,
+    hotkey,
     selectedSubnet,
     selectStakeDrawer,
     seekDiscountDrawer,
@@ -366,7 +374,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Asset")}</div>
           <div className="overflow-hidden">
-            <AssetPill token={token} />
+            <AssetPill token={nativeToken} />
           </div>
         </div>
         <div className="flex h-16 items-center justify-between gap-4">
@@ -386,7 +394,9 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           </div>
           {stakeDirection === "bond" ? (
             <div>
-              {!!token && !!account && <AvailableBalance token={token} account={account} />}
+              {!!nativeToken && !!account && (
+                <AvailableBalance token={nativeToken} account={account} />
+              )}
             </div>
           ) : (
             <BittensorAvailableToUnstake />
@@ -405,7 +415,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             <div className="whitespace-nowrap">{t("Select Validator")}</div>
             <div className="text-body truncate">
               <BittensorDelegatorNameButton
-                poolId={poolId}
+                hotkey={hotkey}
                 isDisabled={stakeType === "subnet" && !netuid}
               />
             </div>
@@ -418,7 +428,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
             <div className="text-body flex items-center gap-2 truncate">
-              <Tokens amount={expectedTaoWithSlippage} symbol={token?.symbol} />
+              <Tokens amount={expectedTaoWithSlippage} symbol={nativeToken?.symbol} />
               <Fiat amount={estimatedAmountToStake?.fiat(currency) ?? 0} noCountUp />
             </div>
           </div>
@@ -427,8 +437,8 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
             <Tokens
-              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={stakeType === "root" ? token?.symbol : selectedSubnet.symbol}
+              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
+              symbol={stakeType === "root" ? nativeToken?.symbol : selectedSubnet.symbol}
             />
           </div>
         </div>
@@ -456,7 +466,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       <BondAccountPicker
         isOpen={accountPicker.isOpen}
         account={account}
-        token={token}
+        token={nativeToken}
         handleClose={accountPicker.close}
         setAddress={setAddress}
       />

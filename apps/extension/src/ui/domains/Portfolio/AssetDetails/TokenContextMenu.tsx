@@ -1,4 +1,4 @@
-import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, SubDTaoToken, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
@@ -14,11 +14,12 @@ import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
+import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken } from "@ui/state"
+import { useBalances, useToken } from "@ui/state"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -55,12 +56,39 @@ const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    // window.open(`/tokens/${tokenId}`, "_blank")
     api.dashboardOpen(`/settings/networks-tokens/tokens/${tokenId}`)
     genericEvent("open view token details", { from: "token menu" })
   }, [genericEvent, tokenId])
 
   return <ContextMenuItem onClick={handleClick}>{t("View token details")}</ContextMenuItem>
+}
+
+const UnstakeDTaoMenuItem: FC<{ token: SubDTaoToken }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+
+  const { open } = useBittensorBondModal()
+
+  const balances = useBalances("owned")
+  const tokenBalances = useMemo(() => balances.find({ token }), [balances, token])
+
+  const handleClick = useCallback(() => {
+    const account = tokenBalances.each.sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
+
+    open({
+      tokenId: token.id,
+      address: account.address,
+      netuid: token.netuid,
+      hotkey: token.hotkey ?? "",
+      stakeDirection: "unbond",
+      stakeType: token.netuid ? "subnet" : "root",
+    })
+    genericEvent("open inline staking modal", { tokenId: token.id })
+  }, [genericEvent, open, token.hotkey, token.id, token.netuid, tokenBalances])
+
+  if (!tokenBalances.count) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Unstake")}</ContextMenuItem>
 }
 
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
@@ -125,9 +153,11 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           </Suspense>
         )}
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
+
         <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Stake" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
+        {token?.type === "substrate-dtao" && <UnstakeDTaoMenuItem token={token} />}
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
       </ContextMenuContent>
     </ContextMenu>

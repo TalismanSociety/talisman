@@ -84,7 +84,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: Lo
           tokenId={tokenId}
           address={rowAddress}
           variant="small"
-          poolId={rowMeta.poolId ?? rowMeta.hotkey}
+          poolIdOrHotkey={rowMeta.poolId ?? rowMeta.hotkey}
           isBittensorUnbond={tokenId === BITTENSOR_TOKEN_ID}
         />
       ) : null}

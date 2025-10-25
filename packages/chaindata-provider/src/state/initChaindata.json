@@ -1176,7 +1176,7 @@
       "name": "0 | Root Τ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 0,
+      "netuid": 0,
       "subnetName": "Root"
     },
     {
@@ -1189,7 +1189,7 @@
       "name": "1 | Apex α",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 1,
+      "netuid": 1,
       "subnetName": "Apex"
     },
     {
@@ -1202,7 +1202,7 @@
       "name": "10 | Swap κ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 10,
+      "netuid": 10,
       "subnetName": "Swap"
     },
     {
@@ -1215,7 +1215,7 @@
       "name": "100 | Subnet 100 დ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 100,
+      "netuid": 100,
       "subnetName": "Subnet 100"
     },
     {
@@ -1228,7 +1228,7 @@
       "name": "101 | Subnet 101 ე",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 101,
+      "netuid": 101,
       "subnetName": "Subnet 101"
     },
     {
@@ -1241,7 +1241,7 @@
       "name": "102 | BetterTherapy ვ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 102,
+      "netuid": 102,
       "subnetName": "BetterTherapy"
     },
     {
@@ -1254,7 +1254,7 @@
       "name": "103 | HappyAI Ա",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 103,
+      "netuid": 103,
       "subnetName": "HappyAI"
     },
     {
@@ -1267,7 +1267,7 @@
       "name": "104 | for sale (burn to uid1) Բ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 104,
+      "netuid": 104,
       "subnetName": "for sale (burn to uid1)"
     },
     {
@@ -1280,7 +1280,7 @@
       "name": "105 | SoundsRight Գ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 105,
+      "netuid": 105,
       "subnetName": "SoundsRight"
     },
     {
@@ -1293,7 +1293,7 @@
       "name": "106 | VoidAI Դ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 106,
+      "netuid": 106,
       "subnetName": "VoidAI"
     },
     {
@@ -1306,7 +1306,7 @@
       "name": "107 | Tiger ALPHA Ե",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 107,
+      "netuid": 107,
       "subnetName": "Tiger ALPHA"
     },
     {
@@ -1319,7 +1319,7 @@
       "name": "108 | Internet of Intelligence ㅊ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 108,
+      "netuid": 108,
       "subnetName": "Internet of Intelligence"
     },
     {
@@ -1332,7 +1332,7 @@
       "name": "109 | Taoillium ՞",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 109,
+      "netuid": 109,
       "subnetName": "Taoillium"
     },
     {
@@ -1345,7 +1345,7 @@
       "name": "11 | Dippy Studio λ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 11,
+      "netuid": 11,
       "subnetName": "Dippy Studio"
     },
     {
@@ -1358,7 +1358,7 @@
       "name": "110 | Rich Kids of TAO Ѐ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 110,
+      "netuid": 110,
       "subnetName": "Rich Kids of TAO"
     },
     {
@@ -1371,7 +1371,7 @@
       "name": "111 | oneoneone Ё",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 111,
+      "netuid": 111,
       "subnetName": "oneoneone"
     },
     {
@@ -1384,7 +1384,7 @@
       "name": "112 | minotaur Ђ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 112,
+      "netuid": 112,
       "subnetName": "minotaur"
     },
     {
@@ -1397,7 +1397,7 @@
       "name": "113 | taonado Ѓ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 113,
+      "netuid": 113,
       "subnetName": "taonado"
     },
     {
@@ -1410,7 +1410,7 @@
       "name": "114 | Level 114 Є",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 114,
+      "netuid": 114,
       "subnetName": "Level 114"
     },
     {
@@ -1423,7 +1423,7 @@
       "name": "115 | SoulX Ѕ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 115,
+      "netuid": 115,
       "subnetName": "SoulX"
     },
     {
@@ -1436,7 +1436,7 @@
       "name": "116 | TaoLend ъ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 116,
+      "netuid": 116,
       "subnetName": "TaoLend"
     },
     {
@@ -1449,7 +1449,7 @@
       "name": "117 | BrainPlay Ⲁ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 117,
+      "netuid": 117,
       "subnetName": "BrainPlay"
     },
     {
@@ -1462,7 +1462,7 @@
       "name": "118 | HODL ETF ⲁ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 118,
+      "netuid": 118,
       "subnetName": "HODL ETF"
     },
     {
@@ -1475,7 +1475,7 @@
       "name": "119 | Akihabara Ⲃ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 119,
+      "netuid": 119,
       "subnetName": "Akihabara"
     },
     {
@@ -1488,7 +1488,7 @@
       "name": "12 | Compute Horde μ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 12,
+      "netuid": 12,
       "subnetName": "Compute Horde"
     },
     {
@@ -1501,7 +1501,7 @@
       "name": "120 | affine ⲃ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 120,
+      "netuid": 120,
       "subnetName": "affine"
     },
     {
@@ -1514,7 +1514,7 @@
       "name": "121 | sundae_bar Ⲅ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 121,
+      "netuid": 121,
       "subnetName": "sundae_bar"
     },
     {
@@ -1527,7 +1527,7 @@
       "name": "122 | Bitrecs ⲅ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 122,
+      "netuid": 122,
       "subnetName": "Bitrecs"
     },
     {
@@ -1540,7 +1540,7 @@
       "name": "123 | MANTIS 𑀀",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 123,
+      "netuid": 123,
       "subnetName": "MANTIS"
     },
     {
@@ -1553,7 +1553,7 @@
       "name": "124 | Swarm 𑀁",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 124,
+      "netuid": 124,
       "subnetName": "Swarm"
     },
     {
@@ -1566,7 +1566,7 @@
       "name": "125 | 8 Ball 𑀂",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 125,
+      "netuid": 125,
       "subnetName": "8 Ball"
     },
     {
@@ -1579,7 +1579,7 @@
       "name": "126 | Tiger Beta 𑀃",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 126,
+      "netuid": 126,
       "subnetName": "Tiger Beta"
     },
     {
@@ -1592,7 +1592,7 @@
       "name": "127 | Astrid Intelligence 𑀅",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 127,
+      "netuid": 127,
       "subnetName": "Astrid Intelligence"
     },
     {
@@ -1605,7 +1605,7 @@
       "name": "128 | ByteLeap න",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 128,
+      "netuid": 128,
       "subnetName": "ByteLeap"
     },
     {
@@ -1618,7 +1618,7 @@
       "name": "13 | Data Universe ν",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 13,
+      "netuid": 13,
       "subnetName": "Data Universe"
     },
     {
@@ -1631,7 +1631,7 @@
       "name": "14 | TAOHash ξ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 14,
+      "netuid": 14,
       "subnetName": "TAOHash"
     },
     {
@@ -1644,7 +1644,7 @@
       "name": "15 | BitQuant ο",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 15,
+      "netuid": 15,
       "subnetName": "BitQuant"
     },
     {
@@ -1657,7 +1657,7 @@
       "name": "16 | BitKoop π",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 16,
+      "netuid": 16,
       "subnetName": "BitKoop"
     },
     {
@@ -1670,7 +1670,7 @@
       "name": "17 | 404—GEN ρ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 17,
+      "netuid": 17,
       "subnetName": "404—GEN"
     },
     {
@@ -1683,7 +1683,7 @@
       "name": "18 | Zeus σ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 18,
+      "netuid": 18,
       "subnetName": "Zeus"
     },
     {
@@ -1696,7 +1696,7 @@
       "name": "19 | Nineteen.ai t",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 19,
+      "netuid": 19,
       "subnetName": "Nineteen.ai"
     },
     {
@@ -1709,7 +1709,7 @@
       "name": "2 | omron 🥩 β",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 2,
+      "netuid": 2,
       "subnetName": "omron 🥩"
     },
     {
@@ -1722,7 +1722,7 @@
       "name": "20 | Bounty Hunter υ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 20,
+      "netuid": 20,
       "subnetName": "Bounty Hunter"
     },
     {
@@ -1735,7 +1735,7 @@
       "name": "21 | OMEGA Any-to-Any φ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 21,
+      "netuid": 21,
       "subnetName": "OMEGA Any-to-Any"
     },
     {
@@ -1748,7 +1748,7 @@
       "name": "22 | Desearch χ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 22,
+      "netuid": 22,
       "subnetName": "Desearch"
     },
     {
@@ -1761,7 +1761,7 @@
       "name": "23 | Nuance ψ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 23,
+      "netuid": 23,
       "subnetName": "Nuance"
     },
     {
@@ -1774,7 +1774,7 @@
       "name": "24 | OMEGA Labs ω",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 24,
+      "netuid": 24,
       "subnetName": "OMEGA Labs"
     },
     {
@@ -1787,7 +1787,7 @@
       "name": "25 | Mainframe א",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 25,
+      "netuid": 25,
       "subnetName": "Mainframe"
     },
     {
@@ -1800,7 +1800,7 @@
       "name": "26 | Kinitro ב",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 26,
+      "netuid": 26,
       "subnetName": "Kinitro"
     },
     {
@@ -1813,7 +1813,7 @@
       "name": "27 | Neural Internet ג",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 27,
+      "netuid": 27,
       "subnetName": "Neural Internet"
     },
     {
@@ -1826,7 +1826,7 @@
       "name": "28 | Subnet 28 ד",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 28,
+      "netuid": 28,
       "subnetName": "Subnet 28"
     },
     {
@@ -1839,7 +1839,7 @@
       "name": "29 | Coldint ה",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 29,
+      "netuid": 29,
       "subnetName": "Coldint"
     },
     {
@@ -1852,7 +1852,7 @@
       "name": "3 | τemplar γ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 3,
+      "netuid": 3,
       "subnetName": "τemplar"
     },
     {
@@ -1865,7 +1865,7 @@
       "name": "30 | Bettensor ו",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 30,
+      "netuid": 30,
       "subnetName": "Bettensor"
     },
     {
@@ -1878,7 +1878,7 @@
       "name": "31 | CANDLES ז",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 31,
+      "netuid": 31,
       "subnetName": "CANDLES"
     },
     {
@@ -1891,7 +1891,7 @@
       "name": "32 | ItsAI ח",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 32,
+      "netuid": 32,
       "subnetName": "ItsAI"
     },
     {
@@ -1904,7 +1904,7 @@
       "name": "33 | ReadyAI ט",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 33,
+      "netuid": 33,
       "subnetName": "ReadyAI"
     },
     {
@@ -1917,7 +1917,7 @@
       "name": "34 | BitMind י",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 34,
+      "netuid": 34,
       "subnetName": "BitMind"
     },
     {
@@ -1930,7 +1930,7 @@
       "name": "35 | Cartha ך",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 35,
+      "netuid": 35,
       "subnetName": "Cartha"
     },
     {
@@ -1943,7 +1943,7 @@
       "name": "36 | Web Agents - Autoppia כ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 36,
+      "netuid": 36,
       "subnetName": "Web Agents - Autoppia"
     },
     {
@@ -1956,7 +1956,7 @@
       "name": "37 | Aurelius ל",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 37,
+      "netuid": 37,
       "subnetName": "Aurelius"
     },
     {
@@ -1969,7 +1969,7 @@
       "name": "38 | Distributed Training ם",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 38,
+      "netuid": 38,
       "subnetName": "Distributed Training"
     },
     {
@@ -1982,7 +1982,7 @@
       "name": "39 | basilica מ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 39,
+      "netuid": 39,
       "subnetName": "basilica"
     },
     {
@@ -1995,7 +1995,7 @@
       "name": "4 | Targon δ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 4,
+      "netuid": 4,
       "subnetName": "Targon"
     },
     {
@@ -2008,7 +2008,7 @@
       "name": "40 | Chunking ן",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 40,
+      "netuid": 40,
       "subnetName": "Chunking"
     },
     {
@@ -2021,7 +2021,7 @@
       "name": "41 | Sportstensor נ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 41,
+      "netuid": 41,
       "subnetName": "Sportstensor"
     },
     {
@@ -2034,7 +2034,7 @@
       "name": "42 | Gopher ס",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 42,
+      "netuid": 42,
       "subnetName": "Gopher"
     },
     {
@@ -2047,7 +2047,7 @@
       "name": "43 | Graphite ע",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 43,
+      "netuid": 43,
       "subnetName": "Graphite"
     },
     {
@@ -2060,7 +2060,7 @@
       "name": "44 | Score ף",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 44,
+      "netuid": 44,
       "subnetName": "Score"
     },
     {
@@ -2073,7 +2073,7 @@
       "name": "45 | Talisman AI פ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 45,
+      "netuid": 45,
       "subnetName": "Talisman AI"
     },
     {
@@ -2086,7 +2086,7 @@
       "name": "46 | RESI ץ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 46,
+      "netuid": 46,
       "subnetName": "RESI"
     },
     {
@@ -2099,7 +2099,7 @@
       "name": "47 | Reboot צ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 47,
+      "netuid": 47,
       "subnetName": "Reboot"
     },
     {
@@ -2112,7 +2112,7 @@
       "name": "48 | Quantum Compute ק",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 48,
+      "netuid": 48,
       "subnetName": "Quantum Compute"
     },
     {
@@ -2125,7 +2125,7 @@
       "name": "49 | Polaris Cloud ר",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 49,
+      "netuid": 49,
       "subnetName": "Polaris Cloud"
     },
     {
@@ -2138,7 +2138,7 @@
       "name": "5 | Hone ε",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 5,
+      "netuid": 5,
       "subnetName": "Hone"
     },
     {
@@ -2151,7 +2151,7 @@
       "name": "50 | Synth ש",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 50,
+      "netuid": 50,
       "subnetName": "Synth"
     },
     {
@@ -2164,7 +2164,7 @@
       "name": "51 | lium.io ת",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 51,
+      "netuid": 51,
       "subnetName": "lium.io"
     },
     {
@@ -2177,7 +2177,7 @@
       "name": "52 | Dojo ا",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 52,
+      "netuid": 52,
       "subnetName": "Dojo"
     },
     {
@@ -2190,7 +2190,7 @@
       "name": "53 | EfficientFrontier ب",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 53,
+      "netuid": 53,
       "subnetName": "EfficientFrontier"
     },
     {
@@ -2203,7 +2203,7 @@
       "name": "54 | Yanez MIID ت",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 54,
+      "netuid": 54,
       "subnetName": "Yanez MIID"
     },
     {
@@ -2216,7 +2216,7 @@
       "name": "55 | Precog ث",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 55,
+      "netuid": 55,
       "subnetName": "Precog"
     },
     {
@@ -2229,7 +2229,7 @@
       "name": "56 | Gradients ج",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 56,
+      "netuid": 56,
       "subnetName": "Gradients"
     },
     {
@@ -2242,7 +2242,7 @@
       "name": "57 | Gaia ح",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 57,
+      "netuid": 57,
       "subnetName": "Gaia"
     },
     {
@@ -2255,7 +2255,7 @@
       "name": "58 | Parked (focused on SN11) خ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 58,
+      "netuid": 58,
       "subnetName": "Parked (focused on SN11)"
     },
     {
@@ -2268,7 +2268,7 @@
       "name": "59 | Babelbit د",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 59,
+      "netuid": 59,
       "subnetName": "Babelbit"
     },
     {
@@ -2281,7 +2281,7 @@
       "name": "6 | Infinite Games ζ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 6,
+      "netuid": 6,
       "subnetName": "Infinite Games"
     },
     {
@@ -2294,7 +2294,7 @@
       "name": "60 | Bitsec.ai ذ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 60,
+      "netuid": 60,
       "subnetName": "Bitsec.ai"
     },
     {
@@ -2307,7 +2307,7 @@
       "name": "61 | RedTeam ر",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 61,
+      "netuid": 61,
       "subnetName": "RedTeam"
     },
     {
@@ -2320,7 +2320,7 @@
       "name": "62 | Ridges ز",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 62,
+      "netuid": 62,
       "subnetName": "Ridges"
     },
     {
@@ -2333,7 +2333,7 @@
       "name": "63 | Quantum Innovate س",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 63,
+      "netuid": 63,
       "subnetName": "Quantum Innovate"
     },
     {
@@ -2346,7 +2346,7 @@
       "name": "64 | Chutes ش",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 64,
+      "netuid": 64,
       "subnetName": "Chutes"
     },
     {
@@ -2359,7 +2359,7 @@
       "name": "65 | TAO Private Network ص",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 65,
+      "netuid": 65,
       "subnetName": "TAO Private Network"
     },
     {
@@ -2372,7 +2372,7 @@
       "name": "66 | Oceans ض",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 66,
+      "netuid": 66,
       "subnetName": "Oceans"
     },
     {
@@ -2385,7 +2385,7 @@
       "name": "67 | τenex ⵋ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 67,
+      "netuid": 67,
       "subnetName": "τenex"
     },
     {
@@ -2398,7 +2398,7 @@
       "name": "68 | NOVA ظ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 68,
+      "netuid": 68,
       "subnetName": "NOVA"
     },
     {
@@ -2411,7 +2411,7 @@
       "name": "69 | Subnet 69 ع",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 69,
+      "netuid": 69,
       "subnetName": "Subnet 69"
     },
     {
@@ -2424,7 +2424,7 @@
       "name": "7 | SubVortex η",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 7,
+      "netuid": 7,
       "subnetName": "SubVortex"
     },
     {
@@ -2437,7 +2437,7 @@
       "name": "70 | Vericore غ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 70,
+      "netuid": 70,
       "subnetName": "Vericore"
     },
     {
@@ -2450,7 +2450,7 @@
       "name": "71 | Leadpoet ㄴ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 71,
+      "netuid": 71,
       "subnetName": "Leadpoet"
     },
     {
@@ -2463,7 +2463,7 @@
       "name": "72 | StreetVision by NATIX ق",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 72,
+      "netuid": 72,
       "subnetName": "StreetVision by NATIX"
     },
     {
@@ -2476,7 +2476,7 @@
       "name": "73 | MetaHash ك",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 73,
+      "netuid": 73,
       "subnetName": "MetaHash"
     },
     {
@@ -2489,7 +2489,7 @@
       "name": "74 | Gittensor ل",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 74,
+      "netuid": 74,
       "subnetName": "Gittensor"
     },
     {
@@ -2502,7 +2502,7 @@
       "name": "75 | Hippius م",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 75,
+      "netuid": 75,
       "subnetName": "Hippius"
     },
     {
@@ -2515,7 +2515,7 @@
       "name": "76 | Safe Scan ن",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 76,
+      "netuid": 76,
       "subnetName": "Safe Scan"
     },
     {
@@ -2528,7 +2528,7 @@
       "name": "77 | Liquidity ه",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 77,
+      "netuid": 77,
       "subnetName": "Liquidity"
     },
     {
@@ -2541,7 +2541,7 @@
       "name": "78 | Subnet 78 و",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 78,
+      "netuid": 78,
       "subnetName": "Subnet 78"
     },
     {
@@ -2554,7 +2554,7 @@
       "name": "79 | τaos ي",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 79,
+      "netuid": 79,
       "subnetName": "τaos"
     },
     {
@@ -2567,7 +2567,7 @@
       "name": "8 | Proprietary Trading Network θ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 8,
+      "netuid": 8,
       "subnetName": "Proprietary Trading Network"
     },
     {
@@ -2580,7 +2580,7 @@
       "name": "80 | TaoQuant ى",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 80,
+      "netuid": 80,
       "subnetName": "TaoQuant"
     },
     {
@@ -2593,7 +2593,7 @@
       "name": "81 | grail ᚠ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 81,
+      "netuid": 81,
       "subnetName": "grail"
     },
     {
@@ -2606,7 +2606,7 @@
       "name": "82 | Subnet 82 ᚢ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 82,
+      "netuid": 82,
       "subnetName": "Subnet 82"
     },
     {
@@ -2619,7 +2619,7 @@
       "name": "83 | CliqueAI ᚦ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 83,
+      "netuid": 83,
       "subnetName": "CliqueAI"
     },
     {
@@ -2632,7 +2632,7 @@
       "name": "84 | ChipForge (Tatsu) ᚨ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 84,
+      "netuid": 84,
       "subnetName": "ChipForge (Tatsu)"
     },
     {
@@ -2645,7 +2645,7 @@
       "name": "85 | Vidaio ᚱ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 85,
+      "netuid": 85,
       "subnetName": "Vidaio"
     },
     {
@@ -2658,7 +2658,7 @@
       "name": "86 | The Alpha Arena ᚳ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 86,
+      "netuid": 86,
       "subnetName": "The Alpha Arena"
     },
     {
@@ -2671,7 +2671,7 @@
       "name": "87 | CheckerChain Ы",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 87,
+      "netuid": 87,
       "subnetName": "CheckerChain"
     },
     {
@@ -2684,7 +2684,7 @@
       "name": "88 | Investing ᛉ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 88,
+      "netuid": 88,
       "subnetName": "Investing"
     },
     {
@@ -2697,7 +2697,7 @@
       "name": "89 | InfiniteHash ᛒ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 89,
+      "netuid": 89,
       "subnetName": "InfiniteHash"
     },
     {
@@ -2710,7 +2710,7 @@
       "name": "9 | iota ι",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 9,
+      "netuid": 9,
       "subnetName": "iota"
     },
     {
@@ -2723,7 +2723,7 @@
       "name": "90 | brain  ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 90,
+      "netuid": 90,
       "subnetName": "brain"
     },
     {
@@ -2736,7 +2736,7 @@
       "name": "91 | τensorprox ᚁ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 91,
+      "netuid": 91,
       "subnetName": "τensorprox"
     },
     {
@@ -2749,7 +2749,7 @@
       "name": "92 | ReinforcedAI ᚂ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 92,
+      "netuid": 92,
       "subnetName": "ReinforcedAI"
     },
     {
@@ -2762,7 +2762,7 @@
       "name": "93 | Bitcast ᚃ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 93,
+      "netuid": 93,
       "subnetName": "Bitcast"
     },
     {
@@ -2775,7 +2775,7 @@
       "name": "94 | Eastworld ᚄ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 94,
+      "netuid": 94,
       "subnetName": "Eastworld"
     },
     {
@@ -2788,7 +2788,7 @@
       "name": "95 | Subnet 95 ᚅ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 95,
+      "netuid": 95,
       "subnetName": "Subnet 95"
     },
     {
@@ -2801,7 +2801,7 @@
       "name": "96 | FLock OFF ᚛",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 96,
+      "netuid": 96,
       "subnetName": "FLock OFF"
     },
     {
@@ -2814,7 +2814,7 @@
       "name": "97 | FlameWire 🔥 ა",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 97,
+      "netuid": 97,
       "subnetName": "FlameWire 🔥"
     },
     {
@@ -2827,7 +2827,7 @@
       "name": "98 | Creator ბ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 98,
+      "netuid": 98,
       "subnetName": "Creator"
     },
     {
@@ -2840,7 +2840,7 @@
       "name": "99 | Neza გ",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg",
       "isDefault": true,
-      "subnetId": 99,
+      "netuid": 99,
       "subnetName": "Neza"
     },
     {
@@ -5175,7 +5175,7 @@
       "chainId": "bittensor",
       "specVersion": 326,
       "version": "v6",
-      "data": "0x6d6574610f94000c1c73705f636f72651863727970746f2c4163636f756e7449643332000004000401205b75383b2033325d0000040000032000000008000800000503000c0000050600100000050700140000050000180000060c001c00000208002000000504002400000620002800000200002c083c7375627374726174655f66697865642446697865644931323804104672616301300004011062697473540110693132380000300c447375627374726174655f747970656e756d1075696e741055496e740804550134044201500008010c6d73623401045500010c6c7362500104420000340c447375627374726174655f747970656e756d1075696e741055496e740804550138044201500008010c6d73623801045500010c6c7362500104420000380c447375627374726174655f747970656e756d1075696e741055496e74080455013c044201500008010c6d73623c01045500010c6c73625001044200003c0c447375627374726174655f747970656e756d1075696e741055496e740804550140044201500008010c6d73624001045500010c6c7362500104420000400c447375627374726174655f747970656e756d1075696e741055496e740804550144044201500008010c6d73624401045500010c6c7362500104420000440c447375627374726174655f747970656e756d1075696e741055496e7408045501480442014c0008010c6d73624801045500010c6c73624c0104420000480c447375627374726174655f747970656e756d1075696e7414555465726d000000004c0c447375627374726174655f747970656e756d0c62697408423100000000500c447375627374726174655f747970656e756d0c62697408423000000000540000050d00580c4070616c6c65745f73756274656e736f721870616c6c6574405375626e65744964656e746974795633000020012c7375626e65745f6e616d651c011c5665633c75383e00012c6769746875625f7265706f1c011c5665633c75383e0001387375626e65745f636f6e746163741c011c5665633c75383e0001287375626e65745f75726c1c011c5665633c75383e00011c646973636f72641c011c5665633c75383e00012c6465736372697074696f6e1c011c5665633c75383e0001206c6f676f5f75726c1c011c5665633c75383e0001286164646974696f6e616c1c011c5665633c75383e00005c00000620006004184f7074696f6e04045401580108104e6f6e6500000010536f6d650400580000010000640000060c00680000060c006c00000270007004184f7074696f6e04045401740108104e6f6e6500000010536f6d65040074000001000074104070616c6c65745f73756274656e736f72207270635f696e666f3064796e616d69635f696e666f2c44796e616d6963496e666f04244163636f756e7449640100005401186e657475696424013c436f6d706163743c4e65745569643e0001306f776e65725f686f746b65790001244163636f756e7449640001346f776e65725f636f6c646b65790001244163636f756e74496400012c7375626e65745f6e616d657801405665633c436f6d706163743c75383e3e000130746f6b656e5f73796d626f6c7801405665633c436f6d706163743c75383e3e00011474656d706f5c0130436f6d706163743c7531363e0001246c6173745f73746570180130436f6d706163743c7536343e000158626c6f636b735f73696e63655f6c6173745f73746570180130436f6d706163743c7536343e000120656d697373696f6e180130436f6d706163743c7536343e000120616c7068615f696e640158436f6d706163743c416c70686143757272656e63793e000124616c7068615f6f7574640158436f6d706163743c416c70686143757272656e63793e00011874616f5f696e680150436f6d706163743c54616f43757272656e63793e000148616c7068615f6f75745f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e000144616c7068615f696e5f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00013c74616f5f696e5f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e00015870656e64696e675f616c7068615f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00015470656e64696e675f726f6f745f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e0001347375626e65745f766f6c756d65800134436f6d706163743c753132383e0001546e6574776f726b5f726567697374657265645f6174180130436f6d706163743c7536343e00013c7375626e65745f6964656e746974796001604f7074696f6e3c5375626e65744964656e7469747956333e0001306d6f76696e675f70726963652c01184939364633320000780000027c007c000006080080000006100084000002880088104070616c6c65745f73756274656e736f72207270635f696e666f287374616b655f696e666f245374616b65496e666f04244163636f756e744964010000240118686f746b65790001244163636f756e74496400011c636f6c646b65790001244163636f756e7449640001186e657475696424013c436f6d706163743c4e65745569643e0001147374616b65640158436f6d706163743c416c70686143757272656e63793e0001186c6f636b6564180130436f6d706163743c7536343e000120656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00013074616f5f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e000114647261696e180130436f6d706163743c7536343e00013469735f72656769737465726564140110626f6f6c00008c00000290009000000408008400043c53756274656e736f724d6f64756c65013c53756274656e736f724d6f64756c6504385374616b696e67486f746b657973010104020028040000000000000700040000000000350808505375626e6574496e666f52756e74696d6541706908506765745f616c6c5f64796e616d69635f696e666f006c00406765745f64796e616d69635f696e666f04186e6574756964207000004c5374616b65496e666f52756e74696d6541706908686765745f7374616b655f696e666f5f666f725f636f6c646b6579043c636f6c646b65795f6163636f756e740084006c6765745f7374616b655f696e666f5f666f725f636f6c646b6579730440636f6c646b65795f6163636f756e7473288c000000000000",
+      "data": "0x6d6574610f94000c1c73705f636f72651863727970746f2c4163636f756e7449643332000004000401205b75383b2033325d0000040000032000000008000800000503000c0000050600100000050700140000050000180000060c001c00000208002000000504002400000620002800000200002c083c7375627374726174655f66697865642446697865644931323804104672616301300004011062697473540110693132380000300c447375627374726174655f747970656e756d1075696e741055496e740804550134044201500008010c6d73623401045500010c6c7362500104420000340c447375627374726174655f747970656e756d1075696e741055496e740804550138044201500008010c6d73623801045500010c6c7362500104420000380c447375627374726174655f747970656e756d1075696e741055496e74080455013c044201500008010c6d73623c01045500010c6c73625001044200003c0c447375627374726174655f747970656e756d1075696e741055496e740804550140044201500008010c6d73624001045500010c6c7362500104420000400c447375627374726174655f747970656e756d1075696e741055496e740804550144044201500008010c6d73624401045500010c6c7362500104420000440c447375627374726174655f747970656e756d1075696e741055496e7408045501480442014c0008010c6d73624801045500010c6c73624c0104420000480c447375627374726174655f747970656e756d1075696e7414555465726d000000004c0c447375627374726174655f747970656e756d0c62697408423100000000500c447375627374726174655f747970656e756d0c62697408423000000000540000050d00580c4070616c6c65745f73756274656e736f721870616c6c6574405375626e65744964656e746974795633000020012c7375626e65745f6e616d651c011c5665633c75383e00012c6769746875625f7265706f1c011c5665633c75383e0001387375626e65745f636f6e746163741c011c5665633c75383e0001287375626e65745f75726c1c011c5665633c75383e00011c646973636f72641c011c5665633c75383e00012c6465736372697074696f6e1c011c5665633c75383e0001206c6f676f5f75726c1c011c5665633c75383e0001286164646974696f6e616c1c011c5665633c75383e00005c00000620006004184f7074696f6e04045401580108104e6f6e6500000010536f6d650400580000010000640000060c00680000060c006c00000270007004184f7074696f6e04045401740108104e6f6e6500000010536f6d65040074000001000074104070616c6c65745f73756274656e736f72207270635f696e666f3064796e616d69635f696e666f2c44796e616d6963496e666f04244163636f756e7449640100005401186e657475696424013c436f6d706163743c4e65745569643e0001306f776e65725f686f746b65790001244163636f756e7449640001346f776e65725f636f6c646b65790001244163636f756e74496400012c7375626e65745f6e616d657801405665633c436f6d706163743c75383e3e000130746f6b656e5f73796d626f6c7801405665633c436f6d706163743c75383e3e00011474656d706f5c0130436f6d706163743c7531363e0001246c6173745f73746570180130436f6d706163743c7536343e000158626c6f636b735f73696e63655f6c6173745f73746570180130436f6d706163743c7536343e000120656d697373696f6e180130436f6d706163743c7536343e000120616c7068615f696e640158436f6d706163743c416c70686143757272656e63793e000124616c7068615f6f7574640158436f6d706163743c416c70686143757272656e63793e00011874616f5f696e680150436f6d706163743c54616f43757272656e63793e000148616c7068615f6f75745f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e000144616c7068615f696e5f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00013c74616f5f696e5f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e00015870656e64696e675f616c7068615f656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00015470656e64696e675f726f6f745f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e0001347375626e65745f766f6c756d65800134436f6d706163743c753132383e0001546e6574776f726b5f726567697374657265645f6174180130436f6d706163743c7536343e00013c7375626e65745f6964656e746974796001604f7074696f6e3c5375626e65744964656e7469747956333e0001306d6f76696e675f70726963652c01184939364633320000780000027c007c000006080080000006100084000002880088104070616c6c65745f73756274656e736f72207270635f696e666f287374616b655f696e666f245374616b65496e666f04244163636f756e744964010000240118686f746b65790001244163636f756e74496400011c636f6c646b65790001244163636f756e7449640001186e657475696424013c436f6d706163743c4e65745569643e0001147374616b65640158436f6d706163743c416c70686143757272656e63793e0001186c6f636b6564180130436f6d706163743c7536343e000120656d697373696f6e640158436f6d706163743c416c70686143757272656e63793e00013074616f5f656d697373696f6e680150436f6d706163743c54616f43757272656e63793e000114647261696e180130436f6d706163743c7536343e00013469735f72656769737465726564140110626f6f6c00008c00000290009000000408008400043c53756274656e736f724d6f64756c65013c53756274656e736f724d6f64756c6504385374616b696e67486f746b657973010104020028040000000000000700040000000000350808505375626e6574496e666f52756e74696d6541706904506765745f616c6c5f64796e616d69635f696e666f006c00004c5374616b65496e666f52756e74696d65417069046c6765745f7374616b655f696e666f5f666f725f636f6c646b6579730440636f6c646b65795f6163636f756e7473288c000000000000",
       "extra": null
     },
     {

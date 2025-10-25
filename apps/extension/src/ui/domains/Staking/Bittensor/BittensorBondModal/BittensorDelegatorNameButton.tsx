@@ -5,18 +5,18 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 import { BittensorSelectButton } from "./BittensorSelectButton"
 
 type BittensorDelegatorNameButtonProps = {
-  poolId: string | number | undefined | null
+  hotkey: string | number | undefined | null
   isDisabled?: boolean
 }
 
 export const BittensorDelegatorNameButton = ({
-  poolId,
+  hotkey,
   isDisabled,
 }: BittensorDelegatorNameButtonProps) => {
   const { netuid } = useBittensorBondWizard()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const selectedPool = combinedValidatorsData.find((data) => data.poolId === poolId)
+  const selectedPool = combinedValidatorsData.find((data) => data.poolId === hotkey)
 
   const defaultPoolName = "Validator"
 

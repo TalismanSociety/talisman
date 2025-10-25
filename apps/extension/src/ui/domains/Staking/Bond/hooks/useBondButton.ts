@@ -64,7 +64,7 @@ export const useBondButton = ({
           handleOpenBittensorModal({
             address,
             tokenId,
-            poolId: hotkey as string, // TODO fix typing issue on handler, in practice it's undefined by default
+            hotkey,
             netuid,
             stakeType,
             isSeekDiscountDrawerOpen: isSeekTaoDiscountEnabled,

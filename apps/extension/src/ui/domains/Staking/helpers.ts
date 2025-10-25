@@ -79,7 +79,7 @@ export const getStakingAPR = async (stakingSapi: ScaleApi, babeSapi: ScaleApi) =
 export const getBittensorStakingPayload = async ({
   sapi,
   address,
-  poolId,
+  hotkey,
   amount,
   stakeType,
   alphaPriceWithSlippagePlanks,
@@ -88,7 +88,7 @@ export const getBittensorStakingPayload = async ({
 }: {
   sapi: ScaleApi
   address: string
-  poolId: string | number
+  hotkey: string
   amount: bigint
   stakeType: StakeType
   alphaPriceWithSlippagePlanks: bigint
@@ -102,7 +102,7 @@ export const getBittensorStakingPayload = async ({
       {
         calls: [
           sapi.getDecodedCall("SubtensorModule", "add_stake", {
-            hotkey: poolId,
+            hotkey,
             netuid: ROOT_NETUID,
             amount_staked: amount,
           }),
@@ -120,8 +120,8 @@ export const getBittensorStakingPayload = async ({
     {
       calls: [
         sapi.getDecodedCall("SubtensorModule", "add_stake_limit", {
-          hotkey: poolId,
-          netuid: netuid,
+          hotkey,
+          netuid,
           amount_staked: amount,
           limit_price: alphaPriceWithSlippagePlanks,
           allow_partial: false,

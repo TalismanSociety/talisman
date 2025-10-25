@@ -80,7 +80,7 @@ type UseGetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
   address: string | undefined | null
-  hotkey: string | number | undefined
+  hotkey: string | null | undefined
   plancks: bigint | null | undefined
   stakeType: StakeType
   alphaPriceWithSlippage: number

@@ -16,7 +16,7 @@ export const useBittensorBondModal = () => {
     ({
       address,
       tokenId,
-      poolId,
+      hotkey,
       isSeekDiscountDrawerOpen = false,
       stakeType = "root",
       stakeDirection = "bond",
@@ -24,9 +24,9 @@ export const useBittensorBondModal = () => {
       netuid = null,
       isSelectStakeDrawerOpen = false,
     }: {
-      address: Address
+      address?: Address
       tokenId: TokenId
-      poolId: number | string
+      hotkey?: string
       isSelectStakeDrawerOpen?: boolean
       isSeekDiscountDrawerOpen?: boolean
       stakeType?: StakeType
@@ -37,7 +37,7 @@ export const useBittensorBondModal = () => {
       reset({
         address,
         tokenId,
-        poolId,
+        hotkey,
         step,
         stakeType,
         stakeDirection,

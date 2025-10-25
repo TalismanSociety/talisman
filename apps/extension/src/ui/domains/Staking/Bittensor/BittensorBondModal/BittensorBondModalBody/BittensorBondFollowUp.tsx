@@ -4,9 +4,9 @@ import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 
 export const BittensorBondFollowUp = () => {
   const { close } = useBittensorBondModal()
-  const { hash, token } = useBittensorBondWizard()
+  const { hash, nativeToken } = useBittensorBondWizard()
 
-  if (!hash || !token?.networkId) return null
+  if (!hash || !nativeToken?.networkId) return null
 
-  return <TxProgress hash={hash} networkIdOrHash={token.networkId} onClose={close} />
+  return <TxProgress hash={hash} networkIdOrHash={nativeToken.networkId} onClose={close} />
 }

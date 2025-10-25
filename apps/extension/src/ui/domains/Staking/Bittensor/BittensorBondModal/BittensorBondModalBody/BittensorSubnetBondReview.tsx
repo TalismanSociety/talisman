@@ -39,13 +39,13 @@ export const BittensorSubnetBondReview = () => {
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
-    token,
+    nativeToken,
     amountToStake,
     account,
     payload,
     isSlippageValid,
     txMetadata,
-    poolId,
+    hotkey,
     netuid,
     selectedSubnet,
     feeToken,
@@ -112,10 +112,10 @@ export const BittensorSubnetBondReview = () => {
                 </>
               ) : (
                 <>
-                  <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
+                  <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
                   <TokensAndFiat
                     isBalance
-                    tokenId={token?.id}
+                    tokenId={nativeToken?.id}
                     planck={amountToStake?.planck}
                     noCountUp
                     tokensClassName="text-body"
@@ -128,7 +128,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pt-2">
             <div className="whitespace-nowrap">{t("Account")} </div>
             <div className="flex items-center gap-4 overflow-hidden">
-              <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
+              <StakingAccountDisplay address={account.address} chainId={nativeToken?.networkId} />
             </div>
           </div>
           <div className="py-8">
@@ -143,13 +143,13 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Validator")} </div>
             <div className="text-body truncate">
-              <BittensorDelegatorNameButton poolId={poolId} />
+              <BittensorDelegatorNameButton hotkey={hotkey} />
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
             <div className="text-body truncate">
-              <StakingUnbondingPeriod chainId={token?.networkId} />
+              <StakingUnbondingPeriod chainId={nativeToken?.networkId} />
             </div>
           </div>
 
@@ -158,14 +158,14 @@ export const BittensorSubnetBondReview = () => {
             {isSubnetUnbond ? (
               <Tokens
                 amount={estimatedAmountToStake?.tokens}
-                decimals={token?.decimals}
-                symbol={token?.symbol}
+                decimals={nativeToken?.decimals}
+                symbol={nativeToken?.symbol}
                 className="text-body truncate"
               />
             ) : (
               <Tokens
                 amount={expectedAlphaWithSlippage}
-                decimals={token?.decimals}
+                decimals={nativeToken?.decimals}
                 symbol={`SN${netuid} ${subnet_name} ${symbol}`}
                 className="text-body truncate"
               />
@@ -179,7 +179,7 @@ export const BittensorSubnetBondReview = () => {
               <div>1 TAO =</div>
               <Tokens
                 amount={taoToAlphaConversionRate}
-                decimals={token?.decimals}
+                decimals={nativeToken?.decimals}
                 symbol={symbol}
               />
             </div>
