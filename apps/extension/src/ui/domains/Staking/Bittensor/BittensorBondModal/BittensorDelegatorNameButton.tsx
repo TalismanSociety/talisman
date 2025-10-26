@@ -32,7 +32,7 @@ export const BittensorDelegatorNameButton = ({
       isLoading={isLoading}
       isDisabled={isDisabled}
       label={label}
-      nextStep="select"
+      nextStep="select-delegate"
     />
   )
 }

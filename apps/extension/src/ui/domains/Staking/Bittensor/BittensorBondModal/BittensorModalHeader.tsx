@@ -41,7 +41,7 @@ export const BittensorModalHeader = () => {
         {step.includes("review") && <div className="font-bold text-white">{t("Confirm")}</div>}
         {step.includes("select") && (
           <div className="font-bold text-white">
-            {step === "select" ? t("Select Validator") : t("Select Subnet")}
+            {step === "select-delegate" ? t("Select Validator") : t("Select Subnet")}
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ type BittensorSelectButtonProps = {
   isLoading?: boolean
   isDisabled?: boolean
   label: string
-  nextStep: "select" | "select-subnet"
+  nextStep: "select-delegate" | "select-subnet"
 }
 
 export const BittensorSelectButton = ({

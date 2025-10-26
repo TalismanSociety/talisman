@@ -412,6 +412,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       </div>
 
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
+        <BondTypeDetails />
         <div
           className={classNames(
             "flex gap-8",
@@ -427,9 +428,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
               />
             </div>
           </div>
-          <>
-            <BondTypeDetails />
-          </>
         </div>
         {isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">

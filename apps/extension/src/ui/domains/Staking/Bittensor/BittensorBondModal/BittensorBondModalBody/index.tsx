@@ -15,7 +15,7 @@ export const BittensorBondModalBody = () => {
       return <BittensorRootBondForm />
     case "subnet-form":
       return <BittensorSubnetBondForm />
-    case "select":
+    case "select-delegate":
       return <BittensorBondDelegateSelect />
     case "select-subnet":
       return <BittensorSubnetSelect />

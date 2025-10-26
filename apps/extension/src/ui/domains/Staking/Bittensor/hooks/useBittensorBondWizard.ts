@@ -32,7 +32,7 @@ export type WizardStep =
   | "review"
   | "subnet-review"
   | "follow-up"
-  | "select"
+  | "select-delegate"
   | "select-subnet"
 export type StakeType = "root" | "subnet"
 export type StakeDirection = "bond" | "unbond"
@@ -83,6 +83,21 @@ const DEFAULT_STATE: WizardState = {
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
+
+const getStepFromType = (currentStep: WizardStep, stakeType: StakeType) => {
+  switch (currentStep) {
+    case "form":
+    case "subnet-form":
+      return stakeType === "root" ? "form" : "subnet-form"
+    case "review":
+    case "subnet-review":
+      return stakeType === "root" ? "review" : "subnet-review"
+    case "select-subnet":
+      return stakeType === "root" ? "form" : "select-subnet"
+    default:
+      return currentStep
+  }
+}
 
 export const useResetBittensorBondWizard = () => {
   const reset = useCallback(
@@ -256,7 +271,11 @@ const useBittensorBondWizardProvider = () => {
 
   const setStakeType = useCallback(
     (stakeType: StakeType) => {
-      setWizardState((prev) => ({ ...prev, stakeType }))
+      setWizardState((prev) => ({
+        ...prev,
+        stakeType,
+        step: getStepFromType(prev.step, stakeType),
+      }))
       stakeTypeDrawer.close()
     },
     [stakeTypeDrawer],
