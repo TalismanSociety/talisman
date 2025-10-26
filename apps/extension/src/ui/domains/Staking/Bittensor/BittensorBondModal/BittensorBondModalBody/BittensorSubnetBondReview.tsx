@@ -9,7 +9,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
-import { MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -274,11 +274,9 @@ export const BittensorSubnetBondReview = () => {
       <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
       <SeekGetFeeDiscountsDrawer
         isOpen={seekDiscountDrawer.isOpen}
-        onDismiss={() => {
-          seekDiscountDrawer.close()
-        }}
+        onDismiss={seekDiscountDrawer.close}
         onCloseModal={close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
     </div>
   )

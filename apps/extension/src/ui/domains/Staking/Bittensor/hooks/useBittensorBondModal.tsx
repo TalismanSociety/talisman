@@ -17,32 +17,24 @@ export const useBittensorBondModal = () => {
       address,
       tokenId,
       hotkey,
-      isSeekDiscountDrawerOpen = false,
-      stakeType = "root",
+      stakeType,
       stakeDirection = "bond",
-      step = "form",
-      netuid = null,
-      isSelectStakeDrawerOpen = false,
+      netuid,
     }: {
       address?: Address
       tokenId: TokenId
       hotkey?: string
-      isSelectStakeDrawerOpen?: boolean
-      isSeekDiscountDrawerOpen?: boolean
       stakeType?: StakeType
       stakeDirection?: StakeDirection
       step?: WizardStep
-      netuid: number | null | undefined
+      netuid?: number
     }) => {
       reset({
         address,
         tokenId,
         hotkey,
-        step,
         stakeType,
         stakeDirection,
-        isSelectStakeDrawerOpen,
-        isSeekDiscountDrawerOpen,
         netuid,
       })
 

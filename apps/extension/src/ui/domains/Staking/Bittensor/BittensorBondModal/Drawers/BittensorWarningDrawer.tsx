@@ -2,7 +2,7 @@ import { FC, PropsWithChildren, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, Drawer } from "talisman-ui"
 
-import { MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState } from "@ui/state"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
@@ -20,7 +20,7 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
   const { t } = useTranslation()
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={MODAL_CONTENT_CONTAINER_ID}>
+    <Drawer anchor="bottom" isOpen={isOpen} containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}>
       <div className="bg-grey-850 flex w-full flex-col items-center gap-8 rounded-t-xl p-12">
         <div className="text-body font-bold">{t("Subnet staking warning")}</div>
         <p className="text-body-secondary text-sm">

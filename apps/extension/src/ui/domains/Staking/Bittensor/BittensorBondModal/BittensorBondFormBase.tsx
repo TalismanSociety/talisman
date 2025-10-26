@@ -28,7 +28,7 @@ import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
 import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { SeekGetFeeDiscountsDrawer } from "../../Seek/SeekGetFeeDiscountsDrawer"
-import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { DTAO_LOGO, ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
@@ -350,7 +350,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     payload,
     hotkey,
     selectedSubnet,
-    selectStakeDrawer,
     seekDiscountDrawer,
     stakeType,
     stakeDirection,
@@ -479,19 +478,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         onCloseClick={close}
         onAddressSelected={handleSelectAccount}
       />
-      <BittensorSelectStakeDrawer
-        isOpen={selectStakeDrawer.isOpen}
-        onDismiss={selectStakeDrawer.close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
-      />
+      <BittensorSelectStakeDrawer containerId={STAKING_MODAL_CONTENT_CONTAINER_ID} />
       <SeekGetFeeDiscountsDrawer
         isOpen={seekDiscountDrawer.isOpen}
-        onDismiss={() => {
-          seekDiscountDrawer.close()
-          stakeType === "root" && selectStakeDrawer.open()
-        }}
+        onDismiss={seekDiscountDrawer.close}
         onCloseModal={close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
     </div>
   )

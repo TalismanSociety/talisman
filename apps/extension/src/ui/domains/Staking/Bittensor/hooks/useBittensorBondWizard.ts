@@ -1,16 +1,24 @@
-import { bind } from "@react-rxjs/core"
 import { Balance, BalanceFormatter, Balances, getBalanceId } from "@talismn/balances"
 import { parseTokenId, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Address } from "extension-core"
-import { SetStateAction, useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
+import { useOpenClose } from "talisman-ui"
 import { Hex } from "viem"
 
+import { provideContext } from "@talisman/util/provideContext"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import {
+  useAccountByAddress,
+  useAppState,
+  useFeatureFlag,
+  usePortfolioBalances,
+  useToken,
+  useTokenRates,
+} from "@ui/state"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
@@ -41,7 +49,6 @@ type WizardState = {
   isSelectStakeDrawerOpen: boolean
   isSlippageDrawerOpen: boolean
   isWarningDrawerOpen: boolean
-  isSeekDiscountDrawerOpen: boolean
   hash: Hex | null
   stakeType: StakeType
   stakeDirection: StakeDirection
@@ -50,13 +57,10 @@ type WizardState = {
 
 type WizardOpenOptions = {
   stakeDirection: StakeDirection
-  step: WizardStep
   tokenId: TokenId
   netuid: number | null | undefined // known only if unstaking
   address?: Address
-  hotkey?: string
-  isSeekDiscountDrawerOpen?: boolean
-  isSelectStakeDrawerOpen?: boolean
+  hotkey?: string // known only if unstaking
   stakeType?: StakeType
 }
 
@@ -72,53 +76,17 @@ const DEFAULT_STATE: WizardState = {
   isSelectStakeDrawerOpen: false,
   isSlippageDrawerOpen: false,
   isWarningDrawerOpen: false,
-  isSeekDiscountDrawerOpen: false,
   hash: null,
   stakeType: "root",
   stakeDirection: "bond",
   userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
 }
 
-const wizardState$ = new BehaviorSubject(DEFAULT_STATE)
-
-const setWizardState = (state: SetStateAction<WizardState>) => {
-  if (typeof state === "function") wizardState$.next(state(wizardState$.value))
-  else wizardState$.next(state)
-}
-
-const [useWizardState] = bind(wizardState$)
-
-type innerOpenCloseKey =
-  | "isAccountPickerOpen"
-  | "isSelectStakeDrawerOpen"
-  | "isSlippageDrawerOpen"
-  | "isWarningDrawerOpen"
-  | "isSeekDiscountDrawerOpen"
-  | "isSelectStakeDrawerOpen"
-
-const useInnerOpenClose = (key: innerOpenCloseKey) => {
-  const state = useWizardState()
-  const isOpen = state[key]
-
-  const setIsOpen = useCallback(
-    (value: boolean) => setWizardState((prev) => ({ ...prev, [key]: value })),
-    [key],
-  )
-
-  const open = useCallback(() => setIsOpen(true), [setIsOpen])
-  const close = useCallback(() => setIsOpen(false), [setIsOpen])
-
-  const toggle = useCallback(
-    () => setWizardState((prev) => ({ ...prev, [key]: !prev[key] })),
-    [key],
-  )
-
-  return { isOpen, setIsOpen, open, close, toggle }
-}
+const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
 
 export const useResetBittensorBondWizard = () => {
   const reset = useCallback(
-    (init: WizardOpenOptions) => setWizardState(Object.assign({}, DEFAULT_STATE, init)),
+    (init: WizardOpenOptions) => wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init)),
     [],
   )
 
@@ -144,26 +112,32 @@ const useBalance = (
   }, [allBalances, address, tokenId])
 }
 
-export const useBittensorBondWizard = () => {
+const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
+  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
+  const [hideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
+
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
 
   const { subnetData } = useCombinedSubnetData()
 
-  const {
-    hotkey,
-    netuid,
-    step,
-    stakeType,
-    displayMode,
-    hash,
-    tokenId: dTaoTokenId,
-    address,
-    plancks,
-    userMaxSlippage,
-    stakeDirection,
-  } = useWizardState()
+  const [
+    {
+      hotkey,
+      netuid,
+      step,
+      stakeType,
+      displayMode,
+      hash,
+      tokenId: dTaoTokenId,
+      address,
+      plancks,
+      userMaxSlippage,
+      stakeDirection,
+    },
+    setWizardState,
+  ] = useState(() => wizardOpenState$.getValue())
 
   const dtaoBalance = useBalance(allBalances, address, dTaoTokenId)
   const nativeTokenId = useNativeTokenId(dTaoTokenId)
@@ -174,11 +148,11 @@ export const useBittensorBondWizard = () => {
   const feeToken = useFeeToken(nativeToken?.id)
   const tokenRates = useTokenRates(nativeTokenId)
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
-  const accountPicker = useInnerOpenClose("isAccountPickerOpen")
-  const selectStakeDrawer = useInnerOpenClose("isSelectStakeDrawerOpen")
-  const slippageDrawer = useInnerOpenClose("isSlippageDrawerOpen")
-  const warningDrawer = useInnerOpenClose("isWarningDrawerOpen")
-  const seekDiscountDrawer = useInnerOpenClose("isSeekDiscountDrawerOpen")
+  const accountPicker = useOpenClose()
+  const stakeTypeDrawer = useOpenClose()
+  const slippageDrawer = useOpenClose()
+  const warningDrawer = useOpenClose()
+  const seekDiscountDrawer = useOpenClose()
 
   const { data: sapi } = useScaleApi(nativeToken?.networkId)
 
@@ -211,7 +185,6 @@ export const useBittensorBondWizard = () => {
     networkId: nativeToken?.networkId,
     stakeType,
     userMaxSlippage,
-    //selectedStake,
     stakeDirection,
   })
 
@@ -282,8 +255,11 @@ export const useBittensorBondWizard = () => {
   )
 
   const setStakeType = useCallback(
-    (stakeType: StakeType) => setWizardState((prev) => ({ ...prev, stakeType })),
-    [],
+    (stakeType: StakeType) => {
+      setWizardState((prev) => ({ ...prev, stakeType }))
+      stakeTypeDrawer.close()
+    },
+    [stakeTypeDrawer],
   )
 
   const setUserMaxSlippage = useCallback(
@@ -513,6 +489,17 @@ export const useBittensorBondWizard = () => {
     [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
   )
 
+  useEffect(() => {
+    // if subnet staking, open seek discount drawer if it has not been displayed yet
+    if (isSeekTaoDiscountEnabled && !hideSeekDiscountDrawer && stakeType === "subnet")
+      seekDiscountDrawer.open()
+  }, [hideSeekDiscountDrawer, isSeekTaoDiscountEnabled, seekDiscountDrawer, stakeType])
+
+  useEffect(() => {
+    // on mount, if stake type is not set, display the stake type select drawer
+    if (!stakeType && stakeDirection === "bond") stakeTypeDrawer.open()
+  }, [stakeType, stakeDirection, stakeTypeDrawer])
+
   return {
     account,
     nativeToken,
@@ -526,7 +513,7 @@ export const useBittensorBondWizard = () => {
     amountToStakeAlpha,
     displayMode,
     accountPicker,
-    selectStakeDrawer,
+    stakeTypeDrawer,
     slippageDrawer,
     warningDrawer,
     seekDiscountDrawer,
@@ -538,7 +525,6 @@ export const useBittensorBondWizard = () => {
     maxPlancks,
     inputErrorMessage,
     stakeDirection,
-    // selectedStake,
     dtaoBalance,
     selectedSubnet,
     newStakeTotal,
@@ -577,3 +563,7 @@ export const useBittensorBondWizard = () => {
     onSubmitted,
   }
 }
+
+export const [BittensorBondWizardProvider, useBittensorBondWizard] = provideContext(
+  useBittensorBondWizardProvider,
+)

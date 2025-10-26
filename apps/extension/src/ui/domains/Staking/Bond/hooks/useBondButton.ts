@@ -1,35 +1,24 @@
 import { Balance, Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { Address, RemoteConfigStoreData } from "extension-core"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useFeatureFlag, useRemoteConfig, useTokensMap } from "@ui/state"
+import { useAccounts, useRemoteConfig } from "@ui/state"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
-import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
 import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
 import { useBondModal } from "./useBondModal"
 
-export const useBondButton = ({
-  balances,
-  stakeType,
-  netuid,
-}: {
-  balances: Balances | null | undefined
-  stakeType?: StakeType
-  netuid?: number
-}) => {
+export const useBondButton = ({ balances }: { balances: Balances | null | undefined }) => {
   const { genericEvent } = useAnalytics()
-  const tokensMap = useTokensMap()
   const ownedAccounts = useAccounts("owned")
 
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
-  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -38,7 +27,7 @@ export const useBondButton = ({
 
     const bondableBalances = balances.each
       .filter((b) => ownedAddresses.includes(b.address))
-      .map((b) => getBondableBalance(b, tokensMap, remoteConfig, stakeType, netuid))
+      .map((b) => getBondableBalance(b, remoteConfig))
       .filter(isNotNil)
       .sort((a, b) => (a.amount === b.amount ? 0 : a.amount > b.amount ? -1 : 1))
 
@@ -46,7 +35,7 @@ export const useBondButton = ({
       bondableBalances.length ? bondableBalances[0] : null,
       bondableBalances.some((b) => b.isBonding),
     ]
-  }, [balances, ownedAddresses, tokensMap, remoteConfig, stakeType, netuid])
+  }, [balances, ownedAddresses, remoteConfig])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -60,16 +49,10 @@ export const useBondButton = ({
 
       switch (bestBondableBalance.type) {
         case "bittensor": {
-          const { address, tokenId, hotkey, netuid } = bestBondableBalance
+          const { address, tokenId } = bestBondableBalance
           handleOpenBittensorModal({
             address,
             tokenId,
-            hotkey,
-            netuid,
-            stakeType,
-            isSeekDiscountDrawerOpen: isSeekTaoDiscountEnabled,
-            isSelectStakeDrawerOpen: !stakeType && !isSeekTaoDiscountEnabled,
-            step: stakeType !== "subnet" ? "form" : "subnet-form",
           })
           break
         }
@@ -89,8 +72,6 @@ export const useBondButton = ({
       bestBondableBalance,
       genericEvent,
       handleOpenBittensorModal,
-      stakeType,
-      isSeekTaoDiscountEnabled,
       remoteConfig.seek.webAppStakingPath,
       open,
     ],
@@ -131,10 +112,7 @@ type BondableBalance =
 
 const getBondableBalance = (
   balance: Balance,
-  tokensMap: Record<string, Token>,
   remoteConfig: RemoteConfigStoreData,
-  stakeType: StakeType | undefined,
-  netuid: number | undefined,
 ): BondableBalance | null => {
   const token = balance.token
   if (!token) return null
@@ -179,10 +157,8 @@ const getBondableBalance = (
       tokenId: token.id,
       address: balance.address,
       hotkey: defaultHotkey,
-      netuid,
       amount: balance.transferable.planck,
       isBonding: false, // TODO
-      // isBonding: !!meta || isBondingAny,
     }
   }
 

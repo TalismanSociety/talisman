@@ -39,6 +39,7 @@ export type AppStoreData = {
   hideManageAccountsWelcome?: boolean
   hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
+  hideSeekTaoDiscountDrawer?: boolean
 
   // dismissed banners
   hideUnifiedAddressBanner?: boolean
