@@ -9,7 +9,7 @@ type GetNomPoolFeeEstimate = {
 
 export const useGetFeeEstimate = ({ sapi, payload }: GetNomPoolFeeEstimate) => {
   return useQuery({
-    queryKey: ["feeEstimate", sapi?.id, payload], // safe stringify because contains bigint
+    queryKey: ["feeEstimate", sapi?.id, payload],
     queryFn: () => {
       if (!sapi || !payload) return null
       return sapi.getFeeEstimate(payload)
