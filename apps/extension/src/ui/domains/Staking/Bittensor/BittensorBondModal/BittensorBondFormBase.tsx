@@ -368,6 +368,14 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     [netuid, stakeDirection],
   )
 
+  const handleSelectAccount = useCallback(
+    (address: string) => {
+      setAddress(address)
+      accountPicker.close()
+    },
+    [accountPicker, setAddress],
+  )
+
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
@@ -467,8 +475,9 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         isOpen={accountPicker.isOpen}
         account={account}
         token={nativeToken}
-        handleClose={accountPicker.close}
-        setAddress={setAddress}
+        onBackClick={accountPicker.close}
+        onCloseClick={close}
+        onAddressSelected={handleSelectAccount}
       />
       <BittensorSelectStakeDrawer
         isOpen={selectStakeDrawer.isOpen}

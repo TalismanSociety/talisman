@@ -1,6 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { isTokenEth, Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
 import { Account, Address, getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,25 +12,25 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { useAccounts, useNetworkById } from "@ui/state"
 
 import { BondAccountsList } from "./BondAccountsList"
-import { useBondModal } from "./hooks/useBondModal"
 
 type BondAccountPickerProps = {
   account: Account | null
   token: Token | null
   isOpen: boolean
-  handleClose: () => void
-  setAddress: (address: Address) => void
+  onBackClick?: () => void
+  onCloseClick?: () => void
+  onAddressSelected: (address: Address) => void
 }
 
 export const BondAccountPicker = ({
   account,
   token,
   isOpen,
-  setAddress,
-  handleClose,
+  onAddressSelected,
+  onBackClick,
+  onCloseClick,
 }: BondAccountPickerProps) => {
   const { t } = useTranslation()
-  const { close } = useBondModal()
   const [search, setSearch] = useState("")
 
   const chain = useNetworkById(token?.networkId, "polkadot")
@@ -59,32 +60,31 @@ export const BondAccountPicker = ({
 
   const handleSelect = useCallback(
     (address: string) => {
-      setAddress(address)
-      handleClose
+      onAddressSelected(address)
+      onBackClick?.()
     },
-    [handleClose, setAddress],
+    [onBackClick, onAddressSelected],
   )
 
   return (
     <Modal
       containerId="StakingModalDialog"
       isOpen={isOpen}
-      onDismiss={handleClose}
+      onDismiss={onBackClick}
       className="relative z-50 size-full"
     >
       <div className="flex size-full flex-grow flex-col bg-black">
         <header className="flex items-center justify-between p-10">
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
             <ChevronLeftIcon />
           </IconButton>
           <div>{t("Select account")}</div>
-          <IconButton onClick={close}>
+          <IconButton onClick={onCloseClick} className={cn(!onCloseClick && "invisible")}>
             <XIcon />
           </IconButton>
         </header>
         <div className="flex grow flex-col">
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-            <div className="font-bold">{t("Account")}</div>
             <div className="mx-1 grow overflow-hidden px-1">
               <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
             </div>
