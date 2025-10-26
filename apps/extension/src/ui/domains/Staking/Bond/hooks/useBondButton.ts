@@ -136,13 +136,13 @@ const getBondableBalance = (
   stakeType: StakeType | undefined,
   netuid: number | undefined,
 ): BondableBalance | null => {
-  const token = tokensMap[balance.tokenId]
+  const token = balance.token
   if (!token) return null
 
   /**
    * Seek Staking
    */
-  if (token?.id === remoteConfig.seek.tokenId) {
+  if (token.id === remoteConfig.seek.tokenId) {
     return {
       type: "seek",
       tokenId: token.id,
@@ -153,31 +153,36 @@ const getBondableBalance = (
   }
 
   /**
-   * Bittensor Native Staking
+   * Bittensor Staking
    */
+  // TODO rework the check so its not hardcoded to bittensor only.
+  // this prevent testnets or local devnets from working with bittensor staking
   if (token?.id === BITTENSOR_TOKEN_ID) {
     const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
 
-    // if user is already staking, reuse parameters
-    type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
-    const entry = balance.subtensor.find(
-      (b) => !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
-    )
-    const meta = entry?.meta as SubtensorMeta
+    // we would need access to substrate-dtao balances to determine if user is already staking TAO elsewhere
+
+    // // if user is already staking, reuse parameters
+    // type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
+    // const entry = balance.subtensor.find(
+    //   (b) => !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
+    // )
+    // const meta = entry?.meta as SubtensorMeta
 
     // on bittensor asset details the first button is staketype agnostic
     // we need to know if we're staking TAO anywhere to display the appropriate icon
-    const isBondingAny =
-      !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
+    // const isBondingAny =
+    //   !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
 
     return {
       type: "bittensor",
       tokenId: token.id,
       address: balance.address,
-      hotkey: meta?.hotkey ?? defaultHotkey,
+      hotkey: defaultHotkey,
       netuid,
       amount: balance.transferable.planck,
-      isBonding: !!meta || isBondingAny,
+      isBonding: false, // TODO
+      // isBonding: !!meta || isBondingAny,
     }
   }
 

@@ -1,7 +1,7 @@
-import { SCALE_FACTOR } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 
 const calculateAlphaPrice = ({ alphaIn, taoIn }: { alphaIn: number; taoIn: number }): number => {
-  return (taoIn * Number(SCALE_FACTOR.toString())) / alphaIn
+  return (taoIn * Number(ALPHA_PRICE_SCALE.toString())) / alphaIn
 }
 
 const calculateTaoAmountFromAlpha = ({
@@ -13,7 +13,7 @@ const calculateTaoAmountFromAlpha = ({
 }) => {
   const expectedAlpha = alphaStaked * alphaPrice
 
-  return expectedAlpha / Number(SCALE_FACTOR.toString())
+  return expectedAlpha / Number(ALPHA_PRICE_SCALE.toString())
 }
 
 export const calculateTaoFromAlphaStaked = ({

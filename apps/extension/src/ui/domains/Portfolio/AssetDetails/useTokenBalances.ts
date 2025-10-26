@@ -6,7 +6,6 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { sortBigBy } from "@talisman/util/bigHelper"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -112,30 +111,36 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       })),
     )
 
-    // BITTENSOR
-    const subtensor = tokenBalances.each.flatMap((b) =>
-      b.subtensor.map((subtensor, index) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { meta } = subtensor as any
-        const rootTitle = getLockTitle({
-          label: "subtensor-staking",
-        })
+    // // BITTENSOR
+    // const subtensor = tokenBalances.each.flatMap((b) =>
+    //   b.subtensor.map((subtensor, index) => {
+    //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //     const { meta } = subtensor as any
+    //     const rootTitle = getLockTitle({
+    //       label: "subtensor-staking",
+    //     })
 
-        return {
-          key: `${b.id}-subtensor-${index}`,
-          title: meta.netuid === ROOT_NETUID ? rootTitle : "Subnet Staking",
-          description: meta?.description ?? undefined,
-          tokens: BigNumber(subtensor.amount.tokens),
-          fiat: subtensor.amount.fiat(currency),
-          locked: true,
-          // only show address when we're viewing balances for all accounts
-          address: account ? undefined : b.address,
-          meta: meta,
-        }
-      }),
-    )
+    //     return {
+    //       key: `${b.id}-subtensor-${index}`,
+    //       title: meta.netuid === ROOT_NETUID ? rootTitle : "Subnet Staking",
+    //       description: meta?.description ?? undefined,
+    //       tokens: BigNumber(subtensor.amount.tokens),
+    //       fiat: subtensor.amount.fiat(currency),
+    //       locked: true,
+    //       // only show address when we're viewing balances for all accounts
+    //       address: account ? undefined : b.address,
+    //       meta: meta,
+    //     }
+    //   }),
+    // )
 
-    return [...available, ...locked, ...reserved, ...staked, ...subtensor]
+    return [
+      ...available,
+      ...locked,
+      ...reserved,
+      ...staked,
+      //  , ...subtensor
+    ]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, currency])

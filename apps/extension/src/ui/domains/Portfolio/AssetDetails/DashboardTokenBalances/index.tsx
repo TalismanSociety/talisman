@@ -1,10 +1,10 @@
 import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 
-import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
+// import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 
 import { useTokenBalances } from "../useTokenBalances"
-import { BittensorTokenBalances } from "./BittensorTokenBalances"
+// import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
@@ -79,13 +79,13 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
               )
             })}
       </TokenBalancesList>
-      {tokenId === BITTENSOR_TOKEN_ID && (
+      {/* {tokenId === BITTENSOR_TOKEN_ID && (
         <>
           <div>==================== BEGIN LEGACY ======================</div>
           <BittensorTokenBalances tokenId={tokenId} balances={balances} />
           <div>==================== END LEGACY ======================</div>
         </>
-      )}
+      )} */}
     </>
   )
 }

@@ -510,7 +510,6 @@ export class Balance {
       this.free.planck +
         this.reserved.planck +
         nomPoolStakedPlancks +
-        this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra),
     )
   }
@@ -549,10 +548,6 @@ export class Balance {
 
   get nompools() {
     return this.getValue("nompool")
-  }
-
-  get subtensor() {
-    return this.getValue("subtensor")
   }
 
   /** The extra balance of this token */
@@ -635,9 +630,7 @@ export class Balance {
       ? 0n
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
 
-    const otherUnavailable =
-      nomPoolStakedPlancks + this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
-    return this.#format(baseUnavailable + otherUnavailable)
+    return this.#format(baseUnavailable + nomPoolStakedPlancks)
   }
 
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */

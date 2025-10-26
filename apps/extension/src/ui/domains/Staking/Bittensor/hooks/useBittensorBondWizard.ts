@@ -190,7 +190,7 @@ export const useBittensorBondWizard = () => {
     feeEstimate,
     errorFeeEstimate,
     isLoadingFeeEstimate,
-    currentHotkey: currentPoolId,
+    currentHotkey,
     minJoinBond,
     minAlphaUnstake,
 
@@ -208,7 +208,7 @@ export const useBittensorBondWizard = () => {
     hotkey,
     netuid,
     plancks,
-    chainId: nativeToken?.networkId,
+    networkId: nativeToken?.networkId,
     stakeType,
     userMaxSlippage,
     //selectedStake,
@@ -325,10 +325,10 @@ export const useBittensorBondWizard = () => {
      * if user is already staking in pool, set poolId to that pool
      * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
      */
-    if (!!currentPoolId && !hotkey && currentPoolId !== hotkey && stakeDirection === "bond") {
-      setWizardState((prev) => ({ ...prev, hotkey: currentPoolId }))
+    if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
+      setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))
     }
-  }, [currentPoolId, hotkey, stakeDirection, step])
+  }, [currentHotkey, hotkey, stakeDirection, step])
 
   const setStep = useCallback(
     (step: WizardStep) => {

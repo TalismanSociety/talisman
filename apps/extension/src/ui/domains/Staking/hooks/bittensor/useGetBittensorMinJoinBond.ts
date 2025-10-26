@@ -1,18 +1,18 @@
-import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "@talismn/balances"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
+import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "./dTao/constants"
 
 type GetBittensorMinJoinBond = {
-  chainId: DotNetworkId | null | undefined
+  networkId: DotNetworkId | null | undefined
   stakeType: StakeType
 }
 
-export const useGetBittensorMinJoinBond = ({ chainId, stakeType }: GetBittensorMinJoinBond) => {
-  const { data: sapi } = useScaleApi(chainId)
+export const useGetBittensorMinJoinBond = ({ networkId, stakeType }: GetBittensorMinJoinBond) => {
+  const { data: sapi } = useScaleApi(networkId)
 
   return useQuery({
     queryKey: ["useGetBittensorMinJoinBond", sapi?.id, stakeType],

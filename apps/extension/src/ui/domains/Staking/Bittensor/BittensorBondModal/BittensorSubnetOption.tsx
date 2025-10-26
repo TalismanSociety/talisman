@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { classNames, planckToTokens } from "@talismn/util"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -27,7 +27,7 @@ export const BittensorSubnetOption = ({
   const isSelected = option.netuid === selectedNetuid
 
   const formattedEmission =
-    (Number(BigInt(option?.emission || 0) * 100n) / Number(SCALE_FACTOR)).toFixed(2) + "%"
+    (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) + "%"
   const emission = isSubnetsError ? "--" : formattedEmission
 
   return (

@@ -3,7 +3,7 @@ import { ScaleApi } from "@talismn/sapi"
 import { useMemo } from "react"
 
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
-import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
+import { useBittensorCurrentHotkey } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
@@ -16,7 +16,7 @@ type GetStakeInfo = {
   hotkey: string | null | undefined
   netuid: number | null
   plancks: bigint | null
-  chainId: DotNetworkId | undefined
+  networkId: DotNetworkId | undefined
   stakeType: StakeType
   userMaxSlippage: number
   stakeDirection: StakeDirection
@@ -28,12 +28,12 @@ export const useGetBittensorStakeInfo = ({
   hotkey,
   netuid,
   plancks,
-  chainId,
+  networkId,
   stakeType,
   userMaxSlippage,
   stakeDirection,
 }: GetStakeInfo) => {
-  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
+  const { data: minJoinBond } = useGetBittensorMinJoinBond({ networkId, stakeType })
 
   const {
     slippage,
@@ -79,7 +79,7 @@ export const useGetBittensorStakeInfo = ({
     netuid,
   })
 
-  const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
+  const currentHotkey = useBittensorCurrentHotkey({ address, networkId, netuid })
 
   const stakeActionPayload = useMemo(
     () => (stakeDirection === "bond" ? bittensorStakingPayload : bittensorUnbondPayload),
@@ -108,7 +108,7 @@ export const useGetBittensorStakeInfo = ({
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    currentHotkey: hotkeys?.[0] ?? hotkey,
+    currentHotkey,
     minJoinBond,
     minAlphaUnstake,
 

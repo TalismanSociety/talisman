@@ -1,8 +1,7 @@
-// const TAO_DECIMALS = 10n ** 9n
-import { SCALE_FACTOR } from "@talismn/balances"
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { useMemo } from "react"
 
-import { useGetSubnetMetagraphByNetuid } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
+import { useSubnetDynamicInfo } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
 import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
 
@@ -21,7 +20,7 @@ export const useGetDynamicTaoStakeInfo = ({
   userMaxSlippage,
   minJoinBond,
 }: GetDynamicTaoStakeInfoProps) => {
-  const { data, isLoading, isError } = useGetSubnetMetagraphByNetuid({ netuid })
+  const { data, isLoading, isError } = useSubnetDynamicInfo({ netuid })
   const { tier } = useGetSeekDiscount()
 
   const isTaoToAlpha = useMemo(() => direction === "taoToAlpha", [direction])
@@ -69,7 +68,7 @@ export const useGetDynamicTaoStakeInfo = ({
         alphaPrice,
         amount: Number(amount ?? 0n),
         slippage: taoToAlphaSlippage,
-      }) / Number(SCALE_FACTOR),
+      }) / Number(ALPHA_PRICE_SCALE),
     [alphaPrice, amount, taoToAlphaSlippage],
   )
 
@@ -109,7 +108,7 @@ export const useGetDynamicTaoStakeInfo = ({
         alphaPrice,
         amount: Number(amount ?? 0n),
         slippage: alphaToTaoSlippage,
-      }) / Number(SCALE_FACTOR),
+      }) / Number(ALPHA_PRICE_SCALE),
     [alphaPrice, alphaToTaoSlippage, amount],
   )
 
@@ -119,7 +118,7 @@ export const useGetDynamicTaoStakeInfo = ({
         alphaPrice,
         amount: Number(minJoinBond || 0),
         slippage: 0,
-      }) / Number(SCALE_FACTOR),
+      }) / Number(ALPHA_PRICE_SCALE),
     [alphaPrice, minJoinBond],
   )
 
