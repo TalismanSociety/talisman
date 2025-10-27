@@ -17,7 +17,6 @@ export const TokenBalancesDetailRow = ({
   symbol,
   tokenId,
   tokenDecimals,
-  netuid,
 }: {
   row: BalanceDetailRow
   isLastRow?: boolean
@@ -25,7 +24,6 @@ export const TokenBalancesDetailRow = ({
   symbol: string
   tokenId?: TokenId // unsafe, there could be multiple aggregated here
   tokenDecimals: number
-  netuid?: number
 }) => {
   const tokenBalance = useMemo(() => {
     const alphaBalanceInTao = new BigNumber(
@@ -65,7 +63,7 @@ export const TokenBalancesDetailRow = ({
       </div>
       {!!row.locked && row.meta && tokenId && (
         <LockedExtra
-          netuid={netuid}
+          //  netuid={netuid}
           tokenId={tokenId}
           address={row.address}
           isLoading={status.status === "fetching"}
