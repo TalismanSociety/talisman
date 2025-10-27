@@ -6,10 +6,10 @@ import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useRemoteConfig } from "@ui/state"
+import { useAccounts, useBalances, useRemoteConfig } from "@ui/state"
+import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
-import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
 import { useBondModal } from "./useBondModal"
 
 export const useBondButton = ({ balances }: { balances: Balances | null | undefined }) => {
@@ -19,6 +19,8 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const allBalances = useBalances("owned")
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -27,7 +29,7 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
 
     const bondableBalances = balances.each
       .filter((b) => ownedAddresses.includes(b.address))
-      .map((b) => getBondableBalance(b, remoteConfig))
+      .map((b) => getBondableBalance(b, remoteConfig, bittensorNetworkIds, allBalances))
       .filter(isNotNil)
       .sort((a, b) => (a.amount === b.amount ? 0 : a.amount > b.amount ? -1 : 1))
 
@@ -35,7 +37,7 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
       bondableBalances.length ? bondableBalances[0] : null,
       bondableBalances.some((b) => b.isBonding),
     ]
-  }, [balances, ownedAddresses, remoteConfig])
+  }, [allBalances, balances, bittensorNetworkIds, ownedAddresses, remoteConfig])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -113,6 +115,8 @@ type BondableBalance =
 const getBondableBalance = (
   balance: Balance,
   remoteConfig: RemoteConfigStoreData,
+  bittensorNetworkIds: string[],
+  allBalances: Balances,
 ): BondableBalance | null => {
   const token = balance.token
   if (!token) return null
@@ -133,24 +137,20 @@ const getBondableBalance = (
   /**
    * Bittensor Staking
    */
-  // TODO rework the check so its not hardcoded to bittensor only.
-  // this prevent testnets or local devnets from working with bittensor staking
-  if (token?.id === BITTENSOR_TOKEN_ID) {
+  if (
+    // token.id === BITTENSOR_TOKEN_ID && // remove this check once staking works on devnets / localnets (for now our validators/subnet pickers assume mainnet only)
+    token?.type === "substrate-native" &&
+    bittensorNetworkIds.includes(token.networkId)
+  ) {
     const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
 
-    // we would need access to substrate-dtao balances to determine if user is already staking TAO elsewhere
-
-    // // if user is already staking, reuse parameters
-    // type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
-    // const entry = balance.subtensor.find(
-    //   (b) => !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
-    // )
-    // const meta = entry?.meta as SubtensorMeta
-
-    // on bittensor asset details the first button is staketype agnostic
-    // we need to know if we're staking TAO anywhere to display the appropriate icon
-    // const isBondingAny =
-    //   !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
+    const isBonding = allBalances.each.some(
+      (b) =>
+        b.networkId === token.networkId &&
+        b.token?.type === "substrate-dtao" &&
+        b.address === balance.address &&
+        b.free.planck > 0n,
+    )
 
     return {
       type: "bittensor",
@@ -158,7 +158,7 @@ const getBondableBalance = (
       address: balance.address,
       hotkey: defaultHotkey,
       amount: balance.transferable.planck,
-      isBonding: false, // TODO
+      isBonding,
     }
   }
 
