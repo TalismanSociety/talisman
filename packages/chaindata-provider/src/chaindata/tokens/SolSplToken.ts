@@ -15,7 +15,7 @@ export const SolSplTokenSchema = TokenBaseSchema.extend({
 })
 export type SolSplToken = z.infer<typeof SolSplTokenSchema>
 
-export const SolSplBalancesConfigSchema = z.undefined()
+export const SolSplBalancesConfigSchema = z.strictObject({})
 
 export type SolSplBalancesConfig = z.infer<typeof SolSplBalancesConfigSchema>
 

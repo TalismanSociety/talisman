@@ -18,7 +18,7 @@ export const SubDTaoTokenSchema = TokenBaseSchema.extend({
 })
 export type SubDTaoToken = z.infer<typeof SubDTaoTokenSchema>
 
-export const SubDTaoBalancesConfigSchema = z.undefined()
+export const SubDTaoBalancesConfigSchema = z.strictObject({})
 
 export type SubDTaoBalancesConfig = z.infer<typeof SubDTaoBalancesConfigSchema>
 

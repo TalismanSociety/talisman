@@ -15,7 +15,7 @@ export const EvmErc20TokenSchema = TokenBaseSchema.extend({
 })
 export type EvmErc20Token = z.infer<typeof EvmErc20TokenSchema>
 
-export const EvmErc20BalancesConfigSchema = z.undefined()
+export const EvmErc20BalancesConfigSchema = z.strictObject({})
 
 export type EvmErc20BalancesConfig = z.infer<typeof EvmErc20BalancesConfigSchema>
 
