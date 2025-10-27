@@ -7,7 +7,7 @@ import { useBittensorCurrentHotkey } from "../../hooks/bittensor/useGetBittensor
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { type StakeDirection, type StakeType } from "./useBittensorBondWizard"
+import { type StakeDirection } from "./useBittensorBondWizard"
 import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
 type GetStakeInfo = {
@@ -17,7 +17,6 @@ type GetStakeInfo = {
   netuid: number | null
   plancks: bigint | null
   networkId: DotNetworkId | undefined
-  stakeType: StakeType
   userMaxSlippage: number
   stakeDirection: StakeDirection
 }
@@ -29,11 +28,10 @@ export const useGetBittensorStakeInfo = ({
   netuid,
   plancks,
   networkId,
-  stakeType,
   userMaxSlippage,
   stakeDirection,
 }: GetStakeInfo) => {
-  const { data: minJoinBond } = useGetBittensorMinJoinBond({ networkId, stakeType })
+  const { data: minJoinBond } = useGetBittensorMinJoinBond({ networkId, netuid })
 
   const {
     slippage,
@@ -61,7 +59,6 @@ export const useGetBittensorStakeInfo = ({
     plancks,
     minJoinBond,
     isEnabled: stakeDirection === "bond",
-    stakeType,
     alphaPriceWithSlippage,
     netuid,
     talismanFee: talismanFee,
@@ -73,7 +70,6 @@ export const useGetBittensorStakeInfo = ({
     hotkey,
     isEnabled: stakeDirection === "unbond",
     plancks,
-    stakeType,
     alphaPriceWithSlippage,
     talismanFee,
     netuid,

@@ -108,8 +108,8 @@ export const BittensorSubnetSelect = () => {
 
   const handleSubmit = useCallback(
     (netuid: number) => {
-      setStep("subnet-form")
       setNetuid(netuid)
+      setStep("form")
     },
     [setNetuid, setStep],
   )

@@ -459,12 +459,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         )}
       </div>
 
-      <Button
-        primary
-        fullWidth
-        disabled={!payload}
-        onClick={() => setStep(stakeType === "root" ? "review" : "subnet-review")}
-      >
+      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
         {t("Review")}
       </Button>
 

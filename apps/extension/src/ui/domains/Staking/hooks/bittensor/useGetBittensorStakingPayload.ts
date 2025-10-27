@@ -3,7 +3,6 @@ import { tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
 import { getBittensorStakingPayload } from "../../helpers"
 
 type GetBittensorStakingPayload = {
@@ -13,7 +12,6 @@ type GetBittensorStakingPayload = {
   plancks: bigint | null
   isEnabled: boolean
   minJoinBond: bigint | null | undefined
-  stakeType: StakeType
   alphaPriceWithSlippage: number
   netuid: number | null
   talismanFee: bigint
@@ -28,7 +26,6 @@ export const useGetBittensorStakingPayload = ({
   plancks,
   isEnabled,
   minJoinBond,
-  stakeType,
   alphaPriceWithSlippage,
   netuid,
   talismanFee,
@@ -54,18 +51,17 @@ export const useGetBittensorStakingPayload = ({
       address,
       hotkey,
       amount?.toString() ?? "0",
-      stakeType,
       alphaPriceWithSlippage,
       netuid,
     ],
     queryFn: async () => {
       if (!sapi || !address || !hotkey) return null
+      if (typeof netuid !== "number") return null
       const response = getBittensorStakingPayload({
         sapi,
         address,
         hotkey,
         amount,
-        stakeType,
         alphaPriceWithSlippagePlanks,
         netuid,
         talismanFee,

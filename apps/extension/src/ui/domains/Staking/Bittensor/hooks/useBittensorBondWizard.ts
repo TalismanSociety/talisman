@@ -26,14 +26,7 @@ import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSub
 import { DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
-export type WizardStep =
-  | "form"
-  | "subnet-form"
-  | "review"
-  | "subnet-review"
-  | "follow-up"
-  | "select-delegate"
-  | "select-subnet"
+export type WizardStep = "form" | "review" | "follow-up" | "select-delegate" | "select-subnet"
 export type StakeType = "root" | "subnet"
 export type StakeDirection = "bond" | "unbond"
 
@@ -50,7 +43,7 @@ type WizardState = {
   isSlippageDrawerOpen: boolean
   isWarningDrawerOpen: boolean
   hash: Hex | null
-  stakeType: StakeType
+  stakeType: StakeType | null
   stakeDirection: StakeDirection
   userMaxSlippage: number
 }
@@ -61,7 +54,6 @@ type WizardOpenOptions = {
   netuid: number | null | undefined // known only if unstaking
   address?: Address
   hotkey?: string // known only if unstaking
-  stakeType?: StakeType
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -77,33 +69,19 @@ const DEFAULT_STATE: WizardState = {
   isSlippageDrawerOpen: false,
   isWarningDrawerOpen: false,
   hash: null,
-  stakeType: "root",
+  stakeType: null,
   stakeDirection: "bond",
   userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
 
-const getStepFromType = (currentStep: WizardStep, stakeType: StakeType) => {
-  switch (currentStep) {
-    case "form":
-    case "subnet-form":
-      return stakeType === "root" ? "form" : "subnet-form"
-    case "review":
-    case "subnet-review":
-      return stakeType === "root" ? "review" : "subnet-review"
-    case "select-subnet":
-      return stakeType === "root" ? "form" : "select-subnet"
-    default:
-      return currentStep
-  }
-}
-
 export const useResetBittensorBondWizard = () => {
-  const reset = useCallback(
-    (init: WizardOpenOptions) => wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init)),
-    [],
-  )
+  const reset = useCallback((init: WizardOpenOptions) => {
+    const stakeType =
+      typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
+    wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType }))
+  }, [])
 
   return reset
 }
@@ -152,7 +130,10 @@ const useBittensorBondWizardProvider = () => {
       stakeDirection,
     },
     setWizardState,
-  ] = useState(() => wizardOpenState$.getValue())
+  ] = useState(() => {
+    const initialState = wizardOpenState$.getValue()
+    return initialState
+  })
 
   const dtaoBalance = useBalance(allBalances, address, dTaoTokenId)
   const nativeTokenId = useNativeTokenId(dTaoTokenId)
@@ -198,7 +179,6 @@ const useBittensorBondWizardProvider = () => {
     netuid,
     plancks,
     networkId: nativeToken?.networkId,
-    stakeType,
     userMaxSlippage,
     stakeDirection,
   })
@@ -260,7 +240,8 @@ const useBittensorBondWizardProvider = () => {
     [],
   )
   const setNetuid = useCallback(
-    (netuid: number) => setWizardState((prev) => ({ ...prev, netuid })),
+    (netuid: number) =>
+      setWizardState((prev) => ({ ...prev, netuid, stakeType: netuid ? "subnet" : "root" })),
     [],
   )
 
@@ -274,7 +255,7 @@ const useBittensorBondWizardProvider = () => {
       setWizardState((prev) => ({
         ...prev,
         stakeType,
-        step: getStepFromType(prev.step, stakeType),
+        netuid: stakeType === "root" ? 0 : prev.netuid || null,
       }))
       stakeTypeDrawer.close()
     },

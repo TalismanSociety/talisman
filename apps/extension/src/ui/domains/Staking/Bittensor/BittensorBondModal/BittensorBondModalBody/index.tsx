@@ -8,21 +8,17 @@ import { BittensorSubnetBondReview } from "./BittensorSubnetBondReview"
 import { BittensorSubnetSelect } from "./BittensorSubnetSelect"
 
 export const BittensorBondModalBody = () => {
-  const { step } = useBittensorBondWizard()
+  const { step, stakeType } = useBittensorBondWizard()
 
   switch (step) {
     case "form":
-      return <BittensorRootBondForm />
-    case "subnet-form":
-      return <BittensorSubnetBondForm />
+      return stakeType === "subnet" ? <BittensorSubnetBondForm /> : <BittensorRootBondForm />
     case "select-delegate":
       return <BittensorBondDelegateSelect />
     case "select-subnet":
       return <BittensorSubnetSelect />
     case "review":
-      return <BittensorBondReview />
-    case "subnet-review":
-      return <BittensorSubnetBondReview />
+      return stakeType === "subnet" ? <BittensorSubnetBondReview /> : <BittensorBondReview />
     case "follow-up":
       return <BittensorBondFollowUp />
   }

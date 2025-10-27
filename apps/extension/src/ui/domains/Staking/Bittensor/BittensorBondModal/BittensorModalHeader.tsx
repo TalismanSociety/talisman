@@ -9,13 +9,10 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 export const BittensorModalHeader = () => {
   const { t } = useTranslation()
-  const { step, stakeType, setStep, stakeDirection } = useBittensorBondWizard()
+  const { step, setStep, stakeDirection } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
 
-  const handleBackClick = useCallback(
-    () => setStep(stakeType === "root" ? "form" : "subnet-form"),
-    [setStep, stakeType],
-  )
+  const handleBackClick = useCallback(() => setStep("form"), [setStep])
 
   return (
     <div

@@ -4,7 +4,6 @@ import { isNotNil } from "@talismn/util"
 import { range } from "lodash-es"
 import { Binary } from "polkadot-api"
 
-import { type StakeType } from "./Bittensor/hooks/useBittensorBondWizard"
 import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./Bittensor/utils/constants"
 
 export const getStakingErasPerYear = (stakingSapi: ScaleApi, babeSapi: ScaleApi) => {
@@ -81,7 +80,6 @@ export const getBittensorStakingPayload = async ({
   address,
   hotkey,
   amount,
-  stakeType,
   alphaPriceWithSlippagePlanks,
   netuid,
   talismanFee,
@@ -90,12 +88,11 @@ export const getBittensorStakingPayload = async ({
   address: string
   hotkey: string
   amount: bigint
-  stakeType: StakeType
   alphaPriceWithSlippagePlanks: bigint
-  netuid: number | null
+  netuid: number
   talismanFee: bigint
 }) => {
-  if (stakeType === "root") {
+  if (netuid === 0) {
     return sapi.getExtrinsicPayload(
       "Utility",
       "batch_all",

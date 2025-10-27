@@ -81,7 +81,6 @@ const UnstakeDTaoMenuItem: FC<{ token: SubDTaoToken }> = ({ token }) => {
       netuid: token.netuid,
       hotkey: token.hotkey ?? "",
       stakeDirection: "unbond",
-      stakeType: token.netuid ? "subnet" : "root",
     })
     genericEvent("open inline staking modal", { tokenId: token.id })
   }, [genericEvent, open, token.hotkey, token.id, token.netuid, tokenBalances])

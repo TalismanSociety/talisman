@@ -1,10 +1,11 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Address } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import type { StakeDirection, StakeType, WizardStep } from "./useBittensorBondWizard"
+import type { StakeDirection } from "./useBittensorBondWizard"
 import { useResetBittensorBondWizard } from "./useBittensorBondWizard"
 
 export const useBittensorBondModal = () => {
@@ -14,26 +15,29 @@ export const useBittensorBondModal = () => {
 
   const open = useCallback(
     ({
+      stakeDirection,
       address,
       tokenId,
       hotkey,
-      stakeType,
-      stakeDirection = "bond",
       netuid,
     }: {
+      stakeDirection: StakeDirection
       address?: Address
       tokenId: TokenId
       hotkey?: string
-      stakeType?: StakeType
-      stakeDirection?: StakeDirection
-      step?: WizardStep
       netuid?: number
     }) => {
+      log.debug("[tao] Resetting Bittensor Bond Wizard", {
+        address,
+        tokenId,
+        hotkey,
+        stakeDirection,
+        netuid,
+      })
       reset({
         address,
         tokenId,
         hotkey,
-        stakeType,
         stakeDirection,
         netuid,
       })

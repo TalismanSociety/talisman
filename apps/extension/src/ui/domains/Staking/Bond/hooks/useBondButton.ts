@@ -1,5 +1,5 @@
 import { Balance, Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { Address, RemoteConfigStoreData } from "extension-core"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
@@ -51,10 +51,13 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
 
       switch (bestBondableBalance.type) {
         case "bittensor": {
-          const { address, tokenId } = bestBondableBalance
+          const { address, tokenId, hotkey, netuid } = bestBondableBalance
           handleOpenBittensorModal({
+            stakeDirection: "bond",
             address,
             tokenId,
+            hotkey,
+            netuid,
           })
           break
         }
@@ -159,6 +162,21 @@ const getBondableBalance = (
       hotkey: defaultHotkey,
       amount: balance.transferable.planck,
       isBonding,
+    }
+  }
+
+  // if dTAO, assume we can bond more native TAO
+  if (token.type === "substrate-dtao") {
+    const address = balance.address
+    const tokenId = subNativeTokenId(token.networkId)
+    return {
+      type: "bittensor",
+      tokenId,
+      address,
+      hotkey: token.hotkey,
+      netuid: token.netuid,
+      amount: balance?.transferable.planck ?? 0n, // used only for sorting
+      isBonding: true,
     }
   }
 

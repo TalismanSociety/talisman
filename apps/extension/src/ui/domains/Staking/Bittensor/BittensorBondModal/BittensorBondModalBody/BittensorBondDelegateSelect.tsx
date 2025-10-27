@@ -30,7 +30,7 @@ const sortMethods: SortMethod[] = [
 export const BittensorBondDelegateSelect = () => {
   const [search, setSearch] = useState<string>("")
 
-  const { hotkey: poolId, stakeType, netuid, setStep, setHotkey } = useBittensorBondWizard()
+  const { hotkey: poolId, netuid, setStep, setHotkey } = useBittensorBondWizard()
 
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
@@ -120,10 +120,10 @@ export const BittensorBondDelegateSelect = () => {
 
   const handleSubmit = useCallback(
     (hotkey: string) => {
-      setStep(stakeType === "root" ? "form" : "subnet-form")
+      setStep("form")
       setHotkey(hotkey)
     },
-    [setHotkey, setStep, stakeType],
+    [setHotkey, setStep],
   )
 
   return (
