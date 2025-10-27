@@ -38,10 +38,6 @@ type WizardState = {
   netuid: number | null
   plancks: bigint | null
   displayMode: "token" | "fiat"
-  isAccountPickerOpen: boolean
-  isSelectStakeDrawerOpen: boolean
-  isSlippageDrawerOpen: boolean
-  isWarningDrawerOpen: boolean
   hash: Hex | null
   stakeType: StakeType | null
   stakeDirection: StakeDirection
@@ -53,7 +49,7 @@ type WizardOpenOptions = {
   tokenId: TokenId
   netuid: number | null | undefined // known only if unstaking
   address?: Address
-  hotkey?: string // known only if unstaking
+  hotkey?: string // might be set if user is already staking
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -64,10 +60,6 @@ const DEFAULT_STATE: WizardState = {
   netuid: null,
   plancks: null,
   displayMode: "token",
-  isAccountPickerOpen: false,
-  isSelectStakeDrawerOpen: false,
-  isSlippageDrawerOpen: false,
-  isWarningDrawerOpen: false,
   hash: null,
   stakeType: null,
   stakeDirection: "bond",
@@ -109,10 +101,8 @@ const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
   const [hideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
-
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
-
   const { subnetData } = useCombinedSubnetData()
 
   const [
@@ -123,7 +113,7 @@ const useBittensorBondWizardProvider = () => {
       stakeType,
       displayMode,
       hash,
-      tokenId: dTaoTokenId,
+      tokenId: dTaoTokenId, // TODO: smelly, should be derived from networkid/netuid/hotkey - in theory only used when unstaking
       address,
       plancks,
       userMaxSlippage,
@@ -163,7 +153,6 @@ const useBittensorBondWizardProvider = () => {
     currentHotkey,
     minJoinBond,
     minAlphaUnstake,
-
     slippage,
     talismanFee,
     taoToAlphaConversionRate,
@@ -227,11 +216,6 @@ const useBittensorBondWizardProvider = () => {
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
-    [],
-  )
-
-  const setTokenId = useCallback(
-    (tokenId: TokenId) => setWizardState((prev) => ({ ...prev, tokenId })),
     [],
   )
 
@@ -551,7 +535,7 @@ const useBittensorBondWizardProvider = () => {
     taoAmountFromAlpha,
 
     setAddress,
-    setTokenId,
+    // setTokenId,
     setNetuid,
     setHotkey,
     setPlancks,
