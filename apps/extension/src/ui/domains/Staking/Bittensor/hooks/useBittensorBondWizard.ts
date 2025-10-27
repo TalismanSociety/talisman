@@ -1,5 +1,10 @@
 import { Balance, BalanceFormatter, Balances, getBalanceId } from "@talismn/balances"
-import { parseTokenId, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
+import {
+  DotNetworkId,
+  subDTaoTokenId,
+  subNativeTokenId,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Address } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -32,8 +37,8 @@ export type StakeDirection = "bond" | "unbond"
 
 type WizardState = {
   step: WizardStep
+  networkId: DotNetworkId | null
   address: Address | null
-  tokenId: TokenId | null
   hotkey: string | null
   netuid: number | null
   plancks: bigint | null
@@ -44,9 +49,9 @@ type WizardState = {
   userMaxSlippage: number
 }
 
-type WizardOpenOptions = {
+export type BittensorStakingWizardOpenOptions = {
   stakeDirection: StakeDirection
-  tokenId: TokenId
+  networkId: DotNetworkId
   netuid: number | null | undefined // known only if unstaking
   address?: Address
   hotkey?: string // might be set if user is already staking
@@ -55,7 +60,7 @@ type WizardOpenOptions = {
 const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
-  tokenId: null,
+  networkId: null,
   hotkey: null,
   netuid: null,
   plancks: null,
@@ -69,21 +74,13 @@ const DEFAULT_STATE: WizardState = {
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
 
 export const useResetBittensorBondWizard = () => {
-  const reset = useCallback((init: WizardOpenOptions) => {
+  const reset = useCallback((init: BittensorStakingWizardOpenOptions) => {
     const stakeType =
       typeof init.netuid === "number" ? (init.netuid === 0 ? "root" : "subnet") : null
     wizardOpenState$.next(Object.assign({}, DEFAULT_STATE, init, { stakeType }))
   }, [])
 
   return reset
-}
-
-const useNativeTokenId = (dtaoTokenId: TokenId | null) => {
-  return useMemo(() => {
-    if (!dtaoTokenId) return null
-    const parsed = parseTokenId(dtaoTokenId)
-    return subNativeTokenId(parsed.networkId)
-  }, [dtaoTokenId])
 }
 
 const useBalance = (
@@ -107,14 +104,14 @@ const useBittensorBondWizardProvider = () => {
 
   const [
     {
-      hotkey,
+      networkId,
+      address,
       netuid,
+      hotkey,
       step,
       stakeType,
       displayMode,
       hash,
-      tokenId: dTaoTokenId, // TODO: smelly, should be derived from networkid/netuid/hotkey - in theory only used when unstaking
-      address,
       plancks,
       userMaxSlippage,
       stakeDirection,
@@ -124,9 +121,16 @@ const useBittensorBondWizardProvider = () => {
     const initialState = wizardOpenState$.getValue()
     return initialState
   })
+  const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
+  const dTaoTokenId = useMemo(
+    () =>
+      networkId && typeof netuid === "number"
+        ? subDTaoTokenId(networkId, netuid, hotkey ?? undefined)
+        : null,
+    [hotkey, netuid, networkId],
+  )
 
   const dtaoBalance = useBalance(allBalances, address, dTaoTokenId)
-  const nativeTokenId = useNativeTokenId(dTaoTokenId)
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
   const account = useAccountByAddress(address)
   const nativeToken = useToken(nativeTokenId)

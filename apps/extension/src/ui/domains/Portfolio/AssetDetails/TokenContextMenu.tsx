@@ -76,14 +76,14 @@ const UnstakeDTaoMenuItem: FC<{ token: SubDTaoToken }> = ({ token }) => {
     const account = tokenBalances.each.sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 
     open({
-      tokenId: token.id,
+      networkId: token.networkId,
       address: account.address,
       netuid: token.netuid,
       hotkey: token.hotkey ?? "",
       stakeDirection: "unbond",
     })
     genericEvent("open inline staking modal", { tokenId: token.id })
-  }, [genericEvent, open, token.hotkey, token.id, token.netuid, tokenBalances])
+  }, [genericEvent, open, token, tokenBalances])
 
   if (!tokenBalances.count) return null
 
