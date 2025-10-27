@@ -226,21 +226,23 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {isSeekTaoDiscountEnabled &&
-                (discount > 0 ? (
-                  <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
-                    <div className="text-[1rem] text-[#D5FF5C]">
-                      {discountPercent} {t("Off Fees")}
-                    </div>
+              {isSeekTaoDiscountEnabled && (
+                <button
+                  type="button"
+                  className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
+                  onClick={seekDiscountDrawer.open}
+                >
+                  <div className="text-[1rem] text-[#D5FF5C]">
+                    {discount ? (
+                      <>
+                        {discountPercent} {t("Off Fees")}
+                      </>
+                    ) : (
+                      t("Get Discount")
+                    )}
                   </div>
-                ) : (
-                  <button
-                    className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
-                    onClick={seekDiscountDrawer.open}
-                  >
-                    <div className="text-[1rem] text-[#D5FF5C]">{t("Get Discount")}</div>
-                  </button>
-                ))}
+                </button>
+              )}
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}

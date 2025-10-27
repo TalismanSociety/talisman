@@ -1,8 +1,8 @@
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorBondDelegateSelect } from "./BittensorBondDelegateSelect"
 import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
-import { BittensorBondReview } from "./BittensorBondReview"
 import { BittensorRootBondForm } from "./BittensorRootBondForm"
+import { BittensorRootBondReview } from "./BittensorRootBondReview"
 import { BittensorSubnetBondForm } from "./BittensorSubnetBondForm"
 import { BittensorSubnetBondReview } from "./BittensorSubnetBondReview"
 import { BittensorSubnetSelect } from "./BittensorSubnetSelect"
@@ -18,7 +18,7 @@ export const BittensorBondModalBody = () => {
     case "select-subnet":
       return <BittensorSubnetSelect />
     case "review":
-      return stakeType === "subnet" ? <BittensorSubnetBondReview /> : <BittensorBondReview />
+      return stakeType === "subnet" ? <BittensorSubnetBondReview /> : <BittensorRootBondReview />
     case "follow-up":
       return <BittensorBondFollowUp />
   }

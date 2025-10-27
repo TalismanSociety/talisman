@@ -13,7 +13,7 @@ import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 
-export const BittensorBondReview = () => {
+export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
   const {
     nativeToken,
