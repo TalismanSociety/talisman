@@ -23,6 +23,7 @@ const NATIVE_TOKEN_SYMBOLS: Record<string, string> = {
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
   connector,
+  tokens,
   miniMetadata,
 }) => {
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
@@ -40,29 +41,37 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   return dynamicInfos
     .filter(isNotNil)
     .map((info): SubDTaoToken => {
+      const config = tokens.find((t) => t.netuid === info.netuid)
+
       let symbol = new TextDecoder().decode(Uint8Array.from(info.token_symbol))
       const subnetName =
         info.subnet_identity?.subnet_name?.asText() ??
         (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
-      const name = `${info.netuid} | ${subnetName} ${symbol}`
+      const name = `SN${info.netuid} | ${subnetName} ${symbol}`
+      // when root staking, consider its TAO so use same logo (set via coingeckoId or config)
+      const logo = info.netuid === 0 ? undefined : DEFAULT_DTAO_LOGO
 
       // for root we want same symbol as native so they can be grouped together in portfolio
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
         symbol = NATIVE_TOKEN_SYMBOLS[networkId]
 
-      return {
-        id: subDTaoTokenId(networkId, info.netuid),
-        type: MODULE_TYPE,
-        platform: PLATFORM,
-        networkId,
-        netuid: info.netuid,
-        isDefault: true,
-        symbol,
-        decimals: 9,
-        logo: DEFAULT_DTAO_LOGO,
-        name,
-        subnetName,
-      }
+      return Object.assign(
+        {},
+        {
+          id: subDTaoTokenId(networkId, info.netuid),
+          type: MODULE_TYPE,
+          platform: PLATFORM,
+          networkId,
+          netuid: info.netuid,
+          isDefault: true,
+          symbol,
+          decimals: 9,
+          logo,
+          name,
+          subnetName,
+        },
+        config,
+      )
     })
 
     .filter((t) => {
