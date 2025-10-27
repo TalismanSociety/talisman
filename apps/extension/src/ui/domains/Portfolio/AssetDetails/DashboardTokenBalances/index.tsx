@@ -74,7 +74,7 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
                   symbol={token.symbol}
                   status={status}
                   tokenId={tokenId}
-                  tokenDecimals={token.decimals}
+                  // tokenDecimals={token.decimals}
                 />
               )
             })}

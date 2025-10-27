@@ -15,7 +15,6 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
 type LockedExtraProps = {
-  netuid?: number
   tokenId: TokenId
   address?: string
   isLoading: boolean

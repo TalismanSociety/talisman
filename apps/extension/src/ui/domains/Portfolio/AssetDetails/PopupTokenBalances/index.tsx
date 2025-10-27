@@ -71,7 +71,6 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
                 symbol={balanceDetailSymbol}
                 status={status}
                 tokenId={tokenId}
-                tokenDecimals={token.decimals}
               />
             )
           })}
