@@ -35,6 +35,8 @@ import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "./BittensorModalHeader"
+import { BittensorModalLayout } from "./BittensorModalLayout"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
@@ -376,7 +378,15 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
   )
 
   return (
-    <div className="text-body-secondary flex size-full flex-col gap-4">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={stakeDirection === "bond" ? t("Staking") : t("Unstake")}
+          withClose
+        />
+      }
+      contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
+    >
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Asset")}</div>
@@ -388,7 +398,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="whitespace-nowrap">{t("Account")}</div>
           <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
-              <BondAccountPillButton address={account?.address} onClick={accountPicker.open} />
+              <BondAccountPillButton
+                address={account?.address}
+                onClick={() => {
+                  stakeDirection === "bond" ? accountPicker.open() : setStep("select-position")
+                }}
+              />
             </Suspense>
           </div>
         </div>
@@ -478,6 +493,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         onCloseModal={close}
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
-    </div>
+    </BittensorModalLayout>
   )
 }

@@ -29,9 +29,19 @@ import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
 import { DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
+import {
+  BittensorStakingPosition,
+  useBittensorStakingPositions,
+} from "./useBittensorStakingPositions"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
 
-export type WizardStep = "form" | "review" | "follow-up" | "select-delegate" | "select-subnet"
+export type WizardStep =
+  | "form"
+  | "review"
+  | "follow-up"
+  | "select-delegate"
+  | "select-subnet"
+  | "select-position"
 export type StakeType = "root" | "subnet"
 export type StakeDirection = "bond" | "unbond"
 
@@ -52,7 +62,7 @@ type WizardState = {
 export type BittensorStakingWizardOpenOptions = {
   stakeDirection: StakeDirection
   networkId: DotNetworkId
-  netuid: number | null | undefined // known only if unstaking
+  netuid?: number // known only if unstaking
   address?: Address
   hotkey?: string // might be set if user is already staking
 }
@@ -305,6 +315,21 @@ const useBittensorBondWizardProvider = () => {
     [isFormValid],
   )
 
+  const setPosition = useCallback((position: BittensorStakingPosition) => {
+    if (!position.token.hotkey) return
+    setWizardState((prev) => {
+      return {
+        ...prev,
+        step: "form",
+        networkId: position.token.networkId,
+        hotkey: position.token.hotkey!,
+        netuid: position.token.netuid,
+        address: position.balance.address,
+        stakeType: position.token.netuid === 0 ? "root" : "subnet",
+      }
+    })
+  }, [])
+
   const onSubmitted = useCallback(
     (hash: Hex) => {
       genericEvent("Bittensor Bond", { tokenId: nativeTokenId })
@@ -477,6 +502,22 @@ const useBittensorBondWizardProvider = () => {
     [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
   )
 
+  // positions are used only when unstaking
+  const positions = useBittensorStakingPositions(networkId)
+  const position = useMemo(() => {
+    return positions.find(
+      (p) =>
+        p.token.netuid === netuid &&
+        p.token.hotkey === hotkey &&
+        p.token.networkId === networkId &&
+        p.balance.address === address,
+    )
+  }, [positions, netuid, hotkey, networkId, address])
+
+  useEffect(() => {
+    if (stakeDirection === "unbond" && step === "form" && !position) setStep("select-position")
+  }, [stakeDirection, position, setStep, step])
+
   useEffect(() => {
     // if subnet staking, open seek discount drawer if it has not been displayed yet
     if (isSeekTaoDiscountEnabled && !hideSeekDiscountDrawer && stakeType === "subnet")
@@ -493,6 +534,7 @@ const useBittensorBondWizardProvider = () => {
     nativeToken,
     dtaoToken,
     tokenRates,
+    networkId,
     hotkey,
     netuid,
     plancks,
@@ -539,12 +581,12 @@ const useBittensorBondWizardProvider = () => {
     taoAmountFromAlpha,
 
     setAddress,
-    // setTokenId,
     setNetuid,
     setHotkey,
     setPlancks,
     setStep,
     setStakeType,
+    setPosition,
     toggleDisplayMode,
     setUserMaxSlippage,
 

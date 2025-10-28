@@ -79,9 +79,6 @@ export const BittensorUnstakeToolbarButton: FC<{ balances: Balances; className?:
     return balance && token
       ? {
           networkId: token.networkId,
-          address: balance.address,
-          netuid: token.netuid,
-          hotkey: token.hotkey,
           stakeDirection: "unbond",
         }
       : null

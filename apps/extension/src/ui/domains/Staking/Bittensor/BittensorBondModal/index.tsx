@@ -1,24 +1,34 @@
+import { cn } from "@talismn/util"
 import { Suspense } from "react"
 import { Modal } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { IS_POPUP } from "@ui/util/constants"
 
-import { ModalContent } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { BittensorBondWizardProvider } from "../hooks/useBittensorBondWizard"
-import { BittensorBondModalBody } from "./BittensorBondModalBody"
-import { BittensorModalHeader } from "./BittensorModalHeader"
+import { BittensorBondModalRouter } from "./Forms"
+
+export const STAKING_MODAL_CONTENT_CONTAINER_ID = "StakingModalDialog"
 
 export const BittensorBondModal = () => {
   const { isOpen, close } = useBittensorBondModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <BittensorBondWizardProvider>
-        <Suspense fallback={<SuspenseTracker name="BittensorBondModal" />}>
-          <ModalContent ModalHeader={BittensorModalHeader} ModalBody={BittensorBondModalBody} />
-        </Suspense>
-      </BittensorBondWizardProvider>
+      <div
+        id={STAKING_MODAL_CONTENT_CONTAINER_ID} // acts as containerId for sub modals
+        className={cn(
+          "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
+          !IS_POPUP && "border-grey-850 rounded border",
+        )}
+      >
+        <BittensorBondWizardProvider>
+          <Suspense fallback={<SuspenseTracker name="BittensorBondModal" />}>
+            <BittensorBondModalRouter />
+          </Suspense>
+        </BittensorBondWizardProvider>
+      </div>
     </Modal>
   )
 }

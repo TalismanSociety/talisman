@@ -28,6 +28,8 @@ import {
   VERY_HIGH_SLIPPAGE,
 } from "../../utils/constants"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "../BittensorModalHeader"
+import { BittensorModalLayout } from "../BittensorModalLayout"
 import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
@@ -63,6 +65,7 @@ export const BittensorSubnetBondReview = () => {
     amountToStakeAlpha,
     estimatedAmountToStake,
     onSubmitted,
+    setStep,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
   const { tier } = useGetSeekDiscount()
@@ -92,7 +95,16 @@ export const BittensorSubnetBondReview = () => {
   if (!account) return null
 
   return (
-    <div className="flex size-full flex-col">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={t("Confirm")}
+          onBackClick={() => setStep("form")}
+          withClose
+        />
+      }
+      contentClassName="p-12 pt-0"
+    >
       <h2 className="mb-16 mt-6 text-center">
         {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
       </h2>
@@ -280,7 +292,7 @@ export const BittensorSubnetBondReview = () => {
         onCloseModal={close}
         containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
-    </div>
+    </BittensorModalLayout>
   )
 }
 

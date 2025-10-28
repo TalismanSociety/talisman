@@ -12,6 +12,8 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "../BittensorModalHeader"
+import { BittensorModalLayout } from "../BittensorModalLayout"
 
 export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
@@ -25,6 +27,7 @@ export const BittensorRootBondReview = () => {
     hotkey,
     stakeDirection,
     newStakeTotal,
+    setStep,
   } = useBittensorBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
@@ -39,7 +42,16 @@ export const BittensorRootBondReview = () => {
   if (!account) return null
 
   return (
-    <div className="flex size-full flex-col">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={t("Confirm")}
+          onBackClick={() => setStep("form")}
+          withClose
+        />
+      }
+      contentClassName="p-12 pt-0"
+    >
       <h2 className="mb-24 mt-8 text-center">
         {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
       </h2>
@@ -106,7 +118,7 @@ export const BittensorRootBondReview = () => {
           disabled={isDisabled}
         />
       )}
-    </div>
+    </BittensorModalLayout>
   )
 }
 
