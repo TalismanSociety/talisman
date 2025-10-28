@@ -1,7 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { SubDTaoToken } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -10,7 +9,9 @@ import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBi
 import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
-export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string }> = ({
+import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
+
+export const BittensorUnstakeToolbarButton: FC<{ balances: Balances; className?: string }> = ({
   balances,
   className,
 }) => {
@@ -31,13 +32,10 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
     return balance && token
       ? {
           networkId: token.networkId,
-          address: balance.address,
-          netuid: token.netuid,
-          hotkey: token.hotkey,
           stakeDirection: "unbond",
         }
       : null
-  }, [balances.each, bittensorNetworkIds])
+  }, [balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
@@ -49,16 +47,9 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
-          type="button"
-          onClick={handleClick}
-          className={cn(
-            "text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs",
-            className,
-          )}
-        >
+        <PortfolioToolbarButton onClick={handleClick} className={className}>
           <ZapOffIcon />
-        </button>
+        </PortfolioToolbarButton>
       </TooltipTrigger>
       <TooltipContent>{t("Unstake")}</TooltipContent>
     </Tooltip>

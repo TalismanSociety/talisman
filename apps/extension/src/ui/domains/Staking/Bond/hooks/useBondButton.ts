@@ -141,11 +141,7 @@ const getBondableBalance = (
   /**
    * Bittensor Staking
    */
-  if (
-    // token.id === BITTENSOR_TOKEN_ID && // remove this check once staking works on devnets / localnets (for now our validators/subnet pickers assume mainnet only)
-    token?.type === "substrate-native" &&
-    bittensorNetworkIds.includes(token.networkId)
-  ) {
+  if (token?.type === "substrate-native" && bittensorNetworkIds.includes(token.networkId)) {
     const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
 
     const isBonding = allBalances.each.some(
@@ -168,7 +164,7 @@ const getBondableBalance = (
   }
 
   // if dTAO, assume we can bond more native TAO
-  if (token.type === "substrate-dtao") {
+  if (token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)) {
     const address = balance.address
     return {
       type: "bittensor",

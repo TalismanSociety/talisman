@@ -55,7 +55,11 @@ export const [useBittensorValidator, getBittensorValidator$] = bind(
 export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
   getTokens$({ platform: "polkadot" }).pipe(
     map((tokens) =>
-      uniq(tokens.filter((t) => t.type === "substrate-dtao").map((t) => t.networkId)),
+      uniq(
+        tokens
+          .filter((t) => t.type === "substrate-dtao" && t.networkId === "bittensor") // TODO: remove networkId check once testnets work
+          .map((t) => t.networkId),
+      ),
     ),
   ),
   [],
