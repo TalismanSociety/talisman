@@ -1,12 +1,6 @@
-import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
-import { ZapOffIcon } from "@talismn/icons"
-import { Address, isAccountOwned } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
-import { useAccountByAddress } from "@ui/state"
+import { Balance } from "@talismn/balances"
+import { Address } from "extension-core"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PortfolioAccount } from "../PortfolioAccount"
 
@@ -17,7 +11,7 @@ type AssetStateProps = {
   address?: Address
   isLoading?: boolean
   locked?: boolean
-  tokenId: TokenId
+  balance: Balance | null
 }
 
 export const AssetState = ({
@@ -27,14 +21,14 @@ export const AssetState = ({
   address,
   isLoading,
   locked,
-  tokenId,
 }: AssetStateProps) => {
   if (!render) return null
   return (
     <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
         <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">
-          {title} <BittensorUnbondButton address={address} tokenId={tokenId} />
+          {title}
+          {/* <BittensorUnbondButton balance={balance} /> */}
         </div>
         {/* show description next to title when address is set */}
         {description && address && (
@@ -68,39 +62,35 @@ export const AssetState = ({
   )
 }
 
-const BittensorUnbondButton: FC<{
-  address: string | null | undefined
-  tokenId: TokenId | null | undefined
-}> = ({ address, tokenId }) => {
-  const account = useAccountByAddress(address)
+// const BittensorUnbondButton: FC<{
+//   balance: Balance
+// }> = ({ balance }) => {
+//   const { open: openUnbondModal } = useBittensorBondModal()
 
-  const { open: openUnbondModal } = useBittensorBondModal()
+//   const opts = useMemo(() => {
+//     const token = balance.token
+//     if (token?.type !== "substrate-dtao") return null
 
-  const opts = useMemo(() => {
-    if (!tokenId || !account || !isAccountOwned(account)) return null
-    const parsed = parseTokenId(tokenId)
-    if (parsed.type !== "substrate-dtao") return null
+//     const opts: BittensorStakingWizardOpenOptions = {
+//       stakeDirection: "unbond",
+//       networkId: token.networkId,
+//       hotkey: token.hotkey,
+//       netuid: token.netuid,
+//       address: balance.address,
+//     }
+//     return opts
+//   }, [balance])
 
-    const opts: BittensorStakingWizardOpenOptions = {
-      stakeDirection: "unbond",
-      networkId: parsed.networkId,
-      hotkey: parsed.hotkey,
-      netuid: parsed.netuid,
-      address: account.address,
-    }
-    return opts
-  }, [account, tokenId])
+//   const handleClick = useCallback(() => {
+//     if (!opts) return
+//     openUnbondModal(opts)
+//   }, [openUnbondModal, opts])
 
-  const handleClick = useCallback(() => {
-    if (!opts) return
-    openUnbondModal(opts)
-  }, [openUnbondModal, opts])
+//   if (!opts) return null
 
-  if (!opts) return null
-
-  return (
-    <PillButton className="rounded-full p-3 text-xs" onClick={handleClick}>
-      <ZapOffIcon className="text-xs" />
-    </PillButton>
-  )
-}
+//   return (
+//     <PillButton className="rounded-full p-3 text-xs" onClick={handleClick}>
+//       <ZapOffIcon className="text-xs" />
+//     </PillButton>
+//   )
+// }

@@ -1,3 +1,4 @@
+import { Balances } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { t } from "i18next"
@@ -11,6 +12,7 @@ import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeButton"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -105,7 +107,8 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
 
 const TokenBreadcrumb: FC<{
   symbol: string
-}> = ({ symbol }) => {
+  balances: Balances
+}> = ({ symbol, balances }) => {
   const { t } = useTranslation()
 
   const navigate = useNavigateWithQuery()
@@ -125,8 +128,13 @@ const TokenBreadcrumb: FC<{
 
   return (
     <div className="flex h-20 items-center justify-between">
-      <Breadcrumb items={items} />
-      <SendFundsButton symbol={symbol} />
+      <div className="grow">
+        <Breadcrumb items={items} />
+      </div>
+      <div className="flex h-20 items-center gap-2">
+        <BittensorUnstakeToolbarButton balances={balances} />
+        <SendFundsButton symbol={symbol} />
+      </div>
     </div>
   )
 }
@@ -160,7 +168,7 @@ export const PortfolioAsset = () => {
 
   return (
     <>
-      <TokenBreadcrumb symbol={symbol} />
+      <TokenBreadcrumb symbol={symbol} balances={balancesToDisplay} />
       <HeaderRow token={token} summary={summary} />
       <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
     </>

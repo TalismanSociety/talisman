@@ -13,6 +13,7 @@ import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
 import { BalanceSummary } from "../../useTokenBalancesSummary"
+import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
@@ -62,6 +63,7 @@ export const TokenBalancesList = ({
               <div className="text-body font-bold">{token.name}</div>
               <div className="text-body flex items-center text-base font-bold">
                 <CopyAddressButton networkId={chainOrNetworkId} />
+                <BittensorUnstakeButton balances={balances} />
                 <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                   <SendFundsTokenButton tokenId={tokenId} />
                   {tokenId && (
