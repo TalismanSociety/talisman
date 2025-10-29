@@ -443,8 +443,8 @@ export class Balance {
       return lpTokenRates
     }
 
-    // dTAO balances need to be converted to the native token to compute their rate
-    if (this.token?.type === "substrate-dtao") {
+    // dTAO balances need to be converted to the native token to compute their rate, unless we have a coingeckoId
+    if (this.token?.type === "substrate-dtao" && !this.token.coingeckoId) {
       if (!this.#db?.tokenRates) return null
 
       const balances = this.#valueGetter.get("free")

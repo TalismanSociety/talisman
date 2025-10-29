@@ -1,11 +1,12 @@
 import { Balances } from "@talismn/balances"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -44,15 +45,6 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
 
   const { canBond } = useBondButton({ balances })
 
-  const tokenLabel = useMemo(() => {
-    switch (token.type) {
-      case "substrate-dtao":
-        return token.netuid === 0 ? token.symbol : token.name
-      default:
-        return token.symbol
-    }
-  }, [token])
-
   if (!token || !network || !summary) return null
 
   return (
@@ -71,7 +63,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           <div className="flex grow flex-col justify-center gap-2">
             <div className="flex items-center gap-3">
               <div className="text-body flex items-center gap-4 text-base font-bold">
-                {tokenLabel}
+                <TokenDisplaySymbol tokenId={token.id} />
                 {!!network.isTestnet && (
                   <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
                     {t("Testnet")}

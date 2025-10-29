@@ -14,6 +14,7 @@ import { IconButton, Popover, PopoverContent, PopoverTrigger, usePopoverContext 
 import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
 
 import { AssetPrice } from "./AssetPrice"
+import { TokenDisplaySymbol } from "./TokenDisplaySymbol"
 import { TokenLogo } from "./TokenLogo"
 
 type ChartVariant = "small" | "large"
@@ -502,7 +503,9 @@ const TokenSelect: FC<{
         <div className="flex flex-col justify-center">
           <TokenLogo tokenId={token.id} className="inline-block text-[1.2em]" />
         </div>
-        <span>{token.symbol}</span>
+        <span>
+          <TokenDisplaySymbol tokenId={token.id} />
+        </span>
       </div>
     )
 
@@ -521,7 +524,9 @@ const TokenSelect: FC<{
           <div className="flex flex-col justify-center">
             <TokenLogo tokenId={token.id} className="inline-block text-[1.2em]" />
           </div>
-          <span>{token.symbol}</span>
+          <span>
+            <TokenDisplaySymbol tokenId={token.id} />
+          </span>
           <ChevronDownIcon className="text-body-secondary group-hover:text-body" />
         </button>
       </PopoverTrigger>

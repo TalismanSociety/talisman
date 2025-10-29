@@ -101,10 +101,8 @@ const getFilteredBalances = ({
     .filter((b) => !networkFilter || networkFilter.networkIds.includes(b.networkId))
     .filter((b) => {
       if (!lowerSearch) return true
-      return (
-        b.token?.symbol.toLowerCase().includes(lowerSearch) ||
-        b.network?.name?.toLowerCase().includes(lowerSearch)
-      )
+      const tokenSearch = [b.token?.symbol, b.token?.name, b.network?.name].join("").toLowerCase()
+      return tokenSearch.includes(lowerSearch)
     })
   return new Balances(filtered, hydrate)
 }
