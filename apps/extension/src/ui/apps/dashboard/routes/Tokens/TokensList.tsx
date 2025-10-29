@@ -72,18 +72,13 @@ export const TokensList: FC<{
       .filter((t) => !!search || !isActiveOnly || isTokenActive(t, activeTokens))
       .filter((t) => !!search || !isCustomOnly || isTokenCustom(t))
       .filter((t) => !!search || !isHidePools || !isTokenEvmUniswapV2(t))
-      .filter((t) => {
-        const tokenSearch = [t.symbol, t.name, t.type].join().toLowerCase()
-
-        return (
+      .filter(
+        (t) =>
           !lowerSearch ||
-          (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
-          (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
-          tokenSearch.includes(lowerSearch) ||
+          [t.symbol, t.name, t.type].join().toLowerCase().includes(lowerSearch) ||
           (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
-            isAddressEqual(t.contractAddress, lowerSearch))
-        )
-      })
+            isAddressEqual(t.contractAddress, lowerSearch)),
+      )
 
     // exact matches first
     if (lowerSearch)

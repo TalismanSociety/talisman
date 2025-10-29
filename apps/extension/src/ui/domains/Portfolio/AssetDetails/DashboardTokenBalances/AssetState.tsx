@@ -1,4 +1,3 @@
-import { Balance } from "@talismn/balances"
 import { Address } from "extension-core"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -11,7 +10,6 @@ type AssetStateProps = {
   address?: Address
   isLoading?: boolean
   locked?: boolean
-  balance: Balance | null
 }
 
 export const AssetState = ({
@@ -26,10 +24,7 @@ export const AssetState = ({
   return (
     <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
-        <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">
-          {title}
-          {/* <BittensorUnbondButton balance={balance} /> */}
-        </div>
+        <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">{title}</div>
         {/* show description next to title when address is set */}
         {description && address && (
           <Tooltip>
@@ -61,36 +56,3 @@ export const AssetState = ({
     </div>
   )
 }
-
-// const BittensorUnbondButton: FC<{
-//   balance: Balance
-// }> = ({ balance }) => {
-//   const { open: openUnbondModal } = useBittensorBondModal()
-
-//   const opts = useMemo(() => {
-//     const token = balance.token
-//     if (token?.type !== "substrate-dtao") return null
-
-//     const opts: BittensorStakingWizardOpenOptions = {
-//       stakeDirection: "unbond",
-//       networkId: token.networkId,
-//       hotkey: token.hotkey,
-//       netuid: token.netuid,
-//       address: balance.address,
-//     }
-//     return opts
-//   }, [balance])
-
-//   const handleClick = useCallback(() => {
-//     if (!opts) return
-//     openUnbondModal(opts)
-//   }, [openUnbondModal, opts])
-
-//   if (!opts) return null
-
-//   return (
-//     <PillButton className="rounded-full p-3 text-xs" onClick={handleClick}>
-//       <ZapOffIcon className="text-xs" />
-//     </PillButton>
-//   )
-// }

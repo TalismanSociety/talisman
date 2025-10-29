@@ -34,7 +34,6 @@ export const TokenBalancesDetailRow = ({
           address={row.address}
           isLoading={row.isLoading}
           locked={row.locked}
-          balance={row.balance}
         />
       </div>
       {!row.locked && <div></div>}
