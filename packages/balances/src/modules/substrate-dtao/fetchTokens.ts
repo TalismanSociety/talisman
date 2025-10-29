@@ -48,8 +48,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         info.subnet_identity?.subnet_name?.asText() ??
         (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
       const name = `SN${info.netuid} | ${subnetName} ${symbol}`
-      // when root staking, consider its TAO so use same logo (set via coingeckoId or config)
-      // const logo = info.netuid === 0 ? undefined : DEFAULT_DTAO_LOGO
 
       // for root we want same symbol as native so they can be grouped together in portfolio
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
@@ -66,7 +64,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           isDefault: true,
           symbol,
           decimals: 9,
-          // logo: undefined,
           name,
           subnetName,
         },

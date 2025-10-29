@@ -31,26 +31,4 @@ export const subscribeBalances: IBalanceModule<
       errors: [],
     })),
   )
-
-  // const subtensorBalancesByAddress$ = getSubtensorStakingBalances$(
-  //   connector,
-  //   networkId,
-  //   balanceDefs,
-  //   miniMetadata,
-  // )
-
-  // return combineLatest([baseBalances$, subtensorBalancesByAddress$]).pipe(
-  //   map(([baseBalances, subtensorBalancesByAddress]) => ({
-  //     success: [
-  //       ...baseBalances.map((b) => ({
-  //         ...b,
-  //         values: [
-  //           ...(b.values?.filter(({ source }) => source !== "subtensor-staking") ?? []),
-  //           ...(subtensorBalancesByAddress[b.address] ?? []),
-  //         ],
-  //       })),
-  //     ],
-  //     errors: [],
-  //   })),
-  // )
 }

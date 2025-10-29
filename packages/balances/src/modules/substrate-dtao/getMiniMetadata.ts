@@ -46,34 +46,19 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
   const isBittensor = unifiedMetadata.pallets.some(({ name }) => name === "SubtensorModule")
   if (!isBittensor) return null
 
-  // if (!hasStorageItems(unifiedMetadata, "SubtensorModule", ["StakingHotkeys", "Stake"])) return null
-
-  // if (!hasRuntimeApi(unifiedMetadata, "StakeInfoRuntimeApi", "get_stake_info_for_coldkey"))
-  //   return null
-  // if (!hasRuntimeApi(unifiedMetadata, "StakeInfoRuntimeApi", "get_all_metagraphs")) return null
-  // if (!hasRuntimeApi(unifiedMetadata, "SubnetInfoRuntimeApi", "get_dynamic_info")) return null
-
-  // ensure the network has all the required bits
-  // if (!hasStorageItems(unifiedMetadata, "Assets", ["Account", "Asset", "Metadata"])) return null
-
   compactMetadata(
     metadata,
-    [{ pallet: "SubtensorModule", items: ["StakingHotkeys", "Stake"] }],
+    [
+      //  { pallet: "SubtensorModule", items: ["StakingHotkeys", "Stake"] }
+    ],
     [
       {
         runtimeApi: "StakeInfoRuntimeApi",
-        methods: [
-          // "get_stake_info_for_coldkey",
-          // "get_all_metagraphs",
-          "get_stake_info_for_coldkeys",
-        ],
+        methods: ["get_stake_info_for_coldkeys"],
       },
       {
         runtimeApi: "SubnetInfoRuntimeApi",
-        methods: [
-          // "get_dynamic_info",
-          "get_all_dynamic_info",
-        ],
+        methods: ["get_all_dynamic_info"],
       },
     ],
   )

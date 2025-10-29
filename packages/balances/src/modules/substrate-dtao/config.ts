@@ -7,6 +7,3 @@ export const MODULE_TYPE = SubDTaoTokenSchema.shape.type.value
 export const PLATFORM = SubDTaoTokenSchema.shape.platform.value
 
 export type TokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
-
-// export const DEFAULT_DTAO_LOGO =
-//   "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/dtao.svg"

@@ -45,7 +45,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 const fetchWithoutMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
+): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   const results = await Promise.allSettled(
@@ -74,7 +74,7 @@ const fetchWithoutMulticall = async (
     }),
   )
 
-  return results.reduce(
+  return results.reduce<FetchBalanceResults>(
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
@@ -87,7 +87,7 @@ const fetchWithoutMulticall = async (
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
+    { success: [], errors: [] },
   )
 }
 
@@ -95,7 +95,7 @@ const fetchWithMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
   multicall3Address: `0x${string}`,
-): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
+): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   try {
@@ -108,7 +108,7 @@ const fetchWithMulticall = async (
       })),
     })
 
-    return callResults.reduce(
+    return callResults.reduce<FetchBalanceResults>(
       (acc, result, index) => {
         if (result.status === "success") {
           acc.success.push({
@@ -134,7 +134,7 @@ const fetchWithMulticall = async (
         }
         return acc
       },
-      { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
+      { success: [], errors: [] },
     )
   } catch (err) {
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({

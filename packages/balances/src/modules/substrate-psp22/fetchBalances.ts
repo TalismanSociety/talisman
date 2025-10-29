@@ -54,7 +54,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     }),
   )
 
-  return results.reduce(
+  return results.reduce<FetchBalanceResults>(
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
@@ -67,6 +67,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
+    { success: [], errors: [] },
   )
 }

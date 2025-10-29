@@ -22,7 +22,6 @@ export const SubNativeMiniMetadataExtraSchema = z.strictObject({
   useLegacyTransferableCalculation: z.boolean().optional(),
   existentialDeposit: z.string().optional(),
   nominationPoolsPalletId: z.string().optional(),
-  hasSubtensorPallet: z.boolean().optional(),
 })
 
 // Do not use this type outside of this module

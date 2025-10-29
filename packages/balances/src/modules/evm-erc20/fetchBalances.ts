@@ -45,7 +45,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 const fetchWithoutAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
+): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   const results = await Promise.allSettled(
@@ -79,7 +79,7 @@ const fetchWithoutAggregator = async (
     }),
   )
 
-  return results.reduce(
+  return results.reduce<FetchBalanceResults>(
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
@@ -92,7 +92,7 @@ const fetchWithoutAggregator = async (
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
+    { success: [], errors: [] },
   )
 }
 
@@ -100,7 +100,7 @@ const fetchWithAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
   erc20BalancesAggregatorAddress: `0x${string}`,
-): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
+): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   try {

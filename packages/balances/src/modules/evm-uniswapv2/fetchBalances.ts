@@ -42,7 +42,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 const fetchPoolBalances = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-): Promise<FetchBalanceResults<typeof MODULE_TYPE>> => {
+): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
   // fetch pool specific info separately to prevent querying same contract info for multiple account addresses
@@ -81,7 +81,7 @@ const fetchPoolBalances = async (
     (p) => p.address,
   )
 
-  const results = balanceDefs.reduce(
+  const results = balanceDefs.reduce<FetchBalanceResults>(
     (acc, { token, address }, i) => {
       const pool = poolInfo[token.contractAddress]
       if (!pool) {
@@ -141,7 +141,7 @@ const fetchPoolBalances = async (
 
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults<typeof MODULE_TYPE>,
+    { success: [], errors: [] },
   )
 
   return results
