@@ -8,7 +8,7 @@ import { SubDTaoBalanceModule } from "./substrate-dtao"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
 import { SubHydrationBalanceModule } from "./substrate-hydration"
 import { SubNativeBalanceModule } from "./substrate-native"
-import { SubPsp22BalanceModule } from "./substrate-psp22"
+// import { SubPsp22BalanceModule } from "./substrate-psp22"
 import { SubTokensBalanceModule } from "./substrate-tokens"
 
 export const BALANCE_MODULES = [
@@ -17,7 +17,7 @@ export const BALANCE_MODULES = [
   SubDTaoBalanceModule,
   SubHydrationBalanceModule,
   SubForeignAssetsBalanceModule,
-  SubPsp22BalanceModule,
+  // SubPsp22BalanceModule,
   SubTokensBalanceModule,
   EvmErc20BalanceModule,
   EvmUniswapV2BalanceModule,
@@ -36,7 +36,7 @@ export * from "./substrate-native"
 export * from "./substrate-assets"
 export * from "./substrate-foreignassets"
 export * from "./substrate-hydration"
-export * from "./substrate-psp22"
+// export * from "./substrate-psp22"
 export * from "./substrate-tokens"
 export * from "./substrate-dtao"
 
