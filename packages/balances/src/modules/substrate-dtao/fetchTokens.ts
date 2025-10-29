@@ -9,7 +9,7 @@ import { isNotNil } from "@talismn/util"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
-import { DEFAULT_DTAO_LOGO, MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
 type GetDynamicInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
@@ -49,7 +49,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         (info.netuid === 0 ? "Root" : `Subnet ${info.netuid}`)
       const name = `SN${info.netuid} | ${subnetName} ${symbol}`
       // when root staking, consider its TAO so use same logo (set via coingeckoId or config)
-      const logo = info.netuid === 0 ? undefined : DEFAULT_DTAO_LOGO
+      // const logo = info.netuid === 0 ? undefined : DEFAULT_DTAO_LOGO
 
       // for root we want same symbol as native so they can be grouped together in portfolio
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
@@ -66,7 +66,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           isDefault: true,
           symbol,
           decimals: 9,
-          logo,
+          // logo: undefined,
           name,
           subnetName,
         },
