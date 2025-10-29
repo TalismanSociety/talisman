@@ -361,8 +361,7 @@ const TokensList: FC<TokensListProps> = ({
       .filter(
         (t) =>
           !ls ||
-          t.token.symbol.toLowerCase().includes(ls) ||
-          t.chainNameSearch?.toLowerCase().includes(ls),
+          [t.token.symbol, t.token.name, t.chainNameSearch].join().toLowerCase().includes(ls),
       )
       .sort((t1, t2) => {
         const s1 = t1.token.symbol.toLowerCase()
