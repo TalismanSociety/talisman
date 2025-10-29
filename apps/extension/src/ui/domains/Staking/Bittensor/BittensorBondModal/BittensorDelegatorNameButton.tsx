@@ -5,7 +5,7 @@ import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 import { BittensorSelectButton } from "./BittensorSelectButton"
 
 type BittensorDelegatorNameButtonProps = {
-  hotkey: string | number | undefined | null
+  hotkey: string | undefined | null
   isDisabled?: boolean
 }
 

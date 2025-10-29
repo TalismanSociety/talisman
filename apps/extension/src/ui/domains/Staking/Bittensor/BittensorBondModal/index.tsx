@@ -5,11 +5,10 @@ import { Modal } from "talisman-ui"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { BittensorBondWizardProvider } from "../hooks/useBittensorBondWizard"
 import { BittensorBondModalRouter } from "./Forms"
-
-export const STAKING_MODAL_CONTENT_CONTAINER_ID = "StakingModalDialog"
 
 export const BittensorBondModal = () => {
   const { isOpen, close } = useBittensorBondModal()

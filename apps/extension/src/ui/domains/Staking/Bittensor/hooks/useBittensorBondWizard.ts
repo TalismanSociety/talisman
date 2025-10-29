@@ -62,9 +62,9 @@ type WizardState = {
 export type BittensorStakingWizardOpenOptions = {
   stakeDirection: StakeDirection
   networkId: DotNetworkId
-  netuid?: number // known only if unstaking
+  netuid?: number
   address?: Address
-  hotkey?: string // might be set if user is already staking
+  hotkey?: string
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -127,10 +127,7 @@ const useBittensorBondWizardProvider = () => {
       stakeDirection,
     },
     setWizardState,
-  ] = useState(() => {
-    const initialState = wizardOpenState$.getValue()
-    return initialState
-  })
+  ] = useState(() => wizardOpenState$.getValue())
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dTaoTokenId = useMemo(
     () =>
@@ -335,7 +332,7 @@ const useBittensorBondWizardProvider = () => {
   )
 
   const totalStakedPlancks = useMemo(
-    () => dtaoBalance?.free.planck ?? 0n, // dtaoBalance.sum.planck, // BigInt(selectedStake?.meta.amountStaked || 0),
+    () => dtaoBalance?.free.planck ?? 0n,
     [dtaoBalance?.free.planck],
   )
 
@@ -439,8 +436,7 @@ const useBittensorBondWizardProvider = () => {
     nativeBalance,
     feeEstimate,
     existentialDeposit?.planck,
-    nativeToken?.decimals,
-    nativeToken?.symbol,
+    nativeToken,
   ])
 
   const unstakeInputErrorMessage = useMemo(() => {
@@ -511,6 +507,7 @@ const useBittensorBondWizardProvider = () => {
   }, [positions, netuid, hotkey, networkId, address])
 
   useEffect(() => {
+    // if unstaking and no position selected, open position select step
     if (stakeDirection === "unbond" && step === "form" && !position) setStep("select-position")
   }, [stakeDirection, position, setStep, step])
 

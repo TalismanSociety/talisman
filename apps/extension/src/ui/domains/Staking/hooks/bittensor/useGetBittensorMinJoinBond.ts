@@ -22,7 +22,7 @@ export const useGetBittensorMinJoinBond = ({ networkId, netuid }: GetBittensorMi
       if (netuid === 0)
         (await sapi.getStorage<bigint>("SubtensorModule", "NominatorMinRequiredStake", [])) ?? 0n
 
-      // Subnet staking has fixed value
+      // TODO: figure out what the correct way to get this value is, attempting to stake with this value causes tx to fail
       return SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
     },
     enabled: !!sapi,

@@ -270,7 +270,7 @@ const FiatInput = () => {
 export const AmountEdit = () => {
   const { t } = useTranslation()
   const {
-    nativeToken: token,
+    nativeToken,
     tokenRates,
     displayMode,
     toggleDisplayMode,
@@ -286,7 +286,7 @@ export const AmountEdit = () => {
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
-      {!!token && (
+      {!!nativeToken && (
         <>
           <div className="h-16">{/* mirrors the height of error message reserved space */}</div>
           <div className="flex flex-col text-xl font-bold">

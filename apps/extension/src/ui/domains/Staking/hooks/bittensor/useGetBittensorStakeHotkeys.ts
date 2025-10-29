@@ -11,7 +11,7 @@ type UseBittensorDefaultHotkey = {
 }
 
 /**
- * result notkey is used to preselect validator if user is already staking TAO
+ * result hotkey is used to preselect validator if user is already staking TAO
  * @param param0
  * @returns
  */
@@ -40,12 +40,6 @@ export const useBittensorCurrentHotkey = ({
       })
       .filter(isNotNil)
       .sort((a, b) => (b.free > a.free ? 1 : -1))
-
-    // TODO check this sorting is correct
-    // console.log(
-    //   "check sort",
-    //   dtaoBalances.map((b) => b.free),
-    // )
 
     if (address && typeof netuid === "number") {
       const fullMatch = dtaoBalances.find((bal) => bal.address === address && bal.netuid === netuid)
