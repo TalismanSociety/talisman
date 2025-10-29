@@ -11,6 +11,7 @@ import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
@@ -100,28 +101,30 @@ const AssetRow: FC<{
     <div className="group relative h-28 w-full">
       <button
         type="button"
-        className="bg-grey-850 hover:bg-grey-800 flex w-full items-center rounded-sm"
+        className="bg-grey-850 hover:bg-grey-800 flex size-full items-center overflow-hidden rounded-sm"
         onClick={handleClick}
       >
-        <div className="p-6 text-xl">
+        <div className="shrink-0 p-6 text-xl">
           <TokenLogo tokenId={token.id} />
         </div>
-        <div className="relative flex grow items-center gap-4 pr-6">
-          <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
-            <div className="flex items-center gap-3">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
+        <div className="relative flex grow items-center gap-4 overflow-hidden pr-6">
+          <div className="flex grow flex-col gap-2 overflow-hidden text-left">
+            <div className="flex w-full items-center gap-3 overflow-hidden">
+              <div className="text-body flex w-full items-center gap-3 overflow-hidden text-sm font-bold">
+                <div className="truncate">
+                  <TokenDisplaySymbol tokenId={token.id} />
+                </div>
                 {!!network.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                  <div className="text-tiny bg-alert-warn/10 text-alert-warn shrink-0 rounded px-3 py-1 font-light">
                     {t("Testnet")}
-                  </span>
+                  </div>
+                )}
+                {!!networkIds.length && (
+                  <div className="shrink-0 text-base">
+                    <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
-                </div>
-              )}
             </div>
 
             {isUniswapV2LpToken && typeof tvl === "number" && (
@@ -136,7 +139,7 @@ const AssetRow: FC<{
           </div>
           <div
             className={classNames(
-              "flex shrink-0 flex-col items-end gap-2 text-right",
+              "flex min-w-[8rem] shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >

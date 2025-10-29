@@ -29,10 +29,6 @@ export const PopupTokenBalances = ({ balances, tokenId }: TokenBalancesParams) =
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
 
-  // if (tokenId === BITTENSOR_TOKEN_ID) {
-  //   return <BittensorTokenBalances tokenId={tokenId} balances={balances} />
-  // }
-
   const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
 
   return (
