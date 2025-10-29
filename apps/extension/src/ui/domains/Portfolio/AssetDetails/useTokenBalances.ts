@@ -50,7 +50,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
   const currency = useSelectedCurrency()
 
-  const rawDetailRows = useMemo((): BalanceDetailRow[] => {
+  const detailRows = useMemo((): BalanceDetailRow[] => {
     if (!summary) return []
 
     // AVAILABLE
@@ -133,7 +133,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
   return {
     summary,
     token,
-    detailRows: rawDetailRows,
+    detailRows,
     status,
     network,
   }

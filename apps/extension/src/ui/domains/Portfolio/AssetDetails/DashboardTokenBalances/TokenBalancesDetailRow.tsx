@@ -19,7 +19,7 @@ export const TokenBalancesDetailRow = ({
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-  tokenId: TokenId // unsafe, there could be multiple aggregated here
+  tokenId: TokenId
 }) => {
   return (
     <div
@@ -39,7 +39,7 @@ export const TokenBalancesDetailRow = ({
       {!row.locked && <div></div>}
       <div>
         <AssetBalanceCellValue
-          render //= {tokenBalance.gt(0)}
+          render
           tokens={row.tokens}
           fiat={row.fiat}
           symbol={symbol}
@@ -52,7 +52,6 @@ export const TokenBalancesDetailRow = ({
       </div>
       {!!row.locked && row.meta && tokenId && (
         <LockedExtra
-          //  netuid={netuid}
           tokenId={tokenId}
           address={row.address}
           isLoading={status.status === "fetching"}

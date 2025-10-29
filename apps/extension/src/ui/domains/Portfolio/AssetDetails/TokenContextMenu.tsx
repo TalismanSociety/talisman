@@ -124,7 +124,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           </Suspense>
         )}
         {!!token?.coingeckoId && <ViewOnCoingeckoMenuItem coingeckoId={token.coingeckoId} />}
-
         <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Stake" />}>
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
