@@ -559,6 +559,7 @@ const useBittensorBondWizardProvider = () => {
     selectedSubnet,
     newStakeTotal,
     isSubnetUnbond,
+    position,
 
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,

@@ -34,7 +34,7 @@ export const BittensorStakingPositionSelect = () => {
   const [searchSync, setSearch] = useState<string>("")
   const search = useDeferredValue(searchSync)
 
-  const { networkId, setPosition } = useBittensorBondWizard()
+  const { networkId, position: currentPosition, setPosition, setStep } = useBittensorBondWizard()
 
   const positions = useBittensorStakingPositions(networkId)
 
@@ -42,14 +42,18 @@ export const BittensorStakingPositionSelect = () => {
     if (!search) return positions
 
     const lowerSearch = search.toLowerCase()
-    return positions.filter(
-      (position) =>
-        position.token.symbol?.toLowerCase().includes(lowerSearch) ||
-        position.token.name?.toLowerCase().includes(lowerSearch) ||
-        position.balance.address.toLowerCase().includes(lowerSearch) ||
-        position.account.name.toLowerCase().includes(lowerSearch) ||
-        position.token.hotkey?.toLowerCase().includes(lowerSearch) ||
-        position.validatorName?.toLowerCase().includes(lowerSearch),
+    return positions.filter((position) =>
+      [
+        position.token.symbol,
+        position.token.name,
+        position.token.hotkey,
+        position.account.name,
+        position.validatorName,
+        position.balance.address,
+      ]
+        .join()
+        .toLowerCase()
+        .includes(lowerSearch),
     )
   }, [positions, search])
 
@@ -62,7 +66,13 @@ export const BittensorStakingPositionSelect = () => {
 
   return (
     <BittensorModalLayout
-      header={<BittensorStakingModalHeader title={t("Select Position")} withClose />}
+      header={
+        <BittensorStakingModalHeader
+          title={t("Select Position")}
+          withClose
+          onBackClick={currentPosition ? () => setStep("form") : undefined}
+        />
+      }
     >
       <div className="flex size-full flex-col overflow-hidden">
         <div className="p-12 pt-0">
@@ -82,7 +92,12 @@ export const BittensorStakingPositionSelect = () => {
         <ScrollContainer className="grow" innerClassName="bg-black-secondary">
           <div className="flex size-full flex-col">
             {filteredPositions.map((position) => (
-              <Position key={position.id} position={position} onClick={handleSelect(position)} />
+              <Position
+                key={position.id}
+                position={position}
+                isSelected={position.id === currentPosition?.id}
+                onClick={handleSelect(position)}
+              />
             ))}
             {!filteredPositions.length && (
               <div className="text-body-secondary p-10">
