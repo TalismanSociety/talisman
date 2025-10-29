@@ -13,7 +13,7 @@ import {
 type GetBittensorUnbondPayload = {
   sapi: ScaleApi
   address: string
-  hotkey: string | number
+  hotkey: string
   plancks: bigint
   talismanFee: bigint
   alphaPriceWithSlippagePlanks: bigint
