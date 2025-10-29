@@ -1,4 +1,4 @@
-import { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 
 export interface IChainConnectorDot {

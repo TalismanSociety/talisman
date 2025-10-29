@@ -1,5 +1,5 @@
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { WsProvider } from "@polkadot/rpc-provider"
-import { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 

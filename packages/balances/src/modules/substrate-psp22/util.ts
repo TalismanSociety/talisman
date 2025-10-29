@@ -1,6 +1,6 @@
-import { TypeRegistry } from "@polkadot/types"
-import { ContractExecResult } from "@polkadot/types/interfaces"
-import { u8aConcatStrict, u8aToHex } from "@polkadot/util"
+import type { TypeRegistry } from "@polkadot/types"
+import type { ContractExecResult } from "@polkadot/types/interfaces"
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { IChainConnectorDot } from "@talismn/chain-connectors"
 
 export const makeContractCaller =
@@ -22,8 +22,8 @@ export const makeContractCaller =
       "ContractExecResult",
       await chainConnector.send(chainId, "state_call", [
         "ContractsApi_call",
-        u8aToHex(
-          u8aConcatStrict([
+        toHex(
+          mergeUint8([
             // origin
             registry.createType("AccountId", callFrom).toU8a(),
             // dest
