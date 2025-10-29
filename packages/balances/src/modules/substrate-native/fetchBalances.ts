@@ -59,24 +59,5 @@ export const fetchBalances: IBalanceModule<
   const nomPoolQueries = buildNomPoolQueries(networkId, partialBalances, miniMetadata)
   const balances = await fetchRpcQueryPack(connector, networkId, nomPoolQueries)
 
-  // TODO ⚠️ dedupe locks
-
-  // const subtensorBalances$ = getSubtensorStakingBalances$(
-  //   connector,
-  //   networkId,
-  //   balanceDefs,
-  //   miniMetadata,
-  // )
-  // const subtensorBalancesByAddress = await firstValueFrom(subtensorBalances$)
-
-  // for (const [address, subtensorBalances] of Object.entries(subtensorBalancesByAddress)) {
-  //   const balance = balances.find((b) => b.address === address)
-  //   if (balance?.values)
-  //     balance.values = [
-  //       ...balance.values.filter(({ source }) => source !== "subtensor-staking"),
-  //       ...subtensorBalances,
-  //     ]
-  // }
-
   return { success: balances, errors: [] }
 }

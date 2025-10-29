@@ -11,6 +11,14 @@ import { ALPHA_PRICE_SCALE, alphaToTao, TAO_DECIMALS } from "./alphaPrice"
 
 const ONE_ALPHA = 10n ** TAO_DECIMALS
 
+/**
+ * To be used for tokens that don't have a coingecko id
+ *
+ * @param token
+ * @param tokenRates
+ * @param scaledAlphaPrice
+ * @returns
+ */
 export const getDTaoTokenRates = (
   token: SubDTaoToken,
   tokenRates: TokenRatesList,
