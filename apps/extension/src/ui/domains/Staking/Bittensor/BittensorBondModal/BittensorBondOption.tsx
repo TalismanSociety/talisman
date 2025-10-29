@@ -40,12 +40,12 @@ export const BittensorBondOption = ({
 }: BittensorBondOptionProps) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
-  const isSelected = option.poolId === selectedHotkey
+  const isSelected = option.hotkey === selectedHotkey
 
   return (
     <button
-      key={option.poolId}
-      onClick={() => handleSelectHotkey(option.poolId)}
+      key={option.hotkey}
+      onClick={() => handleSelectHotkey(option.hotkey)}
       className={classNames(
         "bg-black-tertiary text-body-secondary border-black-tertiary flex w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs",
         isSelected && "border-grey-400 text-grey-300",

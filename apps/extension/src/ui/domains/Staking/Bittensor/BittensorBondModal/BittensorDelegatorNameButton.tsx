@@ -16,7 +16,7 @@ export const BittensorDelegatorNameButton = ({
   const { netuid } = useBittensorBondWizard()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const selectedPool = combinedValidatorsData.find((data) => data.poolId === hotkey)
+  const selectedPool = combinedValidatorsData.find((data) => data.hotkey === hotkey)
 
   const defaultPoolName = "Validator"
 

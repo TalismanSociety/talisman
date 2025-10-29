@@ -69,9 +69,7 @@ type BaseAmountWithLabel<TLabel extends string> = {
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
   const getMetaId = () => {
-    const meta = amount.meta as
-      | { poolId?: number; paraId?: number; hotkey?: string; netuid?: number }
-      | undefined
+    const meta = amount.meta as { poolId?: number; paraId?: number } | undefined
     if (!meta) return ""
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
 

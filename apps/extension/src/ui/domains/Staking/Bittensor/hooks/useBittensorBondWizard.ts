@@ -295,10 +295,6 @@ const useBittensorBondWizardProvider = () => {
   const isSlippageValid = useMemo(() => userMaxSlippage >= slippage, [slippage, userMaxSlippage])
 
   useEffect(() => {
-    /**
-     * if user is already staking in pool, set poolId to that pool
-     * If the user chooses to stake in a different pool, we should not set the poolId to the one the user is currently staking in
-     */
     if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
       setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))
     }

@@ -25,7 +25,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
         )
 
         return {
-          poolId: validator.hotkey?.ss58 ?? "",
+          hotkey: validator.hotkey?.ss58 ?? "",
           name: validator?.name ?? "",
           totalStaked: parseFloat(validator?.global_weighted_stake ?? "0"),
           totalStakers: validator?.global_nominators ?? 0,

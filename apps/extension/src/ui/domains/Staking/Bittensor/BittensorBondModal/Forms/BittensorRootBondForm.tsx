@@ -39,7 +39,7 @@ const BittensorStakeApr = () => {
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const apr = useMemo(() => {
-    const validator = combinedValidatorsData.find((validator) => validator.poolId === hotkey)
+    const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)
     return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
   }, [combinedValidatorsData, hotkey])
 

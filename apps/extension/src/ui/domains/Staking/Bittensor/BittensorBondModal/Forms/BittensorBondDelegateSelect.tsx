@@ -32,7 +32,7 @@ const sortMethods: SortMethod[] = [
 export const BittensorBondDelegateSelect = () => {
   const [search, setSearch] = useState<string>("")
 
-  const { hotkey: poolId, netuid, setStep, setHotkey } = useBittensorBondWizard()
+  const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
 
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
@@ -112,7 +112,7 @@ export const BittensorBondDelegateSelect = () => {
         const filtered = combinedValidatorsData.filter(
           (delegate) =>
             delegate.name.toLowerCase().includes(lowerSearch) ||
-            delegate.poolId.toLowerCase().includes(lowerSearch),
+            delegate.hotkey.toLowerCase().includes(lowerSearch),
         )
         setSortedDelegators(filtered)
       }
@@ -183,9 +183,9 @@ export const BittensorBondDelegateSelect = () => {
                   })
               : sortedDelegators.map((option) => (
                   <BittensorBondOption
-                    key={option.poolId}
+                    key={option.hotkey}
                     option={option}
-                    selectedHotkey={poolId}
+                    selectedHotkey={hotkey}
                     handleSelectHotkey={handleSubmit}
                     tokenId={BITTENSOR_TOKEN_ID}
                   />
