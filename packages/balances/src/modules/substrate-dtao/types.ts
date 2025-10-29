@@ -13,6 +13,4 @@ export type SubDTaoTokenConfig = z.infer<typeof SubDTaoTokenConfigSchema>
 
 export type SubDTaoBalanceMeta = {
   scaledAlphaPrice: string
-  refTokenId: string
-  refTokenValue: string
 }

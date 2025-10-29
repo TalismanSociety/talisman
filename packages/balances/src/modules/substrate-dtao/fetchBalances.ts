@@ -3,7 +3,6 @@ import {
   getCleanToken,
   SubDTaoToken,
   subDTaoTokenId,
-  subNativeTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
@@ -14,7 +13,7 @@ import { AmountWithLabel, IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { getBalanceDefs } from "../shared/types"
-import { alphaToTao, getScaledAlphaPrice } from "./alphaPrice"
+import { getScaledAlphaPrice } from "./alphaPrice"
 import { MODULE_TYPE } from "./config"
 import { SubDTaoBalanceMeta } from "./types"
 
@@ -93,8 +92,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       ),
     ])
 
-    // console.log("SUB-DTAO stakeInfos", { stakeInfos, dynamicInfos })
-
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
 
     const balances = stakeInfos.flatMap(([address, stakes]) =>
@@ -141,18 +138,15 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
     const success: IBalance[] = balanceDefs.map((def): IBalance => {
       const stake = balances.find((b) => b.address === def.address && b.tokenId === def.token.id)
+      const meta: SubDTaoBalanceMeta = {
+        scaledAlphaPrice: stake?.scaledAlphaPrice.toString() ?? "0",
+      }
 
       const balanceValue: AmountWithLabel<string> = {
         type: "free",
         label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
         amount: stake?.stake.toString() ?? "0",
-        meta: {
-          // need to keep the scaledAlphaPrice to be able to convert fiat to alpha in send funds form
-          scaledAlphaPrice: stake?.scaledAlphaPrice.toString() ?? "0",
-          // precompute tao value for better portfolio performance
-          refTokenId: subNativeTokenId(networkId),
-          refTokenValue: alphaToTao(stake?.stake ?? 0n, stake?.scaledAlphaPrice ?? 0n).toString(),
-        } as SubDTaoBalanceMeta,
+        meta,
       }
 
       return {
