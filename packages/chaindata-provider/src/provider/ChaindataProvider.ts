@@ -255,7 +255,7 @@ export class ChaindataProvider implements IChaindataProvider {
 
     if (updates.length) {
       log.debug("[ChaindataProvider] syncDynamicTokens: updating tokens", updates)
-      this.#dynamicTokens$.next(updates)
+      this.registerDynamicTokens(updates)
     }
   }
 
