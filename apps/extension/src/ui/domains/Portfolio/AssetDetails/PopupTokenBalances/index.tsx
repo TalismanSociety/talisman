@@ -1,10 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 
-// import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
-
 import { useTokenBalances } from "../useTokenBalances"
-// import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
 import { TokenBalancesUniswapV2Row } from "./TokenBalancesUniswapV2Row"
