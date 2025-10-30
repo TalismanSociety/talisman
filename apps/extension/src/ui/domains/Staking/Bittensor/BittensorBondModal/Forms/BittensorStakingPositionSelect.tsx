@@ -9,6 +9,7 @@ import { SearchInputControlled } from "@talisman/components/SearchInputControlle
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useAccountByAddress, useSelectedCurrency } from "@ui/state"
@@ -132,14 +133,15 @@ const Position: FC<{
         isSelected && "bg-black-tertiary",
       )}
     >
-      <AccountIcon
-        className="shrink-0 text-xl"
-        address={position.balance.address}
-        genesisHash={getAccountGenesisHash(account)}
-      />
+      <TokenLogo tokenId={position.token.id} className="shrink-0 text-2xl" />
       <div className="flex grow flex-col gap-2 overflow-hidden">
-        <div className="flex w-full justify-between gap-4 overflow-hidden">
-          <div className="flex grow items-center">
+        <div className="flex w-full justify-between gap-4 overflow-hidden text-sm">
+          <div className="flex grow items-center gap-2">
+            <AccountIcon
+              className="shrink-0"
+              address={position.balance.address}
+              genesisHash={getAccountGenesisHash(account)}
+            />
             <div>{account.name}</div>
             <AccountTypeIcon
               type={account?.type}
@@ -155,7 +157,7 @@ const Position: FC<{
             />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full justify-between gap-4 overflow-hidden text-sm">
+        <div className="text-body-secondary flex w-full justify-between gap-4 overflow-hidden text-xs">
           <div className="truncate">
             {position.token.netuid === 0
               ? t("Root Staking")
