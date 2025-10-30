@@ -2,6 +2,8 @@ import { isNativeToken, isNetworkOfPlatform } from "@talismn/chaindata-provider"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
+import { chainConnector } from "../../rpcs/chain-connector"
+import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
@@ -37,6 +39,8 @@ export class ChaindataHandler extends ExtensionHandler {
 
         await customChaindataStore.upsert([network], [nativeToken])
 
+        await clearRpcProviderCache(network.id)
+
         return true
       }
 
@@ -44,6 +48,8 @@ export class ChaindataHandler extends ExtensionHandler {
         const { id } = request as RequestTypes["pri(chaindata.networks.remove)"]
 
         await customChaindataStore.removeNetwork(id)
+
+        await clearRpcProviderCache(id)
 
         return true
       }
@@ -68,4 +74,9 @@ export class ChaindataHandler extends ExtensionHandler {
         throw new Error(`Unable to handle message of type ${type}`)
     }
   }
+}
+
+const clearRpcProviderCache = async (networkId: string) => {
+  chainConnectorEvm.clearRpcProvidersCache(networkId)
+  await chainConnector.reset(networkId)
 }
