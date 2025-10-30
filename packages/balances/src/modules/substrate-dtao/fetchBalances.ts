@@ -117,9 +117,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       tokensWithAddresses.map(([token]) => token),
       (t) => t.id,
     )
-    const newTokens: SubDTaoToken[] = []
+    const dynamicTokens: SubDTaoToken[] = []
 
-    // register tokens that were not requested but have balances
+    // identify tokens that were not requested but have balances
+    // BalanceProvider will be register them in ChaindataProvider at runtime, so they will be requested on next call
     for (const bal of balances) {
       if (!balanceDefs.some((def) => def.token.id === bal.tokenId)) {
         const baseToken = tokensById[bal.baseTokenId] as SubDTaoToken | undefined
@@ -131,7 +132,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             id: bal.tokenId,
             hotkey: bal.hotkey,
           }) as SubDTaoToken
-          newTokens.push(newToken)
+          dynamicTokens.push(newToken)
         }
       }
     }
@@ -162,7 +163,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
     return {
       success,
       errors: [],
-      newTokens,
+      dynamicTokens,
     }
   } catch (err) {
     log.warn("Failed to fetch balances for substrate-dtao", { err })

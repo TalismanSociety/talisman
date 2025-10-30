@@ -139,12 +139,12 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
         miniMetadata: miniMetadata as any,
       })
 
-      if (balances.newTokens?.length) {
-        log.log("%s new tokens found when fetching balances", balances.newTokens.length)
+      if (balances.dynamicTokens?.length) {
+        log.log("%s new tokens found when fetching balances", balances.dynamicTokens.length)
         balances = await mod.fetchBalances({
           networkId,
           tokensWithAddresses: tokens
-            .concat(balances.newTokens)
+            .concat(balances.dynamicTokens)
             .map((token) => [token, BALANCES_ADDRESSES] as const),
           connector,
           miniMetadata: miniMetadata as any,

@@ -255,9 +255,9 @@ export class BalancesProvider {
           ),
           catchError(() => EMPTY), // don't emit, let provider mark balances stale
           tap((results) => {
-            if (results.newTokens?.length) {
+            if (results.dynamicTokens?.length) {
               // register missing tokens in the chaindata provider
-              this.#chaindataProvider.registerDynamicTokens(results.newTokens)
+              this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
             }
           }),
           map(
