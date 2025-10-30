@@ -50,9 +50,9 @@ export const BittensorRootBondReview = () => {
           withClose
         />
       }
-      contentClassName="p-12 pt-0"
+      contentClassName="p-12 pt-0 flex flex-col w-full"
     >
-      <h2 className="mb-24 mt-8 text-center">
+      <h2 className="mb-12 text-center">
         {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
       </h2>
       <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
