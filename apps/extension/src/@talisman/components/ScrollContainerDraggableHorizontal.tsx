@@ -76,7 +76,7 @@ export const ScrollContainerDraggableHorizontal = ({
   }
 
   return (
-    <div className="relative z-0 overflow-hidden">
+    <div className="relative z-0 shrink-0 overflow-hidden">
       {/*   eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={containerRef}

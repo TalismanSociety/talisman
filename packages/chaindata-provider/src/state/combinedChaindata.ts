@@ -19,6 +19,7 @@ const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
 export const getCombinedChaindata$ = (
   default$: Observable<Chaindata>,
   custom$: Observable<CustomChaindata> | CustomChaindata | undefined,
+  dynamicTokens$: Observable<Token[]>,
 ): Observable<Chaindata> => {
   // ensure custom$ is an observable
   if (!custom$) custom$ = of(DEFAULT_CUSTOM_CHAINDATA)
@@ -34,8 +35,21 @@ export const getCombinedChaindata$ = (
     }),
   )
 
+  // append valid dynamic tokens to chaindata tokens (they must not be considered custom tokens)
+  const defaultChainData$ = combineLatest([default$, dynamicTokens$]).pipe(
+    map(([data, dynamicTokens]) => ({
+      ...data,
+      tokens: values(
+        keyBy(
+          data.tokens.concat(dynamicTokens.filter((t) => TokenSchema.safeParse(t).success)),
+          (t) => t.id,
+        ),
+      ),
+    })),
+  )
+
   // merge custom into default
-  return combineLatest({ defaultData: default$, customData: customChaindata$ }).pipe(
+  return combineLatest({ defaultData: defaultChainData$, customData: customChaindata$ }).pipe(
     map((data) => {
       const start = performance.now()
       const parsed = ChaindataProviderDataSchema.safeParse(data)

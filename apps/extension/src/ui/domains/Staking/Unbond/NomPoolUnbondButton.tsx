@@ -6,59 +6,32 @@ import { useTranslation } from "react-i18next"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-import { useBittensorBondModal } from "../Bittensor/hooks/useBittensorBondModal"
-import { BITTENSOR_TOKEN_ID } from "../Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useUnbondModal } from "./useUnbondModal"
 
-export const UnbondButton: FC<{
-  netuid?: number
+// TODO: split into 2 components: one for bittensor and one for nompools
+export const NomPoolUnbondButton: FC<{
   tokenId: TokenId
   address: string
   className?: string
   variant: "small" | "large"
-  poolId: number | string | undefined
-  isBittensorUnbond: boolean
-}> = ({ tokenId, address, className, variant, poolId, isBittensorUnbond, netuid }) => {
+  poolId: number | undefined
+}> = ({ tokenId, address, className, variant, poolId }) => {
   const { t } = useTranslation()
   const { open } = useUnbondModal()
   const { data: stakingStatus } = useNomPoolStakingStatus(tokenId)
-  const { open: handleOpenBittensorModal } = useBittensorBondModal()
 
   const { genericEvent } = useAnalytics()
 
   const canUnstake = useMemo(
-    () =>
-      !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake) ||
-      tokenId === BITTENSOR_TOKEN_ID,
-    [address, stakingStatus?.accounts, tokenId],
+    () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
+    [address, stakingStatus?.accounts],
   )
 
   const handleClick = useCallback(() => {
-    if (isBittensorUnbond) {
-      handleOpenBittensorModal({
-        tokenId,
-        address,
-        poolId: poolId || "",
-        netuid: netuid,
-        stakeDirection: "unbond",
-        stakeType: netuid ? "subnet" : "root",
-        step: netuid ? "subnet-form" : "form",
-      })
-      return
-    }
     open({ tokenId, address, poolId })
     genericEvent("open inline unbonding modal", { from: "asset details", tokenId })
-  }, [
-    address,
-    genericEvent,
-    handleOpenBittensorModal,
-    isBittensorUnbond,
-    open,
-    poolId,
-    tokenId,
-    netuid,
-  ])
+  }, [address, genericEvent, open, poolId, tokenId])
 
   if (!canUnstake) return null // no nompool/tao staking on this network
 

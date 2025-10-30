@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
 import { dirname } from "path"
 
-import { BALANCE_MODULES, FetchBalanceResults, MiniMetadata } from "@talismn/balances"
+import { BALANCE_MODULES, MiniMetadata } from "@talismn/balances"
 import { ChainConnectorDotStub, IChainConnectorDot } from "@talismn/chain-connectors"
 import { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
@@ -51,7 +51,6 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null
-  let balances: FetchBalanceResults | null = null
   let dryRun: any = null
 
   try {
@@ -133,18 +132,37 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
       const BALANCES_ADDRESSES = [TEST_ADDRESS_SUB, TEST_ADDRESS_SUB2, TEST_ADDRESS_EMPTY]
 
-      balances = await mod.fetchBalances({
+      let balances = await mod.fetchBalances({
         networkId,
         tokensWithAddresses: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
         connector,
         miniMetadata: miniMetadata as any,
       })
 
-      log.log("Balances")
-      for (const b of balances.success) log.log(JSON.stringify(b, null, 2))
+      if (balances.dynamicTokens?.length) {
+        log.log("%s new tokens found when fetching balances", balances.dynamicTokens.length)
+        balances = await mod.fetchBalances({
+          networkId,
+          tokensWithAddresses: tokens
+            .concat(balances.dynamicTokens)
+            .map((token) => [token, BALANCES_ADDRESSES] as const),
+          connector,
+          miniMetadata: miniMetadata as any,
+        })
+      }
+
+      log.log("Balances: successes:", balances.success.length)
+      for (const b of balances.success
+        .sort((a, b) => {
+          // simple hack to show positive balances first
+          if (a.value && b.value) return b.value.length - a.value.length
+          return 0
+        })
+        .slice(0, 5))
+        log.log(JSON.stringify(b, null, 2))
       if (balances.errors.length) {
-        log.log("Balance errors:")
-        for (const error of balances.errors) log.error(error)
+        log.log("Balance errors:", balances.errors.length)
+        for (const error of balances.errors.slice(0, 3)) log.error(error)
       }
       log.log()
 
@@ -162,6 +180,10 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
       if (!opts.transfer) continue
 
       const xferToken = tokens.find((t) => t.id === anyPositiveBalance.tokenId)!
+      if (!xferToken) {
+        log.log("No token found for transfer")
+        continue
+      }
       log.log("attempting transfer with ", xferToken.id)
 
       const available =
@@ -215,6 +237,4 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     log.error(err)
     connector.asProvider(network.id).disconnect()
   }
-
-  return { miniMetadatas, tokens, balances, dryRun }
 }

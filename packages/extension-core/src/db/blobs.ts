@@ -3,7 +3,15 @@ import pako from "pako"
 
 import { db } from "./db"
 
-export type DbBlobId = "nfts" | "balances" | "chaindata" | "tokenRates" | "defi-positions"
+export type DbBlobId =
+  | "nfts"
+  | "balances"
+  | "chaindata"
+  | "tokenRates"
+  | "defi-positions"
+  | "dynamic-tokens"
+  | "bittensor-validators"
+
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 
 export const getBlobStore = <Data = unknown>(id: DbBlobId) => ({

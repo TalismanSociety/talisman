@@ -24,7 +24,7 @@ export const EvmUniswapV2TokenSchema = TokenBaseSchema.extend({
 })
 export type EvmUniswapV2Token = z.infer<typeof EvmUniswapV2TokenSchema>
 
-export const EvmUniswapV2BalancesConfigSchema = z.undefined()
+export const EvmUniswapV2BalancesConfigSchema = z.strictObject({})
 
 export type EvmUniswapV2BalancesConfig = z.infer<typeof EvmUniswapV2BalancesConfigSchema>
 

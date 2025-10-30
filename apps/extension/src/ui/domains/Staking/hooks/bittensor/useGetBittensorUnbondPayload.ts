@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query"
 import { Binary } from "polkadot-api"
 import { useMemo } from "react"
 
-import { StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
 import {
   ROOT_NETUID,
   TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR,
@@ -14,12 +13,11 @@ import {
 type GetBittensorUnbondPayload = {
   sapi: ScaleApi
   address: string
-  hotkey: string | number
+  hotkey: string
   plancks: bigint
   talismanFee: bigint
-  stakeType: StakeType
   alphaPriceWithSlippagePlanks: bigint
-  netuid: number | null
+  netuid: number
 }
 
 const getBittensorUnbondPayload = ({
@@ -27,12 +25,11 @@ const getBittensorUnbondPayload = ({
   address,
   hotkey,
   plancks,
-  stakeType,
   netuid,
   alphaPriceWithSlippagePlanks,
   talismanFee,
 }: GetBittensorUnbondPayload) => {
-  if (stakeType === "root") {
+  if (netuid === ROOT_NETUID) {
     return sapi.getExtrinsicPayload(
       "Utility",
       "batch_all",
@@ -80,9 +77,8 @@ type UseGetBittensorUnbondPayload = {
   sapi: ScaleApi | undefined | null
   isEnabled: boolean
   address: string | undefined | null
-  hotkey: string | number | undefined
+  hotkey: string | null | undefined
   plancks: bigint | null | undefined
-  stakeType: StakeType
   alphaPriceWithSlippage: number
   talismanFee: bigint
   netuid: number | null
@@ -95,7 +91,6 @@ export const useGetBittensorUnbondPayload = ({
   isEnabled,
   plancks,
   talismanFee,
-  stakeType,
   alphaPriceWithSlippage,
   netuid,
 }: UseGetBittensorUnbondPayload) => {
@@ -115,13 +110,13 @@ export const useGetBittensorUnbondPayload = ({
       hotkey,
       netuid,
       address,
-      stakeType,
       plancks?.toString() ?? "0",
       alphaPriceWithSlippage,
       talismanFee?.toString() ?? "0",
     ],
     queryFn: async () => {
       if (!sapi || !address || !hotkey) return null
+      if (typeof netuid !== "number") return null
       return getBittensorUnbondPayload({
         sapi,
         address,
@@ -129,7 +124,6 @@ export const useGetBittensorUnbondPayload = ({
         netuid,
         plancks: plancks ?? 0n,
         talismanFee,
-        stakeType,
         alphaPriceWithSlippagePlanks,
       })
     },

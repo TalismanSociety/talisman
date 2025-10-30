@@ -4,6 +4,7 @@ import { EvmUniswapV2BalanceModule } from "./evm-uniswapv2"
 import { SolNativeBalanceModule } from "./sol-native"
 import { SolSplBalanceModule } from "./sol-spl"
 import { SubAssetsBalanceModule } from "./substrate-assets"
+import { SubDTaoBalanceModule } from "./substrate-dtao"
 import { SubForeignAssetsBalanceModule } from "./substrate-foreignassets"
 import { SubHydrationBalanceModule } from "./substrate-hydration"
 import { SubNativeBalanceModule } from "./substrate-native"
@@ -13,6 +14,7 @@ import { SubTokensBalanceModule } from "./substrate-tokens"
 export const BALANCE_MODULES = [
   SubNativeBalanceModule,
   SubAssetsBalanceModule,
+  SubDTaoBalanceModule,
   SubHydrationBalanceModule,
   SubForeignAssetsBalanceModule,
   SubPsp22BalanceModule,
@@ -36,6 +38,7 @@ export * from "./substrate-foreignassets"
 export * from "./substrate-hydration"
 export * from "./substrate-psp22"
 export * from "./substrate-tokens"
+export * from "./substrate-dtao"
 
 export * from "./sol-native"
 export * from "./sol-spl"

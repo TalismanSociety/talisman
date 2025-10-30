@@ -1,6 +1,6 @@
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
@@ -8,7 +8,7 @@ type BittensorSelectButtonProps = {
   isLoading?: boolean
   isDisabled?: boolean
   label: string
-  nextStep: "select" | "select-subnet"
+  nextStep: "select-delegate" | "select-subnet"
 }
 
 export const BittensorSelectButton = ({
@@ -19,10 +19,13 @@ export const BittensorSelectButton = ({
 }: BittensorSelectButtonProps) => {
   const { setStep, step, stakeDirection } = useBittensorBondWizard()
 
-  const isBtnDisabled = useMemo(
-    () => isDisabled || !step.includes("form") || stakeDirection === "unbond",
-    [stakeDirection, step, isDisabled],
-  )
+  const isBtnDisabled = useMemo(() => isDisabled || !step.includes("form"), [step, isDisabled])
+
+  const handleClick = useCallback(() => {
+    if (isBtnDisabled) return
+    if (stakeDirection === "unbond") setStep("select-position")
+    else setStep(nextStep)
+  }, [isBtnDisabled, nextStep, setStep, stakeDirection])
 
   if (isLoading)
     return (
@@ -35,10 +38,10 @@ export const BittensorSelectButton = ({
 
   return (
     <button
-      onClick={() => !isBtnDisabled && setStep(nextStep)}
+      onClick={handleClick}
       className={classNames(
         "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
-        isBtnDisabled && "cursor-not-allowed",
+        isBtnDisabled && "cursor-not-allowed opacity-50",
       )}
     >
       <SettingsIcon className="text-body-secondary" />

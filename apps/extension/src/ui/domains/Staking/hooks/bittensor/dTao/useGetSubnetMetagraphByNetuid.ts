@@ -1,12 +1,15 @@
-import { GetDynamicInfoResult } from "@talismn/balances"
+import type { bittensor } from "@polkadot-api/descriptors"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-export const useGetSubnetMetagraphByNetuid = ({ netuid }: { netuid: number | null }) => {
+export type GetDynamicInfoResult =
+  (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_dynamic_info"][1]
+
+export const useSubnetDynamicInfo = ({ netuid }: { netuid: number | null }) => {
   const { data: sapi } = useScaleApi("bittensor")
 
-  const fetchSubnetMetagraphByNetuid = async ({
+  const fetchSubnetDynamicInfo = async ({
     netuid,
   }: {
     netuid: number | null
@@ -20,8 +23,8 @@ export const useGetSubnetMetagraphByNetuid = ({ netuid }: { netuid: number | nul
   }
 
   return useQuery({
-    queryKey: ["subnetMetagraph", netuid],
-    queryFn: () => fetchSubnetMetagraphByNetuid({ netuid }),
+    queryKey: ["fetchSubnetDynamicInfo", netuid],
+    queryFn: () => fetchSubnetDynamicInfo({ netuid }),
     staleTime: 1000 * 10, // 10 seconds
     enabled: !!sapi && !!netuid,
     retry: 10,

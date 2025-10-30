@@ -5,23 +5,21 @@ import { formatDuration, intervalToDuration } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
-import { UnbondButton } from "@ui/domains/Staking/Unbond/UnbondButton"
+import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
 type LockedExtraProps = {
-  netuid?: number
   tokenId: TokenId
   address?: string
   isLoading: boolean
-  rowMeta: { poolId?: number; unbonding?: boolean; hotkey?: string; netuid?: number }
+  rowMeta: { poolId?: number; unbonding?: boolean }
 }
 
-export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: LockedExtraProps) => {
+export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtraProps) => {
   const { t } = useTranslation()
   const locale = useDateFnsLocale()
   const { data } = useNomPoolStakingStatus(tokenId)
@@ -48,8 +46,8 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: Lo
   )
 
   const canUnbond = useMemo(
-    () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === BITTENSOR_TOKEN_ID,
-    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+    () => accountStatus?.canUnstake && rowMeta.poolId,
+    [accountStatus?.canUnstake, rowMeta.poolId],
   )
 
   if (!rowAddress) return null
@@ -75,13 +73,11 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading, netuid }: Lo
           </>
         )
       ) : canUnbond ? (
-        <UnbondButton
-          netuid={netuid}
+        <NomPoolUnbondButton
           tokenId={tokenId}
           address={rowAddress}
           variant="large"
-          poolId={rowMeta.poolId ?? rowMeta.hotkey}
-          isBittensorUnbond={tokenId === BITTENSOR_TOKEN_ID}
+          poolId={rowMeta.poolId}
         />
       ) : null}
     </div>

@@ -291,4 +291,8 @@ export const api: MessageTypes = {
 
   defiPositionsSubscribe: (cb) =>
     messageService.subscribe("pri(defi.positions.subscribe)", null, cb),
+
+  // bittensor
+  bittensorValidatorsSubscribe: (cb) =>
+    messageService.subscribe("pri(bittensor.validators.subscribe)", null, cb),
 }

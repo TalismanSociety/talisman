@@ -1,10 +1,9 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
-import type { StakeDirection, StakeType, WizardStep } from "./useBittensorBondWizard"
+import type { BittensorStakingWizardOpenOptions } from "./useBittensorBondWizard"
 import { useResetBittensorBondWizard } from "./useBittensorBondWizard"
 
 export const useBittensorBondModal = () => {
@@ -13,39 +12,9 @@ export const useBittensorBondModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("BittensorBondModal")
 
   const open = useCallback(
-    ({
-      address,
-      tokenId,
-      poolId,
-      isSeekDiscountDrawerOpen = false,
-      stakeType = "root",
-      stakeDirection = "bond",
-      step = "form",
-      netuid = null,
-      isSelectStakeDrawerOpen = false,
-    }: {
-      address: Address
-      tokenId: TokenId
-      poolId: number | string
-      isSelectStakeDrawerOpen?: boolean
-      isSeekDiscountDrawerOpen?: boolean
-      stakeType?: StakeType
-      stakeDirection?: StakeDirection
-      step?: WizardStep
-      netuid: number | null | undefined
-    }) => {
-      reset({
-        address,
-        tokenId,
-        poolId,
-        step,
-        stakeType,
-        stakeDirection,
-        isSelectStakeDrawerOpen,
-        isSeekDiscountDrawerOpen,
-        netuid,
-      })
-
+    (opts: BittensorStakingWizardOpenOptions) => {
+      log.debug("[tao] Resetting Bittensor Bond Wizard", opts)
+      reset(opts)
       innerOpen()
     },
     [innerOpen, reset],

@@ -32,6 +32,7 @@ import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { BondAccountPicker } from "./BondAccountPicker"
 import { BondAccountPillButton } from "./BondAccountPillButton"
+import { useBondModal } from "./hooks/useBondModal"
 import { useBondWizard } from "./hooks/useBondWizard"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
@@ -374,6 +375,15 @@ const FeeEstimate = () => {
 export const BondForm = () => {
   const { t } = useTranslation()
   const { account, accountPicker, token, payload, poolId, setStep, setAddress } = useBondWizard()
+  const { close } = useBondModal()
+
+  const handleAddressSelected = useCallback(
+    (address: string) => {
+      setAddress(address)
+      accountPicker.close()
+    },
+    [accountPicker, setAddress],
+  )
 
   return (
     <div className="text-body-secondary flex size-full flex-col gap-4">
@@ -445,8 +455,9 @@ export const BondForm = () => {
         isOpen={accountPicker.isOpen}
         account={account}
         token={token}
-        handleClose={accountPicker.close}
-        setAddress={setAddress}
+        onBackClick={accountPicker.close}
+        onCloseClick={close}
+        onAddressSelected={handleAddressSelected}
       />
     </div>
   )

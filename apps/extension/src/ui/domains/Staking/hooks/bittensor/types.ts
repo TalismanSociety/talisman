@@ -47,7 +47,7 @@ export type ValidatorsData = {
 }
 
 export type BondOption = {
-  poolId: string
+  hotkey: string
   name: string
   totalStaked: number
   totalStakers: number

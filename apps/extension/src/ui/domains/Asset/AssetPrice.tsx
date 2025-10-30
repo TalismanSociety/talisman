@@ -1,4 +1,5 @@
 import { bind } from "@react-rxjs/core"
+import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames, formatPrice } from "@talismn/util"
 import { FC } from "react"
@@ -7,45 +8,53 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { getTokenRates$, selectedCurrency$ } from "@ui/state"
 
-const [useDisplayAssetPrice] = bind((tokenId: TokenId | null | undefined) =>
-  combineLatest([getTokenRates$(tokenId), selectedCurrency$]).pipe(
-    map(([rates, currency]) => {
-      const rate = rates?.[currency]
-      if (!rate) return null
+const [useDisplayAssetPrice] = bind(
+  (tokenId: TokenId | null | undefined, balances: Balances | null | undefined) =>
+    combineLatest([getTokenRates$(tokenId), selectedCurrency$]).pipe(
+      map(([rates, currency]) => {
+        if (!tokenId) return null
 
-      const compact = formatPrice(rate.price, currency, true)
+        let rate = rates?.[currency]
 
-      const full = formatPrice(rate.price, currency, false)
+        // some token rates aren't stored in the global token rates map (e.g. substrate-dtao tokens) and must be picked from balance object
+        if (!rate && balances) rate = balances.find({ tokenId })?.each[0]?.rates?.[currency]
 
-      const rawChange24h = rate.change24h
-        ? new Intl.NumberFormat(undefined, {
-            minimumFractionDigits: 1,
-            style: "percent",
-            signDisplay: "always",
-          }).format(rate.change24h / 100)
-        : undefined
+        if (!rate) return null
 
-      // we dont want a sign (which is used for color check) if change displays as +0.0% or -0.0%
-      const change24h = rawChange24h?.length
-        ? rawChange24h.slice(1) === "0.0%"
-          ? "0.0%"
-          : rawChange24h
-        : undefined
+        const compact = formatPrice(rate.price, currency, true)
 
-      const changeClassName = getPriceChangeClassName(change24h)
+        const full = formatPrice(rate.price, currency, false)
 
-      return {
-        compact,
-        full,
-        change24h,
-        changeClassName,
-      }
-    }),
-  ),
+        const rawChange24h = rate.change24h
+          ? new Intl.NumberFormat(undefined, {
+              minimumFractionDigits: 1,
+              style: "percent",
+              signDisplay: "always",
+            }).format(rate.change24h / 100)
+          : undefined
+
+        // we dont want a sign (which is used for color check) if change displays as +0.0% or -0.0%
+        const change24h = rawChange24h?.length
+          ? rawChange24h.slice(1) === "0.0%"
+            ? "0.0%"
+            : rawChange24h
+          : undefined
+
+        const changeClassName = getPriceChangeClassName(change24h)
+
+        return {
+          compact,
+          full,
+          change24h,
+          changeClassName,
+        }
+      }),
+    ),
 )
 
 export const AssetPrice: FC<{
   tokenId: TokenId | null | undefined
+  balances: Balances | null | undefined
   as?: "div" | "span"
   className?: string
   priceClassName?: string
@@ -55,13 +64,14 @@ export const AssetPrice: FC<{
 }> = ({
   as: Container = "div",
   tokenId,
+  balances,
   noTooltip,
   noChange,
   className,
   priceClassName,
   changeClassName,
 }) => {
-  const price = useDisplayAssetPrice(tokenId)
+  const price = useDisplayAssetPrice(tokenId, balances)
 
   if (!price) return null
 

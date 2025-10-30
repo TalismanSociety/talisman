@@ -22,6 +22,7 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -51,6 +52,7 @@ export const TokensList: FC<{
     const results = tokens
       .filter((t) => !!networksMap[t.networkId])
       .filter((t) => !networkId || t.networkId === networkId)
+      .filter((t) => t.type !== "substrate-dtao" || !t.hotkey) // hide validator-specific dtao tokens
 
     return sortBy(
       results,
@@ -73,9 +75,7 @@ export const TokensList: FC<{
       .filter(
         (t) =>
           !lowerSearch ||
-          (t.type === "evm-erc20" && "erc20".includes(lowerSearch)) ||
-          (t.type === "evm-uniswapv2" && "univ2".includes(lowerSearch)) ||
-          t.symbol.toLowerCase().includes(lowerSearch) ||
+          [t.symbol, t.name, t.type].join().toLowerCase().includes(lowerSearch) ||
           (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
             isAddressEqual(t.contractAddress, lowerSearch)),
       )
@@ -168,7 +168,9 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
           <TokenLogo tokenId={token.id} className="shrink-0 text-xl" />
           <div className="flex flex-col justify-center gap-2 overflow-hidden">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="truncate text-base">{token.symbol}</div>
+              <div className="truncate text-base">
+                <TokenDisplaySymbol tokenId={token.id} />
+              </div>
               <TokenTypePill type={token.type} />
               {isTokenCustom(token) && <CustomPill />}
             </div>

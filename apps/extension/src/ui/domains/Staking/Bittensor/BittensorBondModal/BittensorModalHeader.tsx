@@ -1,51 +1,27 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
+import { cn } from "@talismn/util"
+import { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
 
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
-import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
-export const BittensorModalHeader = () => {
-  const { t } = useTranslation()
-  const { step, stakeType, setStep, stakeDirection } = useBittensorBondWizard()
+export const BittensorStakingModalHeader: FC<{
+  title: ReactNode
+  className?: string
+  withClose?: boolean
+  onBackClick?: () => void
+}> = ({ title, className, withClose, onBackClick }) => {
   const { close } = useBittensorBondModal()
-
-  const handleBackClick = useCallback(
-    () => setStep(stakeType === "root" ? "form" : "subnet-form"),
-    [setStep, stakeType],
-  )
 
   return (
     <div
-      className={classNames(
-        "text-body-secondary flex min-h-32 w-full shrink-0 items-center px-10",
-        step === "follow-up" ? "invisible" : "visible",
-      )}
+      className={cn("text-body-secondary flex h-32 w-full shrink-0 items-center px-10", className)}
     >
-      <IconButton
-        onClick={handleBackClick}
-        className={classNames(
-          step.includes("review") || step.includes("select") ? "block" : "hidden",
-        )}
-      >
+      <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
         <ChevronLeftIcon />
       </IconButton>
-      <div>
-        {step.includes("form") && (
-          <span className="text-body font-bold">
-            {stakeDirection === "bond" ? t("Staking") : t("Unstake")}
-          </span>
-        )}
-        {step.includes("review") && <div className="font-bold text-white">{t("Confirm")}</div>}
-        {step.includes("select") && (
-          <div className="font-bold text-white">
-            {step === "select" ? t("Select Validator") : t("Select Subnet")}
-          </div>
-        )}
-      </div>
-      <IconButton onClick={close} className="ml-auto">
+      <div className="grow text-center font-bold text-white">{title}</div>
+      <IconButton onClick={close} className={cn(!withClose && "invisible")}>
         <XIcon />
       </IconButton>
     </div>

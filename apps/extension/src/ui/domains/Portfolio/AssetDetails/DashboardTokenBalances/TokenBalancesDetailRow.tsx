@@ -1,7 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { classNames, planckToTokens } from "@talismn/util"
-import { BigNumber } from "bignumber.js"
-import { useMemo } from "react"
+import { classNames } from "@talismn/util"
 
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
@@ -16,24 +14,13 @@ export const TokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
-  tokenDecimals,
-  netuid,
 }: {
   row: BalanceDetailRow
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-  tokenId?: TokenId // unsafe, there could be multiple aggregated here
-  tokenDecimals: number
-  netuid?: number
+  tokenId: TokenId
 }) => {
-  const tokenBalance = useMemo(() => {
-    const alphaBalanceInTao = new BigNumber(
-      planckToTokens(row.meta?.amountStaked, tokenDecimals) || "0",
-    )
-    return alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
-  }, [row.meta?.amountStaked, row.tokens, tokenDecimals])
-
   return (
     <div
       key={row.key}
@@ -52,8 +39,8 @@ export const TokenBalancesDetailRow = ({
       {!row.locked && <div></div>}
       <div>
         <AssetBalanceCellValue
-          render={tokenBalance.gt(0)}
-          tokens={tokenBalance}
+          render
+          tokens={row.tokens}
           fiat={row.fiat}
           symbol={symbol}
           locked={row.locked}
@@ -65,7 +52,6 @@ export const TokenBalancesDetailRow = ({
       </div>
       {!!row.locked && row.meta && tokenId && (
         <LockedExtra
-          netuid={netuid}
           tokenId={tokenId}
           address={row.address}
           isLoading={status.status === "fetching"}

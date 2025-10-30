@@ -13,7 +13,7 @@ export const EvmNativeTokenSchema = TokenBaseSchema.extend({
 })
 export type EvmNativeToken = z.infer<typeof EvmNativeTokenSchema>
 
-export const EvmNativeBalancesConfigSchema = z.undefined()
+export const EvmNativeBalancesConfigSchema = z.strictObject({})
 
 export type EvmNativeBalancesConfig = z.infer<typeof EvmNativeBalancesConfigSchema>
 

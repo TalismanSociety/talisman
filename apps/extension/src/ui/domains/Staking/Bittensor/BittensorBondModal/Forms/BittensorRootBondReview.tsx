@@ -12,19 +12,22 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "../BittensorModalHeader"
+import { BittensorModalLayout } from "../BittensorModalLayout"
 
-export const BittensorBondReview = () => {
+export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
   const {
-    token,
+    nativeToken,
     amountToStake,
     account,
     onSubmitted,
     payload,
     txMetadata,
-    poolId,
+    hotkey,
     stakeDirection,
     newStakeTotal,
+    setStep,
   } = useBittensorBondWizard()
 
   const [isDisabled, setIsDisabled] = useState(true)
@@ -39,18 +42,27 @@ export const BittensorBondReview = () => {
   if (!account) return null
 
   return (
-    <div className="flex size-full flex-col">
-      <h2 className="mb-24 mt-8 text-center">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={t("Confirm")}
+          onBackClick={() => setStep("form")}
+          withClose
+        />
+      }
+      contentClassName="p-12 pt-0 flex flex-col w-full"
+    >
+      <h2 className="mb-12 text-center">
         {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
       </h2>
       <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
         <div className="flex items-center justify-between gap-8 pb-2">
           <div className="whitespace-nowrap">{t("Amount")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
+            <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
             <TokensAndFiat
               isBalance
-              tokenId={token?.id}
+              tokenId={nativeToken?.id}
               planck={amountToStake?.planck}
               noCountUp
               tokensClassName="text-body"
@@ -61,7 +73,7 @@ export const BittensorBondReview = () => {
         <div className="flex items-center justify-between gap-8 pt-2">
           <div className="whitespace-nowrap">{t("Account")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
-            <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
+            <StakingAccountDisplay address={account.address} chainId={nativeToken?.networkId} />
           </div>
         </div>
         <div className="py-8">
@@ -70,22 +82,22 @@ export const BittensorBondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Validator")} </div>
           <div className="text-body truncate">
-            <BittensorDelegatorNameButton poolId={poolId} />
+            <BittensorDelegatorNameButton hotkey={hotkey} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
             <Tokens
-              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={token?.symbol}
+              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
+              symbol={nativeToken?.symbol}
             />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
           <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
           <div className="text-body truncate">
-            <StakingUnbondingPeriod chainId={token?.networkId} />
+            <StakingUnbondingPeriod chainId={nativeToken?.networkId} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 pt-2 text-xs">
@@ -106,7 +118,7 @@ export const BittensorBondReview = () => {
           disabled={isDisabled}
         />
       )}
-    </div>
+    </BittensorModalLayout>
   )
 }
 

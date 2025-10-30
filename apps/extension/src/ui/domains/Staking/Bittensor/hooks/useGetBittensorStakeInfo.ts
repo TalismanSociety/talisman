@@ -2,41 +2,36 @@ import { DotNetworkId } from "@talismn/chaindata-provider"
 import { ScaleApi } from "@talismn/sapi"
 import { useMemo } from "react"
 
-import { type BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
-
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
-import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
+import { useBittensorCurrentHotkey } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
 import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { type StakeDirection, type StakeType } from "./useBittensorBondWizard"
+import { type StakeDirection } from "./useBittensorBondWizard"
 import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
 
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
-  poolId: string | number | null | undefined
+  hotkey: string | null | undefined
   netuid: number | null
   plancks: bigint | null
-  chainId: DotNetworkId | undefined
-  stakeType: StakeType
+  networkId: DotNetworkId | undefined
   userMaxSlippage: number
-  selectedStake: BalanceDetailRow | undefined
   stakeDirection: StakeDirection
 }
 
 export const useGetBittensorStakeInfo = ({
   sapi,
   address,
-  poolId,
+  hotkey,
   netuid,
   plancks,
-  chainId,
-  stakeType,
+  networkId,
   userMaxSlippage,
   stakeDirection,
 }: GetStakeInfo) => {
-  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
+  const { data: minJoinBond } = useGetBittensorMinJoinBond({ networkId, netuid })
 
   const {
     slippage,
@@ -60,11 +55,10 @@ export const useGetBittensorStakeInfo = ({
   const bittensorStakingPayload = useGetBittensorStakingPayload({
     sapi,
     address,
-    poolId,
+    hotkey,
     plancks,
     minJoinBond,
     isEnabled: stakeDirection === "bond",
-    stakeType,
     alphaPriceWithSlippage,
     netuid,
     talismanFee: talismanFee,
@@ -73,16 +67,15 @@ export const useGetBittensorStakeInfo = ({
   const bittensorUnbondPayload = useGetBittensorUnbondPayload({
     sapi,
     address,
-    hotkey: String(poolId),
+    hotkey,
     isEnabled: stakeDirection === "unbond",
     plancks,
-    stakeType,
     alphaPriceWithSlippage,
     talismanFee,
     netuid,
   })
 
-  const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
+  const currentHotkey = useBittensorCurrentHotkey({ address, networkId, netuid })
 
   const stakeActionPayload = useMemo(
     () => (stakeDirection === "bond" ? bittensorStakingPayload : bittensorUnbondPayload),
@@ -111,7 +104,7 @@ export const useGetBittensorStakeInfo = ({
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    currentPoolId: hotkeys?.[0] ?? poolId,
+    currentHotkey,
     minJoinBond,
     minAlphaUnstake,
 

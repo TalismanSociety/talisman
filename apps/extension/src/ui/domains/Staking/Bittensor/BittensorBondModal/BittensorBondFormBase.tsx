@@ -28,13 +28,15 @@ import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
 import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { SeekGetFeeDiscountsDrawer } from "../../Seek/SeekGetFeeDiscountsDrawer"
-import { MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { DTAO_LOGO, ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "./BittensorModalHeader"
+import { BittensorModalLayout } from "./BittensorModalLayout"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
@@ -89,39 +91,39 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, stakeDirection, netuid, plancks } = useBittensorBondWizard()
+  const { nativeToken, stakeDirection, netuid, plancks } = useBittensorBondWizard()
 
   const tokenPlancks = useMemo(
-    () => planckToTokens(String(plancks || 0n), token?.decimals),
-    [plancks, token?.decimals],
+    () => planckToTokens(String(plancks || 0n), nativeToken?.decimals),
+    [plancks, nativeToken?.decimals],
   )
 
   const symbol = useMemo(() => {
     if (stakeDirection === "unbond" && netuid !== ROOT_NETUID) {
       return `SN${netuid}`
     }
-    return token?.symbol
-  }, [netuid, stakeDirection, token?.symbol])
+    return nativeToken?.symbol
+  }, [netuid, stakeDirection, nativeToken?.symbol])
 
-  if (!token) return null
+  if (!nativeToken) return null
 
   return (
     <DisplayContainer>
-      <Tokens amount={tokenPlancks} decimals={token.decimals} symbol={symbol} noCountUp />
+      <Tokens amount={tokenPlancks} decimals={nativeToken.decimals} symbol={symbol} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenInput = () => {
-  const { token, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
+  const { nativeToken, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
     useBittensorBondWizard()
 
   const symbol = useMemo(() => {
     if (isSubnetUnbond) {
       return `SN${netuid}`
     }
-    return token?.symbol
-  }, [isSubnetUnbond, netuid, token?.symbol])
+    return nativeToken?.symbol
+  }, [isSubnetUnbond, netuid, nativeToken?.symbol])
 
   const defaultValue = useMemo(
     () => (isSubnetUnbond ? amountToStakeAlpha?.tokens : (amountToStake?.tokens ?? "")),
@@ -131,9 +133,9 @@ const TokenInput = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token) {
+      if (nativeToken) {
         try {
-          const plancks = tokensToPlanck(e.target.value, token.decimals)
+          const plancks = tokensToPlanck(e.target.value, nativeToken.decimals)
 
           return setPlancks(BigInt(plancks))
         } catch (err) {
@@ -143,7 +145,7 @@ const TokenInput = () => {
 
       return setPlancks(null)
     },
-    [setPlancks, token],
+    [setPlancks, nativeToken],
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -176,7 +178,7 @@ const TokenInput = () => {
         {isSubnetUnbond ? (
           <AssetLogo className="text-lg" url={DTAO_LOGO} />
         ) : (
-          <TokenLogo className="text-lg" tokenId={token?.id} />
+          <TokenLogo className="text-lg" tokenId={nativeToken?.id} />
         )}
         <div>{symbol}</div>
       </div>
@@ -185,8 +187,14 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const { token, tokenRates, amountToStake, setPlancks, isSubnetUnbond, taoToAlphaConversionRate } =
-    useBittensorBondWizard()
+  const {
+    nativeToken,
+    tokenRates,
+    amountToStake,
+    setPlancks,
+    isSubnetUnbond,
+    taoToAlphaConversionRate,
+  } = useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
@@ -196,19 +204,21 @@ const FiatInput = () => {
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (token && tokenRates?.[currency]?.price && e.target.value) {
+      if (nativeToken && tokenRates?.[currency]?.price && e.target.value) {
         try {
           const fiat = parseFloat(e.target.value)
           let tokens: string = (fiat / tokenRates[currency].price).toFixed(
-            Math.ceil(token.decimals / 3),
+            Math.ceil(nativeToken.decimals / 3),
           )
 
           if (isSubnetUnbond) {
             tokens = String(
-              (Number(tokens) * taoToAlphaConversionRate).toFixed(Math.ceil(token.decimals / 3)),
+              (Number(tokens) * taoToAlphaConversionRate).toFixed(
+                Math.ceil(nativeToken.decimals / 3),
+              ),
             )
           }
-          const plancks = tokensToPlanck(tokens, token.decimals)
+          const plancks = tokensToPlanck(tokens, nativeToken.decimals)
           return setPlancks(BigInt(plancks))
         } catch (err) {
           // invalid input, ignore
@@ -218,7 +228,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, token, tokenRates],
+    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, nativeToken, tokenRates],
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -260,7 +270,7 @@ const FiatInput = () => {
 export const AmountEdit = () => {
   const { t } = useTranslation()
   const {
-    token,
+    nativeToken,
     tokenRates,
     displayMode,
     toggleDisplayMode,
@@ -276,7 +286,7 @@ export const AmountEdit = () => {
 
   return (
     <div className="flex w-full grow flex-col justify-center gap-4">
-      {!!token && (
+      {!!nativeToken && (
         <>
           <div className="h-16">{/* mirrors the height of error message reserved space */}</div>
           <div className="flex flex-col text-xl font-bold">
@@ -338,11 +348,10 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
   const {
     account,
     accountPicker,
-    token,
+    nativeToken,
     payload,
-    poolId,
+    hotkey,
     selectedSubnet,
-    selectStakeDrawer,
     seekDiscountDrawer,
     stakeType,
     stakeDirection,
@@ -360,20 +369,41 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     [netuid, stakeDirection],
   )
 
+  const handleSelectAccount = useCallback(
+    (address: string) => {
+      setAddress(address)
+      accountPicker.close()
+    },
+    [accountPicker, setAddress],
+  )
+
   return (
-    <div className="text-body-secondary flex size-full flex-col gap-4">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={stakeDirection === "bond" ? t("Staking") : t("Unstake")}
+          withClose
+        />
+      }
+      contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
+    >
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Asset")}</div>
           <div className="overflow-hidden">
-            <AssetPill token={token} />
+            <AssetPill token={nativeToken} />
           </div>
         </div>
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Account")}</div>
           <div className="overflow-hidden">
             <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
-              <BondAccountPillButton address={account?.address} onClick={accountPicker.open} />
+              <BondAccountPillButton
+                address={account?.address}
+                onClick={() => {
+                  stakeDirection === "bond" ? accountPicker.open() : setStep("select-position")
+                }}
+              />
             </Suspense>
           </div>
         </div>
@@ -386,7 +416,9 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           </div>
           {stakeDirection === "bond" ? (
             <div>
-              {!!token && !!account && <AvailableBalance token={token} account={account} />}
+              {!!nativeToken && !!account && (
+                <AvailableBalance token={nativeToken} account={account} />
+              )}
             </div>
           ) : (
             <BittensorAvailableToUnstake />
@@ -395,6 +427,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       </div>
 
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
+        <BondTypeDetails />
         <div
           className={classNames(
             "flex gap-8",
@@ -405,20 +438,17 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             <div className="whitespace-nowrap">{t("Select Validator")}</div>
             <div className="text-body truncate">
               <BittensorDelegatorNameButton
-                poolId={poolId}
+                hotkey={hotkey}
                 isDisabled={stakeType === "subnet" && !netuid}
               />
             </div>
           </div>
-          <>
-            <BondTypeDetails />
-          </>
         </div>
         {isSubnetUnbond && (
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
             <div className="text-body flex items-center gap-2 truncate">
-              <Tokens amount={expectedTaoWithSlippage} symbol={token?.symbol} />
+              <Tokens amount={expectedTaoWithSlippage} symbol={nativeToken?.symbol} />
               <Fiat amount={estimatedAmountToStake?.fiat(currency) ?? 0} noCountUp />
             </div>
           </div>
@@ -427,8 +457,8 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
             <Tokens
-              amount={planckToTokens(String(newStakeTotal), token?.decimals)}
-              symbol={stakeType === "root" ? token?.symbol : selectedSubnet.symbol}
+              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
+              symbol={stakeType === "root" ? nativeToken?.symbol : selectedSubnet.symbol}
             />
           </div>
         </div>
@@ -444,36 +474,25 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         )}
       </div>
 
-      <Button
-        primary
-        fullWidth
-        disabled={!payload}
-        onClick={() => setStep(stakeType === "root" ? "review" : "subnet-review")}
-      >
+      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
         {t("Review")}
       </Button>
 
       <BondAccountPicker
         isOpen={accountPicker.isOpen}
         account={account}
-        token={token}
-        handleClose={accountPicker.close}
-        setAddress={setAddress}
+        token={nativeToken}
+        onBackClick={accountPicker.close}
+        onCloseClick={close}
+        onAddressSelected={handleSelectAccount}
       />
-      <BittensorSelectStakeDrawer
-        isOpen={selectStakeDrawer.isOpen}
-        onDismiss={selectStakeDrawer.close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
-      />
+      <BittensorSelectStakeDrawer containerId={STAKING_MODAL_CONTENT_CONTAINER_ID} />
       <SeekGetFeeDiscountsDrawer
         isOpen={seekDiscountDrawer.isOpen}
-        onDismiss={() => {
-          seekDiscountDrawer.close()
-          stakeType === "root" && selectStakeDrawer.open()
-        }}
+        onDismiss={seekDiscountDrawer.close}
         onCloseModal={close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
-    </div>
+    </BittensorModalLayout>
   )
 }

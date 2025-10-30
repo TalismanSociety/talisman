@@ -1,35 +1,26 @@
 import { Balance, Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { NetworkId, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { Address, RemoteConfigStoreData } from "extension-core"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useFeatureFlag, useRemoteConfig, useTokensMap } from "@ui/state"
+import { useAccounts, useBalances, useRemoteConfig } from "@ui/state"
+import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
-import { type StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
-import { BITTENSOR_TOKEN_ID } from "../../Bittensor/utils/constants"
 import { useBondModal } from "./useBondModal"
 
-export const useBondButton = ({
-  balances,
-  stakeType,
-  netuid,
-}: {
-  balances: Balances | null | undefined
-  stakeType?: StakeType
-  netuid?: number
-}) => {
+export const useBondButton = ({ balances }: { balances: Balances | null | undefined }) => {
   const { genericEvent } = useAnalytics()
-  const tokensMap = useTokensMap()
   const ownedAccounts = useAccounts("owned")
 
   const remoteConfig = useRemoteConfig()
   const { open } = useBondModal()
   const { open: handleOpenBittensorModal } = useBittensorBondModal()
-  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const allBalances = useBalances("owned")
 
   const ownedAddresses = useMemo(() => ownedAccounts.map(({ address }) => address), [ownedAccounts])
 
@@ -38,7 +29,7 @@ export const useBondButton = ({
 
     const bondableBalances = balances.each
       .filter((b) => ownedAddresses.includes(b.address))
-      .map((b) => getBondableBalance(b, tokensMap, remoteConfig, stakeType, netuid))
+      .map((b) => getBondableBalance(b, remoteConfig, bittensorNetworkIds, allBalances))
       .filter(isNotNil)
       .sort((a, b) => (a.amount === b.amount ? 0 : a.amount > b.amount ? -1 : 1))
 
@@ -46,7 +37,7 @@ export const useBondButton = ({
       bondableBalances.length ? bondableBalances[0] : null,
       bondableBalances.some((b) => b.isBonding),
     ]
-  }, [balances, ownedAddresses, tokensMap, remoteConfig, stakeType, netuid])
+  }, [allBalances, balances, bittensorNetworkIds, ownedAddresses, remoteConfig])
 
   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -60,16 +51,13 @@ export const useBondButton = ({
 
       switch (bestBondableBalance.type) {
         case "bittensor": {
-          const { address, tokenId, hotkey, netuid } = bestBondableBalance
+          const { address, networkId, hotkey, netuid } = bestBondableBalance
           handleOpenBittensorModal({
+            stakeDirection: "bond",
             address,
-            tokenId,
-            poolId: hotkey as string, // TODO fix typing issue on handler, in practice it's undefined by default
+            networkId,
+            hotkey,
             netuid,
-            stakeType,
-            isSeekDiscountDrawerOpen: isSeekTaoDiscountEnabled,
-            isSelectStakeDrawerOpen: !stakeType && !isSeekTaoDiscountEnabled,
-            step: stakeType !== "subnet" ? "form" : "subnet-form",
           })
           break
         }
@@ -89,8 +77,6 @@ export const useBondButton = ({
       bestBondableBalance,
       genericEvent,
       handleOpenBittensorModal,
-      stakeType,
-      isSeekTaoDiscountEnabled,
       remoteConfig.seek.webAppStakingPath,
       open,
     ],
@@ -113,6 +99,7 @@ type BondableBalance =
     }
   | {
       type: "bittensor"
+      networkId: NetworkId
       tokenId: TokenId
       address: Address
       amount: bigint
@@ -131,18 +118,17 @@ type BondableBalance =
 
 const getBondableBalance = (
   balance: Balance,
-  tokensMap: Record<string, Token>,
   remoteConfig: RemoteConfigStoreData,
-  stakeType: StakeType | undefined,
-  netuid: number | undefined,
+  bittensorNetworkIds: string[],
+  allBalances: Balances,
 ): BondableBalance | null => {
-  const token = tokensMap[balance.tokenId]
+  const token = balance.token
   if (!token) return null
 
   /**
    * Seek Staking
    */
-  if (token?.id === remoteConfig.seek.tokenId) {
+  if (token.id === remoteConfig.seek.tokenId) {
     return {
       type: "seek",
       tokenId: token.id,
@@ -153,31 +139,42 @@ const getBondableBalance = (
   }
 
   /**
-   * Bittensor Native Staking
+   * Bittensor Staking
    */
-  if (token?.id === BITTENSOR_TOKEN_ID) {
+  if (token?.type === "substrate-native" && bittensorNetworkIds.includes(token.networkId)) {
     const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
 
-    // if user is already staking, reuse parameters
-    type SubtensorMeta = { hotkey?: string; netuid?: number } | undefined
-    const entry = balance.subtensor.find(
-      (b) => !!(b.meta as SubtensorMeta)?.hotkey && (b.meta as SubtensorMeta)?.netuid === netuid,
+    const isBonding = allBalances.each.some(
+      (b) =>
+        b.networkId === token.networkId &&
+        b.token?.type === "substrate-dtao" &&
+        b.address === balance.address &&
+        b.free.planck > 0n,
     )
-    const meta = entry?.meta as SubtensorMeta
-
-    // on bittensor asset details the first button is staketype agnostic
-    // we need to know if we're staking TAO anywhere to display the appropriate icon
-    const isBondingAny =
-      !stakeType && balance.subtensor.some((b) => !!(b.meta as SubtensorMeta)?.hotkey)
 
     return {
       type: "bittensor",
-      tokenId: token.id,
+      networkId: token.networkId,
+      tokenId: subNativeTokenId(token.networkId), // only for analytics
       address: balance.address,
-      hotkey: meta?.hotkey ?? defaultHotkey,
-      netuid,
+      hotkey: defaultHotkey,
       amount: balance.transferable.planck,
-      isBonding: !!meta || isBondingAny,
+      isBonding,
+    }
+  }
+
+  // if dTAO, assume we can bond more native TAO
+  if (token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)) {
+    const address = balance.address
+    return {
+      type: "bittensor",
+      networkId: token.networkId,
+      tokenId: subNativeTokenId(token.networkId), // only for analytics
+      address,
+      hotkey: token.hotkey,
+      netuid: token.netuid,
+      amount: balance?.transferable.planck ?? 0n, // used only for sorting
+      isBonding: true,
     }
   }
 

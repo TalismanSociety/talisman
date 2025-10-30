@@ -51,7 +51,7 @@ export type BalanceJsonList = Record<string, BalanceJson>
 /** An unlabelled amount of a balance */
 export type Amount = string
 
-export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "nompool" | "subtensor"
+export type BalanceStatusTypes = "free" | "reserved" | "locked" | "extra" | "nompool"
 
 /** A labelled amount of a balance */
 type BaseAmountWithLabel<TLabel extends string> = {
@@ -69,15 +69,9 @@ type BaseAmountWithLabel<TLabel extends string> = {
 
 export const getValueId = (amount: AmountWithLabel<string>) => {
   const getMetaId = () => {
-    const meta = amount.meta as
-      | { poolId?: number; paraId?: number; hotkey?: string; netuid?: number }
-      | undefined
+    const meta = amount.meta as { poolId?: number; paraId?: number } | undefined
     if (!meta) return ""
     if (amount.type === "nompool") return meta.poolId?.toString() ?? ""
-    if (amount.type === "subtensor") {
-      const { hotkey, netuid } = meta
-      if (hotkey && netuid !== undefined) return `${hotkey.toString()}${netuid.toString()}`
-    }
 
     return ""
   }

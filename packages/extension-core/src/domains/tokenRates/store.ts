@@ -93,7 +93,7 @@ export class TokenRatesStore {
         }, REFRESH_INTERVAL)
 
         // refresh when token list changes : crucial for first popup load after install or db migration
-        const obsTokens = chaindataProvider.getTokensMapById()
+        const obsTokens = chaindataProvider.getTokensMapById$()
         const obsActiveTokens = activeTokensStore.observable
         const obsCurrencies = settingsStore.observable.pipe(
           map((settings) => settings.selectableCurrencies),

@@ -9,7 +9,7 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
-import { MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
@@ -28,6 +28,8 @@ import {
   VERY_HIGH_SLIPPAGE,
 } from "../../utils/constants"
 import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
+import { BittensorStakingModalHeader } from "../BittensorModalHeader"
+import { BittensorModalLayout } from "../BittensorModalLayout"
 import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
@@ -39,13 +41,13 @@ export const BittensorSubnetBondReview = () => {
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
-    token,
+    nativeToken,
     amountToStake,
     account,
     payload,
     isSlippageValid,
     txMetadata,
-    poolId,
+    hotkey,
     netuid,
     selectedSubnet,
     feeToken,
@@ -63,6 +65,7 @@ export const BittensorSubnetBondReview = () => {
     amountToStakeAlpha,
     estimatedAmountToStake,
     onSubmitted,
+    setStep,
   } = useBittensorBondWizard()
   const { t } = useTranslation()
   const { tier } = useGetSeekDiscount()
@@ -92,8 +95,17 @@ export const BittensorSubnetBondReview = () => {
   if (!account) return null
 
   return (
-    <div className="flex size-full flex-col">
-      <h2 className="mb-16 mt-6 text-center">
+    <BittensorModalLayout
+      header={
+        <BittensorStakingModalHeader
+          title={t("Confirm")}
+          onBackClick={() => setStep("form")}
+          withClose
+        />
+      }
+      contentClassName="p-12 pt-0 flex flex-col w-full"
+    >
+      <h2 className="mb-12 text-center">
         {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
       </h2>
       <div className="space-y-[0.75rem]">
@@ -112,10 +124,10 @@ export const BittensorSubnetBondReview = () => {
                 </>
               ) : (
                 <>
-                  <TokenLogo tokenId={token?.id} className="shrink-0 text-lg" />
+                  <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
                   <TokensAndFiat
                     isBalance
-                    tokenId={token?.id}
+                    tokenId={nativeToken?.id}
                     planck={amountToStake?.planck}
                     noCountUp
                     tokensClassName="text-body"
@@ -128,7 +140,7 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pt-2">
             <div className="whitespace-nowrap">{t("Account")} </div>
             <div className="flex items-center gap-4 overflow-hidden">
-              <StakingAccountDisplay address={account.address} chainId={token?.networkId} />
+              <StakingAccountDisplay address={account.address} chainId={nativeToken?.networkId} />
             </div>
           </div>
           <div className="py-8">
@@ -143,13 +155,13 @@ export const BittensorSubnetBondReview = () => {
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Validator")} </div>
             <div className="text-body truncate">
-              <BittensorDelegatorNameButton poolId={poolId} />
+              <BittensorDelegatorNameButton hotkey={hotkey} />
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
             <div className="text-body truncate">
-              <StakingUnbondingPeriod chainId={token?.networkId} />
+              <StakingUnbondingPeriod chainId={nativeToken?.networkId} />
             </div>
           </div>
 
@@ -158,14 +170,14 @@ export const BittensorSubnetBondReview = () => {
             {isSubnetUnbond ? (
               <Tokens
                 amount={estimatedAmountToStake?.tokens}
-                decimals={token?.decimals}
-                symbol={token?.symbol}
+                decimals={nativeToken?.decimals}
+                symbol={nativeToken?.symbol}
                 className="text-body truncate"
               />
             ) : (
               <Tokens
                 amount={expectedAlphaWithSlippage}
-                decimals={token?.decimals}
+                decimals={nativeToken?.decimals}
                 symbol={`SN${netuid} ${subnet_name} ${symbol}`}
                 className="text-body truncate"
               />
@@ -179,7 +191,7 @@ export const BittensorSubnetBondReview = () => {
               <div>1 TAO =</div>
               <Tokens
                 amount={taoToAlphaConversionRate}
-                decimals={token?.decimals}
+                decimals={nativeToken?.decimals}
                 symbol={symbol}
               />
             </div>
@@ -226,21 +238,23 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {isSeekTaoDiscountEnabled &&
-                (discount > 0 ? (
-                  <div className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1">
-                    <div className="text-[1rem] text-[#D5FF5C]">
-                      {discountPercent} {t("Off Fees")}
-                    </div>
+              {isSeekTaoDiscountEnabled && (
+                <button
+                  type="button"
+                  className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
+                  onClick={seekDiscountDrawer.open}
+                >
+                  <div className="text-[1rem] text-[#D5FF5C]">
+                    {discount ? (
+                      <>
+                        {discountPercent} {t("Off Fees")}
+                      </>
+                    ) : (
+                      t("Get Discount")
+                    )}
                   </div>
-                ) : (
-                  <button
-                    className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
-                    onClick={seekDiscountDrawer.open}
-                  >
-                    <div className="text-[1rem] text-[#D5FF5C]">{t("Get Discount")}</div>
-                  </button>
-                ))}
+                </button>
+              )}
             </div>
             <StakingFeeEstimate
               plancks={talismanFee}
@@ -274,13 +288,11 @@ export const BittensorSubnetBondReview = () => {
       <BittensorWarningDrawer setHasAckWarning={setHasAckWarning} />
       <SeekGetFeeDiscountsDrawer
         isOpen={seekDiscountDrawer.isOpen}
-        onDismiss={() => {
-          seekDiscountDrawer.close()
-        }}
+        onDismiss={seekDiscountDrawer.close}
         onCloseModal={close}
-        containerId={MODAL_CONTENT_CONTAINER_ID}
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
       />
-    </div>
+    </BittensorModalLayout>
   )
 }
 

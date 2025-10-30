@@ -1,10 +1,7 @@
-import { firstValueFrom } from "rxjs"
-
 import log from "../../log"
 import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import { getSubtensorStakingBalances$ } from "./bittensor/getSubtensorStakingBalances"
 import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
 import { buildNomPoolQueries } from "./queries/buildNomPoolQueries"
@@ -61,25 +58,6 @@ export const fetchBalances: IBalanceModule<
   // now for each balance that includes nomPoolStaking, we need to fetch the metadata for the pool
   const nomPoolQueries = buildNomPoolQueries(networkId, partialBalances, miniMetadata)
   const balances = await fetchRpcQueryPack(connector, networkId, nomPoolQueries)
-
-  // TODO ⚠️ dedupe locks
-
-  const subtensorBalances$ = getSubtensorStakingBalances$(
-    connector,
-    networkId,
-    balanceDefs,
-    miniMetadata,
-  )
-  const subtensorBalancesByAddress = await firstValueFrom(subtensorBalances$)
-
-  for (const [address, subtensorBalances] of Object.entries(subtensorBalancesByAddress)) {
-    const balance = balances.find((b) => b.address === address)
-    if (balance?.values)
-      balance.values = [
-        ...balance.values.filter(({ source }) => source !== "subtensor-staking"),
-        ...subtensorBalances,
-      ]
-  }
 
   return { success: balances, errors: [] }
 }
