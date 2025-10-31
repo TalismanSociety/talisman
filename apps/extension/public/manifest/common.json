@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "author": "Talisman",
   "name": "Talisman Wallet",
-  "description": "Talisman is an open-source crypto wallet that makes web3 simple for beginners and unlocks superpowers for pros.",
+  "description": "The self-custody wallet for the next era of intelligent DeFi. One unified portfolio for Ethereum, Solana, Bittensor, Polkadot, and more.",
   "version": "latest",
   "action": {
     "default_title": "Talisman",
