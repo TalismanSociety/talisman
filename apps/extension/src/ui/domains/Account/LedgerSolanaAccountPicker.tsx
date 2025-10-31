@@ -42,12 +42,12 @@ const useLedgerSolanaAccounts = (
     refAddressCache.current = {} // reset if app changes
   }, [])
 
-  const evmNetworks = useNetworks({
-    platform: "ethereum",
+  const solNetworks = useNetworks({
+    platform: "solana",
     activeOnly: true,
     includeTestnets: false,
   })
-  const withBalances = useMemo(() => !!evmNetworks.length, [evmNetworks])
+  const withBalances = useMemo(() => !!solNetworks.length, [solNetworks])
 
   // keep page index as ref to allow for cancelling current page load when changing page
   const refPageIndex = useRef(pageIndex)
@@ -122,7 +122,7 @@ const useLedgerSolanaAccounts = (
       withBalances && derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts.filter(isNotNil).map(
             ({ address }): Account => ({
-              type: "ledger-ethereum",
+              type: "ledger-solana",
               address,
               name: "",
               createdAt: Date.now(),
