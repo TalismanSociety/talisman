@@ -1,5 +1,6 @@
 import { Balances } from "@talismn/balances"
 import { SubDTaoToken } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
 import { ZapOffIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -7,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
@@ -18,12 +20,15 @@ export const BittensorUnstakeToolbarButton: FC<{ balances: Balances; className?:
   const { t } = useTranslation()
   const { open } = useBittensorBondModal()
   const bittensorNetworkIds = useBittensorNetworkIds()
+  const accounts = useAccounts("owned")
 
   const openArgs = useMemo<BittensorStakingWizardOpenOptions | null>(() => {
     const balance = balances.each
       .filter(
         (b) =>
-          b.token?.type === "substrate-dtao" && bittensorNetworkIds.includes(b.token.networkId),
+          b.token?.type === "substrate-dtao" &&
+          bittensorNetworkIds.includes(b.token.networkId) &&
+          accounts.some((a) => isAddressEqual(a.address, b.address)),
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 
@@ -35,7 +40,7 @@ export const BittensorUnstakeToolbarButton: FC<{ balances: Balances; className?:
           stakeDirection: "unbond",
         }
       : null
-  }, [balances, bittensorNetworkIds])
+  }, [accounts, balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
