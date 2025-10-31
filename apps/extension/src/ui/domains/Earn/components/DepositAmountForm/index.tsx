@@ -3,7 +3,7 @@ import { FormEvent, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { DepositWizardPage, useDepositWizard } from "../../context/DepositWizardContext"
+import { useDepositWizard } from "../../context/DepositWizardContext"
 import { DepositProvider } from "../DepositProvider"
 import { useDepositFunds } from "../useDepositFunds"
 import { AddressPillButton } from "./AddressPillButton"
@@ -57,14 +57,7 @@ interface DepositAmountFormProps {
 
 export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
   const { t } = useTranslation()
-  const { account, goto } = useDepositWizard()
-
-  const handleGotoClick = useCallback(
-    (page: DepositWizardPage) => () => {
-      goto(page)
-    },
-    [goto],
-  )
+  const { account } = useDepositWizard()
 
   // we use a form for enter keypress to trigger submit button, but we don't want form to be actually submitted
   const handleSubmit = useCallback((e: FormEvent) => {
@@ -84,11 +77,7 @@ export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
               <div className="flex w-full items-center justify-between gap-4">
                 <div className="text-grey-400">{t("Account")}</div>
                 <div>
-                  <AddressPillButton
-                    className="!w-full"
-                    address={account}
-                    onClick={handleGotoClick("amount")}
-                  />
+                  <AddressPillButton className="!w-full" address={account} onClick={() => {}} />
                 </div>
               </div>
             </Container>
