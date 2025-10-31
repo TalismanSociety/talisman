@@ -1,5 +1,21 @@
 # @talismn/balances
 
+## 1.1.0
+
+### Minor Changes
+
+- 75fb494: dtao tokens and balance modules
+
+### Patch Changes
+
+- Updated dependencies [c883b67]
+- Updated dependencies [75fb494]
+- Updated dependencies [165749d]
+- Updated dependencies [72a1fa6]
+  - @talismn/chaindata-provider@1.2.0
+  - @talismn/token-rates@3.0.10
+  - @talismn/chain-connectors@0.0.8
+
 ## 1.0.9
 
 ### Patch Changes

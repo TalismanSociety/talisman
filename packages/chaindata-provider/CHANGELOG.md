@@ -1,5 +1,16 @@
 # @talismn/chaindata-provider
 
+## 1.2.0
+
+### Minor Changes
+
+- 75fb494: dtao tokens and balance modules
+
+### Patch Changes
+
+- c883b67: generate init data
+- 165749d: update init data
+
 ## 1.1.6
 
 ### Patch Changes

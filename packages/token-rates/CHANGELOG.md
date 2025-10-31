@@ -1,5 +1,15 @@
 # @talismn/token-rates
 
+## 3.0.10
+
+### Patch Changes
+
+- 72a1fa6: fix: tao <> tao rate
+- Updated dependencies [c883b67]
+- Updated dependencies [75fb494]
+- Updated dependencies [165749d]
+  - @talismn/chaindata-provider@1.2.0
+
 ## 3.0.9
 
 ### Patch Changes
