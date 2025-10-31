@@ -52,6 +52,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingContractNetworkId: "",
     stakingContractAddress: "0x",
     webAppStakingPath: "",
+    stakingEarlyRewardBoost: "",
     discountTiers: [
       {
         tier: 0,
