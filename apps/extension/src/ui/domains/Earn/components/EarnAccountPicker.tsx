@@ -1,12 +1,13 @@
+import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
 
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useAccounts, useBalances } from "@ui/state"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { EarnAccountsList } from "./EarnAccountsList"
@@ -27,25 +28,16 @@ export const EarnAccountPicker: FC<EarnAccountPickerProps> = ({
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
+  const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
+
   // Get owned accounts only (excludes watch accounts)
   const allAccounts = useAccounts("owned")
-  const balances = useBalances()
 
-  // Filter accounts by search and token balance
+  // Filter accounts by search
   const accounts = useMemo(() => {
-    return allAccounts
-      .filter((account) => !search || account.name?.toLowerCase().includes(search))
-      .map((account) => {
-        const balance = balances.find({ address: account.address, tokenId }).sorted[0]
-        return {
-          address: account.address,
-          name: account.name,
-          genesisHash: getAccountGenesisHash(account),
-          balance,
-        }
-      })
-    // Remove the filter - show all accounts, EarnAccountsList will disable those without balance
-  }, [allAccounts, search, balances, tokenId])
+    return allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search))
+  }, [allAccounts, search])
 
   const handleSelect = useCallback(
     (address: string) => {
@@ -77,11 +69,25 @@ export const EarnAccountPicker: FC<EarnAccountPickerProps> = ({
             <XIcon />
           </IconButton>
         </header>
-        <div className="grow overflow-hidden p-12 pt-0">
-          <div className="flex min-h-fit w-full items-center gap-8 pb-8">
-            <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
+        <div className="grow overflow-hidden pb-12 pt-0">
+          <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
+            <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+              <div className="mx-1 grow overflow-hidden px-1">
+                <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
+              </div>
+            </div>
+            <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+              <EarnAccountsList
+                accounts={accounts}
+                genesisHash={getNetworkGenesisHash(network)}
+                selected={undefined}
+                onSelect={handleSelect}
+                showBalances
+                tokenId={tokenId}
+                showIfEmpty
+              />
+            </ScrollContainer>
           </div>
-          <EarnAccountsList accounts={accounts} tokenId={tokenId} onSelect={handleSelect} />
         </div>
       </div>
     </Modal>

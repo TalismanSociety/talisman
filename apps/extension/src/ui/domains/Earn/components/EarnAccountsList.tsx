@@ -1,78 +1,101 @@
 import { Balance } from "@talismn/balances"
-import { planckToTokens } from "@talismn/util"
-import { FC } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useBalances, useToken } from "@ui/state"
+
+import { AccountRow } from "../../SendFunds/AccountRow"
 
 export type AccountWithBalance = {
   address: string
   name?: string
-  genesisHash?: string
+  genesisHash?: `0x${string}` | null
   balance?: Balance
 }
 
 type EarnAccountsListProps = {
   accounts: AccountWithBalance[]
-  tokenId: string
-  onSelect: (address: string) => void
+  genesisHash?: `0x${string}` | null
+  noFormat?: boolean
+  selected?: string | null
+  onSelect?: (address: string) => void
+  header?: ReactNode
+  allowZeroBalance?: boolean
+  showIfEmpty?: boolean
+  showBalances?: boolean
+  tokenId?: string
 }
 
 export const EarnAccountsList: FC<EarnAccountsListProps> = ({
+  selected,
   accounts,
-  tokenId: _tokenId,
+  noFormat,
+  genesisHash,
   onSelect,
+  header,
+  allowZeroBalance,
+  showIfEmpty,
+  showBalances,
+  tokenId,
 }) => {
-  const { t: _t } = useTranslation()
+  const { t } = useTranslation()
+  const handleAccountClick = useCallback(
+    (address: string) => () => {
+      onSelect?.(address)
+    },
+    [onSelect],
+  )
+
+  const token = useToken(tokenId)
+  const balances = useBalances()
+
+  const accountsWithBalance = useMemo(() => {
+    return accounts
+      .map((account) => ({
+        ...account,
+        balance: balances.find({ address: account.address, tokenId }).sorted[0],
+      }))
+      .sort((a, b) => {
+        // selected account first
+        if (a.address === selected) return -1
+        if (b.address === selected) return 1
+
+        // then accounts by descending balance
+        const balanceA = a.balance?.transferable.planck ?? 0n
+        const balanceB = b.balance?.transferable.planck ?? 0n
+        if (balanceA > balanceB) return -1
+        if (balanceA < balanceB) return 1
+        return 0
+      })
+      .map((account) => ({
+        ...account,
+        disabled: !account.balance || account.balance.transferable.planck === 0n,
+      }))
+  }, [accounts, balances, selected, tokenId])
+
+  if (!showIfEmpty && !accounts?.length) return null
 
   return (
-    <div className="bg-black-secondary border-grey-700 scrollable w-full grow">
-      {accounts.map((account) => {
-        // Account is enabled if it has a non-zero balance for the token
-        const hasNonZeroBalance = !!account.balance && account.balance.transferable.planck > 0n
-        const disabled = !hasNonZeroBalance
-
-        return (
-          <button
-            key={account.address}
-            type="button"
-            onClick={() => !disabled && onSelect(account.address)}
-            disabled={disabled}
-            className={`text-body-secondary hover:text-body focus:text-body flex h-28 w-full items-center gap-6 px-12 text-left disabled:opacity-50`}
-          >
-            <div className="flex flex-col justify-center">
-              <AccountIcon
-                address={account.address}
-                genesisHash={account.genesisHash as `0x${string}` | null}
-              />
-            </div>
-            <div className="flex grow flex-col gap-2 overflow-hidden">
-              <div className="text-body truncate">{account.name}</div>
-              <div className="text-body-secondary truncate text-sm font-light">
-                {shortenAddress(account.address)}
-              </div>
-            </div>
-            <div className="flex flex-col items-end">
-              <div>
-                <Tokens
-                  amount={planckToTokens(
-                    account.balance?.transferable.planck?.toString() ?? "0",
-                    account.balance?.token?.decimals ?? 0,
-                  )}
-                  symbol={account.balance?.token?.symbol}
-                  decimals={account.balance?.token?.decimals}
-                />
-              </div>
-              <div className="text-body-secondary text-xs">
-                <Fiat amount={account.balance?.transferable} />
-              </div>
-            </div>
-          </button>
-        )
-      })}
+    <div>
+      {!!header && <div className="text-body-secondary mb-4 mt-8 px-12 font-bold">{header}</div>}
+      {accountsWithBalance?.map((account) => (
+        <AccountRow
+          selected={account.address === selected}
+          key={account.address}
+          account={account}
+          genesisHash={genesisHash}
+          noFormat={noFormat}
+          onClick={handleAccountClick(account.address)}
+          showBalances={showBalances}
+          token={token}
+          disabled={!allowZeroBalance && account.disabled}
+        />
+      ))}
+      {!accounts?.length && (
+        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+          {t("No account matches your search")}
+        </div>
+      )}
     </div>
   )
 }
