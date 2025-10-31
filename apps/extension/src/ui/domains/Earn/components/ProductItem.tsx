@@ -11,7 +11,7 @@ interface ProductItemProps {
   onClick: (product: YieldDto) => void
 }
 
-const ProductTokenLogo: FC<{
+export const ProductTokenLogo: FC<{
   protocolLogo: string | null
   tokenId?: string
   className?: string

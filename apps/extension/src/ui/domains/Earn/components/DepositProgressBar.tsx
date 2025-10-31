@@ -4,13 +4,23 @@ import { FC } from "react"
 interface DepositProgressBarProps {
   currentStep: number
   tokenSymbol: string
+  labels?: [string, string]
 }
 
-export const DepositProgressBar: FC<DepositProgressBarProps> = ({ currentStep, tokenSymbol }) => {
-  const steps = [
-    { id: 1, name: `Approve ${tokenSymbol}` },
-    { id: 2, name: `Deposit ${tokenSymbol}` },
-  ]
+export const DepositProgressBar: FC<DepositProgressBarProps> = ({
+  currentStep,
+  tokenSymbol,
+  labels,
+}) => {
+  const steps = labels
+    ? [
+        { id: 1, name: labels[0] },
+        { id: 2, name: labels[1] },
+      ]
+    : [
+        { id: 1, name: `Approve ${tokenSymbol}` },
+        { id: 2, name: `Deposit ${tokenSymbol}` },
+      ]
 
   return (
     <div className="flex flex-col items-center">

@@ -160,6 +160,18 @@ class YieldSDKService {
       arguments: args,
     })
   }
+
+  /**
+   * Exit yield position (withdraw funds)
+   */
+  async exitYield(yieldId: string, address: string, args: ActionArgumentsDto | undefined) {
+    this.ensureConfigured()
+    return sdk.api.exitYield({
+      yieldId,
+      address,
+      arguments: args,
+    })
+  }
 }
 
 export const yieldSdk = new YieldSDKService()

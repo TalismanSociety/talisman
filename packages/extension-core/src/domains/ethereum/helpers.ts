@@ -247,20 +247,27 @@ export const getTransactionSerializable = (
 
 const TX_GAS_LIMIT_DEFAULT = 250000n
 const TX_GAS_LIMIT_MIN = 21000n
-const TX_GAS_LIMIT_SAFETY_RATIO = 2n
+const TX_GAS_LIMIT_SAFETY_RATIO = 2n // 2% safety margin for standard networks
+const TX_GAS_LIMIT_SAFETY_RATIO_L2 = 10n // 10% safety margin for L2 networks (OP Stack, Scroll, etc.)
 
 export const getGasLimit = (
   blockGasLimit: bigint,
   estimatedGas: bigint,
   tx: TransactionRequestBase | undefined,
   isContractCall?: boolean,
+  isL2Network?: boolean,
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const suggestedGasLimit = tx?.gas ?? 0n
-  // for contract calls, gas cost can evolve overtime : add a safety margin
-  const safeGasLimit = isContractCall
-    ? (estimatedGas * (100n + TX_GAS_LIMIT_SAFETY_RATIO)) / 100n
-    : estimatedGas
+
+  // Use higher safety margin for L2 networks (they often have more variable gas costs)
+  const safetyRatio = isL2Network ? TX_GAS_LIMIT_SAFETY_RATIO_L2 : TX_GAS_LIMIT_SAFETY_RATIO
+
+  // Always add a safety margin for contract calls (gas cost can evolve over time)
+  // For L2 networks, always add safety margin even for non-contract calls due to L1 data fee variability
+  const safeGasLimit =
+    isContractCall || isL2Network ? (estimatedGas * (100n + safetyRatio)) / 100n : estimatedGas
+
   // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
   // so if dapp suggests higher gas limit as the estimate, use that
   const highestLimit = safeGasLimit > suggestedGasLimit ? safeGasLimit : suggestedGasLimit

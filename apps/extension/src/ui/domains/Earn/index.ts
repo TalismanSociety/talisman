@@ -1,4 +1,5 @@
 export { EarnPillButton } from "./EarnPillButton"
+export { WithdrawPillButton } from "./WithdrawPillButton"
 export { ProductSelectionModal } from "./components/ProductSelectionModal/ProductSelectionModal"
 export { ProductSelectionPage } from "./components/ProductSelectionPage"
 export { EarnAccountPickerPage } from "./components/EarnAccountPickerPage"

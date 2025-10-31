@@ -16,6 +16,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { ClaimPage } from "@ui/apps/popup/pages/Earn/Claim"
 import { ValidatorPickerPage } from "@ui/apps/popup/pages/Earn/ValidatorPicker"
+import { WithdrawPage } from "@ui/apps/popup/pages/Earn/Withdraw"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
@@ -133,6 +134,7 @@ const Popup = () => {
           <Route path="select-product/select-account" element={<EarnAccountPickerPageWrapper />} />
           <Route path="select-product/deposit/*" element={<DepositPage />} />
           <Route path="select-product/claim/*" element={<ClaimPage />} />
+          <Route path="select-product/withdraw/*" element={<WithdrawPage />} />
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>

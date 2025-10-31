@@ -15,10 +15,13 @@ import { useNetworkById, useTokens } from "@ui/state"
 
 import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"
+import { ConfirmWithdrawModal } from "../ConfirmWithdrawModal"
 import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldPosition } from "../hooks/useYieldPosition"
 import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 import { mapYieldInputTokenToTokenId } from "../utils/tokenMapping"
+import { WithdrawModal } from "../WithdrawModal"
+import { WithdrawPillButton } from "../WithdrawPillButton"
 
 export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
   const position = useYieldPosition(yieldId)
@@ -30,14 +33,19 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
   const [isConfirmClaimModalOpen, setIsConfirmClaimModalOpen] = useState(false)
   const [claimBalance, setClaimBalance] = useState<BalanceDto | null>(null)
 
+  // Withdraw modal state
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [isConfirmWithdrawModalOpen, setIsConfirmWithdrawModalOpen] = useState(false)
+  const [withdrawBalance, setWithdrawBalance] = useState<BalanceDto | null>(null)
+
   // Categorize balances on-the-fly
   const suppliedBalances = useMemo(
-    () => position?.balances.filter((b) => b.type !== "claimable") || [],
+    () => position?.balances.filter((b) => !["claimable", "exiting"].includes(b.type)) || [],
     [position],
   )
 
   const rewardBalances = useMemo(
-    () => position?.balances.filter((b) => b.type === "claimable") || [],
+    () => position?.balances.filter((b) => ["claimable"].includes(b.type)) || [],
     [position],
   )
 
@@ -84,6 +92,30 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
     setClaimBalance(null)
   }, [])
 
+  // Handle withdraw modal next
+  const handleWithdrawNext = useCallback(() => {
+    setIsWithdrawModalOpen(false)
+    setIsConfirmWithdrawModalOpen(true)
+  }, [])
+
+  // Handle withdraw modal close
+  const handleWithdrawClose = useCallback(() => {
+    setIsWithdrawModalOpen(false)
+    setWithdrawBalance(null)
+  }, [])
+
+  // Handle confirm withdraw modal close
+  const handleConfirmWithdrawClose = useCallback(() => {
+    setIsConfirmWithdrawModalOpen(false)
+    setWithdrawBalance(null)
+  }, [])
+
+  // Handle withdraw click
+  const _handleWithdrawClick = useCallback((balance: BalanceDto) => {
+    setWithdrawBalance(balance)
+    setIsWithdrawModalOpen(true)
+  }, [])
+
   if (!position) return null
 
   return (
@@ -93,8 +125,16 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
         onAddToPosition={handleAddToPosition}
         onClaimClick={handleClaimClick}
       />
-      <YieldPositionSection balances={suppliedBalances} title="Supplied" />
-      <YieldPositionSection balances={rewardBalances} title="Rewards" />
+      <YieldPositionSection
+        balances={suppliedBalances}
+        title="Supplied"
+        onWithdraw={_handleWithdrawClick}
+      />
+      <YieldPositionSection
+        balances={rewardBalances}
+        title="Rewards"
+        // No onWithdraw prop - rewards section won't show withdraw button
+      />
       <div className="flex w-full justify-end">
         <YieldPositionActionButtons
           position={position}
@@ -124,6 +164,36 @@ export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yi
           account={claimBalance.address}
           balance={claimBalance}
           validatorAddress={position.validatorAddress}
+        />
+      )}
+
+      {/* Withdraw Modals */}
+      {isWithdrawModalOpen && withdrawBalance && (
+        <WithdrawModal
+          isOpen={isWithdrawModalOpen}
+          onClose={handleWithdrawClose}
+          onNext={handleWithdrawNext}
+          yieldId={position.yieldId}
+          account={withdrawBalance.address}
+          balance={withdrawBalance}
+          validatorAddress={
+            (withdrawBalance as BalanceDto & { validator?: { address?: string } }).validator
+              ?.address || undefined
+          }
+        />
+      )}
+
+      {isConfirmWithdrawModalOpen && withdrawBalance && (
+        <ConfirmWithdrawModal
+          isOpen={isConfirmWithdrawModalOpen}
+          onClose={handleConfirmWithdrawClose}
+          yieldId={position.yieldId}
+          account={withdrawBalance.address}
+          balance={withdrawBalance}
+          validatorAddress={
+            (withdrawBalance as BalanceDto & { validator?: { address?: string } }).validator
+              ?.address || undefined
+          }
         />
       )}
     </div>
@@ -222,13 +292,6 @@ const YieldPositionHeader: FC<{
                 Claim {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
               </ContextMenuItem>
             )}
-            <ContextMenuItem
-              onClick={() => {
-                // TODO: Implement withdraw
-              }}
-            >
-              Withdraw
-            </ContextMenuItem>
             {coingeckoUrl && (
               <ContextMenuItem onClick={handleViewOnCoingeckoClick}>
                 View on CoinGecko
@@ -300,7 +363,8 @@ const YieldPositionActionButtons: FC<{
 const YieldPositionSection: FC<{
   balances: BalanceDto[]
   title: string
-}> = ({ balances, title }) => {
+  onWithdraw?: (balance: BalanceDto) => void
+}> = ({ balances, title, onWithdraw }) => {
   if (!balances.length) return null
 
   return (
@@ -309,7 +373,7 @@ const YieldPositionSection: FC<{
         <div className="truncate px-8 text-base font-bold text-white">{title}</div>
       </div>
       {balances.map((balance, idx) => (
-        <YieldPositionItemRow key={idx} balance={balance} />
+        <YieldPositionItemRow key={idx} balance={balance} onWithdraw={onWithdraw} />
       ))}
     </div>
   )
@@ -317,14 +381,15 @@ const YieldPositionSection: FC<{
 
 const YieldPositionItemRow: FC<{
   balance: BalanceDto
-}> = ({ balance }) => {
+  onWithdraw?: (balance: BalanceDto) => void
+}> = ({ balance, onWithdraw }) => {
   return (
-    <div className="flex h-[6.6rem] w-full items-center gap-8 overflow-hidden px-8">
+    <div className="hover:bg-grey-800/20 group relative flex h-[6.6rem] w-full items-center gap-8 overflow-hidden px-8">
       <AssetLogo url={balance.token.logoURI} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center justify-between gap-8 overflow-hidden font-bold">
           <div className="grow truncate">{balance.token.symbol}</div>
-          <div className="max-w-[50%] truncate">
+          <div className="max-w-[50%] truncate group-hover:hidden">
             {formatDecimals(balance.amount)} {balance.token.symbol}
           </div>
         </div>
@@ -332,11 +397,16 @@ const YieldPositionItemRow: FC<{
           <div className="grow truncate">
             <PortfolioAccount address={balance.address} />
           </div>
-          <div className="shrink-0">
+          <div className="shrink-0 group-hover:hidden">
             <FiatFromUsd amount={parseFloat(balance.amountUsd || "0")} isBalance />
           </div>
         </div>
       </div>
+      {onWithdraw && (
+        <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-row items-center justify-center gap-2 group-hover:flex">
+          <WithdrawPillButton onClick={() => onWithdraw(balance)} />
+        </div>
+      )}
     </div>
   )
 }

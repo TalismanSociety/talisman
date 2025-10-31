@@ -34,6 +34,23 @@ class YieldApiService {
   }
 
   /**
+   * Exit yield position and get unsigned transactions
+   */
+  async exit(request: CreateActionDto): Promise<ActionDto> {
+    try {
+      log.debug("[Yield API] Creating exit intent via SDK", { yieldId: request.yieldId })
+
+      const result = await yieldSdk.exitYield(request.yieldId, request.address, request.arguments)
+
+      log.debug("[Yield API] Exit intent created", { result })
+      return result as ActionDto
+    } catch (error) {
+      log.error("[Yield API] Failed to create exit intent", { error, request })
+      throw error
+    }
+  }
+
+  /**
    * Submit transaction hash after broadcasting
    */
   async submitHash(transactionId: string, request: SubmitHashDto): Promise<TransactionDto> {

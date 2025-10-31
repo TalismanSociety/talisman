@@ -1,80 +1,59 @@
-import { YieldBalancesDtoWithProduct, YieldPosition } from "./types"
+import { mapYieldNetworkToNetworkId } from "./networkMapping"
+import { BalanceDto, YieldBalancesDtoWithProduct, YieldPosition } from "./types"
 
-// Helper function to map Yield.xyz network to Talisman network ID
-function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
-  switch (yieldNetwork) {
-    case "ethereum":
-      return "1"
-    case "base":
-      return "8453"
-    case "arbitrum":
-      return "42161"
-    case "optimism":
-      return "10"
-    case "polygon":
-      return "137"
-    case "gnosis":
-      return "100"
-    case "avalanche-c":
-      return "43114"
-    case "binance":
-      return "56"
-    case "fantom":
-      return "250"
-    case "celo":
-      return "42220"
-    case "moonriver":
-      return "1285"
-    case "harmony":
-      return "1666600000"
-    case "okc":
-      return "66"
-    case "core":
-      return "1116"
-    case "sonic":
-      return "146"
-    case "katana":
-      return "1807"
-    case "polkadot":
-      return "polkadot"
-    case "kusama":
-      return "kusama"
-    case "westend":
-      return "westend"
-    case "solana":
-      return "solana-mainnet"
-    case "near":
-      return "near"
-    case "cardano":
-      return "cardano"
-    case "stellar":
-      return "stellar"
-    case "tezos":
-      return "tezos"
-    case "tron":
-      return "tron"
-    case "ton":
-      return "ton"
-    default:
-      return undefined
+// Helper function to safely extract validatorAddress from an item
+function getValidatorAddressFromItem(item: YieldBalancesDtoWithProduct): string | undefined {
+  // Check if item has validatorAddress property
+  const itemWithUnknown = item as unknown as Record<string, unknown>
+  if ("validatorAddress" in item && typeof itemWithUnknown.validatorAddress === "string") {
+    return itemWithUnknown.validatorAddress
   }
+  return undefined
+}
+
+// Helper function to safely extract validatorAddress from a balance
+function getValidatorAddressFromBalance(balance: BalanceDto): string | undefined {
+  // Check if balance has validatorAddress property
+  const balanceWithUnknown = balance as unknown as Record<string, unknown>
+  if ("validatorAddress" in balance && typeof balanceWithUnknown.validatorAddress === "string") {
+    return balanceWithUnknown.validatorAddress
+  }
+  // Check if balance has validator object with address property
+  if ("validator" in balance && balance.validator) {
+    const validatorWithUnknown = balance.validator as unknown as Record<string, unknown>
+    if (
+      typeof validatorWithUnknown === "object" &&
+      "address" in validatorWithUnknown &&
+      typeof validatorWithUnknown.address === "string"
+    ) {
+      return validatorWithUnknown.address
+    }
+  }
+  return undefined
 }
 
 export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): YieldPosition[] => {
   const positions: YieldPosition[] = []
 
-  // Group items by yieldId to combine multi-validator stakes
-  const itemsByYieldId = new Map<string, YieldBalancesDtoWithProduct[]>()
+  // Group items by yieldId and validatorAddress to preserve validator information
+  const itemsByYieldAndValidator = new Map<string, YieldBalancesDtoWithProduct[]>()
 
   for (const item of items) {
-    if (!itemsByYieldId.has(item.yieldId)) {
-      itemsByYieldId.set(item.yieldId, [])
+    // Create a key that includes both yieldId and validatorAddress (if available)
+    // For items without validator info, we'll use yieldId only
+    const validatorAddress =
+      getValidatorAddressFromItem(item) ||
+      (item.balances[0] ? getValidatorAddressFromBalance(item.balances[0]) : undefined)
+    const key = validatorAddress ? `${item.yieldId}-${validatorAddress}` : item.yieldId
+
+    if (!itemsByYieldAndValidator.has(key)) {
+      itemsByYieldAndValidator.set(key, [])
     }
-    itemsByYieldId.get(item.yieldId)!.push(item)
+    itemsByYieldAndValidator.get(key)!.push(item)
   }
 
-  for (const [_yieldId, yieldItems] of itemsByYieldId) {
-    // Combine all balances from all items with the same yieldId
+  for (const [key, yieldItems] of itemsByYieldAndValidator) {
+    // Combine all balances from all items with the same yieldId and validator
     const allBalances = yieldItems
       .flatMap((item) => item.balances)
       .filter((balance) => !balance.token.isPoints)
@@ -91,10 +70,17 @@ export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): Yiel
     // Get display name - always use product metadata name
     const displayName = firstItem.product?.metadata.name || "Yield Position"
 
+    // Extract validatorAddress from the key or from the first balance's validator.address
+    const validatorAddress = key.includes("-")
+      ? key.split("-")[1]
+      : getValidatorAddressFromItem(firstItem) ||
+        getValidatorAddressFromBalance(firstBalance) ||
+        undefined
+
     positions.push({
       ...firstItem,
       balances: allBalances,
-      validatorAddress: undefined, // No specific validator for multi-validator positions
+      validatorAddress, // Preserve validator address if available
       displayName,
       totalAmountUsd,
       networkId:
