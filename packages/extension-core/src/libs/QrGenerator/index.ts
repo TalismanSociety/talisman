@@ -28,6 +28,25 @@ const getEncryptionForChain = (chain: DotNetwork) => {
   }
 }
 
+const getSignatureTypeForChain = (chain: DotNetwork) => {
+  // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
+  switch (chain.account) {
+    case "secp256k1":
+      return 2
+    default:
+      return 1
+  }
+}
+
+const getCurveForChain = (chain: DotNetwork) => {
+  switch (chain.account) {
+    case "secp256k1":
+      return "ecdsa"
+    default:
+      return "sr25519"
+  }
+}
+
 export const getVerifierMnemonic = async () => {
   const pw = await passwordStore.getPassword()
   assert(pw, "Unauthorised")
@@ -39,12 +58,13 @@ export const getVerifierMnemonic = async () => {
   return keyringStore.getMnemonicText(mnemonicId, pw)
 }
 
-const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
+const signWithVerifierCertMnemonic = async (unsigned: Uint8Array, network: DotNetwork) => {
   try {
     const mnemonic = await getVerifierMnemonic()
+    const curve = getCurveForChain(network)
 
     const keyring = new Keyring()
-    const signingPair = keyring.createFromUri(mnemonic, {}, "sr25519")
+    const signingPair = keyring.createFromUri(mnemonic, {}, curve)
 
     // For network specs, sign the specs (not the entire payload)
     const { type, publicKey } = signingPair
@@ -97,17 +117,18 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
 
   try {
     // eslint-disable-next-line no-var
-    var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(specs, chain)
   } catch (e) {
     log.error("Failed to sign network specs", e)
     throw new Error("Failed to sign network specs")
   }
 
+  const sigType = getSignatureTypeForChain(chain)
+
   return u8aToU8a(
     u8aConcat(
       new Uint8Array([0x53]), // 53 = update
-      // our root account signs using sr25519
-      new Uint8Array([0x01]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
+      new Uint8Array([sigType]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
       new Uint8Array([0xc1]), // c1 = add_specs
       publicKey,
       payload,
@@ -147,17 +168,18 @@ export const generateQrUpdateNetworkMetadata = async (
   })
   try {
     // eslint-disable-next-line no-var
-    var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(payload, chain)
   } catch (e) {
     log.error("Failed to sign network metadata", e)
     throw new Error("Failed to sign network metadata")
   }
 
+  const sigType = getSignatureTypeForChain(chain)
+
   return u8aToU8a(
     u8aConcat(
       new Uint8Array([0x53]), // 0x53 = update
-      // our root account signs using sr25519
-      new Uint8Array([0x01]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
+      new Uint8Array([sigType]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
       new Uint8Array([0x80]), // 0x80 = load_metadata
       publicKey,
       payload,

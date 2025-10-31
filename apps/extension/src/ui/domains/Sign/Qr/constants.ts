@@ -1,5 +1,8 @@
 export const PV_PREFIX_SUBSTRATE = new Uint8Array([0x53])
+export const PV_PREFIX_CRYPTO_ED25519 = new Uint8Array([0x00])
 export const PV_PREFIX_CRYPTO_SR25519 = new Uint8Array([0x01])
+export const PV_PREFIX_CRYPTO_ECDSA = new Uint8Array([0x02])
+export const PV_PREFIX_CRYPTO_ETHEREUM = new Uint8Array([0x03])
 
 // Commands for Polkadot Vault QR codes:
 // 0x00	legacy mortal transaction

@@ -2,6 +2,7 @@ import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { TypeRegistry } from "@polkadot/types"
 import { u8aConcat, u8aToU8a } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
+import { isEthereumAddress } from "@talismn/crypto"
 import { fromHex } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 import {
@@ -19,6 +20,7 @@ import {
   PV_CMD_SIGN_MESSAGE,
   PV_CMD_SIGN_TX,
   PV_CMD_SIGN_TX_WITH_PROOF,
+  PV_PREFIX_CRYPTO_ETHEREUM,
   PV_PREFIX_CRYPTO_SR25519,
   PV_PREFIX_SUBSTRATE,
 } from "./constants"
@@ -57,7 +59,7 @@ const getQrSignPayload = (
   if (isRawPayload(payload))
     return u8aConcat(
       PV_PREFIX_SUBSTRATE,
-      PV_PREFIX_CRYPTO_SR25519,
+      isEthereumAddress(account.address) ? PV_PREFIX_CRYPTO_ETHEREUM : PV_PREFIX_CRYPTO_SR25519,
       PV_CMD_SIGN_MESSAGE,
       decodeAddress(account.address),
       wrapBytes(payload.data),
