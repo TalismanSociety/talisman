@@ -29,10 +29,6 @@ import { TokenPillButton } from "./TokenPillButton"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
   try {
-    // fixes the decimals and remove all leading/trailing zeros
-    // NOTE: BigNumber is used to correctly format the string for tiny numbers.
-    // `Number(0.000000123).toString()` becomes `1.23e-7`
-    // `BigNumber(0.000000123).toString(10)` becomes `0.000000123`
     return value ? BigNumber(Number(value).toFixed(decimals)).toString(10) : ""
   } catch (err) {
     log.error("normalizeStringNumber", { value, decimals, err })
@@ -40,21 +36,21 @@ const normalizeStringNumber = (value?: string | number | null, decimals = 18) =>
   }
 }
 
-const TokenInput = () => {
+const TokenInput = ({ inputRef }: { inputRef?: React.RefObject<HTMLInputElement> }) => {
   const { set, remove } = useDepositWizard()
   const { token, tokenId, deposit, maxAmount, isEstimatingMaxAmount, depositMax, amount } =
     useDepositFunds()
 
   const refTokensInput = useRef<HTMLInputElement>(null)
-  useInputAutoWidth(refTokensInput)
+  const finalRef = inputRef || refTokensInput
+  useInputAutoWidth(finalRef)
 
   useEffect(() => {
-    if (depositMax && refTokensInput.current && maxAmount?.tokens) {
+    if (depositMax && finalRef.current && maxAmount?.tokens) {
       const expectedInputValue = normalizeStringNumber(maxAmount.tokens, token?.decimals)
-      if (refTokensInput.current.value !== expectedInputValue)
-        refTokensInput.current.value = expectedInputValue
+      if (finalRef.current.value !== expectedInputValue) finalRef.current.value = expectedInputValue
     }
-  }, [amount, depositMax, token, maxAmount])
+  }, [amount, depositMax, token, maxAmount, finalRef])
 
   const defaultValue = useMemo(
     () =>
@@ -83,8 +79,8 @@ const TokenInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!depositMax && !deposit) refTokensInput.current?.focus()
-  }, [refTokensInput, depositMax, deposit])
+    if (!depositMax && !deposit) finalRef.current?.focus()
+  }, [finalRef, depositMax, deposit])
 
   return (
     <div
@@ -96,7 +92,7 @@ const TokenInput = () => {
       {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
       <input
         key="tokenInput"
-        ref={refTokensInput}
+        ref={finalRef}
         type="text"
         inputMode="decimal"
         defaultValue={defaultValue}
@@ -104,7 +100,7 @@ const TokenInput = () => {
         className={classNames(
           "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
           depositMax && "placeholder:text-white",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          isEstimatingMaxAmount && "hidden",
         )}
         onChange={handleChange}
       />
@@ -113,21 +109,21 @@ const TokenInput = () => {
   )
 }
 
-const FiatInput = () => {
+const FiatInput = ({ inputRef }: { inputRef?: React.RefObject<HTMLInputElement> }) => {
   const { set, remove, depositMax } = useDepositWizard()
   const { token, deposit, maxAmount, tokenRates, isEstimatingMaxAmount } = useDepositFunds()
 
   const refFiatInput = useRef<HTMLInputElement>(null)
-  useInputAutoWidth(refFiatInput)
+  const finalRef = inputRef || refFiatInput
+  useInputAutoWidth(finalRef)
   const currency = useSelectedCurrency()
 
   useEffect(() => {
-    if (depositMax && refFiatInput.current && typeof maxAmount?.fiat(currency) === "number") {
+    if (depositMax && finalRef.current && typeof maxAmount?.fiat(currency) === "number") {
       const expectedInputValue = maxAmount?.fiat(currency)?.toString() ?? ""
-      if (refFiatInput.current.value !== expectedInputValue)
-        refFiatInput.current.value = expectedInputValue
+      if (finalRef.current.value !== expectedInputValue) finalRef.current.value = expectedInputValue
     }
-  }, [depositMax, currency, maxAmount])
+  }, [depositMax, currency, maxAmount, finalRef])
 
   const defaultValue = useMemo(
     () =>
@@ -161,22 +157,19 @@ const FiatInput = () => {
   return (
     <div
       className={classNames(
-        // display flex in reverse order to leverage peer css
         "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
         isEstimatingMaxAmount && "animate-pulse",
       )}
     >
       <input
         key="fiatInput"
-        ref={refFiatInput}
+        ref={finalRef}
         type="text"
         defaultValue={defaultValue}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
-        autoFocus={!depositMax && !deposit}
         placeholder={"0.00"}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          isEstimatingMaxAmount && "hidden",
         )}
         onChange={handleChange}
       />
@@ -255,19 +248,52 @@ export const DepositAmountErrorMessage = () => {
 export const AmountEdit = () => {
   const { t } = useTranslation()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { onDepositMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } =
-    useDepositFunds()
+  const { tokenRates, isEstimatingMaxAmount, maxAmount, token } = useDepositFunds()
+  const { set } = useDepositWizard()
+  const currency = useSelectedCurrency()
+
+  const tokenInputRef = useRef<HTMLInputElement | null>(null)
+  const fiatInputRef = useRef<HTMLInputElement | null>(null)
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
   }, [])
+
+  const handleMaxClick = useCallback(() => {
+    if (isTokenEdit) {
+      if (tokenInputRef.current && token && maxAmount?.tokens) {
+        tokenInputRef.current.value = maxAmount.tokens
+        // Directly update context for immediate fee estimation
+        set("amount", maxAmount.planck.toString())
+        // Trigger onChange so input handler runs
+        const event = new Event("input", { bubbles: true })
+        tokenInputRef.current.dispatchEvent(event)
+      }
+    } else {
+      if (fiatInputRef.current && token && tokenRates && maxAmount) {
+        const fiatValue = maxAmount.fiat(currency)
+        if (fiatValue !== null) {
+          fiatInputRef.current.value = fiatValue.toString()
+          // Directly update context for immediate fee estimation
+          set("amount", maxAmount.planck.toString())
+          // Trigger onChange so input handler runs
+          const event = new Event("input", { bubbles: true })
+          fiatInputRef.current.dispatchEvent(event)
+        }
+      }
+    }
+  }, [isTokenEdit, token, tokenRates, currency, maxAmount, set])
 
   return (
     <div className="w-full grow">
       {!!token && (
         <>
           <div className="flex h-[8rem] flex-col justify-end text-xl font-bold">
-            {isTokenEdit ? <TokenInput /> : <FiatInput />}
+            {isTokenEdit ? (
+              <TokenInput inputRef={tokenInputRef} />
+            ) : (
+              <FiatInput inputRef={fiatInputRef} />
+            )}
           </div>
           <div
             className={classNames(
@@ -288,7 +314,7 @@ export const AmountEdit = () => {
               </>
             )}
             <PillButton
-              onClick={onDepositMaxClick}
+              onClick={handleMaxClick}
               disabled={!maxAmount}
               size="xs"
               className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
