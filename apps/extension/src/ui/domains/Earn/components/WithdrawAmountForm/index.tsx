@@ -3,7 +3,7 @@ import { FormEvent, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { useWithdrawWizard, WithdrawWizardPage } from "../../context/WithdrawWizardContext"
+import { useWithdrawWizard } from "../../context/WithdrawWizardContext"
 import { useWithdrawFundsContext, WithdrawFundsProvider } from "../WithdrawFundsProvider"
 import { AddressPillButton } from "./AddressPillButton"
 import { AmountEdit, WithdrawAmountErrorMessage } from "./AmountEdit"
@@ -56,14 +56,7 @@ interface WithdrawAmountFormProps {
 }
 
 export const WithdrawAmountForm = ({ onNext }: WithdrawAmountFormProps) => {
-  const { account, goto, balance } = useWithdrawWizard()
-
-  const handleGotoClick = useCallback(
-    (page: WithdrawWizardPage) => () => {
-      goto(page)
-    },
-    [goto],
-  )
+  const { account, balance } = useWithdrawWizard()
 
   // we use a form for enter keypress to trigger submit button, but we don't want form to be actually submitted
   const handleSubmit = useCallback((e: FormEvent) => {
@@ -83,7 +76,7 @@ export const WithdrawAmountForm = ({ onNext }: WithdrawAmountFormProps) => {
             <AssetRow />
             <div className="flex w-full items-center justify-between gap-4">
               <div className="text-grey-400">Account</div>
-              <AddressPillButton address={account} onClick={handleGotoClick("amount")} />
+              <AddressPillButton address={account} onClick={() => {}} />
             </div>
           </Container>
 

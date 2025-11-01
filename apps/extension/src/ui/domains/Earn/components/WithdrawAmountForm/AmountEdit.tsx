@@ -1,11 +1,9 @@
-import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { AlertCircleIcon } from "@talismn/icons"
+import { tokensToPlanck } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { log } from "extension-shared"
 import debounce from "lodash-es/debounce"
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
 
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
@@ -90,6 +88,7 @@ const TokenInput = () => {
           inputMode="decimal"
           placeholder="0"
           defaultValue={defaultValue}
+          readOnly
           onChange={handleChange}
           className="placeholder:text-grey-500 w-full bg-transparent text-right text-xl font-bold text-white outline-none"
           disabled={isEstimatingMaxAmount}
@@ -155,6 +154,7 @@ const FiatInput = () => {
           inputMode="decimal"
           placeholder="0"
           defaultValue={defaultValue}
+          readOnly
           onChange={handleChange}
           className="placeholder:text-grey-500 w-full bg-transparent text-right text-xl font-bold text-white outline-none"
           disabled={isEstimatingMaxAmount}
@@ -222,14 +222,8 @@ export const WithdrawAmountErrorMessage = () => {
 }
 
 export const AmountEdit = () => {
-  const { t } = useTranslation()
-  const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { onWithdrawMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } =
-    useWithdrawFundsContext()
-
-  const toggleIsTokenEdit = useCallback(() => {
-    setIsTokenEdit((prev) => !prev)
-  }, [])
+  const { tokenRates, token } = useWithdrawFundsContext()
+  const [isTokenEdit] = useState(true)
 
   return (
     <div className="w-full grow">
@@ -238,33 +232,11 @@ export const AmountEdit = () => {
           <div className="flex h-[8rem] flex-col justify-end text-xl font-bold">
             {isTokenEdit ? <TokenInput /> : <FiatInput />}
           </div>
-          <div
-            className={classNames(
-              "mt-4 flex max-w-full items-center justify-center gap-4",
-              isEstimatingMaxAmount && "invisible",
-            )}
-          >
-            {tokenRates && (
-              <>
-                {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
-                <PillButton
-                  onClick={toggleIsTokenEdit}
-                  size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
-                >
-                  <SwapIcon />
-                </PillButton>
-              </>
-            )}
-            <PillButton
-              onClick={onWithdrawMaxClick}
-              disabled={!maxAmount}
-              size="xs"
-              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
-            >
-              {t("Max")}
-            </PillButton>
-          </div>
+          {tokenRates && (
+            <div className="mt-4 flex max-w-full items-center justify-center gap-4">
+              {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
+            </div>
+          )}
           {/* Error message moved to parent form for single source of truth */}
         </>
       )}

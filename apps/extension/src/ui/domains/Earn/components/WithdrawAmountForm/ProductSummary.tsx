@@ -1,14 +1,32 @@
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
+
 import { useWithdrawFundsContext } from "../WithdrawFundsProvider"
 
 export const ProductSummary = () => {
+  const { t } = useTranslation()
   const { product } = useWithdrawFundsContext()
 
   if (!product) return null
 
+  const { metadata } = product
+
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">Protocol</div>
-      <div>{product.providerId || "Unknown"}</div>
+      <div className="text-grey-400">{t("Protocol")}</div>
+      <PillButton>
+        <div className="flex items-center gap-2 text-right">
+          <img
+            src={metadata.logoURI || undefined}
+            alt={metadata.name}
+            className="h-6 w-6 flex-shrink-0 rounded-full"
+            onError={(e) => {
+              e.currentTarget.style.display = "none"
+            }}
+          />
+          <div className="max-w-80 truncate text-white">{metadata.name}</div>
+        </div>
+      </PillButton>
     </div>
   )
 }
