@@ -58,11 +58,11 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
   const getCuratorInfo = () => {
     // This would need to be determined based on the product type
     // For now, we'll show the provider or a default
-    return product?.providerId || t("Auto-selected")
+    return product?.providerId || t("Not available")
   }
 
   const getReceiveInfo = (): string => {
-    return product?.outputToken?.symbol || ""
+    return product?.outputToken?.symbol || t("Not available")
   }
 
   return (
@@ -71,13 +71,13 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       <div className="flex flex-col gap-3">
         {/* Amount */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Amount")}</span>
-          <div className="flex w-full items-center justify-end gap-4 text-right">
-            <TokenLogo tokenId={token.id} className="text-sm" />
+          <span className="text-body-secondary text-sm">{t("Amount")}</span>
+          <div className="flex w-full items-center justify-end gap-8 text-right">
+            <TokenLogo tokenId={token.id} className="text-md" />
             <TokensAndFiat
               tokenId={token.id}
               planck={deposit.planck}
-              tokensClassName="text-white text-xs"
+              tokensClassName="text-white text-md"
               noCountUp
               noFiat
             />
@@ -86,11 +86,11 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
 
         {/* Account */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Account")}</span>
+          <span className="text-body-secondary text-sm">{t("Account")}</span>
           <AddressDisplay
             address={account.address}
             networkId={token.networkId}
-            className="text-xs"
+            className="text-sm"
             hideBlockExplorer
           />
         </div>
@@ -100,24 +100,24 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       <div className="bg-grey-800 h-0.5 w-full"></div>
 
       {/* Group 2: APY, Reward Frequency, and Withdrawal Time */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-6">
         {/* APY */}
-        <div className="!text-xs">
+        <div className="!text-sm">
           <ApyRow />
         </div>
 
         {/* Reward Frequency */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Reward Frequency")}</span>
-          <span className="text-body text-xs">
+          <span className="text-body-secondary text-sm">{t("Reward Frequency")}</span>
+          <span className="text-body text-sm">
             {formatRewardFrequency(product?.mechanics?.rewardSchedule || "")}
           </span>
         </div>
 
         {/* Withdrawal Time */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Withdrawal Time")}</span>
-          <span className="text-body text-xs">
+          <span className="text-body-secondary text-sm">{t("Withdrawal Time")}</span>
+          <span className="text-body text-sm">
             {formatWithdrawalTime(product?.mechanics?.cooldownPeriod)}
           </span>
         </div>
@@ -127,22 +127,22 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
       <div className="bg-grey-800 h-0.5 w-full"></div>
 
       {/* Group 3: Curator, Protocol, and Receive */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-6">
         {/* Curator */}
         <div className="flex items-center justify-between">
-          <span className="text-body-secondary text-xs">{t("Curator")}</span>
-          <span className="text-body text-xs">{getCuratorInfo()}</span>
+          <span className="text-body-secondary text-sm">{t("Curator")}</span>
+          <span className="text-body text-sm">{getCuratorInfo()}</span>
         </div>
 
-        <div className="!text-xs">
+        <div className="!text-sm">
           <ProtocolRow />
         </div>
 
         {/* Receive - only show if outputToken exists */}
         {product?.outputToken && (
           <div className="flex items-center justify-between">
-            <span className="text-body-secondary text-xs">{t("Receive")}</span>
-            <span className="text-body text-xs">{getReceiveInfo()}</span>
+            <span className="text-body-secondary text-sm">{t("Receive")}</span>
+            <span className="text-body text-sm">{getReceiveInfo()}</span>
           </div>
         )}
       </div>

@@ -99,7 +99,7 @@ export const EarnNetworkPicker: FC<EarnNetworkPickerProps> = ({
                         <img
                           src={network?.logo}
                           alt={network?.name}
-                          className="h-4 w-4 rounded-full"
+                          className="h-6 w-6 rounded-full"
                         />
                         {network?.isTestnet && (
                           <span className="bg-alert-warn/10 text-alert-warn rounded px-2 py-1 text-xs">
