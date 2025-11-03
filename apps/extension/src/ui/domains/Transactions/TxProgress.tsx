@@ -196,7 +196,7 @@ type TxProgressSubstrateProps = {
 }
 
 const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
-  const chain = useNetworkById(tx.id)
+  const chain = useNetworkById(tx.networkId)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
   return (
