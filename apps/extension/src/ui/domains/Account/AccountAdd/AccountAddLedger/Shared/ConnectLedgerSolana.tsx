@@ -12,7 +12,7 @@ export const ConnectLedgerSolana: FC<{
   const { getAddress } = useLedgerSolana()
 
   const isReadyCheck = useCallback(() => {
-    return getAddress(getSolLedgerDerivationPath())
+    return getAddress(getSolLedgerDerivationPath("ledger-live"))
   }, [getAddress])
 
   return (
