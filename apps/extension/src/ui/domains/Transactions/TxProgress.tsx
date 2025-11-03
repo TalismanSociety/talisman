@@ -1,11 +1,10 @@
 import { HexString } from "@polkadot/util/types"
-import { Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
 import { WalletTransaction, WalletTransactionDot, WalletTransactionEth } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
@@ -14,8 +13,8 @@ import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  const blockExplorerUrl = network?.blockExplorerUrls[0]
-  return blockExplorerUrl ? urlJoin(blockExplorerUrl, "tx", hash) : undefined
+  if (!network) return null
+  return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
@@ -139,7 +138,7 @@ type TxProgressBaseProps = {
   className?: string
   blockNumber?: string
   onClose?: () => void
-  href?: string
+  href?: string | null
 }
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {

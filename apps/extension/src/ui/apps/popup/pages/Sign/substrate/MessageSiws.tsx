@@ -76,7 +76,7 @@ const ViewDetailsContent: FC<{
             "You are about to sign in via Substrate. Please ensure you trust the application before continuing.",
           )}
         </p>
-        <ViewDetailsAddress label={t("From")} address={account.address} />
+        <ViewDetailsAddress label={t("From")} address={account.address} network={null} />
         <ViewDetailsField label={t("Domain")}>{request.domain}</ViewDetailsField>
         <ViewDetailsField label={t("Statement")}>{request.statement}</ViewDetailsField>
         {request.chainId && (

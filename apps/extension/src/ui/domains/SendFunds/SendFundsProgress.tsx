@@ -10,7 +10,6 @@ import {
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
@@ -18,8 +17,7 @@ import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  if (!network?.blockExplorerUrls.length) return undefined
-  return urlJoin(network.blockExplorerUrls[0], "tx", hash)
+  return getBlockExplorerUrls(network!, { type: "transaction", id: hash })[0] ?? null
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {

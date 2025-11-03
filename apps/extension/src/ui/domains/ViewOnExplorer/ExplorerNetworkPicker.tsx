@@ -1,10 +1,9 @@
-import { Network } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
 import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -80,8 +79,9 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
 
   const handleNetworkClick = useCallback(
     (network: Network) => () => {
-      if (!network.blockExplorerUrls.length) return
-      window.open(urlJoin(network.blockExplorerUrls[0], "address", address), "_blank")
+      const url = getBlockExplorerUrls(network, { type: "address", address })[0]
+      if (!url) return
+      window.open(url, "_blank")
       onClose()
     },
     [address, onClose],

@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerLabel, getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowRightIcon,
   LoaderIcon,
@@ -43,7 +43,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -263,7 +262,7 @@ const ActionButton = forwardRef<
 ActionButton.displayName = "ActionButton"
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
-const EvmTxActions: FC<{
+const TxActionsEth: FC<{
   tx: WalletTransactionEth
   enabled: boolean
   isOpen: boolean
@@ -276,6 +275,7 @@ const EvmTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
+  const network = useNetworkById(tx.networkId, "ethereum")
   const txInfo = tx.txInfo
   const canReplace = useCanReplaceTx(tx)
 
@@ -317,18 +317,10 @@ const EvmTxActions: FC<{
     if (IS_EMBEDDED_POPUP) window.close()
   }, [swapHref])
 
-  const hrefBlockExplorer = useMemo(
-    () =>
-      evmNetwork?.blockExplorerUrls[0]
-        ? urlJoin(evmNetwork.blockExplorerUrls[0], "tx", tx.hash)
-        : null,
-    [evmNetwork?.blockExplorerUrls, tx.hash],
-  )
-  const handleBlockExplorerClick = useCallback(() => {
-    if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [hrefBlockExplorer])
+  const blockExplorerUrls = useMemo(() => {
+    if (!network) return []
+    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
+  }, [network, tx])
 
   const { t } = useTranslation()
 
@@ -415,15 +407,19 @@ const EvmTxActions: FC<{
                 {t("View swap status")}
               </button>
             )}
-            {hrefBlockExplorer && (
+            {blockExplorerUrls.map((url) => (
               <button
+                key={url}
                 type="button"
-                onClick={handleBlockExplorerClick}
+                onClick={() => {
+                  window.open(url, "_blank")
+                  if (IS_EMBEDDED_POPUP) window.close()
+                }}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
-                {t("View on block explorer")}
+                {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
               </button>
-            )}
+            ))}
             <button
               type="button"
               onClick={handleActionClick("dismiss")}
@@ -718,7 +714,7 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
       actions={
-        <EvmTxActions
+        <TxActionsEth
           tx={tx}
           enabled={enabled}
           isOpen={isCtxMenuOpen}
@@ -779,16 +775,10 @@ const TxActionsDefault: FC<{
     if (IS_EMBEDDED_POPUP) window.close()
   }, [swapHref])
 
-  const hrefBlockExplorer = useMemo(
-    () =>
-      network?.blockExplorerUrls[0] ? urlJoin(network.blockExplorerUrls[0], "tx", tx.id) : null,
-    [network?.blockExplorerUrls, tx.id],
-  )
-  const handleBlockExplorerClick = useCallback(() => {
-    if (!hrefBlockExplorer) return
-    window.open(hrefBlockExplorer, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [hrefBlockExplorer])
+  const blockExplorerUrls = useMemo(() => {
+    if (!network) return []
+    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
+  }, [network, tx])
 
   const { t } = useTranslation()
 
@@ -832,15 +822,19 @@ const TxActionsDefault: FC<{
                 {t("View swap status")}
               </button>
             )}
-            {hrefBlockExplorer && (
+            {blockExplorerUrls.map((url) => (
               <button
+                key={url}
                 type="button"
-                onClick={handleBlockExplorerClick}
+                onClick={() => {
+                  window.open(url, "_blank")
+                  if (IS_EMBEDDED_POPUP) window.close()
+                }}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
-                {t("View on block explorer")}
+                {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
               </button>
-            )}
+            ))}
             <button
               type="button"
               onClick={handleActionClick("dismiss")}
