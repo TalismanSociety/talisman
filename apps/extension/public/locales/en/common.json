@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "wants you to sign in with Ethereum",
   "wants you to sign in with Substrate": "wants you to sign in with Substrate",
   "Warning": "Warning",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.",
   "Watch": "Watch",
   "Watch account": "Watch account",

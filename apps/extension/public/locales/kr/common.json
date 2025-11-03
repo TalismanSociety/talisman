@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "이더리움으로 서명하기를 원합니다",
   "wants you to sign in with Substrate": "서브스트레이트로 서명하기를 원합니다",
   "Warning": "경고",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "경고: 알파 토큰(루트 스테이킹 토큰 포함)은 대부분의 중앙화 거래소에서 지원되지 않습니다. 중앙화 거래소로 전송할 경우 자금이 손실될 수 있습니다.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "경고: 중앙화 거래소로 송금할 때 <Network /> 네트워크에서 자금을 수신할 것으로 예상되는지 확인하십시오. 잘못된 네트워크로 송금하면 자금이 손실됩니다.",
   "Watch": "시계",
   "Watch account": "계정 보기",

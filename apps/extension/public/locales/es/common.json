@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "quiere que inicies sesión con Ethereum",
   "wants you to sign in with Substrate": "quiere que inicies sesión con Substrate",
   "Warning": "Advertencia",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "Advertencia: Los tokens Alpha (incluidos los tokens root staked) no son compatibles con la mayoría de los exchanges centralizados. Enviar a un exchange centralizado resultará en la pérdida de fondos.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "Advertencia: Si envías a un intercambio centralizado, asegúrate de que espera recibir fondos en la red <Network />. Enviar a la red incorrecta resultará en la pérdida de fondos.",
   "Watch": "Observa",
   "Watch account": "Ver cuenta",

@@ -334,7 +334,7 @@
       "chainspecQrUrl": "https://metadata.novasama.io/qr/node-subtensor_specs.png",
       "latestMetadataQrUrl": "https://metadata.novasama.io/qr/node-subtensor_metadata_latest.apng",
       "prefix": 42,
-      "rpcs": ["wss://entrypoint-finney.opentensor.ai", "wss://lite.sub.latent.to"],
+      "rpcs": ["wss://lite.sub.latent.to", "wss://entrypoint-finney.opentensor.ai"],
       "hasCheckMetadataHash": true,
       "topology": {
         "type": "standalone"
@@ -1444,9 +1444,9 @@
       "platform": "polkadot",
       "networkId": "bittensor",
       "type": "substrate-dtao",
-      "symbol": "ъ",
+      "symbol": "ⴵ",
       "decimals": 9,
-      "name": "SN116 | TaoLend ъ",
+      "name": "SN116 | TaoLend ⴵ",
       "coingeckoId": "solmev",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/solmev.webp",
       "isDefault": true,
@@ -2182,12 +2182,12 @@
       "type": "substrate-dtao",
       "symbol": "ר",
       "decimals": 9,
-      "name": "SN49 | Polaris Cloud ר",
+      "name": "SN49 | Unknown ר",
       "coingeckoId": "polariscloud-ai",
       "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/tokens/coingecko/polariscloud-ai.webp",
       "isDefault": true,
       "netuid": 49,
-      "subnetName": "Polaris Cloud"
+      "subnetName": "Unknown"
     },
     {
       "id": "bittensor:substrate-dtao:5",
