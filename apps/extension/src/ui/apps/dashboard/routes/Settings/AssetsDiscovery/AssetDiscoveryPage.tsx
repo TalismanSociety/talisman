@@ -1,6 +1,13 @@
 import { bind } from "@react-rxjs/core"
 import { Address, BalanceFormatter } from "@talismn/balances"
-import { EthNetworkId, isTokenInTypes, Network, Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  EthNetworkId,
+  getBlockExplorerUrls,
+  isTokenInTypes,
+  Network,
+  Token,
+  TokenId,
+} from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
   DiamondIcon,
@@ -159,10 +166,10 @@ const useBlockExplorerUrl = (token: Token | null) => {
 
   return useMemo(() => {
     if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && network?.blockExplorerUrls[0])
-      return urlJoin(network.blockExplorerUrls[0], "token", token.contractAddress)
+      return getBlockExplorerUrls(network, { type: "address", address: token.contractAddress })[0]
 
     return null
-  }, [token, network?.blockExplorerUrls])
+  }, [token, network])
 }
 
 const useCoingeckoUrl = (token: Token | null) => {

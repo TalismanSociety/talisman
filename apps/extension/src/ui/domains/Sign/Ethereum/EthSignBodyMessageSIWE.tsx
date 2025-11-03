@@ -36,11 +36,7 @@ const ViewDetailsContent: FC<{
             "You are about to sign in via Ethereum. Please ensure you trust the application before continuing.",
           )}
         </p>
-        <ViewDetailsAddress
-          label={t("From")}
-          address={account.address}
-          blockExplorerUrl={evmNetwork?.blockExplorerUrls[0]}
-        />
+        <ViewDetailsAddress label={t("From")} address={account.address} network={evmNetwork} />
         <ViewDetailsField label={t("Domain")}>{siwe.domain}</ViewDetailsField>
         <ViewDetailsField label={t("Statement")}>{siwe.statement}</ViewDetailsField>
         <ViewDetailsField label={t("Network")}>

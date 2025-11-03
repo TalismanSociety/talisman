@@ -1,3 +1,4 @@
+import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
@@ -13,17 +14,27 @@ import { ViewDetailsField, ViewDetailsFieldProps } from "./ViewDetailsField"
 
 export const ViewDetailsAddress: FC<
   ViewDetailsFieldProps & {
+    network: Network | null | undefined
     address?: string
-    blockExplorerUrl?: string | null
-    chainPrefix?: number | null
   }
-> = ({ address, blockExplorerUrl, chainPrefix, ...fieldProps }) => {
+> = ({ address, network, ...fieldProps }) => {
   const account = useAccountByAddress(address)
 
   const formatted = useMemo(
-    () => (address ? encodeAnyAddress(address, { ss58Format: chainPrefix ?? undefined }) : ""),
-    [address, chainPrefix],
+    () =>
+      address
+        ? encodeAnyAddress(address, {
+            ss58Format: network?.platform === "polkadot" ? network.prefix : undefined,
+          })
+        : "",
+    [address, network],
   )
+
+  const blockExplorerUrl = useMemo(() => {
+    if (!formatted || !network) return null
+    const urls = getBlockExplorerUrls(network, { type: "address", address: formatted })
+    return urls[0] ?? null
+  }, [formatted, network])
 
   const handleClick = useCallback(() => {
     if (!formatted) return

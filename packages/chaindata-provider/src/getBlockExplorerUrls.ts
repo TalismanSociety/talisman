@@ -119,6 +119,8 @@ const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | n
         case "statescan.io":
         case "subscan.io":
           return `/accounts/${query.address}`
+        case "taostats.io":
+          return `/account/${query.address}`
         default:
           return `/address/${query.address}`
       }

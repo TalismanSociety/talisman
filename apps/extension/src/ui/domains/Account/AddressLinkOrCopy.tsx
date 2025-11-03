@@ -1,8 +1,7 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useMemo } from "react"
-import urlJoin from "url-join"
 
 import { useAnyNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
@@ -29,9 +28,9 @@ export const NetworkAddress: FC<NetworkAddressProps> = ({
   const network = useAnyNetwork(networkId)
 
   const blockExplorerUrl = useMemo(() => {
-    const baseUrl = network?.blockExplorerUrls?.[0] || null
-    return baseUrl ? urlJoin(baseUrl, "address", address) : null
-  }, [address, network?.blockExplorerUrls])
+    if (!network || !address) return null
+    return getBlockExplorerUrls(network, { type: "address", address })[0] ?? null
+  }, [address, network])
 
   const effectiveMode = useMemo(() => {
     // link must fallback to copy if no blockExplorerUrl
