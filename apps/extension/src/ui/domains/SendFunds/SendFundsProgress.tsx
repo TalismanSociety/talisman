@@ -17,8 +17,7 @@ import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  const urls = getBlockExplorerUrls(network!, { type: "transaction", id: hash })
-  return urls[0]
+  return getBlockExplorerUrls(network!, { type: "transaction", id: hash })[0] ?? null
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {

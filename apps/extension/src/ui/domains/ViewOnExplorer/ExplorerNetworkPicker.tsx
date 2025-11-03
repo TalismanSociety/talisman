@@ -79,9 +79,9 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
 
   const handleNetworkClick = useCallback(
     (network: Network) => () => {
-      const urls = getBlockExplorerUrls(network, { type: "address", address })
-      if (!urls.length) return
-      window.open(urls[0], "_blank")
+      const url = getBlockExplorerUrls(network, { type: "address", address })[0]
+      if (!url) return
+      window.open(url, "_blank")
       onClose()
     },
     [address, onClose],

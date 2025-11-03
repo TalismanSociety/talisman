@@ -13,10 +13,8 @@ import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
-  const blockExplorerUrls = network
-    ? getBlockExplorerUrls(network, { type: "transaction", id: hash })
-    : []
-  return blockExplorerUrls[0]
+  if (!network) return null
+  return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
@@ -140,7 +138,7 @@ type TxProgressBaseProps = {
   className?: string
   blockNumber?: string
   onClose?: () => void
-  href?: string
+  href?: string | null
 }
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {

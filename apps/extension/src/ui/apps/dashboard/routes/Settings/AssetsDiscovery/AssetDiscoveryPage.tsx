@@ -165,8 +165,11 @@ const useBlockExplorerUrl = (token: Token | null) => {
   const network = useNetworkById(token?.networkId)
 
   return useMemo(() => {
-    if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && network?.blockExplorerUrls[0])
-      return getBlockExplorerUrls(network, { type: "address", address: token.contractAddress })[0]
+    if (isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) && network)
+      return (
+        getBlockExplorerUrls(network, { type: "address", address: token.contractAddress })[0] ??
+        null
+      )
 
     return null
   }, [token, network])
