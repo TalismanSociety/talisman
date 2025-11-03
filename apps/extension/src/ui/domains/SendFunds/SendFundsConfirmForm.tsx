@@ -2,7 +2,7 @@ import { isTokenEth } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -15,6 +15,7 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
+import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
 import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
@@ -102,27 +103,41 @@ const TotalAmountRow = () => {
 
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
-  const { to, network } = useSendFunds()
+  const { to, token, network } = useSendFunds()
   const accounts = useAccounts("owned")
 
-  const showWarning = useMemo(() => {
-    if (!network || !to || !accounts) return false
-    return !accounts.some((account) => isAddressEqual(account.address, to))
-  }, [accounts, to, network])
+  const warningType = useMemo(() => {
+    if (!network || !token || !to) return "none"
+    const isAlpha = token.type === "substrate-dtao"
+    const isOwnedTo = accounts.some((account) => isAddressEqual(account.address, to))
+    if (isOwnedTo) return "none"
+    return isAlpha ? "alpha" : "network"
+  }, [network, token, to, accounts])
 
-  if (!showWarning) return null
+  if (warningType === "none") return null
 
   return (
     <div className="text-alert-warn bg-alert-warn/10 flex w-full items-center gap-4 rounded-sm p-4 text-xs">
       <AlertCircleIcon className="shrink-0 text-[2rem]" />
       <div>
-        <Trans
-          t={t}
-          components={{
-            Network: <span className="font-bold text-white">{network?.name}</span>,
-          }}
-          i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
-        />
+        {warningType === "network" && (
+          <Trans
+            t={t}
+            components={{
+              Network: <span className="font-bold text-white">{network?.name}</span>,
+            }}
+            i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
+          />
+        )}
+        {warningType === "alpha" && (
+          <Trans
+            t={t}
+            components={{
+              Network: <span className="font-bold text-white">{network?.name}</span>,
+            }}
+            i18nKey="Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds."
+          />
+        )}
       </div>
     </div>
   )
@@ -363,6 +378,7 @@ export const SendFundsConfirmForm = () => {
               <div className="py-8">
                 <hr className="text-grey-800" />
               </div>
+              <BittensorAlphaTokenRow />
               <div className="mt-4 flex items-center justify-between gap-8 text-xs">
                 <div className="text-body-secondary">{t("Network")}</div>
                 <NetworkDisplay />
@@ -376,5 +392,22 @@ export const SendFundsConfirmForm = () => {
         <SendButton />
       </div>
     </RiskAnalysisProvider>
+  )
+}
+
+const BittensorAlphaTokenRow: FC = () => {
+  const { t } = useTranslation()
+  const { token } = useSendFunds()
+
+  if (token?.type !== "substrate-dtao") return null
+
+  return (
+    <div className="mt-4 flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
+      <div className="text-body-secondary">{t("Token")}</div>
+      <div className={classNames("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
+        {token.name}
+        <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+      </div>
+    </div>
   )
 }
