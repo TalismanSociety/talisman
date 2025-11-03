@@ -7,7 +7,7 @@ import {
   RocketIcon,
   XOctagonIcon,
 } from "@talismn/icons"
-import { classNames, isNotNil, planckToTokens } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { formatDistanceToNowStrict, Locale } from "date-fns"
 import {
@@ -23,7 +23,6 @@ import {
 } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
-import { uniq } from "lodash-es"
 import {
   FC,
   forwardRef,
@@ -320,7 +319,7 @@ const TxActionsEth: FC<{
 
   const blockExplorerUrls = useMemo(() => {
     if (!network) return []
-    return uniq(getBlockExplorerUrls(network, { type: "transaction", id: tx.id }).filter(isNotNil))
+    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
   }, [network, tx])
 
   const { t } = useTranslation()
@@ -778,7 +777,7 @@ const TxActionsDefault: FC<{
 
   const blockExplorerUrls = useMemo(() => {
     if (!network) return []
-    return uniq(getBlockExplorerUrls(network, { type: "transaction", id: tx.id }).filter(isNotNil))
+    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
   }, [network, tx])
 
   const { t } = useTranslation()

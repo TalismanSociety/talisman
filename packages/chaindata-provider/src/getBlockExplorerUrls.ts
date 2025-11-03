@@ -1,4 +1,4 @@
-import { startCase } from "lodash-es"
+import { startCase, uniq } from "lodash-es"
 
 import { Network } from "./chaindata"
 
@@ -33,9 +33,11 @@ export type BlockExplorerQuery =
     }
 
 export const getBlockExplorerUrls = (network: Network, query: BlockExplorerQuery): string[] => {
-  return network.blockExplorerUrls
-    .map((explorerUrl) => getExplorerUrl(explorerUrl, query, network.rpcs?.[0]))
-    .filter(Boolean) as string[]
+  return uniq(
+    network.blockExplorerUrls
+      .map((explorerUrl) => getExplorerUrl(explorerUrl, query, network.rpcs?.[0]))
+      .filter(Boolean) as string[],
+  )
 }
 
 const getExplorerUrl = (
