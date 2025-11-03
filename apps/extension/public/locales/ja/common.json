@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "Ethereumでサインインするよう求めています",
   "wants you to sign in with Substrate": "Substrateでサインインすることを求めています",
   "Warning": "警告",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "警告：アルファトークン（ルートステークトークンを含む）は、ほとんどの中央集権型取引所ではサポートされていません。中央集権型取引所に送信すると、資金を失うことになります。",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "警告: 中央集権型取引所に送信する場合、<Network />ネットワークで資金を受け取ることを期待していることを確認してください。間違ったネットワークに送信すると資金が失われます。",
   "Watch": "見る",
   "Watch account": "アカウントを見る",

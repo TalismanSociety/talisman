@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "希望您使用Ethereum登录",
   "wants you to sign in with Substrate": "希望您使用 Substrate 登录",
   "Warning": "警告 ",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "警告：大多数中心化交易所不支持Alpha代币（包括根质押代币）。发送到中心化交易所将导致资金损失。",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "警告：如果发送到集中式交易所，请确保该交易所预期在 <Network /> 网络上接收资金。发送到错误的网络将导致资金损失。",
   "Watch": "观察 ",
   "Watch account": "观察账户",

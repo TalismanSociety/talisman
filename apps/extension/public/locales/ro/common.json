@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "îți cere să te autentifici cu Ethereum",
   "wants you to sign in with Substrate": "îți cere să te autentifici cu Substrate",
   "Warning": "Avertisment",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "Avertisment: Tokenurile Alpha (inclusiv tokenurile root staked) nu sunt acceptate de majoritatea platformelor de schimb centralizate. Trimiterea către o platformă de schimb centralizată va duce la pierderea fondurilor.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "Avertisment: Dacă trimiți fonduri către un exchange centralizat, asigură-te că acesta așteaptă să primească fonduri pe rețeaua <Network />. Trimiterea către o rețea greșită va duce la pierderea fondurilor.",
   "Watch": "Urmărește",
   "Watch account": "Urmărește contul",

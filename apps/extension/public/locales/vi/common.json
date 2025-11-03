@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "muốn bạn đăng nhập bằng Ethereum",
   "wants you to sign in with Substrate": "muốn bạn đăng nhập với Substrate",
   "Warning": "Cảnh báo",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "Cảnh báo: Token Alpha (bao gồm cả token staking gốc) không được hầu hết các sàn giao dịch tập trung hỗ trợ. Gửi đến một sàn giao dịch tập trung sẽ dẫn đến mất tài sản.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "Cảnh báo: Nếu gửi đến sàn giao dịch tập trung, hãy chắc chắn rằng sàn đó nhận tiền trên mạng <Network />. Gửi sai mạng sẽ dẫn đến mất tiền.",
   "Watch": "Theo dõi",
   "Watch account": "Theo dõi tài khoản",

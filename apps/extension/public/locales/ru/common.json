@@ -1987,6 +1987,7 @@
   "wants you to sign in with Ethereum": "хочет, чтобы вы зарегистрировались с помощью Ethereum",
   "wants you to sign in with Substrate": "хочет, чтобы вы вошли в систему с помощью Substrate",
   "Warning": "Предупреждение",
+  "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.": "Предупреждение: Альфа-токены (включая токены с root-стейкингом) не поддерживаются большинством централизованных бирж. Отправка на централизованную биржу приведет к потере средств.",
   "Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds.": "Внимание: При отправке на централизованную биржу убедитесь, что она ожидает получения средств в сети <Network />. Отправка в неправильную сеть приведет к потере средств.",
   "Watch": "Наблюдать",
   "Watch account": "Наблюдать за аккаунтом",
