@@ -15,7 +15,7 @@ export const SubDTaoTokenSchema = TokenBaseSchema.extend({
 
   // hotkey is set only for dynamic tokens (provisionned at runtime)
   hotkey: z.string().optional(),
-  isTransferable: z.boolean(),
+  isTransferable: z.boolean().default(true),
 })
 export type SubDTaoToken = z.infer<typeof SubDTaoTokenSchema>
 
