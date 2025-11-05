@@ -1,14 +1,18 @@
 import type { bittensor } from "@polkadot-api/descriptors"
+import { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   AnyMiniMetadata,
+  DotNetworkId,
   SubDTaoToken,
   subDTaoTokenId,
   SubDTaoTokenSchema,
 } from "@talismn/chaindata-provider"
+import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
+import { fromPairs } from "lodash-es"
 
 import { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult } from "../shared"
+import { fetchRuntimeCallResult, QueryStorageResult } from "../shared"
 import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
 
 type GetDynamicInfosResult =
@@ -29,14 +33,17 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const anyMiniMetadata = miniMetadata as AnyMiniMetadata
   if (!anyMiniMetadata?.data) return []
 
-  const dynamicInfos = await fetchRuntimeCallResult<GetDynamicInfosResult>(
-    connector,
-    networkId,
-    anyMiniMetadata.data,
-    "SubnetInfoRuntimeApi",
-    "get_all_dynamic_info",
-    [],
-  )
+  const [transferableTokensMap, dynamicInfos] = await Promise.all([
+    fetchTransferableTokensMap(connector, anyMiniMetadata.data, networkId),
+    fetchRuntimeCallResult<GetDynamicInfosResult>(
+      connector,
+      networkId,
+      anyMiniMetadata.data,
+      "SubnetInfoRuntimeApi",
+      "get_all_dynamic_info",
+      [],
+    ),
+  ])
 
   return dynamicInfos
     .filter(isNotNil)
@@ -53,26 +60,54 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
         symbol = NATIVE_TOKEN_SYMBOLS[networkId]
 
-      return Object.assign(
-        {},
-        {
-          id: subDTaoTokenId(networkId, info.netuid),
-          type: MODULE_TYPE,
-          platform: PLATFORM,
-          networkId,
-          netuid: info.netuid,
-          isDefault: true,
-          symbol,
-          decimals: 9,
-          name,
-          subnetName,
-        },
-        config,
-      )
+      const token: SubDTaoToken = {
+        id: subDTaoTokenId(networkId, info.netuid),
+        type: MODULE_TYPE,
+        platform: PLATFORM,
+        networkId,
+        netuid: info.netuid,
+        isDefault: true,
+        symbol,
+        decimals: 9,
+        name,
+        subnetName,
+        isTransferable: !!transferableTokensMap[info.netuid],
+      }
+
+      return Object.assign({}, token, config)
     })
 
     .filter((t) => {
       const parsed = SubDTaoTokenSchema.safeParse(t)
       return parsed.success
     })
+}
+
+const fetchTransferableTokensMap = async (
+  connector: IChainConnectorDot,
+  metadata: `0x${string}`,
+  networkId: DotNetworkId,
+) => {
+  const { builder } = parseMetadataRpc(metadata)
+  const transferToggleCodec = builder.buildStorage("SubtensorModule", "TransferToggle")
+
+  const transferToggleKeys = await connector.send<`0x${string}`[]>(networkId, "state_getKeys", [
+    getStorageKeyPrefix("SubtensorModule", "TransferToggle"),
+  ])
+
+  const transferToggleResults = await connector.send<QueryStorageResult>(
+    networkId,
+    "state_queryStorageAt",
+    [transferToggleKeys],
+  )
+
+  const transferToggleEntries = transferToggleResults.length ? transferToggleResults[0].changes : []
+
+  return fromPairs(
+    transferToggleEntries.map(([key, value]) => {
+      const [netuid] = transferToggleCodec.keys.dec(key) as [number]
+      const isTransferable = transferToggleCodec.value.dec(value) as boolean
+      return [netuid, isTransferable]
+    }),
+  )
 }
