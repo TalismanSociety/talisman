@@ -7,12 +7,24 @@ export const ValidationErrors = () => {
 
   if (!error) return null
 
+  const getErrorMessage = (err: unknown): string => {
+    if (typeof err === "string") return err
+    if (err instanceof Error) return err.message
+    if (err && typeof err === "object" && "message" in err) {
+      return String(err.message)
+    }
+    // Fallback: try to stringify or return a default message
+    try {
+      return JSON.stringify(err)
+    } catch {
+      return "An error occurred"
+    }
+  }
+
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 p-3">
-      <InfoIcon className="h-4 w-4 text-red-400" />
-      <span className="text-sm text-red-300">
-        {typeof error === "string" ? error : error.message}
-      </span>
+    <div className="flex items-center gap-2">
+      <InfoIcon className="text-alert-error h-4 w-4" />
+      <span className="text-alert-error text-sm">{getErrorMessage(error)}</span>
     </div>
   )
 }

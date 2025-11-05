@@ -81,19 +81,17 @@ const TokenInput = () => {
 
   return (
     <div className="flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4">
-      <div className="text-body inline-block min-w-0 text-ellipsis bg-transparent text-xl">
-        <input
-          ref={refTokensInput}
-          type="text"
-          inputMode="decimal"
-          placeholder="0"
-          defaultValue={defaultValue}
-          readOnly
-          onChange={handleChange}
-          className="placeholder:text-grey-500 w-full bg-transparent text-right text-xl font-bold text-white outline-none"
-          disabled={isEstimatingMaxAmount}
-        />
-      </div>
+      <input
+        ref={refTokensInput}
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        defaultValue={defaultValue}
+        readOnly
+        onChange={handleChange}
+        className="placeholder:text-grey-500 min-w-0 flex-1 text-ellipsis bg-transparent text-right text-xl font-bold text-white outline-none"
+        disabled={isEstimatingMaxAmount}
+      />
       <TokenPillButton tokenId={tokenId} onClick={() => {}} />
     </div>
   )
@@ -147,20 +145,18 @@ const FiatInput = () => {
 
   return (
     <div className="flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4">
-      <div className="text-body inline-block min-w-0 text-ellipsis bg-transparent text-xl">
-        <input
-          ref={refFiatInput}
-          type="text"
-          inputMode="decimal"
-          placeholder="0"
-          defaultValue={defaultValue}
-          readOnly
-          onChange={handleChange}
-          className="placeholder:text-grey-500 w-full bg-transparent text-right text-xl font-bold text-white outline-none"
-          disabled={isEstimatingMaxAmount}
-        />
-      </div>
-      <div className="text-body flex flex-nowrap items-center gap-4 text-base">
+      <input
+        ref={refFiatInput}
+        type="text"
+        inputMode="decimal"
+        placeholder="0"
+        defaultValue={defaultValue}
+        readOnly
+        onChange={handleChange}
+        className="placeholder:text-grey-500 min-w-0 flex-1 text-ellipsis bg-transparent text-right text-xl font-bold text-white outline-none"
+        disabled={isEstimatingMaxAmount}
+      />
+      <div className="text-body flex shrink-0 flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
           <span className="text-lg">{currencyConfig[currency].symbol}</span>
         </div>
@@ -202,8 +198,22 @@ const FiatDisplay = () => {
 export const WithdrawAmountErrorMessage = () => {
   const { error } = useWithdrawFundsContext()
 
+  const getErrorMessage = (err: unknown): string => {
+    if (typeof err === "string") return err
+    if (err instanceof Error) return err.message
+    if (err && typeof err === "object" && "message" in err) {
+      return String(err.message)
+    }
+    // Fallback: try to stringify or return a default message
+    try {
+      return JSON.stringify(err)
+    } catch {
+      return "An error occurred"
+    }
+  }
+
   return error ? (
-    <WithTooltip tooltip={typeof error === "string" ? error : error.message}>
+    <WithTooltip tooltip={getErrorMessage(error)}>
       <div
         className="text-alert-error flex items-center justify-center gap-2"
         style={{
@@ -214,8 +224,8 @@ export const WithdrawAmountErrorMessage = () => {
           verticalAlign: "middle",
         }}
       >
-        <AlertCircleIcon className="inline-block align-text-top text-sm" />
-        {typeof error === "string" ? error : error.message}
+        <AlertCircleIcon className="text-alert-error inline-block align-text-top text-sm" />
+        {getErrorMessage(error)}
       </div>
     </WithTooltip>
   ) : null

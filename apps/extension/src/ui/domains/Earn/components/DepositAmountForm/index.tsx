@@ -11,7 +11,6 @@ import { AmountEdit, DepositAmountErrorMessage } from "./AmountEdit"
 import { AvailableBalanceRow } from "./AvailableBalanceRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
-import { InsufficientTokenNotice } from "./InsufficientTokenNotice"
 import { ProductSummary } from "./ProductSummary"
 import { ValidationErrors } from "./ValidationErrors"
 
@@ -58,6 +57,7 @@ interface DepositAmountFormProps {
 export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
   const { t } = useTranslation()
   const { account } = useDepositWizard()
+  const { error, validationErrors } = useDepositFunds()
 
   // we use a form for enter keypress to trigger submit button, but we don't want form to be actually submitted
   const handleSubmit = useCallback((e: FormEvent) => {
@@ -82,16 +82,15 @@ export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
               </div>
             </Container>
             <AmountEdit />
+            <div className="flex justify-center px-8 py-2">
+              <div className="flex w-full flex-col items-center gap-3">
+                {error && <DepositAmountErrorMessage />}
+                {validationErrors.length > 0 && <ValidationErrors />}
+              </div>
+            </div>
           </div>
           {/* Single consolidated validation/errors area */}
           <div className="flex flex-col gap-0">
-            <div className="flex justify-center px-8 py-2">
-              <div className="flex w-full flex-col items-center gap-3">
-                <DepositAmountErrorMessage />
-                <InsufficientTokenNotice />
-                <ValidationErrors />
-              </div>
-            </div>
             <div className="w-full space-y-4 text-xs leading-[140%]">
               <AvailableBalanceRow />
               <ProductSummary />

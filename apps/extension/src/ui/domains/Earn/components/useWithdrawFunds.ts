@@ -134,7 +134,33 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
 
   const error = useMemo(() => {
     if (!transaction?.error) return null
-    return transaction.error instanceof Error ? transaction.error : new Error(transaction.error)
+
+    // If it's already an Error, return it
+    if (transaction.error instanceof Error) return transaction.error
+
+    // If it's a string, create an Error with that message
+    if (typeof transaction.error === "string") return new Error(transaction.error)
+
+    // If it's an object with a message property, extract the message
+    if (
+      transaction.error &&
+      typeof transaction.error === "object" &&
+      "message" in transaction.error
+    ) {
+      const errorMessage = String((transaction.error as Error).message)
+      return new Error(errorMessage || "An error occurred")
+    }
+
+    // Try to stringify if it's an object, or use a default message
+    try {
+      const errorMessage =
+        typeof transaction.error === "object"
+          ? JSON.stringify(transaction.error)
+          : String(transaction.error)
+      return new Error(errorMessage || "An error occurred")
+    } catch {
+      return new Error("An error occurred")
+    }
   }, [transaction?.error])
 
   const onWithdrawMaxClick = useCallback(() => {

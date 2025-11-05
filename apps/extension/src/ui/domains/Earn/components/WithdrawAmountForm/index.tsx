@@ -6,11 +6,10 @@ import { Button } from "talisman-ui"
 import { useWithdrawWizard } from "../../context/WithdrawWizardContext"
 import { useWithdrawFundsContext, WithdrawFundsProvider } from "../WithdrawFundsProvider"
 import { AddressPillButton } from "./AddressPillButton"
-import { AmountEdit, WithdrawAmountErrorMessage } from "./AmountEdit"
+import { AmountEdit } from "./AmountEdit"
 import { AssetRow } from "./AssetRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
-import { InsufficientTokenNotice } from "./InsufficientTokenNotice"
 import { NetworkRow } from "./NetworkRow"
 import { ProductSummary } from "./ProductSummary"
 import { ValidationErrors } from "./ValidationErrors"
@@ -81,17 +80,9 @@ export const WithdrawAmountForm = ({ onNext }: WithdrawAmountFormProps) => {
           </Container>
 
           {/* Section 2: Balance/Amount Component (centered) */}
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center">
             <AmountEdit key={`${balance?.address || ""}-${balance?.token?.address || ""}`} />
-          </div>
-
-          {/* Validation errors */}
-          <div className="flex justify-center px-8 py-2">
-            <div className="flex w-full flex-col items-center gap-3">
-              <ValidationErrors />
-              <WithdrawAmountErrorMessage />
-              <InsufficientTokenNotice />
-            </div>
+            <ValidationErrors />
           </div>
 
           {/* Section 3: Network, Priority, and Fees */}

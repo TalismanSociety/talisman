@@ -65,7 +65,41 @@ export const useWithdrawTransaction = () => {
         const result = await yieldApi.exit(request)
         setYieldResponse(result)
       } catch (err) {
-        setError(err instanceof Error ? err : new Error(String(err)))
+        // Properly extract error message from various error formats
+        let errorMessage = "An error occurred"
+
+        if (err instanceof Error) {
+          errorMessage = err.message
+        } else if (typeof err === "string") {
+          errorMessage = err
+        } else if (err && typeof err === "object") {
+          // Try to extract message from error object
+          if ("message" in err) {
+            errorMessage = String(err.message)
+          } else if ("error" in err && typeof err.error === "string") {
+            errorMessage = err.error
+          } else if (
+            "error" in err &&
+            err.error &&
+            typeof err.error === "object" &&
+            "message" in err.error
+          ) {
+            errorMessage = String(err.error.message)
+          } else {
+            // Fallback: try to stringify if it's a simple object
+            try {
+              const stringified = JSON.stringify(err)
+              // Only use stringified version if it's not just "[object Object]"
+              if (stringified !== "{}" && !stringified.includes("[object")) {
+                errorMessage = stringified
+              }
+            } catch {
+              // Keep default message
+            }
+          }
+        }
+
+        setError(new Error(errorMessage))
       } finally {
         setIsLoading(false)
         isApiCallInProgress.current = false
