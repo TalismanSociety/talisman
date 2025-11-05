@@ -60,6 +60,9 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       if (info.netuid === 0 && NATIVE_TOKEN_SYMBOLS[networkId])
         symbol = NATIVE_TOKEN_SYMBOLS[networkId]
 
+      // if not stage in storage, consider transferable
+      const isTransferable = transferableTokensMap[info.netuid] ?? true
+
       const token: SubDTaoToken = {
         id: subDTaoTokenId(networkId, info.netuid),
         type: MODULE_TYPE,
@@ -71,7 +74,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         decimals: 9,
         name,
         subnetName,
-        isTransferable: !!transferableTokensMap[info.netuid],
+        isTransferable,
       }
 
       return Object.assign({}, token, config)
