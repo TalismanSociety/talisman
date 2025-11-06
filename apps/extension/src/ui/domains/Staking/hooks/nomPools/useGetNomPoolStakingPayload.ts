@@ -24,11 +24,14 @@ export const useGetNomPoolStakingPayload = ({
   minJoinBond,
 }: GetNomPoolStakingPayload) => {
   // use minJoinBond to get an accurate a 'fake fee estimate' if the amount is 0 or less than minJoinBond
-  const amount = useMemo(
-    () =>
-      typeof minJoinBond === "bigint" && plancks && plancks >= minJoinBond ? plancks : minJoinBond,
-    [minJoinBond, plancks],
-  )
+  const amount = useMemo(() => {
+    // no minimum if already in pool
+    if (plancks && hasJoinedNomPool) return plancks
+    // must at least stake minJoinBond
+    if (typeof minJoinBond === "bigint" && plancks && plancks >= minJoinBond) return plancks
+    // default to minJoinBond
+    return minJoinBond
+  }, [hasJoinedNomPool, minJoinBond, plancks])
 
   return useQuery({
     queryKey: [
