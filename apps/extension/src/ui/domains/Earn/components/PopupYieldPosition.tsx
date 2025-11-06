@@ -21,7 +21,6 @@ import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldPosition } from "../hooks/useYieldPosition"
 import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 import { mapYieldInputTokenToTokenId, mapYieldTokenToTokenId } from "../utils/tokenMapping"
-import { WithdrawPillButton } from "../WithdrawPillButton"
 
 export const PopupYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
   const position = useYieldPosition(yieldId)
@@ -128,6 +127,14 @@ export const PopupYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldI
     [position?.yieldId, navigate, tokens],
   )
 
+  // Handle withdraw from dropdown menu
+  const handleWithdrawClick = useCallback(() => {
+    const firstSuppliedBalance = suppliedBalances[0]
+    if (firstSuppliedBalance) {
+      _handleWithdrawClick(firstSuppliedBalance)
+    }
+  }, [suppliedBalances, _handleWithdrawClick])
+
   // Handle confirm claim modal close
   const handleConfirmClaimClose = useCallback(() => {
     setIsConfirmClaimModalOpen(false)
@@ -143,6 +150,8 @@ export const PopupYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldI
           position={position}
           onAddToPosition={handleAddToPosition}
           onClaimClick={handleClaimClick}
+          onWithdrawClick={handleWithdrawClick}
+          hasSuppliedBalances={suppliedBalances.length > 0}
         />
         <YieldPositionSection
           balances={suppliedBalances}
@@ -194,7 +203,9 @@ const YieldPositionHeader: FC<{
   position: YieldPosition
   onAddToPosition: () => void
   onClaimClick: () => void
-}> = ({ position, onAddToPosition, onClaimClick }) => {
+  onWithdrawClick?: () => void
+  hasSuppliedBalances?: boolean
+}> = ({ position, onAddToPosition, onClaimClick, onWithdrawClick, hasSuppliedBalances }) => {
   const { genericEvent } = useAnalytics()
   const networkId = mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
   const network = useNetworkById(networkId)
@@ -277,6 +288,9 @@ const YieldPositionHeader: FC<{
           </ContextMenuTrigger>
           <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
             <ContextMenuItem onClick={onAddToPosition}>Add to position</ContextMenuItem>
+            {hasSuppliedBalances && onWithdrawClick && (
+              <ContextMenuItem onClick={onWithdrawClick}>Withdraw</ContextMenuItem>
+            )}
             {hasClaimableRewards && (
               <ContextMenuItem onClick={onClaimClick}>
                 Claim {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
@@ -372,14 +386,14 @@ const YieldPositionSection: FC<{
 const YieldPositionItemRow: FC<{
   balance: BalanceDto
   onWithdraw?: (balance: BalanceDto) => void
-}> = ({ balance, onWithdraw }) => {
+}> = ({ balance, onWithdraw: _onWithdraw }) => {
   return (
-    <div className="hover:bg-grey-800/20 group relative flex h-28 w-full items-center gap-4 overflow-hidden px-6">
+    <div className="flex h-28 w-full items-center gap-4 overflow-hidden px-6">
       <AssetLogo url={balance.token.logoURI} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
           <div className="grow truncate">{balance.token.symbol}</div>
-          <div className="max-w-[50%] truncate group-hover:hidden">
+          <div className="max-w-[50%] truncate">
             {formatDecimals(balance.amount)} {balance.token.symbol}
           </div>
         </div>
@@ -387,19 +401,11 @@ const YieldPositionItemRow: FC<{
           <div className="grow truncate">
             <PortfolioAccount address={balance.address} />
           </div>
-          <div className="shrink-0 group-hover:hidden">
+          <div className="shrink-0">
             <FiatFromUsd amount={parseFloat(balance.amountUsd || "0")} isBalance />
           </div>
         </div>
       </div>
-      {onWithdraw && (
-        <div className="absolute right-2 top-0 hidden h-28 flex-row items-center justify-center gap-2 group-hover:flex">
-          <WithdrawPillButton
-            onClick={() => onWithdraw(balance)}
-            className="[>svg]:text-sm h-12 text-xs"
-          />
-        </div>
-      )}
     </div>
   )
 }
