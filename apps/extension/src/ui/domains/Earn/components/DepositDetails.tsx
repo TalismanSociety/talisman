@@ -72,8 +72,8 @@ export const DepositDetails: FC<DepositDetailsProps> = ({ className }) => {
         {/* Amount */}
         <div className="flex items-center justify-between">
           <span className="text-body-secondary text-sm">{t("Amount")}</span>
-          <div className="flex w-full items-center justify-end gap-8 text-right">
-            <TokenLogo tokenId={token.id} className="text-md" />
+          <div className="flex w-full items-center justify-end gap-4 text-right">
+            <TokenLogo tokenId={token.id} className="text-lg" />
             <TokensAndFiat
               tokenId={token.id}
               planck={deposit.planck}
