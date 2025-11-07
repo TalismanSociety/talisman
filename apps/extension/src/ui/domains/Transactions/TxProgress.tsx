@@ -183,7 +183,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
           )}
         </div>
       </div>
-      <Button fullWidth onClick={onClose}>
+      <Button fullWidth onClick={onClose} className="mt-8">
         {t("Close")}
       </Button>
     </div>

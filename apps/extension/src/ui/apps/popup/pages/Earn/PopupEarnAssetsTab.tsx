@@ -450,7 +450,7 @@ export const PopupEarnAssetsTab: FC = () => {
           <button
             type="button"
             onClick={() => setIsDefiExpanded(!isDefiExpanded)}
-            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between px-6 text-sm font-medium"
+            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-6 text-sm font-medium"
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
             <div className="flex items-center gap-2">
