@@ -1,9 +1,5 @@
 export * from "./types"
 export { fetchYieldProducts } from "./getYieldProducts"
 export { fetchYieldProductsByNetwork } from "./fetchYieldProductsByNetwork"
+export { yieldProductsCache } from "./yieldProductsCache"
 export { yieldSdk } from "./yieldSdk"
-export {
-  yieldProductsStore$,
-  getCachedProductsForNetwork,
-  updateProductsForNetwork,
-} from "./store.yieldProducts"

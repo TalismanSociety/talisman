@@ -31,9 +31,8 @@ walletReady.then(async () => {
 
 // persist to db when store is updated
 subjectYieldBalancesStore$
-  .pipe(skip(1), debounceTime(2_000), distinctUntilChanged<YieldPositionItem[]>(isEqual))
+  .pipe(skip(1), debounceTime(200), distinctUntilChanged<YieldPositionItem[]>(isEqual))
   .subscribe((items) => {
-    log.debug(`[yield-balances] updating db blob with data (items:${items.length})`)
     blobStore.set({ items })
   })
 

@@ -83,18 +83,14 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   }, [token])
 
   // Fetch yield products with infinite pagination
-  const yieldProductsResult = useInfiniteYieldProductsForToken(
+  const { data, isLoading, error } = useInfiniteYieldProductsForToken(
     tokenIdentifier,
     mappedNetworkName || undefined,
   )
 
-  // Extract loading and error states
-  const isLoading = yieldProductsResult.isLoading
-  const error = yieldProductsResult.error
-
   // Flatten all pages and filter for exact token match
   const allYieldProducts = useMemo(() => {
-    const allProducts = yieldProductsResult.pages.flat() || []
+    const allProducts = data?.pages.flat() || []
     // Filter out products that don't match the requested inputToken exactly
     return allProducts.filter((product) =>
       product.inputTokens?.some((inputToken) => {
@@ -109,7 +105,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
         return symbol === identifier
       }),
     )
-  }, [yieldProductsResult.pages, tokenIdentifier])
+  }, [data, tokenIdentifier])
 
   // Handle pre-selected product (from Add to Position flow)
   useEffect(() => {

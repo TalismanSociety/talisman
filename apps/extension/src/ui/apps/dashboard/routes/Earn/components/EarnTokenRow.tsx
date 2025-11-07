@@ -43,14 +43,14 @@ export const EarnTokenRow: FC<{
   }, [token])
 
   // Fetch yield products for this token
-  const yieldProductsResult = useYieldProducts({
+  const {
+    data: yieldProducts = [],
+    isLoading: isLoadingProducts,
+    error: productsError,
+  } = useYieldProducts({
     inputTokens: tokenIdentifier,
     network: network?.platform as Networks,
   })
-  const yieldProducts = yieldProductsResult.status === "success" ? yieldProductsResult.data : []
-  const isLoadingProducts = yieldProductsResult.status === "loading"
-  const productsError =
-    yieldProductsResult.status === "error" ? yieldProductsResult.error : undefined
 
   const handleToggleExpand = useCallback(() => {
     setIsExpanded(!isExpanded)

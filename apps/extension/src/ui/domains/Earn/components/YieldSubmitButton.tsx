@@ -10,6 +10,7 @@ import { log } from "extension-shared"
 import { FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
+import { TransactionRequest } from "viem"
 
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
@@ -37,9 +38,17 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
   onTxSubmitted,
 }) => {
   const { t } = useTranslation()
-  const { account, token, product, deposit, allTransactions } = useDepositFunds()
+  const { account, token, product, deposit, allTransactions, transaction } = useDepositFunds()
   const accountData = useAccountByAddress(account?.address)
   const { gotoProgress } = useDepositWizard()
+
+  // Get the adjusted transaction with proper gas limits (includes safety margins from useEthTransaction)
+  const adjustedTx = transaction?.platform === "ethereum" ? transaction.tx : undefined
+  const adjustedGasLimit = adjustedTx?.gas
+    ? typeof adjustedTx.gas === "bigint"
+      ? adjustedTx.gas
+      : BigInt(String(adjustedTx.gas))
+    : undefined
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentTransactionIndex, setCurrentTransactionIndex] = useState(0)
@@ -92,6 +101,16 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
               ? JSON.parse(currentTransaction.unsignedTransaction)
               : currentTransaction.unsignedTransaction
 
+          if (!unsignedTx.to || !unsignedTx.data || !unsignedTx.from) {
+            throw new Error("Missing required Ethereum transaction fields")
+          }
+
+          // Always use gas settings from useEthTransaction (includes safety margins and user priority selection)
+          // We do NOT use gas estimation from Yield.xyz API at all
+          if (!adjustedTx || !adjustedGasLimit) {
+            throw new Error("Adjusted transaction with gas settings not available")
+          }
+
           // For sequential transactions, we need to get the current nonce
           // Yield.xyz provides static nonces, but we need dynamic ones
           let currentNonce = unsignedTx.nonce
@@ -114,39 +133,47 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
             }
           }
 
-          // Convert to proper transaction format
-          const baseTx = {
-            to: unsignedTx.to,
+          const baseTx: Omit<TransactionRequest, "type"> = {
+            to: unsignedTx.to as `0x${string}`,
             value: BigInt(unsignedTx.value || "0"),
-            data: unsignedTx.data,
-            from: unsignedTx.from,
-            gas: unsignedTx.gas ? BigInt(unsignedTx.gas) : undefined,
+            data: unsignedTx.data as `0x${string}`,
+            from: unsignedTx.from as `0x${string}`,
+            gas: adjustedGasLimit,
             nonce: currentNonce,
           }
 
-          // Handle EIP-1559 vs legacy gas pricing
-          let processedTx
-          if (unsignedTx.maxFeePerGas && unsignedTx.maxPriorityFeePerGas) {
+          // Use gas pricing from adjusted transaction (respects user priority selection)
+          let processedTx: TransactionRequest
+          if (
+            adjustedTx.type === "eip1559" &&
+            adjustedTx.maxFeePerGas &&
+            adjustedTx.maxPriorityFeePerGas
+          ) {
             // EIP-1559 transaction
             processedTx = {
               ...baseTx,
               type: "eip1559" as const,
-              maxFeePerGas: BigInt(unsignedTx.maxFeePerGas),
-              maxPriorityFeePerGas: BigInt(unsignedTx.maxPriorityFeePerGas),
-            }
-          } else if (unsignedTx.gasPrice) {
+              maxFeePerGas:
+                typeof adjustedTx.maxFeePerGas === "bigint"
+                  ? adjustedTx.maxFeePerGas
+                  : BigInt(String(adjustedTx.maxFeePerGas)),
+              maxPriorityFeePerGas:
+                typeof adjustedTx.maxPriorityFeePerGas === "bigint"
+                  ? adjustedTx.maxPriorityFeePerGas
+                  : BigInt(String(adjustedTx.maxPriorityFeePerGas)),
+            } as TransactionRequest
+          } else if (adjustedTx.type === "legacy" && adjustedTx.gasPrice) {
             // Legacy transaction
             processedTx = {
               ...baseTx,
               type: "legacy" as const,
-              gasPrice: BigInt(unsignedTx.gasPrice),
-            }
+              gasPrice:
+                typeof adjustedTx.gasPrice === "bigint"
+                  ? adjustedTx.gasPrice
+                  : BigInt(String(adjustedTx.gasPrice)),
+            } as TransactionRequest
           } else {
-            // Default to legacy
-            processedTx = {
-              ...baseTx,
-              type: "legacy" as const,
-            }
+            throw new Error("Adjusted transaction missing required gas pricing settings")
           }
 
           const serializedTx = serializeTransactionRequest(processedTx)
@@ -263,6 +290,8 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     deposit,
     allTransactions,
     accountData,
+    adjustedTx,
+    adjustedGasLimit,
     onError,
     onSuccess,
     onTxSubmitted,
@@ -290,6 +319,21 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
     )
   }
 
+  // For Ethereum transactions, ensure adjusted transaction with gas settings is ready
+  const isTransactionReady =
+    !isAccountPlatformEthereum(accountData) ||
+    (transaction?.platform === "ethereum" && adjustedTx && adjustedGasLimit)
+
+  const isDisabled =
+    isSubmitting ||
+    !account ||
+    !token ||
+    !product ||
+    !deposit ||
+    allTransactions.length === 0 ||
+    transaction?.isLoading ||
+    !isTransactionReady
+
   const buttonLabel = isSubmitting
     ? allTransactions.length > 1
       ? t("Processing transaction {{current}} of {{total}}", {
@@ -305,6 +349,7 @@ export const YieldSubmitButton: FC<YieldSubmitButtonProps> = ({
       primary
       onClick={handleSubmit}
       processing={isSubmitting}
+      disabled={isDisabled}
     >
       {buttonLabel}
     </Button>

@@ -1,12 +1,13 @@
 import { Networks, YieldDto } from "@yieldxyz/sdk"
 import { log } from "extension-shared"
 
+import { yieldProductsCache } from "./yieldProductsCache"
 import { yieldSdk } from "./yieldSdk"
 
 /**
  * Fetches yield products for multiple tokens on a specific network
  * Handles pagination automatically to get all available products
- * Caching is handled by the observable layer (matching Portfolio pattern)
+ * Uses caching to avoid redundant API calls
  */
 export const fetchYieldProductsByNetwork = async (
   network: Networks,
@@ -17,6 +18,16 @@ export const fetchYieldProductsByNetwork = async (
       network,
       tokenCount: tokenAddresses.length,
     })
+
+    // Check cache first
+    const cachedProducts = await yieldProductsCache.get(network)
+    if (cachedProducts) {
+      log.debug("[Yield] Using cached products for network", {
+        network,
+        productCount: cachedProducts.length,
+      })
+      return cachedProducts
+    }
 
     // Build comma-separated inputToken string
     const inputTokenString = tokenAddresses.join(",")
@@ -64,6 +75,9 @@ export const fetchYieldProductsByNetwork = async (
       totalProducts: allProducts.length,
       pagesFetched: Math.ceil(offset / limit) + 1,
     })
+
+    // Cache the complete result
+    await yieldProductsCache.set(network, allProducts)
 
     return allProducts
   } catch (error) {
