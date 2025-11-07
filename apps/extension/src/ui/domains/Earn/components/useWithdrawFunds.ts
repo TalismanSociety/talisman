@@ -45,6 +45,7 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
     amount,
     validatorAddress: _validatorAddress,
     withdrawMax,
+    balance: wizardBalance,
   } = useWithdrawWizard()
 
   // Get account, token, and network data
@@ -57,6 +58,16 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
 
   // Get user balance for the token
   const userBalance = useBalance(account as string, tokenId as string)
+
+  // Check if token mapping failed
+  // If we have balance data but no token (mapping failed), show error
+  const tokenMappingError = useMemo(() => {
+    // If we have balance data (meaning we're trying to withdraw) but no token, mapping failed
+    if (wizardBalance && !token) {
+      return new Error("Withdraw not supported for this token")
+    }
+    return null
+  }, [wizardBalance, token])
 
   // Fetch the selected product directly by ID to avoid filtering issues
   const { data: product } = useQuery({
@@ -113,6 +124,8 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
 
   // Validation logic
   const isValid = useMemo(() => {
+    // If token mapping failed, form is invalid
+    if (tokenMappingError) return false
     if (!account || !token || !product || !withdrawAmount) return false
     if (transaction?.isLoading) return false
     if (transaction?.error) return false
@@ -126,13 +139,16 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
     if (!hasEstimatedFee) return false
 
     return true
-  }, [account, token, product, withdrawAmount, transaction])
+  }, [tokenMappingError, account, token, product, withdrawAmount, transaction])
 
   const isLoading = useMemo(() => {
     return transaction?.isLoading || false
   }, [transaction?.isLoading])
 
   const error = useMemo(() => {
+    // Prioritize token mapping error
+    if (tokenMappingError) return tokenMappingError
+
     if (!transaction?.error) return null
 
     // If it's already an Error, return it
@@ -161,7 +177,7 @@ export const useWithdrawFunds = (): TWithdrawFunds => {
     } catch {
       return new Error("An error occurred")
     }
-  }, [transaction?.error])
+  }, [tokenMappingError, transaction?.error])
 
   const onWithdrawMaxClick = useCallback(() => {
     // This will be handled by the WithdrawAmountForm component

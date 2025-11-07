@@ -80,7 +80,7 @@ const TokenInput = () => {
   if (!token) return null
 
   return (
-    <div className="mx-auto flex max-w-[400px] flex-nowrap items-center justify-center gap-4">
+    <div className="mx-auto flex max-w-lg flex-nowrap items-center justify-center gap-4">
       <input
         ref={refTokensInput}
         type="text"
