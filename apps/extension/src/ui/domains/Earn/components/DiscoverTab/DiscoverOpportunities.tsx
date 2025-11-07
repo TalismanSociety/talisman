@@ -12,6 +12,7 @@ import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMappin
 import { mapYieldTokenToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
 import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useAccounts, useRemoteConfig, useToken, useTokens } from "@ui/state"
+import { useDiscoverSearch } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
@@ -35,7 +36,8 @@ const NetworkTokensGroup: FC<{
     | TokenOfPlatform<"polkadot">
     | TokenOfPlatform<"solana">
   )[]
-}> = ({ network, tokens: networkTokens, onProductClick, isPopup, allTokens }) => {
+  search?: string
+}> = ({ network, tokens: networkTokens, onProductClick, isPopup, allTokens, search }) => {
   // For discovery, we'll use token symbols as identifiers since we don't have specific addresses
   // The API will handle symbol-based matching
   const tokenIdentifiers = networkTokens.map((t) => t.symbol)
@@ -81,6 +83,7 @@ const NetworkTokensGroup: FC<{
             isPopup={isPopup}
             networkProducts={networkProducts}
             isLoadingNetworkProducts={isLoadingNetworkProducts}
+            search={search}
           />
         )
       })}
@@ -97,6 +100,7 @@ const TokenDiscovery: FC<{
   isPopup?: boolean
   networkProducts?: YieldDto[] // Network-level products passed from parent
   isLoadingNetworkProducts?: boolean // Loading state from network-level fetch
+  search?: string // Search query for filtering products
 }> = ({
   tokenSymbol,
   network,
@@ -105,6 +109,7 @@ const TokenDiscovery: FC<{
   isPopup,
   networkProducts = [],
   isLoadingNetworkProducts = false,
+  search,
 }) => {
   const [visibleProductCount, setVisibleProductCount] = useState(20)
   const token = useToken(tokenId)
@@ -144,11 +149,36 @@ const TokenDiscovery: FC<{
 
   // Filter products based on status and availability (same as ProductList)
   const availableProducts = useMemo(() => {
-    return allYieldProducts.filter(
+    const filtered = allYieldProducts.filter(
       (product) =>
         product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
     )
-  }, [allYieldProducts])
+
+    // Apply search filter if provided
+    const lowerSearch = (search || "").toLowerCase().trim()
+    if (!lowerSearch) return filtered
+
+    // Check if token symbol matches search - if so, show all products for this token
+    const tokenSymbolLower = tokenSymbol.toLowerCase()
+    if (tokenSymbolLower.includes(lowerSearch)) {
+      return filtered
+    }
+
+    // Otherwise, filter products by search query
+    return filtered.filter((product) => {
+      const haystack: string[] = [
+        product.metadata.name,
+        product.metadata.description,
+        product.inputTokens?.[0]?.symbol,
+        product.outputToken?.symbol,
+        product.mechanics?.type,
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).toLowerCase())
+
+      return haystack.some((text) => text.includes(lowerSearch))
+    })
+  }, [allYieldProducts, search, tokenSymbol])
 
   // Sort products by reward rate (highest first)
   const sortedProducts = useMemo(() => {
@@ -200,6 +230,7 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
   const _accounts = useAccounts("owned")
   const tokens = useTokens()
   const remoteConfig = useRemoteConfig()
+  const search = useDiscoverSearch()
 
   // Modal state management
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
@@ -219,6 +250,9 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
   }, [remoteConfig.earn?.yieldxyzNetworks])
 
   // Group tokens by network for batched fetching
+  // Note: We don't filter tokens here based on search - we filter products later
+  // This allows tokens to show up if they have products matching the search,
+  // even if the token symbol itself doesn't match
   const tokensByNetwork = useMemo(() => {
     const grouped: Record<
       string,
@@ -386,6 +420,7 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
           onProductClick={handleProductClick}
           isPopup={isPopup}
           allTokens={tokens}
+          search={search}
         />
       ))}
 

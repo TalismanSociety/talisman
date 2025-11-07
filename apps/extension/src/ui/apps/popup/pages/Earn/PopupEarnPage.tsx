@@ -4,7 +4,12 @@ import { useTranslation } from "react-i18next"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
-import { setYieldSearch, useYieldSearch } from "@ui/state/yield"
+import {
+  setDiscoverSearch,
+  setYieldSearch,
+  useDiscoverSearch,
+  useYieldSearch,
+} from "@ui/state/yield"
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
@@ -59,7 +64,8 @@ const PopupEarnHeader = () => {
 export const PopupEarnPage: FC = () => {
   const { t } = useTranslation()
   const [selectedTab, setSelectedTab] = useState("assets")
-  const search = useYieldSearch()
+  const assetsSearch = useYieldSearch()
+  const discoverSearch = useDiscoverSearch()
 
   const handleTabChange = (tab: string) => {
     setSelectedTab(tab)
@@ -82,7 +88,17 @@ export const PopupEarnPage: FC = () => {
               containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
               placeholder={t("Search DeFi positions")}
               onChange={setYieldSearch}
-              initialValue={search}
+              initialValue={assetsSearch}
+            />
+          </div>
+        )}
+        {selectedTab === "discover" && (
+          <div className="w-full">
+            <SearchInput
+              containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+              placeholder={t("Search for assets")}
+              onChange={setDiscoverSearch}
+              initialValue={discoverSearch}
             />
           </div>
         )}

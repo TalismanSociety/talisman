@@ -15,6 +15,7 @@ import { useYieldProductsByNetwork } from "@ui/domains/Earn/hooks/useYieldProduc
 import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
 import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useNetworkById, useRemoteConfig, useToken } from "@ui/state"
+import { useDiscoverSearch } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
@@ -31,7 +32,8 @@ const NetworkTokensGroup: FC<{
   onProductClick: (product: YieldDto) => void
   isPopup?: boolean
   allowedNetworks: string[]
-}> = ({ network, tokens, onProductClick, isPopup, allowedNetworks }) => {
+  search?: string
+}> = ({ network, tokens, onProductClick, isPopup, allowedNetworks, search }) => {
   // Extract token identifiers (prioritize contract addresses over symbols)
   const tokenIdentifiers = tokens.map((t) => t.tokenAddress || t.tokenSymbol)
 
@@ -84,6 +86,7 @@ const NetworkTokensGroup: FC<{
           allowedNetworks={allowedNetworks}
           networkProducts={networkProducts}
           isLoadingNetworkProducts={isLoadingNetworkProducts}
+          search={search}
         />
       ))}
     </>
@@ -101,6 +104,7 @@ const TokenWithYields: FC<{
   allowedNetworks: string[]
   networkProducts?: YieldDto[] // Network-level products passed from parent
   isLoadingNetworkProducts?: boolean // Loading state from network-level fetch
+  search?: string // Search query for filtering products
 }> = ({
   tokenSymbol,
   tokenLogoURI,
@@ -111,6 +115,7 @@ const TokenWithYields: FC<{
   allowedNetworks,
   networkProducts = [],
   isLoadingNetworkProducts = false,
+  search,
 }) => {
   const network = useNetworkById(networkId)
   const token = useToken(tokenId)
@@ -152,11 +157,36 @@ const TokenWithYields: FC<{
 
   // Filter products based on status and availability (same as ProductList)
   const availableProducts = useMemo(() => {
-    return allProducts.filter(
+    const filtered = allProducts.filter(
       (product) =>
         product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
     )
-  }, [allProducts])
+
+    // Apply search filter if provided (same logic as DiscoverOpportunities)
+    const lowerSearch = (search || "").toLowerCase().trim()
+    if (!lowerSearch) return filtered
+
+    // Check if token symbol matches search - if so, show all products for this token
+    const tokenSymbolLower = tokenSymbol.toLowerCase()
+    if (tokenSymbolLower.includes(lowerSearch)) {
+      return filtered
+    }
+
+    // Otherwise, filter products by search query
+    return filtered.filter((product) => {
+      const haystack: string[] = [
+        product.metadata.name,
+        product.metadata.description,
+        product.inputTokens?.[0]?.symbol,
+        product.outputToken?.symbol,
+        product.mechanics?.type,
+      ]
+        .filter(Boolean)
+        .map((v) => String(v).toLowerCase())
+
+      return haystack.some((text) => text.includes(lowerSearch))
+    })
+  }, [allProducts, search, tokenSymbol])
 
   // Sort products by reward rate (highest first)
   const sortedProducts = useMemo(() => {
@@ -184,8 +214,8 @@ const TokenWithYields: FC<{
     return null
   }
 
-  // Don't render if no products found
-  if (!isLoadingNetworkProducts && allProducts.length === 0) {
+  // Don't render if no products found (after filtering)
+  if (!isLoadingNetworkProducts && availableProducts.length === 0) {
     return null
   }
 
@@ -210,6 +240,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
   const { userTokens, isLoading } = useUserTokensWithYield()
   const navigate = useNavigate()
   const remoteConfig = useRemoteConfig()
+  const search = useDiscoverSearch()
 
   // Modal state management
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
@@ -248,6 +279,9 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
   )
 
   // Group tokens by network (sorting now happens in NetworkTokensGroup by APY)
+  // Note: We don't filter tokens here based on search - we filter products later
+  // This allows tokens to show up if they have products matching the search,
+  // even if the token symbol itself doesn't match (same as DiscoverOpportunities)
   const sortedTokensByNetwork = useMemo(() => {
     return Object.entries(tokensByNetwork).map(([network, tokens]) => ({
       network,
@@ -390,6 +424,7 @@ export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false })
           onProductClick={handleProductClick}
           isPopup={isPopup}
           allowedNetworks={allowedNetworks}
+          search={search}
         />
       ))}
 

@@ -117,3 +117,10 @@ const subjectYieldSearch$ = new BehaviorSubject<string>("")
 export const [useYieldSearch, yieldSearch$] = bind(subjectYieldSearch$)
 
 export const setYieldSearch = (search: string) => subjectYieldSearch$.next(search)
+
+// Discover tab search state (separate from assets tab search)
+const subjectDiscoverSearch$ = new BehaviorSubject<string>("")
+
+export const [useDiscoverSearch, discoverSearch$] = bind(subjectDiscoverSearch$)
+
+export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
