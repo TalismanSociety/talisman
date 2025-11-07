@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { EarnAssetsStateProvider } from "@ui/domains/Earn/context/EarnAssetsStateContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
@@ -12,7 +13,7 @@ import { PopupEarnPage } from "./PopupEarnPage"
 import { PopupYieldPosition } from "./PopupYieldPosition"
 
 const EarnRoutes = () => (
-  <>
+  <EarnAssetsStateProvider>
     <Routes>
       <Route path="" element={<PopupEarnPage />} />
       <Route path="yield/:yieldId" element={<PopupYieldPosition />} />
@@ -20,7 +21,7 @@ const EarnRoutes = () => (
     <Suspense fallback={<SuspenseTracker name="EarnContent" />}>
       <BottomNav />
     </Suspense>
-  </>
+  </EarnAssetsStateProvider>
 )
 
 const Content: FC<PropsWithChildren> = ({ children }) => {

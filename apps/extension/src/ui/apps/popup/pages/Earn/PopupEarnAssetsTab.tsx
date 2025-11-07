@@ -1,8 +1,9 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { BalanceDto, YieldPosition } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -10,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
@@ -190,13 +192,14 @@ const PopupEarnAssetsSkeleton: FC = () => {
 // Token row with accordion functionality like dashboard
 const PopupEarnTokenRow: FC<{
   tokenData: GroupedTokenData
-}> = ({ tokenData }) => {
+  isExpanded: boolean
+  onToggle: (tokenSymbol: string) => void
+}> = ({ tokenData, isExpanded, onToggle }) => {
   const { t } = useTranslation()
-  const [isExpanded, setIsExpanded] = useState(false)
 
   const handleToggle = useCallback(() => {
-    setIsExpanded(!isExpanded)
-  }, [isExpanded])
+    onToggle(tokenData.tokenSymbol)
+  }, [onToggle, tokenData.tokenSymbol])
 
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
@@ -206,12 +209,15 @@ const PopupEarnTokenRow: FC<{
   }, [tokenData.positions])
 
   return (
-    <div className="bg-grey-850 flex w-full flex-col gap-3">
+    <div className="bg-grey-850 flex w-full flex-col gap-3 rounded">
       {/* Token Row - matching DashboardAssetRow style */}
       <button
         type="button"
         onClick={handleToggle}
-        className="text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center gap-6 overflow-hidden rounded p-6 text-left text-sm"
+        className={classNames(
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center gap-6 overflow-hidden p-6 text-left text-sm",
+          isExpanded ? "rounded-t" : "rounded",
+        )}
       >
         {/* Left section - Logo and Token Info - Flexible */}
         <div className="flex min-w-0 flex-1 items-center gap-4">
@@ -289,7 +295,7 @@ const PopupEarnTokenRow: FC<{
 
       {/* Expanded Positions - part of same row background */}
       {isExpanded && (
-        <div className="bg-grey-850 flex flex-col gap-4 pb-4 pl-6 pr-6">
+        <div className="bg-grey-850 flex flex-col gap-4 rounded-b pb-4 pl-6 pr-6">
           {tokenData.positions.map(({ position, tokenBalance }) => (
             <PopupYieldPositionRow
               key={`${position.yieldId}-${tokenBalance.token.symbol}`}
@@ -309,7 +315,22 @@ export const PopupEarnAssetsTab: FC = () => {
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
-  const [isDefiExpanded, setIsDefiExpanded] = useState(true)
+
+  // Get expanded state from context
+  const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
+    useEarnAssetsState()
+
+  // Toggle handlers
+  const handleDefiToggle = useCallback(() => {
+    toggleDefiExpanded()
+  }, [toggleDefiExpanded])
+
+  const handleTokenToggle = useCallback(
+    (tokenSymbol: string) => {
+      toggleTokenExpanded(tokenSymbol)
+    },
+    [toggleTokenExpanded],
+  )
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
   const selectedAccounts = useMemo(() => {
@@ -461,7 +482,7 @@ export const PopupEarnAssetsTab: FC = () => {
         <div className="mb-6">
           <button
             type="button"
-            onClick={() => setIsDefiExpanded(!isDefiExpanded)}
+            onClick={handleDefiToggle}
             className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-6 text-sm font-medium"
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
@@ -479,7 +500,12 @@ export const PopupEarnAssetsTab: FC = () => {
           {isDefiExpanded && (
             <div className="flex w-full flex-col gap-4">
               {groupedPositions.map((tokenData) => (
-                <PopupEarnTokenRow key={tokenData.tokenSymbol} tokenData={tokenData} />
+                <PopupEarnTokenRow
+                  key={tokenData.tokenSymbol}
+                  tokenData={tokenData}
+                  isExpanded={expandedTokens.has(tokenData.tokenSymbol)}
+                  onToggle={handleTokenToggle}
+                />
               ))}
             </div>
           )}

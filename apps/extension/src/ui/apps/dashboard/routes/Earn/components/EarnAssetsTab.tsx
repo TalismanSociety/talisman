@@ -3,13 +3,14 @@ import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@t
 import { classNames, LoadableStatus } from "@talismn/util"
 import { BalanceDto, YieldPosition } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
@@ -54,7 +55,7 @@ const YieldPositionRow: FC<{
           (position.balances[0] as unknown as { address?: string })?.address
         const validatorAddress = position.validatorAddress
 
-        // Build URL with query params
+        // Build URL with query params (only account and validator, not expanded state params)
         const params = new URLSearchParams()
         if (accountAddress) params.set("account", accountAddress)
         if (validatorAddress) params.set("validator", validatorAddress)
@@ -135,13 +136,14 @@ const YieldPositionRow: FC<{
 
 const DefiTokenRow: FC<{
   tokenData: GroupedTokenData
-}> = ({ tokenData }) => {
+  isExpanded: boolean
+  onToggle: (tokenSymbol: string) => void
+}> = ({ tokenData, isExpanded, onToggle }) => {
   const { t } = useTranslation()
-  const [isExpanded, setIsExpanded] = useState(false)
 
   const handleToggle = useCallback(() => {
-    setIsExpanded(!isExpanded)
-  }, [isExpanded])
+    onToggle(tokenData.tokenSymbol)
+  }, [onToggle, tokenData.tokenSymbol])
 
   // Calculate total token amount from all positions
   const totalTokenAmount = useMemo(() => {
@@ -286,7 +288,22 @@ export const EarnAssetsTab = () => {
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
-  const [isDefiExpanded, setIsDefiExpanded] = useState(true)
+
+  // Get expanded state from context
+  const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
+    useEarnAssetsState()
+
+  // Toggle handlers
+  const handleDefiToggle = useCallback(() => {
+    toggleDefiExpanded()
+  }, [toggleDefiExpanded])
+
+  const handleTokenToggle = useCallback(
+    (tokenSymbol: string) => {
+      toggleTokenExpanded(tokenSymbol)
+    },
+    [toggleTokenExpanded],
+  )
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
   const selectedAccounts = useMemo(() => {
@@ -449,7 +466,7 @@ export const EarnAssetsTab = () => {
         <div className="mb-6">
           <button
             type="button"
-            onClick={() => setIsDefiExpanded(!isDefiExpanded)}
+            onClick={handleDefiToggle}
             className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-8 text-sm font-medium"
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
@@ -467,7 +484,12 @@ export const EarnAssetsTab = () => {
           {isDefiExpanded && (
             <div className="flex flex-col gap-4">
               {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
-                <DefiTokenRow key={tokenSymbol + tokenData.totalAmountUsd} tokenData={tokenData} />
+                <DefiTokenRow
+                  key={tokenSymbol + tokenData.totalAmountUsd}
+                  tokenData={tokenData}
+                  isExpanded={expandedTokens.has(tokenSymbol)}
+                  onToggle={handleTokenToggle}
+                />
               ))}
             </div>
           )}

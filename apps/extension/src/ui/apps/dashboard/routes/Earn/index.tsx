@@ -1,6 +1,7 @@
 import { FC } from "react"
 import { Route, Routes } from "react-router-dom"
 
+import { EarnAssetsStateProvider } from "@ui/domains/Earn/context/EarnAssetsStateContext"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
@@ -11,10 +12,12 @@ export const EarnRoutes: FC = () => {
   return (
     <PortfolioContainer>
       <DashboardLayout sidebar="accounts">
-        <Routes>
-          <Route path="" element={<ProductionSelectionPage />} />
-          <Route path="yield/:yieldId" element={<DashboardYieldPosition />} />
-        </Routes>
+        <EarnAssetsStateProvider>
+          <Routes>
+            <Route path="" element={<ProductionSelectionPage />} />
+            <Route path="yield/:yieldId" element={<DashboardYieldPosition />} />
+          </Routes>
+        </EarnAssetsStateProvider>
       </DashboardLayout>
     </PortfolioContainer>
   )
