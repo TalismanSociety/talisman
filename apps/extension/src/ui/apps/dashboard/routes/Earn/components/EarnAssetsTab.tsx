@@ -151,13 +151,14 @@ const DefiTokenRow: FC<{
   }, [tokenData.positions])
 
   return (
-    <div className="bg-grey-850 flex w-full flex-col gap-3">
+    <div className="bg-grey-850 flex w-full flex-col gap-3 rounded">
       {/* Token Row - matching DashboardAssetRow style */}
       <button
         type="button"
         onClick={handleToggle}
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden rounded p-8 text-left text-base",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden p-8 text-left text-base",
+          isExpanded ? "rounded-t" : "rounded",
         )}
       >
         {/* Left section - Logo and Token Info */}
@@ -204,7 +205,7 @@ const DefiTokenRow: FC<{
 
       {/* Expanded Positions - part of same row background */}
       {isExpanded && (
-        <div className="bg-grey-850 flex flex-col gap-4 pb-4 pl-8 pr-8">
+        <div className="bg-grey-850 flex flex-col gap-4 rounded-b pb-4 pl-8 pr-8">
           {tokenData.positions.map(({ position, tokenBalance }) => (
             <YieldPositionRow
               key={`${position.yieldId}-${tokenBalance.token.symbol}`}
@@ -453,7 +454,7 @@ export const EarnAssetsTab = () => {
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
             <div className="flex items-center gap-2">
-              <div className="text-body-secondary text-base font-bold">
+              <div className="text-body-secondary text-base font-normal">
                 <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
               </div>
               {isDefiExpanded ? (

@@ -466,7 +466,7 @@ export const PopupEarnAssetsTab: FC = () => {
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
             <div className="flex items-center gap-2">
-              <div className="text-body-secondary text-base font-bold">
+              <div className="text-body-secondary text-base font-normal">
                 <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
               </div>
               {isDefiExpanded ? (
