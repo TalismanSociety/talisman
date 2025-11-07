@@ -8,7 +8,12 @@ import { IconButton } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalancesByAddress,
+  useNetworks,
+  useSelectedCurrency,
+} from "@ui/state"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
@@ -76,6 +81,8 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const networks = useExplorerNetworks(address, search)
+  const currency = useSelectedCurrency()
+  const balances = useBalancesByAddress(address)
 
   const handleNetworkClick = useCallback(
     (network: Network) => () => {
@@ -86,6 +93,16 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
     },
     [address, onClose],
   )
+
+  const sortedNetworks = useMemo(() => {
+    // sort networks by total balance, fallback to alphanetical order on name
+    return networks.sort((a, b) => {
+      const totalNetworkA = balances.find({ networkId: a.id }).sum.fiat(currency).total
+      const totalNetworkB = balances.find({ networkId: b.id }).sum.fiat(currency).total
+      if (totalNetworkA !== totalNetworkB) return totalNetworkB - totalNetworkA
+      return a.name.localeCompare(b.name)
+    })
+  }, [balances, currency, networks])
 
   return (
     <div id="copy-address-modal" className="flex h-full w-full flex-col overflow-hidden bg-black">
@@ -102,10 +119,10 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-          {networks.map((network) => (
+          {sortedNetworks.map((network) => (
             <NetworkRow key={network.id} network={network} onClick={handleNetworkClick(network)} />
           ))}
-          {!networks.length && (
+          {!sortedNetworks.length && (
             <div className="text-body-secondary flex h-32 items-center px-12">
               {t("No network match your search")}
             </div>
