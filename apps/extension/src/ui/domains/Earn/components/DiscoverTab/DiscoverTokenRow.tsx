@@ -56,7 +56,7 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
   }, [products])
 
   return (
-    <div className="bg-grey-850 flex w-full flex-col gap-3">
+    <div className="bg-grey-850 flex w-full flex-col gap-3 rounded">
       {/* Token Row - matching existing patterns */}
       <button
         type="button"
