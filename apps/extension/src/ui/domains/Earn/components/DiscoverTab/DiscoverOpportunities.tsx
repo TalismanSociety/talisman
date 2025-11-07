@@ -41,8 +41,12 @@ const NetworkTokensGroup: FC<{
   const tokenIdentifiers = networkTokens.map((t) => t.symbol)
 
   // Fetch products for all tokens on this network
-  const { data: networkProducts = [], isLoading: isLoadingNetworkProducts } =
-    useYieldProductsByNetwork(network as Networks, tokenIdentifiers)
+  const networkProductsResult = useYieldProductsByNetwork(network as Networks, tokenIdentifiers)
+  const networkProducts = useMemo(
+    () => (networkProductsResult.status === "success" ? networkProductsResult.data : []),
+    [networkProductsResult],
+  )
+  const isLoadingNetworkProducts = networkProductsResult.status === "loading"
 
   // Sort tokens by highest APY
   const sortedTokens = useMemo(() => {

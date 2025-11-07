@@ -17,6 +17,7 @@ import { yieldSdk } from "./yieldSdk"
 const REFRESH_INTERVAL = 10_000
 
 // Shared product cache to deduplicate product fetches across batches
+// Persists like Portfolio's cache pattern (no clearing each cycle)
 const productCache = new Map<string, Promise<YieldDto>>()
 
 const accountAddresses$ = keyringStore.accounts$.pipe(
@@ -60,8 +61,8 @@ const fetchYieldBalancesForAddresses = async (
   addresses: string[],
   signal: AbortSignal,
 ): Promise<YieldBalancesDtoWithProduct[]> => {
-  // Clear product cache at start of each polling cycle to ensure fresh data
-  productCache.clear()
+  // Product cache persists across cycles (matching Portfolio pattern)
+  // Products are refreshed via their own observables
 
   const queries = await buildQueries(addresses)
   const batches = chunk(queries, 1)
