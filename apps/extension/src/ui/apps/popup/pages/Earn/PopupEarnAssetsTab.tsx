@@ -71,7 +71,7 @@ const PopupYieldPositionRow: FC<{
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
             </div>
-            <NetworkLogo networkId={position.networkId} className="inline-block" />
+            <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
             {position.balances.some((b) => b.type === "claimable") && (
               <div className="text-[10px] font-medium text-green-400">+rewards</div>
             )}
@@ -228,7 +228,7 @@ const PopupEarnTokenRow: FC<{
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="text-body flex min-w-0 items-center gap-2 text-sm font-bold">
+            <div className="text-body flex min-w-0 items-center gap-3 text-sm font-bold">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="truncate" title={tokenData.tokenSymbol}>
@@ -239,7 +239,7 @@ const PopupEarnTokenRow: FC<{
               </Tooltip>
               <NetworkLogo
                 networkId={tokenData.positions[0]?.position.networkId}
-                className="shrink-0 text-[1rem]"
+                className="shrink-0 text-base"
               />
             </div>
             <Tooltip>

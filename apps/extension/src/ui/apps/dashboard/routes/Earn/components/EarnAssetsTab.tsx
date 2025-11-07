@@ -69,12 +69,12 @@ const YieldPositionRow: FC<{
         className="size-16"
       />
       <div className="flex w-full grow flex-col gap-4 overflow-hidden">
-        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-base font-bold">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
             </div>
-            <NetworkLogo networkId={position.networkId} className="inline-block" />
+            <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
             <div className="text-body-secondary border-grey-500 rounded-xs border-[0.2rem] px-2 py-1 text-[0.8rem]">
               {(position.product?.mechanics.type || "").toLocaleUpperCase()}
             </div>
@@ -172,11 +172,11 @@ const DefiTokenRow: FC<{
             />
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-body flex items-center gap-2 text-base font-bold">
+            <div className="text-body flex items-center gap-3 text-base font-bold">
               {tokenData.tokenSymbol}
               <NetworkLogo
                 networkId={tokenData.positions[0]?.position.networkId}
-                className="text-[1rem]"
+                className="text-base"
               />
             </div>
             <div className="text-body-secondary text-sm">

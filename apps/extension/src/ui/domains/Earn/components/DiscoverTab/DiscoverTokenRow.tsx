@@ -71,11 +71,11 @@ export const DiscoverTokenRow: FC<DiscoverTokenRowProps> = ({
             <AssetLogo tokenId={undefined} url={tokenLogoURI || null} />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="text-body flex min-w-0 items-center gap-2 text-sm font-bold">
+            <div className="text-body flex min-w-0 items-center gap-3 text-base font-bold">
               <div className="truncate" title={tokenSymbol}>
                 {tokenSymbol}
               </div>
-              <NetworkLogo networkId={networkId} className="shrink-0 text-[1rem]" />
+              <NetworkLogo networkId={networkId} className="shrink-0 text-base" />
             </div>
             <div className="text-body-secondary text-xs">{network?.name || networkId}</div>
           </div>
