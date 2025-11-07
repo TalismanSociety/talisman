@@ -470,9 +470,9 @@ export const PopupEarnAssetsTab: FC = () => {
                 <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
               </div>
               {isDefiExpanded ? (
-                <ChevronDownIcon className="h-6 w-6 text-white" />
+                <ChevronDownIcon className="text-body-secondary h-8 w-8" />
               ) : (
-                <ChevronRightIcon className="h-6 w-6 text-white" />
+                <ChevronRightIcon className="text-body-secondary h-8 w-8" />
               )}
             </div>
           </button>
