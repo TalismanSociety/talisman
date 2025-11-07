@@ -1,7 +1,16 @@
 import { getQuery$, keepAlive } from "@talismn/util"
 import { BalancesQueryDto, Networks } from "@yieldxyz/sdk"
 import chunk from "lodash-es/chunk"
-import { combineLatest, firstValueFrom, from, map, shareReplay, switchMap } from "rxjs"
+import {
+  combineLatest,
+  defer,
+  firstValueFrom,
+  from,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+} from "rxjs"
 
 import { walletReady$ } from "../../libs/isWalletReady"
 import { chaindataProvider } from "../../rpcs/chaindata"
@@ -11,7 +20,8 @@ import { keyringStore } from "../keyring/store"
 import { fetchYieldBalances } from "./fetchYieldBalances"
 import { createYieldPositions } from "./groupYieldBalances"
 import { mapToYieldNetwork } from "./networkMapping"
-import { YieldBalancesDtoWithProduct, YieldDto } from "./types"
+import { updateYieldBalancesStore, yieldBalancesStore$ } from "./store"
+import { YieldBalancesDtoWithProduct, YieldDto, YieldPosition } from "./types"
 import { yieldSdk } from "./yieldSdk"
 
 const REFRESH_INTERVAL = 10_000
@@ -81,21 +91,59 @@ const fetchYieldBalancesForAddresses = async (
 export const yieldBalancesGrouped$ = walletReady$.pipe(
   switchMap(() =>
     accountAddresses$.pipe(
-      switchMap((addresses) =>
-        getQuery$({
-          namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
-          args: addresses,
-          queryFn: (addresses, signal) => fetchYieldBalancesForAddresses(addresses, signal),
-          refreshInterval: REFRESH_INTERVAL,
-        }).pipe(
-          map((result) => {
-            if (result.status === "loaded") {
-              return { status: "success", data: createYieldPositions(result.data) }
-            }
-            return { status: "loading", data: [] }
+      switchMap((addresses) => {
+        // Load cached data from store and show it immediately
+        return defer(() =>
+          firstValueFrom(yieldBalancesStore$).then((storedItems) => {
+            // Convert stored items to YieldBalancesDtoWithProduct format
+            // The store has YieldPositionItem[] which is { yieldId, balances }[]
+            // We need to convert it to YieldBalancesDtoWithProduct[] for createYieldPositions
+            const itemsWithProducts: YieldBalancesDtoWithProduct[] = storedItems.map((item) => ({
+              yieldId: item.yieldId,
+              balances: item.balances,
+              // Product will be fetched separately if needed, but for cached display we can show without it
+              product: undefined,
+            }))
+            return createYieldPositions(itemsWithProducts)
           }),
-        ),
-      ),
+        ).pipe(
+          switchMap((cachedPositions) => {
+            // Start with cached positions if available
+            const initialData: YieldPosition[] = cachedPositions.length > 0 ? cachedPositions : []
+
+            return getQuery$({
+              namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
+              args: addresses,
+              queryFn: async (addresses, signal) => {
+                const balancesData = await fetchYieldBalancesForAddresses(addresses, signal)
+                if (!signal.aborted) {
+                  // Update store with new data (store as YieldPositionItem[])
+                  const itemsToStore = balancesData.map((item) => ({
+                    yieldId: item.yieldId,
+                    balances: item.balances,
+                  }))
+                  updateYieldBalancesStore(itemsToStore)
+                }
+                return balancesData
+              },
+              refreshInterval: REFRESH_INTERVAL,
+            }).pipe(
+              startWith({
+                status: "loading" as const,
+                data: initialData,
+                error: undefined,
+              }),
+              map((result) => {
+                if (result.status === "loaded") {
+                  return { status: "success" as const, data: createYieldPositions(result.data) }
+                }
+                // If loading but we have cached data, show it
+                return { status: "loading" as const, data: initialData }
+              }),
+            )
+          }),
+        )
+      }),
     ),
   ),
   shareReplay({ refCount: true, bufferSize: 1 }),

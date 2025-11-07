@@ -1,7 +1,7 @@
 import { splitSubject } from "@talismn/util"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
+import { debounceTime, distinctUntilChanged, ReplaySubject, skip, take } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
@@ -26,6 +26,9 @@ const [setYieldProducts, yieldProductsStore$] = splitSubject(
 )
 export { yieldProductsStore$ }
 
+// Initialize store immediately with default data so ReplaySubject has a value
+setYieldProducts(DEFAULT_DATA)
+
 export const updateYieldProductsStore = (data: YieldProductsStorage) => {
   setYieldProducts({
     products: data.products
@@ -35,6 +38,31 @@ export const updateYieldProductsStore = (data: YieldProductsStorage) => {
       }))
       // enforce consistent ordering by network to allow for easier change comparison
       .sort((a, b) => a.network.localeCompare(b.network)),
+  })
+}
+
+// Helper function to get cached products for a network
+export const getCachedProductsForNetwork = (
+  store: YieldProductsStorage,
+  network: string,
+): YieldDto[] => {
+  const networkData = store.products.find((item) => item.network === network)
+  return networkData?.products || []
+}
+
+// Helper function to update products for a network in the store
+export const updateProductsForNetwork = (network: string, products: YieldDto[]) => {
+  yieldProductsStore$.pipe(take(1)).subscribe((store) => {
+    const existingIndex = store.products.findIndex((item) => item.network === network)
+    const updatedProducts = [...store.products]
+
+    if (existingIndex >= 0) {
+      updatedProducts[existingIndex] = { network, products }
+    } else {
+      updatedProducts.push({ network, products })
+    }
+
+    updateYieldProductsStore({ products: updatedProducts })
   })
 }
 
