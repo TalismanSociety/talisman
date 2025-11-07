@@ -35,51 +35,76 @@ function getValidatorAddressFromBalance(balance: BalanceDto): string | undefined
 export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): YieldPosition[] => {
   const positions: YieldPosition[] = []
 
-  // Group items by yieldId and validatorAddress to preserve validator information
-  const itemsByYieldAndValidator = new Map<string, YieldBalancesDtoWithProduct[]>()
+  // Group balances by yieldId, validatorAddress, and accountAddress
+  // Each balance has an address field, so we group individual balances rather than items
+  const balancesByKey = new Map<
+    string,
+    { balances: BalanceDto[]; item: YieldBalancesDtoWithProduct }
+  >()
 
   for (const item of items) {
-    // Create a key that includes both yieldId and validatorAddress (if available)
-    // For items without validator info, we'll use yieldId only
-    const validatorAddress =
-      getValidatorAddressFromItem(item) ||
-      (item.balances[0] ? getValidatorAddressFromBalance(item.balances[0]) : undefined)
-    const key = validatorAddress ? `${item.yieldId}-${validatorAddress}` : item.yieldId
+    // Filter out points tokens
+    const validBalances = item.balances.filter((balance) => !balance.token.isPoints)
 
-    if (!itemsByYieldAndValidator.has(key)) {
-      itemsByYieldAndValidator.set(key, [])
+    for (const balance of validBalances) {
+      // Extract validatorAddress from item or balance
+      const validatorAddress =
+        getValidatorAddressFromItem(item) || getValidatorAddressFromBalance(balance)
+
+      // Extract account address from balance
+      // The BalanceDto from Yield API should have an address field
+      const balanceWithAddress = balance as unknown as { address?: string }
+      const accountAddress = balanceWithAddress.address
+
+      // If address is missing, skip this balance (shouldn't happen, but defensive)
+      if (!accountAddress) {
+        continue
+      }
+
+      // Create grouping key: yieldId::validatorAddress::accountAddress
+      // If no validator, use: yieldId::accountAddress
+      // Using :: as separator to avoid conflicts with addresses that might contain dashes
+      const key = validatorAddress
+        ? `${item.yieldId}::${validatorAddress}::${accountAddress}`
+        : `${item.yieldId}::${accountAddress}`
+
+      if (!balancesByKey.has(key)) {
+        balancesByKey.set(key, { balances: [], item })
+      }
+      balancesByKey.get(key)!.balances.push(balance)
     }
-    itemsByYieldAndValidator.get(key)!.push(item)
   }
 
-  for (const [key, yieldItems] of itemsByYieldAndValidator) {
-    // Combine all balances from all items with the same yieldId and validator
-    const allBalances = yieldItems
-      .flatMap((item) => item.balances)
-      .filter((balance) => !balance.token.isPoints)
-
+  for (const [key, { balances, item }] of balancesByKey) {
     // Show positions that have any balances (including claimable ones)
-    if (allBalances.length === 0) continue
+    if (balances.length === 0) continue
 
-    const firstBalance = allBalances[0]
-    const firstItem = yieldItems[0]
+    const firstBalance = balances[0]
 
-    // Calculate total USD
-    const totalAmountUsd = allBalances.reduce((sum, b) => sum + parseFloat(b.amountUsd || "0"), 0)
+    // Calculate total USD for this position (only balances for this account)
+    const totalAmountUsd = balances.reduce((sum, b) => sum + parseFloat(b.amountUsd || "0"), 0)
 
     // Get display name - always use product metadata name
-    const displayName = firstItem.product?.metadata.name || "Yield Position"
+    const displayName = item.product?.metadata.name || "Yield Position"
 
-    // Extract validatorAddress from the key or from the first balance's validator.address
-    const validatorAddress = key.includes("-")
-      ? key.split("-")[1]
-      : getValidatorAddressFromItem(firstItem) ||
-        getValidatorAddressFromBalance(firstBalance) ||
-        undefined
+    // Extract validatorAddress and accountAddress from the key
+    // Key format: yieldId::validatorAddress::accountAddress or yieldId::accountAddress
+    const keyParts = key.split("::")
+    let validatorAddress: string | undefined
+
+    if (keyParts.length === 3) {
+      // Has validator: yieldId::validatorAddress::accountAddress
+      validatorAddress = keyParts[1]
+    } else if (keyParts.length === 2) {
+      // eat a 5 star chocolate: do nothing.
+    } else {
+      validatorAddress =
+        getValidatorAddressFromItem(item) || getValidatorAddressFromBalance(firstBalance)
+    }
 
     positions.push({
-      ...firstItem,
-      balances: allBalances,
+      ...item,
+      balances, // Only balances for this specific account
       validatorAddress, // Preserve validator address if available
       displayName,
       totalAmountUsd,

@@ -1,7 +1,7 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { FC, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -14,24 +14,40 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 export const PopupYieldPosition = () => {
   const { popupOpenEvent } = useAnalytics()
   const { yieldId } = useParams()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
     popupOpenEvent("earn yield position")
   }, [popupOpenEvent])
 
+  const accountAddress = searchParams.get("account")
+  const validatorAddress = searchParams.get("validator")
+
   return (
     <>
-      <YieldPositionHeader yieldId={yieldId} />
+      <YieldPositionHeader
+        yieldId={yieldId}
+        accountAddress={accountAddress}
+        validatorAddress={validatorAddress}
+      />
       <div className="h-4 shrink-0"></div>
-      <PopupYieldPositionDetails yieldId={yieldId} />
+      <PopupYieldPositionDetails
+        yieldId={yieldId}
+        accountAddress={accountAddress}
+        validatorAddress={validatorAddress}
+      />
     </>
   )
 }
 
-const YieldPositionHeader: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
+const YieldPositionHeader: FC<{
+  yieldId: string | undefined
+  accountAddress: string | null
+  validatorAddress: string | null
+}> = ({ yieldId, accountAddress, validatorAddress }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const position = useYieldPosition(yieldId)
+  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
 
   if (!position) return null
 

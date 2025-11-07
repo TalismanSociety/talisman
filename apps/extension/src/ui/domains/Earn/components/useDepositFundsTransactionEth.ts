@@ -38,15 +38,16 @@ export const useDepositFundsTransactionEth = () => {
 
     // Get all transactions from Yield API and parse them
     if (allTransactions.length > 0) {
-      const parsedTransactions = allTransactions
-        .filter((tx) => tx.unsignedTransaction)
-        .map((tx) => parseUnsignedTransaction(tx.unsignedTransaction))
-        .filter(Boolean)
+      // Find the first non-skipped transaction for gas estimation
+      const firstNonSkippedTransaction = allTransactions.find(
+        (tx) => tx.status !== "SKIPPED" && tx.unsignedTransaction,
+      )
 
-      if (parsedTransactions.length > 0) {
-        // For now, return the first transaction for fee estimation
-        // The SequentialTransactionExecutor will handle all transactions
-        return [parsedTransactions[0], yieldError]
+      if (firstNonSkippedTransaction?.unsignedTransaction) {
+        const parsedTx = parseUnsignedTransaction(firstNonSkippedTransaction.unsignedTransaction)
+        if (parsedTx) {
+          return [parsedTx, yieldError]
+        }
       }
     }
 

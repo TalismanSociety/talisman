@@ -48,6 +48,7 @@ const fetchBatchWithProducts = async (
   const productById = new Map(
     products.filter((p): p is YieldDto => p !== null).map((p) => [p.id, p]),
   )
+
   return balancesResp.map((item) => ({
     ...item,
     product: productById.get(item.yieldId),
@@ -81,7 +82,7 @@ export const yieldBalancesGrouped$ = walletReady$.pipe(
     accountAddresses$.pipe(
       switchMap((addresses) =>
         getQuery$({
-          namespace: "yield-balances",
+          namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
           args: addresses,
           queryFn: (addresses, signal) => fetchYieldBalancesForAddresses(addresses, signal),
           refreshInterval: REFRESH_INTERVAL,

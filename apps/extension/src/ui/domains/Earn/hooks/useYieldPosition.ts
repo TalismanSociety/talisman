@@ -3,15 +3,39 @@ import { useMemo } from "react"
 
 import { useYieldBalancesGrouped } from "./useYieldBalancesGrouped"
 
-export const useYieldPosition = (yieldId: string | undefined) => {
+export const useYieldPosition = (
+  yieldId: string | undefined,
+  accountAddress?: string | null,
+  validatorAddress?: string | null,
+) => {
   const yieldBalancesGrouped = useYieldBalancesGrouped()
 
   const position = useMemo(() => {
     if (!yieldId || yieldBalancesGrouped.status !== "success" || !yieldBalancesGrouped.data)
       return null
 
-    return yieldBalancesGrouped.data.find((pos: YieldPosition) => pos.yieldId === yieldId) || null
-  }, [yieldId, yieldBalancesGrouped])
+    // Find position matching yieldId, account address, and validator address (if provided)
+    return (
+      yieldBalancesGrouped.data.find((pos: YieldPosition) => {
+        if (pos.yieldId !== yieldId) return false
+
+        // If account address is provided, check if any balance matches
+        if (accountAddress) {
+          const hasMatchingAccount = pos.balances.some(
+            (balance) => (balance as unknown as { address?: string }).address === accountAddress,
+          )
+          if (!hasMatchingAccount) return false
+        }
+
+        // If validator address is provided, check if it matches
+        if (validatorAddress) {
+          if (pos.validatorAddress !== validatorAddress) return false
+        }
+
+        return true
+      }) || null
+    )
+  }, [yieldId, accountAddress, validatorAddress, yieldBalancesGrouped])
 
   return position
 }

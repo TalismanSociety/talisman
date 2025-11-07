@@ -80,7 +80,7 @@ const TokenInput = () => {
   if (!token) return null
 
   return (
-    <div className="flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4">
+    <div className="mx-auto flex max-w-[400px] flex-nowrap items-center justify-center gap-4">
       <input
         ref={refTokensInput}
         type="text"
@@ -144,7 +144,7 @@ const FiatInput = () => {
   if (!tokenRates) return null
 
   return (
-    <div className="flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4">
+    <div className="mx-auto flex max-w-[400px] flex-nowrap items-center justify-center gap-4">
       <input
         ref={refFiatInput}
         type="text"
@@ -236,10 +236,10 @@ export const AmountEdit = () => {
   const [isTokenEdit] = useState(true)
 
   return (
-    <div className="w-full grow">
+    <div className="flex w-full grow flex-col items-center">
       {!!token && (
         <>
-          <div className="flex h-[8rem] flex-col justify-end text-xl font-bold">
+          <div className="flex h-[8rem] w-full flex-col items-center justify-end text-xl font-bold">
             {isTokenEdit ? <TokenInput /> : <FiatInput />}
           </div>
           {tokenRates && (

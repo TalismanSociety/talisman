@@ -47,7 +47,21 @@ const YieldPositionRow: FC<{
       className={classNames(
         "bg-grey-850 hover:bg-grey-800 flex h-auto w-full items-center gap-4 overflow-hidden rounded-sm p-6",
       )}
-      onClick={() => navigate(`/earn/yield/${position.yieldId}`)}
+      onClick={() => {
+        // Get account address from the first balance (all balances in a position have the same account)
+        const accountAddress =
+          (tokenBalance as unknown as { address?: string }).address ||
+          (position.balances[0] as unknown as { address?: string })?.address
+        const validatorAddress = position.validatorAddress
+
+        // Build URL with query params
+        const params = new URLSearchParams()
+        if (accountAddress) params.set("account", accountAddress)
+        if (validatorAddress) params.set("validator", validatorAddress)
+
+        const queryString = params.toString()
+        navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)
+      }}
     >
       <AssetLogo
         url={validator?.logoURI || position.product?.metadata.logoURI || tokenBalance.token.logoURI}

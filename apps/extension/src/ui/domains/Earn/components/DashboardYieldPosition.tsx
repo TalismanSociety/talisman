@@ -23,8 +23,12 @@ import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 import { mapYieldInputTokenToTokenId } from "../utils/tokenMapping"
 import { WithdrawModal } from "../WithdrawModal"
 
-export const DashboardYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
-  const position = useYieldPosition(yieldId)
+export const DashboardYieldPosition: FC<{
+  yieldId: string | undefined
+  accountAddress?: string | null
+  validatorAddress?: string | null
+}> = ({ yieldId, accountAddress, validatorAddress }) => {
+  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
   const { open } = useEarnModal()
   const tokens = useTokens()
 

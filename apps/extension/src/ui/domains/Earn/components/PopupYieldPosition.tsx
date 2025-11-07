@@ -22,8 +22,12 @@ import { useYieldPosition } from "../hooks/useYieldPosition"
 import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 import { mapYieldInputTokenToTokenId, mapYieldTokenToTokenId } from "../utils/tokenMapping"
 
-export const PopupYieldPosition: FC<{ yieldId: string | undefined }> = ({ yieldId }) => {
-  const position = useYieldPosition(yieldId)
+export const PopupYieldPosition: FC<{
+  yieldId: string | undefined
+  accountAddress?: string | null
+  validatorAddress?: string | null
+}> = ({ yieldId, accountAddress, validatorAddress }) => {
+  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
   const { open } = useEarnModal()
   const tokens = useTokens()
   const navigate = useNavigate()

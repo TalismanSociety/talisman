@@ -34,8 +34,20 @@ const PopupYieldPositionRow: FC<{
   const navigate = useNavigate()
 
   const handleClick = useCallback(() => {
-    navigate(`/earn/yield/${position.yieldId}`)
-  }, [navigate, position.yieldId])
+    // Get account address from the first balance (all balances in a position have the same account)
+    const accountAddress =
+      (tokenBalance as unknown as { address?: string }).address ||
+      (position.balances[0] as unknown as { address?: string })?.address
+    const validatorAddress = position.validatorAddress
+
+    // Build URL with query params
+    const params = new URLSearchParams()
+    if (accountAddress) params.set("account", accountAddress)
+    if (validatorAddress) params.set("validator", validatorAddress)
+
+    const queryString = params.toString()
+    navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)
+  }, [navigate, position.yieldId, position.validatorAddress, position.balances, tokenBalance])
 
   return (
     <button
