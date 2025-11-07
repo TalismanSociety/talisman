@@ -297,6 +297,7 @@ export const PopupEarnAssetsTab: FC = () => {
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
+  const [isDefiExpanded, setIsDefiExpanded] = useState(true)
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
   const selectedAccounts = useMemo(() => {
@@ -416,6 +417,12 @@ export const PopupEarnAssetsTab: FC = () => {
     )
   }, [yieldBalancesGrouped, search, selectedAccounts])
 
+  // Calculate total fiat value from all Defi positions
+  const totalDefiAmountUsd = useMemo(() => {
+    if (!groupedPositions.length) return 0
+    return groupedPositions.reduce((total, tokenData) => total + tokenData.totalAmountUsd, 0)
+  }, [groupedPositions])
+
   if (yieldBalancesGrouped.status === "loading") {
     return <PopupEarnAssetsSkeleton />
   }
@@ -437,15 +444,33 @@ export const PopupEarnAssetsTab: FC = () => {
         <PopupStakingTile />
       </div>
 
-      {/* Yield Positions Section */}
+      {/* DeFi Positions Section */}
       {groupedPositions.length > 0 && (
         <div className="mb-6">
-          <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Yield Positions")}</h2>
-          <div className="flex w-full flex-col gap-4">
-            {groupedPositions.map((tokenData) => (
-              <PopupEarnTokenRow key={tokenData.tokenSymbol} tokenData={tokenData} />
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsDefiExpanded(!isDefiExpanded)}
+            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between px-6 text-sm font-medium"
+          >
+            <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
+            <div className="flex items-center gap-2">
+              <div className="text-body-secondary text-base font-bold">
+                <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
+              </div>
+              {isDefiExpanded ? (
+                <ChevronDownIcon className="h-6 w-6 text-white" />
+              ) : (
+                <ChevronRightIcon className="h-6 w-6 text-white" />
+              )}
+            </div>
+          </button>
+          {isDefiExpanded && (
+            <div className="flex w-full flex-col gap-4">
+              {groupedPositions.map((tokenData) => (
+                <PopupEarnTokenRow key={tokenData.tokenSymbol} tokenData={tokenData} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

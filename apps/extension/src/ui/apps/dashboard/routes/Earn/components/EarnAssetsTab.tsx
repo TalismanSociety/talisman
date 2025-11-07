@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -179,9 +180,9 @@ const DefiTokenRow: FC<{
           />
           <div className="flex items-center">
             {isExpanded ? (
-              <ChevronDownIcon className="h-8 w-8 text-white" />
+              <ChevronDownIcon className="text-body-secondary h-8 w-8" />
             ) : (
-              <ChevronRightIcon className="h-8 w-8 text-white" />
+              <ChevronRightIcon className="text-body-secondary h-8 w-8" />
             )}
           </div>
         </div>
@@ -270,6 +271,7 @@ export const EarnAssetsTab = () => {
   const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
+  const [isDefiExpanded, setIsDefiExpanded] = useState(true)
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
   const selectedAccounts = useMemo(() => {
@@ -398,6 +400,15 @@ export const EarnAssetsTab = () => {
   // Show grouped assets instead of individual positions
   const hasDefiAssets = convertedGroupedByToken.size > 0
 
+  // Calculate total fiat value from all Defi positions
+  const totalDefiAmountUsd = useMemo(() => {
+    if (!hasDefiAssets) return 0
+    return Array.from(convertedGroupedByToken.values()).reduce(
+      (total, tokenData) => total + tokenData.totalAmountUsd,
+      0,
+    )
+  }, [convertedGroupedByToken, hasDefiAssets])
+
   if (!hasDefiAssets && !isInitialising && !isLoading) {
     return (
       <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
@@ -421,12 +432,30 @@ export const EarnAssetsTab = () => {
       {/* Defi Section */}
       {hasDefiAssets && (
         <div className="mb-6">
-          <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Defi")}</h2>
-          <div className="flex flex-col gap-4">
-            {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
-              <DefiTokenRow key={tokenSymbol + tokenData.totalAmountUsd} tokenData={tokenData} />
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsDefiExpanded(!isDefiExpanded)}
+            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between px-8 text-sm font-medium"
+          >
+            <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
+            <div className="flex items-center gap-2">
+              <div className="text-body-secondary text-base font-bold">
+                <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
+              </div>
+              {isDefiExpanded ? (
+                <ChevronDownIcon className="h-6 w-6 text-white" />
+              ) : (
+                <ChevronRightIcon className="h-6 w-6 text-white" />
+              )}
+            </div>
+          </button>
+          {isDefiExpanded && (
+            <div className="flex flex-col gap-4">
+              {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
+                <DefiTokenRow key={tokenSymbol + tokenData.totalAmountUsd} tokenData={tokenData} />
+              ))}
+            </div>
+          )}
         </div>
       )}
       {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}
