@@ -92,7 +92,8 @@ const AlphaTokensClaimSettingsMenuItem: FC<{ token: SubDTaoToken; balances: Bala
       address: balance.address,
       netuid: token.netuid,
       hotkey: token.hotkey,
-      stakeDirection: "unbond",
+      stakeDirection: "bond",
+      step: "claim-settings",
     }
   }, [accounts, balances.each, bittensorNetworkIds, token.hotkey, token.netuid, token.networkId])
 
