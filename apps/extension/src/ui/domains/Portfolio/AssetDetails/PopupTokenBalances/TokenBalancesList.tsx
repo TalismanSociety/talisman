@@ -79,6 +79,7 @@ export const TokenBalancesList = ({
         {tokenId && (
           <div className="size-[3.8rem] shrink-0">
             <TokenContextMenu
+              balances={balances}
               tokenId={tokenId}
               className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
             />

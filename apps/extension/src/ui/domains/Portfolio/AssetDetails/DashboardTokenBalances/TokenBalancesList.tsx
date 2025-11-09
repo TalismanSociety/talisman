@@ -68,6 +68,7 @@ export const TokenBalancesList = ({
                   <SendFundsTokenButton tokenId={tokenId} />
                   {tokenId && (
                     <TokenContextMenu
+                      balances={balances}
                       tokenId={tokenId}
                       placement="bottom-start"
                       className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center p-0 text-xs opacity-50"
