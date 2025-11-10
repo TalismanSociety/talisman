@@ -17,8 +17,6 @@ export class OnChainId {
   constructor(config: OptionalConfig) {
     this.#config = {
       ...config,
-      chainIdAlephZero: config.chainIdAlephZero ?? "aleph-zero",
-      aznsSupportedChainIdAlephZero: config.aznsSupportedChainIdAlephZero ?? "alephzero",
       networkIdEthereum: config.networkIdEthereum ?? "1",
     }
   }
@@ -27,13 +25,15 @@ export class OnChainId {
     resolveNames(this.#config, ...args)
   resolveEnsNames = (...args: DropFirst<Parameters<typeof resolveEnsNames>>) =>
     resolveEnsNames(this.#config, ...args)
+  /** @deprecated */
   resolveAznsNames = (...args: DropFirst<Parameters<typeof resolveAznsNames>>) =>
     resolveAznsNames(this.#config, ...args)
 
   lookupAddresses = (...args: DropFirst<Parameters<typeof lookupAddresses>>) =>
     lookupAddresses(this.#config, ...args)
-  lookupAznsAddresses = (...args: DropFirst<Parameters<typeof lookupAznsAddresses>>) =>
-    lookupAznsAddresses(this.#config, ...args)
+  /** @deprecated */
   lookupEnsAddresses = (...args: DropFirst<Parameters<typeof lookupEnsAddresses>>) =>
     lookupEnsAddresses(this.#config, ...args)
+  lookupAznsAddresses = (...args: DropFirst<Parameters<typeof lookupAznsAddresses>>) =>
+    lookupAznsAddresses(this.#config, ...args)
 }
