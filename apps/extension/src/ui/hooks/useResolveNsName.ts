@@ -1,5 +1,5 @@
 import { isEthereumAddress } from "@talismn/crypto"
-import { isPotentialAzns, isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
+import { isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
 import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"
@@ -9,17 +9,13 @@ import { api } from "@ui/api"
 export type Options = {
   /** Enabled by default, set to false to disable */
   ens?: boolean
-
-  /** Enabled by default, set to false to disable */
-  azns?: boolean
 }
 
 /**
- * Use this hook to resolve a string like `0xkheops.eth` or `talisman.azero` to an address.
+ * Use this hook to resolve a string like `0xkheops.eth` to an address.
  */
 export const useResolveNsName = (resolveName?: string, options?: Options) => {
   const useEns = options?.ens !== false
-  const useAzns = options?.azns !== false
 
   const [name, setName] = useState(resolveName)
   useDebounce(() => setName(resolveName), 750, [resolveName])
@@ -31,7 +27,8 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
     // don't look up ethereum addresses
     !isEthereumAddress(name) &&
     // only look up potential ns names
-    ((useEns && isPotentialEns(name)) || (useAzns && isPotentialAzns(name)))
+    useEns &&
+    isPotentialEns(name)
       ? name
       : undefined
 

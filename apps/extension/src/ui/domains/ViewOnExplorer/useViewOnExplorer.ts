@@ -29,6 +29,7 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
 
   const open = useCallback(() => {
     if (blockExplorerUrl) {
+      // only happens if account has a genesisHash
       window.open(blockExplorerUrl, "_blank")
     } else {
       openNetworkPickerModal({ address })
@@ -36,7 +37,6 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   }, [address, blockExplorerUrl, openNetworkPickerModal])
 
   return {
-    blockExplorerUrl,
     open,
     canOpen,
   }

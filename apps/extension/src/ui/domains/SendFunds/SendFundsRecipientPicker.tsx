@@ -30,7 +30,7 @@ import { useAccounts, useNetworkById, useToken } from "@ui/state"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
-import { ToWarning, useSendFunds } from "./useSendFunds"
+import { useSendFunds } from "./useSendFunds"
 
 const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
   const { t } = useTranslation()
@@ -148,7 +148,6 @@ export const SendFundsRecipientPicker = () => {
   }, [matchingAccounts])
 
   const [nsLookup, { isNsLookup, isNsFetching }] = useResolveNsName(search, {
-    azns: isNetworkDot(network),
     ens: isNetworkEth(network),
   })
 
@@ -188,16 +187,10 @@ export const SendFundsRecipientPicker = () => {
 
   const handleSelect = useCallback(
     (address: string) => {
-      // Azns is the only lookup we use for polkadot addresses. If this changes, we will need to use the NsLookupType here.
-      const isAzeroDomainButNotAzero =
-        !address.startsWith("0x") && typeof nsLookup === "string" && network?.id !== "aleph-zero"
-
-      const toWarning: ToWarning = isAzeroDomainButNotAzero ? "AZERO_ID" : undefined
-
       set("to", address, true)
-      setRecipientWarning(toWarning)
+      setRecipientWarning(undefined)
     },
-    [network?.id, nsLookup, set, setRecipientWarning],
+    [set, setRecipientWarning],
   )
 
   const [unknownAddress, setUnknownAddress] = useState<string>()
