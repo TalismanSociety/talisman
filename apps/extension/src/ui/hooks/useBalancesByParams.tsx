@@ -9,7 +9,11 @@ import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state"
 
-const INITIAL_VALUE: BalanceSubscriptionResponse = { status: "initialising", balances: [] }
+const INITIAL_VALUE: BalanceSubscriptionResponse = {
+  status: "initialising",
+  balances: [],
+  failedBalanceIds: [],
+}
 
 const DEFAULT_TOKENS_AND_ADDRESSES: AddressesAndTokens = { addresses: [], tokenIds: [] }
 
