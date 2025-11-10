@@ -1,25 +1,28 @@
 import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, XIcon } from "@talismn/icons"
 import { isAccountCompatibleWithNetwork, isAddressCompatibleWithNetwork } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
-import { useAccountByAddress, useBalancesByAddress, useNetworks } from "@ui/state"
+import {
+  useAccountByAddress,
+  useBalancesByAddress,
+  useNetworks,
+  useSelectedCurrency,
+} from "@ui/state"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
 const useExplorerNetworks = (address: string, search: string): Network[] => {
   const account = useAccountByAddress(address)
   const networks = useNetworks({ activeOnly: true, includeTestnets: true })
-
+  const currency = useSelectedCurrency()
   const balances = useBalancesByAddress(address)
-  const balancesPerNetwork = useBalancesFiatTotalPerNetwork(balances)
 
-  const compatibleChains = useMemo<Network[]>(
+  const compatibleNetworks = useMemo<Network[]>(
     () =>
       networks.filter(
         (chain) =>
@@ -34,15 +37,17 @@ const useExplorerNetworks = (address: string, search: string): Network[] => {
     [account, address, networks],
   )
 
-  const sortedNetworks = useMemo(
-    () =>
-      compatibleChains.sort((a, b) => {
-        if (balancesPerNetwork[a.id] || balancesPerNetwork[b.id])
-          return (balancesPerNetwork[b.id] ?? 0) - (balancesPerNetwork[a.id] ?? 0)
-        return (a.name ?? "").localeCompare(b.name ?? "")
-      }),
-    [balancesPerNetwork, compatibleChains],
-  )
+  const sortedNetworks = useMemo(() => {
+    // sort networks by total balance, fallback to alphanetical order on name
+    return compatibleNetworks
+      .concat()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a, b) => {
+        const totalNetworkA = balances.find({ networkId: a.id }).sum.fiat(currency).total
+        const totalNetworkB = balances.find({ networkId: b.id }).sum.fiat(currency).total
+        return totalNetworkA !== totalNetworkB ? totalNetworkB - totalNetworkA : 0
+      })
+  }, [balances, compatibleNetworks, currency])
 
   return useMemo(() => {
     const lowerSearch = search.toLowerCase()
@@ -74,7 +79,8 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
   onClose,
 }) => {
   const { t } = useTranslation()
-  const [search, setSearch] = useState("")
+  const [rawSearch, setSearch] = useState("")
+  const search = useDeferredValue(rawSearch)
   const networks = useExplorerNetworks(address, search)
 
   const handleNetworkClick = useCallback(
