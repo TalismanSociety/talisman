@@ -1,25 +1,19 @@
-import { isEthereumAddress, isSs58Address } from "@talismn/crypto"
+import { isEthereumAddress } from "@talismn/crypto"
 
 import log from "../log"
-import { resolveAddressToDomain } from "./aznsRouter"
 import { Config, OnChainIds } from "./types"
 
 /**
  * Looks up the on-chain identifiers for some addresses.
- * Supports ENS and AZNS.
+ * Supports ENS.
  */
 export const lookupAddresses = async (config: Config, addresses: string[]): Promise<OnChainIds> => {
   const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
 
-  const [aznsDomains, ensDomains] = await Promise.all([
-    lookupAznsAddresses(config, addresses),
+  const [ensDomains] = await Promise.all([
     lookupEnsAddresses(config, addresses),
+    // add more providers here
   ])
-
-  aznsDomains.forEach((domain, address) => {
-    if (!domain) return
-    onChainIds.set(address, domain)
-  })
 
   ensDomains.forEach((domain, address) => {
     if (!domain) return
@@ -31,35 +25,15 @@ export const lookupAddresses = async (config: Config, addresses: string[]): Prom
 
 /**
  * Looks up the on-chain AZNS domains for some addresses.
+ * @deprecated
  */
 export const lookupAznsAddresses = async (
   config: Config,
   addresses: string[],
 ): Promise<OnChainIds> => {
-  const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
-
-  if (!config.chainConnectors.substrate) {
-    log.warn(`Could not find Substrate chainConnector in OnChainId::lookupAznsAddresses`)
-    return onChainIds
-  }
-
-  const provider = config.chainConnectors.substrate.asProvider(config.chainIdAlephZero)
-
-  const results = await Promise.allSettled(
-    addresses.map(async (address) => {
-      if (!isSs58Address(address)) return
-
-      const domain = await resolveAddressToDomain(address, {
-        chainId: config.aznsSupportedChainIdAlephZero,
-        registry: config.registryAlephZero,
-        provider,
-      })
-      if (domain) onChainIds.set(address, domain)
-    }),
+  return new Promise<OnChainIds>((resolve) =>
+    resolve(new Map(addresses.map((address) => [address, null]))),
   )
-  results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
-
-  return onChainIds
 }
 
 /**
