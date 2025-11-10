@@ -1,16 +1,22 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Address, Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { Account } from "extension-core"
+import { log } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { api } from "@ui/api"
-import { useAccounts, useBalances } from "@ui/state"
+import { useAccounts, useBalances, useToken } from "@ui/state"
+import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 const isCompatibleAddress = (from: Address, to: Address) => {
-  // in the future there might be other account types, for now only ethereum is specific
-  return isEthereumAddress(from) === isEthereumAddress(to)
+  try {
+    return detectAddressEncoding(from) === detectAddressEncoding(to)
+  } catch (err) {
+    log.error("Error detecting address encoding", { from, to, err })
+    return false
+  }
 }
 
 export const useSendFundsPopup = (
@@ -20,6 +26,7 @@ export const useSendFundsPopup = (
   to?: Address,
 ) => {
   const { t } = useTranslation()
+  const token = useToken(tokenId)
   const accounts = useAccounts("owned")
   const balances = useBalances("owned")
   const transferableBalance = useMemo(() => {
@@ -65,8 +72,10 @@ export const useSendFundsPopup = (
           cannotSendFundsReason: t("None of your accounts can send funds to this address"),
         }
     }
+    if (token && !isTransferableToken(token))
+      return { canSendFunds: false, cannotSendFundsReason: t("This token is not transferable") }
     return { canSendFunds: true }
-  }, [account, accounts, t, to, tokenId, transferableBalance])
+  }, [account, accounts, t, to, tokenId, transferableBalance, token])
 
   const openSendFundsPopup = useCallback(() => {
     if (!canSendFunds) return

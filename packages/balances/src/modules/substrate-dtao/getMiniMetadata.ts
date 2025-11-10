@@ -48,9 +48,7 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
 
   compactMetadata(
     metadata,
-    [
-      //  { pallet: "SubtensorModule", items: ["StakingHotkeys", "Stake"] }
-    ],
+    [{ pallet: "SubtensorModule", items: ["TransferToggle"] }],
     [
       {
         runtimeApi: "StakeInfoRuntimeApi",

@@ -5,8 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useTokensMap } from "@ui/state"
-import { isTransferableToken } from "@ui/util/isTransferableToken"
+import { useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
@@ -19,8 +18,7 @@ export const SendFundsTokenButton = ({
 }) => {
   const { t } = useTranslation()
   const { selectedAccount } = usePortfolioNavigation()
-  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets: true })
-  const token = isTransferableToken(tokensMap[tokenId]) ? tokensMap[tokenId] : undefined
+  const token = useToken(tokenId)
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,
