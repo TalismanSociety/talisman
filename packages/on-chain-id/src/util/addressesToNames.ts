@@ -5,7 +5,7 @@ import { Config, OnChainIds } from "./types"
 
 /**
  * Looks up the on-chain identifiers for some addresses.
- * Supports ENS and AZNS.
+ * Supports ENS.
  */
 export const lookupAddresses = async (config: Config, addresses: string[]): Promise<OnChainIds> => {
   const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))

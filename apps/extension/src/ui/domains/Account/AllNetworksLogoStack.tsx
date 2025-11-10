@@ -23,7 +23,6 @@ const prioNetworks = [
   "polkadot",
   "bittensor",
   "hydradx",
-  "aleph-zero",
   "bifrost-polkadot",
   "astar",
   "avail",

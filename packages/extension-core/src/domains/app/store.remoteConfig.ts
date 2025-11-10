@@ -37,7 +37,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     // uncomment for testing on testnets
     // "avail-turing-testnet": [1],
     // "vara-testnet": [1],
-    // "aleph-zero-testnet": [1],
   },
   stakingPools: {},
   documentation: {
