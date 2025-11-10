@@ -1,6 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { EvmErc20Token, SubDTaoToken, TokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
+import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
@@ -16,14 +15,11 @@ import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useToken } from "@ui/state"
-import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { useToken } from "@ui/state"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -67,47 +63,6 @@ const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   return <ContextMenuItem onClick={handleClick}>{t("View token details")}</ContextMenuItem>
 }
 
-const AlphaTokensClaimSettingsMenuItem: FC<{ token: SubDTaoToken; balances: Balances }> = ({
-  token,
-  balances,
-}) => {
-  const { t } = useTranslation()
-  const { genericEvent } = useAnalytics()
-  const { open: openBittensorModal } = useBittensorBondModal()
-  const bittensorNetworkIds = useBittensorNetworkIds()
-  const accounts = useAccounts("owned")
-
-  const openArgs = useMemo<BittensorStakingWizardOpenOptions | null>(() => {
-    const balance = balances.each
-      .filter(
-        (b) =>
-          b.token?.type === "substrate-dtao" &&
-          bittensorNetworkIds.includes(b.token.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)),
-      )
-      .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
-
-    return {
-      networkId: token.networkId,
-      address: balance.address,
-      netuid: token.netuid,
-      hotkey: token.hotkey,
-      stakeDirection: "bond",
-      step: "claim-settings",
-    }
-  }, [accounts, balances.each, bittensorNetworkIds, token.hotkey, token.netuid, token.networkId])
-
-  const handleClick = useCallback(() => {
-    if (!openArgs) return
-    openBittensorModal(openArgs)
-    genericEvent("open bittensor claim settings", { from: "token menu" })
-  }, [genericEvent, openArgs, openBittensorModal])
-
-  if (!openArgs) return null
-
-  return <ContextMenuItem onClick={handleClick}>{t("Claim Settings")}</ContextMenuItem>
-}
-
 const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
@@ -147,7 +102,7 @@ type Props = {
 }
 
 export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
-  { tokenId, balances, placement, trigger, className },
+  { tokenId, placement, trigger, className },
   ref,
 ) {
   const token = useToken(tokenId)
@@ -175,9 +130,6 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
-        {token?.type === "substrate-dtao" && (
-          <AlphaTokensClaimSettingsMenuItem token={token} balances={balances} />
-        )}
       </ContextMenuContent>
     </ContextMenu>
   )

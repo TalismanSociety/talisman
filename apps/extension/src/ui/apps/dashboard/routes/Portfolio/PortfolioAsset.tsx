@@ -12,6 +12,7 @@ import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
 import { BittensorStakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorStakeToolbarButton"
 import { BittensorUnstakeToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorUnstakeToolbarButton"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
@@ -133,6 +134,7 @@ const TokenBreadcrumb: FC<{
         <Breadcrumb items={items} />
       </div>
       <div className="flex h-20 items-center gap-2">
+        <BittensorClaimSettingsToolbarButton balances={balances} />
         <BittensorStakeToolbarButton balances={balances} />
         <BittensorUnstakeToolbarButton balances={balances} />
         <SendFundsButton symbol={symbol} />
