@@ -46,7 +46,12 @@ export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): Yiel
     // Filter out points tokens
     const validBalances = item.balances.filter((balance) => !balance.token.isPoints)
 
-    for (const balance of validBalances) {
+    // Separate claimable and non-claimable balances
+    const claimableBalances = validBalances.filter((b) => b.type === "claimable")
+    const activeBalances = validBalances.filter((b) => b.type !== "claimable")
+
+    // First, process active balances to establish position groups
+    for (const balance of activeBalances) {
       // Extract validatorAddress from item or balance
       const validatorAddress =
         getValidatorAddressFromItem(item) || getValidatorAddressFromBalance(balance)
@@ -72,6 +77,58 @@ export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): Yiel
         balancesByKey.set(key, { balances: [], item })
       }
       balancesByKey.get(key)!.balances.push(balance)
+    }
+
+    // Then, add claimable balances to the same groups as their corresponding active balances
+    // Try to match claimable balances to existing position groups
+    for (const claimableBalance of claimableBalances) {
+      // Extract validatorAddress from item or balance
+      const validatorAddress =
+        getValidatorAddressFromItem(item) || getValidatorAddressFromBalance(claimableBalance)
+
+      // Extract account address from claimable balance
+      const claimableBalanceWithAddress = claimableBalance as unknown as { address?: string }
+      const claimableAccountAddress = claimableBalanceWithAddress.address
+
+      // If address is missing, skip this balance
+      if (!claimableAccountAddress) {
+        continue
+      }
+
+      // Try to find a matching position group
+      // First try with the claimable balance's own address
+      let key = validatorAddress
+        ? `${item.yieldId}::${validatorAddress}::${claimableAccountAddress}`
+        : `${item.yieldId}::${claimableAccountAddress}`
+
+      // If no group found with claimable balance's address, try to find any group with same yieldId and validator
+      if (!balancesByKey.has(key)) {
+        // Find the first matching group for this yieldId and validator
+        const matchingKey = Array.from(balancesByKey.keys()).find((k) => {
+          const parts = k.split("::")
+          if (validatorAddress) {
+            // Has validator: yieldId::validatorAddress::accountAddress
+            return parts[0] === item.yieldId && parts[1] === validatorAddress
+          } else {
+            // No validator: yieldId::accountAddress
+            return parts[0] === item.yieldId
+          }
+        })
+
+        if (matchingKey) {
+          key = matchingKey
+        } else {
+          // No matching group found, create a new one for the claimable balance
+          key = validatorAddress
+            ? `${item.yieldId}::${validatorAddress}::${claimableAccountAddress}`
+            : `${item.yieldId}::${claimableAccountAddress}`
+        }
+      }
+
+      if (!balancesByKey.has(key)) {
+        balancesByKey.set(key, { balances: [], item })
+      }
+      balancesByKey.get(key)!.balances.push(claimableBalance)
     }
   }
 

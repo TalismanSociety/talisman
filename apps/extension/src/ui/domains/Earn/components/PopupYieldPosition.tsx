@@ -39,12 +39,26 @@ export const PopupYieldPosition: FC<{
 
   // Categorize balances on-the-fly
   const suppliedBalances = useMemo(
-    () => position?.balances.filter((b) => !["claimable", "exiting"].includes(b.type)) || [],
+    () =>
+      position?.balances.filter(
+        (b) =>
+          !["claimable", "reward"].includes(b.type) &&
+          !b.pendingActions?.some((a) => a.type === "CLAIM_REWARDS"),
+      ) || [],
     [position],
   )
 
   const rewardBalances = useMemo(
-    () => position?.balances.filter((b) => ["claimable"].includes(b.type)) || [],
+    () =>
+      position?.balances.filter((b) => {
+        // Check if balance type is claimable or reward
+        const isRewardType = ["claimable", "reward"].includes(b.type)
+
+        // Check if balance has pendingActions with CLAIM_REWARDS
+        const hasClaimAction = b.pendingActions?.some((a) => a.type === "CLAIM_REWARDS")
+
+        return isRewardType || !!hasClaimAction
+      }) || [],
     [position],
   )
 

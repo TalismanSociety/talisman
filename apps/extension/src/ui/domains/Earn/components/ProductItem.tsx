@@ -21,8 +21,8 @@ export const ProductTokenLogo: FC<{
       {/* Main product logo */}
       <AssetLogo url={protocolLogo} className="h-full w-full" />
 
-      {/* Small token logo in top-right corner */}
-      <div className="absolute right-0 top-0 h-1/2 w-1/2 rounded-full bg-white p-0.5">
+      {/* Small token logo in top-right corner with boundary */}
+      <div className="absolute -right-[0.25rem] -top-[0.25rem] h-[1em] w-[1em] overflow-hidden rounded-full border-2 border-black">
         <TokenLogo tokenId={tokenId} className="h-full w-full" />
       </div>
     </div>
