@@ -141,7 +141,7 @@ const PopupStakingTile = () => {
   return (
     <button
       type="button"
-      className="bg-grey-850 hover:bg-grey-800 mb-4 flex h-[5.2rem] w-full cursor-pointer items-center justify-between rounded px-6 text-left transition-colors"
+      className="bg-grey-850 hover:bg-grey-800 mb-4 flex h-[5.2rem] w-full cursor-pointer items-center justify-between rounded pl-6 pr-8 text-left transition-colors"
       onClick={handleStakingClick}
     >
       <div className="flex items-center gap-4">
@@ -150,7 +150,7 @@ const PopupStakingTile = () => {
           <div className="text-sm font-bold text-white">{t("Staking")}</div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <div className="text-body-secondary text-xs">{t("Self-stake through Talisman portal")}</div>
         <ExternalLinkIcon className="text-body-secondary h-6 w-6" />
       </div>
@@ -215,7 +215,7 @@ const PopupEarnTokenRow: FC<{
         type="button"
         onClick={handleToggle}
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center gap-6 overflow-hidden p-6 text-left text-sm",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center gap-6 overflow-hidden py-6 pl-6 pr-8 text-left text-sm",
           isExpanded ? "rounded-t" : "rounded",
         )}
       >
@@ -283,13 +283,11 @@ const PopupEarnTokenRow: FC<{
               </TooltipContent>
             </Tooltip>
           </div>
-          <div className="flex shrink-0 items-center">
-            {isExpanded ? (
-              <ChevronDownIcon className="h-8 w-8 text-white" />
-            ) : (
-              <ChevronRightIcon className="h-8 w-8 text-white" />
-            )}
-          </div>
+          {isExpanded ? (
+            <ChevronDownIcon className="h-8 w-8 shrink-0 text-white" />
+          ) : (
+            <ChevronRightIcon className="h-8 w-8 shrink-0 text-white" />
+          )}
         </div>
       </button>
 
@@ -483,7 +481,7 @@ export const PopupEarnAssetsTab: FC = () => {
           <button
             type="button"
             onClick={handleDefiToggle}
-            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-6 text-sm font-medium"
+            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-2 text-sm font-medium"
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
             <div className="flex items-center gap-2">

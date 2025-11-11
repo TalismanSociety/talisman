@@ -159,7 +159,7 @@ const DefiTokenRow: FC<{
         type="button"
         onClick={handleToggle}
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden p-8 text-left text-base",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 flex w-full items-center justify-between overflow-hidden py-8 pl-8 pr-10 text-left text-base",
           isExpanded ? "rounded-t" : "rounded",
         )}
       >
@@ -195,13 +195,11 @@ const DefiTokenRow: FC<{
             className="!h-auto !p-0"
             forceFiatCurrency="usd"
           />
-          <div className="flex items-center">
-            {isExpanded ? (
-              <ChevronDownIcon className="text-body-secondary h-8 w-8" />
-            ) : (
-              <ChevronRightIcon className="text-body-secondary h-8 w-8" />
-            )}
-          </div>
+          {isExpanded ? (
+            <ChevronDownIcon className="text-body-secondary h-8 w-8" />
+          ) : (
+            <ChevronRightIcon className="text-body-secondary h-8 w-8" />
+          )}
         </div>
       </button>
 
@@ -262,7 +260,7 @@ const StakingTile = () => {
   return (
     <button
       type="button"
-      className="bg-grey-850 hover:bg-grey-800 mb-4 flex h-[6.6rem] w-full cursor-pointer items-center justify-between rounded px-8 text-left transition-colors"
+      className="bg-grey-850 hover:bg-grey-800 mb-4 flex h-[6.6rem] w-full cursor-pointer items-center justify-between rounded pl-8 pr-10 text-left transition-colors"
       onClick={handleStakingClick}
     >
       <div className="flex items-center gap-6">
@@ -271,7 +269,7 @@ const StakingTile = () => {
           <div className="text-base font-bold !text-white">{t("Staking")}</div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <div className="text-body-secondary text-sm">{t("Self-stake through Talisman portal")}</div>
         <ExternalLinkIcon className="text-body-secondary h-8 w-8" />
       </div>
@@ -467,7 +465,7 @@ export const EarnAssetsTab = () => {
           <button
             type="button"
             onClick={handleDefiToggle}
-            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-8 text-sm font-medium"
+            className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-2 text-sm font-medium"
           >
             <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
             <div className="flex items-center gap-2">
