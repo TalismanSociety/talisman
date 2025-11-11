@@ -69,7 +69,7 @@ const YieldPositionRow: FC<{
         className="size-16"
       />
       <div className="flex w-full grow flex-col gap-4 overflow-hidden">
-        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-base font-bold">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-[650]">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
@@ -172,7 +172,7 @@ const DefiTokenRow: FC<{
             />
           </div>
           <div className="flex flex-col gap-2">
-            <div className="text-body flex items-center gap-3 text-base font-bold">
+            <div className="text-body flex items-center gap-3 text-sm font-[650]">
               {tokenData.tokenSymbol}
               <NetworkLogo
                 networkId={tokenData.positions[0]?.position.networkId}

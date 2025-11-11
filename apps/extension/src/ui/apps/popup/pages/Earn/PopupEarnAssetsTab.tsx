@@ -66,7 +66,7 @@ const PopupYieldPositionRow: FC<{
         className="size-12"
       />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-        <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-xs font-bold">
+        <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-sm font-[650]">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
@@ -228,7 +228,7 @@ const PopupEarnTokenRow: FC<{
             />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
-            <div className="text-body flex min-w-0 items-center gap-3 text-sm font-bold">
+            <div className="text-body flex min-w-0 items-center gap-3 text-sm font-[650]">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="truncate" title={tokenData.tokenSymbol}>
