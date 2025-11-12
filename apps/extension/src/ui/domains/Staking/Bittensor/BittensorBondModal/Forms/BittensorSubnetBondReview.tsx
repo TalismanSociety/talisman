@@ -1,6 +1,6 @@
 import { InfoIcon, SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -20,6 +20,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { useGetSubnetFee } from "../../hooks/useGetSubnetFee"
 import {
   DEFAULT_USER_MAX_SLIPPAGE,
   DTAO_LOGO,
@@ -71,9 +72,40 @@ export const BittensorSubnetBondReview = () => {
   const { tier } = useGetSeekDiscount()
   const { seekDiscountDrawer } = useBittensorBondWizard()
   const { close } = useBittensorBondModal()
+  const subnetFee = useGetSubnetFee({
+    netuid: netuid ?? 0,
+    direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
+  })
 
   const { discount } = tier
-  const discountPercent = `${tier.discount * 100}%`
+
+  const subnetFeeDiscount = useMemo(() => {
+    if (subnetFee === TALISMAN_FEE_BITTENSOR) {
+      // No discount
+      return 0
+    } else if (subnetFee === 0) {
+      // 100% discount
+      return 1
+    } else {
+      // Calculate discount percentage
+      const discountDiff = TALISMAN_FEE_BITTENSOR - subnetFee
+      return (discountDiff * 1) / TALISMAN_FEE_BITTENSOR
+    }
+  }, [subnetFee])
+
+  const totalFeeDiscount = useMemo(() => {
+    if (subnetFeeDiscount === 1) {
+      // Discount cannot be greater than 100%
+      return 1
+    } else if (isSeekTaoDiscountEnabled) {
+      // Calculate total discount, combining subnet fee discount and seek discount
+      return tier.discount + subnetFeeDiscount
+    }
+    // subnet fee discount only
+    return subnetFeeDiscount
+  }, [subnetFeeDiscount, isSeekTaoDiscountEnabled, tier.discount])
+
+  const totalDiscountPercent = `${totalFeeDiscount * 100}%`
 
   const { isLoading } = useCombinedSubnetData()
 
@@ -234,20 +266,25 @@ export const BittensorSubnetBondReview = () => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                    {t(`Talisman applies a ${TALISMAN_FEE_BITTENSOR}% fee to each transaction.`)}
+                    {subnetFee === 0
+                      ? t("Talisman doesn’t apply any fee to this transaction.")
+                      : t(`Talisman applies a ${TALISMAN_FEE_BITTENSOR}% fee to each transaction.`)}
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {isSeekTaoDiscountEnabled && (
+              {totalFeeDiscount > 0 && (
                 <button
                   type="button"
-                  className="rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1"
-                  onClick={seekDiscountDrawer.open}
+                  className={classNames(
+                    "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
+                    !isSeekTaoDiscountEnabled && "cursor-default",
+                  )}
+                  onClick={isSeekTaoDiscountEnabled ? seekDiscountDrawer.open : undefined}
                 >
                   <div className="text-[1rem] text-[#D5FF5C]">
-                    {discount ? (
+                    {totalFeeDiscount > 0 ? (
                       <>
-                        {discountPercent} {t("Off Fees")}
+                        {totalDiscountPercent} {t("Off Fees")}
                       </>
                     ) : (
                       t("Get Discount")
