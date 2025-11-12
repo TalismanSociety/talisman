@@ -75,7 +75,7 @@ const YieldPositionRow: FC<{
               {position.displayName}
             </div>
             <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
-            <div className="text-body-secondary border-grey-500 rounded-xs border-[0.2rem] px-2 py-1 text-[0.8rem]">
+            <div className="text-body-secondary border-grey-500 rounded-xs border px-2 py-1 text-[0.8rem]">
               {(position.product?.mechanics.type || "").toLocaleUpperCase()}
             </div>
           </div>
@@ -115,8 +115,12 @@ const YieldPositionRow: FC<{
           </div>
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 text-xs font-normal">
-          <div className="truncate">
-            <PortfolioAccount address={tokenBalance.address} className="text-white" />
+          <div className="h-6 truncate">
+            <PortfolioAccount
+              address={tokenBalance.address}
+              className="h-6 text-white"
+              textClassName="text-[1.2rem]"
+            />
           </div>
           <div className={classNames(status === "loading" && "animate-pulse")}>
             <div className="text-body text-sm font-bold">

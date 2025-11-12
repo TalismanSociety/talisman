@@ -72,9 +72,6 @@ const PopupYieldPositionRow: FC<{
               {position.displayName}
             </div>
             <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
-            {position.balances.some((b) => b.type === "claimable") && (
-              <div className="text-[10px] font-medium text-green-400">+rewards</div>
-            )}
           </div>
           <div className="w-[16rem] shrink-0">
             <div className="flex w-full flex-col items-end gap-1 overflow-hidden">
@@ -112,8 +109,12 @@ const PopupYieldPositionRow: FC<{
           </div>
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-4 text-[10px] font-normal">
-          <div className="truncate">
-            <PortfolioAccount address={tokenBalance.address} className="text-white" />
+          <div className="h-6 truncate">
+            <PortfolioAccount
+              address={tokenBalance.address}
+              className="h-6 text-white"
+              textClassName="text-[1.2rem]"
+            />
           </div>
           <div>
             <div className="text-body text-xs font-bold">

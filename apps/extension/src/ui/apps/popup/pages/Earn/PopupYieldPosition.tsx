@@ -71,9 +71,6 @@ const YieldPositionHeader: FC<{
         <div className="flex grow flex-col gap-2 overflow-hidden">
           <div className="text-body flex items-center gap-2 truncate text-sm font-bold">
             <span className="max-w-[14rem] truncate">{position.displayName}</span>
-            <div className="text-body-secondary border-grey-500 rounded-xs shrink-0 border-[0.2rem] px-2 py-1 text-[0.8rem]">
-              {(position.product?.mechanics.type || "").toLocaleUpperCase()}
-            </div>
           </div>
           <div className="text-body-secondary truncate text-xs">
             <PortfolioAccount address={position.balances[0]?.address} />
