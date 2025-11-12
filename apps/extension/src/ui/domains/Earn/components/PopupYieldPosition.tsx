@@ -10,7 +10,6 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
-import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
@@ -42,7 +41,7 @@ export const PopupYieldPosition: FC<{
     () =>
       position?.balances.filter(
         (b) =>
-          !["claimable", "reward"].includes(b.type) &&
+          (["exiting", "entering"].includes(b.type) || !["claimable", "reward"].includes(b.type)) &&
           !b.pendingActions?.some((a) => a.type === "CLAIM_REWARDS"),
       ) || [],
     [position],
@@ -416,8 +415,8 @@ const YieldPositionItemRow: FC<{
           </div>
         </div>
         <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-xs font-normal">
-          <div className="grow truncate">
-            <PortfolioAccount address={balance.address} />
+          <div className="text-grey-400 grow truncate text-xs font-normal">
+            {balance.type.charAt(0).toUpperCase() + balance.type.slice(1)}
           </div>
           <div className="shrink-0">
             <FiatFromUsd amount={parseFloat(balance.amountUsd || "0")} isBalance />
