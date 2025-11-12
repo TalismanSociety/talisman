@@ -76,6 +76,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       },
     ],
   },
+  bittensor: {
+    fee: {
+      buy: {},
+      sell: {},
+    },
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
