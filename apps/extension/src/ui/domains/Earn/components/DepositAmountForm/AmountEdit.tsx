@@ -19,13 +19,13 @@ import { PillButton } from "talisman-ui"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useSelectedCurrency } from "@ui/state"
 
 import { useDepositWizard } from "../../context/DepositWizardContext"
 import { useDepositFunds } from "../useDepositFunds"
-import { TokenPillButton } from "./TokenPillButton"
 
 const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
   try {
@@ -104,7 +104,12 @@ const TokenInput = ({ inputRef }: { inputRef?: React.RefObject<HTMLInputElement>
         )}
         onChange={handleChange}
       />
-      <TokenPillButton tokenId={tokenId} onClick={() => {}} />
+      <div className="text-body flex shrink-0 flex-nowrap items-center gap-4 text-base">
+        <div className="shrink-0">
+          <TokenLogo className="!text-lg" tokenId={tokenId} />
+        </div>
+        <div>{token?.symbol}</div>
+      </div>
     </div>
   )
 }
