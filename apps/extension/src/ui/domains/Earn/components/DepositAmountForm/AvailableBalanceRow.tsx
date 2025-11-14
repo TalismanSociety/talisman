@@ -30,7 +30,7 @@ export const AvailableBalanceRow = () => {
               noCountUp
               isBalance
             />
-            <span>
+            <span className="text-body-secondary">
               (<Fiat amount={balance.transferable} noCountUp isBalance />)
             </span>
           </div>

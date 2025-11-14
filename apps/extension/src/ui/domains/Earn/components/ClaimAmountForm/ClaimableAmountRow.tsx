@@ -24,7 +24,7 @@ export const ClaimableAmountRow: FC = () => {
           noCountUp
           isBalance
         />
-        <span>
+        <span className="text-body-secondary">
           (<Fiat amount={claimAmount} noCountUp isBalance />)
         </span>
       </div>
