@@ -13,7 +13,7 @@ export const AssetRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">Asset</div>
+      <div className="text-grey-400 text-sm">Asset</div>
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2">
           <ProductTokenLogo protocolLogo={yieldLogo} tokenId={token?.id} className="h-10 w-10" />

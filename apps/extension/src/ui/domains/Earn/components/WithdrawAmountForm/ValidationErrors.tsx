@@ -23,7 +23,7 @@ export const ValidationErrors = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <InfoIcon className="text-alert-error h-4 w-4" />
+      <InfoIcon className="text-alert-error h-6 w-6" />
       <span className="text-alert-error text-sm">{getErrorMessage(error)}</span>
     </div>
   )

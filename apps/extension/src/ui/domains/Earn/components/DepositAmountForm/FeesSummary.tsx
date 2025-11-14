@@ -67,9 +67,9 @@ const NetworkRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">{t("Network")}</div>
+      <div className="text-grey-400 text-xs">{t("Network")}</div>
       <div className="flex items-center gap-2">
-        <NetworkLogo networkId={network?.id} className="inline-block text-base" />
+        <NetworkLogo networkId={network?.id} className="inline-block size-8" />
         <div>{network?.name}</div>
       </div>
     </div>
@@ -82,12 +82,12 @@ export const FeesSummary = () => {
 
   return (
     <Container
-      className={classNames("space-y-4 px-8 py-4", isLoading && !estimatedFee && "animate-pulse")}
+      className={classNames("space-y-4 px-8 py-6", isLoading && !estimatedFee && "animate-pulse")}
     >
       <NetworkRow />
       <TransactionPriorityRow />
       <div className="flex w-full items-center justify-between gap-4">
-        <div className="text-grey-400 whitespace-nowrap">
+        <div className="text-grey-400 whitespace-nowrap text-xs">
           {t("Estimated Fee")} <EarnFeeTooltip />
         </div>
         <div

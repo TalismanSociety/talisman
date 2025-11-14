@@ -9,7 +9,7 @@ export const ProductSummary = () => {
   if (!product) return null
 
   return (
-    <Container className="space-y-4 px-8 py-4">
+    <Container className="space-y-4 px-8 py-6">
       <ApyRow />
       <ProtocolRow />
     </Container>

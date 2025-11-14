@@ -22,7 +22,7 @@ export const ApyRow = () => {
     <div className="flex w-full items-center justify-between">
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="text-grey-400 flex items-center gap-1 whitespace-nowrap leading-none">
+          <div className="text-grey-400 flex items-center gap-1 whitespace-nowrap text-xs leading-none">
             {t("APY")}
             <InfoIcon />
           </div>

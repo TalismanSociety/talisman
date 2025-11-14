@@ -76,9 +76,9 @@ export const ClaimAmountForm = ({ onNext }: ClaimAmountFormProps) => {
     >
       <div className="flex flex-col gap-20">
         <div className="flex flex-col gap-0">
-          <Container className="flex h-[7rem] w-full flex-col justify-center px-8">
+          <Container className="flex w-full flex-col gap-4 px-8 py-4">
             <div className="flex w-full items-center justify-between gap-4">
-              <div className="text-grey-400">{t("Account")}</div>
+              <div className="text-grey-400 text-sm">{t("Account")}</div>
               <div>
                 <AddressPillButton
                   className="!w-full"
@@ -87,8 +87,8 @@ export const ClaimAmountForm = ({ onNext }: ClaimAmountFormProps) => {
                 />
               </div>
             </div>
+            <ClaimableAmountRow />
           </Container>
-          <ClaimableAmountRow />
         </div>
         {/* Single consolidated validation/errors area */}
         <div className="flex flex-col gap-0">

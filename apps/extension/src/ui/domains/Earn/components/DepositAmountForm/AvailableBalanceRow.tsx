@@ -12,9 +12,9 @@ export const AvailableBalanceRow = () => {
   const { balance, token } = useDepositFunds()
 
   return (
-    <Container className="space-y-4 px-8 py-4">
+    <Container className="space-y-4 px-8 py-6">
       <div className="flex w-full items-center justify-between">
-        <div className="text-grey-400">{t("Available Balance")}</div>
+        <div className="text-grey-400 text-xs">{t("Available Balance")}</div>
         {balance && token && (
           <div
             className={classNames(

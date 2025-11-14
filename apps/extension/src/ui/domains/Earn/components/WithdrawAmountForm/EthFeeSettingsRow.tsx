@@ -32,7 +32,7 @@ export const EthFeeSettingsRow = () => {
 
   return (
     <div className="flex h-12 w-full items-center justify-between gap-4">
-      <div className="text-grey-400">{t("Transaction Priority")}</div>
+      <div className="text-grey-400 text-xs">{t("Transaction Priority")}</div>
       <div>
         {network.nativeTokenId && priority && tx && txDetails && (
           <EthFeeSelect

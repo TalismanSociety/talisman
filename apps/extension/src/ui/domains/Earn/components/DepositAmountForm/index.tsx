@@ -73,16 +73,16 @@ export const DepositAmountForm = ({ onNext }: DepositAmountFormProps) => {
       >
         <div className="flex flex-col gap-20">
           <div className="flex flex-col gap-0">
-            <Container className="flex h-[7rem] w-full flex-col justify-center px-8">
+            <Container className="flex h-24 w-full flex-col justify-center p-8">
               <div className="flex w-full items-center justify-between gap-4">
-                <div className="text-grey-400">{t("Account")}</div>
+                <div className="text-grey-400 text-sm">{t("Account")}</div>
                 <div>
                   <AddressPillButton className="!w-full" address={account} onClick={() => {}} />
                 </div>
               </div>
             </Container>
             <AmountEdit />
-            <div className="flex justify-center px-8 py-2">
+            <div className="flex justify-center px-8 py-2 pt-[0.5rem]">
               <div className="flex w-full flex-col items-center gap-3">
                 {error && <DepositAmountErrorMessage />}
                 {validationErrors.length > 0 && <ValidationErrors />}

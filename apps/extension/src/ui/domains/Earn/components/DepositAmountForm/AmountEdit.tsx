@@ -233,8 +233,8 @@ export const DepositAmountErrorMessage = () => {
 
   return error ? (
     <WithTooltip tooltip={typeof error === "string" ? error : error.message}>
-      <div className="text-alert-error flex items-center justify-center gap-2 !text-xs font-normal">
-        <AlertCircleIcon className="text-alert-error inline-block align-text-top text-xs" />
+      <div className="text-alert-error flex items-center justify-center gap-2 pt-[0.5rem] !text-xs font-normal">
+        <AlertCircleIcon className="text-alert-error inline-block h-6 w-6 align-text-top" />
         {typeof error === "string" ? error : error.message}
       </div>
     </WithTooltip>

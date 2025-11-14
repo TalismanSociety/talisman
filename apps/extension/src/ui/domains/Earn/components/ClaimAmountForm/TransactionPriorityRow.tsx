@@ -12,7 +12,7 @@ export const TransactionPriorityRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">{t("Priority")}</div>
+      <div className="text-grey-400 text-xs">{t("Priority")}</div>
       <div className="text-white">Standard</div>
     </div>
   )

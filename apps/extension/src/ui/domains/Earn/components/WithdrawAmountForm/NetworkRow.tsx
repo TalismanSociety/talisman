@@ -10,9 +10,9 @@ export const NetworkRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">Network</div>
+      <div className="text-grey-400 text-xs">Network</div>
       <div className="flex items-center gap-2">
-        <NetworkLogo networkId={network.id} className="size-6" />
+        <NetworkLogo networkId={network.id} className="size-8" />
         <NetworkName networkId={network.id} />
       </div>
     </div>

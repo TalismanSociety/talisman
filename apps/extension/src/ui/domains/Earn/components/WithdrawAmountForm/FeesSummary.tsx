@@ -7,6 +7,8 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useBalance } from "@ui/state"
 
 import { useWithdrawFundsContext } from "../WithdrawFundsProvider"
+import { Container } from "./Container"
+import { NetworkRow } from "./NetworkRow"
 import { TransactionPriorityRow } from "./TransactionPriorityRow"
 
 const WithdrawFeeTooltip = () => {
@@ -52,10 +54,13 @@ export const FeesSummary = () => {
   const { feeToken, estimatedFee, isLoading } = useWithdrawFundsContext()
 
   return (
-    <div className="space-y-4">
+    <Container
+      className={classNames("space-y-4 px-8 py-6", isLoading && !estimatedFee && "animate-pulse")}
+    >
+      <NetworkRow />
       <TransactionPriorityRow />
       <div className="flex w-full items-center justify-between gap-4">
-        <div className="text-grey-400 whitespace-nowrap">
+        <div className="text-grey-400 whitespace-nowrap text-xs">
           {t("Estimated Fee")} <WithdrawFeeTooltip />
         </div>
         <div
@@ -82,6 +87,6 @@ export const FeesSummary = () => {
           )}
         </div>
       </div>
-    </div>
+    </Container>
   )
 }

@@ -13,13 +13,13 @@ export const ProtocolRow = () => {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="text-grey-400">{t("Protocol")}</div>
+      <div className="text-grey-400 text-xs">{t("Protocol")}</div>
       <PillButton>
         <div className="flex items-center gap-2 text-right">
           <img
             src={metadata.logoURI || undefined}
             alt={metadata.name}
-            className="h-6 w-6 flex-shrink-0 rounded-full"
+            className="h-8 w-8 flex-shrink-0 rounded-full"
             onError={(e) => {
               e.currentTarget.style.display = "none"
             }}

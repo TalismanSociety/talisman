@@ -10,8 +10,6 @@ import { AmountEdit } from "./AmountEdit"
 import { AssetRow } from "./AssetRow"
 import { Container } from "./Container"
 import { FeesSummary } from "./FeesSummary"
-import { NetworkRow } from "./NetworkRow"
-import { ProductSummary } from "./ProductSummary"
 import { ValidationErrors } from "./ValidationErrors"
 
 const ReviewButton = ({ onNext }: { onNext?: () => void }) => {
@@ -71,10 +69,10 @@ export const WithdrawAmountForm = ({ onNext }: WithdrawAmountFormProps) => {
       >
         <div className="flex flex-col gap-16">
           {/* Section 1: Asset and Account Info */}
-          <Container className="space-y-4 px-8 py-4">
+          <Container className="space-y-4 px-8 py-6">
             <AssetRow />
             <div className="flex w-full items-center justify-between gap-4">
-              <div className="text-grey-400">Account</div>
+              <div className="text-grey-400 text-sm">Account</div>
               <AddressPillButton address={account} onClick={() => {}} />
             </div>
           </Container>
@@ -86,11 +84,9 @@ export const WithdrawAmountForm = ({ onNext }: WithdrawAmountFormProps) => {
           </div>
 
           {/* Section 3: Network, Priority, and Fees */}
-          <Container className="space-y-4 px-8 py-4">
-            <NetworkRow />
-            <ProductSummary />
+          <div className="w-full space-y-4 text-xs leading-[140%]">
             <FeesSummary />
-          </Container>
+          </div>
         </div>
 
         <ReviewButton onNext={onNext} />
