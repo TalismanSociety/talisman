@@ -2,6 +2,7 @@ import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { BalanceDto, YieldPosition } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
 import urlJoin from "url-join"
@@ -335,6 +336,7 @@ const YieldPositionActionButtons: FC<{
   onAddToPosition: () => void
   onClaimClick: () => void
 }> = ({ position, onAddToPosition, onClaimClick }) => {
+  const { t } = useTranslation()
   // Check if there are claimable rewards with CLAIM_REWARDS action
   const hasClaimableRewards = useMemo(() => {
     return position.balances.some((balance) =>
@@ -360,19 +362,19 @@ const YieldPositionActionButtons: FC<{
     <div className="flex w-full max-w-full justify-between overflow-hidden">
       <button
         type="button"
-        className="hover:bg-grey-800/20 flex min-w-[17rem] max-w-full flex-col items-center justify-center gap-1 rounded-sm border-2 border-transparent border-white p-6"
+        className="hover:bg-grey-800/20 text-md flex !h-[50px] min-w-[17rem] max-w-full flex-col items-center justify-center gap-1 rounded-sm border-2 border-transparent border-white p-6 font-normal"
         onClick={onAddToPosition}
       >
-        <span className="truncate">Add to Position</span>
+        {t("Add to Position")}
       </button>
       {hasClaimableRewards && (
         <button
           type="button"
-          className="flex min-w-[17rem] max-w-full flex-col items-center justify-center gap-1 rounded-sm border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
+          className="flex h-[5rem] min-w-[17rem] max-w-full flex-col items-center justify-center gap-1 rounded-sm border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
           onClick={onClaimClick}
         >
-          <div className="truncate text-sm font-medium text-black">Claim</div>
-          <div className="text-grey-800 truncate text-xs font-light">
+          <div className="truncate text-sm font-medium text-black">{t("Claim")}</div>
+          <div className="text-grey-800 truncate text-[1rem] font-normal">
             {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
           </div>
         </button>

@@ -369,21 +369,21 @@ const YieldPositionActionButtons: FC<{
   const primaryToken = position.balances[0]?.token
 
   return (
-    <div className="flex w-full max-w-full gap-4 overflow-hidden">
+    <div className="flex w-full max-w-full justify-end gap-4 overflow-hidden">
       <button
         type="button"
-        className="hover:bg-grey-800/20 flex min-w-80 max-w-full flex-col items-center justify-center gap-2 rounded border-2 border-transparent border-white p-6"
+        className="hover:bg-grey-800/20 text-md flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-2 rounded border-2 border-transparent border-white p-6 font-normal"
         onClick={onAddToPosition}
       >
-        <span className="truncate">Add to Position</span>
+        {t("Add to Position")}
       </button>
       {hasClaimableRewards && (
         <button
           type="button"
-          className="flex min-w-80 max-w-full flex-col items-center justify-center gap-1 rounded border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
+          className="flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-1 rounded border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
           onClick={onClaimClick}
         >
-          <div className="text-md truncate font-normal text-black">{t("Claim")}</div>
+          <div className="truncate text-sm font-normal text-black">{t("Claim")}</div>
           <div className="text-grey-800 truncate text-[1rem] font-normal">
             {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
           </div>
