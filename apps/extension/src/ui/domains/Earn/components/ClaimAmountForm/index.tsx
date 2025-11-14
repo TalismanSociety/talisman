@@ -76,7 +76,7 @@ export const ClaimAmountForm = ({ onNext }: ClaimAmountFormProps) => {
     >
       <div className="flex flex-col gap-20">
         <div className="flex flex-col gap-0">
-          <Container className="flex w-full flex-col gap-4 px-8 py-4">
+          <Container className="flex h-24 w-full flex-col justify-center p-2">
             <div className="flex w-full items-center justify-between gap-4">
               <div className="text-grey-400 text-sm">{t("Account")}</div>
               <div>
@@ -87,7 +87,6 @@ export const ClaimAmountForm = ({ onNext }: ClaimAmountFormProps) => {
                 />
               </div>
             </div>
-            <ClaimableAmountRow />
           </Container>
         </div>
         {/* Single consolidated validation/errors area */}
@@ -98,6 +97,7 @@ export const ClaimAmountForm = ({ onNext }: ClaimAmountFormProps) => {
             </div>
           </div>
           <div className="w-full space-y-4 text-xs leading-[140%]">
+            <ClaimableAmountRow />
             <ProductSummary />
             <FeesSummary />
           </div>
