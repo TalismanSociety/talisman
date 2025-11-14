@@ -64,7 +64,7 @@ export const EarnAccountPicker: FC<EarnAccountPickerProps> = ({
           <IconButton onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
-          <div className="text-base font-bold">{t("Select an account to stake")}</div>
+          <div className="text-base font-bold">{t("Select account")}</div>
           <IconButton onClick={onDismiss} className="invisible">
             <XIcon />
           </IconButton>

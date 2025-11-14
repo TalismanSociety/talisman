@@ -72,7 +72,7 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({
         <IconButton onClick={handleBack}>
           <ChevronLeftIcon />
         </IconButton>
-        <div>{t("Select an account to stake")}</div>
+        <div>{t("Select account")}</div>
         <div className="w-10" /> {/* Spacer for centering */}
       </header>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
