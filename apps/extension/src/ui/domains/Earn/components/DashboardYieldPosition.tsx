@@ -321,7 +321,13 @@ const YieldPositionHeader: FC<{
             )}
             {hasClaimableRewards && (
               <ContextMenuItem onClick={onClaimClick}>
-                Claim {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
+                <div className="flex w-full items-center justify-between">
+                  <span>Claim</span>
+                  <span className="text-body-secondary flex items-center gap-2 text-[10px]">
+                    {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
+                    <span className="border-grey-800 inline-block h-4 w-4 rounded-full border-2 bg-[#D5FF5C]" />
+                  </span>
+                </div>
               </ContextMenuItem>
             )}
             {coingeckoUrl && (
