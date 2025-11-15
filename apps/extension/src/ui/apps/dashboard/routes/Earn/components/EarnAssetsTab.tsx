@@ -38,6 +38,7 @@ const YieldPositionRow: FC<{
   noCountUp: boolean
 }> = ({ position, tokenBalance, status, noCountUp: _noCountUp }) => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const validator = (tokenBalance as unknown as { validator?: { name?: string; logoURI?: string } })
     ?.validator
@@ -49,16 +50,21 @@ const YieldPositionRow: FC<{
         "bg-grey-850 hover:bg-grey-800 flex h-auto w-full items-center gap-4 overflow-hidden rounded-sm p-6",
       )}
       onClick={() => {
-        // Get account address from the first balance (all balances in a position have the same account)
-        const accountAddress =
-          (tokenBalance as unknown as { address?: string }).address ||
-          (position.balances[0] as unknown as { address?: string })?.address
+        // Get validator address for the position
         const validatorAddress = position.validatorAddress
 
-        // Build URL with query params (only account and validator, not expanded state params)
-        const params = new URLSearchParams()
-        if (accountAddress) params.set("account", accountAddress)
+        // Preserve current account/folder from URL to prevent sidebar from resetting
+        // (yield position page will ignore account param and not filter by it)
+        const params = new URLSearchParams(searchParams)
+        // Remove account and folder from params, then add them back if they exist
+        const currentAccount = searchParams.get("account")
+        const currentFolder = searchParams.get("folder")
+        params.delete("account")
+        params.delete("folder")
         if (validatorAddress) params.set("validator", validatorAddress)
+        // Preserve account/folder for sidebar (yield position will ignore it)
+        if (currentAccount) params.set("account", currentAccount)
+        if (currentFolder) params.set("folder", currentFolder)
 
         const queryString = params.toString()
         navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)

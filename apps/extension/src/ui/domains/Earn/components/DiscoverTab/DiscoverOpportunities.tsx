@@ -372,9 +372,8 @@ export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup 
       setIsAccountPickerOpen(false)
 
       if (IS_POPUP) {
-        // Navigate to deposit amount page
+        // Navigate to deposit amount page without account in URL (account is stored in local state)
         const params = new URLSearchParams({
-          account: address,
           productId: selectedProduct?.id || "",
         })
         if (selectedValidator) {

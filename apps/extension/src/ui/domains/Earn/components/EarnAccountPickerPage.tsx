@@ -43,10 +43,9 @@ export const EarnAccountPickerPage: FC<EarnAccountPickerPageProps> = ({
     (address: string) => {
       setEarnWizardAccount(address)
 
-      // If we have a productId, navigate to deposit page
+      // If we have a productId, navigate to deposit page without account in URL (account is stored in EarnWizard context)
       if (productId) {
         const params = new URLSearchParams({
-          account: address,
           tokenId,
           productId,
         })

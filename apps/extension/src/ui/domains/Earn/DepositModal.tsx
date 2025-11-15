@@ -26,19 +26,23 @@ const DepositModalContent = ({
   productId,
   validatorAddress,
 }: Omit<DepositModalProps, "isOpen">) => {
-  const { set, resetUserInput } = useDepositWizard()
+  const { set, resetUserInput, account: accountFromUrl } = useDepositWizard()
 
   // Initialize the wizard with the provided parameters
+  // Only set account if it's not already in URL (to prevent URL update when account picker is used)
   useEffect(() => {
-    if (account && tokenId && productId) {
-      set("account", account)
+    if (tokenId && productId) {
+      // Only set account if it's not already in URL and we have an account prop
+      if (account && !accountFromUrl) {
+        set("account", account)
+      }
       set("tokenId", tokenId)
       set("productId", productId)
       if (validatorAddress) {
         set("validatorAddress", validatorAddress)
       }
     }
-  }, [account, tokenId, productId, validatorAddress, set])
+  }, [account, accountFromUrl, tokenId, productId, validatorAddress, set])
 
   // In popup mode, don't render the modal - the pages will handle the full page view
   if (IS_POPUP) {

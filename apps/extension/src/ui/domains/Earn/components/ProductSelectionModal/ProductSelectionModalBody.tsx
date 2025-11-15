@@ -294,9 +294,8 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
           return
         }
 
-        // Navigate to deposit amount page with all parameters
+        // Navigate to deposit amount page without account in URL (account is stored in EarnWizard context)
         const params = new URLSearchParams({
-          account: address,
           tokenId,
           productId: currentProduct.id,
         })

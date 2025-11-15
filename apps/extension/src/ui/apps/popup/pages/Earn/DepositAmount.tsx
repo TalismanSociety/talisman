@@ -1,12 +1,25 @@
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { DepositAmountForm } from "@ui/domains/Earn/components/DepositAmountForm"
+import { useDepositWizard } from "@ui/domains/Earn/context/DepositWizardContext"
+import { useEarnWizard } from "@ui/domains/Earn/hooks/useEarnWizard"
 
 export const DepositAmount = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { set } = useDepositWizard()
+  const { selectedAccountAddress } = useEarnWizard()
+
+  // Initialize account from EarnWizard context if not in URL
+  useEffect(() => {
+    const accountFromUrl = searchParams.get("account")
+    if (!accountFromUrl && selectedAccountAddress) {
+      set("account", selectedAccountAddress)
+    }
+  }, [searchParams, selectedAccountAddress, set])
 
   const handleClose = () => {
     // Navigate back to product selection with preserved tokenId

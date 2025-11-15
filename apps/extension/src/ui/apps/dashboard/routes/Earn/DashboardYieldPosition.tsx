@@ -1,5 +1,5 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { FC, useEffect } from "react"
+import { FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { IconButton } from "talisman-ui"
@@ -20,20 +20,21 @@ export const DashboardYieldPosition = () => {
     pageOpenEvent("earn yield position")
   }, [pageOpenEvent])
 
-  const accountAddress = searchParams.get("account")
+  // Don't read account from URL to prevent sidebar account from changing
+  // Account will be derived from position data
   const validatorAddress = searchParams.get("validator")
 
   return (
     <>
       <YieldPositionHeader
         yieldId={yieldId}
-        accountAddress={accountAddress}
+        accountAddress={null}
         validatorAddress={validatorAddress}
       />
       <div className="h-4 shrink-0"></div>
       <DashboardYieldPositionDetails
         yieldId={yieldId}
-        accountAddress={accountAddress}
+        accountAddress={null}
         validatorAddress={validatorAddress}
       />
     </>
@@ -47,7 +48,19 @@ const YieldPositionHeader: FC<{
 }> = ({ yieldId, accountAddress, validatorAddress }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
+
+  const handleBack = useCallback(() => {
+    // Navigate to earn page while preserving current account/folder selection
+    const params = new URLSearchParams()
+    const currentAccount = searchParams.get("account")
+    const currentFolder = searchParams.get("folder")
+    if (currentAccount) params.set("account", currentAccount)
+    if (currentFolder) params.set("folder", currentFolder)
+    const queryString = params.toString()
+    navigate(`/earn${queryString ? `?${queryString}` : ""}`)
+  }, [navigate, searchParams])
 
   if (!position) return null
 
@@ -56,7 +69,7 @@ const YieldPositionHeader: FC<{
   return (
     <div className="flex h-[4.4rem] w-full items-center gap-8">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
-        <IconButton onClick={() => navigate(-1)}>
+        <IconButton onClick={handleBack}>
           <ChevronLeftIcon />
         </IconButton>
         <AssetLogo

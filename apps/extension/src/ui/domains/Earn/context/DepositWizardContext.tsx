@@ -1,6 +1,6 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { Address } from "extension-core"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -22,9 +22,11 @@ export type DepositWizardPage = "amount" | "confirm"
 const useDepositWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  // Local state for account that doesn't update URL (to prevent sidebar from changing)
+  const [accountLocalState, setAccountLocalState] = useState<Address | undefined>(undefined)
 
   const {
-    account,
+    account: accountFromUrl,
     tokenId,
     productId,
     amount,
@@ -42,12 +44,30 @@ const useDepositWizardProvider = () => {
     [searchParams],
   )
 
+  // Account prefers local state over URL (to prevent sidebar from changing when account picker is used)
+  const account = useMemo(
+    () => accountLocalState ?? accountFromUrl,
+    [accountLocalState, accountFromUrl],
+  )
+
   const set = useCallback(
     <T extends keyof DepositWizardParams>(
       key: T,
       value: DepositWizardParams[T],
       goToNextPage = false,
     ) => {
+      // Special handling for account: store in local state instead of URL to prevent sidebar from changing
+      if (key === "account") {
+        setAccountLocalState(value as Address)
+        searchParams.delete("depositMax")
+        // Don't update URL for account
+        if (goToNextPage) {
+          const url = `/select-product/deposit/amount?${searchParams.toString()}`
+          navigate(url)
+        }
+        return
+      }
+
       // reset amount if token changes, as decimals may be totally different
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
         searchParams.delete("amount")
@@ -55,7 +75,6 @@ const useDepositWizardProvider = () => {
       }
 
       if (key === "amount" && value) searchParams.delete("depositMax")
-      if (key === "account" && value) searchParams.delete("depositMax")
 
       // boolean values
       if (BOOL_PROPS.includes(key) && value) searchParams.set(key, "")
@@ -68,17 +87,20 @@ const useDepositWizardProvider = () => {
 
       if (goToNextPage) {
         let page: DepositWizardPage = "amount"
-        if (!searchParams.has("account")) page = "amount"
+        if (!account && !searchParams.has("account")) page = "amount"
         else if (!searchParams.has("amount") && !searchParams.has("depositMax")) page = "amount"
         const url = `/select-product/deposit/${page}?${searchParams.toString()}`
         navigate(url)
       }
     },
-    [navigate, searchParams, setSearchParams],
+    [navigate, searchParams, setSearchParams, account],
   )
 
   const remove = useCallback(
     (key: keyof DepositWizardParams) => {
+      if (key === "account") {
+        setAccountLocalState(undefined)
+      }
       searchParams.delete(key)
       setSearchParams(searchParams, { replace: true })
     },
@@ -99,7 +121,12 @@ const useDepositWizardProvider = () => {
     if (!productId) throw new Error("Product is not set")
     if (!amount && !depositMax) throw new Error("Amount is not set")
 
-    navigate(`/select-product/deposit/confirm?${searchParams.toString()}`)
+    // Include account in URL for confirm page (it reads from URL)
+    const confirmParams = new URLSearchParams(searchParams)
+    if (account && !confirmParams.has("account")) {
+      confirmParams.set("account", account)
+    }
+    navigate(`/select-product/deposit/confirm?${confirmParams.toString()}`)
   }, [account, navigate, searchParams, amount, depositMax, tokenId, productId])
 
   const gotoProgress = useCallback(
@@ -114,6 +141,7 @@ const useDepositWizardProvider = () => {
 
   const reset = useCallback(() => {
     // Clear all search parameters to reset the wizard state
+    setAccountLocalState(undefined)
     searchParams.delete("account")
     searchParams.delete("tokenId")
     searchParams.delete("productId")
