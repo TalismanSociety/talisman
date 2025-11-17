@@ -1,10 +1,12 @@
+import { HexString } from "@polkadot/util/types"
 import { BalanceFormatter } from "@talismn/balances"
 import { getBlockExplorerLabel, getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import {
   ArrowRightIcon,
+  CloseIcon,
+  ExternalLinkIcon,
   LoaderIcon,
-  MoreHorizontalIcon,
-  RocketIcon,
+  TrashIcon,
   XOctagonIcon,
 } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
@@ -23,26 +25,9 @@ import {
 } from "extension-core"
 import { IS_FIREFOX } from "extension-shared"
 import i18next from "i18next"
-import {
-  FC,
-  forwardRef,
-  ReactNode,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { FC, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
+import { Button, Modal, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -53,6 +38,7 @@ import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import {
+  useAnyNetwork,
   useNetworkByGenesisHash,
   useNetworkById,
   useSelectedCurrency,
@@ -61,42 +47,85 @@ import {
 } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
 
-import { TxReplaceDrawer } from "../TxReplaceDrawer"
-import { TxReplaceType } from "../types"
+import { TxProgress } from "../TxProgress"
 import { useTxHistory } from "./TxHistoryContext"
-import { useCanReplaceTx } from "./useCanReplaceTx"
+
+const getExplorerTargetId = (tx: WalletTransaction) =>
+  tx.platform === "solana" ? tx.signature : tx.hash
+
+type ReplacementCallbackArgs = { txId: HexString; networkId: string }
 
 export const TxHistoryList = () => {
   const { isLoading, transactions } = useTxHistory()
   const { t } = useTranslation()
 
-  // if context menu is open on a row, we need to disable others
-  // because of this we need to control at list level which row shows buttons
-  const [activeTxHash, setActiveTxHash] = useState<string>()
+  const [selectedTxId, setSelectedTxId] = useState<string>()
+  const [dismissingTxIds, setDismissingTxIds] = useState<Set<string>>(() => new Set())
 
-  const handleContextMenuOpen = useCallback(
-    (hash: string) => {
-      if (activeTxHash) return
-      setActiveTxHash(hash)
-    },
-    [activeTxHash],
+  const selectedTx = useMemo(
+    () => transactions.find((tx) => tx.id === selectedTxId),
+    [selectedTxId, transactions],
   )
 
-  const handleContextMenuClose = useCallback(
-    (hash: string) => {
-      if (hash !== activeTxHash) return
-      setActiveTxHash(undefined)
-    },
-    [activeTxHash],
-  )
+  const handleSelectTx = useCallback((tx: WalletTransaction) => {
+    setSelectedTxId(tx.id)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedTxId(undefined)
+  }, [])
+
+  const handleDismissTx = useCallback(async (tx: WalletTransaction) => {
+    setDismissingTxIds((prev) => {
+      const next = new Set(prev)
+      next.add(tx.id)
+      return next
+    })
+
+    try {
+      await db.transactionsV2.delete(tx.id)
+    } catch (error) {
+      setDismissingTxIds((prev) => {
+        const next = new Set(prev)
+        next.delete(tx.id)
+        return next
+      })
+    }
+  }, [])
+
+  const handleReplacementComplete = useCallback(({ txId }: ReplacementCallbackArgs) => {
+    setSelectedTxId(txId)
+  }, [])
+
+  useEffect(() => {
+    if (!selectedTxId) return
+    if (!transactions.some((tx) => tx.id === selectedTxId)) {
+      setSelectedTxId(undefined)
+    }
+  }, [selectedTxId, transactions])
+
+  useEffect(() => {
+    setDismissingTxIds((prev) => {
+      let mutated = false
+      const next = new Set(prev)
+      prev.forEach((id) => {
+        if (transactions.some((tx) => tx.id === id)) return
+        next.delete(id)
+        mutated = true
+      })
+
+      return mutated ? next : prev
+    })
+  }, [transactions])
+
+  const isModalDismissing = selectedTx ? dismissingTxIds.has(selectedTx.id) : false
 
   return (
     <div className="pb-4">
       <TransactionRows
         transactions={transactions}
-        activeTxId={activeTxHash}
-        onContextMenuOpen={handleContextMenuOpen}
-        onContextMenuClose={handleContextMenuClose}
+        dismissingTxIds={dismissingTxIds}
+        onSelectTx={handleSelectTx}
       />
 
       {!isLoading && !transactions.length && (
@@ -105,24 +134,38 @@ export const TxHistoryList = () => {
         </div>
       )}
       {isLoading && <TransactionRowShimmer />}
+
+      <TxHistoryModal
+        tx={selectedTx}
+        isOpen={!!selectedTxId}
+        onClose={handleCloseModal}
+        onDismiss={handleDismissTx}
+        isDismissing={isModalDismissing}
+        onReplacementComplete={handleReplacementComplete}
+      />
     </div>
   )
 }
 
-const TransactionRows: FC<{
+type TransactionRowsProps = {
   transactions: WalletTransaction[]
-  activeTxId?: string
-  onContextMenuOpen: (id: string) => void
-  onContextMenuClose: (id: string) => void
-}> = ({ transactions, activeTxId: activeTxId, onContextMenuOpen, onContextMenuClose }) => {
-  const { ref: refContainer } = useScrollContainer() // used/defined in popup only
+  dismissingTxIds: Set<string>
+  onSelectTx: (tx: WalletTransaction) => void
+}
+
+const TransactionRows: FC<TransactionRowsProps> = ({
+  transactions,
+  dismissingTxIds,
+  onSelectTx,
+}) => {
+  const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
     count: transactions.length,
     estimateSize: () => (IS_POPUP ? 52 : 58),
     overscan: 5,
-    getScrollElement: () => refContainer?.current ?? document.getElementById("main"), // fallback to main, the container for dashboard
+    getScrollElement: () => refContainer?.current ?? document.getElementById("main"),
     gap: 8,
   })
 
@@ -134,303 +177,383 @@ const TransactionRows: FC<{
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
-        {virtualizer.getVirtualItems().map((item) => (
-          <div
-            data-testid="tx-history-row-transaction"
-            key={item.key}
-            className="absolute left-0 top-0 w-full"
-            style={{
-              height: `${item.size}px`,
-              transform: `translateY(${item.start}px)`,
-            }}
-          >
-            {!!transactions[item.index] && (
+        {virtualizer.getVirtualItems().map((item) => {
+          const tx = transactions[item.index]
+          if (!tx) return null
+
+          return (
+            <div
+              data-testid="tx-history-row-transaction"
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+            >
               <TransactionRow
-                tx={transactions[item.index]}
-                enabled={!activeTxId || activeTxId === transactions[item.index].id}
-                onContextMenuOpen={() => onContextMenuOpen(transactions[item.index].id)}
-                onContextMenuClose={() => onContextMenuClose(transactions[item.index].id)}
+                tx={tx}
+                onSelectTx={onSelectTx}
+                isDismissing={dismissingTxIds.has(tx.id)}
               />
-            )}
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-type TransactionRowProps = {
-  tx: WalletTransaction
-
-  enabled: boolean
-  onContextMenuOpen?: () => void
-  onContextMenuClose?: () => void
-}
-
-type TransactionRowEthProps = TransactionRowProps & { tx: WalletTransactionEth }
-type TransactionRowDotProps = TransactionRowProps & { tx: WalletTransactionDot }
-type TransactionRowSolProps = TransactionRowProps & { tx: WalletTransactionSol }
-
-type TransactionAction = "cancel" | "speed-up" | "dismiss"
-
-const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, className }) => {
-  const iconUrl = useFaviconUrl(siteUrl)
-  const [isError, setError] = useState(false)
-
-  const handleError = useCallback(() => {
-    setError(true)
-  }, [])
-
-  if (!iconUrl) return null
-  if (isError) return <NetworkLogo className={className} />
-
-  return (
-    <img
-      loading="lazy"
-      src={iconUrl}
-      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
-      className={className}
-      alt=""
-      onError={handleError}
-    />
-  )
-}
-
-const TxIconContainer = ({
-  className,
-  tooltip,
-  networkId,
-  children,
-}: {
-  className?: string
-  tooltip?: string | null
-  networkId?: NetworkId
-  children?: ReactNode
-}) => (
-  <Tooltip>
-    <TooltipTrigger className={classNames("relative h-16 w-16 shrink-0 cursor-default", className)}>
-      {children}
-      {!!networkId && (
-        <NetworkLogo
-          networkId={networkId}
-          className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
-        />
-      )}
-    </TooltipTrigger>
-    <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-      {tooltip}
-    </TooltipContent>
-  </Tooltip>
-)
-
-const displayDistanceToNow = (timestamp: number, locale: Locale) =>
-  Date.now() - timestamp > 60_000
-    ? formatDistanceToNowStrict(timestamp, { addSuffix: true, locale })
-    : i18next.t("Just now")
-
-const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
-  const locale = useDateFnsLocale()
-  const [text, setText] = useState(() => displayDistanceToNow(timestamp, locale))
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setText(displayDistanceToNow(timestamp, locale))
-    }, 10_000)
-
-    return () => clearInterval(interval)
-  }, [locale, text, timestamp])
-
-  return <>{text}</>
-}
-
-const ActionButton = forwardRef<
-  HTMLButtonElement,
-  React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
->(({ type = "button", className, ...props }, ref) => {
-  return (
-    <button
-      type={type}
-      ref={ref}
-      className={classNames(
-        "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
-        className,
-      )}
-      {...props}
-    />
-  )
-})
-ActionButton.displayName = "ActionButton"
-
-// this context menu prevents drawer animation to slide up correctly, render when it's finished
-const TxActionsEth: FC<{
-  tx: WalletTransactionEth
-  enabled: boolean
+type TxHistoryModalProps = {
+  tx?: WalletTransaction
   isOpen: boolean
-  onContextMenuOpen?: () => void
-  onContextMenuClose?: () => void
-}> = ({
+  onClose: () => void
+  onDismiss: (tx: WalletTransaction) => void
+  isDismissing: boolean
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+}
+
+const TxHistoryModal: FC<TxHistoryModalProps> = ({
   tx,
-  enabled,
-  isOpen, // controlled because we must prevent other rows to get in hover state if our context menu is open
-  onContextMenuOpen,
-  onContextMenuClose,
+  isOpen,
+  onClose,
+  onDismiss,
+  isDismissing,
+  onReplacementComplete,
 }) => {
-  const network = useNetworkById(tx.networkId, "ethereum")
-  const txInfo = tx.txInfo
-  const canReplace = useCanReplaceTx(tx)
+  const { t } = useTranslation()
+  const network = useAnyNetwork(tx?.networkId)
+  const explorerId = tx ? getExplorerTargetId(tx) : undefined
 
-  const [replaceType, setReplaceType] = useState<TxReplaceType>()
-
-  const handleActionClick = useCallback(
-    (action: TransactionAction) => () => {
-      onContextMenuClose?.()
-      if (action === "speed-up") setReplaceType("speed-up")
-      if (action === "cancel") setReplaceType("cancel")
-      if (action === "dismiss") db.transactionsV2.delete(tx.id) // TODO via backend
-    },
-    [onContextMenuClose, tx.id],
+  const supportsProgress =
+    !!tx && tx.status === "pending" && (tx.platform === "polkadot" || tx.platform === "ethereum")
+  const modalClassNames = classNames(
+    "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
+    IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border",
   )
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (open) onContextMenuOpen?.()
-      else onContextMenuClose?.()
-    },
-    [onContextMenuClose, onContextMenuOpen],
-  )
+  const progressTx = supportsProgress
+    ? (tx as WalletTransactionDot | WalletTransactionEth)
+    : undefined
 
-  const evmNetwork = useNetworkById(tx.networkId, "ethereum")
+  return (
+    <Modal
+      isOpen={isOpen}
+      onDismiss={onClose}
+      className={modalClassNames}
+      containerId={IS_POPUP ? "main" : undefined}
+    >
+      {!tx ? (
+        <div className="text-body-disabled flex h-full items-center justify-center text-sm">
+          {t("Transaction unavailable")}
+        </div>
+      ) : (
+        <div className="flex h-full flex-col">
+          <div className="border-grey-850 border-b px-10 py-8">
+            <div className="flex items-start justify-between gap-8">
+              <div>
+                <div className="text-body text-xl font-semibold">
+                  {tx.label ?? t("Transaction details")}
+                </div>
+                <div className="text-body-disabled mt-2 text-sm">
+                  <DistanceToNow timestamp={tx.timestamp} />
+                </div>
+                {network?.name ? (
+                  <div className="text-body-disabled text-xs uppercase tracking-wide">
+                    {network.name}
+                  </div>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                aria-label={t("Close")}
+                onClick={onClose}
+                className="hover:bg-grey-850 text-body-secondary flex h-10 w-10 items-center justify-center rounded-sm"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+          </div>
+          <div
+            className={classNames("grow overflow-auto px-10 py-6", supportsProgress && "px-0 py-0")}
+          >
+            {supportsProgress && progressTx ? (
+              <TxProgress
+                hash={progressTx.hash as HexString}
+                networkIdOrHash={progressTx.networkId}
+                onClose={onClose}
+                onReplacementComplete={onReplacementComplete}
+              />
+            ) : (
+              <TxHistoryDetails tx={tx} network={network} />
+            )}
+          </div>
+          <TxHistoryActions
+            tx={tx}
+            network={network}
+            explorerId={explorerId}
+            onDismiss={onDismiss}
+            isDismissing={isDismissing}
+          />
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+type TxHistoryActionsProps = {
+  tx: WalletTransaction
+  network: ReturnType<typeof useAnyNetwork>
+  explorerId?: string
+  onDismiss: (tx: WalletTransaction) => void
+  isDismissing: boolean
+}
+
+const TxHistoryActions: FC<TxHistoryActionsProps> = ({
+  tx,
+  network,
+  explorerId,
+  onDismiss,
+  isDismissing,
+}) => {
+  const { t } = useTranslation()
+  const swapInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
 
   const swapHref = useMemo(() => {
-    if (!isTxInfoSwap(txInfo)) return
-    if (txInfo.type === "swap-simpleswap" && txInfo.exchangeId)
-      return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
-    if (txInfo.type === "swap-stealthex" && txInfo.exchangeId)
-      return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
-    if (txInfo.type === "swap-lifi") return `https://scan.li.fi/tx/${tx.hash}`
+    if (!swapInfo) return undefined
+    if (swapInfo.type === "swap-simpleswap" && swapInfo.exchangeId)
+      return `https://simpleswap.io/exchange?id=${swapInfo.exchangeId}`
+    if (swapInfo.type === "swap-stealthex" && swapInfo.exchangeId)
+      return `https://stealthex.io/exchange?id=${swapInfo.exchangeId}`
+    if (swapInfo.type === "swap-lifi" && tx.platform === "ethereum")
+      return `https://scan.li.fi/tx/${tx.hash}`
+    return undefined
+  }, [swapInfo, tx])
 
-    return
-  }, [tx.hash, txInfo])
-  const handleSwapClick = useCallback(() => {
-    if (!swapHref) return
-    window.open(swapHref, "_blank")
+  const explorerLinks = useMemo(() => {
+    if (!network || !explorerId) return []
+    return getBlockExplorerUrls(network, { type: "transaction", id: explorerId })
+  }, [explorerId, network])
+
+  const handleExternal = useCallback((url: string) => {
+    window.open(url, "_blank")
     if (IS_EMBEDDED_POPUP) window.close()
-  }, [swapHref])
+  }, [])
 
-  const blockExplorerUrls = useMemo(() => {
-    if (!network) return []
-    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
-  }, [network, tx])
-
-  const { t } = useTranslation()
+  const handleDismiss = useCallback(() => onDismiss(tx), [onDismiss, tx])
 
   return (
-    <div
-      className={classNames(
-        "absolute right-0 top-0 z-10 flex items-center",
-        IS_POPUP ? "h-[36px]" : "h-[42px]",
-        isOpen ? "visible opacity-100" : "invisible opacity-0",
-        enabled && "group-hover:visible group-hover:opacity-100",
-      )}
-    >
-      <div className="relative">
-        {canReplace && evmNetwork && !evmNetwork.preserveGasEstimate && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ActionButton onClick={handleActionClick("speed-up")}>
-                  <RocketIcon className="inline" />
-                </ActionButton>
-              </TooltipTrigger>
-              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                {t("Speed Up")}
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ActionButton onClick={handleActionClick("cancel")}>
-                  <XOctagonIcon className="inline" />
-                </ActionButton>
-              </TooltipTrigger>
-              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                {t("Cancel")}
-              </TooltipContent>
-            </Tooltip>
-          </>
+    <div className="border-grey-850 border-t px-10 py-6">
+      <div className="flex flex-wrap gap-4">
+        {swapHref && tx.status === "success" && (
+          <Button iconLeft={ExternalLinkIcon} onClick={() => handleExternal(swapHref)}>
+            {t("View swap status")}
+          </Button>
         )}
-        <Popover placement="bottom-end" open={isOpen} onOpenChange={handleOpenChange}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <ActionButton
-                  className={classNames(isOpen && "!bg-grey-700 !text-body")}
-                  onClick={() => handleOpenChange(true)}
-                >
-                  <MoreHorizontalIcon className="inline" />
-                </ActionButton>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              {t("More options")}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent
-            className={classNames(
-              "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-              isOpen ? "visible opacity-100" : "invisible opacity-0",
-            )}
-          >
-            {canReplace && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleActionClick("cancel")}
-                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-                >
-                  {t("Cancel transaction")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleActionClick("speed-up")}
-                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-                >
-                  {t("Speed up transaction")}
-                </button>
-              </>
-            )}
-            {tx.status === "success" && swapHref && (
-              <button
-                type="button"
-                onClick={handleSwapClick}
-                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-              >
-                {t("View swap status")}
-              </button>
-            )}
-            {blockExplorerUrls.map((url) => (
-              <button
-                key={url}
-                type="button"
-                onClick={() => {
-                  window.open(url, "_blank")
-                  if (IS_EMBEDDED_POPUP) window.close()
-                }}
-                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-              >
-                {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={handleActionClick("dismiss")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-            >
-              {t("Dismiss")}
-            </button>
-          </PopoverContent>
-        </Popover>
+        {explorerLinks.map((url) => (
+          <Button key={url} iconLeft={ExternalLinkIcon} onClick={() => handleExternal(url)}>
+            {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
+          </Button>
+        ))}
+        <Button
+          iconLeft={TrashIcon}
+          onClick={handleDismiss}
+          processing={isDismissing}
+          disabled={isDismissing}
+        >
+          {t("Dismiss transaction")}
+        </Button>
       </div>
-      <TxReplaceDrawer tx={tx} type={replaceType} onClose={() => setReplaceType(undefined)} />
+    </div>
+  )
+}
+
+type DetailRow = {
+  label: string
+  value?: ReactNode
+}
+
+type TxHistoryDetailsProps = {
+  tx: WalletTransaction
+  network: ReturnType<typeof useAnyNetwork>
+}
+
+const TxHistoryDetails: FC<TxHistoryDetailsProps> = ({ tx, network }) => {
+  const { t } = useTranslation()
+  const transferInfo = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
+  const swapInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
+  const approvalInfo = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
+
+  const currency = useSelectedCurrency()
+
+  const primaryTokenId = transferInfo?.tokenId ?? approvalInfo?.tokenId ?? swapInfo?.fromTokenId
+  const primaryToken = useToken(primaryTokenId)
+  const primaryRates = useTokenRates(primaryTokenId)
+  const toTokenId = swapInfo?.toTokenId
+  const toToken = useToken(toTokenId)
+  const toTokenRates = useTokenRates(toTokenId)
+
+  const primaryAmount = useMemo(() => {
+    if (transferInfo && primaryToken)
+      return new BalanceFormatter(transferInfo.value, primaryToken.decimals, primaryRates)
+    if (approvalInfo && primaryToken)
+      return new BalanceFormatter(approvalInfo.amount, primaryToken.decimals, primaryRates)
+    if (swapInfo && primaryToken)
+      return new BalanceFormatter(swapInfo.fromAmount, primaryToken.decimals, primaryRates)
+    return null
+  }, [approvalInfo, primaryRates, primaryToken, swapInfo, transferInfo])
+
+  const toAmount = useMemo(() => {
+    if (!swapInfo || !toToken) return null
+    return new BalanceFormatter(swapInfo.toAmount, toToken.decimals, toTokenRates)
+  }, [swapInfo, toToken, toTokenRates])
+
+  const typeLabel = useMemo(() => {
+    if (transferInfo) return t("Transfer")
+    if (swapInfo) return t("Swap")
+    if (approvalInfo) return t("Approval")
+    return t("Transaction")
+  }, [approvalInfo, swapInfo, t, transferInfo])
+
+  const infoRows: DetailRow[] = []
+
+  if (transferInfo) {
+    infoRows.push({
+      label: t("Amount"),
+      value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
+    })
+    infoRows.push({ label: t("Recipient"), value: transferInfo.to })
+  }
+
+  if (approvalInfo) {
+    infoRows.push({
+      label: t("Allowance"),
+      value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
+    })
+    infoRows.push({ label: t("Spender"), value: approvalInfo.contractAddress })
+  }
+
+  if (swapInfo) {
+    infoRows.push({
+      label: t("From"),
+      value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
+    })
+    infoRows.push({
+      label: t("To"),
+      value: <TxAmountValue amount={toAmount} token={toToken} currency={currency} />,
+    })
+    if (swapInfo.to) infoRows.push({ label: t("Recipient"), value: swapInfo.to })
+  }
+
+  const submittedValue = (
+    <div className="flex flex-col text-sm">
+      <span>{new Date(tx.timestamp).toLocaleString()}</span>
+      <span className="text-body-disabled text-xs">
+        <DistanceToNow timestamp={tx.timestamp} />
+      </span>
+    </div>
+  )
+
+  const metadataRows: DetailRow[] = [
+    { label: t("Status"), value: <TransactionStatusLabel status={tx.status} /> },
+    { label: t("Type"), value: typeLabel },
+    { label: t("Network"), value: network?.name ?? t("Unknown network") },
+    { label: t("Account"), value: tx.account },
+    { label: t("Submitted"), value: submittedValue },
+  ]
+
+  if ("nonce" in tx) {
+    metadataRows.push({ label: t("Nonce"), value: tx.nonce?.toString() })
+  }
+
+  if ("blockNumber" in tx && tx.blockNumber) {
+    metadataRows.push({ label: t("Block number"), value: tx.blockNumber })
+  }
+
+  if (tx.platform === "polkadot" && tx.extrinsicIndex) {
+    metadataRows.push({ label: t("Extrinsic index"), value: tx.extrinsicIndex })
+  }
+
+  const explorerId = getExplorerTargetId(tx)
+  metadataRows.push({ label: t("Transaction hash"), value: explorerId })
+
+  if (tx.siteUrl) {
+    metadataRows.push({
+      label: t("Site"),
+      value: (
+        <a
+          className="hover:text-body text-body break-words"
+          href={tx.siteUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {tx.siteUrl}
+        </a>
+      ),
+    })
+  }
+
+  if (tx.label) {
+    metadataRows.push({ label: t("Label"), value: tx.label })
+  }
+
+  if (tx.platform === "ethereum" && tx.isReplacement) {
+    metadataRows.push({ label: t("Replacement"), value: t("Yes") })
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-10 overflow-auto pr-1">
+      {infoRows.length > 0 && (
+        <section className="space-y-4">
+          <div className="text-body-secondary text-xs uppercase tracking-wide">
+            {t("Transaction details")}
+          </div>
+          <TxDetailGrid rows={infoRows} />
+        </section>
+      )}
+
+      <section className="space-y-4">
+        <div className="text-body-secondary text-xs uppercase tracking-wide">{t("Metadata")}</div>
+        <TxDetailGrid rows={metadataRows} />
+      </section>
+    </div>
+  )
+}
+
+const TxDetailGrid: FC<{ rows: DetailRow[] }> = ({ rows }) => {
+  return (
+    <div className="grid gap-8 sm:grid-cols-2">
+      {rows.map((row) => (
+        <div key={row.label} className="flex flex-col gap-2">
+          <div className="text-body-disabled text-xs uppercase tracking-wide">{row.label}</div>
+          <div className="text-body break-words text-sm">{row.value ?? "—"}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type TxAmountValueProps = {
+  amount: BalanceFormatter | null
+  token: ReturnType<typeof useToken>
+  currency: ReturnType<typeof useSelectedCurrency>
+}
+
+const TxAmountValue: FC<TxAmountValueProps> = ({ amount, token, currency }) => {
+  if (!amount || !token) return <span>—</span>
+
+  return (
+    <div className="flex flex-col gap-1">
+      <Tokens
+        className="pointer-events-none"
+        amount={amount.tokens}
+        decimals={token.decimals}
+        symbol={token.symbol}
+        noCountUp
+        noTooltip
+        isBalance
+      />
+      {amount.fiat(currency) ? <Fiat amount={amount} noCountUp isBalance /> : null}
     </div>
   )
 }
@@ -514,27 +637,109 @@ const SwapTransactionStatusLabelFallback = () => {
   )
 }
 
+type TransactionRowProps = {
+  tx: WalletTransaction
+  onSelectTx: (tx: WalletTransaction) => void
+  isDismissing: boolean
+}
+
+type TransactionRowEthProps = TransactionRowProps & { tx: WalletTransactionEth }
+type TransactionRowDotProps = TransactionRowProps & { tx: WalletTransactionDot }
+type TransactionRowSolProps = TransactionRowProps & { tx: WalletTransactionSol }
+
+const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, className }) => {
+  const iconUrl = useFaviconUrl(siteUrl)
+  const [isError, setError] = useState(false)
+
+  const handleError = useCallback(() => {
+    setError(true)
+  }, [])
+
+  if (!iconUrl) return null
+  if (isError) return <NetworkLogo className={className} />
+
+  return (
+    <img
+      loading="lazy"
+      src={iconUrl}
+      crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
+      className={className}
+      alt=""
+      onError={handleError}
+    />
+  )
+}
+
+const TxIconContainer = ({
+  className,
+  tooltip,
+  networkId,
+  children,
+}: {
+  className?: string
+  tooltip?: string | null
+  networkId?: NetworkId
+  children?: ReactNode
+}) => (
+  <Tooltip>
+    <TooltipTrigger className={classNames("relative h-16 w-16 shrink-0 cursor-default", className)}>
+      {children}
+      {!!networkId && (
+        <NetworkLogo
+          networkId={networkId}
+          className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
+        />
+      )}
+    </TooltipTrigger>
+    <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+      {tooltip}
+    </TooltipContent>
+  </Tooltip>
+)
+
+const displayDistanceToNow = (timestamp: number, locale: Locale) =>
+  Date.now() - timestamp > 60_000
+    ? formatDistanceToNowStrict(timestamp, { addSuffix: true, locale })
+    : i18next.t("Just now")
+
+const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
+  const locale = useDateFnsLocale()
+  const [text, setText] = useState(() => displayDistanceToNow(timestamp, locale))
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setText(displayDistanceToNow(timestamp, locale))
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [locale, text, timestamp])
+
+  return <>{text}</>
+}
+
 const TransactionRowBase: FC<{
-  isCtxMenuOpen: boolean
-  enabled: boolean
   logo: ReactNode
   status: ReactNode
   wen: ReactNode
   tokens: ReactNode
   fiat: ReactNode
-  actions: ReactNode
-}> = ({ isCtxMenuOpen, enabled, logo, status, wen, tokens, fiat, actions }) => {
+  onClick: () => void
+  isBusy?: boolean
+}> = ({ logo, status, wen, tokens, fiat, onClick, isBusy }) => {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={isBusy}
       className={classNames(
-        "bg-grey-850 group z-0 flex w-full grow items-center rounded-sm",
+        "bg-grey-850 relative z-0 flex w-full grow items-center rounded-sm text-left transition",
         IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
-        isCtxMenuOpen && "bg-grey-800",
-        enabled && "hover:bg-grey-800",
+        !isBusy && "hover:bg-grey-800",
+        isBusy && "cursor-wait opacity-60",
       )}
     >
       {logo}
-      <div className="leading-paragraph relative flex w-full grow justify-between">
+      <div className="leading-paragraph flex w-full grow justify-between">
         <div className="flex flex-col items-start justify-center">
           <div
             className={classNames(
@@ -548,35 +753,23 @@ const TransactionRowBase: FC<{
             {wen}
           </div>
         </div>
-        <div className="relative flex grow flex-col items-end justify-center">
-          <div
-            className={classNames(
-              "text-right",
-              isCtxMenuOpen ? "opacity-0" : "opacity-100",
-              enabled && "group-hover:opacity-0",
-            )}
-          >
-            <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
-              {tokens}
-            </div>
-            <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
-              {fiat}
-            </div>
+        <div className="flex flex-col items-end justify-center text-right">
+          <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
+            {tokens}
           </div>
-
-          {actions}
+          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
+            {fiat}
+          </div>
         </div>
       </div>
-    </div>
+      {isBusy && (
+        <LoaderIcon className="text-body-disabled animate-spin-slow absolute right-6 top-1/2 -translate-y-1/2" />
+      )}
+    </button>
   )
 }
 
-const TransactionRowEvm: FC<TransactionRowEthProps> = ({
-  tx,
-  enabled,
-  onContextMenuOpen,
-  onContextMenuClose,
-}) => {
+const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx, isDismissing }) => {
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
@@ -604,25 +797,12 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
 
-  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
-
-  const handleOpenCtxMenu = useCallback(() => {
-    if (!enabled) return
-    onContextMenuOpen?.()
-    setIsCtxMenuOpen(true)
-  }, [enabled, onContextMenuOpen])
-
-  const handleCloseCtxMenu = useCallback(() => {
-    setIsCtxMenuOpen(false)
-    onContextMenuClose?.()
-  }, [onContextMenuClose])
+  const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 
   const { t } = useTranslation()
 
   return (
     <TransactionRowBase
-      isCtxMenuOpen={isCtxMenuOpen}
-      enabled={enabled}
       logo={
         tx.siteUrl ? (
           <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
@@ -667,6 +847,8 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({
         </>
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
+      onClick={handleRowClick}
+      isBusy={isDismissing}
       tokens={
         txSwap ? (
           // tx is a swap deposit
@@ -713,148 +895,11 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({
         !!amount &&
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
-      actions={
-        <TxActionsEth
-          tx={tx}
-          enabled={enabled}
-          isOpen={isCtxMenuOpen}
-          onContextMenuOpen={handleOpenCtxMenu}
-          onContextMenuClose={handleCloseCtxMenu}
-        />
-      }
     />
   )
 }
 
-// this context menu prevents drawer animation to slide up correctly, render when it's finished
-const TxActionsDefault: FC<{
-  tx: WalletTransactionDot | WalletTransactionSol
-  enabled: boolean
-  isOpen: boolean
-  onContextMenuOpen?: () => void
-  onContextMenuClose?: () => void
-}> = ({
-  tx,
-  enabled,
-  isOpen, // controlled because we must prevent other rows to get in hover state if our context menu is open
-  onContextMenuOpen,
-  onContextMenuClose,
-}) => {
-  const txInfo = tx.txInfo
-
-  const handleActionClick = useCallback(
-    (action: TransactionAction) => () => {
-      onContextMenuClose?.()
-      if (action === "dismiss") db.transactionsV2.delete(tx.id) // TODO via backend
-    },
-    [onContextMenuClose, tx.id],
-  )
-
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (open) onContextMenuOpen?.()
-      else onContextMenuClose?.()
-    },
-    [onContextMenuClose, onContextMenuOpen],
-  )
-
-  const network = useNetworkById(tx.networkId)
-
-  const swapHref = useMemo(() => {
-    if (!isTxInfoSwap(txInfo)) return
-    if (txInfo.type === "swap-simpleswap" && txInfo.exchangeId)
-      return `https://simpleswap.io/exchange?id=${txInfo.exchangeId}`
-    if (txInfo.type === "swap-stealthex" && txInfo.exchangeId)
-      return `https://stealthex.io/exchange?id=${txInfo.exchangeId}`
-    // NOTE: Lifi doesn't support substrate, we don't need to handle it here
-    return
-  }, [txInfo])
-  const handleSwapClick = useCallback(() => {
-    if (!swapHref) return
-    window.open(swapHref, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [swapHref])
-
-  const blockExplorerUrls = useMemo(() => {
-    if (!network) return []
-    return getBlockExplorerUrls(network, { type: "transaction", id: tx.id })
-  }, [network, tx])
-
-  const { t } = useTranslation()
-
-  return (
-    <div
-      className={classNames(
-        "absolute right-0 top-0 z-10 flex h-[36px] items-center",
-        isOpen ? "visible opacity-100" : "invisible opacity-0",
-        enabled && "group-hover:visible group-hover:opacity-100",
-      )}
-    >
-      <div className="relative">
-        <Popover placement="bottom-end" open={isOpen} onOpenChange={handleOpenChange}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <ActionButton
-                  className={classNames(isOpen && "!bg-grey-700 !text-body")}
-                  onClick={() => handleOpenChange(true)}
-                >
-                  <MoreHorizontalIcon className="inline" />
-                </ActionButton>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              {t("More options")}
-            </TooltipContent>
-          </Tooltip>
-          <PopoverContent
-            className={classNames(
-              "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-              isOpen ? "visible opacity-100" : "invisible opacity-0",
-            )}
-          >
-            {tx.status === "success" && swapHref && (
-              <button
-                type="button"
-                onClick={handleSwapClick}
-                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-              >
-                {t("View swap status")}
-              </button>
-            )}
-            {blockExplorerUrls.map((url) => (
-              <button
-                key={url}
-                type="button"
-                onClick={() => {
-                  window.open(url, "_blank")
-                  if (IS_EMBEDDED_POPUP) window.close()
-                }}
-                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-              >
-                {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={handleActionClick("dismiss")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-            >
-              {t("Dismiss")}
-            </button>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
-  )
-}
-
-const TransactionRowDot: FC<TransactionRowDotProps> = ({
-  tx,
-  enabled,
-  onContextMenuOpen,
-  onContextMenuClose,
-}) => {
+const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx, isDismissing }) => {
   const { genesisHash } = tx.payload
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
@@ -882,23 +927,12 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
 
-  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
-
-  const handleOpenCtxMenu = useCallback(() => {
-    if (!enabled) return
-    onContextMenuOpen?.()
-    setIsCtxMenuOpen(true)
-  }, [enabled, onContextMenuOpen])
-
-  const handleCloseCtxMenu = useCallback(() => {
-    setIsCtxMenuOpen(false)
-    onContextMenuClose?.()
-  }, [onContextMenuClose])
+  const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 
   return (
     <TransactionRowBase
-      isCtxMenuOpen={isCtxMenuOpen}
-      enabled={enabled}
+      onClick={handleRowClick}
+      isBusy={isDismissing}
       logo={
         tx.siteUrl ? (
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
@@ -981,25 +1015,11 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({
         !!amount &&
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
-      actions={
-        <TxActionsDefault
-          tx={tx}
-          enabled={enabled}
-          isOpen={isCtxMenuOpen}
-          onContextMenuOpen={handleOpenCtxMenu}
-          onContextMenuClose={handleCloseCtxMenu}
-        />
-      }
     />
   )
 }
 
-const TransactionRowSol: FC<TransactionRowSolProps> = ({
-  tx,
-  enabled,
-  onContextMenuOpen,
-  onContextMenuClose,
-}) => {
+const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx, isDismissing }) => {
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
   const txApproval = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
@@ -1026,23 +1046,12 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
 
-  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
-
-  const handleOpenCtxMenu = useCallback(() => {
-    if (!enabled) return
-    onContextMenuOpen?.()
-    setIsCtxMenuOpen(true)
-  }, [enabled, onContextMenuOpen])
-
-  const handleCloseCtxMenu = useCallback(() => {
-    setIsCtxMenuOpen(false)
-    onContextMenuClose?.()
-  }, [onContextMenuClose])
+  const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 
   return (
     <TransactionRowBase
-      isCtxMenuOpen={isCtxMenuOpen}
-      enabled={enabled}
+      onClick={handleRowClick}
+      isBusy={isDismissing}
       logo={
         tx.siteUrl ? (
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
@@ -1123,15 +1132,6 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({
         !!amount &&
         !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
-      actions={
-        <TxActionsDefault
-          tx={tx}
-          enabled={enabled}
-          isOpen={isCtxMenuOpen}
-          onContextMenuOpen={handleOpenCtxMenu}
-          onContextMenuClose={handleCloseCtxMenu}
-        />
-      }
     />
   )
 }
@@ -1152,8 +1152,8 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 const TransactionRowShimmer = () => {
   return (
     <TransactionRowBase
-      isCtxMenuOpen={false}
-      enabled={false}
+      onClick={() => undefined}
+      isBusy={false}
       logo={<div className="bg-grey-800 h-16 w-16 shrink-0 animate-pulse rounded-full" />}
       status={
         <div className="bg-grey-800 text-grey-800 rounded-xs mb-1 animate-pulse text-sm">
@@ -1165,7 +1165,6 @@ const TransactionRowShimmer = () => {
           Very long time ago
         </div>
       }
-      actions={null}
       tokens={null}
       fiat={null}
     />
