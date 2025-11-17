@@ -87,11 +87,11 @@ export const BittensorSubnetBondReview = () => {
       return 0
     } else if (subnetFee === 0) {
       // 100% discount
-      return 1
+      return MAX_TOTAL_FEE_DISCOUNT
     } else {
       // Calculate discount percentage
       const discountDiff = TALISMAN_FEE_BITTENSOR - subnetFee
-      return (discountDiff * 1) / TALISMAN_FEE_BITTENSOR
+      return discountDiff / TALISMAN_FEE_BITTENSOR
     }
   }, [subnetFee])
 
