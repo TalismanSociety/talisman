@@ -12,7 +12,14 @@ import { useBittensorNetworkIds } from "@ui/state/bittensor"
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { useBondModal } from "./useBondModal"
 
-export const useBondButton = ({ balances }: { balances: Balances | null | undefined }) => {
+export const useBondButton = ({
+  balances,
+  ignoreExistingSettings,
+}: {
+  balances: Balances | null | undefined
+  // for now only used for bittensor to prevent reusing existing netuid
+  ignoreExistingSettings?: boolean
+}) => {
   const { genericEvent } = useAnalytics()
   const ownedAccounts = useAccounts("owned")
 
@@ -57,7 +64,7 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
             address,
             networkId,
             hotkey,
-            netuid,
+            netuid: ignoreExistingSettings ? undefined : netuid,
           })
           break
         }
@@ -77,6 +84,7 @@ export const useBondButton = ({ balances }: { balances: Balances | null | undefi
       bestBondableBalance,
       genericEvent,
       handleOpenBittensorModal,
+      ignoreExistingSettings,
       remoteConfig.seek.webAppStakingPath,
       open,
     ],

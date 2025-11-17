@@ -8,10 +8,11 @@ import { useBondButton } from "./hooks/useBondButton"
 
 export const BondPillButton: FC<{
   balances: Balances
+  ignoreExistingSettings?: boolean
   className?: string
-}> = ({ balances, className }) => {
+}> = ({ balances, className, ignoreExistingSettings }) => {
   const { t } = useTranslation()
-  const { onClick } = useBondButton({ balances })
+  const { onClick } = useBondButton({ balances, ignoreExistingSettings })
 
   if (!onClick) return null
 
