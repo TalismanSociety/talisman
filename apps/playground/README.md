@@ -1,3 +1,0 @@
-# Talisman Playground
-
-##
