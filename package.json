@@ -29,7 +29,6 @@
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "preconstruct dev && pnpm run --filter extension dev",
     "dev:extension:firefox": "preconstruct dev && pnpm run --filter extension dev:firefox",
-    "dev:playground": "pnpm run --filter playground dev",
     "build": "turbo run build",
     "build:packages": "NODE_OPTIONS=--max_old_space_size=8192 preconstruct build",
     "build:extension": "turbo run build:extension",
