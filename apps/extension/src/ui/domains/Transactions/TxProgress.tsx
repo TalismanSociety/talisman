@@ -1,7 +1,12 @@
 import { HexString } from "@polkadot/util/types"
 import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { WalletTransaction, WalletTransactionDot, WalletTransactionEth } from "extension-core"
+import {
+  WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
+  WalletTransactionSol,
+} from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
@@ -203,14 +208,14 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
   )
 }
 
-type TxProgressSubstrateProps = {
+type TxProgressDotProps = {
   tx: WalletTransactionDot
   onClose?: () => void
   className?: string
   onReplacementComplete?: (args: ReplaceCallbackArgs) => void
 }
 
-const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({
+const TxProgressDot: FC<TxProgressDotProps> = ({
   tx,
   onClose,
   className,
@@ -231,14 +236,14 @@ const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({
   )
 }
 
-type TxProgressEvmProps = {
+type TxProgressEthProps = {
   tx: WalletTransactionEth
   onClose?: () => void
   className?: string
   onReplacementComplete?: (args: ReplaceCallbackArgs) => void
 }
 
-const TxProgressEvm: FC<TxProgressEvmProps> = ({
+const TxProgressEth: FC<TxProgressEthProps> = ({
   tx,
   className,
   onClose,
@@ -259,8 +264,21 @@ const TxProgressEvm: FC<TxProgressEvmProps> = ({
   )
 }
 
+type TxProgressSolProps = {
+  tx: WalletTransactionSol
+  onClose?: () => void
+  className?: string
+}
+
+const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
+  const network = useNetworkById(tx.networkId, "ethereum")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.signature), [network, tx.signature])
+
+  return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
+}
+
 type TxProgressProps = {
-  hash: HexString
+  hash: string // hash or signature (for solana)
   networkIdOrHash: string
   onClose?: () => void
   className?: string
@@ -290,26 +308,14 @@ export const TxProgress: FC<TxProgressProps> = ({
     )
   }
 
-  if (tx?.platform === "polkadot")
-    return (
-      <TxProgressSubstrate
-        tx={tx}
-        onClose={onClose}
-        className={className}
-        onReplacementComplete={onReplacementComplete}
-      />
-    )
-
-  if (tx?.platform === "ethereum")
-    return (
-      <TxProgressEvm
-        tx={tx}
-        onClose={onClose}
-        className={className}
-        onReplacementComplete={onReplacementComplete}
-      />
-    )
-
-  // render null while loading
-  return null
+  switch (tx?.platform) {
+    case "ethereum":
+      return <TxProgressEth tx={tx} onClose={onClose} className={className} />
+    case "polkadot":
+      return <TxProgressDot tx={tx} onClose={onClose} className={className} />
+    case "solana":
+      return <TxProgressSol tx={tx} onClose={onClose} className={className} />
+    default:
+      return null
+  }
 }
