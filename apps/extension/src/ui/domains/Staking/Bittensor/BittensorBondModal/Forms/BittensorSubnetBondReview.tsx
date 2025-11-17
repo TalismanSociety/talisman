@@ -35,6 +35,8 @@ import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
 
+const MAX_TOTAL_FEE_DISCOUNT = 1
+
 export const BittensorSubnetBondReview = () => {
   const [isDisabled, setIsDisabled] = useState(true)
   const [hideWarning] = useAppState("hideBittensorSubnetStakeWarning")
@@ -94,9 +96,9 @@ export const BittensorSubnetBondReview = () => {
   }, [subnetFee])
 
   const totalFeeDiscount = useMemo(() => {
-    if (subnetFeeDiscount === 1) {
+    if (subnetFeeDiscount === MAX_TOTAL_FEE_DISCOUNT) {
       // Discount cannot be greater than 100%
-      return 1
+      return MAX_TOTAL_FEE_DISCOUNT
     } else if (isSeekTaoDiscountEnabled) {
       // Calculate total discount, combining subnet fee discount and seek discount
       return tier.discount + subnetFeeDiscount
@@ -105,7 +107,11 @@ export const BittensorSubnetBondReview = () => {
     return subnetFeeDiscount
   }, [subnetFeeDiscount, isSeekTaoDiscountEnabled, tier.discount])
 
-  const totalDiscountPercent = `${totalFeeDiscount * 100}%`
+  const totalDiscountPercent = useMemo(() => `${totalFeeDiscount * 100}%`, [totalFeeDiscount])
+  const isSeekDrawerEnabled = useMemo(
+    () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
+    [isSeekTaoDiscountEnabled, totalFeeDiscount],
+  )
 
   const { isLoading } = useCombinedSubnetData()
 
@@ -277,9 +283,9 @@ export const BittensorSubnetBondReview = () => {
                   type="button"
                   className={classNames(
                     "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
-                    !isSeekTaoDiscountEnabled && "cursor-default",
+                    !isSeekDrawerEnabled && "cursor-default",
                   )}
-                  onClick={isSeekTaoDiscountEnabled ? seekDiscountDrawer.open : undefined}
+                  onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
                 >
                   <div className="text-[1rem] text-[#D5FF5C]">
                     {totalFeeDiscount > 0 ? (
