@@ -3,12 +3,13 @@ import { useMemo } from "react"
 
 import { useSubnetDynamicInfo } from "../../hooks/bittensor/dTao/useGetSubnetMetagraphByNetuid"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
-import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
+import { StakeDirection } from "./types"
+import { useGetSubnetFee } from "./useGetSubnetFee"
 
 type GetDynamicTaoStakeInfoProps = {
   netuid: number | null
   amount: bigint | null
-  direction: "taoToAlpha" | "alphaToTao"
+  direction: StakeDirection
   userMaxSlippage: number
   minJoinBond: bigint | null | undefined
 }
@@ -22,6 +23,7 @@ export const useGetDynamicTaoStakeInfo = ({
 }: GetDynamicTaoStakeInfoProps) => {
   const { data, isLoading, isError } = useSubnetDynamicInfo({ netuid })
   const { tier } = useGetSeekDiscount()
+  const subnetFee = useGetSubnetFee({ netuid: netuid ?? 0, direction })
 
   const isTaoToAlpha = useMemo(() => direction === "taoToAlpha", [direction])
 
@@ -46,8 +48,8 @@ export const useGetDynamicTaoStakeInfo = ({
   )
 
   const taoToAlphaTalismanFee = useMemo(
-    () => calculateFee({ amount, fee: TALISMAN_FEE_BITTENSOR, seekDiscount: tier.discount }),
-    [amount, tier.discount],
+    () => calculateFee({ amount, fee: subnetFee, seekDiscount: tier.discount }),
+    [amount, subnetFee, tier.discount],
   )
 
   // calculate the conversion rate of 1 Tao to alpha with zero slippage
@@ -85,10 +87,10 @@ export const useGetDynamicTaoStakeInfo = ({
     () =>
       calculateFee({
         amount: BigInt(Math.round(taoAmountFromAlpha)),
-        fee: TALISMAN_FEE_BITTENSOR,
+        fee: subnetFee,
         seekDiscount: tier.discount,
       }),
-    [taoAmountFromAlpha, tier.discount],
+    [subnetFee, taoAmountFromAlpha, tier.discount],
   )
 
   const alphaToTaoSlippage = useMemo(
