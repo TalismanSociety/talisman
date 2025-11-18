@@ -99,6 +99,7 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
           config.featureFlags.SEEK_BENEFITS = true
           config.featureFlags.SEEK_TAO_DISCOUNT = true
           config.featureFlags.ASSET_HUB_MIGRATION_BANNER = true
+          config.featureFlags.SEEK_PRESALE = true
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated

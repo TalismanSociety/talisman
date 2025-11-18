@@ -46,7 +46,7 @@ export const SeekPresaleBanner: FC<{ variant: "small" | "large"; className?: str
               {t("SEEK Pre-Sale Ends Soon")}
             </div>
             <div className="text-body-secondary truncate">
-              {t("Closes Oct 20. Don’t miss out!")}
+              {t("Closes Dec 2nd. Don’t miss out!")}
               {variant === "large" && <> {t("Click here to learn more.")}</>}
             </div>
           </div>
