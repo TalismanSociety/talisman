@@ -6,5 +6,5 @@ export const TxHistoryDetailsTokens: FC<{
   value: bigint | string
   tokenId: string
 }> = ({ value, tokenId }) => {
-  return <TokensAndFiat planck={value} tokenId={tokenId} noCountUp />
+  return <TokensAndFiat planck={value} tokenId={tokenId} />
 }

@@ -41,8 +41,29 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({ tx, isOpen, onClose })
 
   return (
     <Modal isOpen={isOpen} onDismiss={onClose} containerId="main">
-      {!!displayTx && <ModalContent tx={displayTx} onClose={onClose} />}
+      {!!displayTx && (
+        <DialogWrapper tx={displayTx} onClose={onClose}>
+          <ModalContent tx={displayTx} onClose={onClose} />
+        </DialogWrapper>
+      )}
     </Modal>
+  )
+}
+
+const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: ReactNode }> = ({
+  tx,
+  children,
+  onClose,
+}) => {
+  const { t } = useTranslation()
+  return (
+    <ModalDialog
+      title={t("Transaction Details")}
+      className={cn("h-[60rem] w-[40rem]", tx.status === "pending" && "[&_header]:invisible")}
+      onClose={onClose}
+    >
+      {children}
+    </ModalDialog>
   )
 }
 
@@ -54,26 +75,18 @@ const ModalContent: FC<{ tx: WalletTransaction; onClose: () => void }> = ({ tx, 
         <TxProgress hash={getTransactionId(tx)} onClose={onClose} networkIdOrHash={tx.networkId} />
       )
     default:
-      return <TxHistoryDetailsDialog tx={tx} onClose={onClose} />
+      return <TxHistoryDetailsContent tx={tx} />
   }
 }
 
-const TxHistoryDetailsDialog: FC<{ tx: WalletTransaction; onClose: () => void }> = ({
-  tx,
-  onClose,
-}) => {
-  const { t } = useTranslation()
-  return (
-    <ModalDialog title={t("Transaction Details")} className="h-[60rem] w-[40rem]" onClose={onClose}>
-      <div className="flex size-full flex-col overflow-hidden">
-        <div className="grow overflow-y-auto">
-          <TxHistoryDetails tx={tx} />
-        </div>
-        <TxHistoryActions tx={tx} />
-      </div>
-    </ModalDialog>
-  )
-}
+const TxHistoryDetailsContent: FC<{ tx: WalletTransaction }> = ({ tx }) => (
+  <div className="flex size-full flex-col gap-8 overflow-hidden">
+    <div className="grow overflow-y-auto">
+      <TxHistoryDetails tx={tx} />
+    </div>
+    <TxHistoryActions tx={tx} />
+  </div>
+)
 
 type TxHistoryActionsProps = {
   tx: WalletTransaction
@@ -174,14 +187,14 @@ const TxHistoryDetails: FC<TxHistoryDetailsProps> = ({ tx }) => {
       {(tx.platform === "ethereum" || tx.platform === "polkadot") && (
         <TxHistoryDetailsRow title={t("Nonce")}>{tx.nonce}</TxHistoryDetailsRow>
       )}
-      <TxHistoryDetailsRow title={t("Submitted At")}>
+      <TxHistoryDetailsRow title={t("Submitted at")}>
         <TxHistoryDetailsTimestamp timestamp={tx.timestamp} />
       </TxHistoryDetailsRow>
       {(tx.platform === "ethereum" || tx.platform === "polkadot") && (
         <TxHistoryDetailsRow title={t("Block number")}>{tx.blockNumber}</TxHistoryDetailsRow>
       )}
       {!!tx.txInfo && (
-        <TxHistoryDetailsRow title={t("Transaction Info")}>
+        <TxHistoryDetailsRow title={t("In-wallet transaction")}>
           <TxHistoryDetailsTxInfo tx={tx} />
         </TxHistoryDetailsRow>
       )}
