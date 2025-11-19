@@ -50,7 +50,10 @@ export const TxHistoryDetailsAddress: FC<{
         <button
           type="button"
           onClick={handleClick}
-          className={cn("flex w-full items-center gap-2 overflow-hidden", className)}
+          className={cn(
+            "text-body inline-flex max-w-full items-center gap-2 overflow-hidden align-sub",
+            className,
+          )}
         >
           <AccountIcon
             address={formatted}
@@ -60,7 +63,13 @@ export const TxHistoryDetailsAddress: FC<{
           {account ? (
             <div className="overflow-hidden text-ellipsis whitespace-nowrap">{account.name}</div>
           ) : (
-            <Address noTooltip address={formatted} startCharCount={8} endCharCount={8} />
+            <Address
+              noTooltip
+              address={formatted}
+              startCharCount={8}
+              endCharCount={8}
+              className="leading-none"
+            />
           )}
           {blockExplorerUrl ? (
             <ExternalLinkIcon className="shrink-0 text-base" />
