@@ -3,6 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useNetworkById } from "@ui/state"
 
 export const TxHistoryDetailsNetwork: FC<{
@@ -16,7 +17,7 @@ export const TxHistoryDetailsNetwork: FC<{
   return (
     <div className="flex w-full gap-2 overflow-hidden">
       <NetworkLogo networkId={networkId} className="shrink-0" />
-      <div className="truncate">{network.name}</div>
+      <NetworkName networkId={networkId} className="grow" />
     </div>
   )
 }

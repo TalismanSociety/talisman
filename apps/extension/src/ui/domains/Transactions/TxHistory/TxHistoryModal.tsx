@@ -16,6 +16,7 @@ import { TxHistoryDetailsAddress } from "./TxHistoryDetails/TxHistoryDetailsAddr
 import { TxHistoryDetailsNetwork } from "./TxHistoryDetails/TxHistoryDetailsNetwork"
 import { TxHistoryDetailsTimestamp } from "./TxHistoryDetails/TxHistoryDetailsTimestamp"
 import { TxHistoryDetailsTokens } from "./TxHistoryDetails/TxHistoryDetailsTokens"
+import { TxHistoryDetailsTxInfo } from "./TxHistoryDetails/TxHistoryDetailsTxInfo"
 import { TxHistoryDetailsUrl } from "./TxHistoryDetails/TxHistoryDetailsUrl"
 import { ReplacementCallbackArgs } from "./types"
 
@@ -173,14 +174,18 @@ const TxHistoryDetails: FC<TxHistoryDetailsProps> = ({ tx }) => {
       {(tx.platform === "ethereum" || tx.platform === "polkadot") && (
         <TxHistoryDetailsRow title={t("Nonce")}>{tx.nonce}</TxHistoryDetailsRow>
       )}
-      <TxHistoryDetailsRow title={t("Submitted at")}>
+      <TxHistoryDetailsRow title={t("Submitted At")}>
         <TxHistoryDetailsTimestamp timestamp={tx.timestamp} />
       </TxHistoryDetailsRow>
       {(tx.platform === "ethereum" || tx.platform === "polkadot") && (
         <TxHistoryDetailsRow title={t("Block number")}>{tx.blockNumber}</TxHistoryDetailsRow>
       )}
-
-      {tx.platform === "ethereum" && <>{tx.nonce}</>}
+      {!!tx.txInfo && (
+        <TxHistoryDetailsRow title={t("Transaction Info")}>
+          <TxHistoryDetailsTxInfo tx={tx} />
+        </TxHistoryDetailsRow>
+      )}
+      {tx.platform === "ethereum" && <>{tx.payload.data}</>}
       {tx.platform === "polkadot" && <></>}
       {tx.platform === "solana" && <></>}
     </div>
