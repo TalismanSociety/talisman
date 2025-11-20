@@ -1,12 +1,13 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { NetworkId } from "@talismn/chaindata-provider"
-import { ArrowRightIcon, LoaderIcon } from "@talismn/icons"
+import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   isTxInfoApproval,
   isTxInfoSwap,
   isTxInfoTransfer,
+  TransactionStatus,
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
@@ -35,7 +36,6 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { ReplacementCallbackArgs } from "../TxProgress"
 import { DistanceToNow } from "./DistanceToNow"
-import { TransactionStatusLabel } from "./TransactionStatusLabel"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"
 
@@ -218,6 +218,32 @@ const TxIconContainer = ({
     </TooltipContent>
   </Tooltip>
 )
+const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
+  const { t } = useTranslation()
+
+  switch (status) {
+    case "error":
+      return <span className="text-brand-orange">{t("Failed")}</span>
+    case "pending":
+      return (
+        <>
+          <span>{t("Submitting")} </span>
+          <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        </>
+      )
+    case "success":
+      return <span>{t("Confirmed")}</span>
+    case "replaced":
+      return (
+        <>
+          <span>{t("Cancelled")}</span>
+          <XOctagonIcon className="text-brand-orange" />
+        </>
+      )
+    case "unknown":
+      return <span>{t("Unknown")}</span>
+  }
+}
 
 const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
   const { t } = useTranslation()

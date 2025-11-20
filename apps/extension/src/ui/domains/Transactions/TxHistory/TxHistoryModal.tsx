@@ -86,7 +86,6 @@ const ModalContent: FC<{
 }> = ({ tx, onClose, onReplacementComplete }) => {
   switch (tx.status) {
     case "pending":
-      // TODO handle on replacement complete?
       return (
         <TxProgress
           hash={getTransactionId(tx)}
