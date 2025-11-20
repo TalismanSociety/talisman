@@ -64,7 +64,7 @@ export const deserializeTransaction = (transaction: string): Transaction | Versi
 
 export const txToHumanJSON = (tx: string | Transaction | VersionedTransaction) => {
   if (typeof tx === "string") tx = deserializeTransaction(tx)
-  return tx instanceof VersionedTransaction ? versionedTxToJSON(tx) : legacyTxToJSON(tx)
+  return isVersionedTransaction(tx) ? versionedTxToJSON(tx) : legacyTxToJSON(tx)
 }
 
 const legacyTxToJSON = (tx: Transaction) => {

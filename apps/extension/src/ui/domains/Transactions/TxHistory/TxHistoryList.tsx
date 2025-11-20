@@ -33,11 +33,11 @@ import {
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
+import { ReplacementCallbackArgs } from "../TxProgress"
 import { DistanceToNow } from "./DistanceToNow"
 import { TransactionStatusLabel } from "./TransactionStatusLabel"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"
-import { ReplacementCallbackArgs } from "./types"
 
 export const TxHistoryList = () => {
   const { isLoading, transactions } = useTxHistory()

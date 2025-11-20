@@ -11,7 +11,7 @@ import { Button, Modal, ModalDialog } from "talisman-ui"
 import { useNetworkById } from "@ui/state"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
-import { TxProgress } from "../TxProgress"
+import { ReplacementCallbackArgs, TxProgress } from "../TxProgress"
 import { TxHistoryDetailsAddress } from "./TxHistoryDetails/TxHistoryDetailsAddress"
 import { TxHistoryDetailsNetwork } from "./TxHistoryDetails/TxHistoryDetailsNetwork"
 import {
@@ -22,7 +22,6 @@ import { TxHistoryDetailsTimestamp } from "./TxHistoryDetails/TxHistoryDetailsTi
 import { TxHistoryDetailsTokens } from "./TxHistoryDetails/TxHistoryDetailsTokens"
 import { TxHistoryDetailsTxInfo } from "./TxHistoryDetails/TxHistoryDetailsTxInfo"
 import { TxHistoryDetailsUrl } from "./TxHistoryDetails/TxHistoryDetailsUrl"
-import { ReplacementCallbackArgs } from "./types"
 
 type TxHistoryModalProps = {
   tx?: WalletTransaction

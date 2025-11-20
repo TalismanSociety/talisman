@@ -20,12 +20,11 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   if (!network) return null
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
-
-type ReplaceCallbackArgs = { txId: HexString; networkId: string }
+export type ReplacementCallbackArgs = { txId: `0x${string}`; networkId: string }
 
 type TxReplaceActionsProps = {
   tx: WalletTransaction
-  onReplacementComplete?: (args: ReplaceCallbackArgs) => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete }) => {
@@ -149,7 +148,7 @@ type TxProgressBaseProps = {
   blockNumber?: string
   onClose?: () => void
   href?: string | null
-  onReplacementComplete?: (args: ReplaceCallbackArgs) => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 const TxProgressBase: FC<TxProgressBaseProps> = ({
@@ -212,7 +211,7 @@ type TxProgressDotProps = {
   tx: WalletTransactionDot
   onClose?: () => void
   className?: string
-  onReplacementComplete?: (args: ReplaceCallbackArgs) => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 const TxProgressDot: FC<TxProgressDotProps> = ({
@@ -240,7 +239,7 @@ type TxProgressEthProps = {
   tx: WalletTransactionEth
   onClose?: () => void
   className?: string
-  onReplacementComplete?: (args: ReplaceCallbackArgs) => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 const TxProgressEth: FC<TxProgressEthProps> = ({
@@ -282,7 +281,7 @@ type TxProgressProps = {
   networkIdOrHash: string
   onClose?: () => void
   className?: string
-  onReplacementComplete?: (args: ReplaceCallbackArgs) => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
 export const TxProgress: FC<TxProgressProps> = ({
