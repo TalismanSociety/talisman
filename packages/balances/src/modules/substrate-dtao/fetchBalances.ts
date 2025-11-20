@@ -1,4 +1,5 @@
 import type { bittensor } from "@polkadot-api/descriptors"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   getCleanToken,
   SubDTaoToken,
@@ -11,7 +12,7 @@ import { keyBy, uniq } from "lodash-es"
 import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult } from "../shared"
+import { fetchRuntimeCallResult, fetchStorageValue } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { MODULE_TYPE } from "./config"
@@ -21,6 +22,8 @@ type GetStakeInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
 type GetDynamicInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
+
+const ROOT_NETUID = 0
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
   networkId,
@@ -91,6 +94,18 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         [],
       ),
     ])
+
+    const rootHotkeys = uniq(
+      stakeInfos.flatMap(([, stakes]) =>
+        stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey),
+      ),
+    )
+    const _rootClaimableRatesByHotkey =
+      rootHotkeys.length && miniMetadata.data
+        ? await fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys)
+        : new Map<string, Map<number, bigint>>()
+
+    // console.log({ rootClaimableRatesByHotkey })
 
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
 
@@ -179,4 +194,36 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       errors,
     }
   }
+}
+
+const fetchRootClaimableRates = async (
+  connector: IChainConnectorDot,
+  networkId: string,
+  metadataRpc: `0x${string}`,
+  hotkeys: string[],
+): Promise<Map<string, Map<number, bigint>>> => {
+  if (!hotkeys.length) return new Map<string, Map<number, bigint>>()
+
+  const entries = await Promise.all(
+    hotkeys.map(async (hotkey) => {
+      try {
+        const rootClaimable = await fetchStorageValue<[number, bigint][] | null>(
+          connector,
+          networkId,
+          metadataRpc,
+          "SubtensorModule",
+          "RootClaimable",
+          [hotkey],
+        )
+        return [hotkey, rootClaimable ? new Map(rootClaimable) : new Map()] as const
+      } catch (cause) {
+        log.warn(`Failed to fetch RootClaimable for hotkey ${hotkey} on ${networkId}`, {
+          cause,
+        })
+        return [hotkey, new Map<number, bigint>()] as const
+      }
+    }),
+  )
+
+  return new Map(entries)
 }
