@@ -14,6 +14,10 @@ import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 import { TxProgress } from "../TxProgress"
 import { TxHistoryDetailsAddress } from "./TxHistoryDetails/TxHistoryDetailsAddress"
 import { TxHistoryDetailsNetwork } from "./TxHistoryDetails/TxHistoryDetailsNetwork"
+import {
+  TxHistoryDetailsPayload,
+  TxHistoryDetailsPayloadDisplayMode,
+} from "./TxHistoryDetails/TxHistoryDetailsPayload"
 import { TxHistoryDetailsTimestamp } from "./TxHistoryDetails/TxHistoryDetailsTimestamp"
 import { TxHistoryDetailsTokens } from "./TxHistoryDetails/TxHistoryDetailsTokens"
 import { TxHistoryDetailsTxInfo } from "./TxHistoryDetails/TxHistoryDetailsTxInfo"
@@ -90,9 +94,6 @@ const TxHistoryDetailsContent: FC<{ tx: WalletTransaction }> = ({ tx }) => (
 
 type TxHistoryActionsProps = {
   tx: WalletTransaction
-  //   explorerId?: string
-  //   onDismiss: (tx: WalletTransaction) => void
-  //   isDismissing: boolean
 }
 
 const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
@@ -136,23 +137,31 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
       )}
     >
       {swapHref && tx.status === "success" && (
-        <Button primary iconLeft={ExternalLinkIcon} onClick={() => handleExternal(swapHref)}>
+        <Button
+          primary
+          iconLeft={ExternalLinkIcon}
+          small
+          className="h-28 text-sm"
+          onClick={() => handleExternal(swapHref)}
+        >
           {t("View swap status")}
         </Button>
       )}
       {explorerLinks.map((url) => (
-        <Button primary key={url} iconLeft={ExternalLinkIcon} onClick={() => handleExternal(url)}>
+        <Button
+          primary
+          key={url}
+          className={cn("h-28", buttonsCount > 1 && "text-sm")}
+          small={buttonsCount > 1}
+          iconLeft={ExternalLinkIcon}
+          onClick={() => handleExternal(url)}
+        >
           {t("View on {{label}}", { label: getBlockExplorerLabel(url) })}
         </Button>
       ))}
     </div>
   )
 }
-
-// type DetailRow = {
-//   label: string
-//   value?: ReactNode
-// }
 
 type TxHistoryDetailsProps = {
   tx: WalletTransaction
@@ -198,205 +207,28 @@ const TxHistoryDetails: FC<TxHistoryDetailsProps> = ({ tx }) => {
           <TxHistoryDetailsTxInfo tx={tx} />
         </TxHistoryDetailsRow>
       )}
-      {tx.platform === "ethereum" && <>{tx.payload.data}</>}
-      {tx.platform === "polkadot" && <></>}
-      {tx.platform === "solana" && <></>}
+      <TxHistoryDetailsRow title={t("Payload")} extra={<TxHistoryDetailsPayloadDisplayMode />}>
+        <TxHistoryDetailsPayload tx={tx} />
+      </TxHistoryDetailsRow>
     </div>
   )
 }
 
-const TxHistoryDetailsRow: FC<{ title: ReactNode; children: ReactNode }> = ({
+const TxHistoryDetailsRow: FC<{ title: ReactNode; extra?: ReactNode; children: ReactNode }> = ({
   title,
+  extra,
   children,
 }) => {
   return (
     <div className="flex shrink-0 flex-col gap-2">
-      <div className="text-body-secondary">{title}</div>
+      <div className="text-body-secondary flex w-full justify-between">
+        <div>{title}</div>
+        <div>{extra}</div>
+      </div>
       <div className="text-body">{children}</div>
     </div>
   )
 }
-
-// const TxHistoryDetailsOld: FC<TxHistoryDetailsProps> = ({ tx }) => {
-//   const { t } = useTranslation()
-//   const network = useNetworkById(tx.networkId)
-//   const transferInfo = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
-//   const swapInfo = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
-//   const approvalInfo = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
-
-//   const currency = useSelectedCurrency()
-
-//   const primaryTokenId = transferInfo?.tokenId ?? approvalInfo?.tokenId ?? swapInfo?.fromTokenId
-//   const primaryToken = useToken(primaryTokenId)
-//   const primaryRates = useTokenRates(primaryTokenId)
-//   const toTokenId = swapInfo?.toTokenId
-//   const toToken = useToken(toTokenId)
-//   const toTokenRates = useTokenRates(toTokenId)
-
-//   const primaryAmount = useMemo(() => {
-//     if (transferInfo && primaryToken)
-//       return new BalanceFormatter(transferInfo.value, primaryToken.decimals, primaryRates)
-//     if (approvalInfo && primaryToken)
-//       return new BalanceFormatter(approvalInfo.amount, primaryToken.decimals, primaryRates)
-//     if (swapInfo && primaryToken)
-//       return new BalanceFormatter(swapInfo.fromAmount, primaryToken.decimals, primaryRates)
-//     return null
-//   }, [approvalInfo, primaryRates, primaryToken, swapInfo, transferInfo])
-
-//   const toAmount = useMemo(() => {
-//     if (!swapInfo || !toToken) return null
-//     return new BalanceFormatter(swapInfo.toAmount, toToken.decimals, toTokenRates)
-//   }, [swapInfo, toToken, toTokenRates])
-
-//   const typeLabel = useMemo(() => {
-//     if (transferInfo) return t("Transfer")
-//     if (swapInfo) return t("Swap")
-//     if (approvalInfo) return t("Approval")
-//     return t("Transaction")
-//   }, [approvalInfo, swapInfo, t, transferInfo])
-
-//   const infoRows: DetailRow[] = []
-
-//   if (transferInfo) {
-//     infoRows.push({
-//       label: t("Amount"),
-//       value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
-//     })
-//     infoRows.push({ label: t("Recipient"), value: transferInfo.to })
-//   }
-
-//   if (approvalInfo) {
-//     infoRows.push({
-//       label: t("Allowance"),
-//       value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
-//     })
-//     infoRows.push({ label: t("Spender"), value: approvalInfo.contractAddress })
-//   }
-
-//   if (swapInfo) {
-//     infoRows.push({
-//       label: t("From"),
-//       value: <TxAmountValue amount={primaryAmount} token={primaryToken} currency={currency} />,
-//     })
-//     infoRows.push({
-//       label: t("To"),
-//       value: <TxAmountValue amount={toAmount} token={toToken} currency={currency} />,
-//     })
-//     if (swapInfo.to) infoRows.push({ label: t("Recipient"), value: swapInfo.to })
-//   }
-
-//   const submittedValue = (
-//     <div className="flex flex-col text-sm">
-//       <span>{new Date(tx.timestamp).toLocaleString()}</span>
-//       <span className="text-body-disabled text-xs">
-//         <DistanceToNow timestamp={tx.timestamp} />
-//       </span>
-//     </div>
-//   )
-
-//   const metadataRows: DetailRow[] = [
-//     { label: t("Status"), value: <TransactionStatusLabel status={tx.status} /> },
-//     { label: t("Type"), value: typeLabel },
-//     { label: t("Network"), value: network?.name ?? t("Unknown network") },
-//     { label: t("Account"), value: tx.account },
-//     { label: t("Submitted"), value: submittedValue },
-//   ]
-
-//   if ("nonce" in tx) {
-//     metadataRows.push({ label: t("Nonce"), value: tx.nonce?.toString() })
-//   }
-
-//   if ("blockNumber" in tx && tx.blockNumber) {
-//     metadataRows.push({ label: t("Block number"), value: tx.blockNumber })
-//   }
-
-//   if (tx.platform === "polkadot" && tx.extrinsicIndex) {
-//     metadataRows.push({ label: t("Extrinsic index"), value: tx.extrinsicIndex })
-//   }
-
-//   const explorerId = getTransactionId(tx)
-//   metadataRows.push({ label: t("Transaction hash"), value: explorerId })
-
-//   if (tx.siteUrl) {
-//     metadataRows.push({
-//       label: t("Site"),
-//       value: (
-//         <a
-//           className="hover:text-body text-body break-words"
-//           href={tx.siteUrl}
-//           target="_blank"
-//           rel="noreferrer"
-//         >
-//           {tx.siteUrl}
-//         </a>
-//       ),
-//     })
-//   }
-
-//   if (tx.label) {
-//     metadataRows.push({ label: t("Label"), value: tx.label })
-//   }
-
-//   if (tx.platform === "ethereum" && tx.isReplacement) {
-//     metadataRows.push({ label: t("Replacement"), value: t("Yes") })
-//   }
-
-//   return (
-//     <div className="flex h-full flex-col gap-10 overflow-auto pr-1">
-//       {infoRows.length > 0 && (
-//         <section className="space-y-4">
-//           <div className="text-body-secondary text-xs uppercase tracking-wide">
-//             {t("Transaction details")}
-//           </div>
-//           <TxDetailGrid rows={infoRows} />
-//         </section>
-//       )}
-
-//       <section className="space-y-4">
-//         <div className="text-body-secondary text-xs uppercase tracking-wide">{t("Metadata")}</div>
-//         <TxDetailGrid rows={metadataRows} />
-//       </section>
-//     </div>
-//   )
-// }
-
-// const TxDetailGrid: FC<{ rows: DetailRow[] }> = ({ rows }) => {
-//   return (
-//     <div className="grid gap-8 sm:grid-cols-2">
-//       {rows.map((row) => (
-//         <div key={row.label} className="flex flex-col gap-2">
-//           <div className="text-body-disabled text-xs uppercase tracking-wide">{row.label}</div>
-//           <div className="text-body break-words text-sm">{row.value ?? "—"}</div>
-//         </div>
-//       ))}
-//     </div>
-//   )
-// }
-
-// type TxAmountValueProps = {
-//   amount: BalanceFormatter | null
-//   token: ReturnType<typeof useToken>
-//   currency: ReturnType<typeof useSelectedCurrency>
-// }
-
-// const TxAmountValue: FC<TxAmountValueProps> = ({ amount, token, currency }) => {
-//   if (!amount || !token) return <span>—</span>
-
-//   return (
-//     <div className="flex flex-col gap-1">
-//       <Tokens
-//         className="pointer-events-none"
-//         amount={amount.tokens}
-//         decimals={token.decimals}
-//         symbol={token.symbol}
-//         noCountUp
-//         noTooltip
-//         isBalance
-//       />
-//       {amount.fiat(currency) ? <Fiat amount={amount} noCountUp isBalance /> : null}
-//     </div>
-//   )
-// }
 
 const getTransactionId = (tx: WalletTransaction) =>
   tx.platform === "solana" ? tx.signature : tx.hash
