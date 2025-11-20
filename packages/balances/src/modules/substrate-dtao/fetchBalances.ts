@@ -1,4 +1,3 @@
-import type { bittensor } from "@polkadot-api/descriptors"
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   getCleanToken,
@@ -15,13 +14,14 @@ import { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult, fetchStorageValue } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
+import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
-import { SubDTaoBalanceMeta } from "./types"
-
-type GetStakeInfosResult =
-  (typeof bittensor)["descriptors"]["apis"]["StakeInfoRuntimeApi"]["get_stake_info_for_coldkeys"][1]
-type GetDynamicInfosResult =
-  (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]
+import {
+  GetDynamicInfosResult,
+  GetStakeInfosResult,
+  SubDTaoBalance,
+  SubDTaoBalanceMeta,
+} from "./types"
 
 const ROOT_NETUID = 0
 
@@ -100,33 +100,80 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey),
       ),
     )
-    const _rootClaimableRatesByHotkey =
+    const rootClaimableRatesByHotkey =
       rootHotkeys.length && miniMetadata.data
         ? await fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys)
         : new Map<string, Map<number, bigint>>()
 
-    // console.log({ rootClaimableRatesByHotkey })
-
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
 
-    const balances = stakeInfos.flatMap(([address, stakes]) =>
-      stakes.map((stake) => {
-        const dynamicInfo = dynamicInfoByNetuid[stake.netuid]
-        const scaledAlphaPrice = dynamicInfo
-          ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
-          : 0n
-
-        return {
-          address,
-          tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
-          baseTokenId: subDTaoTokenId(networkId, stake.netuid),
-          stake: stake.stake,
-          hotkey: stake.hotkey,
-          netuid: stake.netuid,
-          scaledAlphaPrice,
+    // Upserts a balance into the accumulator, merging stake values if the balance already exists.
+    // Eg: Acc X has root staked with validator Y, but also staked on sn 45 with the same validator Y.
+    // We merge the pending root claim of sn 45 and the sn 45 stake in the same balance.
+    const upsertBalance = (
+      acc: Record<string, SubDTaoBalance>,
+      address: string,
+      tokenId: string,
+      balance: SubDTaoBalance,
+    ): void => {
+      const key = `${address}:${tokenId}`
+      const recordedBalance = acc[key]
+      if (recordedBalance) {
+        acc[key] = {
+          ...recordedBalance,
+          stake: recordedBalance.stake + balance.stake,
+          // If the new balance has pendingRootClaim, use it (it's calculated from current state)
+          ...(balance.pendingRootClaim !== undefined && {
+            pendingRootClaim: balance.pendingRootClaim,
+          }),
         }
-      }),
+      } else {
+        acc[key] = balance
+      }
+    }
+
+    const balancesRaw = stakeInfos.reduce<Record<string, SubDTaoBalance>>(
+      (acc, [address, stakes]) => {
+        for (const stake of stakes) {
+          // Regular stake cases
+          const dynamicInfo = dynamicInfoByNetuid[stake.netuid]
+          const scaledAlphaPrice = dynamicInfo
+            ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
+            : 0n
+
+          const balance: SubDTaoBalance = {
+            address,
+            tokenId: subDTaoTokenId(networkId, stake.netuid, stake.hotkey),
+            baseTokenId: subDTaoTokenId(networkId, stake.netuid),
+            stake: stake.stake,
+            hotkey: stake.hotkey,
+            netuid: stake.netuid,
+            scaledAlphaPrice,
+          }
+
+          upsertBalance(acc, address, balance.tokenId, balance)
+
+          // Root stake cases, we need to calculate the pending root claim and add to the balances
+          if (stake.netuid === ROOT_NETUID) {
+            const pendingRootClaimBalances = calculatePendingRootClaimable({
+              stake: stake.stake,
+              hotkey: stake.hotkey,
+              address,
+              networkId,
+              validatorRootClaimableRate: rootClaimableRatesByHotkey.get(stake.hotkey) ?? new Map(),
+              dynamicInfoByNetuid,
+            })
+            pendingRootClaimBalances.forEach((balance) => {
+              upsertBalance(acc, address, balance.tokenId, balance)
+            })
+          }
+        }
+        return acc
+      },
+      {},
     )
+
+    const balances = Object.values(balancesRaw)
 
     const tokensById = keyBy(
       tokensWithAddresses.map(([token]) => token),
@@ -161,7 +208,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const balanceValue: AmountWithLabel<string> = {
         type: "free",
         label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
-        amount: stake?.stake.toString() ?? "0",
+        amount: stake?.stake?.toString() ?? "0",
+        meta,
+      }
+
+      const pendingRootClaimValue: AmountWithLabel<string> = {
+        type: "locked",
+        label: "Pending root claim",
+        amount: stake?.pendingRootClaim?.toString() ?? "0",
         meta,
       }
 
@@ -171,7 +225,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         tokenId: def.token.id,
         source: MODULE_TYPE,
         status: "live",
-        values: [balanceValue],
+        values: [balanceValue, pendingRootClaimValue],
       }
     })
 
