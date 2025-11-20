@@ -31,7 +31,12 @@ type TxHistoryModalProps = {
   onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-export const TxHistoryModal: FC<TxHistoryModalProps> = ({ tx, isOpen, onClose }) => {
+export const TxHistoryModal: FC<TxHistoryModalProps> = ({
+  tx,
+  isOpen,
+  onClose,
+  onReplacementComplete,
+}) => {
   // cache the tx so we continue displaying it while modal fades out
   const [cachedTx, setCachedTx] = useState(() => tx)
   useEffect(() => {
@@ -47,7 +52,11 @@ export const TxHistoryModal: FC<TxHistoryModalProps> = ({ tx, isOpen, onClose })
     <Modal isOpen={isOpen} onDismiss={onClose} containerId="main">
       {!!displayTx && (
         <DialogWrapper tx={displayTx} onClose={onClose}>
-          <ModalContent tx={displayTx} onClose={onClose} />
+          <ModalContent
+            tx={displayTx}
+            onClose={onClose}
+            onReplacementComplete={onReplacementComplete}
+          />
         </DialogWrapper>
       )}
     </Modal>
@@ -71,12 +80,21 @@ const DialogWrapper: FC<{ tx: WalletTransaction; onClose: () => void; children: 
   )
 }
 
-const ModalContent: FC<{ tx: WalletTransaction; onClose: () => void }> = ({ tx, onClose }) => {
+const ModalContent: FC<{
+  tx: WalletTransaction
+  onClose: () => void
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+}> = ({ tx, onClose, onReplacementComplete }) => {
   switch (tx.status) {
     case "pending":
       // TODO handle on replacement complete?
       return (
-        <TxProgress hash={getTransactionId(tx)} onClose={onClose} networkIdOrHash={tx.networkId} />
+        <TxProgress
+          hash={getTransactionId(tx)}
+          onClose={onClose}
+          networkIdOrHash={tx.networkId}
+          onReplacementComplete={onReplacementComplete}
+        />
       )
     default:
       return <TxHistoryDetailsContent tx={tx} />

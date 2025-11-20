@@ -310,9 +310,23 @@ export const TxProgress: FC<TxProgressProps> = ({
 
   switch (tx?.platform) {
     case "ethereum":
-      return <TxProgressEth tx={tx} onClose={onClose} className={className} />
+      return (
+        <TxProgressEth
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
     case "polkadot":
-      return <TxProgressDot tx={tx} onClose={onClose} className={className} />
+      return (
+        <TxProgressDot
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
     case "solana":
       return <TxProgressSol tx={tx} onClose={onClose} className={className} />
     default:

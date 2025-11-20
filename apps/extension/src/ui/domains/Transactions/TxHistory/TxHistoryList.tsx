@@ -109,69 +109,13 @@ export const TxHistoryList = () => {
   )
 }
 
-const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
-  const { t } = useTranslation()
-  const swapExchangeId =
-    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
-  const swapLifiHash =
-    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi" && tx.platform === "ethereum"
-      ? tx.hash
-      : undefined
-  const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
-
-  // show regular tx status while tx is still submitting
-  if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
-
-  switch (swapStatus) {
-    case "waiting":
-    case "confirming":
-    case "exchanging":
-    case "sending":
-    case "verifying":
-      return (
-        <>
-          {swapStatus === "waiting" ? <span>{t("Depositing funds")} </span> : null}
-          {swapStatus === "confirming" ? <span>{t("Confirming")} </span> : null}
-          {swapStatus === "exchanging" ? <span>{t("Exchanging")} </span> : null}
-          {swapStatus === "sending" ? <span>{t("Sending")} </span> : null}
-          {swapStatus === "verifying" ? <span>{t("Verifying")} </span> : null}
-          <LoaderIcon className="animate-spin-slow text-body-disabled" />
-        </>
-      )
-    case "failed":
-    case "refunded":
-    case "expired":
-    case "invalid":
-      return <TransactionStatusLabel status="error" />
-    case "finished":
-      return <TransactionStatusLabel status={tx.status} />
-    default:
-      return <TransactionStatusLabel status="unknown" />
-  }
-}
-const SwapTransactionStatusLabelFallback = () => {
-  const { t } = useTranslation()
-  return (
-    <>
-      <span className="bg-body-disabled select-none rounded text-transparent">
-        {t("Submitting")}{" "}
-      </span>
-      <LoaderIcon className="animate-spin-slow text-body-disabled" />
-    </>
-  )
-}
-
 type TransactionRowsProps = {
   transactions: WalletTransaction[]
   dismissingTxIds: Set<string>
   onSelectTx: (tx: WalletTransaction) => void
 }
 
-const TransactionRows: FC<TransactionRowsProps> = ({
-  transactions,
-  dismissingTxIds,
-  onSelectTx,
-}) => {
+const TransactionRows: FC<TransactionRowsProps> = ({ transactions, onSelectTx }) => {
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
@@ -205,11 +149,7 @@ const TransactionRows: FC<TransactionRowsProps> = ({
                 transform: `translateY(${item.start}px)`,
               }}
             >
-              <TransactionRow
-                tx={tx}
-                onSelectTx={onSelectTx}
-                isDismissing={dismissingTxIds.has(tx.id)}
-              />
+              <TransactionRow tx={tx} onSelectTx={onSelectTx} />
             </div>
           )
         })}
@@ -221,7 +161,6 @@ const TransactionRows: FC<TransactionRowsProps> = ({
 type TransactionRowProps = {
   tx: WalletTransaction
   onSelectTx: (tx: WalletTransaction) => void
-  isDismissing: boolean
 }
 
 type TransactionRowEthProps = TransactionRowProps & { tx: WalletTransactionEth }
@@ -280,25 +219,74 @@ const TxIconContainer = ({
   </Tooltip>
 )
 
+const SwapTransactionStatusLabel = ({ tx }: { tx: WalletTransaction }) => {
+  const { t } = useTranslation()
+  const swapExchangeId =
+    isTxInfoSwap(tx.txInfo) && "exchangeId" in tx.txInfo ? tx.txInfo.exchangeId : undefined
+  const swapLifiHash =
+    isTxInfoSwap(tx.txInfo) && tx.txInfo.type === "swap-lifi" && tx.platform === "ethereum"
+      ? tx.hash
+      : undefined
+  const swapStatus = useSwapStatus(tx.txInfo?.type, swapExchangeId ?? swapLifiHash)
+
+  // show regular tx status while tx is still submitting
+  if (tx.status !== "success") return <TransactionStatusLabel status={tx.status} />
+
+  switch (swapStatus) {
+    case "waiting":
+    case "confirming":
+    case "exchanging":
+    case "sending":
+    case "verifying":
+      return (
+        <>
+          {swapStatus === "waiting" ? <span>{t("Depositing funds")} </span> : null}
+          {swapStatus === "confirming" ? <span>{t("Confirming")} </span> : null}
+          {swapStatus === "exchanging" ? <span>{t("Exchanging")} </span> : null}
+          {swapStatus === "sending" ? <span>{t("Sending")} </span> : null}
+          {swapStatus === "verifying" ? <span>{t("Verifying")} </span> : null}
+          <LoaderIcon className="animate-spin-slow text-body-disabled" />
+        </>
+      )
+    case "failed":
+    case "refunded":
+    case "expired":
+    case "invalid":
+      return <TransactionStatusLabel status="error" />
+    case "finished":
+      return <TransactionStatusLabel status={tx.status} />
+    default:
+      return <TransactionStatusLabel status="unknown" />
+  }
+}
+const SwapTransactionStatusLabelFallback = () => {
+  const { t } = useTranslation()
+  return (
+    <>
+      <span className="bg-body-disabled select-none rounded text-transparent">
+        {t("Submitting")}{" "}
+      </span>
+      <LoaderIcon className="animate-spin-slow text-body-disabled" />
+    </>
+  )
+}
+
 const TransactionRowBase: FC<{
   logo: ReactNode
   status: ReactNode
   wen: ReactNode
   tokens: ReactNode
   fiat: ReactNode
-  onClick: () => void
-  isBusy?: boolean
-}> = ({ logo, status, wen, tokens, fiat, onClick, isBusy }) => {
+  onClick?: () => void
+}> = ({ logo, status, wen, tokens, fiat, onClick }) => {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={isBusy}
+      disabled={!onClick}
       className={classNames(
         "bg-grey-850 relative z-0 flex w-full grow items-center rounded-sm text-left transition",
         IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
-        !isBusy && "hover:bg-grey-800",
-        isBusy && "cursor-wait opacity-60",
       )}
     >
       {logo}
@@ -325,14 +313,11 @@ const TransactionRowBase: FC<{
           </div>
         </div>
       </div>
-      {isBusy && (
-        <LoaderIcon className="text-body-disabled animate-spin-slow absolute right-6 top-1/2 -translate-y-1/2" />
-      )}
     </button>
   )
 }
 
-const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx, isDismissing }) => {
+const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx }) => {
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
@@ -411,7 +396,6 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx, isDismi
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       onClick={handleRowClick}
-      isBusy={isDismissing}
       tokens={
         txSwap ? (
           // tx is a swap deposit
@@ -462,7 +446,7 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx, isDismi
   )
 }
 
-const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx, isDismissing }) => {
+const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
   const { genesisHash } = tx.payload
 
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
@@ -495,7 +479,6 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx, isDismi
   return (
     <TransactionRowBase
       onClick={handleRowClick}
-      isBusy={isDismissing}
       logo={
         tx.siteUrl ? (
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
@@ -582,7 +565,7 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx, isDismi
   )
 }
 
-const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx, isDismissing }) => {
+const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx }) => {
   const txTransfer = isTxInfoTransfer(tx.txInfo) ? tx.txInfo : undefined
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
   const txApproval = isTxInfoApproval(tx.txInfo) ? tx.txInfo : undefined
@@ -614,7 +597,6 @@ const TransactionRowSol: FC<TransactionRowSolProps> = ({ tx, onSelectTx, isDismi
   return (
     <TransactionRowBase
       onClick={handleRowClick}
-      isBusy={isDismissing}
       logo={
         tx.siteUrl ? (
           <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
@@ -715,8 +697,6 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 const TransactionRowShimmer = () => {
   return (
     <TransactionRowBase
-      onClick={() => undefined}
-      isBusy={false}
       logo={<div className="bg-grey-800 h-16 w-16 shrink-0 animate-pulse rounded-full" />}
       status={
         <div className="bg-grey-800 text-grey-800 rounded-xs mb-1 animate-pulse text-sm">
