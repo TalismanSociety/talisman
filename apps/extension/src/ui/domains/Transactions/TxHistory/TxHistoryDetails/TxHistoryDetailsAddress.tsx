@@ -38,7 +38,7 @@ export const TxHistoryDetailsAddress: FC<{
 
   const handleClick = useCallback(() => {
     if (!formatted) return
-    if (blockExplorerUrl) window.open(urlJoin(blockExplorerUrl, "address", formatted), "_blank")
+    if (blockExplorerUrl) window.open(urlJoin(blockExplorerUrl), "_blank")
     else copyAddress(formatted)
   }, [blockExplorerUrl, formatted])
 
