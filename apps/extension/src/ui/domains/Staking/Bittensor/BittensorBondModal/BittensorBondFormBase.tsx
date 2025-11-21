@@ -418,7 +418,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         </div>
       </div>
 
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
+      <div className="bg-grey-900 leading-paragraph flex flex-col gap-2 rounded p-4 text-xs">
         <BondTypeDetails />
         <div
           className={classNames(
@@ -472,7 +472,13 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         )}
       </div>
 
-      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
+      <Button
+        primary
+        fullWidth
+        className="mt-6"
+        disabled={!payload}
+        onClick={() => setStep("review")}
+      >
         {t("Review")}
       </Button>
 
