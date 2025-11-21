@@ -6,6 +6,7 @@ import {
   Button,
   Drawer,
   FormFieldInputText,
+  PillButton,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -21,6 +22,8 @@ import {
 
 export const BittensorSlippageDrawer = () => {
   const { slippageDrawer, userMaxSlippage, setUserMaxSlippage } = useBittensorBondWizard()
+  // const [slippageSetting, setSlippageSetting] = useSetting("dtaoSlippage")
+
   const [maxSlippage, setMaxSlippage] = useState<string>(String(userMaxSlippage))
   const { t } = useTranslation()
 
@@ -34,13 +37,13 @@ export const BittensorSlippageDrawer = () => {
       containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
     >
       <div className="bg-grey-800 flex w-full flex-col items-center gap-4 rounded-t-xl p-12">
-        <div className="text-body font-bold">{t("Slippage Tolerance")}</div>
-        <div className="text-body-secondary text-xs">
+        <div className="text-body pb-8 font-bold">{t("Slippage Tolerance")}</div>
+        <p className="text-body-secondary text-sm">
           {t(
             "You can customize the slippage percentage to balance transaction success and price accuracy.",
           )}
-        </div>
-        <div className="text-body-secondary mt-10 flex items-center gap-2 self-start text-xs">
+        </p>
+        <div className="text-body-secondary mt-4 flex items-center gap-2 self-start text-sm">
           <div className="">{t("Max Slippage")}</div>
           <Tooltip>
             <TooltipTrigger>
@@ -57,17 +60,16 @@ export const BittensorSlippageDrawer = () => {
         </div>
         <FormFieldInputText
           small
-          containerProps={{ className: "px-6" }}
+          containerProps={{ className: "px-6 text-right" }}
           after={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <div>%</div>
-              <Button
+              <PillButton
                 className="h-[3rem] px-4"
-                small
                 onClick={() => setMaxSlippage(String(DEFAULT_USER_MAX_SLIPPAGE))}
               >
                 {t("Reset")}
-              </Button>
+              </PillButton>
             </div>
           }
           placeholder={String(DEFAULT_USER_MAX_SLIPPAGE)}
