@@ -12,10 +12,14 @@ type GetBittensorDefaultMinStake = {
 export const useGetBittensorDefaultMinStake = ({ networkId }: GetBittensorDefaultMinStake) => {
   const { data: sapi } = useScaleApi(networkId)
 
-  return useMemo(
-    () =>
-      sapi?.getConstant<bigint>("SubtensorModule", "DefaultMinStake") ??
-      SUBTENSOR_MIN_STAKE_AMOUNT_PLANK,
-    [sapi],
-  )
+  return useMemo(() => {
+    try {
+      return (
+        sapi?.getConstant<bigint>("SubtensorModule", "DefaultMinStake") ??
+        SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
+      )
+    } catch {
+      return SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
+    }
+  }, [sapi])
 }
