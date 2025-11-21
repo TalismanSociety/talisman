@@ -119,7 +119,11 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       {canBond && (
         <>
           <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
-            <BondPillButton balances={balances} className="[>svg]:text-[2rem] text-base" />
+            <BondPillButton
+              balances={balances}
+              ignoreExistingSettings
+              className="[>svg]:text-[2rem] text-base"
+            />
           </div>
           <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
             <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">

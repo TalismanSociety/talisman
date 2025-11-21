@@ -105,6 +105,7 @@ const mockedApiMethods = {
     cb({
       status: "initialising",
       balances: [],
+      failedBalanceIds: [],
     })
 
     return () => {}

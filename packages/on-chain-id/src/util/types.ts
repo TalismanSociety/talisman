@@ -1,6 +1,14 @@
-import { SupportedChainId } from "@azns/resolver-core"
-import { TypeRegistry } from "@polkadot/types"
-import { ChainConnectors } from "@talismn/balances"
+import {
+  IChainConnectorDot,
+  IChainConnectorEth,
+  IChainConnectorSol,
+} from "@talismn/chain-connectors"
+
+export type ChainConnectors = {
+  substrate?: IChainConnectorDot
+  evm?: IChainConnectorEth
+  solana?: IChainConnectorSol
+}
 
 /** A map of addresses to their on-chain ids. */
 export type OnChainIds = Map<string, string | null>
@@ -15,17 +23,16 @@ export type NsLookupType = "ens" | "azns"
  * Used as the first parameter to all `namesToAddresses`/`addressesToNames` functions.
  */
 export type Config = {
-  // TODO: Create a package for `/apps/extension/src/core/util/getTypeRegistry.ts` which
-  // can be used from outside of the wallet.
-  registryAlephZero: TypeRegistry
   chainConnectors: ChainConnectors
-
-  /** Used for azns lookups */
-  chainIdAlephZero: string
-  /** Used for azns lookups */
-  aznsSupportedChainIdAlephZero: `${SupportedChainId}`
   /** Used for ens lookups */
   networkIdEthereum: string
+
+  /** @deprecated */
+  registryAlephZero?: unknown
+  /** @deprecated */
+  chainIdAlephZero?: string
+  /** @deprecated */
+  aznsSupportedChainIdAlephZero?: string
 }
 
 export type OptionalConfigParams =

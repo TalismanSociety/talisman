@@ -29,7 +29,6 @@
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "preconstruct dev && pnpm run --filter extension dev",
     "dev:extension:firefox": "preconstruct dev && pnpm run --filter extension dev:firefox",
-    "dev:playground": "pnpm run --filter playground dev",
     "build": "turbo run build",
     "build:packages": "NODE_OPTIONS=--max_old_space_size=8192 preconstruct build",
     "build:extension": "turbo run build:extension",
@@ -194,7 +193,9 @@
       "@metamask/sdk@>=0.16.0 <=0.33.0": ">=0.33.1",
       "axios@>=1.0.0 <1.12.0": ">=1.12.0",
       "vite@>=5.2.6 <=5.4.20": ">=5.4.21",
-      "playwright@<1.55.1": ">=1.55.1"
+      "playwright@<1.55.1": ">=1.55.1",
+      "glob@>=10.2.0 <10.5.0": ">=10.5.0",
+      "glob@>=11.0.0 <11.1.0": ">=11.1.0"
     }
   },
   "lint-staged": {

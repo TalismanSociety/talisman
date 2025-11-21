@@ -50,6 +50,12 @@ export type RemoteConfigStoreData = {
       discount: number
     }>
   }
+  bittensor: {
+    fee: {
+      buy: Record<number, number>
+      sell: Record<number, number>
+    }
+  }
 }
 
 export interface RequestOnboardCreatePassword {

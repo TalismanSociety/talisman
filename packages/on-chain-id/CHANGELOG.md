@@ -1,5 +1,15 @@
 # @talismn/on-chain-id
 
+## 0.2.0
+
+### Minor Changes
+
+- 1f4146c: deprecate azns
+
+### Patch Changes
+
+- @talismn/chain-connectors@0.0.9
+
 ## 0.1.29
 
 ### Patch Changes

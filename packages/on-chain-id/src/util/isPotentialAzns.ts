@@ -1,3 +1,3 @@
-/** dot separated string with `azero` or `tzero` suffix e.g. `fontbois.tzero` or `talisman.tzero` */
-export const isPotentialAzns = (name?: string) =>
-  typeof name === "string" && /^.+\.(([ta]zero)|(a0))$/.test(name)
+/** @deprecated */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const isPotentialAzns = (name?: string) => false

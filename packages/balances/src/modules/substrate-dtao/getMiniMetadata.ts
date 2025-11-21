@@ -54,6 +54,7 @@ const getData = (metadataRpc: `0x${string}`): `0x${string}` | null => {
         items: ["RootClaimable"],
       },
     ],
+    [{ pallet: "SubtensorModule", items: ["TransferToggle"] }],
     [
       {
         runtimeApi: "StakeInfoRuntimeApi",
