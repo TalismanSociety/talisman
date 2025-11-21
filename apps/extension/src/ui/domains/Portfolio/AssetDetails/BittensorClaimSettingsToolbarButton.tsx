@@ -8,13 +8,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
 import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccounts, useToken } from "@ui/state"
+import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
-
-const ROOT_TOKEN_ID = "bittensor:substrate-dtao:0:5Gq2gs4ft5dhhjbHabvVbAhjMCV2RgKmVJKAFCUWiirbRT21"
 
 export const BittensorClaimSettingsToolbarButton: FC<{
   balances: Balances
@@ -25,19 +24,23 @@ export const BittensorClaimSettingsToolbarButton: FC<{
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open: openBittensorModal } = useBittensorBondModal()
   const { genericEvent } = useAnalytics()
-  const token = useToken(ROOT_TOKEN_ID) as SubDTaoToken
 
   const openArgs = useMemo<BittensorStakingWizardOpenOptions | null>(() => {
     const balance = balances.each
       .filter(
         (b) =>
           b.token?.type === "substrate-dtao" &&
+          b.token.netuid === ROOT_NETUID &&
           bittensorNetworkIds.includes(b.token.networkId) &&
           accounts.some((a) => isAddressEqual(a.address, b.address)),
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 
-    if (!token || !balance) return null
+    const token = balance?.token as SubDTaoToken
+
+    if (!token || !balance) {
+      return null
+    }
 
     return {
       networkId: token.networkId,
@@ -47,7 +50,7 @@ export const BittensorClaimSettingsToolbarButton: FC<{
       stakeDirection: "bond",
       step: "claim-settings",
     }
-  }, [accounts, balances.each, bittensorNetworkIds, token])
+  }, [accounts, balances.each, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
