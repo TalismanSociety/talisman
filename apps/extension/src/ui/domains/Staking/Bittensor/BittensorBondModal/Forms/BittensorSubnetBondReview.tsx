@@ -48,8 +48,8 @@ export const BittensorSubnetBondReview = () => {
     netuid,
     feeToken,
     slippageDrawer,
+    slippage,
     warningDrawer,
-    userMaxSlippage,
     isSubnetUnbond,
     talismanFee,
     swapPrice,
@@ -217,7 +217,7 @@ export const BittensorSubnetBondReview = () => {
                 }
               >
                 <EditIcon />
-                <div>{userMaxSlippage.toFixed(2)}%</div>
+                <div>{slippage.toFixed(2)}%</div>
               </button>
             </div>
           </div>

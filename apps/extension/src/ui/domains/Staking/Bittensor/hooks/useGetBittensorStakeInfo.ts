@@ -13,7 +13,6 @@ type GetStakeInfo = {
   netuid: number | null
   amountIn: bigint | null
   networkId: DotNetworkId | undefined
-  userMaxSlippage: number
   stakeDirection: StakeDirection
 }
 
@@ -24,7 +23,6 @@ export const useGetBittensorStakeInfo = ({
   netuid,
   amountIn,
   networkId,
-  userMaxSlippage,
   stakeDirection,
 }: GetStakeInfo) => {
   const {
@@ -42,11 +40,11 @@ export const useGetBittensorStakeInfo = ({
     swapPrice,
     priceImpact,
     isLoading: isLoadingPayload,
+    slippage,
   } = useBittensorStakingPayload({
     netuid,
     amountIn,
     direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
-    userMaxSlippage,
     hotkey,
     address,
     networkId,
@@ -78,5 +76,6 @@ export const useGetBittensorStakeInfo = ({
     priceImpact,
     talismanFee,
     amountOut,
+    slippage,
   }
 }

@@ -27,7 +27,7 @@ import {
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
-import { DEFAULT_USER_MAX_SLIPPAGE, ROOT_NETUID } from "../utils/constants"
+import { ROOT_NETUID } from "../utils/constants"
 import {
   BittensorStakingPosition,
   useBittensorStakingPositions,
@@ -55,7 +55,6 @@ type WizardState = {
   hash: Hex | null
   stakeType: StakeType | null
   stakeDirection: StakeDirection
-  userMaxSlippage: number
 }
 
 export type BittensorStakingWizardOpenOptions = {
@@ -77,7 +76,6 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
   stakeType: null,
   stakeDirection: "bond",
-  userMaxSlippage: DEFAULT_USER_MAX_SLIPPAGE,
 }
 
 const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
@@ -122,7 +120,6 @@ const useBittensorBondWizardProvider = () => {
       displayMode,
       hash,
       amountIn,
-      userMaxSlippage,
       stakeDirection,
     },
     setWizardState,
@@ -169,6 +166,7 @@ const useBittensorBondWizardProvider = () => {
     minAlphaUnstake,
     priceImpact,
     talismanFee,
+    slippage,
     amountOut,
   } = useGetBittensorStakeInfo({
     sapi,
@@ -177,7 +175,6 @@ const useBittensorBondWizardProvider = () => {
     netuid,
     amountIn,
     networkId: nativeToken?.networkId,
-    userMaxSlippage,
     stakeDirection,
   })
 
@@ -243,11 +240,6 @@ const useBittensorBondWizardProvider = () => {
       stakeTypeDrawer.close()
     },
     [stakeTypeDrawer],
-  )
-
-  const setUserMaxSlippage = useCallback(
-    (userMaxSlippage: number) => setWizardState((prev) => ({ ...prev, userMaxSlippage })),
-    [],
   )
 
   const toggleDisplayMode = useCallback(() => {
@@ -526,22 +518,19 @@ const useBittensorBondWizardProvider = () => {
     newStakeTotal,
     isSubnetUnbond,
     position,
-
+    slippage,
     payload: !inputErrorMessage && isFormValid ? payload : null,
     txMetadata,
     isLoadingPayload: isLoadingPayload,
     errorPayload,
-
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
     stakeType,
-
     alphaPrice,
     swapPrice,
     talismanFee,
     amountOut,
-    userMaxSlippage,
     priceImpact,
     setAddress,
     setNetuid,
@@ -551,8 +540,6 @@ const useBittensorBondWizardProvider = () => {
     setStakeType,
     setPosition,
     toggleDisplayMode,
-    setUserMaxSlippage,
-
     onSubmitted,
   }
 }

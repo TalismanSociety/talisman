@@ -16,6 +16,7 @@ import {
 import { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
+import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
 import { useGetSubnetFee } from "./useGetSubnetFee"
 
 type UseBittensorStakingPayloadProps = {
@@ -25,7 +26,6 @@ type UseBittensorStakingPayloadProps = {
   netuid: number | null
   amountIn: bigint | null
   direction: StakeDirection
-  userMaxSlippage: number
 }
 
 const MOCKED_HOTKEY = "5HK5tp6t2S59DywmHRWPBVJeJ86T61KjurYqeooqj8sREpeN"
@@ -37,10 +37,10 @@ export const useBittensorStakingPayload = ({
   netuid,
   direction,
   amountIn,
-  userMaxSlippage,
 }: UseBittensorStakingPayloadProps) => {
   const { tier } = useGetSeekDiscount()
   const subnetFee = useGetSubnetFee({ netuid: netuid ?? 0, direction })
+  const [slippage] = useBittensorSubnetSlippage(netuid)
 
   const { data: sapi, isLoading: isLoadingSapi, isError: isErrorSapi } = useScaleApi(networkId)
 
@@ -107,9 +107,9 @@ export const useBittensorStakingPayload = ({
 
   const priceLimit = useMemo(() => {
     if (!simulation) return null
-    const tolerance = userMaxSlippage / 100 // percentage to decimal
+    const tolerance = slippage / 100 // percentage to decimal
     return getLimitPrice(simulation, direction, tolerance)
-  }, [simulation, direction, userMaxSlippage])
+  }, [simulation, direction, slippage])
 
   const priceImpact = useMemo(() => {
     if (!alphaPrice || !swapPrice) return null
@@ -201,6 +201,7 @@ export const useBittensorStakingPayload = ({
     minTaoStake,
     minAlphaUnstake,
     priceImpact,
+    slippage,
   }
 }
 
