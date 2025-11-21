@@ -1,4 +1,4 @@
-import { AlertTriangleIcon, InfoIcon } from "@talismn/icons"
+import { AlertTriangleIcon, InfoIcon, SaveIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +13,11 @@ import {
 
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../../shared/ModalContent"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { DEFAULT_USER_MAX_SLIPPAGE, HIGH_SLIPPAGE, VERY_HIGH_SLIPPAGE } from "../../utils/constants"
+import {
+  DEFAULT_USER_MAX_SLIPPAGE,
+  HIGH_PRICE_IMPACT,
+  VERY_HIGH_PRICE_IMPACT,
+} from "../../utils/constants"
 
 export const BittensorSlippageDrawer = () => {
   const { slippageDrawer, userMaxSlippage, setUserMaxSlippage } = useBittensorBondWizard()
@@ -23,9 +27,14 @@ export const BittensorSlippageDrawer = () => {
   const { isOpen, close } = slippageDrawer
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}>
+    <Drawer
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={close}
+      containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
+    >
       <div className="bg-grey-800 flex w-full flex-col items-center gap-4 rounded-t-xl p-12">
-        <div className="text-body font-bold">{t("Set Max Slippage")}</div>
+        <div className="text-body font-bold">{t("Slippage Tolerance")}</div>
         <div className="text-body-secondary text-xs">
           {t(
             "You can customize the slippage percentage to balance transaction success and price accuracy.",
@@ -57,7 +66,7 @@ export const BittensorSlippageDrawer = () => {
                 small
                 onClick={() => setMaxSlippage(String(DEFAULT_USER_MAX_SLIPPAGE))}
               >
-                {t("Auto")}
+                {t("Reset")}
               </Button>
             </div>
           }
@@ -68,20 +77,21 @@ export const BittensorSlippageDrawer = () => {
         <div
           className={classNames(
             "mb-4 flex items-center gap-2 self-start text-xs text-orange-500",
-            Number(maxSlippage) < HIGH_SLIPPAGE && "invisible",
-            Number(maxSlippage) >= VERY_HIGH_SLIPPAGE && "text-red-500",
+            Number(maxSlippage) < HIGH_PRICE_IMPACT && "invisible",
+            Number(maxSlippage) >= VERY_HIGH_PRICE_IMPACT && "text-red-500",
           )}
         >
           <AlertTriangleIcon />
           <div>
-            {Number(maxSlippage) >= VERY_HIGH_SLIPPAGE
+            {Number(maxSlippage) >= VERY_HIGH_PRICE_IMPACT
               ? t("Very high slippage")
               : t("High slippage")}
           </div>
         </div>
         <div className="flex w-full items-center">
           <Button
-            className="w-full text-sm"
+            className="w-full"
+            icon={SaveIcon}
             primary
             onClick={() => {
               close()

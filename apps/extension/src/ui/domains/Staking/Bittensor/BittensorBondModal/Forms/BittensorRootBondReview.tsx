@@ -1,8 +1,7 @@
-import { planckToTokens } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -11,7 +10,6 @@ import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 import { BittensorStakingModalHeader } from "../BittensorModalHeader"
 import { BittensorModalLayout } from "../BittensorModalLayout"
 
@@ -19,7 +17,7 @@ export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
   const {
     nativeToken,
-    amountToStake,
+    amountIn,
     account,
     onSubmitted,
     payload,
@@ -63,7 +61,7 @@ export const BittensorRootBondReview = () => {
             <TokensAndFiat
               isBalance
               tokenId={nativeToken?.id}
-              planck={amountToStake?.planck}
+              planck={amountIn ?? 0n}
               noCountUp
               tokensClassName="text-body"
               fiatClassName="text-body-secondary"
@@ -82,16 +80,13 @@ export const BittensorRootBondReview = () => {
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Validator")} </div>
           <div className="text-body truncate">
-            <BittensorDelegatorNameButton hotkey={hotkey} />
+            <BittensorValidatorName hotkey={hotkey} />
           </div>
         </div>
-        <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+        <div className="flex items-center justify-between gap-8 py-2 text-xs">
           <div className="whitespace-nowrap">{t("New staked total")} </div>
           <div className="text-body truncate">
-            <Tokens
-              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
-              symbol={nativeToken?.symbol}
-            />
+            <TokensAndFiat tokenId={nativeToken?.id} planck={newStakeTotal ?? 0n} noCountUp />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
