@@ -11,7 +11,7 @@ export const useGetBittensorMinJoinBond = ({ networkId }: GetBittensorMinJoinBon
   const { data: sapi } = useScaleApi(networkId)
 
   return useQuery({
-    queryKey: ["useGetBittensorMinJoinBond", sapi?.id, networkId],
+    queryKey: ["useGetBittensorMinJoinBond", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
 

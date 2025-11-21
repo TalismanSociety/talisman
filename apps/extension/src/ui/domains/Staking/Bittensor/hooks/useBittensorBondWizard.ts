@@ -267,11 +267,9 @@ const useBittensorBondWizardProvider = () => {
       typeof minTaoBond === "bigint" &&
       amountIn &&
       amountIn > 0n,
-    // should we check minTaoBond here ?
     [account, amountTao, minTaoBond, netuid, amountIn, hotkey, stakeType, nativeToken],
   )
 
-  // should we check remaining balance vs minTaoBond here ?
   const isUnstakeFormValid = useMemo(() => amountIn && amountIn > 0n, [amountIn])
 
   const isFormValid = useMemo(
