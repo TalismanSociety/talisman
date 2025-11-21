@@ -3,7 +3,6 @@ import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -38,7 +37,7 @@ export const ViewDetailsAddress: FC<
 
   const handleClick = useCallback(() => {
     if (!formatted) return
-    if (blockExplorerUrl) window.open(urlJoin(blockExplorerUrl, "address", formatted), "_blank")
+    if (blockExplorerUrl) window.open(blockExplorerUrl, "_blank")
     else copyAddress(formatted)
   }, [blockExplorerUrl, formatted])
 

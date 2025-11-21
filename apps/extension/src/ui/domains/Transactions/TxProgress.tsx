@@ -1,12 +1,16 @@
 import { HexString } from "@polkadot/util/types"
 import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import { WalletTransaction, WalletTransactionDot, WalletTransactionEth } from "extension-core"
+import {
+  WalletTransaction,
+  WalletTransactionDot,
+  WalletTransactionEth,
+  WalletTransactionSol,
+} from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
 
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
@@ -16,11 +20,16 @@ const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) 
   if (!network) return null
   return getBlockExplorerUrls(network, { type: "transaction", id: hash })[0] ?? null
 }
+export type ReplacementCallbackArgs = { txId: `0x${string}`; networkId: string }
 
-const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
+type TxReplaceActionsProps = {
+  tx: WalletTransaction
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+}
+
+const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete }) => {
   const { t } = useTranslation()
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
-  const { gotoProgress } = useSendFundsWizard()
 
   const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
 
@@ -28,10 +37,10 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     (newHash?: HexString) => {
       setReplaceType(undefined)
       if (newHash) {
-        gotoProgress({ txId: newHash, networkId: tx.networkId })
+        onReplacementComplete?.({ txId: newHash, networkId: tx.networkId })
       }
     },
-    [gotoProgress, tx],
+    [onReplacementComplete, tx],
   )
 
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
@@ -139,9 +148,16 @@ type TxProgressBaseProps = {
   blockNumber?: string
   onClose?: () => void
   href?: string | null
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClose }) => {
+const TxProgressBase: FC<TxProgressBaseProps> = ({
+  tx,
+  blockNumber,
+  href,
+  onClose,
+  onReplacementComplete,
+}) => {
   const { t } = useTranslation()
   const { title, subtitle, animStatus } = useTxStatusDetails(tx)
 
@@ -174,7 +190,9 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
           ) : null}
         </div>
         <div className="h-[3.6rem]">
-          {tx?.status === "pending" && <TxReplaceActions tx={tx} />}
+          {tx?.status === "pending" && (
+            <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />
+          )}
           {tx?.status === "success" && !tx?.confirmed && (
             <div className="text-secondary h-[3.6rem] animate-pulse">
               {t("You may close this window or wait for the transaction to be confirmed")}
@@ -189,13 +207,19 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({ tx, blockNumber, href, onClos
   )
 }
 
-type TxProgressSubstrateProps = {
+type TxProgressDotProps = {
   tx: WalletTransactionDot
   onClose?: () => void
   className?: string
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, className }) => {
+const TxProgressDot: FC<TxProgressDotProps> = ({
+  tx,
+  onClose,
+  className,
+  onReplacementComplete,
+}) => {
   const chain = useNetworkById(tx.networkId)
   const href = useMemo(() => getBlockExplorerUrl(chain, tx.hash), [chain, tx.hash])
 
@@ -206,17 +230,24 @@ const TxProgressSubstrate: FC<TxProgressSubstrateProps> = ({ tx, onClose, classN
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      onReplacementComplete={onReplacementComplete}
     />
   )
 }
 
-type TxProgressEvmProps = {
+type TxProgressEthProps = {
   tx: WalletTransactionEth
   onClose?: () => void
   className?: string
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
 }
 
-const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
+const TxProgressEth: FC<TxProgressEthProps> = ({
+  tx,
+  className,
+  onClose,
+  onReplacementComplete,
+}) => {
   const network = useNetworkById(tx.networkId, "ethereum")
   const href = useMemo(() => getBlockExplorerUrl(network, tx.hash), [network, tx.hash])
 
@@ -227,33 +258,77 @@ const TxProgressEvm: FC<TxProgressEvmProps> = ({ tx, className, onClose }) => {
       onClose={onClose}
       blockNumber={tx.blockNumber}
       href={href}
+      onReplacementComplete={onReplacementComplete}
     />
   )
 }
 
-type TxProgressProps = {
-  hash: HexString
-  networkIdOrHash: string
+type TxProgressSolProps = {
+  tx: WalletTransactionSol
   onClose?: () => void
   className?: string
 }
 
-export const TxProgress: FC<TxProgressProps> = ({ hash, networkIdOrHash, onClose, className }) => {
+const TxProgressSol: FC<TxProgressSolProps> = ({ tx, className, onClose }) => {
+  const network = useNetworkById(tx.networkId, "ethereum")
+  const href = useMemo(() => getBlockExplorerUrl(network, tx.signature), [network, tx.signature])
+
+  return <TxProgressBase tx={tx} className={className} onClose={onClose} href={href} />
+}
+
+type TxProgressProps = {
+  hash: string // hash or signature (for solana)
+  networkIdOrHash: string
+  onClose?: () => void
+  className?: string
+  onReplacementComplete?: (args: ReplacementCallbackArgs) => void
+}
+
+export const TxProgress: FC<TxProgressProps> = ({
+  hash,
+  networkIdOrHash,
+  onClose,
+  className,
+  onReplacementComplete,
+}) => {
   const tx = useTransaction(hash)
   const network = useAnyNetwork(networkIdOrHash)
 
   // tx is null if not found in db
   if (tx === null) {
     const href = getBlockExplorerUrl(network, hash)
-    return <TxProgressBase href={href} className={className} onClose={onClose} />
+    return (
+      <TxProgressBase
+        href={href}
+        className={className}
+        onClose={onClose}
+        onReplacementComplete={onReplacementComplete}
+      />
+    )
   }
 
-  if (tx?.platform === "polkadot")
-    return <TxProgressSubstrate tx={tx} onClose={onClose} className={className} />
-
-  if (tx?.platform === "ethereum")
-    return <TxProgressEvm tx={tx} onClose={onClose} className={className} />
-
-  // render null while loading
-  return null
+  switch (tx?.platform) {
+    case "ethereum":
+      return (
+        <TxProgressEth
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
+    case "polkadot":
+      return (
+        <TxProgressDot
+          tx={tx}
+          onClose={onClose}
+          className={className}
+          onReplacementComplete={onReplacementComplete}
+        />
+      )
+    case "solana":
+      return <TxProgressSol tx={tx} onClose={onClose} className={className} />
+    default:
+      return null
+  }
 }

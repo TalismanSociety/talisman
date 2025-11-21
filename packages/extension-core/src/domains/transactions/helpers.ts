@@ -3,7 +3,7 @@ import { HexString } from "@polkadot/util/types"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
-import { parseTransactionInfo } from "@talismn/solana"
+import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import { log } from "extension-shared"
 import merge from "lodash-es/merge"
 import { Hex, TransactionRequest } from "viem"
@@ -39,7 +39,7 @@ export const addSolTransaction = async (
       networkId,
       account,
       signature,
-      payload: transaction.serialize().toString("base64"),
+      payload: serializeTransaction(transaction),
       status: "pending",
       confirmed: false,
       siteUrl,
