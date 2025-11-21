@@ -13,6 +13,7 @@ import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 import { ReplacementCallbackArgs, TxProgress } from "../TxProgress"
 import { TxHistoryDetailsAddress } from "./TxHistoryDetails/TxHistoryDetailsAddress"
+import { TxHistoryDetailsIdentifier } from "./TxHistoryDetails/TxHistoryDetailsIdentifier"
 import { TxHistoryDetailsNetwork } from "./TxHistoryDetails/TxHistoryDetailsNetwork"
 import {
   TxHistoryDetailsPayload,
@@ -225,6 +226,11 @@ const TxHistoryDetails: FC<TxHistoryDetailsProps> = ({ tx }) => {
       )}
       <TxHistoryDetailsRow title={t("Payload")} extra={<TxHistoryDetailsPayloadDisplayMode />}>
         <TxHistoryDetailsPayload tx={tx} />
+      </TxHistoryDetailsRow>
+      <TxHistoryDetailsRow
+        title={tx.platform === "solana" ? t("Signature") : t("Transaction hash")}
+      >
+        <TxHistoryDetailsIdentifier tx={tx} />
       </TxHistoryDetailsRow>
     </div>
   )

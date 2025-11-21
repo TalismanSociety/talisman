@@ -1,16 +1,16 @@
 import { bind } from "@react-rxjs/core"
 import { base58 } from "@talismn/crypto"
-import { CheckIcon, CopyIcon } from "@talismn/icons"
 import { deserializeTransaction, txToHumanJSON } from "@talismn/solana"
 import { cn } from "@talismn/util"
 import { WalletTransaction } from "extension-core"
 import { log } from "extension-shared"
 import { dump as convertToYaml } from "js-yaml"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 
 import { CodeBlock } from "@talisman/components/CodeBlock"
+import { CopyToClipboardLinkButton } from "@talisman/components/CopyToClipboardLinkButton"
 
 const subjectDisplayMode = new BehaviorSubject<"yaml" | "json">("yaml")
 const [useDisplayMode] = bind(subjectDisplayMode.asObservable())
@@ -86,41 +86,9 @@ export const TxHistoryDetailsPayload: FC<{
     <div>
       <CodeBlock code={code} />
       <div className="mt-2 text-right">
-        <CopyToClipboard data={code} />
+        <CopyToClipboardLinkButton data={code} />
       </div>
     </div>
-  )
-}
-
-const CopyToClipboard: FC<{ data: string; className?: string }> = ({ data, className }) => {
-  const { t } = useTranslation()
-  const [isCopied, setIsCopied] = useState(false)
-
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(data).then(() => {
-      setIsCopied(true)
-      setTimeout(() => setIsCopied(false), 2000)
-    })
-  }, [data])
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className={cn("text-body-secondary hover:text-body inline-flex items-center", className)}
-    >
-      {isCopied ? (
-        <>
-          <CheckIcon className="text-primary mr-2 inline" />
-          <span className="text-primary">{t("Copied successfully")}</span>
-        </>
-      ) : (
-        <>
-          <CopyIcon className="mr-2 inline" />
-          <span>{t("Copy to clipboard")}</span>
-        </>
-      )}
-    </button>
   )
 }
 
