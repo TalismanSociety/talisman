@@ -3,7 +3,14 @@ import { useMemo } from "react"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-const SUBTENSOR_MIN_STAKE_AMOUNT_PLANK = 1000000n
+/**
+    #[pallet::type_value]
+    /// Default minimum stake.
+    pub fn DefaultMinStake<T: Config>() -> TaoCurrency {
+        2_000_000.into()
+    }
+ */
+const SUBTENSOR_DEFAULT_MIN_STAKE = 2_000_000n
 
 type GetBittensorDefaultMinStake = {
   networkId: DotNetworkId | null | undefined
@@ -15,11 +22,13 @@ export const useGetBittensorDefaultMinStake = ({ networkId }: GetBittensorDefaul
   return useMemo(() => {
     try {
       return (
+        // should be there but not exposed in the metadata, can't figure out why
+        // https://github.com/opentensor/subtensor/blob/6304dbedc34c6b271546a9338d9b870ceb1ac625/pallets/subtensor/src/lib.rs#L882
         sapi?.getConstant<bigint>("SubtensorModule", "DefaultMinStake") ??
-        SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
+        SUBTENSOR_DEFAULT_MIN_STAKE
       )
     } catch {
-      return SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
+      return SUBTENSOR_DEFAULT_MIN_STAKE
     }
   }, [sapi])
 }
