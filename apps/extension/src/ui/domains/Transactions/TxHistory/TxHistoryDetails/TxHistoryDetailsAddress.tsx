@@ -5,7 +5,6 @@ import { cn } from "@talismn/util"
 import { getAccountGenesisHash } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -38,7 +37,7 @@ export const TxHistoryDetailsAddress: FC<{
 
   const handleClick = useCallback(() => {
     if (!formatted) return
-    if (blockExplorerUrl) window.open(urlJoin(blockExplorerUrl), "_blank")
+    if (blockExplorerUrl) window.open(blockExplorerUrl, "_blank")
     else copyAddress(formatted)
   }, [blockExplorerUrl, formatted])
 
