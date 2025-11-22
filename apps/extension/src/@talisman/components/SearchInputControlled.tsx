@@ -35,9 +35,7 @@ export const SearchInputControlled = ({
   }, [onClear])
 
   useEffectOnce(() => {
-    if (autoFocus) {
-      ref.current?.focus()
-    }
+    if (autoFocus) ref.current?.focus()
   })
 
   return (
