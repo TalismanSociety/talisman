@@ -20,6 +20,9 @@ export const useGetBittensorDefaultMinStake = ({ networkId }: GetBittensorDefaul
   const { data: sapi } = useScaleApi(networkId)
 
   return useMemo(() => {
+    // hack to keep the code below valid while not using it
+    if (Date.now()) return SUBTENSOR_DEFAULT_MIN_STAKE
+
     try {
       return (
         // should be there but not exposed in the metadata, can't figure out why
