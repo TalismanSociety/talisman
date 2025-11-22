@@ -311,7 +311,7 @@ const TransactionRowBase: FC<{
       onClick={onClick}
       disabled={!onClick}
       className={classNames(
-        "bg-grey-850 relative z-0 flex w-full grow items-center rounded-sm text-left transition",
+        "bg-grey-850 hover:bg-grey-800 relative z-0 flex w-full grow items-center rounded-sm text-left",
         IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
       )}
     >
