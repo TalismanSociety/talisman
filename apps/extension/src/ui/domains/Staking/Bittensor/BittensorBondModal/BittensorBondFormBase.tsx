@@ -348,7 +348,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     seekDiscountDrawer,
     stakeType,
     stakeDirection,
-    newStakeTotal,
     netuid,
     amountOut,
     setStep,
@@ -436,25 +435,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             </div>
           </div>
         </div>
-        {isSubnetUnbond && (
-          <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-            <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
-            <div className="text-body-secondary flex items-center gap-2 truncate">
-              <TokensAndFiat
-                planck={amountOut}
-                tokenId={nativeToken?.id}
-                noCountUp
-                tokensClassName="text-body"
-              />
-            </div>
-          </div>
-        )}
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-          <div className="whitespace-nowrap">{t("New staked total")} </div>
-          <div className="text-body-secondary truncate">
+          <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
+          <div className="text-body-secondary flex items-center gap-2 truncate">
             <TokensAndFiat
-              planck={newStakeTotal}
-              tokenId={dtaoToken?.id}
+              planck={amountOut}
+              tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
               noCountUp
               tokensClassName="text-body"
             />

@@ -24,7 +24,6 @@ export const BittensorRootBondReview = () => {
     txMetadata,
     hotkey,
     stakeDirection,
-    newStakeTotal,
     setStep,
   } = useBittensorBondWizard()
 
@@ -81,12 +80,6 @@ export const BittensorRootBondReview = () => {
           <div className="whitespace-nowrap">{t("Validator")} </div>
           <div className="text-body truncate">
             <BittensorValidatorName hotkey={hotkey} />
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-8 py-2 text-xs">
-          <div className="whitespace-nowrap">{t("New staked total")} </div>
-          <div className="text-body truncate">
-            <TokensAndFiat tokenId={nativeToken?.id} planck={newStakeTotal ?? 0n} noCountUp />
           </div>
         </div>
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
