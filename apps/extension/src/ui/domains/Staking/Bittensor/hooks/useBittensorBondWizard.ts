@@ -101,6 +101,21 @@ const useBalance = (
   }, [allBalances, address, tokenId])
 }
 
+const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
+  // use the dynamic token if user already has a balance
+  const tokenWithHotkey = useToken(
+    useMemo(() => subDTaoTokenId(networkId, netuid, hotkey), [networkId, netuid, hotkey]),
+    "substrate-dtao",
+  )
+  // otherwise the template token (without hotkey)
+  const tokenWithoutHotkey = useToken(
+    useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid]),
+    "substrate-dtao",
+  )
+
+  return tokenWithHotkey || tokenWithoutHotkey
+}
+
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
@@ -125,19 +140,13 @@ const useBittensorBondWizardProvider = () => {
     setWizardState,
   ] = useState(() => wizardOpenState$.getValue())
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
-  const dTaoTokenId = useMemo(
-    () =>
-      networkId && typeof netuid === "number"
-        ? subDTaoTokenId(networkId, netuid, hotkey ?? undefined)
-        : null,
-    [hotkey, netuid, networkId],
-  )
+  const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
-  const dtaoBalance = useBalance(allBalances, address, dTaoTokenId)
+  const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
   const account = useAccountByAddress(address)
   const nativeToken = useToken(nativeTokenId, "substrate-native")
-  const dtaoToken = useToken(dTaoTokenId, "substrate-dtao")
+
   const feeToken = useFeeToken(nativeToken?.id)
   const tokenRates = useTokenRates(nativeTokenId)
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
