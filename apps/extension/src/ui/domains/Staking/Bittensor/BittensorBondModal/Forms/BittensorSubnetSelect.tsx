@@ -181,9 +181,9 @@ const SortMethodButton: FC<{
 
   const sortMethods = useMemo<{ label: string; value: SortValue }[]>(
     () => [
+      { label: t("UID"), value: "netuid" },
       { label: t("Alpha in Pool"), value: "total_alpha" },
       { label: t("TAO in Pool"), value: "total_tao" },
-      { label: t("UID"), value: "netuid" },
       { label: t("Emission"), value: "emission" },
     ],
     [t],

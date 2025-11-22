@@ -31,9 +31,9 @@ const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionT
     .concat()
     .sort((a, b) => {
       if (sortBy === "name") {
-        // Sort by name in ascending order (A to Z)
-        if (a.name < b.name) return -1
-        if (a.name > b.name) return 1
+        if (a.name && !b.name) return -1
+        if (!a.name && b.name) return 1
+        return a.name.localeCompare(b.name)
       } else {
         // Sort other fields in descending order
         if (a[sortBy] > b[sortBy]) return -1
@@ -211,7 +211,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-2 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
