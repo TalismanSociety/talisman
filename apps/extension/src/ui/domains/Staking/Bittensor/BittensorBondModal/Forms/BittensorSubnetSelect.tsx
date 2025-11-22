@@ -1,5 +1,5 @@
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
-import { subDTaoTokenId } from "@talismn/chaindata-provider"
+import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
@@ -61,7 +61,7 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
 
 export const BittensorSubnetSelect = () => {
   const { t } = useTranslation()
-  const { setStep, setNetuid, netuid, networkId, dtaoToken } = useBittensorBondWizard()
+  const { setStep, setNetuid, netuid, networkId } = useBittensorBondWizard()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
@@ -96,8 +96,6 @@ export const BittensorSubnetSelect = () => {
       setSortedSubnets(sortSubnetOptions(subnetData, sortMethod))
     })
   }, [sortMethod, subnetData])
-
-  if (!dtaoToken) return null
 
   return (
     <BittensorModalLayout
@@ -138,7 +136,7 @@ export const BittensorSubnetSelect = () => {
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
             <SubnetRows
-              taoTokenId={dtaoToken.id}
+              networkId={networkId}
               subnets={displayedSubnets}
               selectedNetuid={netuid}
               isLoading={isLoading || isSubnetsLoading}
@@ -198,12 +196,12 @@ const SortMethodButton: FC<{
 }
 
 const SubnetRows: FC<{
-  taoTokenId: string
+  networkId: string
   subnets: SubnetData[]
   selectedNetuid?: number | null
   isLoading?: boolean
   onSelect: (netuid: number) => void
-}> = ({ taoTokenId, subnets, selectedNetuid, isLoading, onSelect }) => {
+}> = ({ networkId, subnets, selectedNetuid, isLoading, onSelect }) => {
   const { ref: refContainer } = useScrollContainer()
   const ref = useRef<HTMLDivElement>(null)
 
@@ -242,7 +240,7 @@ const SubnetRows: FC<{
                 key={item.key}
                 isSelected={subnet.netuid === selectedNetuid}
                 option={subnet}
-                taoTokenId={taoTokenId}
+                networkId={networkId}
                 onClick={() => onSelect(subnet.netuid!)}
                 isLoading={isLoading}
               />
@@ -255,20 +253,19 @@ const SubnetRows: FC<{
 }
 
 const SubnetRow: FC<{
-  taoTokenId: string
+  networkId: string
   option: SubnetData
   isSelected?: boolean
   isLoading?: boolean
   onClick: () => void
-}> = ({ taoTokenId, option, isSelected, isLoading, onClick }) => {
+}> = ({ networkId, option, isSelected, isLoading, onClick }) => {
   const { t } = useTranslation()
 
-  const tokenTao = useToken(taoTokenId)
-  const alphaId = useMemo(
-    () => (tokenTao ? subDTaoTokenId(tokenTao?.networkId, option.netuid!) : null),
-    [tokenTao, option.netuid],
+  const [taoTokenId, dtaoTokenId] = useMemo(
+    () => [subNativeTokenId(networkId), subDTaoTokenId(networkId, option.netuid!)] as const,
+    [networkId, option.netuid],
   )
-  const tokanAlpha = useToken(alphaId, "substrate-dtao")
+  const tokanAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
   const emission = useMemo(
     () =>
