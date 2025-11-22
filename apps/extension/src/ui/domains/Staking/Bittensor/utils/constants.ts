@@ -1,7 +1,7 @@
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 
 export const ROOT_NETUID = 0
-export const DEFAULT_USER_MAX_SLIPPAGE = 0.01 // 0.01%
+export const DEFAULT_USER_MAX_SLIPPAGE = 0.1 // 0.1%
 export const HIGH_PRICE_IMPACT = 2
 export const VERY_HIGH_PRICE_IMPACT = 5
 export const BITTENSOR_TOKEN_ID = subNativeTokenId("bittensor")
