@@ -1,6 +1,8 @@
-import { ToolbarSortIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { TokenId } from "@talismn/chaindata-provider"
+import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
+import { classNames, cn, planckToTokens } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -9,14 +11,16 @@ import {
   ContextMenuTrigger,
 } from "talisman-ui"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
+import { Address } from "@ui/domains/Account/Address"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useToken } from "@ui/state"
 
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
-import { BittensorBondOption, BittensorBondOptionSkeleton } from "../BittensorBondOption"
 import { BittensorStakingModalHeader } from "../BittensorModalHeader"
 import { BittensorModalLayout } from "../BittensorModalLayout"
 
@@ -40,7 +44,7 @@ const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionT
     // Validators with yield data first (others dont validate this subnet)
     .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1))
 
-export const BittensorBondDelegateSelect = () => {
+export const BittensorValidatorSelect = () => {
   const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
 
   const [selectedSortMethod, setSelectedSortMethod] = useState<SortValue>("totalStaked")
@@ -48,11 +52,7 @@ export const BittensorBondDelegateSelect = () => {
 
   const { t } = useTranslation()
 
-  const {
-    combinedValidatorsData,
-    //   isLoading: combinedValidatorsDataLoading,
-    isError,
-  } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
   const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[] | undefined>(() =>
     combinedValidatorsData.length
@@ -72,11 +72,6 @@ export const BittensorBondDelegateSelect = () => {
         delegate.hotkey.toLowerCase().includes(lowerSearch),
     )
   }, [sortedDelegators, search])
-
-  // const isLoading = useMemo(
-  //   () => combinedValidatorsDataLoading && !sortedDelegators.length,
-  //   [combinedValidatorsDataLoading, sortedDelegators.length],
-  // )
 
   useEffect(() => {
     if (combinedValidatorsData.length)
@@ -126,12 +121,6 @@ export const BittensorBondDelegateSelect = () => {
     [setHotkey, setStep],
   )
 
-  // useEffect(() => {
-  //   console.log("BittensorBondDelegateSelect displayedValidators", displayedValidators?.length, {
-  //     displayedValidators,
-  //   })
-  // }, [displayedValidators])
-
   return (
     <BittensorModalLayout
       header={
@@ -160,23 +149,6 @@ export const BittensorBondDelegateSelect = () => {
           </div>
           <SortMethodButton method={selectedSortMethod} onChange={handleSortMethodChange} />
         </div>
-        {/* <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
-          {sortMethods.map((method) => (
-            <button
-              key={method.label}
-              onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
-              className={classNames(
-                "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
-                method.value === selectedSortMethod.value && !search
-                  ? "bg-primary-500 text-black"
-                  : "bg-black-tertiary text-grey-400",
-                (isLoading || method.isDisabled) && "cursor-not-allowed",
-              )}
-            >
-              {t(method.label)}
-            </button>
-          ))}
-        </ScrollContainerDraggableHorizontal> */}
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="text-body-disabled flex justify-between px-12 text-sm">
             <div>{t("Validator")}</div>
@@ -186,21 +158,21 @@ export const BittensorBondDelegateSelect = () => {
             className="w-full grow"
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
-            {!displayedValidators
-              ? Array(10)
-                  .fill(null)
-                  .map((_, i) => {
-                    return <BittensorBondOptionSkeleton key={i} />
-                  })
-              : displayedValidators.map((option) => (
-                  <BittensorBondOption
-                    key={option.hotkey}
-                    option={option}
-                    selectedHotkey={hotkey}
-                    handleSelectHotkey={handleSubmit}
-                    tokenId={BITTENSOR_TOKEN_ID}
-                  />
-                ))}
+            {!displayedValidators ? (
+              Array(10)
+                .fill(null)
+                .map((_, i) => {
+                  return <ValidatorRowSkeleton key={i} />
+                })
+            ) : (
+              <ValidatorRows
+                taoTokenId={BITTENSOR_TOKEN_ID}
+                validators={displayedValidators}
+                selectedHotkey={hotkey}
+                isLoading={isLoading}
+                onSelect={handleSubmit}
+              />
+            )}
             {isError && (
               <div className="text-alert-error flex h-full items-center justify-center">
                 {t("Unable to fetch validators")}
@@ -256,5 +228,151 @@ const SortMethodButton: FC<{
         ))}
       </ContextMenuContent>
     </ContextMenu>
+  )
+}
+
+const ValidatorRows: FC<{
+  taoTokenId: string
+  validators: BondOptionType[]
+  selectedHotkey?: string | null
+  isLoading?: boolean
+  onSelect: (hotkey: string) => void
+}> = ({ taoTokenId, validators, selectedHotkey, isLoading, onSelect }) => {
+  const { ref: refContainer } = useScrollContainer()
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: validators.length,
+    estimateSize: () => 58,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+  })
+
+  if (!validators.length) return null
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const validator = validators[item.index]
+          if (!validator) return null
+
+          return (
+            <div
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+              data-testid="token-picker-row"
+            >
+              <ValidatorRow
+                key={item.key}
+                isSelected={validator.hotkey === selectedHotkey}
+                option={validator}
+                taoTokenId={taoTokenId}
+                onClick={() => onSelect(validator.hotkey)}
+                isLoading={isLoading}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const ValidatorRowSkeleton = () => {
+  return (
+    <div className="flex h-[5.8rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
+      <div className="bg-grey-750 size-16 animate-pulse rounded-full"></div>
+      <div className="grow space-y-[5px]">
+        <div className={"text-body flex w-full justify-between text-sm font-bold"}>
+          <div>
+            <div className="bg-grey-750 rounded-xs inline-block h-7 w-56 animate-pulse"></div>
+          </div>
+          <div>
+            <div className="bg-grey-750 rounded-xs inline-block h-7 w-20 animate-pulse"></div>
+          </div>
+        </div>
+        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
+          <div>
+            <div className="bg-grey-800 rounded-xs inline-block h-6 w-40 animate-pulse"></div>
+          </div>
+          <div className="grow text-right">
+            <div className="bg-grey-800 rounded-xs inline-block h-6 w-36 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const ValidatorRow: FC<{
+  option: BondOptionType
+  taoTokenId: TokenId
+  isSelected: boolean
+  isLoading?: boolean
+  onClick: () => void
+}> = ({ option, isSelected, isLoading, taoTokenId, onClick }) => {
+  const { t } = useTranslation()
+  const tao = useToken(taoTokenId)
+
+  return (
+    <button
+      type="button"
+      key={option.hotkey}
+      onClick={onClick}
+      className={classNames(
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 flex-col justify-center gap-3 overflow-hidden px-12 text-left",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        isSelected && "bg-grey-800 text-body-secondary",
+      )}
+    >
+      <div className="text-body flex w-full justify-between text-sm">
+        <div className={cn(option.isRecommended && "text-primary font-bold")}>
+          {option.name || <Address startCharCount={8} endCharCount={8} address={option.hotkey} />}
+        </div>
+        <div className={cn(isLoading && "animate-pulse")}>#{option.rank}</div>
+      </div>
+      <div
+        className={cn(
+          "text-body-secondary flex w-full justify-between text-xs",
+          isLoading && "animate-pulse",
+        )}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <LockIcon />
+            <Tokens
+              amount={planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}
+              symbol={tao?.symbol}
+              noCountUp
+            />
+          </div>
+          <div className="bg-body-disabled inline-block size-2 rounded-full" />
+          <div className="flex items-center gap-2">
+            <UserIcon />
+            {option.totalStakers}
+          </div>
+          <div className="bg-body-disabled inline-block size-2 rounded-full" />
+          <div className="flex items-center gap-2">
+            <GlobeIcon />
+            {option.subnets}
+          </div>
+        </div>
+        <div>
+          {option.validatorYield?.thirty_day_apy
+            ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
+            : t("N/A")}
+        </div>
+      </div>
+    </button>
   )
 }

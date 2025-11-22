@@ -1,7 +1,9 @@
-import { subNativeTokenId } from "@talismn/chaindata-provider"
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
+import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { classNames, cn } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -10,16 +12,19 @@ import {
   ContextMenuTrigger,
 } from "talisman-ui"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useToken } from "@ui/state"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
+import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
 import { BittensorStakingModalHeader } from "../BittensorModalHeader"
 import { BittensorModalLayout } from "../BittensorModalLayout"
-import { BittensorSubnetOption, BittensorSubnetOptionSkeleton } from "../BittensorSubnetOption"
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
@@ -55,8 +60,7 @@ export const BittensorSubnetSelect = () => {
     [networkId],
   )
 
-  const { subnetData, isError, isLoading, isSubnetsError, isSubnetsLoading } =
-    useCombinedSubnetData()
+  const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
   // removes rootnet from subnets
   const subnets = useMemo(
@@ -64,9 +68,9 @@ export const BittensorSubnetSelect = () => {
     [subnetData],
   )
 
-  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[] | undefined>(
+  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[]>(
     // check if data is available on first render, otherwise show loading state
-    () => (subnets.length ? sortSubnetOptions(subnets, selectedSortMethod) : undefined),
+    () => sortSubnetOptions(subnets, selectedSortMethod),
   )
 
   useEffect(() => {
@@ -155,31 +159,13 @@ export const BittensorSubnetSelect = () => {
             className="w-full grow"
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
-            {!networkId ||
-            !sortedOrFilteredSubnets ||
-            (isLoading && sortedOrFilteredSubnets.length === 0)
-              ? Array(10)
-                  .fill(null)
-                  .map((_, i) => {
-                    return <BittensorSubnetOptionSkeleton key={i} />
-                  })
-              : sortedOrFilteredSubnets.map((option) => (
-                  <BittensorSubnetOption
-                    key={option.netuid!}
-                    option={option}
-                    selectedNetuid={netuid}
-                    networkId={networkId}
-                    taoTokenId={taoTokenId}
-                    handleSelectSubnet={handleSubmit}
-                    isSubnetsLoading={isSubnetsLoading}
-                    isSubnetsError={isSubnetsError}
-                  />
-                ))}
-            {isError && (
-              <div className="text-alert-error flex h-full items-center justify-center">
-                {t("Unable to fetch subnets")}
-              </div>
-            )}
+            <SubnetRows
+              taoTokenId={taoTokenId}
+              subnets={sortedOrFilteredSubnets}
+              selectedNetuid={netuid}
+              isLoading={isLoading || isSubnetsLoading} // ?
+              onSelect={handleSubmit}
+            />
           </ScrollContainer>
         </div>
       </div>
@@ -213,7 +199,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-2 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -230,5 +216,147 @@ const SortMethodButton: FC<{
         ))}
       </ContextMenuContent>
     </ContextMenu>
+  )
+}
+
+const SubnetRows: FC<{
+  taoTokenId: string
+  subnets: SubnetData[]
+  selectedNetuid?: number | null
+  isLoading?: boolean
+  onSelect: (netuid: number) => void
+}> = ({ taoTokenId, subnets, selectedNetuid, isLoading, onSelect }) => {
+  const { ref: refContainer } = useScrollContainer()
+  const ref = useRef<HTMLDivElement>(null)
+
+  const virtualizer = useVirtualizer({
+    count: subnets.length,
+    estimateSize: () => 58,
+    overscan: 5,
+    getScrollElement: () => refContainer.current,
+  })
+
+  if (!subnets.length) return null
+
+  return (
+    <div ref={ref}>
+      <div
+        className="relative w-full"
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+        }}
+      >
+        {virtualizer.getVirtualItems().map((item) => {
+          const subnet = subnets[item.index]
+          if (!subnet) return null
+
+          return (
+            <div
+              key={item.key}
+              className="absolute left-0 top-0 w-full"
+              style={{
+                height: `${item.size}px`,
+                transform: `translateY(${item.start}px)`,
+              }}
+              data-testid="token-picker-row"
+            >
+              <SubnetRow
+                key={item.key}
+                isSelected={subnet.netuid === selectedNetuid}
+                option={subnet}
+                taoTokenId={taoTokenId}
+                onClick={() => onSelect(subnet.netuid!)}
+                isLoading={isLoading}
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const SubnetRow: FC<{
+  taoTokenId: string
+  option: SubnetData
+  isSelected?: boolean
+  isLoading?: boolean
+  onClick: () => void
+}> = ({ taoTokenId, option, isSelected, isLoading, onClick }) => {
+  const { t } = useTranslation()
+
+  const tokenTao = useToken(taoTokenId)
+  const alphaId = useMemo(
+    () => (tokenTao ? subDTaoTokenId(tokenTao?.networkId, option.netuid!) : null),
+    [tokenTao, option.netuid],
+  )
+  const tokanAlpha = useToken(alphaId, "substrate-dtao")
+
+  const emission = useMemo(
+    () =>
+      option.emission
+        ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
+          "%"
+        : t("N/A"),
+    [option.emission, t],
+  )
+
+  if (!tokanAlpha) return null
+
+  return (
+    <button
+      type="button"
+      key={option.netuid}
+      onClick={onClick}
+      className={classNames(
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        isSelected && "bg-grey-800 text-body-secondary",
+      )}
+    >
+      <TokenLogo tokenId={tokanAlpha.id} className="size-16 shrink-0" />
+      <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden text-sm">
+        <div className="flex w-full items-center justify-between gap-8 overflow-hidden text-white">
+          <div className="truncate">
+            {tokanAlpha.netuid} | {tokanAlpha.subnetName} {tokanAlpha.symbol}
+          </div>
+          <div className={cn("shrink-0", isLoading && "animate-pulse")}>{emission}</div>
+        </div>
+
+        {!!option.total_tao && (
+          <div
+            className={cn(
+              "text-body-secondary flex w-full items-center justify-between gap-8 overflow-hidden text-xs",
+              isLoading && "animate-pulse",
+            )}
+          >
+            <div className="flex grow items-center gap-2 overflow-hidden">
+              <TokensAndFiat
+                tokenId={taoTokenId}
+                planck={option.total_tao}
+                noFiat
+                noCountUp
+                noTooltip
+              />
+              <div className="bg-body-disabled inline-block size-2 rounded-full" />
+              <TokensAndFiat
+                tokenId={tokanAlpha.id}
+                planck={option.total_alpha}
+                noFiat
+                noCountUp
+                noTooltip
+              />
+            </div>
+            <div className="shrink-0">
+              <BittensorAlphaPrice
+                taoTokenId={taoTokenId}
+                price={option.price}
+                priceChange24h={option.price_change_1_day}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </button>
   )
 }

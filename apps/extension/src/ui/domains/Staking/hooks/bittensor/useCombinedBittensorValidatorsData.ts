@@ -7,7 +7,7 @@ import { useGetInfiniteValidatorsYieldByNetuid } from "./dTao/useGetInfiniteVali
 import { BondOption } from "./types"
 
 export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
-  const { data: validatorsYieldData } = useGetInfiniteValidatorsYieldByNetuid({
+  const { data: validatorsYieldData, isLoading } = useGetInfiniteValidatorsYieldByNetuid({
     netuid: netuid || 0,
   })
 
@@ -45,7 +45,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
 
   return {
     combinedValidatorsData,
-    isLoading: status === "loading",
+    isLoading: status === "loading" || isLoading,
     isInfiniteValidatorsError: status === "error",
     isError: status === "error",
   }

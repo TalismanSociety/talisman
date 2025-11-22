@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
@@ -13,26 +14,19 @@ export const BittensorDelegatorNameButton = ({
   hotkey,
   isDisabled,
 }: BittensorDelegatorNameButtonProps) => {
+  const { t } = useTranslation()
   const { netuid } = useBittensorBondWizard()
-  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+  const { combinedValidatorsData, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const selectedPool = combinedValidatorsData.find((data) => data.hotkey === hotkey)
-
-  const defaultPoolName = "Validator"
-
-  const poolName = selectedPool?.name
-
-  const label = useMemo(
-    () => (isError || !poolName ? defaultPoolName : poolName),
-    [isError, poolName],
+  const selectedPool = useMemo(
+    () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
+    [combinedValidatorsData, hotkey],
   )
 
-  return (
-    <BittensorSelectButton
-      isLoading={isLoading}
-      isDisabled={isDisabled}
-      label={label}
-      nextStep="select-delegate"
-    />
-  )
+  const label = useMemo(() => {
+    const poolName = selectedPool?.name
+    return isError || !poolName ? t("Validator") : poolName
+  }, [isError, selectedPool?.name, t])
+
+  return <BittensorSelectButton isDisabled={isDisabled} label={label} nextStep="select-delegate" />
 }

@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react"
+import { isTokenSubDTao, NetworkId } from "@talismn/chaindata-provider"
+import { assign, keyBy } from "lodash-es"
+import { useEffect, useMemo } from "react"
+
+import { useTokens } from "@ui/state"
 
 import { SubnetData } from "./types"
 import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
@@ -7,8 +11,27 @@ import { useGetSubnets } from "./useGetInfiniteSubnets"
 
 export type CombinedSubnetData = ReturnType<typeof useCombinedSubnetData>
 
-export const useCombinedSubnetData = () => {
-  const [subnetData, setSubnetData] = useState<Record<number, SubnetData>>({})
+export const useCombinedSubnetData = (networkId: NetworkId) => {
+  const allTokens = useTokens({ platform: "polkadot" })
+
+  // these should load instantly
+  const alphaTokenSubnets = useMemo(
+    () =>
+      allTokens
+        .filter(isTokenSubDTao)
+        // exclude dynamic ones, so we get only one for each netuid
+        .filter((token) => !token.hotkey && token.networkId === networkId)
+        .map(
+          (t): SubnetData => ({
+            netuid: t.netuid,
+            name: t.subnetName,
+            subnet_name: t.subnetName,
+            symbol: t.symbol,
+          }),
+        ),
+    [allTokens, networkId],
+  )
+
   const { data: subnets, isLoading: isSubnetsLoading, isError: isSubnetsError } = useGetSubnets()
   const {
     data: subnetDescriptionsData,
@@ -44,39 +67,44 @@ export const useCombinedSubnetData = () => {
     }
   }, [hasSubnetPoolsNextPage, isSubnetPoolsFetchingNextPage, fetchSubnetPoolsNextPage])
 
-  useEffect(() => {
-    // subnetDescriptionsData and subnetPoolsData data are mission critical for alpha staking, and their query are initialized with placeholder data.
-    // If they are not available, do not proceed with combining bad response data.
-    if (!subnetDescriptionsData?.pages.length || !subnetPoolsData?.pages.length) return
+  const descriptionsMap = useMemo(
+    () =>
+      keyBy(
+        subnetDescriptionsData?.pages
+          .flatMap((page) => page.data)
+          .map((desc) => ({ ...desc, descriptionName: desc.subnet_name })) ?? [],
+        (desc) => desc.netuid,
+      ),
+    [subnetDescriptionsData?.pages],
+  )
 
-    const descriptions = subnetDescriptionsData.pages
-      .flatMap((page) => page.data)
-      .map((desc) => ({ ...desc, descriptionName: desc.subnet_name }))
-    const pools = subnetPoolsData.pages.flatMap((page) => page.data)
+  const poolsMap = useMemo(
+    () =>
+      keyBy(subnetPoolsData?.pages.flatMap((page) => page.data) ?? [], (pool) =>
+        Number(pool.netuid),
+      ),
+    [subnetPoolsData?.pages],
+  )
 
-    const combinedSubnetData = descriptions.reduce(
-      (acc, desc) => {
-        const netuid = Number(desc.netuid)
-        const pool = pools.find((pool) => Number(pool.netuid) === netuid) || {}
-        const subnet = subnets?.find((subnet) => subnet.netuid === netuid)
+  const subnetsMap = useMemo(() => keyBy(subnets ?? [], (subnet) => subnet.netuid), [subnets])
 
-        acc[netuid] = { ...desc, ...pool, ...subnet }
-        return acc
-      },
-      {} as Record<number, SubnetData>,
-    )
-
-    setSubnetData(combinedSubnetData)
-  }, [
-    subnetDescriptionsData,
-    subnetDescriptionsData?.pages,
-    subnetPoolsData,
-    subnetPoolsData?.pages,
-    subnets,
-  ])
+  const subnetData = useMemo(() => {
+    return alphaTokenSubnets
+      .map(
+        (tokenSubnet): SubnetData =>
+          assign(
+            {},
+            tokenSubnet,
+            descriptionsMap[Number(tokenSubnet.netuid)] || {},
+            poolsMap[Number(tokenSubnet.netuid)] || {},
+            subnetsMap[Number(tokenSubnet.netuid)] || {},
+          ),
+      )
+      .sort((a, b) => (Number(a.netuid) || 0) - (Number(b.netuid) || 0))
+  }, [alphaTokenSubnets, descriptionsMap, poolsMap, subnetsMap])
 
   return {
-    subnetData: subnetData,
+    subnetData,
     isError: isSubnetDescriptionsError || isSubnetPoolsError,
     isLoading: isSubnetDescriptionsLoading || isSubnetPoolsLoading,
     isFetchingNextPage: isSubnetDescriptionsFetchingNextPage || isSubnetPoolsFetchingNextPage,

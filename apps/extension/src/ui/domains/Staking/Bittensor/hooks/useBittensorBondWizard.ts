@@ -47,7 +47,7 @@ export type StakeDirection = "bond" | "unbond"
 
 type WizardState = {
   step: WizardStep
-  networkId: DotNetworkId | null
+  networkId: DotNetworkId
   address: Address | null
   hotkey: string | null
   netuid: number | null
@@ -70,7 +70,7 @@ export type BittensorStakingWizardOpenOptions = {
 const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
-  networkId: null,
+  networkId: "bittensor",
   hotkey: null,
   netuid: null,
   plancks: null,
@@ -110,7 +110,6 @@ const useBittensorBondWizardProvider = () => {
   const [hideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
-  const { subnetData } = useCombinedSubnetData()
 
   const [
     {
@@ -128,6 +127,7 @@ const useBittensorBondWizardProvider = () => {
     },
     setWizardState,
   ] = useState(() => wizardOpenState$.getValue())
+  const { subnetData } = useCombinedSubnetData(networkId)
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dTaoTokenId = useMemo(
     () =>

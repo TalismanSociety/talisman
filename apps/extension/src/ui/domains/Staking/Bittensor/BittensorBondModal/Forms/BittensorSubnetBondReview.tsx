@@ -44,6 +44,7 @@ export const BittensorSubnetBondReview = () => {
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
+    networkId,
     nativeToken,
     amountToStake,
     account,
@@ -113,7 +114,7 @@ export const BittensorSubnetBondReview = () => {
     [isSeekTaoDiscountEnabled, totalFeeDiscount],
   )
 
-  const { isLoading } = useCombinedSubnetData()
+  const { isLoading } = useCombinedSubnetData(networkId)
 
   const { open } = slippageDrawer
   const { open: openWarningDrawer } = warningDrawer
