@@ -67,6 +67,9 @@ export const BittensorSlippageDrawer = () => {
             "You can customize the slippage percentage to balance transaction success and price accuracy.",
           )}
         </p>
+        <p className="text-body-secondary text-sm">
+          {t("This setting will apply to all your subnet staking transactions.")}
+        </p>
         <div className="text-body-secondary mt-4 flex items-center gap-2 self-start text-sm">
           <div className="">{t("Max Slippage")}</div>
           <Tooltip>
