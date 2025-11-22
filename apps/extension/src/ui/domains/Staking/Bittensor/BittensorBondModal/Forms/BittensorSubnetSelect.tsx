@@ -1,9 +1,18 @@
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
-import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
+import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  FC,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -21,7 +30,6 @@ import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/
 import { useToken } from "@ui/state"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
 import { BittensorStakingModalHeader } from "../BittensorModalHeader"
 import { BittensorModalLayout } from "../BittensorModalLayout"
@@ -30,88 +38,48 @@ type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
 const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] => {
   const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
-  const sorted = data.sort((a, b) => {
-    if (descendingFilters.includes(sortBy)) {
-      // Sort other fields in descending order
-      if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
-      if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
+  const sorted = data
+    .filter((sn) => sn.netuid)
+    .sort((a, b) => {
+      if (descendingFilters.includes(sortBy)) {
+        // Sort other fields in descending order
+        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
+        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
 
-      return 0 // Keep them in the same place if equal
-    } else {
-      // Sort other fields in ascending order
-      if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return -1
-      if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return 1
+        return 0 // Keep them in the same place if equal
+      } else {
+        // Sort other fields in ascending order
+        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return -1
+        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return 1
 
-      return 0 // Keep them in the same place if equal
-    }
-  })
+        return 0 // Keep them in the same place if equal
+      }
+    })
 
   return sorted
 }
 
 export const BittensorSubnetSelect = () => {
   const { t } = useTranslation()
-  const [search, setSearch] = useState<string>("")
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
-  const { setStep, setNetuid, netuid, networkId } = useBittensorBondWizard()
-
-  const taoTokenId = useMemo(
-    () => (networkId ? subNativeTokenId(networkId) : BITTENSOR_TOKEN_ID),
-    [networkId],
-  )
+  const { setStep, setNetuid, netuid, networkId, dtaoToken } = useBittensorBondWizard()
+  const [sortMethod, setSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
+  const [rawSearch, setSearch] = useState<string>("")
+  const search = useDeferredValue(rawSearch)
 
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
-  // removes rootnet from subnets
-  const subnets = useMemo(
-    () => Object.values(subnetData).filter((subnet) => subnet.netuid !== 0),
-    [subnetData],
+  const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
+    sortSubnetOptions(subnetData, sortMethod),
   )
 
-  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[]>(
-    // check if data is available on first render, otherwise show loading state
-    () => sortSubnetOptions(subnets, selectedSortMethod),
-  )
-
-  useEffect(() => {
-    if (!subnets.length) return
-    const defaultFilteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod)
-    setSortedOrFilteredSubnets(defaultFilteredSubnets)
-  }, [selectedSortMethod, subnets])
-
-  const handleSortMethodChange = useCallback(
-    (method: SortValue) => {
-      setSelectedSortMethod(method)
-      setSortedOrFilteredSubnets(sortSubnetOptions(subnets, method))
-    },
-    [subnets],
-  )
-
-  const handleSearchClear = useCallback(() => {
-    setSearch("")
-    // restore selected sort method
-    const filteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod)
-    setSortedOrFilteredSubnets(filteredSubnets)
-  }, [selectedSortMethod, subnets])
-
-  const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const input = e.target.value
-      setSearch(input)
-      if (!input) {
-        handleSearchClear()
-      } else {
-        setSortedOrFilteredSubnets(
-          Object.values(subnets).filter((subnet) => {
-            const { netuid, subnet_name, symbol } = subnet
-            const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
-            return subnetName.includes(input.toLowerCase())
-          }),
-        )
-      }
-    },
-    [handleSearchClear, subnets],
-  )
+  const displayedSubnets = useMemo(() => {
+    const lowerSearch = search.toLowerCase()
+    return sortedSubnets.filter((subnet) => {
+      const { netuid, subnet_name, symbol } = subnet
+      const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
+      return subnetName.includes(lowerSearch)
+    })
+  }, [search, sortedSubnets])
 
   const handleSubmit = useCallback(
     (netuid: number) => {
@@ -120,6 +88,16 @@ export const BittensorSubnetSelect = () => {
     },
     [setNetuid, setStep],
   )
+
+  const [, startTransition] = useTransition()
+
+  useEffect(() => {
+    startTransition(() => {
+      setSortedSubnets(sortSubnetOptions(subnetData, sortMethod))
+    })
+  }, [sortMethod, subnetData])
+
+  if (!dtaoToken) return null
 
   return (
     <BittensorModalLayout
@@ -141,13 +119,13 @@ export const BittensorSubnetSelect = () => {
               )}
               placeholder={t("Search subnets")}
               value={search}
-              onChange={handleSearchChange}
-              onClear={handleSearchClear}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch("")}
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
-          <SortMethodButton method={selectedSortMethod} onChange={handleSortMethodChange} />
+          <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
         </div>
 
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
@@ -160,10 +138,10 @@ export const BittensorSubnetSelect = () => {
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
             <SubnetRows
-              taoTokenId={taoTokenId}
-              subnets={sortedOrFilteredSubnets}
+              taoTokenId={dtaoToken.id}
+              subnets={displayedSubnets}
               selectedNetuid={netuid}
-              isLoading={isLoading || isSubnetsLoading} // ?
+              isLoading={isLoading || isSubnetsLoading}
               onSelect={handleSubmit}
             />
           </ScrollContainer>

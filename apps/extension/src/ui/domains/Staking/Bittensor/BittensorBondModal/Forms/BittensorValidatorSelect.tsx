@@ -2,7 +2,16 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { classNames, cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  FC,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -45,73 +54,28 @@ const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionT
     .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1))
 
 export const BittensorValidatorSelect = () => {
-  const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
-
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortValue>("totalStaked")
-  const [search, setSearch] = useState<string>("")
-
   const { t } = useTranslation()
-
+  const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
-  const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[] | undefined>(() =>
-    combinedValidatorsData.length
-      ? sortBondOptions(combinedValidatorsData, selectedSortMethod)
-      : undefined,
+  const [sortMethod, setSortMethod] = useState<SortValue>("totalStaked")
+  const [rawSearch, setSearch] = useState<string>("")
+  const search = useDeferredValue(rawSearch)
+
+  const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
+    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined,
   )
 
   const displayedValidators = useMemo(() => {
-    if (!sortedDelegators) return undefined
-
-    if (!search) return sortedDelegators
+    if (!sortedValidators) return undefined
 
     const lowerSearch = search.toLowerCase()
-    return sortedDelegators.filter(
+    return sortedValidators.filter(
       (delegate) =>
         delegate.name.toLowerCase().includes(lowerSearch) ||
         delegate.hotkey.toLowerCase().includes(lowerSearch),
     )
-  }, [sortedDelegators, search])
-
-  useEffect(() => {
-    if (combinedValidatorsData.length)
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, selectedSortMethod))
-  }, [combinedValidatorsData, selectedSortMethod])
-
-  const handleSortMethodChange = (method: SortValue) => {
-    setSearch("")
-    setSelectedSortMethod(method)
-    setSortedDelegators(sortBondOptions(combinedValidatorsData, method))
-  }
-
-  const handleSearchClear = useCallback(() => {
-    setSearch("")
-    // restore selected sort method
-    const filteredValidators: BondOptionType[] = sortBondOptions(
-      combinedValidatorsData,
-      selectedSortMethod,
-    )
-    setSortedDelegators(filteredValidators)
-  }, [combinedValidatorsData, selectedSortMethod])
-
-  const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
-      const input = e.target.value
-      setSearch(input)
-      if (!input) {
-        handleSearchClear()
-      } else {
-        const lowerSearch = input.toLowerCase()
-        const filtered = combinedValidatorsData.filter(
-          (delegate) =>
-            delegate.name.toLowerCase().includes(lowerSearch) ||
-            delegate.hotkey.toLowerCase().includes(lowerSearch),
-        )
-        setSortedDelegators(filtered)
-      }
-    },
-    [combinedValidatorsData, handleSearchClear],
-  )
+  }, [sortedValidators, search])
 
   const handleSubmit = useCallback(
     (hotkey: string) => {
@@ -120,6 +84,15 @@ export const BittensorValidatorSelect = () => {
     },
     [setHotkey, setStep],
   )
+
+  const [, startTransition] = useTransition()
+
+  useEffect(() => {
+    if (combinedValidatorsData.length)
+      startTransition(() => {
+        setSortedValidators(sortBondOptions(combinedValidatorsData, sortMethod))
+      })
+  }, [combinedValidatorsData, sortMethod])
 
   return (
     <BittensorModalLayout
@@ -141,13 +114,13 @@ export const BittensorValidatorSelect = () => {
               )}
               placeholder={t("Search validators")}
               value={search}
-              onChange={handleSearchChange}
-              onClear={handleSearchClear}
+              onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch("")}
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
-          <SortMethodButton method={selectedSortMethod} onChange={handleSortMethodChange} />
+          <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="text-body-disabled flex justify-between px-12 text-sm">
