@@ -22,6 +22,8 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
       validators?.map((validator) => {
         const validatorYield = validatorYieldMap[validator.hotkey.ss58]
 
+        // if (!validator.hotkey.ss58) console.warn("Validator missing hotkey ss58", validator)
+
         return {
           hotkey: validator.hotkey?.ss58 ?? "",
           name: validator?.name ?? "",
@@ -29,6 +31,8 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           totalStakers: validator?.global_nominators ?? 0,
           validatorYield,
           apr: parseFloat(validatorYield?.thirty_day_apy ?? "0"),
+          subnets: validator.active_subnets,
+          rank: validator.rank,
           hasData: !!validator,
           isError: status === "error",
         }
@@ -36,6 +40,8 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
 
     return combined
   }, [status, validators, validatorsYieldData])
+
+  // console.log("combinedValidatorsData", { validators, validatorsYieldData, combinedValidatorsData })
 
   return {
     combinedValidatorsData,

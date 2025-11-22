@@ -64,7 +64,7 @@ export const BittensorSubnetOption = ({
         </div>
 
         <div className="text-body-secondary flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
-          <div className="truncate">
+          <div className="flex grow items-center gap-2 overflow-hidden">
             <TokensAndFiat
               tokenId={taoTokenId}
               planck={option.total_tao}
@@ -72,7 +72,7 @@ export const BittensorSubnetOption = ({
               noCountUp
               noTooltip
             />
-            {" - "}
+            <div className="bg-body-disabled inline-block size-2 rounded-full" />
             <TokensAndFiat
               tokenId={tokenId}
               planck={option.total_alpha}

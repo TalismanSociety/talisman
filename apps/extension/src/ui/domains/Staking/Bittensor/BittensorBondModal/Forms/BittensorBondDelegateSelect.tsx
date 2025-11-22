@@ -1,9 +1,15 @@
+import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
@@ -16,79 +22,71 @@ import { BittensorModalLayout } from "../BittensorModalLayout"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 
-export type SortMethod = {
-  label: string
-  value: SortValue
-  isDisabled?: boolean
-}
-
-const sortMethods: SortMethod[] = [
-  { label: "Total Staked", value: "totalStaked" },
-  { label: "Name", value: "name" },
-  { label: "N° of Stakers", value: "totalStakers" },
-  { label: "Rewards", value: "apr" },
-]
+const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionType[] =>
+  data
+    .concat()
+    .sort((a, b) => {
+      if (sortBy === "name") {
+        // Sort by name in ascending order (A to Z)
+        if (a.name < b.name) return -1
+        if (a.name > b.name) return 1
+      } else {
+        // Sort other fields in descending order
+        if (a[sortBy] > b[sortBy]) return -1
+        if (a[sortBy] < b[sortBy]) return 1
+      }
+      return 0 // Keep them in the same place if equal
+    })
+    // Validators with yield data first (others dont validate this subnet)
+    .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1))
 
 export const BittensorBondDelegateSelect = () => {
-  const [search, setSearch] = useState<string>("")
-
   const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
 
-  const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[]>([])
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
+  const [selectedSortMethod, setSelectedSortMethod] = useState<SortValue>("totalStaked")
+  const [search, setSearch] = useState<string>("")
 
   const { t } = useTranslation()
 
   const {
     combinedValidatorsData,
-    isLoading: combinedValidatorsDataLoading,
+    //   isLoading: combinedValidatorsDataLoading,
     isError,
   } = useCombinedBittensorValidatorsData(netuid)
 
-  const isLoading = useMemo(
-    () => combinedValidatorsDataLoading && !sortedDelegators.length,
-    [combinedValidatorsDataLoading, sortedDelegators.length],
+  const [sortedDelegators, setSortedDelegators] = useState<BondOptionType[] | undefined>(() =>
+    combinedValidatorsData.length
+      ? sortBondOptions(combinedValidatorsData, selectedSortMethod)
+      : undefined,
   )
 
-  const sortBondOptions = useCallback(
-    (data: BondOptionType[], sortBy: SortValue): BondOptionType[] => {
-      const sorted = data.sort((a, b) => {
-        if (sortBy === "name") {
-          // Sort by name in ascending order (A to Z)
-          if (a.name < b.name) return -1
-          if (a.name > b.name) return 1
-        } else {
-          // Sort other fields in descending order
-          if (a[sortBy] > b[sortBy]) return -1
-          if (a[sortBy] < b[sortBy]) return 1
-        }
-        return 0 // Keep them in the same place if equal
-      })
+  const displayedValidators = useMemo(() => {
+    if (!sortedDelegators) return undefined
 
-      return sorted
-    },
-    [],
-  )
+    if (!search) return sortedDelegators
+
+    const lowerSearch = search.toLowerCase()
+    return sortedDelegators.filter(
+      (delegate) =>
+        delegate.name.toLowerCase().includes(lowerSearch) ||
+        delegate.hotkey.toLowerCase().includes(lowerSearch),
+    )
+  }, [sortedDelegators, search])
+
+  // const isLoading = useMemo(
+  //   () => combinedValidatorsDataLoading && !sortedDelegators.length,
+  //   [combinedValidatorsDataLoading, sortedDelegators.length],
+  // )
 
   useEffect(() => {
-    if (
-      combinedValidatorsData.length &&
-      !combinedValidatorsDataLoading &&
-      !sortedDelegators.length
-    ) {
-      setSortedDelegators(sortBondOptions(combinedValidatorsData, sortMethods[0].value))
-    }
-  }, [
-    combinedValidatorsData,
-    combinedValidatorsDataLoading,
-    sortBondOptions,
-    sortedDelegators.length,
-  ])
+    if (combinedValidatorsData.length)
+      setSortedDelegators(sortBondOptions(combinedValidatorsData, selectedSortMethod))
+  }, [combinedValidatorsData, selectedSortMethod])
 
-  const handleSortMethodChange = (method: SortMethod) => {
+  const handleSortMethodChange = (method: SortValue) => {
     setSearch("")
     setSelectedSortMethod(method)
-    setSortedDelegators(sortBondOptions(combinedValidatorsData, method.value))
+    setSortedDelegators(sortBondOptions(combinedValidatorsData, method))
   }
 
   const handleSearchClear = useCallback(() => {
@@ -96,10 +94,10 @@ export const BittensorBondDelegateSelect = () => {
     // restore selected sort method
     const filteredValidators: BondOptionType[] = sortBondOptions(
       combinedValidatorsData,
-      selectedSortMethod.value,
+      selectedSortMethod,
     )
     setSortedDelegators(filteredValidators)
-  }, [combinedValidatorsData, selectedSortMethod.value, sortBondOptions])
+  }, [combinedValidatorsData, selectedSortMethod])
 
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -128,6 +126,12 @@ export const BittensorBondDelegateSelect = () => {
     [setHotkey, setStep],
   )
 
+  // useEffect(() => {
+  //   console.log("BittensorBondDelegateSelect displayedValidators", displayedValidators?.length, {
+  //     displayedValidators,
+  //   })
+  // }, [displayedValidators])
+
   return (
     <BittensorModalLayout
       header={
@@ -137,22 +141,26 @@ export const BittensorBondDelegateSelect = () => {
           withClose
         />
       }
-      contentClassName="p-12 pt-0"
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
-        <SearchInputControlled
-          containerClassName={classNames(
-            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4 shrink-0",
-            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
-            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-          )}
-          placeholder={t("Search for delegator name or hotkey")}
-          value={search}
-          onChange={handleSearchChange}
-          onClear={handleSearchClear}
-          isDisabled={isLoading || combinedValidatorsData.length === 0}
-        />
-        <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
+        <div className="flex items-center gap-4 px-12">
+          <div className="grow">
+            <SearchInputControlled
+              containerClassName={classNames(
+                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
+                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+              )}
+              placeholder={t("Search validators")}
+              value={search}
+              onChange={handleSearchChange}
+              onClear={handleSearchClear}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+            />
+          </div>
+          <SortMethodButton method={selectedSortMethod} onChange={handleSortMethodChange} />
+        </div>
+        {/* <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
           {sortMethods.map((method) => (
             <button
               key={method.label}
@@ -168,20 +176,23 @@ export const BittensorBondDelegateSelect = () => {
               {t(method.label)}
             </button>
           ))}
-        </ScrollContainerDraggableHorizontal>
-        <div className="grow space-y-[8px]">
-          <div className="text-body-disabled flex justify-between px-[10px] text-sm">
-            <div>{t("Name")}</div>
-            <div>{t("Est. Rewards")}</div>
+        </ScrollContainerDraggableHorizontal> */}
+        <div className="flex w-full grow flex-col gap-2 overflow-hidden">
+          <div className="text-body-disabled flex justify-between px-12 text-sm">
+            <div>{t("Validator")}</div>
+            <div>{t("Rank / 30 days APY")}</div>
           </div>
-          <ScrollContainer className="h-[40rem]" innerClassName="space-y-[0.8rem]">
-            {isLoading && sortedDelegators.length === 0
-              ? Array(6)
+          <ScrollContainer
+            className="w-full grow"
+            innerClassName="flex flex-col w-full bg-black-secondary"
+          >
+            {!displayedValidators
+              ? Array(10)
                   .fill(null)
                   .map((_, i) => {
-                    return <BittensorBondOptionSkeleton key={i} isRecommended={i === 0} />
+                    return <BittensorBondOptionSkeleton key={i} />
                   })
-              : sortedDelegators.map((option) => (
+              : displayedValidators.map((option) => (
                   <BittensorBondOption
                     key={option.hotkey}
                     option={option}
@@ -199,5 +210,51 @@ export const BittensorBondDelegateSelect = () => {
         </div>
       </div>
     </BittensorModalLayout>
+  )
+}
+
+const SortMethodButton: FC<{
+  method: SortValue
+  onChange: (method: SortValue) => void
+}> = ({ method, onChange }) => {
+  const { t } = useTranslation()
+
+  const sortMethods = useMemo<{ label: string; value: SortValue }[]>(
+    () => [
+      { label: t("Total Staked"), value: "totalStaked" },
+      { label: t("Name"), value: "name" },
+      { label: t("N° of Stakers"), value: "totalStakers" },
+      { label: t("30 days APY"), value: "apr" },
+    ],
+    [t],
+  )
+
+  const selected = useMemo(
+    () => sortMethods.find((sortMethod) => sortMethod.value === method),
+    [method, sortMethods],
+  )
+
+  return (
+    <ContextMenu placement="bottom-end">
+      <ContextMenuTrigger asChild>
+        <button
+          type="button"
+          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-2 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+        >
+          <div>{selected?.label}</div>
+          <ToolbarSortIcon className="size-10" />
+        </button>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        {sortMethods.map((sortMethod) => (
+          <ContextMenuOptionItem
+            key={sortMethod.value}
+            label={t(sortMethod.label)}
+            selected={sortMethod.value === method}
+            onClick={() => onChange(sortMethod.value)}
+          />
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }
