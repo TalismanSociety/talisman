@@ -1,80 +1,94 @@
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
-import { classNames, planckToTokens } from "@talismn/util"
+import { subDTaoTokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import { useMemo } from "react"
 
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { AssetPercentageChange } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/AssetPercentageChange"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useToken } from "@ui/state"
 
+import { BittensorAlphaPrice } from "./BittensorAlphaPrice"
+
 type BittensorSubnetOptionProps = {
+  networkId: string
   option: SubnetData
   selectedNetuid: number | null | undefined
-  tokenId: string
+  taoTokenId: string
   isSubnetsLoading: boolean
   isSubnetsError: boolean
   handleSelectSubnet: (subnetNetuid: number) => void
 }
 
 export const BittensorSubnetOption = ({
+  networkId,
   option,
   selectedNetuid,
-  tokenId,
-  isSubnetsLoading,
+  taoTokenId,
+  // isSubnetsLoading,
   isSubnetsError,
   handleSelectSubnet,
 }: BittensorSubnetOptionProps) => {
+  const tokenId = subDTaoTokenId(networkId, option.netuid!)
   const token = useToken(tokenId)
   const isSelected = option.netuid === selectedNetuid
 
-  const formattedEmission =
-    (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) + "%"
+  const formattedEmission = useMemo(
+    () =>
+      (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) + "%",
+    [option?.emission],
+  )
+
   const emission = isSubnetsError ? "--" : formattedEmission
+
+  if (token?.type !== "substrate-dtao") return null
 
   return (
     <button
+      type="button"
       key={option.netuid}
       onClick={() => handleSelectSubnet(option.netuid!)}
       className={classNames(
-        "bg-black-tertiary text-body-secondary border-black-tertiary flex w-full items-stretch rounded-sm border-[1px] p-[12px] text-xs",
-        isSelected && "border-grey-400 text-grey-300",
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        isSelected && "bg-grey-800 text-body-secondary",
       )}
     >
-      <div className="flex w-full flex-col gap-[10px]">
-        <div className="flex w-full justify-between">
-          <div
-            className={classNames(
-              "max-w-[22rem] self-end truncate text-sm font-bold",
-              isSelected && "text-white",
-            )}
-          >
-            {option.netuid} | {option.subnet_name} {option.symbol}
+      <TokenLogo tokenId={tokenId} className="size-16 shrink-0" />
+      <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden text-sm">
+        <div className="flex w-full items-center justify-between gap-8 overflow-hidden text-white">
+          <div className="truncate">
+            {token.netuid} | {token.subnetName} {token.symbol}
           </div>
-          <AssetPercentageChange priceChange={option.price_change_1_day} />
+          <div className="shrink-0">{emission}</div>
         </div>
-        <div className="flex w-full justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-4">
-              <Tokens
-                amount={planckToTokens(option.total_tao, token?.decimals ?? token?.decimals)}
-                symbol={token?.symbol}
-              />
-            </div>
-            <div className="bg-body-disabled inline-block size-2 rounded-full" />
 
-            <Tokens
-              amount={planckToTokens(option.total_alpha, token?.decimals ?? token?.decimals)}
-              symbol={option.symbol}
+        <div className="text-body-secondary flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
+          <div className="truncate">
+            <TokensAndFiat
+              tokenId={taoTokenId}
+              planck={option.total_tao}
+              noFiat
+              noCountUp
+              noTooltip
+            />
+            {" - "}
+            <TokensAndFiat
+              tokenId={tokenId}
+              planck={option.total_alpha}
+              noFiat
+              noCountUp
+              noTooltip
+            />
+          </div>
+          <div className="shrink-0">
+            <BittensorAlphaPrice
+              taoTokenId={taoTokenId}
+              price={option.price}
+              priceChange24h={option.price_change_1_day}
             />
           </div>
         </div>
-      </div>
-
-      <div className="flex items-center justify-center pl-[0.75rem] text-sm">
-        {isSubnetsLoading ? (
-          <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[3.5rem] animate-pulse" />
-        ) : (
-          emission
-        )}
       </div>
     </button>
   )
@@ -82,13 +96,26 @@ export const BittensorSubnetOption = ({
 
 export const BittensorSubnetOptionSkeleton = () => {
   return (
-    <div className="bg-black-tertiary border-black-tertiary flex h-[6.7rem] w-full flex-col gap-[10px] rounded-sm border-[1px] p-[12px] text-xs">
-      <div className="flex w-full justify-between">
-        <div className="flex items-center" />
-        <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[15rem] animate-pulse" />
-        <div className="bg-grey-700 rounded-xs ml-auto h-[1.6rem] w-[3rem] animate-pulse" />
+    <div className="flex h-[5.8rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
+      <div className="bg-grey-750 size-16 animate-pulse rounded-full"></div>
+      <div className="grow space-y-[5px]">
+        <div className={"text-body flex w-full justify-between text-sm font-bold"}>
+          <div>
+            <div className="bg-grey-750 rounded-xs inline-block h-7 w-56 animate-pulse"></div>
+          </div>
+          <div>
+            <div className="bg-grey-750 rounded-xs inline-block h-7 w-20 animate-pulse"></div>
+          </div>
+        </div>
+        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
+          <div>
+            <div className="bg-grey-800 rounded-xs inline-block h-6 w-40 animate-pulse"></div>
+          </div>
+          <div className="grow text-right">
+            <div className="bg-grey-800 rounded-xs inline-block h-6 w-36 animate-pulse"></div>
+          </div>
+        </div>
       </div>
-      <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[15rem] animate-pulse" />
     </div>
   )
 }

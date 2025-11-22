@@ -6,6 +6,7 @@ type ScrollContainerDraggableHorizontalProps = {
   className?: string
 }
 
+/** @deprecated avoid using horizontal containers on desktop apps, not everyone has a trackpad */
 export const ScrollContainerDraggableHorizontal = ({
   children,
   className,

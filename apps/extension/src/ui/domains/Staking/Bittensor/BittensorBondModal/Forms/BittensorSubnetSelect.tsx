@@ -1,9 +1,16 @@
+import { subNativeTokenId } from "@talismn/chaindata-provider"
+import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuOptionItem,
+  ContextMenuTrigger,
+} from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { ScrollContainerDraggableHorizontal } from "@talisman/components/ScrollContainerDraggableHorizontal"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
@@ -16,27 +23,37 @@ import { BittensorSubnetOption, BittensorSubnetOptionSkeleton } from "../Bittens
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 
-export type SortMethod = {
-  label: string
-  value: SortValue
-  isDisabled?: boolean
+const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] => {
+  const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
+  const sorted = data.sort((a, b) => {
+    if (descendingFilters.includes(sortBy)) {
+      // Sort other fields in descending order
+      if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
+      if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
+
+      return 0 // Keep them in the same place if equal
+    } else {
+      // Sort other fields in ascending order
+      if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return -1
+      if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return 1
+
+      return 0 // Keep them in the same place if equal
+    }
+  })
+
+  return sorted
 }
 
-const sortMethods: SortMethod[] = [
-  { label: "Alpha in Pool", value: "total_alpha" },
-  { label: "TAO in Pool", value: "total_tao" },
-  { label: "UID", value: "netuid" },
-  { label: "Emission", value: "emission" },
-  // { label: "Price", value: "price" },
-]
-
 export const BittensorSubnetSelect = () => {
-  const [search, setSearch] = useState<string>("")
-  const [selectedSortMethod, setSelectedSortMethod] = useState<SortMethod>(sortMethods[0])
-  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[]>([])
-  const { setStep, setNetuid, netuid } = useBittensorBondWizard()
-
   const { t } = useTranslation()
+  const [search, setSearch] = useState<string>("")
+  const [selectedSortMethod, setSelectedSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
+  const { setStep, setNetuid, netuid, networkId } = useBittensorBondWizard()
+
+  const taoTokenId = useMemo(
+    () => (networkId ? subNativeTokenId(networkId) : BITTENSOR_TOKEN_ID),
+    [networkId],
+  )
 
   const { subnetData, isError, isLoading, isSubnetsError, isSubnetsLoading } =
     useCombinedSubnetData()
@@ -47,47 +64,31 @@ export const BittensorSubnetSelect = () => {
     [subnetData],
   )
 
-  const sortSubnetOptions = useCallback((data: SubnetData[], sortBy: SortValue): SubnetData[] => {
-    const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
-    const sorted = data.sort((a, b) => {
-      if (descendingFilters.includes(sortBy)) {
-        // Sort other fields in descending order
-        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return -1
-        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return 1
-
-        return 0 // Keep them in the same place if equal
-      } else {
-        // Sort other fields in ascending order
-        if (Number(a[sortBy] || 0) < Number(b[sortBy] || 0)) return -1
-        if (Number(a[sortBy] || 0) > Number(b[sortBy] || 0)) return 1
-
-        return 0 // Keep them in the same place if equal
-      }
-    })
-
-    return sorted
-  }, [])
+  const [sortedOrFilteredSubnets, setSortedOrFilteredSubnets] = useState<SubnetData[] | undefined>(
+    // check if data is available on first render, otherwise show loading state
+    () => (subnets.length ? sortSubnetOptions(subnets, selectedSortMethod) : undefined),
+  )
 
   useEffect(() => {
-    const defaultFilteredSubnets: SubnetData[] = sortSubnetOptions(subnets, sortMethods[0].value)
+    if (!subnets.length) return
+    const defaultFilteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod)
     setSortedOrFilteredSubnets(defaultFilteredSubnets)
-  }, [sortSubnetOptions, subnets])
+  }, [selectedSortMethod, subnets])
 
   const handleSortMethodChange = useCallback(
-    (method: SortMethod) => {
-      setSearch("") // clear search
+    (method: SortValue) => {
       setSelectedSortMethod(method)
-      setSortedOrFilteredSubnets(sortSubnetOptions(subnets, method.value))
+      setSortedOrFilteredSubnets(sortSubnetOptions(subnets, method))
     },
-    [sortSubnetOptions, subnets],
+    [subnets],
   )
 
   const handleSearchClear = useCallback(() => {
     setSearch("")
     // restore selected sort method
-    const filteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod.value)
+    const filteredSubnets: SubnetData[] = sortSubnetOptions(subnets, selectedSortMethod)
     setSortedOrFilteredSubnets(filteredSubnets)
-  }, [selectedSortMethod.value, sortSubnetOptions, subnets])
+  }, [selectedSortMethod, subnets])
 
   const handleSearchChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -125,46 +126,39 @@ export const BittensorSubnetSelect = () => {
           withClose
         />
       }
-      contentClassName="p-12 pt-0"
     >
-      <div className="flex h-full flex-col gap-8">
-        <SearchInputControlled
-          containerClassName={classNames(
-            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
-            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
-            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-          )}
-          placeholder={t("Search for subnet name or number")}
-          value={search}
-          onChange={handleSearchChange}
-          onClear={handleSearchClear}
-          isDisabled={isLoading || subnets.length === 0}
-        />
-        <ScrollContainerDraggableHorizontal className="flex justify-between gap-2">
-          {sortMethods.map((method) => (
-            <button
-              key={method.label}
-              onClick={() => !isLoading && !method.isDisabled && handleSortMethodChange(method)}
-              className={classNames(
-                "text-nowrap rounded-[12px] px-[8px] py-[6px] text-sm",
-                method.value === selectedSortMethod.value && !search
-                  ? "bg-primary-500 text-black"
-                  : "bg-black-tertiary text-grey-400",
-                (isLoading || method.isDisabled) && "cursor-not-allowed",
+      <div className="flex size-full flex-col gap-8 overflow-hidden">
+        <div className="flex items-center gap-4 px-12">
+          <div className="grow">
+            <SearchInputControlled
+              containerClassName={classNames(
+                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
+                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
               )}
-            >
-              {t(method.label)}
-            </button>
-          ))}
-        </ScrollContainerDraggableHorizontal>
-        <div className="grow space-y-[8px] overflow-hidden">
-          <div className="text-body-disabled flex justify-between px-[10px] text-sm">
-            <div>{t("Name")}</div>
-            <div>{t("Emission")}</div>
+              placeholder={t("Search subnets")}
+              value={search}
+              onChange={handleSearchChange}
+              onClear={handleSearchClear}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
+            />
           </div>
-          <ScrollContainer className="h-[40rem]" innerClassName="space-y-[0.8rem]">
-            {isLoading && sortedOrFilteredSubnets.length === 0
-              ? Array(6)
+          <SortMethodButton method={selectedSortMethod} onChange={handleSortMethodChange} />
+        </div>
+
+        <div className="flex w-full grow flex-col gap-2 overflow-hidden">
+          <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
+            <div>{t("Name / Pool")}</div>
+            <div>{t("Emission / Alpha Price")}</div>
+          </div>
+          <ScrollContainer
+            className="w-full grow"
+            innerClassName="flex flex-col w-full bg-black-secondary"
+          >
+            {!networkId ||
+            !sortedOrFilteredSubnets ||
+            (isLoading && sortedOrFilteredSubnets.length === 0)
+              ? Array(10)
                   .fill(null)
                   .map((_, i) => {
                     return <BittensorSubnetOptionSkeleton key={i} />
@@ -174,7 +168,8 @@ export const BittensorSubnetSelect = () => {
                     key={option.netuid!}
                     option={option}
                     selectedNetuid={netuid}
-                    tokenId={BITTENSOR_TOKEN_ID}
+                    networkId={networkId}
+                    taoTokenId={taoTokenId}
                     handleSelectSubnet={handleSubmit}
                     isSubnetsLoading={isSubnetsLoading}
                     isSubnetsError={isSubnetsError}
@@ -189,5 +184,51 @@ export const BittensorSubnetSelect = () => {
         </div>
       </div>
     </BittensorModalLayout>
+  )
+}
+
+const SortMethodButton: FC<{
+  method: SortValue
+  onChange: (method: SortValue) => void
+}> = ({ method, onChange }) => {
+  const { t } = useTranslation()
+
+  const sortMethods = useMemo<{ label: string; value: SortValue }[]>(
+    () => [
+      { label: t("Alpha in Pool"), value: "total_alpha" },
+      { label: t("TAO in Pool"), value: "total_tao" },
+      { label: t("UID"), value: "netuid" },
+      { label: t("Emission"), value: "emission" },
+    ],
+    [t],
+  )
+
+  const selected = useMemo(
+    () => sortMethods.find((sortMethod) => sortMethod.value === method),
+    [method, sortMethods],
+  )
+
+  return (
+    <ContextMenu placement="bottom-end">
+      <ContextMenuTrigger asChild>
+        <button
+          type="button"
+          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-2 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+        >
+          <div>{selected?.label}</div>
+          <ToolbarSortIcon className="size-10" />
+        </button>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        {sortMethods.map((sortMethod) => (
+          <ContextMenuOptionItem
+            key={sortMethod.value}
+            label={t(sortMethod.label)}
+            selected={sortMethod.value === method}
+            onClick={() => onChange(sortMethod.value)}
+          />
+        ))}
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

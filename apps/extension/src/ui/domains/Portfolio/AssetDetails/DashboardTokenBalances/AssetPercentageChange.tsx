@@ -1,31 +1,42 @@
-import { classNames } from "@talismn/util"
-import { useMemo } from "react"
+// import { classNames } from "@talismn/util"
+// import { useMemo } from "react"
 
-type AssetPercentageChangeProps = {
-  priceChange: string | null | undefined
-  isError?: boolean
-  isLoading?: boolean
-}
+// type AssetPercentageChangeProps = {
+//   priceChange: string | null | undefined
+//   isError?: boolean
+//   isLoading?: boolean
+//   className?: string
+// }
 
-export const AssetPercentageChange = ({
-  priceChange,
-  isLoading,
-  isError,
-}: AssetPercentageChangeProps) => {
-  const num = parseFloat(priceChange || "0")
+// export const AssetPercentageChange = ({
+//   priceChange,
+//   isLoading,
+//   isError,
+//   className,
+// }: AssetPercentageChangeProps) => {
+//   const num = parseFloat(priceChange || "0")
 
-  const formattedValue = useMemo(() => {
-    const truncatedValue = num.toFixed(1)
-    return num > 0 ? `+${truncatedValue}` : truncatedValue
-  }, [num])
+//   const formattedValue = useMemo(() => {
+//     const truncatedValue = num.toFixed(1)
+//     return num > 0 ? `+${truncatedValue}` : truncatedValue
+//   }, [num])
 
-  if (isError) return null
+//   if (isError) return null
 
-  if (isLoading || !priceChange) {
-    return <div className="bg-grey-700 rounded-xs h-[1.6rem] w-[6rem] animate-pulse" />
-  }
+//   if (isLoading || !priceChange) {
+//     return (
+//       <div
+//         className={classNames(
+//           "bg-grey-700 rounded-xs h-[1.6rem] w-[6rem] animate-pulse",
+//           className,
+//         )}
+//       />
+//     )
+//   }
 
-  return (
-    <div className={classNames(num < 0 ? "text-red-500" : "text-green-500")}>{formattedValue}%</div>
-  )
-}
+//   return (
+//     <div className={classNames(num < 0 ? "text-red-500" : "text-green-500", className)}>
+//       {formattedValue}%
+//     </div>
+//   )
+// }

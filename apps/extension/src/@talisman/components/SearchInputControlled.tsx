@@ -1,6 +1,7 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useCallback, useRef } from "react"
+import { useEffectOnce } from "react-use"
 import { FormFieldInputText, IconButton } from "talisman-ui"
 
 type SearchInputControlledProps = {
@@ -9,6 +10,7 @@ type SearchInputControlledProps = {
   placeholder?: string
   isDisabled?: boolean
   value?: string
+  autoFocus?: boolean
   onChange: React.ChangeEventHandler<HTMLInputElement>
   onClear: () => void
 }
@@ -19,6 +21,7 @@ export const SearchInputControlled = ({
   value,
   placeholder,
   isDisabled,
+  autoFocus,
   onChange,
   onClear,
 }: SearchInputControlledProps) => {
@@ -30,6 +33,12 @@ export const SearchInputControlled = ({
     ref.current.value = ""
     ref.current.blur()
   }, [onClear])
+
+  useEffectOnce(() => {
+    if (autoFocus) {
+      ref.current?.focus()
+    }
+  })
 
   return (
     <FormFieldInputText
