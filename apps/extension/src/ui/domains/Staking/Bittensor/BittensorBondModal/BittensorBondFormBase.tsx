@@ -438,12 +438,14 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
           <div className="text-body-secondary flex items-center gap-2 truncate">
-            <TokensAndFiat
-              planck={amountOut}
-              tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
-              noCountUp
-              tokensClassName="text-body"
-            />
+            {!!amountOut && (
+              <TokensAndFiat
+                planck={amountOut}
+                tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
+                noCountUp
+                tokensClassName="text-body"
+              />
+            )}
           </div>
         </div>
         {!isSubnetUnbond && (
