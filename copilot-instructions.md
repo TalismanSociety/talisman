@@ -39,6 +39,7 @@
 - Keep modules composable and documented (see `BalancesModules.md` for expectations on APIs, storage, hydration).
 - Encourage `lodash-es` helpers when they keep code clear/concise.
 - Ensure opt-in analytics/telemetry flows stay optional and clearly communicated (see `AnalyticsOptInInfo.tsx`).
+- As we are using React 18, guard against unnecessary re-renders: wrap expensive computations in `useMemo`, stable callbacks in `useCallback`, and memoize derived props passed to child components when identity matters (without overusing them).
 
 ## Performance & Footprint
 
