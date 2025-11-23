@@ -46,15 +46,11 @@ export const useBittensorCurrentHotkey = ({
       if (fullMatch) return fullMatch.hotkey
     }
 
-    if (address) {
-      const addressMatch = dtaoBalances.find((bal) => bal.address === address)
-      if (addressMatch) return addressMatch.hotkey
-    }
     if (!address) {
       const netuidMatch = dtaoBalances.find((bal) => bal.netuid === netuid)
       if (netuidMatch) return netuidMatch.hotkey
     }
 
-    return dtaoBalances[0]?.hotkey
+    return undefined
   }, [balances, networkId, address, netuid])
 }

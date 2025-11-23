@@ -1,26 +1,19 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
-import axios from "axios"
-import { TAOSTATS_BASE_PATH } from "extension-shared"
 import { useEffect, useMemo } from "react"
 
+import { fetchTaostats } from "./fetchTaostats"
 import { Subnet, SubnetsData } from "./types"
-
-const fetchSubnets = async ({ pageParam = 1 }) => {
-  const { data } = await axios.get<SubnetsData>(`${TAOSTATS_BASE_PATH}/api/subnet/latest/v1`, {
-    params: { page: pageParam },
-    method: "GET",
-    headers: {
-      "Authorization": TAOSTATS_BASE_PATH,
-      "Content-Type": "application/json",
-    },
-  })
-  return data
-}
 
 export const useGetInfiniteSubnets = () => {
   return useInfiniteQuery({
     queryKey: ["infiniteSubnets"],
-    queryFn: fetchSubnets,
+    queryFn: ({ pageParam = 1, signal }) =>
+      fetchTaostats<SubnetsData>({
+        path: "/api/subnet/latest/v1",
+        params: { page: pageParam },
+        signal,
+        includeAuthHeader: true,
+      }),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.pagination.next_page ?? undefined,
     getPreviousPageParam: (firstPage) => firstPage.pagination.prev_page ?? undefined,

@@ -15,7 +15,11 @@ export const BittensorSubnetBondForm = () => {
         <div className="whitespace-nowrap">{t("Select Subnet")}</div>
         <div className="text-body truncate">
           <BittensorSelectButton
-            label={dtaoToken?.subnetName ?? t("Subnet")}
+            label={
+              dtaoToken?.netuid
+                ? (dtaoToken.subnetName ?? t(`Subnet {{netuid}}`, dtaoToken))
+                : t("Subnet")
+            }
             nextStep="select-subnet"
           />
         </div>
