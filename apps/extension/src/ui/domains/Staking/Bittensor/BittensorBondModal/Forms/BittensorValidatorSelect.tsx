@@ -18,10 +18,14 @@ import {
   ContextMenuContent,
   ContextMenuOptionItem,
   ContextMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "talisman-ui"
 
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state"
@@ -123,7 +127,7 @@ export const BittensorValidatorSelect = () => {
           <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="text-body-disabled flex justify-between px-12 text-sm">
+          <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
             <div>{t("Validator")}</div>
             <div>{t("Rank / 30 days APY")}</div>
           </div>
@@ -303,47 +307,61 @@ const ValidatorRow: FC<{
       key={option.hotkey}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 flex-col justify-center gap-3 overflow-hidden px-12 text-left",
+        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800 text-body-secondary",
       )}
     >
-      <div className="text-body flex w-full justify-between text-sm">
-        <div className={cn(option.isRecommended && "text-primary font-bold")}>
-          {option.name || <Address startCharCount={8} endCharCount={8} address={option.hotkey} />}
-        </div>
-        <div className={cn(isLoading && "animate-pulse")}>#{option.rank}</div>
-      </div>
-      <div
-        className={cn(
-          "text-body-secondary flex w-full justify-between text-xs",
-          isLoading && "animate-pulse",
-        )}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <LockIcon />
-            <Tokens
-              amount={planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}
-              symbol={tao?.symbol}
-              noCountUp
-            />
+      <AccountIcon address={option.hotkey} className="size-16 shrink-0 text-xl" />
+      <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
+        <div className="text-body flex w-full justify-between text-sm">
+          <div className={cn(option.isRecommended && "text-primary font-bold")}>
+            {option.name ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>{option.name}</div>
+                </TooltipTrigger>
+                <TooltipContent>{option.hotkey}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
+            )}
           </div>
-          <div className="bg-body-disabled inline-block size-2 rounded-full" />
-          <div className="flex items-center gap-2">
-            <UserIcon />
-            {option.totalStakers}
-          </div>
-          <div className="bg-body-disabled inline-block size-2 rounded-full" />
-          <div className="flex items-center gap-2">
-            <GlobeIcon />
-            {option.subnets}
+          <div className={cn("text-body-secondary", isLoading && "animate-pulse")}>
+            #{option.rank}
           </div>
         </div>
-        <div>
-          {option.validatorYield?.thirty_day_apy
-            ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
-            : t("N/A")}
+        <div
+          className={cn(
+            "text-body-secondary flex w-full justify-between text-xs",
+            isLoading && "animate-pulse",
+          )}
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <LockIcon />
+              <Tokens
+                amount={planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}
+                symbol={tao?.symbol}
+                noCountUp
+              />
+            </div>
+            <div className="bg-body-disabled inline-block size-2 rounded-full" />
+            <div className="flex items-center gap-2">
+              <UserIcon />
+              {option.totalStakers}
+            </div>
+            <div className="bg-body-disabled inline-block size-2 rounded-full" />
+            <div className="flex items-center gap-2">
+              <GlobeIcon />
+              {option.subnets}
+            </div>
+          </div>
+          <div>
+            {option.validatorYield?.thirty_day_apy
+              ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
+              : t("N/A")}
+          </div>
         </div>
       </div>
     </button>
