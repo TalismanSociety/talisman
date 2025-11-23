@@ -40,6 +40,14 @@
 - Encourage `lodash-es` helpers when they keep code clear/concise.
 - Ensure opt-in analytics/telemetry flows stay optional and clearly communicated (see `AnalyticsOptInInfo.tsx`).
 
+## Performance & Footprint
+
+- Keep the service worker and UI responsive: avoid long synchronous work on the main thread/background; use async pipelines, batching, and RxJS operators like `throttleTime`/`shareReplay` to prevent storms.
+- Reuse existing caches (Dexie, shared stores, token/balance hydration) instead of refetching; prefer incremental queries and pagination for large data sets.
+- Minimize bundle size impact: tree-shake imports, lazy-load heavy UI routes, and avoid introducing large dependencies for small features.
+- Be mindful of connection counts and RPC usage—reuse chain connectors and respect exponential backoff to avoid exhausting browser/chain limits.
+- Watch for memory leaks: unsubscribe RxJS streams, clear timers, and release references to sensitive or large objects when views unmount.
+
 ## Privacy, Security & Data Protection
 
 - **Never log or persist anything that could reveal user identity, portfolio contents, mnemonics, private keys, or passwords.** Diagnostics must be anonymized and minimal.
