@@ -26,7 +26,6 @@ import {
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
 import { ROOT_NETUID } from "../utils/constants"
 import {
   BittensorStakingPosition,
@@ -138,7 +137,6 @@ const useBittensorBondWizardProvider = () => {
     },
     setWizardState,
   ] = useState(() => wizardOpenState$.getValue())
-  const { subnetData } = useCombinedSubnetData(networkId)
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
 
@@ -190,9 +188,6 @@ const useBittensorBondWizardProvider = () => {
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
     [netuid, stakeDirection],
   )
-
-  // currently selected subnet
-  const selectedSubnet = useMemo(() => subnetData?.[netuid || 0] ?? {}, [netuid, subnetData])
 
   const amountTao = useMemo(
     () =>
@@ -522,7 +517,6 @@ const useBittensorBondWizardProvider = () => {
     inputErrorMessage,
     stakeDirection,
     dtaoBalance,
-    selectedSubnet,
     newStakeTotal,
     isSubnetUnbond,
     position,

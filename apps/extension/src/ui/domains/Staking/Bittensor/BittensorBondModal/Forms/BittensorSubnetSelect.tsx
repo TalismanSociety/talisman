@@ -63,8 +63,8 @@ export const BittensorSubnetSelect = () => {
   const { t } = useTranslation()
   const { setStep, setNetuid, netuid, networkId } = useBittensorBondWizard()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
-  const [rawSearch, setSearch] = useState<string>("")
-  const search = useDeferredValue(rawSearch)
+  const [search, setSearch] = useState<string>("")
+  const deferredSearch = useDeferredValue(search)
 
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
@@ -73,13 +73,13 @@ export const BittensorSubnetSelect = () => {
   )
 
   const displayedSubnets = useMemo(() => {
-    const lowerSearch = search.toLowerCase()
+    const lowerSearch = deferredSearch.toLowerCase()
     return sortedSubnets.filter((subnet) => {
       const { netuid, subnet_name, symbol } = subnet
       const subnetName = `${netuid} ${subnet_name} ${symbol}`.toLowerCase()
       return subnetName.includes(lowerSearch)
     })
-  }, [search, sortedSubnets])
+  }, [deferredSearch, sortedSubnets])
 
   const handleSubmit = useCallback(
     (netuid: number) => {
