@@ -26,7 +26,6 @@ import {
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
-import { useCombinedSubnetData } from "../../hooks/bittensor/dTao/useCombinedSubnetData"
 import { ROOT_NETUID } from "../utils/constants"
 import {
   BittensorStakingPosition,
@@ -46,7 +45,7 @@ export type StakeDirection = "bond" | "unbond"
 
 type WizardState = {
   step: WizardStep
-  networkId: DotNetworkId | null
+  networkId: DotNetworkId
   address: Address | null
   hotkey: string | null
   netuid: number | null
@@ -68,7 +67,7 @@ export type BittensorStakingWizardOpenOptions = {
 const DEFAULT_STATE: WizardState = {
   step: "form",
   address: null,
-  networkId: null,
+  networkId: "bittensor",
   hotkey: null,
   netuid: null,
   amountIn: null,
@@ -122,7 +121,6 @@ const useBittensorBondWizardProvider = () => {
   const [hideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
-  const { subnetData } = useCombinedSubnetData()
 
   const [
     {
@@ -146,7 +144,6 @@ const useBittensorBondWizardProvider = () => {
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
   const account = useAccountByAddress(address)
   const nativeToken = useToken(nativeTokenId, "substrate-native")
-
   const feeToken = useFeeToken(nativeToken?.id)
   const tokenRates = useTokenRates(nativeTokenId)
   const existentialDeposit = useExistentialDeposit(nativeToken?.id)
@@ -191,9 +188,6 @@ const useBittensorBondWizardProvider = () => {
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
     [netuid, stakeDirection],
   )
-
-  // currently selected subnet
-  const selectedSubnet = useMemo(() => subnetData?.[netuid || 0] ?? {}, [netuid, subnetData])
 
   const amountTao = useMemo(
     () =>
@@ -523,7 +517,6 @@ const useBittensorBondWizardProvider = () => {
     inputErrorMessage,
     stakeDirection,
     dtaoBalance,
-    selectedSubnet,
     newStakeTotal,
     isSubnetUnbond,
     position,
