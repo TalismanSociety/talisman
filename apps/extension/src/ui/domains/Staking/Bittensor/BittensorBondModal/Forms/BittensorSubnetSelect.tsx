@@ -129,7 +129,7 @@ export const BittensorSubnetSelect = () => {
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
             <div>{t("Name / Pool")}</div>
-            <div>{t("Emission / Alpha Price")}</div>
+            <div>{t("Emissions / Alpha Price")}</div>
           </div>
           <ScrollContainer
             className="w-full grow"
@@ -160,7 +160,7 @@ const SortMethodButton: FC<{
       { label: t("UID"), value: "netuid" },
       { label: t("Alpha in Pool"), value: "total_alpha" },
       { label: t("TAO in Pool"), value: "total_tao" },
-      { label: t("Emission"), value: "emission" },
+      { label: t("Emissions"), value: "emission" },
     ],
     [t],
   )

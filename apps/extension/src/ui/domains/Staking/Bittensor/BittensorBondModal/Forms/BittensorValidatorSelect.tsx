@@ -129,7 +129,7 @@ export const BittensorValidatorSelect = () => {
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
             <div>{t("Validator")}</div>
-            <div>{t("Rank / 30 days APY")}</div>
+            <div>{t("30 days APY")}</div>
           </div>
           <ScrollContainer
             className="w-full grow"
@@ -327,8 +327,10 @@ const ValidatorRow: FC<{
               <Address startCharCount={8} endCharCount={8} address={option.hotkey} />
             )}
           </div>
-          <div className={cn("text-body-secondary", isLoading && "animate-pulse")}>
-            #{option.rank}
+          <div className={cn(isLoading && "animate-pulse")}>
+            {option.validatorYield?.thirty_day_apy
+              ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
+              : t("N/A")}
           </div>
         </div>
         <div
@@ -338,30 +340,54 @@ const ValidatorRow: FC<{
           )}
         >
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <LockIcon />
-              <Tokens
-                amount={planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}
-                symbol={tao?.symbol}
-                noCountUp
-              />
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <LockIcon />
+                  <Tokens
+                    amount={planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}
+                    symbol={tao?.symbol}
+                    noCountUp
+                    noTooltip
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="flex flex-col gap-2">
+                  <div>{t("Total staked in this validator:")}</div>
+                  <div>
+                    {planckToTokens(option.totalStaked.toString(), tao?.decimals ?? 9)}{" "}
+                    {tao?.symbol}
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
             <div className="bg-body-disabled inline-block size-2 rounded-full" />
-            <div className="flex items-center gap-2">
-              <UserIcon />
-              {option.totalStakers}
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <UserIcon />
+                  {option.totalStakers}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("{{count}} nominators", { count: option.totalStakers })}
+              </TooltipContent>
+            </Tooltip>
             <div className="bg-body-disabled inline-block size-2 rounded-full" />
-            <div className="flex items-center gap-2">
-              <GlobeIcon />
-              {option.subnets}
-            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <GlobeIcon />
+                  {option.subnets}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t("Validating {{count}} subnets", { count: option.subnets })}
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <div>
-            {option.validatorYield?.thirty_day_apy
-              ? `${(Number(option.validatorYield?.thirty_day_apy) * 100).toFixed(2)}%`
-              : t("N/A")}
-          </div>
+          <div>{/* save slot for later */}</div>
         </div>
       </div>
     </button>

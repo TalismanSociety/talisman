@@ -190,7 +190,7 @@ export const BittensorSubnetBondReview = () => {
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col gap-2 rounded p-8 py-6">
           <div className="flex items-center justify-between gap-8 text-xs">
             <div className="whitespace-nowrap">{t("Alpha Price")} </div>
-            <div className="text-body flex items-center gap-2">
+            <div className="text-body-secondary flex items-center gap-2">
               <TokensAndFiat
                 planck={swapPrice!}
                 tokenId={nativeToken?.id}
