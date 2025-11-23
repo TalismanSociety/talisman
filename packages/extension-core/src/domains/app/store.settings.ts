@@ -26,6 +26,7 @@ export interface SettingsStoreData {
   developerMode: boolean
   polkadotVaultSignWithProof: boolean
   ledgerTransportType: LedgerTransportType
+  dtaoSlippage?: number
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
