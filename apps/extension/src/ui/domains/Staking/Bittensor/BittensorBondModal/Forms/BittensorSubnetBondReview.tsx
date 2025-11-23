@@ -1,18 +1,16 @@
-import { InfoIcon, SettingsIcon } from "@talismn/icons"
+import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { Tokens } from "@ui/domains/Asset/Tokens"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState, useFeatureFlag } from "@ui/state"
 
-import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
@@ -22,16 +20,12 @@ import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { useGetSubnetFee } from "../../hooks/useGetSubnetFee"
 import {
-  DEFAULT_USER_MAX_SLIPPAGE,
-  DTAO_LOGO,
-  HIGH_SLIPPAGE,
+  HIGH_PRICE_IMPACT,
   TALISMAN_FEE_BITTENSOR,
-  VERY_HIGH_SLIPPAGE,
+  VERY_HIGH_PRICE_IMPACT,
 } from "../../utils/constants"
-import { BittensorDelegatorNameButton } from "../BittensorDelegatorNameButton"
 import { BittensorStakingModalHeader } from "../BittensorModalHeader"
 import { BittensorModalLayout } from "../BittensorModalLayout"
-import { BittensorSelectButton } from "../BittensorSelectButton"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
 
@@ -44,29 +38,26 @@ export const BittensorSubnetBondReview = () => {
   const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
 
   const {
+    networkId,
     nativeToken,
-    amountToStake,
+    dtaoToken,
     account,
     payload,
-    isSlippageValid,
+    amountIn,
     txMetadata,
     hotkey,
     netuid,
-    selectedSubnet,
     feeToken,
     slippageDrawer,
-    warningDrawer,
     slippage,
-    userMaxSlippage,
+    warningDrawer,
     isSubnetUnbond,
     talismanFee,
-    taoToAlphaConversionRate,
-    isDynamicInfoLoading,
-    isDynamicInfoError,
-    expectedAlphaWithSlippage,
+    swapPrice,
+    errorFeeEstimate,
+    amountOut,
     stakeDirection,
-    amountToStakeAlpha,
-    estimatedAmountToStake,
+    priceImpact,
     onSubmitted,
     setStep,
   } = useBittensorBondWizard()
@@ -113,15 +104,10 @@ export const BittensorSubnetBondReview = () => {
     [isSeekTaoDiscountEnabled, totalFeeDiscount],
   )
 
-  const { isLoading } = useCombinedSubnetData()
+  const { isLoading } = useCombinedSubnetData(networkId)
 
   const { open } = slippageDrawer
   const { open: openWarningDrawer } = warningDrawer
-
-  const { subnet_name, symbol } = selectedSubnet
-
-  const selectedSubnetLabel = `SN${netuid} ${subnet_name} ${symbol}`
-  const label = netuid ? selectedSubnetLabel : "Subnet"
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
@@ -150,34 +136,22 @@ export const BittensorSubnetBondReview = () => {
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pb-2">
             <div className="whitespace-nowrap">{t("Amount")} </div>
-            <div className="flex items-center gap-4 overflow-hidden">
-              {isSubnetUnbond ? (
-                <>
-                  <AssetLogo url={DTAO_LOGO} className="shrink-0 text-lg" />
-                  <Tokens
-                    amount={amountToStakeAlpha?.tokens}
-                    symbol={selectedSubnetLabel}
-                    className="text-body truncate"
-                  />
-                </>
-              ) : (
-                <>
-                  <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
-                  <TokensAndFiat
-                    isBalance
-                    tokenId={nativeToken?.id}
-                    planck={amountToStake?.planck}
-                    noCountUp
-                    tokensClassName="text-body"
-                    fiatClassName="text-body-secondary"
-                  />
-                </>
-              )}
+            <div className="overflow-hidden">
+              <TokensAndFiat
+                tokenId={stakeDirection === "bond" ? nativeToken?.id : dtaoToken?.id}
+                planck={amountIn!}
+                noCountUp
+                withLogo
+                className="flex items-center"
+                tokensClassName="text-body"
+                logoClassName="size-12"
+                fiatClassName="text-body-secondary"
+              />
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 pt-2">
             <div className="whitespace-nowrap">{t("Account")} </div>
-            <div className="flex items-center gap-4 overflow-hidden">
+            <div className="overflow-hidden">
               <StakingAccountDisplay address={account.address} chainId={nativeToken?.networkId} />
             </div>
           </div>
@@ -186,14 +160,12 @@ export const BittensorSubnetBondReview = () => {
           </div>
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Subnet")} </div>
-            <div className="text-body truncate">
-              <BittensorSelectButton label={label} isLoading={isLoading} nextStep="select-subnet" />
-            </div>
+            <div className="text-body truncate">{dtaoToken?.name}</div>
           </div>
-          <div className="flex items-center justify-between gap-8 pb-2 text-xs">
+          <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Validator")} </div>
             <div className="text-body truncate">
-              <BittensorDelegatorNameButton hotkey={hotkey} />
+              <BittensorValidatorName hotkey={hotkey} />
             </div>
           </div>
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
@@ -205,60 +177,57 @@ export const BittensorSubnetBondReview = () => {
 
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated amount")}</div>
-            {isSubnetUnbond ? (
-              <Tokens
-                amount={estimatedAmountToStake?.tokens}
-                decimals={nativeToken?.decimals}
-                symbol={nativeToken?.symbol}
-                className="text-body truncate"
-              />
-            ) : (
-              <Tokens
-                amount={expectedAlphaWithSlippage}
-                decimals={nativeToken?.decimals}
-                symbol={`SN${netuid} ${subnet_name} ${symbol}`}
-                className="text-body truncate"
-              />
-            )}
-          </div>
-        </div>
-        <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
-          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-            <div className="whitespace-nowrap">{t("Conversion Rate")} </div>
-            <div className="text-body flex items-center gap-2">
-              <div>1 TAO =</div>
-              <Tokens
-                amount={taoToAlphaConversionRate}
-                decimals={nativeToken?.decimals}
-                symbol={symbol}
+            <div className="overflow-hidden">
+              <TokensAndFiat
+                planck={amountOut}
+                tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
+                noCountUp
+                tokensClassName="text-body"
               />
             </div>
           </div>
-          <div className="flex items-center justify-between gap-8 pt-2 text-xs">
-            <div className="whitespace-nowrap">{t("Slippage")}</div>
+        </div>
+        <div className="bg-grey-900 text-body-secondary flex w-full flex-col gap-2 rounded p-8 py-6">
+          <div className="flex items-center justify-between gap-8 text-xs">
+            <div className="whitespace-nowrap">{t("Alpha Price")} </div>
+            <div className="text-body-secondary flex items-center gap-2">
+              <TokensAndFiat
+                planck={swapPrice!}
+                tokenId={nativeToken?.id}
+                tokensClassName="text-body"
+                noCountUp
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-8 text-xs">
+            <div className="whitespace-nowrap">{t("Price Impact")}</div>
             <div
               className={classNames(
-                "text-body flex items-center gap-2",
-                ((slippage >= HIGH_SLIPPAGE && slippage < VERY_HIGH_SLIPPAGE) ||
-                  !isSlippageValid) &&
-                  "text-orange-500",
-                slippage >= VERY_HIGH_SLIPPAGE && "text-red-500",
+                "text-body",
+                !!priceImpact && priceImpact >= HIGH_PRICE_IMPACT && "text-orange-500",
+                !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500",
               )}
             >
+              {priceImpact?.toFixed(2)}%
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-8 text-xs">
+            <div className="whitespace-nowrap">{t("Slippage Tolerance")} </div>
+            <div className="text-body flex items-center gap-2">
               <button
+                type="button"
                 onClick={open}
                 className={
-                  "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light"
+                  "flex cursor-pointer items-center gap-2 rounded-xl pl-2 text-xs font-light"
                 }
               >
-                <SettingsIcon />
-                <div>{userMaxSlippage !== DEFAULT_USER_MAX_SLIPPAGE ? t("Custom") : t("Auto")}</div>
+                <EditIcon />
+                <div>{slippage.toFixed(2)}%</div>
               </button>
-              <div>{slippage}%</div>
             </div>
           </div>
         </div>
-        <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
+        <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8 py-6">
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Fee")} </div>
             <FeeEstimate />
@@ -302,8 +271,8 @@ export const BittensorSubnetBondReview = () => {
             <StakingFeeEstimate
               plancks={talismanFee}
               tokenId={feeToken?.id}
-              isLoading={isDynamicInfoLoading}
-              error={isDynamicInfoError}
+              isLoading={isLoading}
+              error={errorFeeEstimate}
               tokensClassName={discount > 0 && isSeekTaoDiscountEnabled ? "text-[#D5FF5C]" : ""}
               noCountUp
               noFiat
@@ -324,7 +293,7 @@ export const BittensorSubnetBondReview = () => {
             payload={payload}
             onSubmitted={onSubmitted}
             txMetadata={txMetadata}
-            disabled={isDisabled || !isSlippageValid}
+            disabled={isDisabled}
           />
         ))}
       <BittensorSlippageDrawer />

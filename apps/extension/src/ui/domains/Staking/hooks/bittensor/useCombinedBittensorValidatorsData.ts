@@ -7,7 +7,7 @@ import { useGetInfiniteValidatorsYieldByNetuid } from "./dTao/useGetInfiniteVali
 import { BondOption } from "./types"
 
 export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
-  const { data: validatorsYieldData } = useGetInfiniteValidatorsYieldByNetuid({
+  const { data: validatorsYieldData, isLoading } = useGetInfiniteValidatorsYieldByNetuid({
     netuid: netuid || 0,
   })
 
@@ -29,6 +29,8 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
           totalStakers: validator?.global_nominators ?? 0,
           validatorYield,
           apr: parseFloat(validatorYield?.thirty_day_apy ?? "0"),
+          subnets: validator.active_subnets,
+          rank: validator.rank,
           hasData: !!validator,
           isError: status === "error",
         }
@@ -39,7 +41,7 @@ export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
 
   return {
     combinedValidatorsData,
-    isLoading: status === "loading",
+    isLoading: status === "loading" || isLoading,
     isInfiniteValidatorsError: status === "error",
     isError: status === "error",
   }

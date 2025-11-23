@@ -55,14 +55,14 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
   )
 }
 
-const UNSUPPORTED_REGIONS_DOCS_URL =
-  "https://support.ramp.network/en/articles/433-unsupported-countries-territories-and-us-states-for-buying-and-selling-crypto"
+const DTAO_DOCS_URL =
+  "https://medium.com/we-are-talisman/understanding-the-new-bittensor-dtao-subnet-staking-model-56f37a414151"
 
 const LearnMoreButton: FC<PropsWithChildren> = ({ children }) => (
   <button
     type="button"
     className="inline text-white underline"
-    onClick={() => window.open(UNSUPPORTED_REGIONS_DOCS_URL, "_blank", "noopener noreferrer")}
+    onClick={() => window.open(DTAO_DOCS_URL, "_blank", "noopener noreferrer")}
   >
     {children}
   </button>

@@ -16,7 +16,6 @@ import { useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
 
@@ -30,7 +29,7 @@ import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { SeekGetFeeDiscountsDrawer } from "../../Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
-import { DTAO_LOGO, ROOT_NETUID } from "../utils/constants"
+import { ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
@@ -40,18 +39,12 @@ import { BittensorModalLayout } from "./BittensorModalLayout"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
 
 const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
-  const { t } = useTranslation()
-
   if (!token) return null
 
   return (
     <div className="flex h-16 items-center gap-4 px-4">
       <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
-      <div className="flex items-center gap-2">
-        <div className="text-body text-base">{token.symbol}</div>
-        <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
-        <div className="text-body-secondary text-sm">{t("Delegated Staking")}</div>
-      </div>
+      <div className="text-body text-base">{token.symbol}</div>
     </div>
   )
 }
@@ -79,23 +72,23 @@ const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
 
 const FiatDisplay = () => {
   const currency = useSelectedCurrency()
-  const { tokenRates, amountToStake } = useBittensorBondWizard()
+  const { tokenRates, amountTao } = useBittensorBondWizard()
 
   if (!tokenRates) return null
 
   return (
     <DisplayContainer>
-      <Fiat amount={amountToStake?.fiat(currency) ?? 0} noCountUp />
+      <Fiat amount={amountTao?.fiat(currency) ?? 0} noCountUp />
     </DisplayContainer>
   )
 }
 
 const TokenDisplay = () => {
-  const { nativeToken, stakeDirection, netuid, plancks } = useBittensorBondWizard()
+  const { nativeToken, stakeDirection, netuid, amountIn } = useBittensorBondWizard()
 
   const tokenPlancks = useMemo(
-    () => planckToTokens(String(plancks || 0n), nativeToken?.decimals),
-    [plancks, nativeToken?.decimals],
+    () => planckToTokens(String(amountIn || 0n), nativeToken?.decimals),
+    [amountIn, nativeToken?.decimals],
   )
 
   const symbol = useMemo(() => {
@@ -115,7 +108,7 @@ const TokenDisplay = () => {
 }
 
 const TokenInput = () => {
-  const { nativeToken, amountToStake, amountToStakeAlpha, isSubnetUnbond, setPlancks, netuid } =
+  const { nativeToken, dtaoToken, amountTao, amountAlpha, isSubnetUnbond, setPlancks, netuid } =
     useBittensorBondWizard()
 
   const symbol = useMemo(() => {
@@ -126,8 +119,8 @@ const TokenInput = () => {
   }, [isSubnetUnbond, netuid, nativeToken?.symbol])
 
   const defaultValue = useMemo(
-    () => (isSubnetUnbond ? amountToStakeAlpha?.tokens : (amountToStake?.tokens ?? "")),
-    [amountToStake?.tokens, amountToStakeAlpha?.tokens, isSubnetUnbond],
+    () => (isSubnetUnbond ? (amountAlpha?.tokens ?? "") : (amountTao?.tokens ?? "")),
+    [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond],
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,8 +148,8 @@ const TokenInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!amountToStake) refTokensInput.current?.focus()
-  }, [amountToStake, refTokensInput])
+    if (!amountTao) refTokensInput.current?.focus()
+  }, [amountTao, refTokensInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refTokensInput)
@@ -175,11 +168,7 @@ const TokenInput = () => {
         onChange={handleChange}
       />
       <div className="text-body flex shrink-0 items-center gap-2 text-base font-normal">
-        {isSubnetUnbond ? (
-          <AssetLogo className="text-lg" url={DTAO_LOGO} />
-        ) : (
-          <TokenLogo className="text-lg" tokenId={nativeToken?.id} />
-        )}
+        <TokenLogo className="text-lg" tokenId={isSubnetUnbond ? dtaoToken?.id : nativeToken?.id} />
         <div>{symbol}</div>
       </div>
     </div>
@@ -187,24 +176,23 @@ const TokenInput = () => {
 }
 
 const FiatInput = () => {
-  const {
-    nativeToken,
-    tokenRates,
-    amountToStake,
-    setPlancks,
-    isSubnetUnbond,
-    taoToAlphaConversionRate,
-  } = useBittensorBondWizard()
+  const { nativeToken, tokenRates, amountTao, setPlancks, isSubnetUnbond, swapPrice } =
+    useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
   const defaultValue = useMemo(() => {
-    const val = amountToStake?.fiat(currency) ?? ""
+    const val = amountTao?.fiat(currency) ?? ""
     return val ? String(Number(val.toFixed(2))) : val
-  }, [currency, amountToStake])
+  }, [currency, amountTao])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (nativeToken && tokenRates?.[currency]?.price && e.target.value) {
+      if (
+        nativeToken &&
+        tokenRates?.[currency]?.price &&
+        e.target.value &&
+        typeof swapPrice === "bigint"
+      ) {
         try {
           const fiat = parseFloat(e.target.value)
           let tokens: string = (fiat / tokenRates[currency].price).toFixed(
@@ -213,9 +201,9 @@ const FiatInput = () => {
 
           if (isSubnetUnbond) {
             tokens = String(
-              (Number(tokens) * taoToAlphaConversionRate).toFixed(
-                Math.ceil(nativeToken.decimals / 3),
-              ),
+              (
+                Number(tokens) * Number(planckToTokens(swapPrice.toString(), nativeToken.decimals))
+              ).toFixed(Math.ceil(nativeToken.decimals / 3)),
             )
           }
           const plancks = tokensToPlanck(tokens, nativeToken.decimals)
@@ -228,7 +216,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, isSubnetUnbond, setPlancks, taoToAlphaConversionRate, nativeToken, tokenRates],
+    [nativeToken, tokenRates, currency, swapPrice, setPlancks, isSubnetUnbond],
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -238,8 +226,8 @@ const FiatInput = () => {
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
-    if (!amountToStake) refFiatInput.current?.focus()
-  }, [amountToStake, refFiatInput])
+    if (!amountTao) refFiatInput.current?.focus()
+  }, [amountTao, refFiatInput])
 
   // resize input to keep content centered
   useInputAutoWidth(refFiatInput)
@@ -344,21 +332,18 @@ type BittensorBondFormBaseProps = {
 
 export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBaseProps) => {
   const { t } = useTranslation()
-  const currency = useSelectedCurrency()
   const {
     account,
     accountPicker,
     nativeToken,
+    dtaoToken,
     payload,
     hotkey,
-    selectedSubnet,
     seekDiscountDrawer,
     stakeType,
     stakeDirection,
-    newStakeTotal,
     netuid,
-    expectedTaoWithSlippage,
-    estimatedAmountToStake,
+    amountOut,
     setStep,
     setAddress,
   } = useBittensorBondWizard()
@@ -426,7 +411,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         </div>
       </div>
 
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
+      <div className="bg-grey-900 leading-paragraph flex flex-col gap-2 rounded p-4 text-xs">
         <BondTypeDetails />
         <div
           className={classNames(
@@ -444,22 +429,17 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
             </div>
           </div>
         </div>
-        {isSubnetUnbond && (
-          <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-            <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
-            <div className="text-body flex items-center gap-2 truncate">
-              <Tokens amount={expectedTaoWithSlippage} symbol={nativeToken?.symbol} />
-              <Fiat amount={estimatedAmountToStake?.fiat(currency) ?? 0} noCountUp />
-            </div>
-          </div>
-        )}
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
-          <div className="whitespace-nowrap">{t("New staked total")} </div>
-          <div className="text-body truncate">
-            <Tokens
-              amount={planckToTokens(String(newStakeTotal), nativeToken?.decimals)}
-              symbol={stakeType === "root" ? nativeToken?.symbol : selectedSubnet.symbol}
-            />
+          <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
+          <div className="text-body-secondary flex items-center gap-2 truncate">
+            {!!amountOut && (
+              <TokensAndFiat
+                planck={amountOut}
+                tokenId={isSubnetUnbond ? nativeToken?.id : dtaoToken?.id}
+                noCountUp
+                tokensClassName="text-body"
+              />
+            )}
           </div>
         </div>
         {!isSubnetUnbond && (
@@ -474,7 +454,13 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         )}
       </div>
 
-      <Button primary fullWidth disabled={!payload} onClick={() => setStep("review")}>
+      <Button
+        primary
+        fullWidth
+        className="mt-6"
+        disabled={!payload}
+        onClick={() => setStep("review")}
+      >
         {t("Review")}
       </Button>
 
