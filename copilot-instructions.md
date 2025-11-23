@@ -40,6 +40,8 @@
 - Encourage `lodash-es` helpers when they keep code clear/concise.
 - Ensure opt-in analytics/telemetry flows stay optional and clearly communicated (see `AnalyticsOptInInfo.tsx`).
 - As we are using React 18, guard against unnecessary re-renders: wrap expensive computations in `useMemo`, stable callbacks in `useCallback`, and memoize derived props passed to child components when identity matters (without overusing them).
+- When introducing risky or incremental functionality, gate it behind existing feature-flag/remote-config plumbing (`remoteConfigStore`, `FeatureFlag`) so it can be rolled out gradually or disabled instantly.
+- Respect accessibility/UX guardrails: maintain keyboard/focus flows, provide ARIA labels, keep color contrast high, and ensure responsive layouts across popup, onboarding, and support surfaces.
 
 ## Performance & Footprint
 
@@ -57,6 +59,13 @@
 - Use any necessary technical control to protect users: encryption APIs, browser secure storage, zero-knowledge patterns, permission prompts, rate-limiting, etc.
 - Privacy features must default to **opt-in**, and any data sharing needs explicit informed consent.
 - If an implementation could jeopardize user funds, privacy, or data integrity, stop and redesign; shipping unsafe code is never acceptable.
+- When React components briefly hold mnemonics/secrets, clear state in `useEffect` cleanups or immediately after use, and avoid passing secrets deep into unrelated components.
+
+## Error Handling & Observability
+
+- Bubble actionable errors to users via established patterns (inline messaging, notifications) while keeping sensitive details out of the UI/logs.
+- Use shared logging/telemetry utilities sparingly and only for anonymized diagnostics.
+- Prefer existing retry/backoff helpers (chain connectors, fetch utilities) and avoid tight retry loops that could spam RPC providers.
 
 ## Testing & Verification Checklist
 
