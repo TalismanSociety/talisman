@@ -321,21 +321,13 @@ const useBittensorBondWizardProvider = () => {
     if (stakeDirection === "unbond") {
       return totalStakedPlancks
     }
-    if (!nativeBalance || !existentialDeposit || !feeEstimate || typeof talismanFee !== "bigint")
-      return null
+    if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
     if (existentialDeposit.planck + feeEstimate * 11n > nativeBalance.transferable.planck)
       return null
     const maxRootStake =
       nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
     return maxRootStake
-  }, [
-    stakeDirection,
-    nativeBalance,
-    existentialDeposit,
-    feeEstimate,
-    talismanFee,
-    totalStakedPlancks,
-  ])
+  }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
