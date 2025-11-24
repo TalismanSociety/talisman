@@ -4,8 +4,6 @@ import { isNotNil } from "@talismn/util"
 import { range } from "lodash-es"
 import { Binary } from "polkadot-api"
 
-import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./Bittensor/utils/constants"
-
 export const getStakingErasPerYear = (stakingSapi: ScaleApi, babeSapi: ScaleApi) => {
   const MS_PER_YEAR = 1000n * 60n * 60n * 24n * 365n
   const eraDuration = getStakingEraDurationMs(stakingSapi, babeSapi)
@@ -73,67 +71,6 @@ export const getStakingAPR = async (stakingSapi: ScaleApi, babeSapi: ScaleApi) =
   const apr = Number(bigapr) / Number(RATIO_DIGITS)
 
   return apr
-}
-
-export const getBittensorStakingPayload = async ({
-  sapi,
-  address,
-  hotkey,
-  amount,
-  alphaPriceWithSlippagePlanks,
-  netuid,
-  talismanFee,
-}: {
-  sapi: ScaleApi
-  address: string
-  hotkey: string
-  amount: bigint
-  alphaPriceWithSlippagePlanks: bigint
-  netuid: number
-  talismanFee: bigint
-}) => {
-  if (netuid === 0) {
-    return sapi.getExtrinsicPayload(
-      "Utility",
-      "batch_all",
-      {
-        calls: [
-          sapi.getDecodedCall("SubtensorModule", "add_stake", {
-            hotkey,
-            netuid: ROOT_NETUID,
-            amount_staked: amount,
-          }),
-          sapi.getDecodedCall("System", "remark_with_event", {
-            remark: Binary.fromText("talisman-bittensor"),
-          }),
-        ],
-      },
-      { address },
-    )
-  }
-  return sapi.getExtrinsicPayload(
-    "Utility",
-    "batch_all",
-    {
-      calls: [
-        sapi.getDecodedCall("SubtensorModule", "add_stake_limit", {
-          hotkey,
-          netuid,
-          amount_staked: amount,
-          limit_price: alphaPriceWithSlippagePlanks,
-          allow_partial: false,
-        }),
-        sapi.getDecodedCall("Balances", "transfer_keep_alive", {
-          dest: Enum("Id", TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR),
-          value: talismanFee,
-        }),
-        sapi.getDecodedCall("System", "remark_with_event", {
-          remark: Binary.fromText("talisman-bittensor"),
-        }),
-      ],
-    },
-    { address },
-  )
 }
 
 export const getNomPoolStakingPayload = async (

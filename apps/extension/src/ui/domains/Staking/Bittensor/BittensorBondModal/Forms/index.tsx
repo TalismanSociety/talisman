@@ -1,5 +1,4 @@
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { BittensorBondDelegateSelect } from "./BittensorBondDelegateSelect"
 import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
 import { BittensorClaimSettings } from "./BittensorClaimSettings"
 import { BittensorRootBondForm } from "./BittensorRootBondForm"
@@ -8,6 +7,7 @@ import { BittensorStakingPositionSelect } from "./BittensorStakingPositionSelect
 import { BittensorSubnetBondForm } from "./BittensorSubnetBondForm"
 import { BittensorSubnetBondReview } from "./BittensorSubnetBondReview"
 import { BittensorSubnetSelect } from "./BittensorSubnetSelect"
+import { BittensorValidatorSelect } from "./BittensorValidatorSelect"
 
 export const BittensorBondModalRouter = () => {
   const { step, stakeType } = useBittensorBondWizard()
@@ -16,7 +16,7 @@ export const BittensorBondModalRouter = () => {
     case "form":
       return stakeType === "subnet" ? <BittensorSubnetBondForm /> : <BittensorRootBondForm />
     case "select-delegate":
-      return <BittensorBondDelegateSelect />
+      return <BittensorValidatorSelect />
     case "select-subnet":
       return <BittensorSubnetSelect />
     case "select-position":

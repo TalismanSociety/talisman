@@ -1,25 +1,18 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
-import axios from "axios"
-import { TAOSTATS_BASE_PATH } from "extension-shared"
 
+import { fetchTaostats } from "./fetchTaostats"
 import { SubnetApiResponse } from "./types"
-
-const fetchSubnetPools = async ({ pageParam = 1 }) => {
-  const { data } = await axios.get<SubnetApiResponse>(`${TAOSTATS_BASE_PATH}/api/dtao/pool/v1`, {
-    params: { page: pageParam },
-    method: "GET",
-    headers: {
-      "Authorization": TAOSTATS_BASE_PATH,
-      "Content-Type": "application/json",
-    },
-  })
-  return data
-}
 
 export function useGetInfiniteSubnetPools() {
   return useInfiniteQuery({
     queryKey: ["infiniteSubnetPools"],
-    queryFn: fetchSubnetPools,
+    queryFn: ({ pageParam = 1, signal }) =>
+      fetchTaostats<SubnetApiResponse>({
+        path: "/api/dtao/pool/v1",
+        params: { page: pageParam },
+        signal,
+        includeAuthHeader: true,
+      }),
     initialPageParam: 1,
     placeholderData: {
       pages: [initialData],

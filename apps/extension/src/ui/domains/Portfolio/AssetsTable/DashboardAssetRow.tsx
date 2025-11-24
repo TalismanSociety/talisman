@@ -121,7 +121,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
             <BondPillButton
               balances={balances}
-              ignoreExistingSettings
+              isPortfolio
               className="[>svg]:text-[2rem] text-base"
             />
           </div>

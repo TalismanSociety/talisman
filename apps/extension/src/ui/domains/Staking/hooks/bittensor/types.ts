@@ -56,6 +56,8 @@ export type BondOption = {
   isRecommended?: boolean
   validatorYield?: ValidatorYield
   apr: number
+  subnets: number
+  rank: number
 }
 
 type Address = {
