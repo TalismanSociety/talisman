@@ -58,8 +58,13 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   )
 
   const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setValue(formattedValue)
   }, [formattedValue])
 
@@ -67,6 +72,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     (e) => {
       if (sendMax) set("sendMax", false)
       const nextValue = e.target.value ?? ""
+      refSkipSync.current = true
       setValue(nextValue)
       const num = Number(nextValue)
       if (token && nextValue.length && !isNaN(num))
@@ -129,8 +135,13 @@ const FiatInput = () => {
   )
 
   const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
   useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
     setValue(formattedValue)
   }, [formattedValue])
 
@@ -138,6 +149,7 @@ const FiatInput = () => {
     (e) => {
       if (sendMax) set("sendMax", false)
       const nextValue = e.target.value ?? ""
+      refSkipSync.current = true
       setValue(nextValue)
       const num = Number(nextValue)
       const tokenRate = tokenRates?.[currency]
