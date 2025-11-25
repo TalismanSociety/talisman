@@ -74,7 +74,7 @@ const fetchWithoutMulticall = async (
     }),
   )
 
-  return results.reduce(
+  return results.reduce<FetchBalanceResults>(
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
@@ -87,7 +87,7 @@ const fetchWithoutMulticall = async (
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] },
   )
 }
 
@@ -108,7 +108,7 @@ const fetchWithMulticall = async (
       })),
     })
 
-    return callResults.reduce(
+    return callResults.reduce<FetchBalanceResults>(
       (acc, result, index) => {
         if (result.status === "success") {
           acc.success.push({
@@ -134,7 +134,7 @@ const fetchWithMulticall = async (
         }
         return acc
       },
-      { success: [], errors: [] } as FetchBalanceResults,
+      { success: [], errors: [] },
     )
   } catch (err) {
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({

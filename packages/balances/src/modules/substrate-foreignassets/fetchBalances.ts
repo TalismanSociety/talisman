@@ -55,7 +55,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
   const balances = await fetchRpcQueryPack(connector, networkId, queries)
 
-  return balanceDefs.reduce(
+  return balanceDefs.reduce<FetchBalanceResults>(
     (acc, def) => {
       const balance = balances.find(
         (b) => b?.address === def.address && b?.tokenId === def.token.id,
@@ -76,6 +76,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         })
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] },
   )
 }

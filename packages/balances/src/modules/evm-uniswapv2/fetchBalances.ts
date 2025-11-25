@@ -81,7 +81,7 @@ const fetchPoolBalances = async (
     (p) => p.address,
   )
 
-  const results = balanceDefs.reduce(
+  const results = balanceDefs.reduce<FetchBalanceResults>(
     (acc, { token, address }, i) => {
       const pool = poolInfo[token.contractAddress]
       if (!pool) {
@@ -141,7 +141,7 @@ const fetchPoolBalances = async (
 
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] },
   )
 
   return results

@@ -130,7 +130,7 @@ export const useNomPoolWithdrawWizard = () => {
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
   } = useQuery({
-    queryKey: ["feeEstimate", payload], // safe stringify because contains bigint
+    queryKey: ["feeEstimate", payload],
     queryFn: () => {
       if (!sapi || !payload) return null
       return sapi.getFeeEstimate(payload)

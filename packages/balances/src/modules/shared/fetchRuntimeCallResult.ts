@@ -9,13 +9,19 @@ export const fetchRuntimeCallResult = async <T>(
   method: string,
   args: unknown[],
 ): Promise<T> => {
-  const { builder } = parseMetadataRpc(metadataRpc)
-  const call = builder.buildRuntimeCall(apiName, method)
+  try {
+    const { builder } = parseMetadataRpc(metadataRpc)
+    const call = builder.buildRuntimeCall(apiName, method)
 
-  const hex = await connector.send<string>(networkId, "state_call", [
-    `${apiName}_${method}`,
-    toHex(call.args.enc(args)),
-  ])
+    const hex = await connector.send<string>(networkId, "state_call", [
+      `${apiName}_${method}`,
+      toHex(call.args.enc(args)),
+    ])
 
-  return call.value.dec(hex) as T
+    return call.value.dec(hex) as T
+  } catch (cause) {
+    throw new Error(`Error fetching runtime call on ${networkId} for ${apiName}.${method}`, {
+      cause,
+    })
+  }
 }

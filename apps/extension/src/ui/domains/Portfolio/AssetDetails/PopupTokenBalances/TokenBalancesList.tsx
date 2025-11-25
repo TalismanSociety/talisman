@@ -10,7 +10,9 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useToken } from "@ui/state"
 
+import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
+import { BittensorValidatorName } from "../DashboardTokenBalances/BittensorValidatorName"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
 
@@ -49,6 +51,7 @@ export const TokenBalancesList = ({
             <div className="text-body truncate font-bold">{token.name}</div>
             <div className="flex items-center">
               <CopyAddressButton networkId={chainOrNetworkId} />
+              <BittensorUnstakeButton balances={balances} />
               <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                 <SendFundsTokenButton tokenId={tokenId} shouldClose />
               </Suspense>
@@ -58,6 +61,13 @@ export const TokenBalancesList = ({
             <NetworkLogo networkId={chainOrNetworkId} />
             <span className="truncate">
               <NetworkName networkId={chainOrNetworkId} />
+              {token.type === "substrate-dtao" && (
+                <BittensorValidatorName
+                  hotkey={token.hotkey}
+                  prefix=" | "
+                  className="text-body-secondary text-sm"
+                />
+              )}
             </span>
           </div>
         </div>

@@ -9,5 +9,5 @@ export const NetworkName: FC<{ networkId: NetworkId | null | undefined; classNam
 }) => {
   const networkName = useNetworkDisplayName(networkId)
 
-  return <span className={className}>{networkName}</span>
+  return <span className={className}>{networkName ?? networkId}</span>
 }

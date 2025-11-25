@@ -19,7 +19,10 @@ export const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, 
         <div className="shrink-0">
           <TokenLogo className="!text-lg" tokenId={tokenId} />
         </div>
-        <div>{token.symbol}</div>
+        <div>
+          {token.type === "substrate-dtao" && token.netuid === 0 ? "Staked " : ""}
+          {token.symbol}
+        </div>
       </div>
     </PillButton>
   )

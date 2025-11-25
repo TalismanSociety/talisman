@@ -71,6 +71,7 @@ const getBalancesByParams$ = (
         return of<BalanceSubscriptionResponse>({
           balances: [],
           status: "live",
+          failedBalanceIds: [],
         })
 
       const addressesByTokenId = fromPairs(

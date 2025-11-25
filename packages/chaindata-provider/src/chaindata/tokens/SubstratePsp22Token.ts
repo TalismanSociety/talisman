@@ -14,7 +14,7 @@ export const SubPsp22TokenSchema = TokenBaseSchema.extend({
 })
 export type SubPsp22Token = z.infer<typeof SubPsp22TokenSchema>
 
-export const SubPsp22BalancesConfigSchema = z.undefined()
+export const SubPsp22BalancesConfigSchema = z.strictObject({})
 
 export type SubPsp22BalancesConfig = z.infer<typeof SubPsp22BalancesConfigSchema>
 

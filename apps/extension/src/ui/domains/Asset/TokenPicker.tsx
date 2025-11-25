@@ -24,6 +24,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
+import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { Fiat } from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import { Tokens } from "./Tokens"
@@ -34,7 +35,6 @@ type TokenRowProps = {
   selected: boolean
   onClick?: () => void
   balances: Balances
-  hasFiatRate?: boolean
   allowUntransferable?: boolean
 }
 
@@ -67,7 +67,6 @@ type TokenData = {
   token: Token
   balances: Balances
   chainNameSearch: string | null | undefined
-  hasFiatRate: boolean
 }
 
 const TokenRows: FC<{
@@ -115,7 +114,6 @@ const TokenRows: FC<{
                 selected={tokenData.token.id === selectedTokenId}
                 token={tokenData.token}
                 balances={tokenData.balances}
-                hasFiatRate={tokenData.hasFiatRate}
                 allowUntransferable={allowUntransferable}
                 onClick={() => onTokenClick(tokenData.token.id)}
               />
@@ -131,7 +129,6 @@ const TokenRow: FC<TokenRowProps> = ({
   token,
   selected,
   balances,
-  hasFiatRate,
   allowUntransferable,
   onClick,
 }) => {
@@ -148,6 +145,7 @@ const TokenRow: FC<TokenRowProps> = ({
 
   const currency = useSelectedCurrency()
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
+  const hasFiatRate = useMemo(() => balances.each.some((b) => b.rates), [balances])
 
   return (
     <button
@@ -201,6 +199,9 @@ const TokenRow: FC<TokenRowProps> = ({
             <div className="truncate" data-testid="picker-token-network">
               <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
               <NetworkName networkId={token.networkId} />
+              {token.type === "substrate-dtao" && (
+                <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
+              )}
             </div>
           </div>
           <div className={classNames(isLoading && "animate-pulse")}>
@@ -360,8 +361,7 @@ const TokensList: FC<TokensListProps> = ({
       .filter(
         (t) =>
           !ls ||
-          t.token.symbol.toLowerCase().includes(ls) ||
-          t.chainNameSearch?.toLowerCase().includes(ls),
+          [t.token.symbol, t.token.name, t.chainNameSearch].join().toLowerCase().includes(ls),
       )
       .sort((t1, t2) => {
         const s1 = t1.token.symbol.toLowerCase()

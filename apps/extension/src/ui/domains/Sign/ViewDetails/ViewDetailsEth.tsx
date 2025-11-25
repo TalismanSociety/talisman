@@ -133,16 +133,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               : t("Unknown")}
           </ViewDetailsField>
         )}
-        <ViewDetailsAddress
-          label={t("From")}
-          address={request.from}
-          blockExplorerUrl={network?.blockExplorerUrls[0]}
-        />
-        <ViewDetailsAddress
-          label={t("To")}
-          address={request.to ?? undefined}
-          blockExplorerUrl={network?.blockExplorerUrls[0]}
-        />
+        <ViewDetailsAddress label={t("From")} address={request.from} network={network} />
+        <ViewDetailsAddress label={t("To")} address={request.to ?? undefined} network={network} />
         <ViewDetailsField label={t("Value to be transferred")} breakAll>
           {formatEthValue(transaction?.value)}
         </ViewDetailsField>

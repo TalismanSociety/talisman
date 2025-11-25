@@ -52,7 +52,6 @@ export const getMiniMetadata: IBalanceModule<
     "NominationPools",
     "PalletId",
   )?.asText()
-  const hasSubtensorPallet = !!tryGetConstantValue(metadataRpc, "SubtensorModule", "KeySwapCost")
 
   const hasFreezesItem = Boolean(
     unifiedMetadata.pallets
@@ -61,20 +60,12 @@ export const getMiniMetadata: IBalanceModule<
   )
   const useLegacyTransferableCalculation = !hasFreezesItem
 
-  compactMetadata(
-    metadata,
-    [
-      { pallet: "System", constants: ["Version", "SS58Prefix"], items: ["Account"] },
-      { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
-      { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
-      { pallet: "Staking", items: ["Ledger"] },
-      { pallet: "SubtensorModule", items: ["StakingHotkeys", "Stake"] },
-    ],
-    [
-      { runtimeApi: "StakeInfoRuntimeApi", methods: ["get_stake_info_for_coldkey"] },
-      { runtimeApi: "SubnetInfoRuntimeApi", methods: ["get_dynamic_info"] },
-    ],
-  )
+  compactMetadata(metadata, [
+    { pallet: "System", constants: ["Version", "SS58Prefix"], items: ["Account"] },
+    { pallet: "Balances", items: ["Reserves", "Holds", "Locks", "Freezes"] },
+    { pallet: "NominationPools", items: ["PoolMembers", "BondedPools", "Metadata"] },
+    { pallet: "Staking", items: ["Ledger"] },
+  ])
 
   return {
     id,
@@ -87,7 +78,6 @@ export const getMiniMetadata: IBalanceModule<
       useLegacyTransferableCalculation,
       existentialDeposit,
       nominationPoolsPalletId,
-      hasSubtensorPallet,
     },
   }
 }

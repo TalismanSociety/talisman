@@ -37,7 +37,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     // uncomment for testing on testnets
     // "avail-turing-testnet": [1],
     // "vara-testnet": [1],
-    // "aleph-zero-testnet": [1],
   },
   stakingPools: {},
   documentation: {
@@ -52,6 +51,7 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingContractNetworkId: "",
     stakingContractAddress: "0x",
     webAppStakingPath: "",
+    stakingEarlyRewardBoost: "",
     discountTiers: [
       {
         tier: 0,
@@ -91,6 +91,12 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       // solana: "solana-mainnet",
     },
   },
+  bittensor: {
+    fee: {
+      buy: {},
+      sell: {},
+    },
+  },
 }
 
 const CONFIG_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -114,6 +120,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
         if (DEBUG) {
           config.featureFlags.SEEK_BENEFITS = true
           config.featureFlags.SEEK_TAO_DISCOUNT = true
+          config.featureFlags.ASSET_HUB_MIGRATION_BANNER = true
+          config.featureFlags.SEEK_PRESALE = true
         }
 
         // first arg is an empty object so that DEFAULT_REMOTE_CONFIG is not mutated

@@ -1,11 +1,11 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useTokensMap } from "@ui/state"
-import { isTransferableToken } from "@ui/util/isTransferableToken"
+import { useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
@@ -16,9 +16,9 @@ export const SendFundsTokenButton = ({
   tokenId: TokenId
   shouldClose?: boolean
 }) => {
+  const { t } = useTranslation()
   const { selectedAccount } = usePortfolioNavigation()
-  const tokensMap = useTokensMap({ activeOnly: true, includeTestnets: true })
-  const token = isTransferableToken(tokensMap[tokenId]) ? tokensMap[tokenId] : undefined
+  const token = useToken(tokenId)
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,
@@ -44,12 +44,17 @@ export const SendFundsTokenButton = ({
     )
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs"
-    >
-      <SendIcon />
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={handleClick}
+          className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs"
+        >
+          <SendIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>{t("Send")}</TooltipContent>
+    </Tooltip>
   )
 }

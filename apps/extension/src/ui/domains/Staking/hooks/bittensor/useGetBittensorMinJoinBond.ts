@@ -1,27 +1,23 @@
-import { SUBTENSOR_MIN_STAKE_AMOUNT_PLANK } from "@talismn/balances"
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { StakeType } from "../../Bittensor/hooks/useBittensorBondWizard"
-
 type GetBittensorMinJoinBond = {
-  chainId: DotNetworkId | null | undefined
-  stakeType: StakeType
+  networkId: DotNetworkId | null | undefined
 }
 
-export const useGetBittensorMinJoinBond = ({ chainId, stakeType }: GetBittensorMinJoinBond) => {
-  const { data: sapi } = useScaleApi(chainId)
+export const useGetBittensorMinJoinBond = ({ networkId }: GetBittensorMinJoinBond) => {
+  const { data: sapi } = useScaleApi(networkId)
 
   return useQuery({
-    queryKey: ["useGetBittensorMinJoinBond", sapi?.id, stakeType],
+    queryKey: ["useGetBittensorMinJoinBond", sapi?.id],
     queryFn: async () => {
       if (!sapi) return null
-      if (stakeType === "subnet") return SUBTENSOR_MIN_STAKE_AMOUNT_PLANK
-      return (
-        (await sapi.getStorage<bigint>("SubtensorModule", "NominatorMinRequiredStake", [])) ?? 0n
-      )
+
+      // same for all netuids
+      // also must not go below this minimum when unstaking partially
+      return sapi.getStorage<bigint>("SubtensorModule", "NominatorMinRequiredStake", [])
     },
     enabled: !!sapi,
   })

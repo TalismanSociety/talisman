@@ -1,10 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 
-import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
-
 import { useTokenBalances } from "../useTokenBalances"
-import { BittensorTokenBalances } from "./BittensorTokenBalances"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"
 import { TokenBalancesDetailRow } from "./TokenBalancesDetailRow"
 import { TokenBalancesList } from "./TokenBalancesList"
@@ -15,25 +12,15 @@ type TokenBalancesParams = {
 }
 
 export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
-  const {
-    network: chainOrNetwork,
-    summary,
-    token,
-    detailRows,
-    status,
-  } = useTokenBalances({
+  const { network, summary, token, detailRows, status } = useTokenBalances({
     tokenId,
     balances,
   })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
+  if (!network || !summary || !token || balances.count === 0) return null
 
-  const isUniswapV2LpToken = balances.sorted[0]?.source === "evm-uniswapv2"
-
-  if (tokenId === BITTENSOR_TOKEN_ID) {
-    return <BittensorTokenBalances tokenId={tokenId} balances={balances} />
-  }
+  const isUniswapV2LpToken = balances.each[0]?.source === "evm-uniswapv2"
 
   return (
     <TokenBalancesList
@@ -41,7 +28,7 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
       token={token}
       balances={balances}
       detailRowsLength={detailRows.length}
-      chainOrNetworkId={chainOrNetwork.id}
+      chainOrNetworkId={network.id}
       summary={summary}
       status={status}
       symbol={token.symbol}
@@ -69,7 +56,6 @@ export const TokenBalances = ({ balances, tokenId }: TokenBalancesParams) => {
                 symbol={token.symbol}
                 status={status}
                 tokenId={tokenId}
-                tokenDecimals={token.decimals}
               />
             )
           })}

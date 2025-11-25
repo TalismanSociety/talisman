@@ -1,109 +1,66 @@
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { ScaleApi } from "@talismn/sapi"
-import { useMemo } from "react"
 
-import { type BalanceDetailRow } from "@ui/domains/Portfolio/AssetDetails/useTokenBalances"
-
-import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
-import { useGetBittensorStakeHotkeys } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
-import { useGetBittensorStakingPayload } from "../../hooks/bittensor/useGetBittensorStakingPayload"
-import { useGetBittensorUnbondPayload } from "../../hooks/bittensor/useGetBittensorUnbondPayload"
+import { useBittensorCurrentHotkey } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { type StakeDirection, type StakeType } from "./useBittensorBondWizard"
-import { useGetDynamicTaoStakeInfo } from "./useGetDynamicTaoStakeInfo"
+import { type StakeDirection } from "./useBittensorBondWizard"
+import { useBittensorStakingPayload } from "./useBittensorStakingPayload"
 
 type GetStakeInfo = {
   sapi: ScaleApi | undefined | null
   address: string | null
-  poolId: string | number | null | undefined
+  hotkey: string | null | undefined
   netuid: number | null
-  plancks: bigint | null
-  chainId: DotNetworkId | undefined
-  stakeType: StakeType
-  userMaxSlippage: number
-  selectedStake: BalanceDetailRow | undefined
+  amountIn: bigint | null
+  networkId: DotNetworkId | undefined
   stakeDirection: StakeDirection
 }
 
 export const useGetBittensorStakeInfo = ({
   sapi,
   address,
-  poolId,
+  hotkey,
   netuid,
-  plancks,
-  chainId,
-  stakeType,
-  userMaxSlippage,
+  amountIn,
+  networkId,
   stakeDirection,
 }: GetStakeInfo) => {
-  const { data: minJoinBond } = useGetBittensorMinJoinBond({ chainId, stakeType })
-
   const {
-    slippage,
-    talismanFee,
-    taoToAlphaConversionRate,
-    expectedAlphaWithSlippage,
-    expectedTaoWithSlippage,
-    alphaPriceWithSlippage,
-    taoAmountFromAlpha,
+    alphaPrice,
+    payload,
+    feeEstimatePayload,
+    txMetadata,
+    minTaoBond,
+    minAlphaBond,
+    minTaoStake,
     minAlphaUnstake,
-    isLoading: isDynamicInfoLoading,
-    isError: isDynamicInfoError,
-  } = useGetDynamicTaoStakeInfo({
-    netuid,
-    amount: plancks,
-    direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
-    userMaxSlippage,
-    minJoinBond,
-  })
-
-  const bittensorStakingPayload = useGetBittensorStakingPayload({
-    sapi,
-    address,
-    poolId,
-    plancks,
-    minJoinBond,
-    isEnabled: stakeDirection === "bond",
-    stakeType,
-    alphaPriceWithSlippage,
-    netuid,
-    talismanFee: talismanFee,
-  })
-
-  const bittensorUnbondPayload = useGetBittensorUnbondPayload({
-    sapi,
-    address,
-    hotkey: String(poolId),
-    isEnabled: stakeDirection === "unbond",
-    plancks,
-    stakeType,
-    alphaPriceWithSlippage,
+    amountOut,
     talismanFee,
+    errorPayload,
+    swapPrice,
+    priceImpact,
+    isLoading: isLoadingPayload,
+    slippage,
+  } = useBittensorStakingPayload({
     netuid,
+    amountIn,
+    direction: stakeDirection === "bond" ? "taoToAlpha" : "alphaToTao",
+    hotkey,
+    address,
+    networkId,
   })
 
-  const hotkeys = useGetBittensorStakeHotkeys({ address, chainId })
-
-  const stakeActionPayload = useMemo(
-    () => (stakeDirection === "bond" ? bittensorStakingPayload : bittensorUnbondPayload),
-    [bittensorStakingPayload, bittensorUnbondPayload, stakeDirection],
-  )
-
-  const {
-    data: payloadAndMetadata,
-    isLoading: isLoadingPayload,
-    error: errorPayload,
-  } = stakeActionPayload
-
-  const { payload, txMetadata } = payloadAndMetadata || {}
+  const currentHotkey = useBittensorCurrentHotkey({ address, networkId, netuid })
 
   const {
     data: feeEstimate,
     isLoading: isLoadingFeeEstimate,
     error: errorFeeEstimate,
-  } = useGetFeeEstimate({ sapi, payload })
+  } = useGetFeeEstimate({ sapi, payload: feeEstimatePayload })
 
   return {
+    alphaPrice,
+    swapPrice,
     payload,
     txMetadata,
     isLoadingPayload,
@@ -111,17 +68,14 @@ export const useGetBittensorStakeInfo = ({
     feeEstimate,
     isLoadingFeeEstimate,
     errorFeeEstimate,
-    currentPoolId: hotkeys?.[0] ?? poolId,
-    minJoinBond,
+    currentHotkey,
+    minTaoBond,
+    minAlphaBond,
+    minTaoStake,
     minAlphaUnstake,
-
-    slippage,
+    priceImpact,
     talismanFee,
-    taoToAlphaConversionRate,
-    taoAmountFromAlpha,
-    expectedAlphaWithSlippage,
-    expectedTaoWithSlippage,
-    isDynamicInfoLoading,
-    isDynamicInfoError,
+    amountOut,
+    slippage,
   }
 }

@@ -79,7 +79,7 @@ const fetchWithoutAggregator = async (
     }),
   )
 
-  return results.reduce(
+  return results.reduce<FetchBalanceResults>(
     (acc, result) => {
       if (result.status === "fulfilled") acc.success.push(result.value as IBalance)
       else {
@@ -92,7 +92,7 @@ const fetchWithoutAggregator = async (
       }
       return acc
     },
-    { success: [], errors: [] } as FetchBalanceResults,
+    { success: [], errors: [] },
   )
 }
 

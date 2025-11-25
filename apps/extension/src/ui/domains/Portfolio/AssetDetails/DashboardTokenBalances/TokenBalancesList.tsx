@@ -13,9 +13,11 @@ import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
 import { BalanceSummary } from "../../useTokenBalancesSummary"
+import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
 import { TokenContextMenu } from "../TokenContextMenu"
+import { BittensorValidatorName } from "./BittensorValidatorName"
 
 type TokenBalancesListProps = {
   tokenId: TokenId
@@ -61,6 +63,7 @@ export const TokenBalancesList = ({
               <div className="text-body font-bold">{token.name}</div>
               <div className="text-body flex items-center text-base font-bold">
                 <CopyAddressButton networkId={chainOrNetworkId} />
+                <BittensorUnstakeButton balances={balances} />
                 <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
                   <SendFundsTokenButton tokenId={tokenId} />
                   {tokenId && (
@@ -77,6 +80,13 @@ export const TokenBalancesList = ({
               <NetworkLogo networkId={chainOrNetworkId} />
               <span className="truncate text-sm">
                 <NetworkName networkId={chainOrNetworkId} />
+                {token.type === "substrate-dtao" && (
+                  <BittensorValidatorName
+                    hotkey={token.hotkey}
+                    prefix=" | "
+                    className="text-body-secondary text-sm"
+                  />
+                )}
               </span>
             </div>
           </div>

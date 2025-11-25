@@ -1,5 +1,39 @@
 # @talismn/balances
 
+## 1.2.0
+
+### Minor Changes
+
+- 4d24072: chaindata v7 (isTransferable on substrate-dtao tokens)
+
+### Patch Changes
+
+- 24e8511: fix: return stale balance in case of fetch error
+- Updated dependencies [927f797]
+- Updated dependencies [f603f41]
+- Updated dependencies [e1e20e5]
+- Updated dependencies [4d24072]
+- Updated dependencies [1f4146c]
+  - @talismn/chaindata-provider@1.3.0
+  - @talismn/chain-connectors@0.0.9
+  - @talismn/token-rates@3.0.11
+
+## 1.1.0
+
+### Minor Changes
+
+- 75fb494: dtao tokens and balance modules
+
+### Patch Changes
+
+- Updated dependencies [c883b67]
+- Updated dependencies [75fb494]
+- Updated dependencies [165749d]
+- Updated dependencies [72a1fa6]
+  - @talismn/chaindata-provider@1.2.0
+  - @talismn/token-rates@3.0.10
+  - @talismn/chain-connectors@0.0.8
+
 ## 1.0.9
 
 ### Patch Changes

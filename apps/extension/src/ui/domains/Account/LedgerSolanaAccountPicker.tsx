@@ -1,6 +1,6 @@
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { Account, getSolLedgerDerivationPath } from "extension-core"
+import { Account, getSolLedgerDerivationPath, LedgerSolDerivationPathType } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,6 +16,7 @@ import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerCon
 
 const useLedgerSolanaAccounts = (
   name: string,
+  derivationPathType: LedgerSolDerivationPathType,
   selectedAccounts: LedgerAccountDefSolana[],
   pageIndex: number,
   itemsPerPage: number,
@@ -41,12 +42,12 @@ const useLedgerSolanaAccounts = (
     refAddressCache.current = {} // reset if app changes
   }, [])
 
-  const evmNetworks = useNetworks({
-    platform: "ethereum",
+  const solNetworks = useNetworks({
+    platform: "solana",
     activeOnly: true,
     includeTestnets: false,
   })
-  const withBalances = useMemo(() => !!evmNetworks.length, [evmNetworks])
+  const withBalances = useMemo(() => !!solNetworks.length, [solNetworks])
 
   // keep page index as ref to allow for cancelling current page load when changing page
   const refPageIndex = useRef(pageIndex)
@@ -75,7 +76,7 @@ const useLedgerSolanaAccounts = (
           if (refPageIndex.current !== pageIndex) return loadPage(refPageIndex.current, true)
 
           const accountIndex = skip + i
-          const path = getSolLedgerDerivationPath(accountIndex)
+          const path = getSolLedgerDerivationPath(derivationPathType, accountIndex)
 
           const { address } = refAddressCache.current[path] ?? {
             address: encodeAddressSolana((await getAddress(path)).address),
@@ -112,7 +113,7 @@ const useLedgerSolanaAccounts = (
         refIsBusy.current = false
       }
     },
-    [getAddress, itemsPerPage, name, t],
+    [derivationPathType, getAddress, itemsPerPage, name, t],
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -121,7 +122,7 @@ const useLedgerSolanaAccounts = (
       withBalances && derivedAccounts.filter(isNotNil).length === itemsPerPage
         ? derivedAccounts.filter(isNotNil).map(
             ({ address }): Account => ({
-              type: "ledger-ethereum",
+              type: "ledger-solana",
               address,
               name: "",
               createdAt: Date.now(),
@@ -176,6 +177,7 @@ const useLedgerSolanaAccounts = (
 
 type LedgerSolanaAccountPickerProps = {
   name: string
+  derivationPathType: LedgerSolDerivationPathType
   onChange?: (accounts: LedgerAccountDefSolana[]) => void
 }
 
@@ -183,6 +185,7 @@ type LedgerSolanaAccount = DerivedAccountBase & LedgerAccountDefSolana
 
 export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
   name,
+  derivationPathType,
   onChange,
 }) => {
   const itemsPerPage = 5
@@ -190,6 +193,7 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSolana[]>([])
   const { accounts, withBalances, connectionStatus } = useLedgerSolanaAccounts(
     name,
+    derivationPathType,
     selectedAccounts,
     pageIndex,
     itemsPerPage,

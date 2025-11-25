@@ -55,7 +55,6 @@ const ViewTokenDetailsMenuItem: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
   const { genericEvent } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    // window.open(`/tokens/${tokenId}`, "_blank")
     api.dashboardOpen(`/settings/networks-tokens/tokens/${tokenId}`)
     genericEvent("open view token details", { from: "token menu" })
   }, [genericEvent, tokenId])

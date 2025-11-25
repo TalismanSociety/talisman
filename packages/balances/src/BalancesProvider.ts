@@ -45,6 +45,7 @@ type BalancesStatus = "initialising" | "live"
 export type BalancesResult = {
   status: BalancesStatus
   balances: IBalance[]
+  failedBalanceIds: string[] // balance ids that failed to fetch
 }
 
 export type BalancesStorage = {
@@ -147,6 +148,7 @@ export class BalancesProvider {
               ),
             )
             .sort(sortByBalanceId),
+          failedBalanceIds: results.flatMap((result) => result.failedBalanceIds),
         }),
       ),
       distinctUntilChanged<BalancesResult>(isEqual),
@@ -197,17 +199,28 @@ export class BalancesProvider {
               }
               default: {
                 log.warn("[balances] Unsupported network platform for module", { networkId, mod })
-                return of({ status: "live", balances: [] } as BalancesResult)
+                return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
               }
             }
           }),
         )
       }),
-      map((results) => {
+      map((results): BalancesResult => {
+        // for each balance that could not be fetched, see if we have a stored balance and return it, marked as stale
+        const errorBalanceIds = results.flatMap((result) => result.failedBalanceIds)
+        const staleBalances = errorBalanceIds
+          .map((balanceId) => this.#storage.value.balances[balanceId])
+          .filter(isNotNil)
+          .map((b): IBalance => ({ ...b, status: "stale" }))
+
         return {
           status: results.some(({ status }) => status === "initialising") ? "initialising" : "live",
-          balances: results.flatMap((result) => result.balances).sort(sortByBalanceId),
-        } as BalancesResult
+          balances: results
+            .flatMap((result) => result.balances)
+            .concat(staleBalances)
+            .sort(sortByBalanceId),
+          failedBalanceIds: [],
+        }
       }),
       distinctUntilChanged<BalancesResult>(isEqual),
     )
@@ -222,7 +235,8 @@ export class BalancesProvider {
       `BalancesProvider.getPolkadotNetworkModuleBalances$`,
       { networkId, mod, tokensWithAddresses },
       () => {
-        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
+        if (!tokensWithAddresses.length)
+          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
@@ -236,10 +250,11 @@ export class BalancesProvider {
         if (!this.#chainConnectors.substrate) {
           log.warn("[balances] no substrate connector or miniMetadata for module", mod.type)
           return defer(() =>
-            of({
+            of<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           )
         }
 
@@ -254,11 +269,20 @@ export class BalancesProvider {
             }),
           ),
           catchError(() => EMPTY), // don't emit, let provider mark balances stale
+          tap((results) => {
+            if (results.dynamicTokens?.length) {
+              // register missing tokens in the chaindata provider
+              this.#chaindataProvider.registerDynamicTokens(results.dynamicTokens)
+            }
+          }),
           map(
             (results): BalancesResult => ({
               status: "live",
               // exclude zero balances
               balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+              failedBalanceIds: results.errors.map(({ tokenId, address }) =>
+                getBalanceId({ tokenId, address }),
+              ),
             }),
           ),
           tap((results) => {
@@ -272,10 +296,11 @@ export class BalancesProvider {
         // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
         return defer(() =>
           moduleBalances$.pipe(
-            startWith({
+            startWith<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           ),
         )
       },
@@ -291,7 +316,8 @@ export class BalancesProvider {
       `BalancesProvider.getEthereumNetworkModuleBalances$`,
       { networkId, mod, tokensWithAddresses },
       () => {
-        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
+        if (!tokensWithAddresses.length)
+          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
@@ -305,10 +331,11 @@ export class BalancesProvider {
         if (!this.#chainConnectors.evm) {
           log.warn("[balances] no ethereum connector for module", mod.type)
           return defer(() =>
-            of({
+            of<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           )
         }
 
@@ -325,6 +352,9 @@ export class BalancesProvider {
                 status: "live",
                 // exclude zero balances
                 balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+                failedBalanceIds: results.errors.map(({ tokenId, address }) =>
+                  getBalanceId({ tokenId, address }),
+                ),
               }),
             ),
             tap((results) => {
@@ -338,10 +368,11 @@ export class BalancesProvider {
         // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
         return defer(() =>
           moduleBalances$.pipe(
-            startWith({
+            startWith<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           ),
         )
       },
@@ -357,7 +388,8 @@ export class BalancesProvider {
       `BalancesProvider.getSolanaNetworkModuleBalances$`,
       { networkId, mod, tokensWithAddresses },
       () => {
-        if (!tokensWithAddresses.length) return of({ status: "live", balances: [] })
+        if (!tokensWithAddresses.length)
+          return of<BalancesResult>({ status: "live", balances: [], failedBalanceIds: [] })
 
         const moduleAddressesByTokenId = fromPairs(
           tokensWithAddresses.map(([token, addresses]) => [token.id, addresses]),
@@ -371,10 +403,11 @@ export class BalancesProvider {
         if (!this.#chainConnectors.solana) {
           log.warn("[balances] no solana connector for module", mod.type)
           return defer(() =>
-            of({
+            of<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           )
         }
 
@@ -391,6 +424,9 @@ export class BalancesProvider {
                 status: "live",
                 // exclude zero balances
                 balances: results.success.filter((b) => new Balance(b).total.planck > 0n),
+                failedBalanceIds: results.errors.map(({ tokenId, address }) =>
+                  getBalanceId({ tokenId, address }),
+                ),
               }),
             ),
             tap((results) => {
@@ -404,10 +440,11 @@ export class BalancesProvider {
         // defer the startWith call to start with up to date balances each time the observable is re-subscribed to
         return defer(() =>
           moduleBalances$.pipe(
-            startWith({
+            startWith<BalancesResult>({
               status: "initialising",
               balances: this.getStoredBalances(moduleAddressesByTokenId),
-            } as BalancesResult),
+              failedBalanceIds: [],
+            }),
           ),
         )
       },
@@ -421,14 +458,24 @@ export class BalancesProvider {
     const balances = assign(
       {},
       storage.balances,
-      // delete all balances expected in the result set. because if they are not present it means they are empty.
-      fromPairs(balanceIds.map((balanceId) => [balanceId, undefined])),
+      // delete all balances expected in the result set (except the ones that failed). because if they are not present it means they are empty.
+      fromPairs(
+        balanceIds
+          .filter((bid) => !balancesResult.failedBalanceIds.includes(bid))
+          .map((balanceId) => [balanceId, undefined]),
+      ),
       keyBy(
         // storage balances must have status "cache", because they are used as start value when initialising subsequent subscriptions
         balancesResult.balances.map((b) => ({ ...b, status: "cache" })),
         (b) => getBalanceId(b),
       ),
     )
+
+    // update status of stale balances
+    for (const errorBalanceId of balancesResult.failedBalanceIds) {
+      const balance = balances[errorBalanceId] as IBalance
+      if (balance) balance.status = "stale"
+    }
 
     this.#storage.next(assign({}, storage, { balances }))
   }

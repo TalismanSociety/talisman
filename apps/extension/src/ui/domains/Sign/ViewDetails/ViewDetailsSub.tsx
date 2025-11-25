@@ -100,12 +100,7 @@ const ViewDetailsContent: FC<{
     <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
-        <ViewDetailsAddress
-          label={t("From")}
-          address={payload.address}
-          chainPrefix={chain?.prefix}
-          blockExplorerUrl={chain?.blockExplorerUrls[0]}
-        />
+        <ViewDetailsAddress label={t("From")} address={payload.address} network={chain} />
 
         {isExtrinsic ? (
           <>

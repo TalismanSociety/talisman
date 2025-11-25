@@ -119,7 +119,13 @@ export async function fetchTokenRates(
 
     // insert TOKEN<>TAO rate (calculated based on TAO<>USD rate and TOKEN<>USD rate) into each TOKEN
     const taoIndex = currencyIds.indexOf("tao")
-    rawTokenRates.forEach((rates) => {
+    rawTokenRates.forEach((rates, i) => {
+      // hardcoded rate for TAO<>TAO
+      if (i === effectiveTaoIndex) {
+        rates?.splice(taoIndex, 0, [1, null, null])
+        return
+      }
+
       // get TOKEN<>USD rate
       const tokenUsdRate = rates?.[effectiveUsdIndex]?.[0]
       // calculate TOKEN<>TAO rate

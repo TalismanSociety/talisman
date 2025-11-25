@@ -6,6 +6,7 @@ import {
   parseEvmUniswapV2TokenId,
   parseSolSplTokenId,
   parseSubAssetTokenId,
+  parseSubDTaoTokenId,
   parseSubForeignAssetTokenId,
   parseSubHydrationTokenId,
   parseSubNativeTokenId,
@@ -105,6 +106,10 @@ export const isTokenSubAssets = (token: Token | null | undefined) => {
   return isTokenOfType(token, "substrate-assets")
 }
 
+export const isTokenSubDTao = (token: Token | null | undefined) => {
+  return isTokenOfType(token, "substrate-dtao")
+}
+
 export const isTokenSubForeignAssets = (token: Token | null | undefined) => {
   return isTokenOfType(token, "substrate-foreignassets")
 }
@@ -158,6 +163,8 @@ export const parseTokenId = <T extends TokenType>(tokenId: TokenId): TokenIdSpec
       return parseSubAssetTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-foreignassets":
       return parseSubForeignAssetTokenId(tokenId) as TokenIdSpecs<T>
+    case "substrate-dtao":
+      return parseSubDTaoTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-tokens":
       return parseSubTokensTokenId(tokenId) as TokenIdSpecs<T>
     case "substrate-hydration":

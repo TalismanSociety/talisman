@@ -7,6 +7,7 @@ import AppHandler from "../domains/app/handler"
 import { hideGetStartedOnceFunded } from "../domains/app/hideGetStartedOnceFunded"
 import { AssetDiscoveryHandler } from "../domains/assetDiscovery/handler"
 import { BalancesHandler } from "../domains/balances"
+import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
 import { DefiHandler } from "../domains/defi/handler"
@@ -58,6 +59,7 @@ export default class Extension extends ExtensionHandler {
       solana: new SolanaExtensionHandler(stores),
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
+      bittensor: new BittensorHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store

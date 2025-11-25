@@ -12,7 +12,6 @@ const NETWORK_IDS = [
   "kusama-asset-hub",
   "bittensor",
   "hydradx",
-  "aleph-zero",
   "bifrost-polkadot",
   "solana-mainnet",
 

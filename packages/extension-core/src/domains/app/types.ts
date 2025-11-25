@@ -42,6 +42,7 @@ export type RemoteConfigStoreData = {
     tradeUrl: string
     stakingContractNetworkId: string
     stakingContractAddress: `0x${string}`
+    stakingEarlyRewardBoost: string
     webAppStakingPath: string
     discountTiers: Array<{
       tier: number
@@ -52,6 +53,13 @@ export type RemoteConfigStoreData = {
   earn: {
     earnButtonTokenIds: TokenId[]
     yieldxyzNetworks: Record<string, NetworkId>
+  }
+
+  bittensor: {
+    fee: {
+      buy: Record<number, number>
+      sell: Record<number, number>
+    }
   }
 }
 
@@ -93,7 +101,7 @@ export type FeatureFlags = Partial<{
   SEEK_BENEFITS: boolean
   SEEK_TAO_DISCOUNT: boolean
   SEEK_PRESALE: boolean
-  BLOCKAID_DAPP_SCAN: boolean
+  ASSET_HUB_MIGRATION_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 

@@ -32,7 +32,7 @@ export const CustomErc20TokenViewDetails = ({
             <ViewDetailsAddress
               label={t("Contract")}
               address={token.contractAddress}
-              blockExplorerUrl={network.blockExplorerUrls[0]}
+              network={network}
             />
           </div>
           <Button className="mt-12" onClick={close}>

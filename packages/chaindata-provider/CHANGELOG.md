@@ -1,5 +1,29 @@
 # @talismn/chaindata-provider
 
+## 1.3.0
+
+### Minor Changes
+
+- 4d24072: chaindata v7 (isTransferable on substrate-dtao tokens)
+
+### Patch Changes
+
+- 927f797: generate init data
+- f603f41: fix taostats urls
+- e1e20e5: update init data
+- 1f4146c: remove aleph-zero from init data
+
+## 1.2.0
+
+### Minor Changes
+
+- 75fb494: dtao tokens and balance modules
+
+### Patch Changes
+
+- c883b67: generate init data
+- 165749d: update init data
+
 ## 1.1.6
 
 ### Patch Changes

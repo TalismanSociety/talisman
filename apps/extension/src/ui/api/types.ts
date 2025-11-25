@@ -21,6 +21,7 @@ import {
   AuthRequestId,
   AuthSolanaSignInApprove,
   BalanceSubscriptionResponse,
+  BittensorValidator,
   ChangePasswordStatusUpdate,
   DecryptRequestId,
   DefiPosition,
@@ -282,5 +283,9 @@ export default interface MessageTypes {
   ) => UnsubscribeFn
   yieldBalancesGroupedSubscribe: (
     cb: (positions: Loadable<YieldPosition[]>) => void,
+  ) => UnsubscribeFn
+
+  bittensorValidatorsSubscribe: (
+    cb: (validators: Loadable<BittensorValidator[]>) => void,
   ) => UnsubscribeFn
 }

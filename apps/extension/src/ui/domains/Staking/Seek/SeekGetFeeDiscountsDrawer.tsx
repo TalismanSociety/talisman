@@ -2,13 +2,13 @@ import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
+import { useAccounts, useAppState, useBalances, useRemoteConfig, useToken } from "@ui/state"
 
 import { useGetSeekDiscount } from "./hooks/useGetSeekDiscount"
 import { useGetSeekStaked } from "./hooks/useGetSeekStaked"
@@ -33,7 +33,6 @@ export const SeekGetFeeDiscountsDrawer = ({
   const { tokenId, webAppStakingPath, docsUrl } = remoteConfig.seek
   const token = useToken(tokenId)
   const balances = useBalances()
-
   const accounts = useAccounts("owned")
 
   const totalOwned = useMemo(() => {
@@ -48,6 +47,12 @@ export const SeekGetFeeDiscountsDrawer = ({
   } = useGetSeekStaked()
   const { tier } = useGetSeekDiscount()
 
+  const [, setHideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
+  const handleDismiss = useCallback(() => {
+    setHideSeekDiscountDrawer(true)
+    onDismiss()
+  }, [setHideSeekDiscountDrawer, onDismiss])
+
   const hasSeekStaked = totalStaked.planck > 0n
 
   const discountPercent = `${tier.discount * 100}%`
@@ -55,11 +60,11 @@ export const SeekGetFeeDiscountsDrawer = ({
   const tokenSymbol = token?.symbol || "SEEK"
 
   return (
-    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId}>
+    <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={onDismiss}>
       <div className="bg-grey-850 flex w-full flex-col items-center gap-12 rounded-t-xl p-12">
         <div className="flex w-full items-center justify-between">
           <div className="text-body flex-1 text-center font-bold">{t("Get Fee Discounts")}</div>
-          <button className="ml-auto" onClick={onDismiss} aria-label="Close">
+          <button className="ml-auto" onClick={handleDismiss} aria-label="Close">
             <CloseIcon />
           </button>
         </div>

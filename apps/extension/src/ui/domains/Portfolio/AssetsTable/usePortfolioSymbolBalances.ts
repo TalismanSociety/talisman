@@ -14,6 +14,24 @@ const sortSymbolBalancesByName = ([aSymbol]: SymbolBalances, [bSymbol]: SymbolBa
   return aSymbol.localeCompare(bSymbol)
 }
 
+const groupBalancesBySymbol = (balances: Balances) => {
+  return balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
+    if (!b.token) return acc
+
+    const token = b.token
+    // this symbol is used for sorting tokens alphabetically
+    // for alpha tokens we want the name instead of the symbol
+    const symbol =
+      token.type === "substrate-dtao" && token.netuid ? (token.name ?? token.symbol) : token.symbol
+
+    const key = b.network?.isTestnet ? `${symbol}__testnet` : symbol
+    if (!acc[key]) acc[key] = []
+    acc[key].push(b)
+
+    return acc
+  }, {})
+}
+
 const sortSymbolBalancesBy =
   (type: "total" | "available" | "locked", currency: TokenRateCurrency) =>
   ([aSymbol, aBalances]: SymbolBalances, [bSymbol, bBalances]: SymbolBalances): number => {
@@ -105,15 +123,7 @@ export const [usePortfolioSymbolBalancesByFilter, getPortfolioSymbolBalancesByFi
         // group balances by token symbol
         // TODO: Move the association between a token on multiple chains into the backend / subsquid.
         // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-        const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
-          if (!b.token) return acc
-
-          const key = b.network?.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
-          if (!acc[key]) acc[key] = []
-          acc[key].push(b)
-
-          return acc
-        }, {})
+        const groupedByToken = groupBalancesBySymbol(balances)
 
         const sortFn =
           tokensSortBy === "name"
@@ -177,15 +187,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
   // TODO: Move the association between a token on multiple chains into the backend / subsquid.
   // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
   const symbolBalances: SymbolBalances[] = useMemo(() => {
-    const groupedByToken = balances.each.reduce<Record<string, Balance[]>>((acc, b) => {
-      if (!b.token) return acc
-
-      const key = b.network?.isTestnet ? `${b.token.symbol}__testnet` : b.token.symbol
-      if (!acc[key]) acc[key] = []
-      acc[key].push(b)
-
-      return acc
-    }, {})
+    const groupedByToken = groupBalancesBySymbol(balances)
 
     return Object.entries(groupedByToken)
       .map(([key, tokenBalances]): SymbolBalances => [key, new Balances(tokenBalances)])

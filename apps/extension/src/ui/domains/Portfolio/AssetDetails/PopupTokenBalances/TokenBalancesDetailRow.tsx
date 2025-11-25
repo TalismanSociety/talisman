@@ -1,8 +1,6 @@
 import { TokenId } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
-import { classNames, planckToTokens } from "@talismn/util"
-import { BigNumber } from "bignumber.js"
-import { useMemo } from "react"
+import { classNames } from "@talismn/util"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -19,9 +17,7 @@ type TokenBalancesDetailRowProps = {
   isLastRow?: boolean
   status: BalancesStatus
   symbol: string
-  tokenId?: TokenId
-  tokenDecimals: number
-  netuid?: number
+  tokenId: TokenId
 }
 
 export const TokenBalancesDetailRow = ({
@@ -30,16 +26,7 @@ export const TokenBalancesDetailRow = ({
   status,
   symbol,
   tokenId,
-  tokenDecimals,
-  netuid,
 }: TokenBalancesDetailRowProps) => {
-  const tokenBalance = useMemo(() => {
-    const alphaBalanceInTao = new BigNumber(
-      planckToTokens(row.meta?.amountStaked, tokenDecimals) || "0",
-    )
-    return alphaBalanceInTao.gt(0) ? alphaBalanceInTao : row.tokens
-  }, [row.meta?.amountStaked, row.tokens, tokenDecimals])
-
   return (
     <div
       className={classNames(
@@ -52,7 +39,6 @@ export const TokenBalancesDetailRow = ({
           <div className="truncate capitalize">{row.title}</div>
           {!!row.locked && tokenId && row.meta && (
             <LockedExtra
-              netuid={netuid}
               tokenId={tokenId}
               address={row.address}
               isLoading={status.status === "fetching" || !!row.isLoading}
@@ -91,7 +77,7 @@ export const TokenBalancesDetailRow = ({
             row.locked ? "text-body-secondary" : "text-white",
           )}
         >
-          <Tokens amount={tokenBalance} symbol={symbol} isBalance />
+          <Tokens amount={row.tokens} symbol={symbol} isBalance />
           {row.locked ? <LockIcon className="lock shrink-0" /> : null}
           {status.status === "stale" ? (
             <StaleBalancesIcon className="shrink-0" staleChains={status.staleChains} />

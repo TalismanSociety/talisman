@@ -1,4 +1,4 @@
-import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+import { subDTaoTokenId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -29,6 +29,10 @@ class ActiveTokensStore extends StorageProvider<ActiveTokens> {
 export const activeTokensStore = new ActiveTokensStore()
 
 export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
+  if (token.type === "substrate-dtao" && token.hotkey) {
+    const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
+    return Boolean(activeTokens[templateTokenId] ?? token.isDefault ?? false)
+  }
   return Boolean(activeTokens[token.id] ?? token.isDefault ?? false)
 }
 

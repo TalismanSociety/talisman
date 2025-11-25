@@ -47,7 +47,7 @@ export type ValidatorsData = {
 }
 
 export type BondOption = {
-  poolId: string
+  hotkey: string
   name: string
   totalStaked: number
   totalStakers: number
@@ -56,6 +56,8 @@ export type BondOption = {
   isRecommended?: boolean
   validatorYield?: ValidatorYield
   apr: number
+  subnets: number
+  rank: number
 }
 
 type Address = {

@@ -13,7 +13,7 @@ export const SolNativeTokenSchema = TokenBaseSchema.extend({
 })
 export type SolNativeToken = z.infer<typeof SolNativeTokenSchema>
 
-export const SolNativeBalancesConfigSchema = z.undefined()
+export const SolNativeBalancesConfigSchema = z.strictObject({})
 
 export type SolNativeBalancesConfig = z.infer<typeof SolNativeBalancesConfigSchema>
 

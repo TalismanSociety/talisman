@@ -1,3 +1,4 @@
+import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { DefiPosition } from "extension-core"
@@ -16,7 +17,9 @@ export const PositionContextMenu: FC<{ position: DefiPosition; className?: strin
 
   const blockExplorerUrl = useMemo(() => {
     if (!position.poolAddress || !network?.blockExplorerUrls.length) return null
-    return `${network.blockExplorerUrls[0]}/address/${position.poolAddress}`
+    return (
+      getBlockExplorerUrls(network, { type: "address", address: position.poolAddress })[0] ?? null
+    )
   }, [network, position.poolAddress])
 
   // dont display the menu if there is no action to provide

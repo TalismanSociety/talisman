@@ -16,7 +16,7 @@ export const SubHydrationTokenSchema = TokenBaseSchema.extend({
 })
 export type SubHydrationToken = z.infer<typeof SubHydrationTokenSchema>
 
-export const SubHydrationBalancesConfigSchema = z.undefined()
+export const SubHydrationBalancesConfigSchema = z.strictObject({})
 
 export type SubHydrationBalancesConfig = z.infer<typeof SubHydrationBalancesConfigSchema>
 

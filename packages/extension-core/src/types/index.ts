@@ -5,6 +5,7 @@ import { AccountsMessages } from "../domains/accounts/types"
 import { AppMessages } from "../domains/app/types"
 import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
 import { BalancesMessages } from "../domains/balances/types"
+import { BittensorMessages } from "../domains/bittensor/types"
 import { ChainsMessages } from "../domains/chains/types"
 import { DefiMessages } from "../domains/defi/types"
 import { EncryptMessages } from "../domains/encrypt/types"
@@ -95,6 +96,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   YieldMessages &
   PingMessages &
   ChaindataMessages &
+  BittensorMessages &
   UnsubscribeMessages
 
 interface PingMessages {

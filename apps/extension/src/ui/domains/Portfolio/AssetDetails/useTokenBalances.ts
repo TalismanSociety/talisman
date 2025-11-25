@@ -1,4 +1,11 @@
-import { BalanceLockType, Balances, filterBaseLocks, getLockTitle } from "@talismn/balances"
+import {
+  Balance,
+  BalanceLockType,
+  Balances,
+  filterBaseLocks,
+  getBalanceId,
+  getLockTitle,
+} from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import { Address } from "extension-core"
@@ -6,9 +13,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { sortBigBy } from "@talisman/util/bigHelper"
-import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
 
@@ -25,6 +30,7 @@ export type BalanceDetailRow = {
   address?: Address
   meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   isLoading?: boolean
+  balance: Balance | null
 }
 
 type TokenBalancesParams = {
@@ -44,7 +50,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
 
   const currency = useSelectedCurrency()
 
-  const rawDetailRows = useMemo((): BalanceDetailRow[] => {
+  const detailRows = useMemo((): BalanceDetailRow[] => {
     if (!summary) return []
 
     // AVAILABLE
@@ -56,6 +62,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
             tokens: summary.availableTokens,
             fiat: summary.availableFiat,
             locked: false,
+            balance: tokenBalances.get(getBalanceId({ address: account.address, tokenId })),
           },
         ]
       : tokenBalances.each.map((b) => ({
@@ -65,6 +72,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
           fiat: b.transferable.fiat(currency),
           locked: false,
           address: b.address,
+          balance: b,
         }))
 
     // LOCKED
@@ -77,6 +85,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
+        balance: b,
       })),
     )
 
@@ -93,6 +102,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: reserve.meta,
+        balance: b,
       })),
     )
 
@@ -109,38 +119,14 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         meta: nomPool.meta,
+        balance: b,
       })),
     )
 
-    // BITTENSOR
-    const subtensor = tokenBalances.each.flatMap((b) =>
-      b.subtensor.map((subtensor, index) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { meta } = subtensor as any
-        const rootTitle = getLockTitle({
-          label: "subtensor-staking",
-        })
-
-        return {
-          key: `${b.id}-subtensor-${index}`,
-          title: meta.netuid === ROOT_NETUID ? rootTitle : "Subnet Staking",
-          description: meta?.description ?? undefined,
-          tokens: BigNumber(subtensor.amount.tokens),
-          fiat: subtensor.amount.fiat(currency),
-          locked: true,
-          // only show address when we're viewing balances for all accounts
-          address: account ? undefined : b.address,
-          meta: meta,
-        }
-      }),
-    )
-
-    return [...available, ...locked, ...reserved, ...staked, ...subtensor]
+    return [...available, ...locked, ...reserved, ...staked]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [summary, account, t, tokenBalances, currency])
-
-  const detailRows = useEnhanceDetailRows(rawDetailRows)
+  }, [summary, account, t, tokenBalances, tokenId, currency])
 
   const status = useBalancesStatus(balances)
 
@@ -151,37 +137,4 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
     status,
     network,
   }
-}
-
-const useEnhanceDetailRows = (detailRows: BalanceDetailRow[]) => {
-  const { combinedValidatorsData, isLoading: isLoadingCombinedValidators } =
-    useCombinedBittensorValidatorsData()
-
-  return useMemo(() => {
-    return detailRows
-      .map((row) => {
-        if (row.meta?.type === "subtensor-staking")
-          return {
-            ...row,
-            description:
-              combinedValidatorsData?.find((v) => v?.poolId === row.meta.hotkey)?.name ||
-              row.meta.hotkey,
-            isLoading: isLoadingCombinedValidators,
-          } as BalanceDetailRow
-
-        return row
-      })
-      .sort((a, b) => {
-        if (a.key === "available") return -1 // "available" always first
-        if (b.key === "available") return 1
-
-        if (a.title === "Reserved") return -1 // "reserved" always second
-        if (b.title === "Reserved") return 1
-
-        if (a.meta?.netuid === 0 && b.meta?.netuid !== 0) return -1 // Move netuid === 0 after reserved
-        if (b.meta?.netuid === 0 && a.meta?.netuid !== 0) return 1
-
-        return 0 // Preserve relative order for others
-      })
-  }, [detailRows, combinedValidatorsData, isLoadingCombinedValidators])
 }

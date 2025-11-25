@@ -1,5 +1,5 @@
 import { Address as TAddress } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -7,7 +7,6 @@ import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import urlJoin from "url-join"
 
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
@@ -33,8 +32,8 @@ const useBlockExplorerUrl = (
 
   return useMemo(() => {
     if (!resolvedAddress || !network?.blockExplorerUrls.length) return null
-    return urlJoin(network.blockExplorerUrls[0], "address", resolvedAddress)
-  }, [network?.blockExplorerUrls, resolvedAddress])
+    return getBlockExplorerUrls(network, { type: "address", address: resolvedAddress })[0] ?? null
+  }, [network, resolvedAddress])
 }
 
 const AddressTooltip: FC<{

@@ -1,7 +1,9 @@
 import { Balances } from "@talismn/balances"
+import { isAddressEqual } from "@talismn/crypto"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { isAccountOwned } from "extension-core"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,6 +13,7 @@ import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { EarnPillButton } from "@ui/domains/Earn"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
@@ -65,7 +68,7 @@ const AssetRow: FC<{
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
-  const { selectedAccount } = usePortfolioNavigation()
+  const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
 
@@ -101,9 +104,20 @@ const AssetRow: FC<{
   const { canBond } = useBondButton({ balances })
   const showStakingButton = canBond && !locked
   const remoteConfig = useRemoteConfig()
+
   const showEarnButton = useMemo(
-    () => token?.id && remoteConfig.earn.earnButtonTokenIds.includes(token.id),
-    [token?.id, remoteConfig.earn.earnButtonTokenIds],
+    () =>
+      !canBond &&
+      token?.id &&
+      remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
+      balances
+        .find({ tokenId: token.id })
+        .each.some((b) =>
+          selectedAccounts.some(
+            (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
+          ),
+        ),
+    [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
   )
 
   if (!token || !summary || !network) return null
@@ -112,28 +126,30 @@ const AssetRow: FC<{
     <div className="group relative h-28 w-full">
       <button
         type="button"
-        className="bg-grey-850 hover:bg-grey-800 flex w-full items-center rounded-sm"
+        className="bg-grey-850 hover:bg-grey-800 flex size-full items-center overflow-hidden rounded-sm"
         onClick={handleClick}
       >
-        <div className="p-6 text-xl">
+        <div className="shrink-0 p-6 text-xl">
           <TokenLogo tokenId={token.id} />
         </div>
-        <div className="relative flex grow items-center gap-4 pr-6">
-          <div className="flex w-full flex-col gap-2 overflow-hidden text-left">
-            <div className="flex items-center gap-3">
-              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
-                {token.symbol}
+        <div className="relative flex grow items-center gap-4 overflow-hidden pr-6">
+          <div className="flex grow flex-col gap-2 overflow-hidden text-left">
+            <div className="flex w-full items-center gap-3 overflow-hidden">
+              <div className="text-body flex w-full items-center gap-3 overflow-hidden text-sm font-bold">
+                <div className="truncate">
+                  <TokenDisplaySymbol tokenId={token.id} />
+                </div>
                 {!!network.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                  <div className="text-tiny bg-alert-warn/10 text-alert-warn shrink-0 rounded px-3 py-1 font-light">
                     {t("Testnet")}
-                  </span>
+                  </div>
+                )}
+                {!!networkIds.length && (
+                  <div className="shrink-0 text-base">
+                    <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
+                  </div>
                 )}
               </div>
-              {!!networkIds.length && (
-                <div className="text-base">
-                  <PortfolioNetworksLogoStack networkIds={networkIds} max={3} />
-                </div>
-              )}
             </div>
 
             {isUniswapV2LpToken && typeof tvl === "number" && (
@@ -142,11 +158,13 @@ const AssetRow: FC<{
                 <span className="text-[0.8rem]">TVL</span>
               </div>
             )}
-            {!isUniswapV2LpToken && <AssetPrice tokenId={token.id} className="text-xs" />}
+            {!isUniswapV2LpToken && (
+              <AssetPrice tokenId={token.id} balances={balances} className="text-xs" />
+            )}
           </div>
           <div
             className={classNames(
-              "flex shrink-0 flex-col items-end gap-2 text-right",
+              "flex min-w-[8rem] shrink-0 flex-col items-end gap-2 text-right",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
           >
@@ -181,19 +199,20 @@ const AssetRow: FC<{
         </div>
       </button>
       {/* Dynamic button positioning based on which buttons are shown */}
-      <div
-        className={classNames(
-          "absolute right-2 top-0 hidden h-28 flex-row items-center justify-center gap-2",
-          selectedAccount?.type !== "watch-only" && "group-hover:flex",
-        )}
-      >
-        {showStakingButton && (
-          <BondPillButton balances={balances} className="[>svg]:text-[2rem] text-base" />
-        )}
-        {showEarnButton && (
+      {showEarnButton && (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
-        )}
-      </div>
+        </div>
+      )}
+      {showStakingButton && (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <BondPillButton
+            balances={balances}
+            isPortfolio
+            className="[>svg]:text-[2rem] text-base"
+          />
+        </div>
+      )}
     </div>
   )
 }

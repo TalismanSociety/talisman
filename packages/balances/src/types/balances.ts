@@ -4,6 +4,8 @@ import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } f
 import BigNumber from "bignumber.js"
 
 import log from "../log"
+import { SubDTaoBalanceMeta } from "../modules"
+import { getDTaoTokenRates } from "../modules/substrate-dtao"
 import {
   Amount,
   AmountWithLabel,
@@ -441,6 +443,18 @@ export class Balance {
       return lpTokenRates
     }
 
+    // dTAO balances need to be converted to the native token to compute their rate, unless we have a coingeckoId
+    if (this.token?.type === "substrate-dtao" && !this.token.coingeckoId) {
+      if (!this.#db?.tokenRates) return null
+
+      const balances = this.#valueGetter.get("free")
+      if (!balances.length) return null
+      const balanceMeta = balances[0].meta as SubDTaoBalanceMeta | undefined
+      if (!balanceMeta?.scaledAlphaPrice) return null
+
+      return getDTaoTokenRates(this.token, this.#db.tokenRates, balanceMeta.scaledAlphaPrice)
+    }
+
     // other tokens can just pick from the tokenRates db using the tokenId
     return (this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]) || null
   }
@@ -496,7 +510,6 @@ export class Balance {
       this.free.planck +
         this.reserved.planck +
         nomPoolStakedPlancks +
-        this.subtensor.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n) +
         includeInTotalExtraAmount(extra),
     )
   }
@@ -535,10 +548,6 @@ export class Balance {
 
   get nompools() {
     return this.getValue("nompool")
-  }
-
-  get subtensor() {
-    return this.getValue("subtensor")
   }
 
   /** The extra balance of this token */
@@ -621,9 +630,7 @@ export class Balance {
       ? 0n
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
 
-    const otherUnavailable =
-      nomPoolStakedPlancks + this.subtensor.reduce((total, each) => total + each.amount.planck, 0n)
-    return this.#format(baseUnavailable + otherUnavailable)
+    return this.#format(baseUnavailable + nomPoolStakedPlancks)
   }
 
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */

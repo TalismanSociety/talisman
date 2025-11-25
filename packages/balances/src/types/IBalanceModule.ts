@@ -58,6 +58,10 @@ export type FetchBalanceErrors = Array<{ tokenId: TokenId; address: Address; err
 export type FetchBalanceResults = {
   success: IBalance[]
   errors: FetchBalanceErrors
+  /**
+   * tokens identified at runtime while fetching balances, that were not part of the original request
+   */
+  dynamicTokens?: Token[]
 }
 
 export interface IBalanceModule<

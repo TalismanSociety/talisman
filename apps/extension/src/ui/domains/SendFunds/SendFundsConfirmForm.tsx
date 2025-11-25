@@ -1,26 +1,31 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
+import { Checkbox } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useAccounts, useSelectedCurrency } from "@ui/state"
+import { useSelectedCurrency } from "@ui/state"
 
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "../Networks/NetworkLogo"
+import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
 import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
+import {
+  ExternalAddressWarningProvider,
+  useExternalAddressWarning,
+} from "./useExternalAddressWarning"
 import { useSendFunds } from "./useSendFunds"
 
 const AmountDisplay = () => {
@@ -102,28 +107,57 @@ const TotalAmountRow = () => {
 
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
-  const { to, network } = useSendFunds()
-  const accounts = useAccounts("owned")
+  const { warningType, isWarningAcknowledged, setIsWarningAcknowledged } =
+    useExternalAddressWarning()
+  const { network, token } = useSendFunds()
 
-  const showWarning = useMemo(() => {
-    if (!network || !to || !accounts) return false
-    return !accounts.some((account) => isAddressEqual(account.address, to))
-  }, [accounts, to, network])
+  const handleCheckChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setIsWarningAcknowledged(e.target.checked)
+    },
+    [setIsWarningAcknowledged],
+  )
 
-  if (!showWarning) return null
+  if (warningType === "none") return null
 
   return (
     <div className="text-alert-warn bg-alert-warn/10 flex w-full items-center gap-4 rounded-sm p-4 text-xs">
       <AlertCircleIcon className="shrink-0 text-[2rem]" />
-      <div>
-        <Trans
-          t={t}
-          components={{
-            Network: <span className="font-bold text-white">{network?.name}</span>,
-          }}
-          i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
-        />
-      </div>
+      {warningType === "network" && network && token && (
+        <div>
+          <div>
+            <Trans
+              t={t}
+              components={{
+                Network: <span className="font-bold text-white">{network?.name}</span>,
+              }}
+              i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
+            />
+          </div>
+          <div className="text-body mt-4">
+            <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
+              {t("Recipient supports {{token}} on {{network}}", {
+                token: token.name,
+                network: network.name,
+              })}
+            </Checkbox>
+          </div>
+        </div>
+      )}
+      {warningType === "alpha" && (
+        <div>
+          <div>
+            {t(
+              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.",
+            )}
+          </div>
+          <div className="text-body mt-2">
+            <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
+              {t("Recipient is not a centralized exchange")}
+            </Checkbox>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -131,6 +165,7 @@ export const ExternalRecipientWarning = () => {
 const SendButton = () => {
   const { t } = useTranslation()
   const { network, onSubmitted, transaction, txInfo } = useSendFunds()
+  const { canConfirm } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
 
@@ -200,7 +235,7 @@ const SendButton = () => {
           label={t("Confirm")}
           onSubmit={handleSubmit}
           tx={tx}
-          disabled={!isReady}
+          disabled={!isReady || !canConfirm}
           containerId="main"
         />
       </div>
@@ -339,42 +374,62 @@ export const SendFundsConfirmForm = () => {
   }, [transaction])
 
   return (
-    <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
-      <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
-        <ScrollContainer
-          className="w-full grow"
-          innerClassName="flex flex-col w-full items-center space-between min-h-full"
-        >
-          <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
-          <div className="w-full grow">
-            <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-              <div className="text-body flex h-16 items-center justify-between gap-8">
-                <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
-                <AmountDisplay />
+    <ExternalAddressWarningProvider>
+      <RiskAnalysisProvider riskAnalysis={riskAnalysis}>
+        <div className="flex h-full w-full flex-col items-center gap-6 px-12 pb-8">
+          <ScrollContainer
+            className="w-full grow"
+            innerClassName="flex flex-col w-full items-center space-between min-h-full"
+          >
+            <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
+            <div className="w-full grow">
+              <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
+                <div className="text-body flex h-16 items-center justify-between gap-8">
+                  <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
+                  <AmountDisplay />
+                </div>
+                <div className="flex h-16 items-center justify-between gap-8">
+                  <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
+                  <AddressDisplay className="h-16" address={from} networkId={network?.id} />
+                </div>
+                <div className="flex h-16 items-center justify-between gap-8">
+                  <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
+                  <AddressDisplay className="h-16" address={to} networkId={network?.id} />
+                </div>
+                <div className="py-8">
+                  <hr className="text-grey-800" />
+                </div>
+                <BittensorAlphaTokenRow />
+                <div className="mt-4 flex items-center justify-between gap-8 text-xs">
+                  <div className="text-body-secondary">{t("Network")}</div>
+                  <NetworkDisplay />
+                </div>
+                <FeeSummary />
+                <TotalAmountRow />
               </div>
-              <div className="flex h-16 items-center justify-between gap-8">
-                <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
-                <AddressDisplay className="h-16" address={from} networkId={network?.id} />
-              </div>
-              <div className="flex h-16 items-center justify-between gap-8">
-                <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
-                <AddressDisplay className="h-16" address={to} networkId={network?.id} />
-              </div>
-              <div className="py-8">
-                <hr className="text-grey-800" />
-              </div>
-              <div className="mt-4 flex items-center justify-between gap-8 text-xs">
-                <div className="text-body-secondary">{t("Network")}</div>
-                <NetworkDisplay />
-              </div>
-              <FeeSummary />
-              <TotalAmountRow />
             </div>
-          </div>
-        </ScrollContainer>
-        {riskAnalysis && <RiskAnalysisPillButton />}
-        <SendButton />
+          </ScrollContainer>
+          {riskAnalysis && <RiskAnalysisPillButton />}
+          <SendButton />
+        </div>
+      </RiskAnalysisProvider>
+    </ExternalAddressWarningProvider>
+  )
+}
+
+const BittensorAlphaTokenRow: FC = () => {
+  const { t } = useTranslation()
+  const { token } = useSendFunds()
+
+  if (token?.type !== "substrate-dtao") return null
+
+  return (
+    <div className="mt-4 flex w-full items-center justify-between gap-8 overflow-hidden text-xs">
+      <div className="text-body-secondary">{t("Token")}</div>
+      <div className={classNames("truncate", token.netuid === 0 ? "text-alert-warn" : "text-body")}>
+        {token.name}
+        <BittensorValidatorName hotkey={token.hotkey} prefix=" | " />
       </div>
-    </RiskAnalysisProvider>
+    </div>
   )
 }

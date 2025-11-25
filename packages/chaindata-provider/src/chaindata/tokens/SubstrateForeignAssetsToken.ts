@@ -18,7 +18,7 @@ export const SubForeignAssetsTokenSchema = TokenBaseSchema.extend({
 })
 export type SubForeignAssetsToken = z.infer<typeof SubForeignAssetsTokenSchema>
 
-export const SubForeignAssetsBalancesConfigSchema = z.undefined()
+export const SubForeignAssetsBalancesConfigSchema = z.strictObject({})
 
 export type SubForeignAssetsBalancesConfig = z.infer<typeof SubForeignAssetsBalancesConfigSchema>
 

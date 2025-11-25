@@ -1,5 +1,5 @@
 import { isPromise, replaySubjectFrom } from "@talismn/util"
-import { isEqual } from "lodash-es"
+import { isEqual, keyBy, values } from "lodash-es"
 import {
   distinctUntilKeyChanged,
   firstValueFrom,
@@ -18,11 +18,15 @@ import {
   NetworkId,
   NetworkOfPlatform,
   NetworkPlatform,
+  SubDTaoToken,
+  subDTaoTokenId,
   Token,
   TokenId,
   TokenOfType,
+  TokenSchema,
   TokenType,
 } from "../chaindata"
+import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
@@ -51,23 +55,35 @@ const DEFAULT_STORAGE: ChaindataStorage = {
 export type ChaindataProviderOptions = {
   persistedStorage?: ChaindataStorage | Promise<ChaindataStorage | undefined>
   customChaindata$?: Observable<CustomChaindata> | CustomChaindata
+  dynamicTokens$?: ReplaySubject<Token[]>
 }
 
 export class ChaindataProvider implements IChaindataProvider {
   #storage$: ReplaySubject<ChaindataStorage>
   #chaindata$: Observable<Chaindata>
+  #dynamicTokens$: ReplaySubject<Token[]>
 
-  constructor({ persistedStorage, customChaindata$ }: ChaindataProviderOptions = {}) {
+  constructor({
+    persistedStorage,
+    customChaindata$,
+    dynamicTokens$,
+  }: ChaindataProviderOptions = {}) {
     tryToDeleteOldChaindataDb()
 
     // merge persistedStorage with DEFAULT_STORAGE to make sure there's no missing keys
     const mergedStorage = isPromise(persistedStorage)
       ? persistedStorage.then((storage) => ({ ...DEFAULT_STORAGE, ...storage }))
       : { ...DEFAULT_STORAGE, ...persistedStorage }
-
     this.#storage$ = replaySubjectFrom(mergedStorage)
     const defaultChaindata$ = getDefaultChaindata$(this.#storage$)
-    this.#chaindata$ = getCombinedChaindata$(defaultChaindata$, customChaindata$)
+
+    this.#dynamicTokens$ = replaySubjectFrom(dynamicTokens$ ?? [])
+
+    this.#chaindata$ = getCombinedChaindata$(
+      defaultChaindata$,
+      customChaindata$,
+      this.#dynamicTokens$,
+    )
   }
 
   /**
@@ -185,6 +201,62 @@ export class ChaindataProvider implements IChaindataProvider {
       "Failed to get token by id",
       this.getTokenById$(id, type),
     )) as R | null
+  }
+
+  /**
+   * Registers token dynamically a runtime. used for SPL and dTAO tokens.
+   * @param tokens
+   */
+  async registerDynamicTokens(tokens: Token[]) {
+    if (!tokens.length) return
+
+    // check schema
+    tokens.forEach((t) => TokenSchema.parse(t))
+
+    const currentStorage = await firstValueFrom(this.#dynamicTokens$)
+    const currentById = keyBy<Token>(currentStorage, (t) => t.id)
+    const newById = keyBy<Token>(
+      tokens.filter((t) => TokenSchema.parse(t)),
+      (t) => t.id,
+    )
+    const dynamicTokens = values<Token>({ ...currentById, ...newById }).sort((a, b) =>
+      a.id.localeCompare(b.id),
+    )
+
+    // update only if necessary
+    if (!isEqual(currentStorage, dynamicTokens)) {
+      this.#dynamicTokens$.next(dynamicTokens)
+    }
+  }
+
+  /**
+   * dynamic tokens are created when they are first detected by the balance modules.
+   * this method syncs their metadata (name, symbol, logo) with custom logic specific to each token type
+   */
+  async syncDynamicTokens() {
+    const dynamicTokens = await firstValueFrom(this.#dynamicTokens$)
+    const updates: Token[] = []
+
+    for (const token of dynamicTokens) {
+      if (token.type === "substrate-dtao") {
+        const templateTokenId = subDTaoTokenId(token.networkId, token.netuid)
+        const templateToken = await this.getTokenById(templateTokenId, "substrate-dtao")
+        if (!templateToken) continue
+        const updatedToken: SubDTaoToken = {
+          ...token,
+          symbol: templateToken.symbol,
+          name: templateToken.name,
+          logo: templateToken.logo,
+          subnetName: templateToken.subnetName,
+        }
+        if (!isEqual(token, updatedToken)) updates.push(updatedToken)
+      }
+    }
+
+    if (updates.length) {
+      log.debug("[ChaindataProvider] syncDynamicTokens: updating tokens", updates)
+      this.registerDynamicTokens(updates)
+    }
   }
 
   /**

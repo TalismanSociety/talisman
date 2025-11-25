@@ -39,12 +39,14 @@ export type AppStoreData = {
   hideManageAccountsWelcome?: boolean
   hideBittensorSubnetStakeWarning?: boolean
   hideGetStarted?: boolean
+  hideSeekTaoDiscountDrawer?: boolean
 
   // dismissed banners
   hideUnifiedAddressBanner?: boolean
   hideAutonomysQuestBanner?: boolean
   hideSeekBenefitsBanner?: boolean
   hideSeekPresaleBanner?: boolean
+  hideAssetHubMigrationBanner?: boolean
 
   // represents a migration that is currently running
   currentMigration?: CurrentMigration
@@ -127,6 +129,7 @@ if (DEBUG) {
       hideAutonomysQuestBanner: false,
       hideSeekBenefitsBanner: false,
       hideSeekPresaleBanner: false,
+      hideAssetHubMigrationBanner: false,
     })
   }
   hostObj.setAppSettings = (settings: Partial<AppStoreData>) => {

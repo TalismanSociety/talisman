@@ -1,8 +1,8 @@
-import { startCase } from "lodash-es"
+import { startCase, uniq } from "lodash-es"
 
 import { Network } from "./chaindata"
 
-type ExplorerQuery =
+export type BlockExplorerQuery =
   | {
       type: "address"
       // to be used for contracts mainly, otherwise use "account"
@@ -32,15 +32,17 @@ type ExplorerQuery =
       hash: `0x${string}`
     }
 
-export const getBlockExplorerUrls = (network: Network, query: ExplorerQuery): string[] => {
-  return network.blockExplorerUrls
-    .map((explorerUrl) => getExplorerUrl(explorerUrl, query, network.rpcs?.[0]))
-    .filter(Boolean) as string[]
+export const getBlockExplorerUrls = (network: Network, query: BlockExplorerQuery): string[] => {
+  return uniq(
+    network.blockExplorerUrls
+      .map((explorerUrl) => getExplorerUrl(explorerUrl, query, network.rpcs?.[0]))
+      .filter(Boolean) as string[],
+  )
 }
 
 const getExplorerUrl = (
   explorerUrl: string,
-  query: ExplorerQuery,
+  query: BlockExplorerQuery,
   rpcUrl?: string,
 ): string | null => {
   if (explorerUrl.includes("{RPC_URL}")) {
@@ -95,14 +97,17 @@ const getExplorerHost = (explorerUrl: URL): ExplorerHost => {
   return parts.length > 2 ? parts.slice(-2).join(".") : hostname
 }
 
-const getQueryPath = (query: ExplorerQuery, host: ExplorerHost): string | null => {
+const getQueryPath = (query: BlockExplorerQuery, host: ExplorerHost): string | null => {
   switch (query.type) {
     case "transaction":
       switch (host) {
         case "avail.so":
         case "polkadot.js":
-        case "statescan.io":
           return null
+        case "statescan.io":
+          return `/extrinsics/${query.id}`
+        case "taostats.io":
+          return `/hash/${query.id}`
         default:
           return `/tx/${query.id}`
       }
@@ -114,6 +119,8 @@ const getQueryPath = (query: ExplorerQuery, host: ExplorerHost): string | null =
         case "statescan.io":
         case "subscan.io":
           return `/accounts/${query.address}`
+        case "taostats.io":
+          return `/account/${query.address}`
         default:
           return `/address/${query.address}`
       }

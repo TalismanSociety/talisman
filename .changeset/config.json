@@ -13,7 +13,6 @@
     "extension",
     "extension-core",
     "extension-shared",
-    "playground",
     "talisman-ui",
     "balances-bench"
   ]

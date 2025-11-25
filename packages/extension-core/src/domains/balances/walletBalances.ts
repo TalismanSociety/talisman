@@ -44,7 +44,11 @@ export const walletBalances$ = walletAddressesByTokenId$.pipe(
   firstThenDebounce(500),
   tap({
     subscribe: () => log.debug("[balances] starting main subscription"),
-    unsubscribe: () => log.debug("[balances] stopping main subscription"),
+    unsubscribe: () => {
+      log.debug("[balances] stopping main subscription")
+      // doing it on unsubscribe ensures we do not restart while subscriptions are active
+      chaindataProvider.syncDynamicTokens()
+    },
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(3000),

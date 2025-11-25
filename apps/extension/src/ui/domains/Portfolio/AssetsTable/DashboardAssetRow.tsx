@@ -1,11 +1,14 @@
 import { Balances } from "@talismn/balances"
+import { isAddressEqual } from "@talismn/crypto"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { isAccountOwned } from "extension-core"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { EarnPillButton } from "@ui/domains/Earn"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
@@ -29,7 +32,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
-  const { selectedAccount } = usePortfolioNavigation()
+  const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -46,11 +49,21 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
   const remoteConfig = useRemoteConfig()
-  const showEarnButton = useMemo(
-    () => token?.id && remoteConfig.earn.earnButtonTokenIds.includes(token.id),
-    [token?.id, remoteConfig.earn.earnButtonTokenIds],
-  )
   const { canBond } = useBondButton({ balances })
+  const showEarnButton = useMemo(
+    () =>
+      !canBond &&
+      token?.id &&
+      remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
+      balances
+        .find({ tokenId: token.id })
+        .each.some((b) =>
+          selectedAccounts.some(
+            (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
+          ),
+        ),
+    [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
+  )
 
   if (!token || !network || !summary) return null
 
@@ -70,7 +83,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           <div className="flex grow flex-col justify-center gap-2">
             <div className="flex items-center gap-3">
               <div className="text-body flex items-center gap-4 text-base font-bold">
-                {token.symbol}
+                <TokenDisplaySymbol tokenId={token.id} />
                 {!!network.isTestnet && (
                   <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
                     {t("Testnet")}
@@ -89,7 +102,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
               </div>
             )}
             {!isUniswapV2LpToken && !!rate && (
-              <AssetPrice tokenId={token.id} className="text-body-secondary" />
+              <AssetPrice tokenId={token.id} className="text-body-secondary" balances={balances} />
             )}
           </div>
         </div>
@@ -125,18 +138,26 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
         </div>
       </button>
       {/* Dynamic button positioning based on which buttons are shown */}
-      <div className="absolute right-2 top-0 hidden h-[6.6rem] flex-row items-center justify-center gap-2 group-hover:flex">
-        {canBond && <BondPillButton balances={balances} className="[>svg]:text-[2rem] text-base" />}
-        {showEarnButton && selectedAccount?.type !== "watch-only" && (
+      {showEarnButton && (
+        <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
-        )}
-      </div>
-      {canBond && (
-        <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-          <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
-            <ZapFastIcon className="size-6" />
-          </div>
         </div>
+      )}
+      {canBond && (
+        <>
+          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+            <BondPillButton
+              balances={balances}
+              isPortfolio
+              className="[>svg]:text-[2rem] text-base"
+            />
+          </div>
+          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+              <ZapFastIcon className="size-6" />
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
