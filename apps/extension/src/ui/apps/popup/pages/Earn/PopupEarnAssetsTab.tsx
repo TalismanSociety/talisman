@@ -16,7 +16,7 @@ import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalances
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useYieldSearch } from "@ui/state/yield"
+import { useTalismanNetworkIdFromYieldNetworkId, useYieldSearch } from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -35,6 +35,7 @@ const PopupYieldPositionRow: FC<{
 }> = ({ position, tokenBalance }) => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network)
 
   const handleClick = useCallback(() => {
     // Get validator address for the position
@@ -77,7 +78,7 @@ const PopupYieldPositionRow: FC<{
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
             </div>
-            <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
+            <NetworkLogo networkId={networkId} className="inline-block text-base" />
           </div>
           <div className="w-[16rem] shrink-0">
             <div className="flex w-full flex-col items-end gap-1 overflow-hidden">
@@ -203,6 +204,10 @@ const PopupEarnTokenRow: FC<{
   onToggle: (tokenSymbol: string) => void
 }> = ({ tokenData, isExpanded, onToggle }) => {
   const { t } = useTranslation()
+  // TODO check this, feels like tokendata.positions is multi network
+  const networkId = useTalismanNetworkIdFromYieldNetworkId(
+    tokenData.positions[0]?.position.product?.network,
+  )
 
   const handleToggle = useCallback(() => {
     onToggle(tokenData.tokenSymbol)
@@ -244,10 +249,7 @@ const PopupEarnTokenRow: FC<{
                 </TooltipTrigger>
                 <TooltipContent>{tokenData.tokenSymbol}</TooltipContent>
               </Tooltip>
-              <NetworkLogo
-                networkId={tokenData.positions[0]?.position.networkId}
-                className="shrink-0 text-base"
-              />
+              <NetworkLogo networkId={networkId} className="shrink-0 text-base" />
             </div>
             <Tooltip>
               <TooltipTrigger asChild>

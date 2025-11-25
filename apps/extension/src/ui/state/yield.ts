@@ -1,14 +1,21 @@
 import { bind } from "@react-rxjs/core"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 import {
   fetchYieldProducts,
+  getTalismanNetworkIdToYieldNetworkIdMap,
+  getYieldNetworkIdToTalismanNetworkIdMap,
+  Networks,
   YieldPosition,
   YieldsControllerGetYieldsParamsExtended,
 } from "extension-core"
-import { BehaviorSubject, Observable, shareReplay } from "rxjs"
+import { log } from "extension-shared"
+import { BehaviorSubject, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
+
+import { remoteConfig$ } from "./remoteConfig"
 
 // Add new observable for grouped yield balances using bind()
 const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subscriber) => {
@@ -17,6 +24,8 @@ const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subs
   })
 
   return () => {
+    // TODO remove after unsubscribe works
+    log.debug("[frontend] Unsubscribing from api.yieldBalancesGroupedSubscribe")
     unsubscribe()
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
@@ -124,3 +133,27 @@ const subjectDiscoverSearch$ = new BehaviorSubject<string>("")
 export const [useDiscoverSearch, discoverSearch$] = bind(subjectDiscoverSearch$)
 
 export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
+
+export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
+  bind(remoteConfig$.pipe(map(getYieldNetworkIdToTalismanNetworkIdMap)))
+
+export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYieldNetworkId$] =
+  bind(
+    (yieldNetworkId: Networks | null | undefined) =>
+      yieldNetworkIdToTalismanNetworkIdMap$.pipe(
+        map((map) => map[yieldNetworkId as Networks] ?? null),
+      ),
+    null,
+  )
+
+export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
+  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldNetworkIdMap)))
+
+export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalismanNetworkId$] =
+  bind(
+    (talismanNetworkId: NetworkId | null | undefined) =>
+      talismanNetworkIdToYieldNetworkIdMap$.pipe(
+        map((map) => map[talismanNetworkId as NetworkId] ?? null),
+      ),
+    null,
+  )

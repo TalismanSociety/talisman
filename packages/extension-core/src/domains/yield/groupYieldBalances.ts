@@ -1,4 +1,3 @@
-import { mapYieldNetworkToNetworkId } from "./networkMapping"
 import { BalanceDto, YieldBalancesDtoWithProduct, YieldPosition } from "./types"
 
 // Helper function to safely extract validatorAddress from an item
@@ -165,8 +164,6 @@ export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): Yiel
       validatorAddress, // Preserve validator address if available
       displayName,
       totalAmountUsd,
-      networkId:
-        mapYieldNetworkToNetworkId(firstBalance.token.network) || firstBalance.token.network,
     })
   }
 

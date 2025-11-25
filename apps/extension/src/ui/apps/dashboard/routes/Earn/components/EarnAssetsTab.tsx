@@ -18,7 +18,7 @@ import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAc
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { usePortfolioGlobalData } from "@ui/state"
-import { useYieldSearch } from "@ui/state/yield"
+import { useTalismanNetworkIdFromYieldNetworkId, useYieldSearch } from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -39,6 +39,7 @@ const YieldPositionRow: FC<{
 }> = ({ position, tokenBalance, status, noCountUp: _noCountUp }) => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network)
 
   const validator = (tokenBalance as unknown as { validator?: { name?: string; logoURI?: string } })
     ?.validator
@@ -80,7 +81,7 @@ const YieldPositionRow: FC<{
             <div className="truncate text-white" title={position.displayName}>
               {position.displayName}
             </div>
-            <NetworkLogo networkId={position.networkId} className="inline-block text-base" />
+            <NetworkLogo networkId={networkId} className="inline-block text-base" />
             <div className="text-body-secondary border-grey-500 rounded-xs border px-2 py-1 text-[0.8rem]">
               {(position.product?.mechanics.type || "").toLocaleUpperCase()}
             </div>
@@ -151,6 +152,10 @@ const DefiTokenRow: FC<{
 }> = ({ tokenData, isExpanded, onToggle }) => {
   const { t } = useTranslation()
 
+  const networkId = useTalismanNetworkIdFromYieldNetworkId(
+    tokenData.positions[0]?.position.product?.network,
+  )
+
   const handleToggle = useCallback(() => {
     onToggle(tokenData.tokenSymbol)
   }, [onToggle, tokenData.tokenSymbol])
@@ -184,10 +189,7 @@ const DefiTokenRow: FC<{
           <div className="flex flex-col gap-2">
             <div className="text-body flex items-center gap-3 text-sm font-[650]">
               {tokenData.tokenSymbol}
-              <NetworkLogo
-                networkId={tokenData.positions[0]?.position.networkId}
-                className="text-base"
-              />
+              <NetworkLogo networkId={networkId} className="text-base" />
             </div>
             <div className="text-body-secondary text-sm">
               {tokenData.holdingsCount}{" "}

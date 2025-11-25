@@ -52,6 +52,7 @@ export type RemoteConfigStoreData = {
   }
   earn: {
     earnButtonTokenIds: TokenId[]
+    /** Yield.xyz network ID => Talisman NetworkId */
     yieldxyzNetworks: Record<string, NetworkId>
   }
 

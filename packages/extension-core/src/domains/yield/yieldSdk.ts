@@ -28,7 +28,6 @@ class YieldSDKService {
         apiKey: "talisman",
       })
       this.initialized = true
-      log.debug("[Yield SDK] Configured successfully")
     } catch (error) {
       log.error("[Yield SDK] Configuration failed", { error })
     }

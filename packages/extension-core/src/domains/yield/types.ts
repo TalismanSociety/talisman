@@ -54,7 +54,7 @@ export interface YieldPosition extends YieldBalancesDtoWithProduct {
   // Display-ready fields
   displayName: string
   totalAmountUsd: number
-  networkId: string
+  // networkId: string
 }
 
 // UI subscription response type (store-backed), mirroring DeFi

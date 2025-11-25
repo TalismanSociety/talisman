@@ -3,6 +3,7 @@ import { Networks } from "extension-core"
 /**
  * Mapping of chain IDs to Yield.xyz network names
  * This data is sourced from Yield.xyz's supported networks list
+ * @deprecated DOT NOT USE
  */
 const yieldNetworkMapping: Record<string, string> = {
   "1": "ethereum",
@@ -36,7 +37,7 @@ const yieldNetworkMapping: Record<string, string> = {
 /**
  * Maps network platform and chain ID to Yield.xyz compatible network names
  * Uses dynamic mapping from Yield.xyz supported networks
- *
+ * @deprecated DOT NOT USE
  * @param platform - The network platform (e.g., 'ethereum', 'polkadot', 'solana')
  * @param chainId - The chain ID as a string (e.g., '1', '8453')
  * @returns The Yield.xyz compatible network name, or null if not supported
@@ -55,7 +56,7 @@ export function mapToYieldNetwork(platform: Networks, chainId: string): Networks
 
 /**
  * Maps a network object to Yield.xyz compatible network name
- *
+ * @deprecated DOT NOT USE
  * @param network - The network object with platform and id properties
  * @returns The Yield.xyz compatible network name, or null if network is not available
  */
@@ -71,7 +72,7 @@ export function mapNetworkToYieldNetwork(
 
 /**
  * Maps Yield.xyz network name to network ID
- *
+ * @deprecated DOT NOT USE
  * @param yieldNetwork - The Yield.xyz network name (e.g., 'ethereum', 'base')
  * @returns The network ID as a string, or undefined if not supported
  */

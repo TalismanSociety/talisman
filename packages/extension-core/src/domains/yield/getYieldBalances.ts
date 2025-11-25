@@ -1,30 +1,33 @@
 import { getQuery$, keepAlive } from "@talismn/util"
-import { BalancesQueryDto, Networks } from "@yieldxyz/sdk"
-import chunk from "lodash-es/chunk"
-import { combineLatest, firstValueFrom, from, map, shareReplay, switchMap } from "rxjs"
+import { BalancesQueryDto } from "@yieldxyz/sdk"
+import { log } from "extension-shared"
+import { chunk, isEqual, uniq } from "lodash-es"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  firstValueFrom,
+  from,
+  map,
+  shareReplay,
+  switchMap,
+  tap,
+} from "rxjs"
 
-import { walletReady$ } from "../../libs/isWalletReady"
-import { chaindataProvider } from "../../rpcs/chaindata"
-import { isAddressCompatibleWithNetwork } from "../accounts/helpers"
-import { balancesStore$ } from "../balances/store.balances"
-import { keyringStore } from "../keyring/store"
+import { remoteConfigStore } from "../app/store.remoteConfig"
+import { walletBalances$ } from "../balances/walletBalances"
 import { fetchYieldBalances } from "./fetchYieldBalances"
 import { createYieldPositions } from "./groupYieldBalances"
-import { mapToYieldNetwork } from "./networkMapping"
+import { getTalismanNetworkIdToYieldNetworkIdMap } from "./helpers"
 import { YieldBalancesDtoWithProduct, YieldDto } from "./types"
 import { yieldSdk } from "./yieldSdk"
 
-const REFRESH_INTERVAL = 10_000
+const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
+const BATCH_SIZE = 50
+
+// TODO delete or rework the cache, otherwise positions will keep appearing after exiting, until next browser restart.
 
 // Shared product cache to deduplicate product fetches across batches
 const productCache = new Map<string, Promise<YieldDto>>()
-
-const accountAddresses$ = keyringStore.accounts$.pipe(
-  map((accounts) => {
-    const addresses = accounts.map((a) => a.address)
-    return addresses
-  }),
-)
 
 // Fetch a single batch of queries with shared product caching
 const fetchBatchWithProducts = async (
@@ -37,7 +40,7 @@ const fetchBatchWithProducts = async (
   // Use shared cache for products to avoid duplicate fetches across batches
   const products = await Promise.all(
     yieldIds.map(async (yieldId) => {
-      if (signal.aborted) return null
+      signal.throwIfAborted()
       if (!productCache.has(yieldId)) {
         productCache.set(yieldId, yieldSdk.getYield(yieldId))
       }
@@ -56,15 +59,15 @@ const fetchBatchWithProducts = async (
 }
 
 // Main function that handles batching and parallel execution
-const fetchYieldBalancesForAddresses = async (
-  addresses: string[],
+const fetchYieldBalanceQueries = async (
+  queries: BalancesQueryDto[],
   signal: AbortSignal,
 ): Promise<YieldBalancesDtoWithProduct[]> => {
   // Clear product cache at start of each polling cycle to ensure fresh data
   productCache.clear()
 
-  const queries = await buildQueries(addresses)
-  const batches = chunk(queries, 1)
+  // const queries = await buildQueries(addresses)
+  const batches = chunk(queries, BATCH_SIZE)
 
   if (batches.length === 0) return []
   if (batches.length === 1) return fetchBatchWithProducts(batches[0], signal)
@@ -77,65 +80,54 @@ const fetchYieldBalancesForAddresses = async (
   return results.flat()
 }
 
-export const yieldBalancesGrouped$ = walletReady$.pipe(
-  switchMap(() =>
-    accountAddresses$.pipe(
-      switchMap((addresses) =>
-        getQuery$({
-          namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
-          args: addresses,
-          queryFn: (addresses, signal) => fetchYieldBalancesForAddresses(addresses, signal),
-          refreshInterval: REFRESH_INTERVAL,
-        }).pipe(
-          map((result) => {
-            if (result.status === "loaded") {
-              return { status: "success", data: createYieldPositions(result.data) }
-            }
-            return { status: "loading", data: [] }
-          }),
-        ),
-      ),
+const walletYieldQueries$ = combineLatest([
+  // walletBalances filters out all incompatible or balanceless network/account combinations already
+  walletBalances$,
+  // just need to match network/account pairs against supported networks, defined in remote config
+  remoteConfigStore.observable,
+]).pipe(
+  map(([balances, remoteConfig]) => {
+    const networksIdMap = getTalismanNetworkIdToYieldNetworkIdMap(remoteConfig)
+
+    return uniq(
+      balances.balances
+        .filter((b) => networksIdMap[b.networkId])
+        .map((b) => `${b.address}::${b.networkId}`),
+    )
+      .sort()
+      .map((serialized): BalancesQueryDto => {
+        const [address, networkId] = serialized.split("::")
+        return { address, network: networksIdMap[networkId] }
+      })
+  }),
+  distinctUntilChanged<BalancesQueryDto[]>(isEqual),
+  shareReplay({ refCount: true, bufferSize: 1 }),
+)
+
+export const walletYieldPositions$ = walletYieldQueries$.pipe(
+  switchMap((queries) =>
+    getQuery$({
+      namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
+      args: queries,
+      queryFn: fetchYieldBalanceQueries,
+      refreshInterval: REFRESH_INTERVAL,
+    }).pipe(
+      map((result) => {
+        if (result.status === "loaded") {
+          return { status: "success", data: createYieldPositions(result.data) }
+        }
+        return result
+      }),
     ),
   ),
+  tap({
+    subscribe: () => {
+      log.debug("[yield.xyz] starting yield balances subscription")
+      // TODO save to store
+    },
+    unsubscribe: () => log.debug("[yield.xyz] stopping yield balances subscription"),
+  }),
+  // TODO startWith() from store
   shareReplay({ refCount: true, bufferSize: 1 }),
   keepAlive(60000),
 )
-
-const buildQueries = async (addresses: string[]): Promise<BalancesQueryDto[]> => {
-  const networksMap = await chaindataProvider.getNetworksMapById()
-  const allBalances = (await firstValueFrom(balancesStore$)).balances
-
-  const queries: BalancesQueryDto[] = []
-  const seen = new Set<string>()
-
-  for (const address of addresses) {
-    const addressBalances = allBalances.filter((b) => b.address === address)
-    const networks = new Set<Networks>()
-
-    for (const bal of addressBalances) {
-      const net = networksMap[bal.networkId]
-      if (!net) continue
-      const yieldNet = mapToYieldNetwork(net.platform, net.id)
-      if (yieldNet) networks.add(yieldNet as Networks)
-    }
-
-    for (const network of networks) {
-      // Only query if address is compatible with network
-      const networkObj =
-        networksMap[
-          Object.keys(networksMap).find((id) => {
-            const net = networksMap[id]
-            return net && mapToYieldNetwork(net.platform, net.id) === network
-          })!
-        ]
-      if (!networkObj || !isAddressCompatibleWithNetwork(networkObj, address)) continue
-
-      const key = `${address}-${network}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      queries.push({ address, network })
-    }
-  }
-
-  return queries
-}

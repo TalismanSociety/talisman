@@ -13,13 +13,13 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
+import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"
 import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldPosition } from "../hooks/useYieldPosition"
-import { mapYieldNetworkToNetworkId } from "../utils/networkMapping"
 import { mapYieldInputTokenToTokenId, mapYieldTokenToTokenId } from "../utils/tokenMapping"
 
 export const PopupYieldPosition: FC<{
@@ -225,7 +225,7 @@ const YieldPositionHeader: FC<{
   hasSuppliedBalances?: boolean
 }> = ({ position, onAddToPosition, onClaimClick, onWithdrawClick, hasSuppliedBalances }) => {
   const { genericEvent } = useAnalytics()
-  const networkId = mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
+  const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network)
   const network = useNetworkById(networkId)
 
   const hasClaimableRewards = useMemo(() => {

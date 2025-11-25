@@ -1,7 +1,5 @@
 import type {
   ActionDto,
-  BalancesRequestDto,
-  BalancesResponseDto,
   CreateActionDto,
   CreateManageActionDto,
   SubmitHashDto,
@@ -70,19 +68,19 @@ class YieldApiService {
   /**
    * Fetch user yield balances across networks
    */
-  async getYieldBalances(request: BalancesRequestDto): Promise<BalancesResponseDto> {
-    try {
-      log.debug("[Yield API] Fetching balances via SDK", { request })
+  // async getYieldBalances(request: BalancesRequestDto): Promise<BalancesResponseDto> {
+  //   try {
+  //     log.debug("[Yield API] Fetching balances via SDK", { request })
 
-      const result = await yieldSdk.getAggregateBalances(request)
+  //     const result = await yieldSdk.getAggregateBalances(request)
 
-      log.debug("[Yield API] Balances fetched", { result })
-      return result as BalancesResponseDto
-    } catch (error) {
-      log.error("[Yield API] Failed to fetch balances", { error, request })
-      throw error
-    }
-  }
+  //     log.debug("[Yield API] Balances fetched", { result })
+  //     return result as BalancesResponseDto
+  //   } catch (error) {
+  //     log.error("[Yield API] Failed to fetch balances", { error, request })
+  //     throw error
+  //   }
+  // }
 
   /**
    * Fetch validators for a specific yield product

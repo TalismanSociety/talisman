@@ -1,6 +1,6 @@
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
+import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
@@ -29,11 +29,16 @@ walletReady.then(async () => {
   }
 })
 
+// TODO: normalize function to order items consistently
+const normalizeYieldBalances = (items: YieldPositionItem[]): YieldPositionItem[] => {
+  return items?.concat().sort((a, b) => a.yieldId.localeCompare(b.yieldId)) || []
+}
+
 // persist to db when store is updated
 subjectYieldBalancesStore$
-  .pipe(skip(1), debounceTime(200), distinctUntilChanged<YieldPositionItem[]>(isEqual))
-  .subscribe((items) => {
-    blobStore.set({ items })
+  .pipe(debounceTime(500), map(normalizeYieldBalances), pairwise())
+  .subscribe(([prev, items]) => {
+    if (!isEqual(prev, items)) blobStore.set({ items })
   })
 
 export const yieldBalancesStore$ = subjectYieldBalancesStore$.asObservable()

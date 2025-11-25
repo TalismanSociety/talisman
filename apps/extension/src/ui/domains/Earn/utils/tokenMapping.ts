@@ -1,14 +1,14 @@
 import { YieldDto } from "extension-core"
-import { useMemo } from "react"
 
 import { useTokens } from "@ui/state"
 
 import { mapYieldNetworkToNetworkId } from "./networkMapping"
+// import { mapYieldNetworkToNetworkId } from "./networkMapping"
 import { getTokenAddress } from "./tokenUtils"
 
 /**
  * Maps a YieldDto input token to a chaindata tokenId
- *
+ * @deprecated DO NOT USE
  * @param product - The yield product containing input tokens
  * @param tokens - Array of all available tokens from chaindata
  * @returns The tokenId if found, null otherwise
@@ -78,7 +78,7 @@ export const mapYieldInputTokenToTokenId = (
 
 /**
  * Maps a token identifier (address or symbol) and network to a chaindata tokenId
- *
+ * @deprecated DO NOT USE
  * @param identifier - The token address or symbol
  * @param network - The yield network name
  * @param tokens - Array of all available tokens from chaindata
@@ -148,7 +148,7 @@ export const mapYieldTokenToTokenId = (
 /**
  * @deprecated Use mapYieldTokenToTokenId instead
  */
-export const mapTokenSymbolToTokenId = mapYieldTokenToTokenId
+// export const mapTokenSymbolToTokenId = mapYieldTokenToTokenId
 
 /**
  * Hook to get tokenId for a yield product
@@ -156,11 +156,11 @@ export const mapTokenSymbolToTokenId = mapYieldTokenToTokenId
  * @param product - The yield product
  * @returns The tokenId if found, null otherwise
  */
-export const useYieldProductTokenId = (product: YieldDto | null): string | null => {
-  const tokens = useTokens()
+// export const useYieldProductTokenId = (product: YieldDto | null): string | null => {
+//   const tokens = useTokens()
 
-  return useMemo(() => {
-    if (!product) return null
-    return mapYieldInputTokenToTokenId(product, tokens)
-  }, [product, tokens])
-}
+//   return useMemo(() => {
+//     if (!product) return null
+//     return mapYieldInputTokenToTokenId(product, tokens)
+//   }, [product, tokens])
+// }
