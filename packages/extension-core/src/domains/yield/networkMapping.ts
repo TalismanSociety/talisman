@@ -1,30 +1,18 @@
+import { NetworkId, NetworkPlatform } from "@talismn/chaindata-provider"
+
 /**
- * Maps network platform and chain ID to Yield.xyz compatible network names
+ * Maps network platform and network ID to Yield.xyz compatible network names
  */
-export function mapToYieldNetwork(platform: string, chainId: string): string {
-  if (platform === "ethereum") {
-    switch (chainId) {
-      case "1":
-        return "ethereum"
-      case "8453":
-        return "base"
-      default:
-        // Fallback to platform for unknown EVM chains until expanded
-        return platform
-    }
+export const mapToYieldNetwork = (_platform: NetworkPlatform, networkId: NetworkId) => {
+  // TODO lookup from remote config
+  switch (networkId) {
+    case "1":
+      return "ethereum"
+    case "8453":
+      return "base"
+    default:
+      return null
   }
-
-  return platform
-}
-
-/**
- * Maps a network object to Yield.xyz compatible network name
- */
-export function mapNetworkToYieldNetwork(
-  network: { platform: string; id: string } | null | undefined,
-): string | null {
-  if (!network) return null
-  return mapToYieldNetwork(network.platform, network.id)
 }
 
 /**
@@ -33,7 +21,8 @@ export function mapNetworkToYieldNetwork(
  * @param yieldNetwork - The Yield.xyz network name (e.g., 'ethereum', 'base')
  * @returns The network ID as a string, or undefined if not supported
  */
-export function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | undefined {
+export function mapYieldNetworkToNetworkId(yieldNetwork?: string): NetworkId | null {
+  // TODO lookup from remote config
   switch (yieldNetwork) {
     case "ethereum":
       return "1"
@@ -88,6 +77,6 @@ export function mapYieldNetworkToNetworkId(yieldNetwork?: string): string | unde
     case "ton":
       return "ton"
     default:
-      return undefined
+      return null
   }
 }

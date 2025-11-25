@@ -6,7 +6,7 @@ import {
   YieldBalancesRequestDto,
   YieldsControllerGetYieldsParams,
 } from "@yieldxyz/sdk"
-import { log, YIELD_API_BASE_URL, YIELD_API_KEY } from "extension-shared"
+import { log, YIELD_API_BASE_URL } from "extension-shared"
 
 import { YieldsControllerGetYieldsBatchParams } from "./types"
 
@@ -22,15 +22,10 @@ class YieldSDKService {
   }
 
   private initialize() {
-    if (!YIELD_API_KEY) {
-      log.error("[Yield SDK] No API key configured")
-      return
-    }
-
     try {
       sdk.configure({
-        apiKey: YIELD_API_KEY,
         baseURL: YIELD_API_BASE_URL,
+        apiKey: "talisman",
       })
       this.initialized = true
       log.debug("[Yield SDK] Configured successfully")
@@ -89,7 +84,6 @@ class YieldSDKService {
     const url = `${YIELD_API_BASE_URL}/yields?${queryParams.toString()}`
     const response = await fetch(url, {
       headers: {
-        "Authorization": `Bearer ${YIELD_API_KEY}`,
         "Content-Type": "application/json",
       },
     })
