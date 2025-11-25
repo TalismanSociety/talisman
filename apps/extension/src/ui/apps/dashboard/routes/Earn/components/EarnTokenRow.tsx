@@ -109,7 +109,7 @@ export const EarnTokenRow: FC<{
                 </div>
               )}
               {!isUniswapV2LpToken && !!rate && (
-                <AssetPrice tokenId={token.id} className="text-body-secondary" />
+                <AssetPrice tokenId={token.id} className="text-body-secondary" balances={null} />
               )}
             </div>
           </div>
