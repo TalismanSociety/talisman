@@ -11,14 +11,13 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useAppState, useFeatureFlag, useRemoteConfig } from "@ui/state"
+import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { useSeekBenefitsModal } from "../SeekBenefits/SeekBenefitsModal"
 import {
   GetStartedAddAccountIcon,
-  GetStartedBitgetIcon,
   GetStartedBuyIcon,
   GetStartedEyeIcon,
   GetStartedReceiveIcon,
@@ -41,7 +40,6 @@ export const GetStarted = () => {
     onLearnMoreClick,
     onDismissClick,
     onSeekClick,
-    onTradeClick,
   } = useGetStarted()
 
   const canBuy = useFeatureFlag("BUY_CRYPTO")
@@ -115,21 +113,15 @@ export const GetStarted = () => {
       {IS_POPUP ? (
         <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
           {showSeekBenefits && (
-            <>
-              <GetStartedActionButton
-                label={t("Trade")}
-                iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
-                onClick={onTradeClick}
-              />
-              <GetStartedActionButton
-                label={t("Get SEEK")}
-                iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-                onClick={onSeekClick}
-              />
-            </>
+            <GetStartedActionButton
+              className="col-span-2"
+              label={t("SEEK Benefits")}
+              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+              onClick={onSeekClick}
+            />
           )}
           <GetStartedActionButton
-            label={t("Learn More")}
+            label={t("About")}
             iconTop={<ArrowRightCircleIcon className="-ml-2 size-12" />}
             onClick={onLearnMoreClick}
           />
@@ -137,23 +129,16 @@ export const GetStarted = () => {
       ) : (
         <div className={cn("grid gap-8", showSeekBenefits ? "grid-cols-3" : "grid-cols-1")}>
           {showSeekBenefits && (
-            <>
-              <GetStartedActionButton
-                label={t("Trade on Bitget")}
-                iconTop={<GetStartedBitgetIcon className="-ml-2 size-12" />}
-                onClick={onTradeClick}
-              />
-              <GetStartedActionButton
-                label={t("Get Talisman SEEK")}
-                iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
-                onClick={onSeekClick}
-              />
-            </>
+            <GetStartedActionButton
+              label={t("SEEK Benefits")}
+              iconTop={<GetStartedEyeIcon className="-ml-2 size-12" />}
+              onClick={onSeekClick}
+            />
           )}
           <GetStartedActionButton
-            label={t("Learn More")}
+            label={t("About Talisman")}
             description={t("Discover how Talisman can elevate your web3 journey")}
-            className="group"
+            className={cn("group", showSeekBenefits && "col-span-2")}
             iconRight={
               <ChevronRightIcon className="text-body-inactive group-hover:text-body-secondary -mr-4 size-12" />
             }
@@ -168,7 +153,6 @@ export const GetStarted = () => {
 const useGetStarted = () => {
   const ownedAccounts = useAccounts("owned")
   const hasAccounts = useMemo(() => !!ownedAccounts.length, [ownedAccounts])
-  const remoteConfig = useRemoteConfig()
 
   const navigate = useNavigate()
   const { open: onCopyAddressModal } = useCopyAddressModal()
@@ -234,12 +218,6 @@ const useGetStarted = () => {
     openSeekBenefits()
   }, [openSeekBenefits])
 
-  const onTradeClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Trade" })
-    window.open(remoteConfig.seek.tradeUrl, "_blank")
-    closeIfEmbeddedPopup()
-  }, [remoteConfig.seek.tradeUrl])
-
   return {
     isHidden,
     hasAccounts,
@@ -251,7 +229,6 @@ const useGetStarted = () => {
     onDismissClick,
     onLearnMoreClick,
     onSeekClick,
-    onTradeClick,
   }
 }
 
