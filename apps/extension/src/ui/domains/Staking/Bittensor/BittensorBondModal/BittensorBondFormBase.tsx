@@ -11,6 +11,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
@@ -118,25 +119,37 @@ const TokenInput = () => {
     return nativeToken?.symbol
   }, [isSubnetUnbond, netuid, nativeToken?.symbol])
 
-  const defaultValue = useMemo(
+  const formattedValue = useMemo(
     () => (isSubnetUnbond ? (amountAlpha?.tokens ?? "") : (amountTao?.tokens ?? "")),
     [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond],
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
+
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
+
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      if (nativeToken) {
-        try {
-          const plancks = tokensToPlanck(e.target.value, nativeToken.decimals)
+      refSkipSync.current = true
+      const nextValue = e.target.value
+      setValue(nextValue)
 
-          return setPlancks(BigInt(plancks))
-        } catch (err) {
-          // invalid input, ignore
-        }
+      if (!nativeToken || !nextValue.trim()) return setPlancks(null)
+
+      try {
+        const plancks = tokensToPlanck(nextValue, nativeToken.decimals)
+        setPlancks(BigInt(plancks))
+      } catch (err) {
+        // invalid input, ignore
+        setPlancks(null)
       }
-
-      return setPlancks(null)
     },
     [setPlancks, nativeToken],
   )
@@ -163,7 +176,7 @@ const TokenInput = () => {
         inputMode="decimal"
         placeholder="0"
         step="any"
-        defaultValue={defaultValue}
+        value={value}
         className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
         onChange={handleChange}
       />
@@ -180,21 +193,36 @@ const FiatInput = () => {
     useBittensorBondWizard()
   const currency = useSelectedCurrency()
 
-  const defaultValue = useMemo(() => {
+  const formattedValue = useMemo(() => {
     const val = amountTao?.fiat(currency) ?? ""
     return val ? String(Number(val.toFixed(2))) : val
   }, [currency, amountTao])
 
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
+
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
+
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      refSkipSync.current = true
+      const nextValue = e.target.value
+      setValue(nextValue)
+
       if (
         nativeToken &&
         tokenRates?.[currency]?.price &&
-        e.target.value &&
+        nextValue &&
         typeof swapPrice === "bigint"
       ) {
         try {
-          const fiat = parseFloat(e.target.value)
+          const fiat = parseFloat(nextValue)
           let tokens: string = (fiat / tokenRates[currency].price).toFixed(
             Math.ceil(nativeToken.decimals / 3),
           )
@@ -244,7 +272,7 @@ const FiatInput = () => {
         ref={refFiatInput}
         type="number"
         inputMode="decimal"
-        defaultValue={defaultValue}
+        value={value}
         placeholder={"0.00"}
         className="text-body peer inline-block min-w-0 bg-transparent text-xl"
         onChange={handleChange}
