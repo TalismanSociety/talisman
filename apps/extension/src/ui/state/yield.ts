@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery } from "@tanstack/react-query"
 import {
   fetchYieldProducts,
   getTalismanNetworkIdToYieldNetworkIdMap,
@@ -19,6 +19,7 @@ import { remoteConfig$ } from "./remoteConfig"
 
 // Add new observable for grouped yield balances using bind()
 const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subscriber) => {
+  // TODO rename to yieldPositionsSubscribe, or earn
   const unsubscribe = api.yieldBalancesGroupedSubscribe((loadable: Loadable<YieldPosition[]>) => {
     subscriber.next(loadable)
   })
@@ -30,58 +31,11 @@ const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subs
   }
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
+// TODO rename to useYieldPositions
 export const [useYieldBalancesGrouped, yieldBalancesGrouped$] = bind(rawYieldBalancesGrouped$, {
   status: "loading",
   data: [],
 })
-
-/**
- * Hook to fetch yield products for earning opportunities
- * Uses React Query for caching and error handling
- */
-export const useYieldProducts = (filter?: YieldsControllerGetYieldsParamsExtended) => {
-  return useQuery({
-    queryKey: ["yieldProducts", filter],
-    queryFn: () => fetchYieldProducts(filter),
-    enabled: !!filter?.network, // Only fetch when network name is available
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
-    refetchOnWindowFocus: false,
-    retry: 2,
-  })
-}
-
-/**
- * Hook to fetch yield products with infinite pagination
- * Fetches 20 items per page for better performance
- */
-export const useInfiniteYieldProducts = (
-  filter?: Omit<YieldsControllerGetYieldsParamsExtended, "limit" | "offset">,
-) => {
-  return useInfiniteQuery({
-    queryKey: ["infiniteYieldProducts", filter],
-    queryFn: ({ pageParam = 0 }) =>
-      fetchYieldProducts({
-        ...filter,
-        limit: 20,
-        offset: pageParam,
-      }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      // If we got less than 20 items, we've reached the end
-      if (lastPage.length < 20) {
-        return undefined
-      }
-      // Return next offset (current offset + 20)
-      return allPages.length * 20
-    },
-    enabled: !!filter?.network, // Only fetch when network name is available
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
-    refetchOnWindowFocus: false,
-    retry: 2,
-  })
-}
 
 /**
  * Hook to fetch yield products for a specific token with infinite pagination
@@ -96,6 +50,7 @@ export const useInfiniteYieldProductsForToken = (
 ) => {
   return useInfiniteQuery({
     queryKey: ["infiniteYieldProductsForToken", tokenIdentifier, network],
+    // TODO signal
     queryFn: ({ pageParam = 0 }) =>
       fetchYieldProducts({
         network,

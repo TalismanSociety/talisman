@@ -16,7 +16,6 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { usePortfolioGlobalData } from "@ui/state"
 import { useTalismanNetworkIdFromYieldNetworkId, useYieldSearch } from "@ui/state/yield"
 
@@ -292,12 +291,12 @@ const StakingTile = () => {
 export const EarnAssetsTab = () => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolioGlobalData()
-  const { selectedAccount, selectedFolder } = usePortfolioNavigation()
+  const { selectedAccount, selectedFolder, selectedAccounts } = usePortfolioNavigation()
   const yieldBalancesGrouped = useYieldBalancesGrouped()
   const isLoading = yieldBalancesGrouped.status === "loading"
   const search = useYieldSearch()
-  const [searchParams] = useSearchParams()
-  const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
+  // const [searchParams] = useSearchParams()
+  // const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
 
   // Get expanded state from context
   const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
@@ -315,62 +314,23 @@ export const EarnAssetsTab = () => {
     [toggleTokenExpanded],
   )
 
-  // Get selected accounts from URL params, similar to usePortfolioNavigation
-  const selectedAccounts = useMemo(() => {
-    const accountAddress = searchParams.get("account")
-    const folderId = searchParams.get("folder")
-
-    if (accountAddress) {
-      const selectedAccount = allAccounts.find((acc) => isAddressEqual(acc.address, accountAddress))
-      return selectedAccount ? [selectedAccount] : portfolioAccounts
-    }
-
-    if (folderId) {
-      const selectedFolder =
-        catalog.portfolio.find((folder) => folder.type === "folder" && folder.id === folderId) ||
-        catalog.watched.find((folder) => folder.type === "folder" && folder.id === folderId)
-      if (selectedFolder && selectedFolder.type === "folder") {
-        return allAccounts.filter((acc) =>
-          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address)),
-        )
-      }
-    }
-
-    return portfolioAccounts
-  }, [allAccounts, portfolioAccounts, catalog, searchParams])
-
   const location = useLocation()
-
-  // Get portfolio account addresses (owned + portfolio watch accounts) to match portfolio behavior
-  const portfolioAddresses = useMemo(() => {
-    return new Set(portfolioAccounts.map((account) => account.address))
-  }, [portfolioAccounts])
 
   // Convert yield balances to token-to-position mapping
   const convertedGroupedByToken = useMemo(() => {
-    if (yieldBalancesGrouped.status !== "success" || !yieldBalancesGrouped.data)
-      return new Map<string, GroupedTokenData>()
+    if (!yieldBalancesGrouped.data) return new Map<string, GroupedTokenData>()
 
     const converted = new Map<string, GroupedTokenData>()
     const lowerSearch = (search || "").toLowerCase().trim()
-    const selectedAddresses = new Set((selectedAccounts || []).map((a) => a.address))
 
     yieldBalancesGrouped.data
+      .filter((position) =>
+        selectedAccounts.some((sa) =>
+          position.balances.some((pb) => isAddressEqual(sa.address, pb.address)),
+        ),
+      )
       .filter((position) => {
-        // Check if any balance in the position belongs to portfolio addresses (owned + portfolio watch accounts)
-        const hasPortfolioAddress = position.balances.some((balance) =>
-          portfolioAddresses.has(balance.address),
-        )
-        return hasPortfolioAddress
-      })
-      .filter((position) => {
-        // Check if any balance in the position belongs to selected addresses
-        const hasSelectedAddress = selectedAddresses.size
-          ? position.balances.some((balance) => selectedAddresses.has(balance.address))
-          : true
-        return hasSelectedAddress
-      })
-      .filter((position) => {
+        // TODO move search in another useMemo
         if (!lowerSearch) return true
         const haystack: string[] = [
           position.displayName,
@@ -437,7 +397,7 @@ export const EarnAssetsTab = () => {
       })
 
     return converted
-  }, [yieldBalancesGrouped, portfolioAddresses, search, selectedAccounts])
+  }, [yieldBalancesGrouped, search, selectedAccounts])
 
   // Show grouped assets instead of individual positions
   const hasDefiAssets = convertedGroupedByToken.size > 0
