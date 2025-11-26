@@ -1,15 +1,17 @@
-import { getQuery$, keepAlive } from "@talismn/util"
+import TTLCache from "@isaacs/ttlcache"
+import { getQuery$, keepAlive, Loadable, QueryResult } from "@talismn/util"
 import { BalancesQueryDto } from "@yieldxyz/sdk"
 import { log } from "extension-shared"
 import { chunk, isEqual, uniq } from "lodash-es"
 import {
   combineLatest,
+  concatMap,
+  defer,
   distinctUntilChanged,
-  firstValueFrom,
-  from,
   map,
   shareReplay,
   switchMap,
+  take,
   tap,
 } from "rxjs"
 
@@ -18,16 +20,16 @@ import { walletBalances$ } from "../balances/walletBalances"
 import { fetchYieldBalances } from "./fetchYieldBalances"
 import { createYieldPositions } from "./groupYieldBalances"
 import { getTalismanNetworkIdToYieldNetworkIdMap } from "./helpers"
-import { YieldBalancesDtoWithProduct, YieldDto } from "./types"
+import { updateYieldPositionsStore, yieldPositionsStore$ } from "./store"
+import { YieldBalancesDtoWithProduct, YieldDto, YieldPosition } from "./types"
 import { yieldSdk } from "./yieldSdk"
 
 const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
 const BATCH_SIZE = 50
+const KEEP_ALIVE = 3_000
 
-// TODO delete or rework the cache, otherwise positions will keep appearing after exiting, until next browser restart.
-
-// Shared product cache to deduplicate product fetches across batches
-const productCache = new Map<string, Promise<YieldDto>>()
+// Products dont change and can be kept in memory for 10 minutes
+const productCache = new TTLCache<string, Promise<YieldDto>>({ ttl: 600_000 })
 
 // Fetch a single batch of queries with shared product caching
 const fetchBatchWithProducts = async (
@@ -39,7 +41,7 @@ const fetchBatchWithProducts = async (
 
   // Use shared cache for products to avoid duplicate fetches across batches
   const products = await Promise.all(
-    yieldIds.map(async (yieldId) => {
+    yieldIds.map((yieldId) => {
       signal.throwIfAborted()
       if (!productCache.has(yieldId)) {
         productCache.set(yieldId, yieldSdk.getYield(yieldId))
@@ -63,19 +65,9 @@ const fetchYieldBalanceQueries = async (
   queries: BalancesQueryDto[],
   signal: AbortSignal,
 ): Promise<YieldBalancesDtoWithProduct[]> => {
-  // Clear product cache at start of each polling cycle to ensure fresh data
-  productCache.clear()
-
-  // const queries = await buildQueries(addresses)
   const batches = chunk(queries, BATCH_SIZE)
 
-  if (batches.length === 0) return []
-  if (batches.length === 1) return fetchBatchWithProducts(batches[0], signal)
-
-  // Parallel execution with combineLatest
-  const results = await firstValueFrom(
-    combineLatest(batches.map((batch) => from(fetchBatchWithProducts(batch, signal)))),
-  )
+  const results = await Promise.all(batches.map((batch) => fetchBatchWithProducts(batch, signal)))
 
   return results.flat()
 }
@@ -104,30 +96,54 @@ const walletYieldQueries$ = combineLatest([
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
 
-export const walletYieldPositions$ = walletYieldQueries$.pipe(
-  switchMap((queries) =>
-    getQuery$({
-      namespace: "yield-balances-grouped-v2", // Changed namespace to invalidate cache after grouping logic update
-      args: queries,
-      queryFn: fetchYieldBalanceQueries,
-      refreshInterval: REFRESH_INTERVAL,
-    }).pipe(
-      map((result) => {
-        if (result.status === "loaded") {
-          return { status: "success", data: createYieldPositions(result.data) }
-        }
-        return result
-      }),
+export const walletYieldPositions$ = defer(() =>
+  yieldPositionsStore$.pipe(
+    take(1),
+    concatMap((defaultValue) =>
+      walletYieldQueries$.pipe(
+        switchMap((queries) =>
+          getQuery$({
+            namespace: "walletYieldPositions$",
+            args: queries,
+            queryFn: async (queries, signal) => {
+              const balances = await fetchYieldBalanceQueries(queries, signal)
+              return createYieldPositions(balances)
+            },
+            refreshInterval: REFRESH_INTERVAL,
+            defaultValue,
+          }),
+        ),
+        distinctUntilChanged<QueryResult<YieldPosition[]>>(isEqual),
+        tap({
+          next: (positions) => {
+            if (positions.status === "loaded") updateYieldPositionsStore(positions.data)
+          },
+          subscribe: () => log.debug("[yield.xyz] starting yield balances subscription"),
+          unsubscribe: () => log.debug("[yield.xyz] stopping yield balances subscription"),
+        }),
+        // TODO consolidate Loadable<T> and QueryResult<T> with a common type
+        map((val): Loadable<YieldPosition[]> => {
+          switch (val.status) {
+            case "loading":
+              return { status: "loading", data: val.data }
+            case "loaded":
+              return { status: "success", data: val.data }
+            case "error": {
+              const error = val.error as Error | undefined
+              return {
+                status: "error",
+                error: {
+                  name: error?.name ?? "QueryError",
+                  message: error?.message ?? "Failed to query yield balances",
+                },
+              }
+            }
+          }
+        }),
+        shareReplay({ refCount: true, bufferSize: 1 }),
+        keepAlive(KEEP_ALIVE),
+      ),
     ),
+    tap((val) => log.debug("[yield.xyz] yield positions emit", val)),
   ),
-  tap({
-    subscribe: () => {
-      log.debug("[yield.xyz] starting yield balances subscription")
-      // TODO save to store
-    },
-    unsubscribe: () => log.debug("[yield.xyz] stopping yield balances subscription"),
-  }),
-  // TODO startWith() from store
-  shareReplay({ refCount: true, bufferSize: 1 }),
-  keepAlive(60000),
 )

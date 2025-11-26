@@ -4,45 +4,58 @@ import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { YieldPositionItem } from "./types"
+import { YieldPosition } from "./types"
 
-type YieldBalancesStoreData = {
-  items: YieldPositionItem[]
-}
+const blobStore = getBlobStore<YieldPosition[]>("yield-balances")
 
-const blobStore = getBlobStore<YieldBalancesStoreData>("yield-balances")
+const DEFAULT_DATA: YieldPosition[] = []
 
-const DEFAULT_DATA: YieldPositionItem[] = []
-
-const subjectYieldBalancesStore$ = new ReplaySubject<YieldPositionItem[]>(1)
-
-// Initialize store immediately with default data
-subjectYieldBalancesStore$.next(DEFAULT_DATA)
+const subjectYieldPositionsStore$ = new ReplaySubject<YieldPosition[]>(1)
 
 walletReady.then(async () => {
   try {
     const data = await blobStore.get()
-    subjectYieldBalancesStore$.next(data ? data.items : DEFAULT_DATA)
+    subjectYieldPositionsStore$.next(data ?? DEFAULT_DATA)
   } catch (error) {
-    log.error("Error fetching yield balances:", error)
-    subjectYieldBalancesStore$.next(DEFAULT_DATA)
+    log.error("[yield.xyz] Error fetching yield balances:", error)
+    subjectYieldPositionsStore$.next(DEFAULT_DATA)
   }
 })
 
-// TODO: normalize function to order items consistently
-const normalizeYieldBalances = (items: YieldPositionItem[]): YieldPositionItem[] => {
-  return items?.concat().sort((a, b) => a.yieldId.localeCompare(b.yieldId)) || []
+// normalize function to order items consistently, so we can use isEqual reliably
+const normalizeYieldPositions = (items: YieldPosition[]): YieldPosition[] => {
+  return (
+    items
+      ?.map((p) => ({
+        ...p,
+        balances: p.balances.sort((a, b) => {
+          if (a.address !== b.address) return a.address.localeCompare(b.address)
+          if (a.token.address !== b.token.address)
+            return (a.token.address ?? "").localeCompare(b.token.address ?? "")
+          if (a.date !== b.date) return (a.date ?? "").localeCompare(b.date ?? "")
+          if (a.validator !== b.validator)
+            return (a.validator?.address ?? "").localeCompare(b.validator?.address ?? "")
+          log.warn("Cannot sort yield position balances:", { a, b })
+          return 0
+        }),
+      }))
+      .sort((a, b) => a.yieldId.localeCompare(b.yieldId)) || []
+  )
 }
 
 // persist to db when store is updated
-subjectYieldBalancesStore$
-  .pipe(debounceTime(500), map(normalizeYieldBalances), pairwise())
-  .subscribe(([prev, items]) => {
-    if (!isEqual(prev, items)) blobStore.set({ items })
+subjectYieldPositionsStore$
+  .pipe(debounceTime(500), map(normalizeYieldPositions), pairwise())
+  .subscribe(async ([prev, items]) => {
+    try {
+      if (!isEqual(prev, items)) await blobStore.set(items)
+    } catch (error) {
+      log.error("[yield.xyz] Error saving yield balances:", error)
+    }
   })
 
-export const yieldBalancesStore$ = subjectYieldBalancesStore$.asObservable()
+export const yieldPositionsStore$ = subjectYieldPositionsStore$.asObservable()
 
-export const updateYieldBalancesStore = (items: YieldPositionItem[]) => {
-  subjectYieldBalancesStore$.next(items)
+export const updateYieldPositionsStore = (items: YieldPosition[]) => {
+  subjectYieldPositionsStore$.next(items)
 }
