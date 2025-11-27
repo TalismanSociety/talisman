@@ -247,7 +247,7 @@ export const BittensorSubnetBondReview = () => {
                   </span>
                 </TooltipContent>
               </Tooltip>
-              {totalFeeDiscount > 0 && (
+              {(totalFeeDiscount > 0 || isSeekTaoDiscountEnabled) && (
                 <button
                   type="button"
                   className={classNames(
