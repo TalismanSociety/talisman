@@ -136,17 +136,17 @@ const supportedEvmChains: Record<string, ViemChain | undefined> = {
  */
 const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
   dot: {
-    id: subNativeTokenId("polkadot"),
-    name: "Polkadot",
+    id: subNativeTokenId("polkadot-asset-hub"),
+    name: "Polkadot Asset Hub",
     symbol: "DOT",
-    chainId: "polkadot",
+    chainId: "polkadot-asset-hub",
     networkType: "substrate",
   },
   ksm: {
-    id: subNativeTokenId("kusama"),
-    name: "Kusama",
+    id: subNativeTokenId("kusama-asset-hub"),
+    name: "Kusama Asset Hub",
     symbol: "KSM",
-    chainId: "kusama",
+    chainId: "kusama-asset-hub",
     networkType: "substrate",
   },
   usdtdot: {
