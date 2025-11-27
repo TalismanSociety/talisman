@@ -1,4 +1,4 @@
-import { WalletTransactionInfo } from "extension-core"
+import { activeNetworksStore, activeTokensStore, WalletTransactionInfo } from "extension-core"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -139,9 +139,19 @@ export const SwapConfirmSubstrate = ({
 
       closeSwapTokensModal()
       resetSwapForm()
+      if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
+      if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     },
-    [closeSwapTokensModal, fromAddress, navigate, resetSwapForm, swapModule, txInfo],
+    [
+      closeSwapTokensModal,
+      fromAddress,
+      navigate,
+      resetSwapForm,
+      swapModule?.protocol,
+      toAsset,
+      txInfo,
+    ],
   )
 
   return (
