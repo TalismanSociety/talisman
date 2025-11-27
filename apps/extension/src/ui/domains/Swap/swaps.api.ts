@@ -7,6 +7,7 @@ import BigNumber from "bignumber.js"
 import {
   isAccountAddressEthereum,
   isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAddressCompatibleWithNetwork,
@@ -806,7 +807,10 @@ export const useSetToAddress = () => {
           return
 
         // fromAddress isn't substrate, set toAddress to null
-        if (!isAccountPlatformPolkadot(fromAccount))
+        if (
+          !isAccountPlatformPolkadot(fromAccount) ||
+          (toNetwork && !isAccountCompatibleWithNetwork(toNetwork, fromAccount))
+        )
           return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
 
         // fromAddress is substrate, set toAddress to fromAddress
