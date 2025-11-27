@@ -20,7 +20,8 @@ export type RemoteConfigStoreData = {
     simpleswapApiKeyDiscounted?: string
     simpleswapDiscountedCurrencies?: string[]
     curatedTokens?: string[]
-    promotedTokens?: string[]
+    promotedBuyTokens?: string[]
+    promotedSellTokens?: string[]
   }
   coingecko: {
     apiUrl: string

@@ -30,6 +30,8 @@ type Props = {
   disableBtc?: boolean
   usdOverride?: number
   maxNativeTokenGasBuffer?: string
+  /** Used to determine which tokens should be prioritized to the top of the list */
+  priorityMode?: "buy" | "sell"
 }
 
 const hardcodedGasBufferByTokenSymbol: Record<string, number> = {
@@ -54,6 +56,7 @@ export const TokenAmountInput: FC<Props> = ({
   disabled = false,
   usdOverride,
   maxNativeTokenGasBuffer,
+  priorityMode,
 }) => {
   const { t } = useTranslation()
 
@@ -275,6 +278,7 @@ export const TokenAmountInput: FC<Props> = ({
             onSelectAsset={handleChangeAsset}
             selectedAsset={selectedAsset}
             assets={assets}
+            priorityMode={priorityMode}
           />
         </div>
       </div>

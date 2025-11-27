@@ -29,7 +29,8 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     simpleswapApiKeyDiscounted: "",
     simpleswapDiscountedCurrencies: [],
     curatedTokens: [],
-    promotedTokens: [],
+    promotedBuyTokens: [],
+    promotedSellTokens: [],
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",

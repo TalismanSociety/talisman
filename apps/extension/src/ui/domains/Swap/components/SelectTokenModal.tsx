@@ -19,9 +19,16 @@ type Props = {
   assets?: SwappableAssetWithDecimals[]
   selectedAsset?: SwappableAssetWithDecimals | null
   onSelectAsset: (asset: SwappableAssetWithDecimals | null) => void
+  /** Used to determine which tokens should be prioritized to the top of the list */
+  priorityMode?: "buy" | "sell"
 }
 
-export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSelectAsset }) => {
+export const SelectTokenModal: React.FC<Props> = ({
+  assets,
+  selectedAsset,
+  onSelectAsset,
+  priorityMode,
+}) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(null)
@@ -58,8 +65,16 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
 
   const remoteConfig = useRemoteConfig()
   const promotedTokens = useCallback(
-    (token: Token) => remoteConfig.swaps.promotedTokens?.includes(token.id) || false,
-    [remoteConfig],
+    (token: Token) => {
+      const promotedTokens =
+        priorityMode === "buy"
+          ? remoteConfig.swaps.promotedBuyTokens
+          : priorityMode === "sell"
+            ? remoteConfig.swaps.promotedSellTokens
+            : undefined
+      return promotedTokens?.includes(token.id) || false
+    },
+    [priorityMode, remoteConfig],
   )
 
   const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
