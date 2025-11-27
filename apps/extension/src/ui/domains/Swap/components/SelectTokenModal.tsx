@@ -9,7 +9,7 @@ import { Button } from "talisman-ui"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { getTokenTabs, safeTokensSetAtom, tokenTabAtom } from "../swaps.api"
@@ -56,6 +56,12 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
     [assets, handleSelectAsset, onSelectAsset],
   )
 
+  const remoteConfig = useRemoteConfig()
+  const promotedTokens = useCallback(
+    (token: Token) => remoteConfig.swaps.promotedTokens?.includes(token.id) || false,
+    [remoteConfig],
+  )
+
   const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
     useTokenFilterOptions()
 
@@ -88,6 +94,7 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
               allowUntransferable
               ownedOnly
               isInitializing={!assets}
+              priorityTokens={promotedTokens}
               tokenFilter={tokenFilter}
               tokenFilterOptions={tokenFilterOptions}
               tokenFilterDefaultOption={defaultTokenFilterOption}
