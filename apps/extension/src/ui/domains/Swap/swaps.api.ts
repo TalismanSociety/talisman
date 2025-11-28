@@ -290,11 +290,15 @@ const uniswapExtendedTokensSet = atom(async () => {
   return new Set(tokens.map((token) => `${token.chainId}:${token.address.toLowerCase()}`))
 })
 
-const talismanSafeTokensSet = atom(async () => {
-  return new Set([
-    "1:0x1fB35614aA19c80eb997adad5F71520e915003C0",
-    "137:0x2a69b0383759572081c09f0a68d3a8a955751dde",
-  ])
+const talismanSafeTokensSet = atom(async (get) => {
+  const lifiTalismanTokens = (await get(remoteConfigAtom)).swaps?.lifiTalismanTokens ?? []
+
+  const safeTokens = lifiTalismanTokens.map((tokenId) => {
+    const [chainId, _type, contractAddress] = tokenId.split(":")
+    return `${chainId}:${contractAddress}`
+  })
+
+  return new Set(safeTokens)
 })
 
 export const safeTokensSetAtom = atom(async (get) => {
