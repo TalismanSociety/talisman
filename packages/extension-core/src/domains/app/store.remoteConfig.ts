@@ -24,10 +24,13 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   swaps: {
     questApi: "",
     lifiTalismanTokens: [],
+    lifiCustomFeeTokens: {},
     simpleswapApiKey: "",
     simpleswapApiKeyDiscounted: "",
     simpleswapDiscountedCurrencies: [],
     curatedTokens: [],
+    promotedBuyTokens: [],
+    promotedSellTokens: [],
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",

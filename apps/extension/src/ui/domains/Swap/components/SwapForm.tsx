@@ -159,6 +159,7 @@ export const SwapForm = ({
               quote?.data?.quote?.data?.maxNativeTokenGasBuffer) ||
             undefined
           }
+          priorityMode="sell"
         />
         <ReverseButton />
         <TokenAmountInput
@@ -171,6 +172,7 @@ export const SwapForm = ({
           substrateAddress={fromSubstrateAccount?.address}
           disabled
           hideBalance
+          priorityMode="buy"
         />
       </div>
 

@@ -15,10 +15,13 @@ export type RemoteConfigStoreData = {
   swaps: {
     questApi?: string
     lifiTalismanTokens?: string[]
+    lifiCustomFeeTokens?: Record<string, number>
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
     simpleswapDiscountedCurrencies?: string[]
     curatedTokens?: string[]
+    promotedBuyTokens?: string[]
+    promotedSellTokens?: string[]
   }
   coingecko: {
     apiUrl: string
