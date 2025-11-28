@@ -3,13 +3,12 @@ import {
   CreditCardIcon,
   EyeIcon,
   EyeOffIcon,
-  QuestStarCircleIcon,
   RepeatIcon,
   SeekEyeIcon,
   SendIcon,
 } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
-import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -172,7 +171,6 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
-  const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const { disableActions, disabledReason } = useMemo(() => {
     const disableActions = disabled || !ownedAccounts.length
@@ -247,7 +245,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
         ))}
       </div>
       {i18n.language === "en" && // not enough space in other languages
-        (showSeekBenefits ? <SeekBenefitsLink /> : showQuestLink ? <QuestLink /> : null)}
+        !!showSeekBenefits && <SeekBenefitsLink />}
     </div>
   )
 }
@@ -272,30 +270,6 @@ const SeekBenefitsLink = () => {
         <SeekEyeIcon />
       </div>
       <div>SEEK</div>
-    </button>
-  )
-}
-const QuestLink = () => {
-  const { t } = useTranslation()
-
-  const handleQuestsClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(TALISMAN_QUEST_APP_URL, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [])
-
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "text-primary-700 hover:text-primary pointer-events-auto flex items-center gap-2.5 text-[1rem]",
-      )}
-      onClick={handleQuestsClick}
-    >
-      <div className="flex flex-col justify-center text-sm">
-        <QuestStarCircleIcon />
-      </div>
-      <div>{t("Quests")}</div>
     </button>
   )
 }
