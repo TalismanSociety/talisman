@@ -27,7 +27,6 @@ import { Tokens } from "../../../Asset/Tokens"
 import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
 import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
-import { SeekGetFeeDiscountsDrawer } from "../../Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { ROOT_NETUID } from "../utils/constants"
@@ -367,7 +366,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
     dtaoToken,
     payload,
     hotkey,
-    seekDiscountDrawer,
     stakeType,
     stakeDirection,
     netuid,
@@ -501,12 +499,6 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         onAddressSelected={handleSelectAccount}
       />
       <BittensorSelectStakeDrawer containerId={STAKING_MODAL_CONTENT_CONTAINER_ID} />
-      <SeekGetFeeDiscountsDrawer
-        isOpen={seekDiscountDrawer.isOpen}
-        onDismiss={seekDiscountDrawer.close}
-        onCloseModal={close}
-        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
-      />
     </BittensorModalLayout>
   )
 }
