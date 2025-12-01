@@ -142,7 +142,7 @@ const specialAssets: Record<string, Omit<SwappableAssetBaseType, "context">> = {
     chainId: "polkadot-asset-hub",
     networkType: "substrate",
   },
-  ksm: {
+  ksmassethub: {
     id: subNativeTokenId("kusama-asset-hub"),
     name: "Kusama Asset Hub",
     symbol: "KSM",
