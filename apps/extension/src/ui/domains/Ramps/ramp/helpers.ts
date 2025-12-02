@@ -1,9 +1,4 @@
-import { RAMPS_RAMP_PAY_URL } from "extension-shared"
-
-import { remoteConfig$ } from "@ui/state"
-
-const TALISMAN_LOGO_URL =
-  "https://raw.githubusercontent.com/TalismanSociety/talisman-web/0fa6f5a99b4729f740c1a68bbe3d2ca9c85c9daa/apps/portal/public/talisman.svg"
+import { RAMPS_RAMP_API_URL } from "extension-shared"
 
 export const getRampBuyUrl = async (
   currencyCode: string,
@@ -12,15 +7,9 @@ export const getRampBuyUrl = async (
   address: string,
   countryCode: string,
 ) => {
-  const remoteConfig = await remoteConfig$.getValue()
-
   // https://docs.ramp.network/configuration
   const params = new URLSearchParams({
-    hostApiKey: remoteConfig.ramps.rampApiKey,
-    hostLogoUrl: TALISMAN_LOGO_URL,
     defaultFlow: "ONRAMP",
-    enabledFlows: "ONRAMP,OFFRAMP",
-    hostAppName: "Talisman",
     hideExitButton: "true",
 
     selectedCountryCode: countryCode,
@@ -30,7 +19,15 @@ export const getRampBuyUrl = async (
     fiatValue: amount.toString(),
   })
 
-  return `${RAMPS_RAMP_PAY_URL}/?${params.toString()}`
+  const response = await fetch(
+    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`,
+  )
+  if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
+
+  const url = (await response.json())?.url
+  if (!url) throw new Error(`Failed to generate Ramp URL`)
+
+  return url
 }
 
 export const getRampSellUrl = async (
@@ -40,14 +37,8 @@ export const getRampSellUrl = async (
   currencyCode: string,
   countryCode: string,
 ) => {
-  const remoteConfig = await remoteConfig$.getValue()
-
   const params = new URLSearchParams({
-    hostApiKey: remoteConfig.ramps.rampApiKey,
-    hostLogoUrl: TALISMAN_LOGO_URL,
     defaultFlow: "OFFRAMP",
-    enabledFlows: "ONRAMP,OFFRAMP",
-    hostAppName: "Talisman",
     hideExitButton: "true",
 
     selectedCountryCode: countryCode,
@@ -57,5 +48,13 @@ export const getRampSellUrl = async (
     swapAmount: plancks.toString(),
   })
 
-  return `${RAMPS_RAMP_PAY_URL}/?${params.toString()}`
+  const response = await fetch(
+    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`,
+  )
+  if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
+
+  const url = (await response.json())?.url
+  if (!url) throw new Error(`Failed to generate Ramp URL`)
+
+  return url
 }
