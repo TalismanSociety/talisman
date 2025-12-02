@@ -9,7 +9,6 @@ export type RemoteConfigStoreData = {
   ramps: {
     coinbaseProjectId: string
     pinnedTokens: TokenId[]
-    rampApiKey: string
     rampNetworks: Record<string, string> // maps a Ramp network ID to an NetworkId
   }
   swaps: {

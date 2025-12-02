@@ -1,6 +1,6 @@
 import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
-import { log } from "extension-shared"
+import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,7 +11,6 @@ import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
-import { getRampApiUrl } from "./getRampApiUrl"
 import { getRampSellUrl } from "./helpers"
 import { RampSellQuoteResult } from "./types"
 import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
@@ -115,7 +114,7 @@ const fetchRampSellQuote = async (
   cryptoAssetSymbol: string,
   plancks: string,
 ): Promise<FetchRampSellQuoteResult> => {
-  const url = await getRampApiUrl("/offramp/quote/all")
+  const url = `${RAMPS_RAMP_API_URL}/api/host-api/v3/offramp/quote/all`
 
   const response = await fetch(url, {
     method: "POST",

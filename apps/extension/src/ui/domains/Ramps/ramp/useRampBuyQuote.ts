@@ -1,6 +1,6 @@
 import { formatPrice } from "@talismn/util"
 import { useQuery, UseQueryResult } from "@tanstack/react-query"
-import { log } from "extension-shared"
+import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -11,7 +11,6 @@ import { RampsBuyQuote, RampsBuyQuoteOptions } from "../buy/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
-import { getRampApiUrl } from "./getRampApiUrl"
 import { getRampBuyUrl } from "./helpers"
 import { RampBuyQuoteResult } from "./types"
 import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
@@ -107,7 +106,7 @@ const fetchRampBuyQuote = async (
   cryptoAssetSymbol: string,
   amount: number,
 ): Promise<FetchRampBuyQuoteResult> => {
-  const url = await getRampApiUrl("/onramp/quote/all")
+  const url = `${RAMPS_RAMP_API_URL}/api/host-api/v3/onramp/quote/all`
 
   const response = await fetch(url, {
     method: "POST",
