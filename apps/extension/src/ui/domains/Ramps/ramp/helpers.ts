@@ -25,6 +25,8 @@ export const getRampBuyUrl = async (
   if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
 
   const url = (await response.json())?.url
+  if (!url) throw new Error(`Failed to generate Ramp URL`)
+
   return url
 }
 
@@ -52,5 +54,7 @@ export const getRampSellUrl = async (
   if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
 
   const url = (await response.json())?.url
+  if (!url) throw new Error(`Failed to generate Ramp URL`)
+
   return url
 }
