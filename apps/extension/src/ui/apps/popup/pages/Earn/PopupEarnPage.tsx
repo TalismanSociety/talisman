@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import {
   setDiscoverSearch,
@@ -13,7 +14,6 @@ import {
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
-import { PopupEarnTabs } from "./PopupEarnTabs"
 
 const PageHeader = () => {
   const { t } = useTranslation()
@@ -81,7 +81,7 @@ export const PopupEarnPage: FC = () => {
 
       {/* Tabs and Search */}
       <div className="mb-6 flex flex-col gap-4">
-        <PopupEarnTabs onTabChange={handleTabChange} />
+        <EarnTabs onTabChange={handleTabChange} />
         {selectedTab === "assets" && (
           <div className="w-full">
             <SearchInput

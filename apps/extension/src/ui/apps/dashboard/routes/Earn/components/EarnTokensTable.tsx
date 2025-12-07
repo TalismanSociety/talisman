@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
+import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { useAccounts } from "@ui/state"
 import {
@@ -15,7 +16,6 @@ import {
 
 import { EarnAssetsTab } from "./EarnAssetsTab"
 import { EarnDiscoverTab } from "./EarnDiscoverTab"
-import { EarnTabs } from "./EarnTabs"
 
 const EarnHeaderRow = () => {
   const { t } = useTranslation()
