@@ -1,3 +1,4 @@
+import { cn } from "@talismn/util"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -26,7 +27,7 @@ const EarnHeaderRow = () => {
 
   // Calculate total from Yield balances (excluding watch-only accounts)
   const displayTotal = useMemo(() => {
-    if (yieldBalancesGrouped.status === "success" && yieldBalancesGrouped.data) {
+    if (yieldBalancesGrouped.data) {
       return yieldBalancesGrouped.data.reduce((total, position) => {
         return (
           total +
@@ -46,10 +47,14 @@ const EarnHeaderRow = () => {
       <div className="flex flex-col gap-4 px-6 py-8">
         <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
         <div className="text-body text-2xl font-bold">
-          {isLoading ? (
-            <div className="bg-grey-700 h-8 w-32 animate-pulse rounded"></div>
+          {!displayTotal && isLoading ? (
+            <div className="bg-grey-700 text-grey-700 animate-pulse rounded">$0.00</div>
           ) : (
-            <Fiat amount={displayTotal} forceCurrency="usd" />
+            <Fiat
+              amount={displayTotal}
+              forceCurrency="usd"
+              className={cn(isLoading && "animate-pulse")}
+            />
           )}
         </div>
       </div>

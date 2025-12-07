@@ -236,7 +236,7 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 mt-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
         className,
       )}
     >
@@ -461,11 +461,11 @@ export const EarnAssetsTab = () => {
                   onToggle={handleTokenToggle}
                 />
               ))}
+              {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}
             </div>
           )}
         </div>
       )}
-      {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}
     </div>
   )
 }
