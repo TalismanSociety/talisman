@@ -4,7 +4,9 @@ import type { DotNetwork, EthNetwork, Token } from "@talismn/chaindata-provider"
 import type { ResponseType, SendRequest } from "extension-core"
 
 type TalismanWindow = typeof globalThis & {
-  talismanSub?: ReturnType<typeof rpcProvider> & ReturnType<typeof tokensProvider>
+  talismanSub?: ReturnType<typeof rpcProvider> &
+    ReturnType<typeof tokensProvider> &
+    ReturnType<typeof extensionUiProvider>
 }
 
 const rpcProvider = (sendRequest: SendRequest) => ({
@@ -56,9 +58,17 @@ const tokensProvider = (sendRequest: SendRequest) => ({
   },
 })
 
+const extensionUiProvider = (sendRequest: SendRequest) => ({
+  openFullscreenPortfolio: () => sendRequest("pub(talisman.extension.openPortfolio)", null),
+})
+
 export const injectSubstrate = (sendRequest: SendRequest) => {
   // small helper with the typescript types, just cast window
   const windowInject = window as TalismanWindow
 
-  windowInject.talismanSub = { ...rpcProvider(sendRequest), ...tokensProvider(sendRequest) }
+  windowInject.talismanSub = {
+    ...rpcProvider(sendRequest),
+    ...tokensProvider(sendRequest),
+    ...extensionUiProvider(sendRequest),
+  }
 }
