@@ -217,9 +217,9 @@ const DefiTokenRow: FC<{
       {/* Expanded Positions - part of same row background */}
       {isExpanded && (
         <div className="bg-grey-850 flex flex-col gap-4 rounded-b pb-4 pl-8 pr-8">
-          {tokenData.positions.map(({ position, tokenBalance }) => (
+          {tokenData.positions.map(({ position, tokenBalance }, idx) => (
             <YieldPositionRow
-              key={`${position.yieldId}-${tokenBalance.token.symbol}`}
+              key={`${position.yieldId}-${tokenBalance.token.symbol}-${idx}`}
               position={position}
               tokenBalance={tokenBalance}
               status="success"
@@ -295,8 +295,6 @@ export const EarnAssetsTab = () => {
   const yieldBalancesGrouped = useYieldBalancesGrouped()
   const isLoading = yieldBalancesGrouped.status === "loading"
   const search = useYieldSearch()
-  // const [searchParams] = useSearchParams()
-  // const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
 
   // Get expanded state from context
   const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
@@ -453,9 +451,9 @@ export const EarnAssetsTab = () => {
           </button>
           {isDefiExpanded && (
             <div className="flex flex-col gap-4">
-              {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData]) => (
+              {Array.from(convertedGroupedByToken.entries()).map(([tokenSymbol, tokenData], i) => (
                 <DefiTokenRow
-                  key={tokenSymbol + tokenData.totalAmountUsd}
+                  key={`${tokenSymbol}-${i}`}
                   tokenData={tokenData}
                   isExpanded={expandedTokens.has(tokenSymbol)}
                   onToggle={handleTokenToggle}
