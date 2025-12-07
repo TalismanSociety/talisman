@@ -34,6 +34,7 @@ export interface TalismanMessages {
     { error: Error | null; data: unknown },
   ]
   "pub(talisman.rpc.byGenesisHash.unsubscribe)": [RequestRpcByGenesisHashUnsubscribe, boolean]
+  "pub(talisman.extension.openPortfolio)": [null, boolean]
 
   // TODO yeet everything below once discussed with the team
   "pub(talisman.customSubstrateChains.subscribe)": [null, string, DotNetwork[]]
