@@ -9,7 +9,7 @@ import { Button } from "talisman-ui"
 
 import { FadeIn } from "@talisman/components/FadeIn"
 import { TokenPicker } from "@ui/domains/Asset/TokenPicker"
-import { useNetworkById } from "@ui/state"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 
 import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
 import { getTokenTabs, safeTokensSetAtom, tokenTabAtom } from "../swaps.api"
@@ -19,9 +19,16 @@ type Props = {
   assets?: SwappableAssetWithDecimals[]
   selectedAsset?: SwappableAssetWithDecimals | null
   onSelectAsset: (asset: SwappableAssetWithDecimals | null) => void
+  /** Used to determine which tokens should be prioritized to the top of the list */
+  priorityMode?: "buy" | "sell"
 }
 
-export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSelectAsset }) => {
+export const SelectTokenModal: React.FC<Props> = ({
+  assets,
+  selectedAsset,
+  onSelectAsset,
+  priorityMode,
+}) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [assetWithWarning, setAssetWithWarning] = useState<SwappableAssetWithDecimals | null>(null)
@@ -56,6 +63,20 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
     [assets, handleSelectAsset, onSelectAsset],
   )
 
+  const remoteConfig = useRemoteConfig()
+  const promotedTokens = useCallback(
+    (token: Token) => {
+      const promotedTokens =
+        priorityMode === "buy"
+          ? remoteConfig.swaps.promotedBuyTokens
+          : priorityMode === "sell"
+            ? remoteConfig.swaps.promotedSellTokens
+            : undefined
+      return promotedTokens?.includes(token.id) || false
+    },
+    [priorityMode, remoteConfig],
+  )
+
   const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
     useTokenFilterOptions()
 
@@ -88,6 +109,7 @@ export const SelectTokenModal: React.FC<Props> = ({ assets, selectedAsset, onSel
               allowUntransferable
               ownedOnly
               isInitializing={!assets}
+              priorityTokens={promotedTokens}
               tokenFilter={tokenFilter}
               tokenFilterOptions={tokenFilterOptions}
               tokenFilterDefaultOption={defaultTokenFilterOption}

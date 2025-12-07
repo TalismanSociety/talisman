@@ -1,9 +1,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
-import { log } from "extension-shared"
+import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { useMemo } from "react"
 
 import { RampsMode } from "../shared/types"
-import { getRampApiUrl } from "./getRampApiUrl"
 import { RampHostAssetsConfig } from "./types"
 import { useRampCurrencies } from "./useRampCurrencies"
 
@@ -12,9 +11,10 @@ const fetchRampAssets = async (
   currencyCode: string,
   mode: RampsMode,
 ): Promise<RampHostAssetsConfig> => {
-  const apiUrl = await getRampApiUrl(
-    `${mode === "sell" ? "/offramp" : ""}/assets?currencyCode=${currencyCode.toUpperCase()}`,
-  )
+  const apiUrl =
+    mode === "sell"
+      ? `${RAMPS_RAMP_API_URL}/api/host-api/v3/offramp/assets?currencyCode=${currencyCode.toUpperCase()}`
+      : `${RAMPS_RAMP_API_URL}/api/host-api/v3/assets?currencyCode=${currencyCode.toUpperCase()}`
 
   const response = await fetch(apiUrl)
   if (!response.ok) {

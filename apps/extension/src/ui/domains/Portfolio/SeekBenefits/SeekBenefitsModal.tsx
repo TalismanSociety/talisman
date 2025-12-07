@@ -128,17 +128,17 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
         <div className="grid grid-cols-2 gap-8">
           <Button
             className="h-24 px-0 text-base [&>div>div]:text-base [&>div]:gap-3"
+            icon={ExternalLinkIcon}
+            onClick={handleClickTrade}
+          >
+            {t("Get SEEK")}
+          </Button>
+          <Button
+            primary
+            className="h-24 px-0 text-base [&>div>div]:text-base [&>div]:gap-3"
             onClick={handleClickSwap}
           >
             {t("Swap SEEK")}
-          </Button>
-          <Button
-            className="h-24 px-0 text-base [&>div>div]:text-base [&>div]:gap-3"
-            icon={ExternalLinkIcon}
-            primary
-            onClick={handleClickTrade}
-          >
-            {t("Trade SEEK")}
           </Button>
         </div>
       </div>

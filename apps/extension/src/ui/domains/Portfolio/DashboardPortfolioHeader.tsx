@@ -3,7 +3,6 @@ import {
   CreditCardIcon,
   FolderIcon,
   MoreHorizontalIcon,
-  QuestStarCircleIcon,
   RepeatIcon,
   SeekEyeIcon,
   SendIcon,
@@ -11,7 +10,7 @@ import {
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames, isNotNil } from "@talismn/util"
 import { Account, getAccountGenesisHash, isAccountOwned, TreeFolder } from "extension-core"
-import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useMatch } from "react-router-dom"
@@ -38,7 +37,6 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
-import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
@@ -237,7 +235,6 @@ const TopActions: FC = () => {
   const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekLink = useFeatureFlag("SEEK_BENEFITS")
-  const showQuestLink = useFeatureFlag("QUEST_LINK")
 
   const [disableActions, disabledReason] = useMemo(() => {
     if (!!selectedAccount && !isAccountOwned(selectedAccount))
@@ -328,7 +325,7 @@ const TopActions: FC = () => {
           <Action key={index} {...action} />
         ))}
       </div>
-      {showSeekLink ? <SeekBenefitsLink /> : showQuestLink ? <QuestLink /> : null}
+      {!!showSeekLink && <SeekBenefitsLink />}
     </div>
   )
 }
@@ -353,31 +350,6 @@ const SeekBenefitsLink = () => {
         <SeekEyeIcon />
       </div>
       <div>SEEK</div>
-    </button>
-  )
-}
-
-const QuestLink = () => {
-  const { t } = useTranslation()
-
-  const handleQuestsClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(TALISMAN_QUEST_APP_URL, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [])
-
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "text-primary-700 hover:text-primary flex shrink-0 items-center gap-3 text-base",
-      )}
-      onClick={handleQuestsClick}
-    >
-      <div className="flex flex-col justify-center text-[2rem]">
-        <QuestStarCircleIcon />
-      </div>
-      <div>{t("Quests")}</div>
     </button>
   )
 }

@@ -15,14 +15,7 @@ import { Hex } from "viem"
 import { provideContext } from "@talisman/util/provideContext"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import {
-  useAccountByAddress,
-  useAppState,
-  useFeatureFlag,
-  usePortfolioBalances,
-  useToken,
-  useTokenRates,
-} from "@ui/state"
+import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
@@ -117,8 +110,6 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
 
 const useBittensorBondWizardProvider = () => {
   const { t } = useTranslation()
-  const isSeekTaoDiscountEnabled = useFeatureFlag("SEEK_TAO_DISCOUNT")
-  const [hideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
   const { genericEvent } = useAnalytics()
   const { allBalances } = usePortfolioBalances()
 
@@ -321,21 +312,13 @@ const useBittensorBondWizardProvider = () => {
     if (stakeDirection === "unbond") {
       return totalStakedPlancks
     }
-    if (!nativeBalance || !existentialDeposit || !feeEstimate || typeof talismanFee !== "bigint")
-      return null
+    if (!nativeBalance || !existentialDeposit || !feeEstimate) return null
     if (existentialDeposit.planck + feeEstimate * 11n > nativeBalance.transferable.planck)
       return null
     const maxRootStake =
       nativeBalance.transferable.planck - existentialDeposit.planck - feeEstimate * 11n
     return maxRootStake
-  }, [
-    stakeDirection,
-    nativeBalance,
-    existentialDeposit,
-    feeEstimate,
-    talismanFee,
-    totalStakedPlancks,
-  ])
+  }, [stakeDirection, nativeBalance, existentialDeposit, feeEstimate, totalStakedPlancks])
 
   const newStakeTotal = useMemo(() => {
     if (stakeDirection === "unbond") {
@@ -480,12 +463,6 @@ const useBittensorBondWizardProvider = () => {
     // if unstaking and no position selected, open position select step
     if (stakeDirection === "unbond" && step === "form" && !position) setStep("select-position")
   }, [stakeDirection, position, setStep, step])
-
-  useEffect(() => {
-    // if subnet staking, open seek discount drawer if it has not been displayed yet
-    if (isSeekTaoDiscountEnabled && !hideSeekDiscountDrawer && stakeType === "subnet")
-      seekDiscountDrawer.open()
-  }, [hideSeekDiscountDrawer, isSeekTaoDiscountEnabled, seekDiscountDrawer, stakeType])
 
   useEffect(() => {
     // on mount, if stake type is not set, display the stake type select drawer

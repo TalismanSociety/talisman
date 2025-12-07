@@ -1,5 +1,11 @@
 # @talismn/solana
 
+## 0.0.4
+
+### Patch Changes
+
+- f97a95f: new txToHumanJson helper
+
 ## 0.0.3
 
 ### Patch Changes

@@ -5,7 +5,6 @@ import {
   KeyIcon,
   LockIcon,
   PlusIcon,
-  QuestStarIcon,
   RepeatIcon,
   SeekEyeIcon,
   SendIcon,
@@ -14,7 +13,7 @@ import {
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
-import { TALISMAN_QUEST_APP_URL, TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -29,7 +28,6 @@ import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBen
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
-import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -144,13 +142,6 @@ export const NavigationDrawer: FC = () => {
     close()
   }, [close, navigate])
 
-  const showQuestLink = useFeatureFlag("QUEST_LINK")
-  const handleQuestsClick = useCallback(() => {
-    sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action: "Quests" })
-    window.open(TALISMAN_QUEST_APP_URL, "_blank")
-    if (IS_EMBEDDED_POPUP) window.close()
-  }, [])
-
   const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
   const { open: openSeekBenefitsModal } = useSeekBenefitsModal()
   const handleSeekBenefitsClick = useCallback(() => {
@@ -203,7 +194,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
               {t("Latest Features")}
             </NavItem>
-            {showSeekBenefits ? (
+            {!!showSeekBenefits && (
               <NavItem
                 className="hover:bg-primary/10"
                 icon={<SeekEyeIcon className="text-primary" />}
@@ -211,19 +202,7 @@ export const NavigationDrawer: FC = () => {
               >
                 <span className="text-primary font-bold">SEEK</span>
               </NavItem>
-            ) : showQuestLink ? (
-              <NavItem
-                className="hover:bg-primary/10"
-                icon={
-                  <div className="bg-primary flex h-[1em] w-[1em] items-center justify-center rounded-full">
-                    <QuestStarIcon className="text-xs text-black" />
-                  </div>
-                }
-                onClick={handleQuestsClick}
-              >
-                <span className="text-primary font-bold">{t("Quests")}</span>
-              </NavItem>
-            ) : null}
+            )}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
               {t("All Settings")}
             </NavItem>

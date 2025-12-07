@@ -15,7 +15,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
       evmNativeTokenId("1"),
       subNativeTokenId("bittensor"),
     ],
-    rampApiKey: "5ga4dyv63auqe9t2ytrcz8jaaudmq4m2js8egzsh",
     rampNetworks: {
       POLKADOT: "polkadot",
       ETH: "1",
@@ -24,10 +23,13 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   swaps: {
     questApi: "",
     lifiTalismanTokens: [],
+    lifiCustomFeeTokens: {},
     simpleswapApiKey: "",
     simpleswapApiKeyDiscounted: "",
     simpleswapDiscountedCurrencies: [],
     curatedTokens: [],
+    promotedBuyTokens: [],
+    promotedSellTokens: [],
   },
   coingecko: {
     apiUrl: "https://api.coingecko.com",
