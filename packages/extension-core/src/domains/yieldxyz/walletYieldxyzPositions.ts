@@ -101,13 +101,14 @@ export const walletYieldxyzPositions$ = defer(() =>
     take(1),
     concatMap((defaultValue) =>
       walletYieldQueries$.pipe(
+        // TODO should be one getQuery per actual query
         switchMap((queries) =>
           getQuery$({
             namespace: "walletYieldPositions$",
             args: queries,
             queryFn: async (queries, signal) => {
-              const balances = await fetchYieldBalanceQueries(queries, signal)
-              return createYieldxyzPositions(balances)
+              const positions = await fetchYieldBalanceQueries(queries, signal)
+              return createYieldxyzPositions(positions)
             },
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,

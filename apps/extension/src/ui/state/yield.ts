@@ -20,11 +20,9 @@ import { remoteConfig$ } from "./remoteConfig"
 // Add new observable for grouped yield balances using bind()
 const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
   // TODO rename to yieldPositionsSubscribe, or earn
-  const unsubscribe = api.yieldBalancesGroupedSubscribe(
-    (loadable: Loadable<YieldxyzPosition[]>) => {
-      subscriber.next(loadable)
-    },
-  )
+  const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
+    subscriber.next(loadable)
+  })
 
   return () => {
     // TODO remove after unsubscribe works

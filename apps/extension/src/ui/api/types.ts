@@ -279,7 +279,7 @@ export default interface MessageTypes {
 
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
 
-  yieldBalancesGroupedSubscribe: (
+  yieldxyzPositionsSubscribe: (
     cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
 

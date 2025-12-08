@@ -12,7 +12,7 @@ export class YieldxyzHandler extends ExtensionHandler {
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(yieldxyz.balances.grouped.subscribe)":
+      case "pri(yieldxyz.positions.subscribe)":
         return genericSubscription(id, port, walletYieldxyzPositions$)
 
       default:

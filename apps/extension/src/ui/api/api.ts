@@ -293,8 +293,8 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(defi.positions.subscribe)", null, cb),
 
   // yield
-  yieldBalancesGroupedSubscribe: (cb) =>
-    messageService.subscribe("pri(yieldxyz.balances.grouped.subscribe)", null, cb),
+  yieldxyzPositionsSubscribe: (cb) =>
+    messageService.subscribe("pri(yieldxyz.positions.subscribe)", null, cb),
   // bittensor
   bittensorValidatorsSubscribe: (cb) =>
     messageService.subscribe("pri(bittensor.validators.subscribe)", null, cb),

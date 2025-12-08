@@ -51,6 +51,8 @@ export interface YieldxyzBalancesDtoWithProduct extends YieldBalancesDto {
 
 // Simplified yield position with validator grouping
 export interface YieldxyzPosition extends YieldxyzBalancesDtoWithProduct {
+  // networkId: string // TODO
+  // address: string // TODO
   // Validator address if applicable
   validatorAddress?: string
   // Display-ready fields
@@ -68,5 +70,5 @@ export type YieldxyzPositionsGroupedResponse = Loadable<YieldxyzPosition[]>
 // Message type augmentation for handler routing
 export interface YieldxyzMessages {
   // "pri(yieldxyz.balances.subscribe)": [null, boolean, YieldxyzPositionsResponse]
-  "pri(yieldxyz.balances.grouped.subscribe)": [null, boolean, YieldxyzPositionsGroupedResponse]
+  "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsGroupedResponse]
 }
