@@ -11,7 +11,7 @@ import {
   YieldsControllerGetYieldsParamsExtended,
 } from "extension-core"
 import { log } from "extension-shared"
-import { BehaviorSubject, map, Observable, shareReplay } from "rxjs"
+import { map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -75,19 +75,19 @@ export const useInfiniteYieldProductsForToken = (
   })
 }
 
-// Yield-specific search state (separate from portfolio search)
-const subjectYieldSearch$ = new BehaviorSubject<string>("")
+// // Yield-specific search state (separate from portfolio search)
+// const subjectYieldSearch$ = new BehaviorSubject<string>("")
 
-export const [useYieldSearch, yieldSearch$] = bind(subjectYieldSearch$)
+// export const [useYieldSearch, yieldSearch$] = bind(subjectYieldSearch$)
 
-export const setYieldSearch = (search: string) => subjectYieldSearch$.next(search)
+// export const setYieldSearch = (search: string) => subjectYieldSearch$.next(search)
 
-// Discover tab search state (separate from assets tab search)
-const subjectDiscoverSearch$ = new BehaviorSubject<string>("")
+// // Discover tab search state (separate from assets tab search)
+// const subjectDiscoverSearch$ = new BehaviorSubject<string>("")
 
-export const [useDiscoverSearch, discoverSearch$] = bind(subjectDiscoverSearch$)
+// export const [useDiscoverSearch, discoverSearch$] = bind(subjectDiscoverSearch$)
 
-export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
+// export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
 
 export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
   bind(remoteConfig$.pipe(map(getYieldNetworkIdToTalismanNetworkIdMap)))

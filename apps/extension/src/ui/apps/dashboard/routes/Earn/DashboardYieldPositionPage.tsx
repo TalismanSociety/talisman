@@ -11,7 +11,7 @@ import { useYieldPosition } from "@ui/domains/Earn/hooks/useYieldPosition"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-export const DashboardYieldPosition = () => {
+export const DashboardYieldPositionPage = () => {
   const { pageOpenEvent } = useAnalytics()
   const { yieldId } = useParams()
   const [searchParams] = useSearchParams()

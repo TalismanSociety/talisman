@@ -15,15 +15,10 @@ import { useYieldProductsByNetwork } from "@ui/domains/Earn/hooks/useYieldProduc
 import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
 import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useNetworkById, useRemoteConfig, useToken } from "@ui/state"
-import { useDiscoverSearch } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
-
-interface EarnOnYourAssetsProps {
-  isPopup?: boolean
-}
 
 // Network-level component that fetches once per network
 const NetworkTokensGroup: FC<{
@@ -235,12 +230,14 @@ const TokenWithYields: FC<{
   )
 }
 
-export const EarnOnYourAssets: FC<EarnOnYourAssetsProps> = ({ isPopup = false }) => {
+export const EarnOnYourAssets: FC<{
+  isPopup?: boolean
+  search: string
+}> = ({ isPopup = false, search }) => {
   const { t } = useTranslation()
   const { userTokens, isLoading } = useUserTokensWithYield()
   const navigate = useNavigate()
   const remoteConfig = useRemoteConfig()
-  const search = useDiscoverSearch()
 
   // Modal state management
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)

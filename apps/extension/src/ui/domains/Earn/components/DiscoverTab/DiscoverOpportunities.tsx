@@ -12,14 +12,9 @@ import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMappin
 import { mapYieldTokenToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
 import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useAccounts, useRemoteConfig, useToken, useTokens } from "@ui/state"
-import { useDiscoverSearch } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { DiscoverTokenRow } from "./DiscoverTokenRow"
-
-interface DiscoverOpportunitiesProps {
-  isPopup?: boolean
-}
 
 // Network-level component that fetches once per network
 const NetworkTokensGroup: FC<{
@@ -225,12 +220,14 @@ const TokenDiscovery: FC<{
   )
 }
 
-export const DiscoverOpportunities: FC<DiscoverOpportunitiesProps> = ({ isPopup = false }) => {
+export const DiscoverOpportunities: FC<{ isPopup?: boolean; search: string }> = ({
+  isPopup = false,
+  search,
+}) => {
   const navigate = useNavigate()
   const _accounts = useAccounts("owned")
   const tokens = useTokens()
   const remoteConfig = useRemoteConfig()
-  const search = useDiscoverSearch()
 
   // Modal state management
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)

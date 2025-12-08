@@ -16,7 +16,7 @@ import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalances
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useTalismanNetworkIdFromYieldNetworkId, useYieldSearch } from "@ui/state/yield"
+import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -316,10 +316,9 @@ const PopupEarnTokenRow: FC<{
   )
 }
 
-export const PopupEarnAssetsTab: FC = () => {
+export const PopupEarnAssetsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
   const yieldBalancesGrouped = useYieldBalancesGrouped()
-  const search = useYieldSearch()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
 

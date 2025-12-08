@@ -17,7 +17,7 @@ import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellVal
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioGlobalData } from "@ui/state"
-import { useTalismanNetworkIdFromYieldNetworkId, useYieldSearch } from "@ui/state/yield"
+import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -288,13 +288,12 @@ const StakingTile = () => {
   )
 }
 
-export const EarnAssetsTab = () => {
+export const EarnAssetsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder, selectedAccounts } = usePortfolioNavigation()
   const yieldBalancesGrouped = useYieldBalancesGrouped()
   const isLoading = yieldBalancesGrouped.status === "loading"
-  const search = useYieldSearch()
 
   // Get expanded state from context
   const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =

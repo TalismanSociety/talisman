@@ -5,17 +5,17 @@ import { EarnAssetsStateProvider } from "@ui/domains/Earn/context/EarnAssetsStat
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
-import { DashboardYieldPosition } from "./DashboardYieldPosition"
-import { ProductionSelectionPage } from "./EarnPage"
+import { DashboardEarnPage } from "./DashboardEarnPage"
+import { DashboardYieldPositionPage } from "./DashboardYieldPositionPage"
 
-export const EarnRoutes: FC = () => {
+export const DashboardEarnRoutes: FC = () => {
   return (
     <PortfolioContainer>
       <DashboardLayout sidebar="accounts">
         <EarnAssetsStateProvider>
           <Routes>
-            <Route path="" element={<ProductionSelectionPage />} />
-            <Route path="yield/:yieldId" element={<DashboardYieldPosition />} />
+            <Route path="" element={<DashboardEarnPage />} />
+            <Route path="yield/:yieldId" element={<DashboardYieldPositionPage />} />
           </Routes>
         </EarnAssetsStateProvider>
       </DashboardLayout>

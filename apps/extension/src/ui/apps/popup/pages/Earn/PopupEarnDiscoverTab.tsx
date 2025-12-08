@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
 import { EarnOnYourAssets } from "@ui/domains/Earn/components/DiscoverTab/EarnOnYourAssets"
 
-export const PopupEarnDiscoverTab: FC = () => {
+export const PopupEarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
 
   return (
@@ -12,7 +12,7 @@ export const PopupEarnDiscoverTab: FC = () => {
       {/* Earn on your assets section */}
       <div className="mb-4">
         <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Earn on your assets")}</h2>
-        <EarnOnYourAssets isPopup={true} />
+        <EarnOnYourAssets isPopup={true} search={search} />
       </div>
 
       {/* Discover opportunities section */}
@@ -20,7 +20,7 @@ export const PopupEarnDiscoverTab: FC = () => {
         <h2 className="text-body-secondary mb-4 text-sm font-medium">
           {t("Discover opportunities")}
         </h2>
-        <DiscoverOpportunities isPopup={true} />
+        <DiscoverOpportunities isPopup={true} search={search} />
       </div>
     </div>
   )

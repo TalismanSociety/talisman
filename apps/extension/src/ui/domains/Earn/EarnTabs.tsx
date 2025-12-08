@@ -1,34 +1,31 @@
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Tabs } from "@talisman/components/Tabs"
 
-const URL_TAB_ASSETS = "assets"
-const URL_TAB_DISCOVER = "discover"
-
 interface EarnTabsProps {
   className?: string
-  onTabChange?: (tab: string) => void
+  onTabChange: (tab: "assets" | "discover") => void
+  value: "assets" | "discover"
 }
 
-export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange }) => {
+export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange, value = "assets" }) => {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState(URL_TAB_ASSETS)
 
   const tabs = useMemo(() => {
-    const resTabs = [{ label: t("Earn Assets"), value: URL_TAB_ASSETS }]
-    resTabs.push({ label: t("Discover"), value: URL_TAB_DISCOVER })
+    const resTabs = [{ label: t("Earn Assets"), value: "assets" }]
+    resTabs.push({ label: t("Discover"), value: "discover" })
 
     return resTabs
   }, [t])
 
   const handleChange = useCallback(
     (value: string) => {
-      setSelectedTab(value)
+      if (value !== "assets" && value !== "discover") return
       onTabChange?.(value)
     },
     [onTabChange],
   )
 
-  return <Tabs tabs={tabs} selected={selectedTab} onChange={handleChange} className={className} />
+  return <Tabs tabs={tabs} selected={value} onChange={handleChange} className={className} />
 }

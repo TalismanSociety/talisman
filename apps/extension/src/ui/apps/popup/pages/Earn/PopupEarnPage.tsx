@@ -5,12 +5,6 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
 import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
-import {
-  setDiscoverSearch,
-  setYieldSearch,
-  useDiscoverSearch,
-  useYieldSearch,
-} from "@ui/state/yield"
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
@@ -63,13 +57,8 @@ const PopupEarnHeader = () => {
 
 export const PopupEarnPage: FC = () => {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState("assets")
-  const assetsSearch = useYieldSearch()
-  const discoverSearch = useDiscoverSearch()
-
-  const handleTabChange = (tab: string) => {
-    setSelectedTab(tab)
-  }
+  const [selectedTab, setSelectedTab] = useState<"assets" | "discover">("assets")
+  const [search, setSearch] = useState("")
 
   return (
     <div className="text-body-secondary flex w-full flex-col gap-6 text-left text-base">
@@ -81,18 +70,18 @@ export const PopupEarnPage: FC = () => {
 
       {/* Tabs and Search */}
       <div className="mb-6 flex flex-col gap-4">
-        <EarnTabs onTabChange={handleTabChange} />
-        {selectedTab === "assets" && (
-          <div className="w-full">
-            <SearchInput
-              containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
-              placeholder={t("Search DeFi positions")}
-              onChange={setYieldSearch}
-              initialValue={assetsSearch}
-            />
-          </div>
-        )}
-        {selectedTab === "discover" && (
+        <EarnTabs onTabChange={setSelectedTab} value={selectedTab} />
+        {/* {selectedTab === "assets" && ( */}
+        <div className="w-full">
+          <SearchInput
+            containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
+            placeholder={t("Search DeFi positions")}
+            onChange={setSearch}
+            initialValue={search}
+          />
+        </div>
+        {/* )} */}
+        {/* {selectedTab === "discover" && (
           <div className="w-full">
             <SearchInput
               containerClassName="!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4"
@@ -101,13 +90,13 @@ export const PopupEarnPage: FC = () => {
               initialValue={discoverSearch}
             />
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Tab Content */}
       <div className="pb-4">
-        {selectedTab === "assets" && <PopupEarnAssetsTab />}
-        {selectedTab === "discover" && <PopupEarnDiscoverTab />}
+        {selectedTab === "assets" && <PopupEarnAssetsTab search={search} />}
+        {selectedTab === "discover" && <PopupEarnDiscoverTab search={search} />}
       </div>
     </div>
   )
