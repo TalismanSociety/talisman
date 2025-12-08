@@ -47,7 +47,7 @@ export default class Extension extends ExtensionHandler {
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),
       defi: new DefiHandler(stores),
-      yield: new YieldxyzHandler(stores),
+      yieldxyz: new YieldxyzHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),

@@ -10,15 +10,17 @@ import {
   YieldxyzControllerGetYieldsParamsExtended,
   YieldxyzPosition,
 } from "extension-core"
+import { createYieldxyzPositions } from "extension-core/src/domains/yieldxyz/createYieldxyzPositions"
 import { log } from "extension-shared"
 import { map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
 import { remoteConfig$ } from "./remoteConfig"
+import { debugObservable } from "./util/debugObservable"
 
 // Add new observable for grouped yield balances using bind()
-const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
+const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
   // TODO rename to yieldPositionsSubscribe, or earn
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
     subscriber.next(loadable)
@@ -29,13 +31,24 @@ const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldxyzPosition[]>>((s
     log.debug("[frontend] Unsubscribing from api.yieldBalancesGroupedSubscribe")
     unsubscribe()
   }
-}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
+}).pipe(
+  debugObservable("rawYieldxyzPositions$", true),
+  shareReplay({ bufferSize: 1, refCount: true }),
+)
 
-// TODO rename to useYieldPositions
-export const [useYieldBalancesGrouped, yieldBalancesGrouped$] = bind(rawYieldBalancesGrouped$, {
-  status: "loading",
-  data: [],
-})
+export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
+  rawYieldxyzPositions$.pipe(
+    map((loadable) => ({
+      ...loadable,
+      // might want to move this to where its needed
+      data: loadable.data ? createYieldxyzPositions(loadable.data) : undefined,
+    })),
+  ),
+  {
+    status: "loading",
+    data: [],
+  },
+)
 
 /**
  * Hook to fetch yield products for a specific token with infinite pagination

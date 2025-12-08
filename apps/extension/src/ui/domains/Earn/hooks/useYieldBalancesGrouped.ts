@@ -1,3 +1,3 @@
-import { useYieldBalancesGrouped } from "@ui/state/yield"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
-export { useYieldBalancesGrouped }
+export { useYieldxyzPositionsEnhanced as useYieldBalancesGrouped }

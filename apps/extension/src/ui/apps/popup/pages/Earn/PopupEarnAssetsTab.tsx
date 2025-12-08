@@ -1,7 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { BalanceDto, YieldxyzPosition } from "extension-core"
+import { BalanceDto, YieldxyzPositionEnhanced } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,7 +22,7 @@ interface GroupedTokenData {
   tokenSymbol: string
   totalAmountUsd: number
   positions: Array<{
-    position: YieldxyzPosition
+    position: YieldxyzPositionEnhanced
     tokenBalance: BalanceDto
   }>
   holdingsCount: number
@@ -30,7 +30,7 @@ interface GroupedTokenData {
 
 // YieldPositionRow for yield balances - clickable like dashboard
 const PopupYieldPositionRow: FC<{
-  position: YieldxyzPosition
+  position: YieldxyzPositionEnhanced
   tokenBalance: BalanceDto
 }> = ({ position, tokenBalance }) => {
   const navigate = useNavigate()

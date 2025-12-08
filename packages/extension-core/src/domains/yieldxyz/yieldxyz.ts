@@ -30,6 +30,10 @@ class YieldSDKService {
 
   private initialize() {
     try {
+      sdk.configure({
+        baseURL: YIELD_API_BASE_URL,
+        apiKey: "talisman",
+      })
       this.initialized = true
     } catch (error) {
       log.error("[Yield SDK] Configuration failed", { error })

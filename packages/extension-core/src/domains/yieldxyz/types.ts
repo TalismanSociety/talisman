@@ -1,34 +1,31 @@
+import { Address } from "@talismn/balances"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
-import {
-  BalanceDto,
-  YieldBalancesDto,
-  YieldDto,
-  YieldsControllerGetYieldsParams,
-} from "@yieldxyz/sdk"
+import { BalanceDto, YieldDto, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
 
 // TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
-  YieldDto,
-  YieldBalancesRequestDto,
-  YieldBalancesDto,
+  ActionDto,
+  BalanceDto,
   BalancesRequestDto,
   BalancesResponseDto,
   CreateActionDto,
   CreateManageActionDto,
-  ActionDto,
-  TransactionDto,
-  SubmitHashDto,
-  NetworkDto,
-  ProviderDto,
   HealthStatusDto,
-  YieldsControllerGetYieldsParams,
+  NetworkDto,
   Networks,
-  BalanceDto,
-  TokenDto,
-  ValidatorDto,
-  YieldsControllerGetYieldValidators200,
   PendingActionDto,
+  ProviderDto,
+  SubmitHashDto,
+  TokenDto,
+  TransactionDto,
+  ValidatorDto,
+  YieldBalancesDto,
+  YieldBalancesRequestDto,
+  YieldDto,
+  YieldsControllerGetYieldsParams,
+  YieldsControllerGetYieldValidators200,
 } from "@yieldxyz/sdk"
 
 // Extend SDK params to support comma-separated inputToken values
@@ -41,18 +38,39 @@ export interface YieldxyzControllerGetYieldsParamsExtended extends YieldsControl
   inputTokens?: string // Comma-separated token addresses/symbols
 }
 
-export interface YieldxyzPositionItem {
-  yieldId: string
-  balances: BalanceDto[]
-}
-export interface YieldxyzBalancesDtoWithProduct extends YieldBalancesDto {
-  product?: YieldDto
-}
+// export interface YieldxyzPositionItem {
+//   yieldId: string
+//   balances: BalanceDto[]
+// }
+// export interface YieldxyzBalancesDtoWithProduct extends YieldBalancesDto {
+//   product?: YieldDto
+//   // Maps addresses to their originating Talisman and yield.xyz network IDs for reconstruction
+//   // addressNetworkIdMap?: Record<Address, NetworkId>
+//   // addressYieldxyzNetworkIdMap?: Record<Address, Networks>
+// }
 
 // Simplified yield position with validator grouping
-export interface YieldxyzPosition extends YieldxyzBalancesDtoWithProduct {
-  // networkId: string // TODO
-  // address: string // TODO
+export type YieldxyzPosition = {
+  yieldId: string
+  networkId: NetworkId
+  address: Address
+  product: YieldDto
+  balances: BalanceDto[]
+
+  // Validator address if applicable
+  // validatorAddress?: string
+  // // Display-ready fields
+  // displayName: string
+  // totalAmountUsd: number
+  // networkId: string
+}
+
+export type YieldxyzPositionEnhanced = YieldxyzPosition & {
+  // yieldId: string
+  // networkId: NetworkId
+  // address: Address
+  // product: YieldDto
+
   // Validator address if applicable
   validatorAddress?: string
   // Display-ready fields
@@ -65,10 +83,10 @@ export interface YieldxyzPosition extends YieldxyzBalancesDtoWithProduct {
 // export type YieldxyzPositionsResponse = import("@talismn/util").Loadable<
 //   YieldxyzBalancesDtoWithProduct[]
 // >
-export type YieldxyzPositionsGroupedResponse = Loadable<YieldxyzPosition[]>
+export type YieldxyzPositionsResponse = Loadable<YieldxyzPosition[]>
 
 // Message type augmentation for handler routing
 export interface YieldxyzMessages {
   // "pri(yieldxyz.balances.subscribe)": [null, boolean, YieldxyzPositionsResponse]
-  "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsGroupedResponse]
+  "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsResponse]
 }
