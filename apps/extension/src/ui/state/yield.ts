@@ -4,11 +4,11 @@ import { Loadable } from "@talismn/util"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import {
   fetchYieldProducts,
-  getTalismanNetworkIdToYieldNetworkIdMap,
-  getYieldNetworkIdToTalismanNetworkIdMap,
+  getTalismanNetworkIdToYieldxyzNetworkIdMap,
+  getYieldxyzNetworkIdToTalismanNetworkIdMap,
   Networks,
-  YieldPosition,
-  YieldsControllerGetYieldsParamsExtended,
+  YieldxyzControllerGetYieldsParamsExtended,
+  YieldxyzPosition,
 } from "extension-core"
 import { log } from "extension-shared"
 import { map, Observable, shareReplay } from "rxjs"
@@ -18,11 +18,13 @@ import { api } from "@ui/api"
 import { remoteConfig$ } from "./remoteConfig"
 
 // Add new observable for grouped yield balances using bind()
-const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldPosition[]>>((subscriber) => {
+const rawYieldBalancesGrouped$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
   // TODO rename to yieldPositionsSubscribe, or earn
-  const unsubscribe = api.yieldBalancesGroupedSubscribe((loadable: Loadable<YieldPosition[]>) => {
-    subscriber.next(loadable)
-  })
+  const unsubscribe = api.yieldBalancesGroupedSubscribe(
+    (loadable: Loadable<YieldxyzPosition[]>) => {
+      subscriber.next(loadable)
+    },
+  )
 
   return () => {
     // TODO remove after unsubscribe works
@@ -44,7 +46,7 @@ export const [useYieldBalancesGrouped, yieldBalancesGrouped$] = bind(rawYieldBal
 export const useInfiniteYieldProductsForToken = (
   tokenIdentifier: string,
   network?: Omit<
-    YieldsControllerGetYieldsParamsExtended,
+    YieldxyzControllerGetYieldsParamsExtended,
     "limit" | "offset" | "inputTokens"
   >["network"],
 ) => {
@@ -90,7 +92,7 @@ export const useInfiniteYieldProductsForToken = (
 // export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
 
 export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getYieldNetworkIdToTalismanNetworkIdMap)))
+  bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))
 
 export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYieldNetworkId$] =
   bind(
@@ -102,7 +104,7 @@ export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYi
   )
 
 export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldNetworkIdMap)))
+  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldxyzNetworkIdMap)))
 
 export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalismanNetworkId$] =
   bind(

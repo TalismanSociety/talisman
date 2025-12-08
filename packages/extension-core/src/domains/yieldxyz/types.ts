@@ -1,3 +1,4 @@
+import { Loadable } from "@talismn/util"
 import {
   BalanceDto,
   YieldBalancesDto,
@@ -5,6 +6,7 @@ import {
   YieldsControllerGetYieldsParams,
 } from "@yieldxyz/sdk"
 
+// TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
   YieldDto,
@@ -30,25 +32,25 @@ export type {
 } from "@yieldxyz/sdk"
 
 // Extend SDK params to support comma-separated inputToken values
-export interface YieldsControllerGetYieldsBatchParams extends YieldsControllerGetYieldsParams {
+export interface YieldxyzControllerGetYieldsBatchParams extends YieldsControllerGetYieldsParams {
   inputTokens?: string // Comma-separated token addresses/symbols
 }
 
 // Also extend the base SDK params to support inputTokens for backward compatibility
-export interface YieldsControllerGetYieldsParamsExtended extends YieldsControllerGetYieldsParams {
+export interface YieldxyzControllerGetYieldsParamsExtended extends YieldsControllerGetYieldsParams {
   inputTokens?: string // Comma-separated token addresses/symbols
 }
 
-export interface YieldPositionItem {
+export interface YieldxyzPositionItem {
   yieldId: string
   balances: BalanceDto[]
 }
-export interface YieldBalancesDtoWithProduct extends YieldBalancesDto {
+export interface YieldxyzBalancesDtoWithProduct extends YieldBalancesDto {
   product?: YieldDto
 }
 
 // Simplified yield position with validator grouping
-export interface YieldPosition extends YieldBalancesDtoWithProduct {
+export interface YieldxyzPosition extends YieldxyzBalancesDtoWithProduct {
   // Validator address if applicable
   validatorAddress?: string
   // Display-ready fields
@@ -58,11 +60,13 @@ export interface YieldPosition extends YieldBalancesDtoWithProduct {
 }
 
 // UI subscription response type (store-backed), mirroring DeFi
-export type YieldPositionsResponse = import("@talismn/util").Loadable<YieldBalancesDtoWithProduct[]>
-export type YieldPositionsGroupedResponse = import("@talismn/util").Loadable<YieldPosition[]>
+// export type YieldxyzPositionsResponse = import("@talismn/util").Loadable<
+//   YieldxyzBalancesDtoWithProduct[]
+// >
+export type YieldxyzPositionsGroupedResponse = Loadable<YieldxyzPosition[]>
 
 // Message type augmentation for handler routing
-export interface YieldMessages {
-  "pri(yield.balances.subscribe)": [null, boolean, YieldPositionsResponse]
-  "pri(yield.balances.grouped.subscribe)": [null, boolean, YieldPositionsGroupedResponse]
+export interface YieldxyzMessages {
+  // "pri(yieldxyz.balances.subscribe)": [null, boolean, YieldxyzPositionsResponse]
+  "pri(yieldxyz.balances.grouped.subscribe)": [null, boolean, YieldxyzPositionsGroupedResponse]
 }

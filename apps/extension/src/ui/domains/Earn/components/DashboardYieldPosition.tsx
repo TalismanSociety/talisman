@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { BalanceDto, YieldPosition } from "extension-core"
+import { BalanceDto, YieldxyzPosition } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
@@ -228,7 +228,7 @@ export const DashboardYieldPosition: FC<{
 }
 
 const YieldPositionHeader: FC<{
-  position: YieldPosition
+  position: YieldxyzPosition
   onAddToPosition: () => void
   onClaimClick: () => void
   onWithdrawClick?: () => void
@@ -349,7 +349,7 @@ const YieldPositionHeader: FC<{
 }
 
 const YieldPositionActionButtons: FC<{
-  position: YieldPosition
+  position: YieldxyzPosition
   onAddToPosition: () => void
   onClaimClick: () => void
 }> = ({ position, onAddToPosition, onClaimClick }) => {

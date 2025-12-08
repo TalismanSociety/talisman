@@ -20,7 +20,7 @@ import { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { YieldMessages } from "../domains/yield/types"
+import { YieldxyzMessages } from "../domains/yieldxyz/types"
 import { ChaindataMessages } from "./domains"
 
 export declare type RequestTypes = {
@@ -93,7 +93,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AssetDiscoveryMessages &
   NftsMessages &
   DefiMessages &
-  YieldMessages &
+  YieldxyzMessages &
   PingMessages &
   ChaindataMessages &
   BittensorMessages &

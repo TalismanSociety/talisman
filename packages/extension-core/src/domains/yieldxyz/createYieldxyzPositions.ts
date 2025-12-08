@@ -1,7 +1,7 @@
-import { BalanceDto, YieldBalancesDtoWithProduct, YieldPosition } from "./types"
+import { BalanceDto, YieldxyzBalancesDtoWithProduct, YieldxyzPosition } from "./types"
 
 // Helper function to safely extract validatorAddress from an item
-function getValidatorAddressFromItem(item: YieldBalancesDtoWithProduct): string | undefined {
+function getValidatorAddressFromItem(item: YieldxyzBalancesDtoWithProduct): string | undefined {
   // Check if item has validatorAddress property
   const itemWithUnknown = item as unknown as Record<string, unknown>
   if ("validatorAddress" in item && typeof itemWithUnknown.validatorAddress === "string") {
@@ -31,14 +31,16 @@ function getValidatorAddressFromBalance(balance: BalanceDto): string | undefined
   return undefined
 }
 
-export const createYieldPositions = (items: YieldBalancesDtoWithProduct[]): YieldPosition[] => {
-  const positions: YieldPosition[] = []
+export const createYieldxyzPositions = (
+  items: YieldxyzBalancesDtoWithProduct[],
+): YieldxyzPosition[] => {
+  const positions: YieldxyzPosition[] = []
 
   // Group balances by yieldId, validatorAddress, and accountAddress
   // Each balance has an address field, so we group individual balances rather than items
   const balancesByKey = new Map<
     string,
-    { balances: BalanceDto[]; item: YieldBalancesDtoWithProduct }
+    { balances: BalanceDto[]; item: YieldxyzBalancesDtoWithProduct }
   >()
 
   for (const item of items) {

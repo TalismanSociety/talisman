@@ -4,26 +4,26 @@ import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { YieldPosition } from "./types"
+import { YieldxyzPosition } from "./types"
 
-const blobStore = getBlobStore<YieldPosition[]>("yield-balances")
+const blobStore = getBlobStore<YieldxyzPosition[]>("yieldxyz-positions")
 
-const DEFAULT_DATA: YieldPosition[] = []
+const DEFAULT_DATA: YieldxyzPosition[] = []
 
-const subjectYieldPositionsStore$ = new ReplaySubject<YieldPosition[]>(1)
+const subjectYieldxyzPositionsStore$ = new ReplaySubject<YieldxyzPosition[]>(1)
 
 walletReady.then(async () => {
   try {
     const data = await blobStore.get()
-    subjectYieldPositionsStore$.next(data ?? DEFAULT_DATA)
+    subjectYieldxyzPositionsStore$.next(data ?? DEFAULT_DATA)
   } catch (error) {
     log.error("[yield.xyz] Error fetching yield balances:", error)
-    subjectYieldPositionsStore$.next(DEFAULT_DATA)
+    subjectYieldxyzPositionsStore$.next(DEFAULT_DATA)
   }
 })
 
 // normalize function to order items consistently, so we can use isEqual reliably
-const normalizeYieldPositions = (items: YieldPosition[]): YieldPosition[] => {
+const normalizeYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosition[] => {
   return (
     items
       ?.map((p) => ({
@@ -44,8 +44,8 @@ const normalizeYieldPositions = (items: YieldPosition[]): YieldPosition[] => {
 }
 
 // persist to db when store is updated
-subjectYieldPositionsStore$
-  .pipe(debounceTime(500), map(normalizeYieldPositions), pairwise())
+subjectYieldxyzPositionsStore$
+  .pipe(debounceTime(500), map(normalizeYieldxyzPositions), pairwise())
   .subscribe(async ([prev, items]) => {
     try {
       if (!isEqual(prev, items)) await blobStore.set(items)
@@ -54,8 +54,8 @@ subjectYieldPositionsStore$
     }
   })
 
-export const yieldPositionsStore$ = subjectYieldPositionsStore$.asObservable()
+export const yieldxyzPositionsStore$ = subjectYieldxyzPositionsStore$.asObservable()
 
-export const updateYieldPositionsStore = (items: YieldPosition[]) => {
-  subjectYieldPositionsStore$.next(items)
+export const updateYieldxyzPositionsStore = (items: YieldxyzPosition[]) => {
+  subjectYieldxyzPositionsStore$.next(items)
 }

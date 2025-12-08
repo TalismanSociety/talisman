@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { BalanceDto, YieldPosition } from "extension-core"
+import { BalanceDto, YieldxyzPosition } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -218,7 +218,7 @@ export const PopupYieldPosition: FC<{
 }
 
 const YieldPositionHeader: FC<{
-  position: YieldPosition
+  position: YieldxyzPosition
   onAddToPosition: () => void
   onClaimClick: () => void
   onWithdrawClick?: () => void
@@ -338,7 +338,7 @@ const YieldPositionHeader: FC<{
 }
 
 const YieldPositionActionButtons: FC<{
-  position: YieldPosition
+  position: YieldxyzPosition
   onAddToPosition: () => void
   onClaimClick: () => void
 }> = ({ position, onAddToPosition, onClaimClick }) => {

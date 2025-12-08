@@ -1,17 +1,17 @@
 import { log } from "extension-shared"
 
 import { BalancesRequestDto, YieldBalancesDto } from "./types"
-import { yieldSdk } from "./yieldSdk"
+import { yieldxyz } from "./yieldxyz"
 
-export const fetchYieldBalances = async (
+export const fetchYieldxyzBalances = async (
   queries: BalancesRequestDto,
 ): Promise<YieldBalancesDto[]> => {
   try {
-    log.debug("[Yield] Fetching balances via SDK", { queries })
+    log.debug("[Yield.xyz] Fetching balances via SDK", { queries })
 
-    const response = await yieldSdk.getAggregateBalances(queries)
+    const response = await yieldxyz.getAggregateBalances(queries)
 
-    log.debug("[Yield] SDK balances response", {
+    log.debug("[Yield.xyz] SDK balances response", {
       itemCount: response?.items?.length || 0,
       errorCount: response.errors?.length || 0,
       queries,
@@ -20,7 +20,7 @@ export const fetchYieldBalances = async (
 
     return response.items
   } catch (error) {
-    log.error("[Yield] Failed to fetch balances via SDK", { error })
+    log.error("[Yield.xyz] Failed to fetch balances via SDK", { error })
     return []
   }
 }

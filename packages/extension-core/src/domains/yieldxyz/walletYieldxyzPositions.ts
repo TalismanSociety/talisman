@@ -17,12 +17,12 @@ import {
 
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { walletBalances$ } from "../balances/walletBalances"
-import { fetchYieldBalances } from "./fetchYieldBalances"
-import { createYieldPositions } from "./groupYieldBalances"
-import { getTalismanNetworkIdToYieldNetworkIdMap } from "./helpers"
-import { updateYieldPositionsStore, yieldPositionsStore$ } from "./store"
-import { YieldBalancesDtoWithProduct, YieldDto, YieldPosition } from "./types"
-import { yieldSdk } from "./yieldSdk"
+import { createYieldxyzPositions } from "./createYieldxyzPositions"
+import { fetchYieldxyzBalances } from "./fetchYieldxyzBalances"
+import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
+import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store"
+import { YieldDto, YieldxyzBalancesDtoWithProduct, YieldxyzPosition } from "./types"
+import { yieldxyz } from "./yieldxyz"
 
 const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
 const BATCH_SIZE = 50
@@ -35,8 +35,8 @@ const productCache = new TTLCache<string, Promise<YieldDto>>({ ttl: 600_000 })
 const fetchBatchWithProducts = async (
   queries: BalancesQueryDto[],
   signal: AbortSignal,
-): Promise<YieldBalancesDtoWithProduct[]> => {
-  const balancesResp = await fetchYieldBalances({ queries })
+): Promise<YieldxyzBalancesDtoWithProduct[]> => {
+  const balancesResp = await fetchYieldxyzBalances({ queries })
   const yieldIds = Array.from(new Set(balancesResp.map((i) => i.yieldId)))
 
   // Use shared cache for products to avoid duplicate fetches across batches
@@ -44,7 +44,7 @@ const fetchBatchWithProducts = async (
     yieldIds.map((yieldId) => {
       signal.throwIfAborted()
       if (!productCache.has(yieldId)) {
-        productCache.set(yieldId, yieldSdk.getYield(yieldId))
+        productCache.set(yieldId, yieldxyz.getYield(yieldId))
       }
       return productCache.get(yieldId)!
     }),
@@ -64,7 +64,7 @@ const fetchBatchWithProducts = async (
 const fetchYieldBalanceQueries = async (
   queries: BalancesQueryDto[],
   signal: AbortSignal,
-): Promise<YieldBalancesDtoWithProduct[]> => {
+): Promise<YieldxyzBalancesDtoWithProduct[]> => {
   const batches = chunk(queries, BATCH_SIZE)
 
   const results = await Promise.all(batches.map((batch) => fetchBatchWithProducts(batch, signal)))
@@ -79,7 +79,7 @@ const walletYieldQueries$ = combineLatest([
   remoteConfigStore.observable,
 ]).pipe(
   map(([balances, remoteConfig]) => {
-    const networksIdMap = getTalismanNetworkIdToYieldNetworkIdMap(remoteConfig)
+    const networksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
 
     return uniq(
       balances.balances
@@ -96,8 +96,8 @@ const walletYieldQueries$ = combineLatest([
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
 
-export const walletYieldPositions$ = defer(() =>
-  yieldPositionsStore$.pipe(
+export const walletYieldxyzPositions$ = defer(() =>
+  yieldxyzPositionsStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
       walletYieldQueries$.pipe(
@@ -107,22 +107,22 @@ export const walletYieldPositions$ = defer(() =>
             args: queries,
             queryFn: async (queries, signal) => {
               const balances = await fetchYieldBalanceQueries(queries, signal)
-              return createYieldPositions(balances)
+              return createYieldxyzPositions(balances)
             },
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),
         ),
-        distinctUntilChanged<QueryResult<YieldPosition[]>>(isEqual),
+        distinctUntilChanged<QueryResult<YieldxyzPosition[]>>(isEqual),
         tap({
           next: (positions) => {
-            if (positions.status === "loaded") updateYieldPositionsStore(positions.data)
+            if (positions.status === "loaded") updateYieldxyzPositionsStore(positions.data)
           },
           subscribe: () => log.debug("[yield.xyz] starting yield balances subscription"),
           unsubscribe: () => log.debug("[yield.xyz] stopping yield balances subscription"),
         }),
         // TODO consolidate Loadable<T> and QueryResult<T> with a common type
-        map((val): Loadable<YieldPosition[]> => {
+        map((val): Loadable<YieldxyzPosition[]> => {
           switch (val.status) {
             case "loading":
               return { status: "loading", data: val.data }

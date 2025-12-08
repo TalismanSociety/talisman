@@ -8,7 +8,14 @@ import {
 } from "@yieldxyz/sdk"
 import { log, YIELD_API_BASE_URL } from "extension-shared"
 
-import { YieldsControllerGetYieldsBatchParams } from "./types"
+import { YieldxyzControllerGetYieldsBatchParams } from "./types"
+
+// TODO KISS like this?
+// sdk.configure({
+//         baseURL: YIELD_API_BASE_URL,
+//         apiKey: "talisman",
+//   })
+// export const yieldxyz = sdk
 
 /**
  * Yield.xyz SDK configuration and service
@@ -23,10 +30,6 @@ class YieldSDKService {
 
   private initialize() {
     try {
-      sdk.configure({
-        baseURL: YIELD_API_BASE_URL,
-        apiKey: "talisman",
-      })
       this.initialized = true
     } catch (error) {
       log.error("[Yield SDK] Configuration failed", { error })
@@ -69,7 +72,7 @@ class YieldSDKService {
    * Get yields with direct API call supporting comma-separated inputToken
    * Bypasses SDK wrapper to use full REST API capabilities
    */
-  async getYieldsBatch(params?: YieldsControllerGetYieldsBatchParams) {
+  async getYieldsBatch(params?: YieldxyzControllerGetYieldsBatchParams) {
     this.ensureConfigured()
 
     // Build query params manually
@@ -167,4 +170,4 @@ class YieldSDKService {
   }
 }
 
-export const yieldSdk = new YieldSDKService()
+export const yieldxyz = new YieldSDKService()

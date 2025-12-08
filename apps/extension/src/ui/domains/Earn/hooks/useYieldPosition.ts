@@ -1,4 +1,4 @@
-import { YieldPosition } from "extension-core"
+import { YieldxyzPosition } from "extension-core"
 import { useMemo } from "react"
 
 import { useYieldBalancesGrouped } from "./useYieldBalancesGrouped"
@@ -16,7 +16,7 @@ export const useYieldPosition = (
 
     // Find position matching yieldId, account address, and validator address (if provided)
     return (
-      yieldBalancesGrouped.data.find((pos: YieldPosition) => {
+      yieldBalancesGrouped.data.find((pos: YieldxyzPosition) => {
         if (pos.yieldId !== yieldId) return false
 
         // If account address is provided, check if any balance matches

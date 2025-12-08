@@ -56,7 +56,7 @@ import {
   ValidRequests,
   WalletTransactionInfo,
   WatchAssetRequestId,
-  YieldPosition,
+  YieldxyzPosition,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
@@ -278,11 +278,9 @@ export default interface MessageTypes {
   nftsRefreshMetadata: (id: string) => Promise<boolean>
 
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
-  yieldBalancesSubscribe: (
-    cb: (positions: Loadable<import("extension-core").YieldBalancesDtoWithProduct[]>) => void,
-  ) => UnsubscribeFn
+
   yieldBalancesGroupedSubscribe: (
-    cb: (positions: Loadable<YieldPosition[]>) => void,
+    cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
 
   bittensorValidatorsSubscribe: (

@@ -2,9 +2,9 @@ import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { walletYieldPositions$ } from "./getYieldBalances"
+import { walletYieldxyzPositions$ } from "./walletYieldxyzPositions"
 
-export class YieldHandler extends ExtensionHandler {
+export class YieldxyzHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -12,8 +12,8 @@ export class YieldHandler extends ExtensionHandler {
     port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(yield.balances.grouped.subscribe)":
-        return genericSubscription(id, port, walletYieldPositions$)
+      case "pri(yieldxyz.balances.grouped.subscribe)":
+        return genericSubscription(id, port, walletYieldxyzPositions$)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

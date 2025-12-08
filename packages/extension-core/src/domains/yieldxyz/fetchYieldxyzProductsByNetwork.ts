@@ -1,28 +1,28 @@
 import { Networks, YieldDto } from "@yieldxyz/sdk"
 import { log } from "extension-shared"
 
-import { yieldProductsCache } from "./yieldProductsCache"
-import { yieldSdk } from "./yieldSdk"
+import { yieldxyz } from "./yieldxyz"
+import { yieldxyzProductsCache } from "./yieldxyzProductsCache"
 
 /**
  * Fetches yield products for multiple tokens on a specific network
  * Handles pagination automatically to get all available products
  * Uses caching to avoid redundant API calls
  */
-export const fetchYieldProductsByNetwork = async (
+export const fetchYieldxyzProductsByNetwork = async (
   network: Networks,
   tokenAddresses: string[],
 ): Promise<YieldDto[]> => {
   try {
-    log.debug("[Yield] Fetching products by network", {
+    log.debug("[Yield.xyz] Fetching products by network", {
       network,
       tokenCount: tokenAddresses.length,
     })
 
     // Check cache first
-    const cachedProducts = await yieldProductsCache.get(network)
+    const cachedProducts = await yieldxyzProductsCache.get(network)
     if (cachedProducts) {
-      log.debug("[Yield] Using cached products for network", {
+      log.debug("[Yield.xyz] Using cached products for network", {
         network,
         productCount: cachedProducts.length,
       })
@@ -39,9 +39,9 @@ export const fetchYieldProductsByNetwork = async (
     let hasMorePages = true
 
     while (hasMorePages) {
-      log.debug("[Yield] Fetching page", { network, offset, limit })
+      log.debug("[Yield.xyz] Fetching page", { network, offset, limit })
 
-      const response = await yieldSdk.getYieldsBatch({
+      const response = await yieldxyz.getYieldsBatch({
         network,
         inputTokens: inputTokenString,
         limit,
@@ -62,7 +62,7 @@ export const fetchYieldProductsByNetwork = async (
 
       // Safety check to prevent infinite loops
       if (offset > 10000) {
-        log.warn("[Yield] Reached maximum offset limit, stopping pagination", {
+        log.warn("[Yield.xyz] Reached maximum offset limit, stopping pagination", {
           network,
           offset,
         })
@@ -70,18 +70,18 @@ export const fetchYieldProductsByNetwork = async (
       }
     }
 
-    log.debug("[Yield] Completed fetching all products for network", {
+    log.debug("[Yield.xyz] Completed fetching all products for network", {
       network,
       totalProducts: allProducts.length,
       pagesFetched: Math.ceil(offset / limit) + 1,
     })
 
     // Cache the complete result
-    await yieldProductsCache.set(network, allProducts)
+    await yieldxyzProductsCache.set(network, allProducts)
 
     return allProducts
   } catch (error) {
-    log.error("[Yield] Failed to fetch products by network", {
+    log.error("[Yield.xyz] Failed to fetch products by network", {
       network,
       tokenCount: tokenAddresses.length,
       error,

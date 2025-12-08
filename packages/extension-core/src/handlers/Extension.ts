@@ -23,7 +23,7 @@ import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
 import { SubHandler } from "../domains/substrate/handler.extension"
 import TokenRatesHandler from "../domains/tokenRates/handler"
 import { updateTransactionsRestart } from "../domains/transactions/helpers"
-import { YieldHandler } from "../domains/yield/handler"
+import { YieldxyzHandler } from "../domains/yieldxyz/handler"
 import { talismanAnalytics } from "../libs/Analytics"
 import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
@@ -47,7 +47,7 @@ export default class Extension extends ExtensionHandler {
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),
       defi: new DefiHandler(stores),
-      yield: new YieldHandler(stores),
+      yield: new YieldxyzHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),

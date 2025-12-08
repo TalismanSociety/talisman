@@ -1,20 +1,20 @@
 import { log } from "extension-shared"
 
-import { YieldDto, YieldsControllerGetYieldsParamsExtended } from "./types"
-import { yieldSdk } from "./yieldSdk"
+import { YieldDto, YieldxyzControllerGetYieldsParamsExtended } from "./types"
+import { yieldxyz } from "./yieldxyz"
 
 /**
  * Fetches yield products from yield.xyz API using SDK
  */
-export const fetchYieldProducts = async (
-  filter?: YieldsControllerGetYieldsParamsExtended,
+export const fetchYieldxyzProducts = async (
+  filter?: YieldxyzControllerGetYieldsParamsExtended,
 ): Promise<YieldDto[]> => {
   try {
-    log.debug("[Yield] Fetching yield products via SDK", { filter })
+    log.debug("[Yield.xyz] Fetching yield products via SDK", { filter })
 
-    const response = await yieldSdk.getYields(filter)
+    const response = await yieldxyz.getYields(filter)
 
-    log.debug("[Yield] SDK yields response", {
+    log.debug("[Yield.xyz] SDK yields response", {
       count: response?.items?.length || 0,
       firstItem: response?.items?.[0],
     })
@@ -44,7 +44,7 @@ export const fetchYieldProducts = async (
         }),
       )
 
-      log.debug("[Yield] Client-filtered products", {
+      log.debug("[Yield.xyz] Client-filtered products", {
         before: products.length,
         after: filtered.length,
         requested: Array.from(requestedIdentifiers.values()),
@@ -65,7 +65,7 @@ export const fetchYieldProducts = async (
 
     return sortedProducts
   } catch (error) {
-    log.error("[Yield] Failed to fetch yield products via SDK", { error, filter })
+    log.error("[Yield.xyz] Failed to fetch yield products via SDK", { error, filter })
     return []
   }
 }
