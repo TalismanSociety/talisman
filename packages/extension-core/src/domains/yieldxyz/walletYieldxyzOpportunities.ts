@@ -1,13 +1,30 @@
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { isNotNil } from "@talismn/util"
+import { isNotNil, keepAlive, Loadable } from "@talismn/util"
 import { isEqual, uniq } from "lodash-es"
-import { combineLatest, distinctUntilChanged, map, switchMap } from "rxjs"
+import {
+  combineLatest,
+  concatMap,
+  defer,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+  tap,
+} from "rxjs"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { walletBalances$ } from "../balances/walletBalances"
+import { YieldDto } from "./exports"
 import { getYieldxyzProductOpportunities$ } from "./getYieldxyzProductOpportunities"
 import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
+import {
+  updateYieldxyzOpportunitiesStore,
+  yieldxyzOpportunitiesStore$,
+} from "./store.opportunities"
+
+const KEEP_ALIVE = 3_000
 
 const tokenIds$ = walletBalances$.pipe(
   map((balances) => uniq(balances.balances.map((b) => b.tokenId)).sort()),
@@ -26,7 +43,7 @@ const getTokenAddressOrSynbol = (token: Token) => {
   }
 }
 
-export const walletYieldxyzOpportunities$ = combineLatest([
+const liveWalletYieldxyzOpportunities$ = combineLatest([
   chaindataProvider.getTokensMapById$(),
   tokenIds$,
   remoteConfigStore.observable,
@@ -50,11 +67,34 @@ export const walletYieldxyzOpportunities$ = combineLatest([
       },
       {
         networks: [], // yieldxyz netwrork ids
-        inputTokens: [], // symbol for native tokens, addresses for ERC20 and SPL
+        inputTokens: [], // symbol for native tokens, addresses for ERC20 and SPL - unused atm
       },
     )
   }),
   switchMap(({ networks, inputTokens }) =>
     getYieldxyzProductOpportunities$({ networks, inputTokens }),
+  ),
+  tap({
+    next: (opportunities) => {
+      if (opportunities.status === "success") updateYieldxyzOpportunitiesStore(opportunities.data)
+    },
+  }),
+)
+
+export const walletYieldxyzOpportunities$ = defer(() =>
+  yieldxyzOpportunitiesStore$.pipe(
+    take(1),
+    concatMap((defaultValue) =>
+      liveWalletYieldxyzOpportunities$.pipe(
+        map((opportunities) =>
+          opportunities.status === "success"
+            ? opportunities
+            : ({ status: "loading", data: defaultValue } as Loadable<YieldDto[]>),
+        ),
+      ),
+    ),
+    distinctUntilChanged<Loadable<YieldDto[]>>(isEqual),
+    shareReplay({ refCount: true, bufferSize: 1 }),
+    keepAlive(KEEP_ALIVE),
   ),
 )

@@ -23,7 +23,7 @@ import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
 } from "./helpers"
-import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store"
+import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store.positions"
 import { YieldxyzPosition } from "./types"
 
 const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
@@ -125,8 +125,9 @@ export const walletYieldxyzPositions$ = defer(() =>
         switchMap(([queries, remoteConfig]) =>
           getQuery$({
             namespace: "walletYieldPositions$",
-            args: queries,
-            queryFn: async (queries, signal) => fetchPositions(queries, remoteConfig, signal),
+            args: [queries, remoteConfig] as const,
+            queryFn: ([queries, remoteConfig], signal) =>
+              fetchPositions(queries, remoteConfig, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),

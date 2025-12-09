@@ -11,6 +11,7 @@ export type DbBlobId =
   | "defi-positions"
   | "yieldxyz-positions"
   | "yieldxyz-products"
+  | "yieldxyz-opportunities"
   | "dynamic-tokens"
   | "bittensor-validators"
 
