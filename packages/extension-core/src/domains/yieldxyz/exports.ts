@@ -1,6 +1,6 @@
 export * from "./types"
 export { fetchYieldxyzProducts as fetchYieldProducts } from "./fetchYieldxyzProducts"
-export { fetchYieldxyzProductsByNetwork as fetchYieldProductsByNetwork } from "./fetchYieldxyzProductsByNetwork"
-export { yieldxyzProductsCache as yieldProductsCache } from "./yieldxyzProductsCache"
+// export { fetchYieldxyzProductsByNetwork as fetchYieldProductsByNetwork } from "./fetchYieldxyzProductsByNetwork"
+// export { yieldxyzProductsCache as yieldProductsCache } from "./yieldxyzProductsCache"
 export { yieldxyz as yieldSdk } from "./yieldxyz"
 export * from "./helpers"

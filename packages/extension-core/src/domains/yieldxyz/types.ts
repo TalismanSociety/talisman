@@ -3,6 +3,8 @@ import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
 import { BalanceDto, YieldDto, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
 
+import { YieldxyzProvider } from "./fetchYieldxyzProviders"
+
 // TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
@@ -72,9 +74,11 @@ export type YieldxyzPositionEnhanced = YieldxyzPosition & {
 // >
 export type YieldxyzPositionsResponse = Loadable<YieldxyzPosition[]>
 export type YieldxyzOpportunitiesResponse = Loadable<YieldDto[]>
+export type YieldxyzProvidersResponse = Loadable<YieldxyzProvider[]>
 
 // Message type augmentation for handler routing
 export interface YieldxyzMessages {
   "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsResponse]
   "pri(yieldxyz.opportunities.subscribe)": [null, boolean, YieldxyzOpportunitiesResponse]
+  "pri(yieldxyz.providers.subscribe)": [null, boolean, YieldxyzProvidersResponse]
 }

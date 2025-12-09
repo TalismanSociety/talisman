@@ -12,6 +12,7 @@ import {
   YieldxyzPosition,
 } from "extension-core"
 import { createYieldxyzPositions } from "extension-core/src/domains/yieldxyz/createYieldxyzPositions"
+import { YieldxyzProvider } from "extension-core/src/domains/yieldxyz/fetchYieldxyzProviders"
 import { log } from "extension-shared"
 import { map, Observable, shareReplay } from "rxjs"
 
@@ -19,6 +20,41 @@ import { api } from "@ui/api"
 
 import { remoteConfig$ } from "./remoteConfig"
 import { debugObservable } from "./util/debugObservable"
+
+// Add new observable for grouped yield balances using bind()
+const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
+  // TODO rename to yieldPositionsSubscribe, or earn
+  const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
+    subscriber.next(loadable)
+  })
+
+  return () => {
+    // TODO remove after unsubscribe works
+    log.debug("[frontend] Unsubscribing from api.yieldxyzOpportunitiesSubscribe")
+    unsubscribe()
+  }
+}).pipe(
+  debugObservable("rawYieldxyzProviders$", true),
+  shareReplay({ bufferSize: 1, refCount: true }),
+)
+
+export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
+  status: "loading",
+  data: [],
+})
+
+export const [useYieldxyzProvider, yieldxyzProvider$] = bind(
+  (providerId: string | null | undefined) =>
+    yieldxyzProviders$.pipe(
+      map((loadable) => {
+        if (!providerId)
+          return { status: "success", data: null } as Loadable<YieldxyzProvider | null>
+        const provider = loadable.data?.find((p) => p.id === providerId) || null
+        return { ...loadable, data: provider } as Loadable<YieldxyzProvider | null>
+      }),
+    ),
+  { status: "loading", data: null },
+)
 
 // Add new observable for grouped yield balances using bind()
 const rawYieldxyzOpportunities$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {

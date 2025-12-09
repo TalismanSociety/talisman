@@ -8,14 +8,16 @@ import {
   TokenId,
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { ChevronRightIcon } from "@talismn/icons"
+import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn, isNotNil, Loadable } from "@talismn/util"
 import { getYieldxyzNetworkIdToTalismanNetworkIdMap, TokenDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
+import { t } from "i18next"
 import { uniq } from "lodash-es"
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -34,10 +36,11 @@ import {
   useSelectedCurrency,
   useToken,
 } from "@ui/state"
-import { useYieldxyzOpportunities } from "@ui/state/yield"
+import { useYieldxyzOpportunities, useYieldxyzProviders } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
+import { YieldxyzProviderLogo } from "../YieldxyzProviderLogo"
 
 // // Network-level component that fetches once per network
 // const NetworkTokensGroup: FC<{
@@ -260,6 +263,7 @@ export const EarnOnYourAssets: FC<{
   //  isPopup = false, search
   //  }
   {
+    useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
     const { t } = useTranslation()
     // const { userTokens, isLoading } = useUserTokensWithYield()
     const navigate = useNavigate()
@@ -617,59 +621,133 @@ const TokenOpportunities: FC<{
   bestApr: number
   balances: Balances
   isLoading?: boolean
-}> = ({
-  tokenId,
-  // opportunities,
-  bestApr,
-  balances,
-  isLoading,
-}) => {
+}> = ({ tokenId, opportunities, bestApr, balances, isLoading }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
   const network = useNetworkById(token?.networkId)
+  const { isOpen, toggle } = useOpenClose()
 
   if (!token || !network) return null
 
   return (
+    <div className="bg-grey-900 w-full overflow-hidden rounded">
+      <button
+        type="button"
+        onClick={toggle}
+        className={cn(
+          "hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden rounded px-8",
+          isOpen && "bg-grey-800",
+        )}
+      >
+        <TokenLogo tokenId={tokenId} className="size-16" />
+        <div className="text-body-secondary flex grow flex-col justify-center gap-2 text-left text-sm font-medium">
+          <div className="">
+            <span className="text-body font-bold">
+              <TokenDisplaySymbol tokenId={tokenId} />
+            </span>{" "}
+            {token.name}
+          </div>
+          <div className="flex w-full items-center gap-2 overflow-hidden">
+            <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+            <NetworkName networkId={token.networkId} className="truncate" />
+          </div>
+        </div>
+        <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
+          <div className="text-body-secondary">
+            <TokensAndFiat
+              tokenId={tokenId}
+              planck={balances.sum.planck.transferable}
+              tokensClassName="text-body"
+              fiatClassName=" text-sm font-medium"
+            />
+          </div>
+          <div className={cn(isLoading && "animate-pulse")}>
+            <Trans
+              t={t}
+              defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
+              values={{ bestApr: bestApr.toFixed(2) }}
+              components={{ Highlight: <span className="text-primary font-bold" /> }}
+            />
+          </div>
+        </div>
+        <ChevronRightIcon
+          className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
+        />
+      </button>
+      <div className={cn("flex w-full flex-col py-2 pl-12 pr-4", isOpen ? "block" : "hidden")}>
+        {isOpen &&
+          opportunities.map((opportunity) => (
+            <OpportunityRow key={opportunity.id} opportunity={opportunity} />
+          ))}
+      </div>
+    </div>
+  )
+}
+
+const OpportunityRow: FC<{ opportunity: YieldDto }> = ({ opportunity }) => {
+  const { t } = useTranslation()
+  //const { data: provider } = useYieldxyzProvider(opportunity.providerId)
+  return (
     <button
       type="button"
-      className="bg-grey-900 hover:bg-grey-800 flex h-28 items-center gap-6 rounded px-8"
+      className="hover:bg-grey-800 flex h-28 w-full items-center gap-6 rounded px-8 text-sm"
     >
-      <TokenLogo tokenId={tokenId} className="size-16" />
-      <div className="text-body-secondary flex w-full grow flex-col justify-center gap-2 text-left text-sm font-medium">
-        <div className="">
-          <span className="text-body font-bold">
-            <TokenDisplaySymbol tokenId={tokenId} />
-          </span>{" "}
-          {token.name}
+      {/* <img className="bg-grey-500 size-16 rounded-full" src={opportunity.metadata.logoURI} alt="" /> */}
+      <YieldxyzProviderLogo providerId={opportunity.providerId} className="size-16 shrink-0" />
+      <div className="flex grow flex-col items-start justify-start gap-2">
+        <div className="text-body">
+          {opportunity.metadata.name} <Badge>{opportunity.mechanics?.type}</Badge>
         </div>
-        <div className="flex w-full items-center gap-2 overflow-hidden">
-          <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
-          <NetworkName networkId={token.networkId} className="truncate" />
-        </div>
-      </div>
-      <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
-        <div className="text-body-secondary">
-          <TokensAndFiat
-            tokenId={tokenId}
-            planck={balances.sum.planck.transferable}
-            tokensClassName="text-body"
-            fiatClassName=" text-sm font-medium"
-          />
-        </div>
-        <div className={cn(isLoading && "animate-pulse")}>
-          <Trans
-            t={t}
-            defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
-            values={{ bestApr: bestApr.toFixed(2) }}
-            components={{ Highlight: <span className="text-primary font-bold" /> }}
-          />
+        <div className="flex items-center gap-4">
+          {/* <span>{provider?.name}</span>
+          <span className="text-body-disabled">{provider?.description}</span> */}
+          <Metric icon={<UsersIcon />} tooltip={t("Number of unique holders")}>
+            {opportunity.statistics?.uniqueUsers}
+          </Metric>
+          <Metric icon={<LockIcon />} tooltip={t("Total value locked")}>
+            {Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+              notation: "compact",
+            }).format(Number(opportunity.statistics?.tvlUsd ?? 0))}
+          </Metric>
         </div>
       </div>
-      <ChevronRightIcon className="size-10 shrink-0" />
+      <div className="shrink-0 text-nowrap">
+        {opportunity.rewardRate.rateType}:{" "}
+        <span className="text-primary-500 font-bold">
+          {(opportunity.rewardRate.total * 100).toFixed(2)}%
+        </span>
+      </div>
     </button>
   )
 }
+
+const Metric: FC<
+  PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
+> = ({ children, icon, tooltip, className }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
+        <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
+        <div>{children ?? t("N/A")}</div>
+      </div>
+    </TooltipTrigger>
+    <TooltipContent>{tooltip}</TooltipContent>
+  </Tooltip>
+)
+
+const Badge: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => (
+  <span
+    className={cn(
+      // TODO fix text-tiny which currently makes color white, use text-[1rem] for now
+      "rounded-xs text-body-inactive mx-3 border px-2 py-1 align-middle text-[1rem] font-medium uppercase",
+      className,
+    )}
+  >
+    {children}
+  </span>
+)
 
 const TokenOpportunitiesShimmer = () => (
   <div className="bg-grey-900 flex h-28 items-center gap-6 rounded px-8">

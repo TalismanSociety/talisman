@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { fetchYieldProductsByNetwork, Networks } from "extension-core"
+import { Networks, YieldDto } from "extension-core"
 
 /**
  * Hook to fetch yield products for multiple tokens on a specific network
@@ -9,7 +9,7 @@ import { fetchYieldProductsByNetwork, Networks } from "extension-core"
 export const useYieldProductsByNetwork = (network: Networks, tokenAddresses: string[]) => {
   return useQuery({
     queryKey: ["yieldProductsByNetwork", network, tokenAddresses.sort()],
-    queryFn: () => fetchYieldProductsByNetwork(network, tokenAddresses),
+    queryFn: () => [] as YieldDto[], // fetchYieldProductsByNetwork(network, tokenAddresses),
     enabled: !!network && tokenAddresses.length > 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data

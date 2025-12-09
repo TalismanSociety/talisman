@@ -297,6 +297,8 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(yieldxyz.positions.subscribe)", null, cb),
   yieldxyzOpportunitiesSubscribe: (cb) =>
     messageService.subscribe("pri(yieldxyz.opportunities.subscribe)", null, cb),
+  yieldxyzProvidersSubscribe: (cb) =>
+    messageService.subscribe("pri(yieldxyz.providers.subscribe)", null, cb),
 
   // bittensor
   bittensorValidatorsSubscribe: (cb) =>

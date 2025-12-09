@@ -59,6 +59,7 @@ import {
   YieldDto,
   YieldxyzPosition,
 } from "extension-core"
+import { YieldxyzProvider } from "extension-core/src/domains/yieldxyz/fetchYieldxyzProviders"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
@@ -284,6 +285,9 @@ export default interface MessageTypes {
     cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
   yieldxyzOpportunitiesSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
+  yieldxyzProvidersSubscribe: (
+    cb: (positions: Loadable<YieldxyzProvider[]>) => void,
+  ) => UnsubscribeFn
 
   bittensorValidatorsSubscribe: (
     cb: (validators: Loadable<BittensorValidator[]>) => void,
