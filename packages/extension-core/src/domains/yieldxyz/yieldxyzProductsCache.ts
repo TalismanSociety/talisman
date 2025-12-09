@@ -3,14 +3,14 @@ import { log } from "extension-shared"
 import { getBlobStore } from "../../db/blobs"
 import { YieldDto } from "./types"
 
-export interface YieldxyzProductsCacheData {
+interface YieldxyzProductsCacheData {
   [network: string]: {
     products: YieldDto[]
     timestamp: number
   }
 }
 
-export class YieldxyzProductsCache {
+class YieldxyzProductsCache {
   private readonly blobStore = getBlobStore<YieldxyzProductsCacheData>("yieldxyz-products")
   private readonly defaultTtl = 5 * 60 * 1000 // 5 minutes in milliseconds
 

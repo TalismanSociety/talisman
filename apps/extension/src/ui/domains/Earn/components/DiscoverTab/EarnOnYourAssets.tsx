@@ -1,418 +1,456 @@
-import { Networks, YieldDto } from "extension-core"
+import { Balances } from "@talismn/balances"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  solNativeTokenId,
+  solSplTokenId,
+  subNativeTokenId,
+  TokenId,
+} from "@talismn/chaindata-provider"
+import { normalizeAddress } from "@talismn/crypto"
+import { ChevronRightIcon } from "@talismn/icons"
+import { isNotNil } from "@talismn/util"
+import { getYieldxyzNetworkIdToTalismanNetworkIdMap, TokenDto, YieldDto } from "extension-core"
+import { log } from "extension-shared"
+import { uniq } from "lodash-es"
 import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EarnAccountPicker } from "@ui/domains/Earn/components/EarnAccountPicker"
 import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
-import {
-  GroupedToken,
-  useTokensByYieldNetwork,
-} from "@ui/domains/Earn/hooks/useTokensByYieldNetwork"
 import { useUserTokensWithYield } from "@ui/domains/Earn/hooks/useUserTokensWithYield"
-import { useYieldProductsByNetwork } from "@ui/domains/Earn/hooks/useYieldProductsByNetwork"
-import { mapNetworkToYieldNetwork } from "@ui/domains/Earn/utils/networkMapping"
-import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
-import { useNetworkById, useRemoteConfig, useToken } from "@ui/state"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import {
+  useBalances,
+  useNetworkById,
+  useNetworksMapById,
+  useRemoteConfig,
+  useSelectedCurrency,
+  useToken,
+} from "@ui/state"
+import { useYieldxyzOpportunities } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
-import { DiscoverTokenRow } from "./DiscoverTokenRow"
 
-// Network-level component that fetches once per network
-const NetworkTokensGroup: FC<{
-  network: string
-  tokens: GroupedToken[]
-  onProductClick: (product: YieldDto) => void
-  isPopup?: boolean
-  allowedNetworks: string[]
-  search?: string
-}> = ({ network, tokens, onProductClick, isPopup, allowedNetworks, search }) => {
-  // Extract token identifiers (prioritize contract addresses over symbols)
-  const tokenIdentifiers = tokens.map((t) => t.tokenAddress || t.tokenSymbol)
+// // Network-level component that fetches once per network
+// const NetworkTokensGroup: FC<{
+//   network: string
+//   tokens: GroupedToken[]
+//   onProductClick: (product: YieldDto) => void
+//   isPopup?: boolean
+//   allowedNetworks: string[]
+//   search?: string
+// }> = ({ network, tokens, onProductClick, isPopup, allowedNetworks, search }) => {
+//   // Extract token identifiers (prioritize contract addresses over symbols)
+//   const tokenIdentifiers = tokens.map((t) => t.tokenAddress || t.tokenSymbol)
 
-  // Fetch products for all tokens on this network
-  const { data: networkProducts = [], isLoading: isLoadingNetworkProducts } =
-    useYieldProductsByNetwork(network as Networks, tokenIdentifiers)
+//   // Fetch products for all tokens on this network
+//   const { data: networkProducts = [], isLoading: isLoadingNetworkProducts } =
+//     useYieldProductsByNetwork(network as Networks, tokenIdentifiers)
 
-  // Sort tokens by highest APY
-  const sortedTokens = useMemo(() => {
-    if (!networkProducts.length) return tokens
+//   console.log("networkProducts", { network, tokens, networkProducts })
 
-    return tokens
-      .map((token) => {
-        const tokenIdentifier = (token.tokenAddress || token.tokenSymbol).toLowerCase()
-        // Find max reward rate for this token
-        const maxRate = networkProducts.reduce((max, product) => {
-          const matches = product.inputTokens?.some((inputToken) => {
-            const symbol = inputToken.symbol?.toLowerCase()
-            const address = inputToken.address?.toLowerCase()
-            const identifier = tokenIdentifier
+//   // Sort tokens by highest APY
+//   const sortedTokens = useMemo(() => {
+//     if (!networkProducts.length) return tokens
 
-            // Prioritize address matching if both have addresses
-            if (address && identifier.startsWith("0x")) {
-              return address === identifier
-            }
-            // Fallback to symbol matching
-            return symbol === identifier
-          })
-          if (matches) {
-            return Math.max(max, product.rewardRate?.total || 0)
-          }
-          return max
-        }, 0)
-        return { ...token, maxRate }
-      })
-      .sort((a, b) => b.maxRate - a.maxRate)
-  }, [tokens, networkProducts])
+//     return tokens
+//       .map((token) => {
+//         const tokenIdentifier = (token.tokenAddress || token.tokenSymbol).toLowerCase()
+//         // Find max reward rate for this token
+//         const maxRate = networkProducts.reduce((max, product) => {
+//           const matches = product.inputTokens?.some((inputToken) => {
+//             const symbol = inputToken.symbol?.toLowerCase()
+//             const address = inputToken.address?.toLowerCase()
+//             const identifier = tokenIdentifier
 
-  return (
-    <>
-      {sortedTokens.map((token) => (
-        <TokenWithYields
-          key={`${token.tokenId}-${token.networkId}`}
-          tokenSymbol={token.tokenSymbol}
-          tokenLogoURI={token.tokenLogoURI}
-          networkId={token.networkId}
-          tokenId={token.tokenId}
-          onProductClick={onProductClick}
-          isPopup={isPopup}
-          allowedNetworks={allowedNetworks}
-          networkProducts={networkProducts}
-          isLoadingNetworkProducts={isLoadingNetworkProducts}
-          search={search}
-        />
-      ))}
-    </>
-  )
-}
+//             // Prioritize address matching if both have addresses
+//             if (address && identifier.startsWith("0x")) {
+//               return address === identifier
+//             }
+//             // Fallback to symbol matching
+//             return symbol === identifier
+//           })
+//           if (matches) {
+//             return Math.max(max, product.rewardRate?.total || 0)
+//           }
+//           return max
+//         }, 0)
+//         return { ...token, maxRate }
+//       })
+//       .sort((a, b) => b.maxRate - a.maxRate)
+//   }, [tokens, networkProducts])
 
-// Component for individual token with its yield products
-const TokenWithYields: FC<{
-  tokenSymbol: string
-  tokenLogoURI?: string
-  networkId: string
-  tokenId: string
-  onProductClick: (product: YieldDto) => void
-  isPopup?: boolean
-  allowedNetworks: string[]
-  networkProducts?: YieldDto[] // Network-level products passed from parent
-  isLoadingNetworkProducts?: boolean // Loading state from network-level fetch
-  search?: string // Search query for filtering products
-}> = ({
-  tokenSymbol,
-  tokenLogoURI,
-  networkId,
-  tokenId,
-  onProductClick,
-  isPopup,
-  allowedNetworks,
-  networkProducts = [],
-  isLoadingNetworkProducts = false,
-  search,
-}) => {
-  const network = useNetworkById(networkId)
-  const token = useToken(tokenId)
-  const mappedNetwork = mapNetworkToYieldNetwork(network)
-  const [visibleProductCount, setVisibleProductCount] = useState(20)
+//   return (
+//     <>
+//       {sortedTokens.map((token) => (
+//         <TokenWithYields
+//           key={`${token.tokenId}-${token.networkId}`}
+//           tokenSymbol={token.tokenSymbol}
+//           tokenLogoURI={token.tokenLogoURI}
+//           networkId={token.networkId}
+//           tokenId={token.tokenId}
+//           onProductClick={onProductClick}
+//           isPopup={isPopup}
+//           allowedNetworks={allowedNetworks}
+//           networkProducts={networkProducts}
+//           isLoadingNetworkProducts={isLoadingNetworkProducts}
+//           search={search}
+//         />
+//       ))}
+//     </>
+//   )
+// }
 
-  // Get token address if available, fallback to symbol
-  const tokenIdentifier = useMemo(() => {
-    const address = getTokenAddress(token)
-    return address || tokenSymbol
-  }, [token, tokenSymbol])
+// // Component for individual token with its yield products
+// const TokenWithYields: FC<{
+//   tokenSymbol: string
+//   tokenLogoURI?: string
+//   networkId: string
+//   tokenId: string
+//   onProductClick: (product: YieldDto) => void
+//   isPopup?: boolean
+//   allowedNetworks: string[]
+//   networkProducts?: YieldDto[] // Network-level products passed from parent
+//   isLoadingNetworkProducts?: boolean // Loading state from network-level fetch
+//   search?: string // Search query for filtering products
+// }> = ({
+//   tokenSymbol,
+//   tokenLogoURI,
+//   networkId,
+//   tokenId,
+//   onProductClick,
+//   isPopup,
+//   allowedNetworks,
+//   networkProducts = [],
+//   isLoadingNetworkProducts = false,
+//   search,
+// }) => {
+//   const network = useNetworkById(networkId)
+//   const token = useToken(tokenId)
+//   const mappedNetwork = mapNetworkToYieldNetwork(network)
+//   const [visibleProductCount, setVisibleProductCount] = useState(20)
 
-  // Filter network-level products for this specific token
-  const allProducts = useMemo(() => {
-    if (!networkProducts.length) return []
+//   // Get token address if available, fallback to symbol
+//   const tokenIdentifier = useMemo(() => {
+//     const address = getYieldxyzTokenAddress(token)
+//     return address || tokenSymbol
+//   }, [token, tokenSymbol])
 
-    // Filter out products that don't match the requested inputToken exactly
-    // Also ensure the product is available on the current network
-    return networkProducts.filter((product) => {
-      // Check if product matches the token identifier
-      const matchesToken = product.inputTokens?.some((inputToken) => {
-        const symbol = inputToken.symbol?.toLowerCase()
-        const address = inputToken.address?.toLowerCase()
-        const identifier = tokenIdentifier.toLowerCase()
+//   // Filter network-level products for this specific token
+//   const allProducts = useMemo(() => {
+//     if (!networkProducts.length) return []
 
-        // Match by address first if both have addresses, then fallback to symbol
-        if (address && identifier.startsWith("0x")) {
-          return address === identifier
-        }
-        return symbol === identifier
-      })
+//     // Filter out products that don't match the requested inputToken exactly
+//     // Also ensure the product is available on the current network
+//     return networkProducts.filter((product) => {
+//       // Check if product matches the token identifier
+//       const matchesToken = product.inputTokens?.some((inputToken) => {
+//         const symbol = inputToken.symbol?.toLowerCase()
+//         const address = inputToken.address?.toLowerCase()
+//         const identifier = tokenIdentifier.toLowerCase()
 
-      // Check if product is available on the current network
-      const matchesNetwork = product.network === mappedNetwork
+//         // Match by address first if both have addresses, then fallback to symbol
+//         if (address && identifier.startsWith("0x")) {
+//           return address === identifier
+//         }
+//         return symbol === identifier
+//       })
 
-      return matchesToken && matchesNetwork
-    })
-  }, [networkProducts, tokenIdentifier, mappedNetwork])
+//       // Check if product is available on the current network
+//       const matchesNetwork = product.network === mappedNetwork
 
-  // Filter products based on status and availability (same as ProductList)
-  const availableProducts = useMemo(() => {
-    const filtered = allProducts.filter(
-      (product) =>
-        product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
-    )
+//       return matchesToken && matchesNetwork
+//     })
+//   }, [networkProducts, tokenIdentifier, mappedNetwork])
 
-    // Apply search filter if provided (same logic as DiscoverOpportunities)
-    const lowerSearch = (search || "").toLowerCase().trim()
-    if (!lowerSearch) return filtered
+//   // Filter products based on status and availability (same as ProductList)
+//   const availableProducts = useMemo(() => {
+//     const filtered = allProducts.filter(
+//       (product) =>
+//         product.status.enter && !product.metadata.underMaintenance && !product.metadata.deprecated,
+//     )
 
-    // Check if token symbol matches search - if so, show all products for this token
-    const tokenSymbolLower = tokenSymbol.toLowerCase()
-    if (tokenSymbolLower.includes(lowerSearch)) {
-      return filtered
-    }
+//     // Apply search filter if provided (same logic as DiscoverOpportunities)
+//     const lowerSearch = (search || "").toLowerCase().trim()
+//     if (!lowerSearch) return filtered
 
-    // Otherwise, filter products by search query
-    return filtered.filter((product) => {
-      const haystack: string[] = [
-        product.metadata.name,
-        product.metadata.description,
-        product.inputTokens?.[0]?.symbol,
-        product.outputToken?.symbol,
-        product.mechanics?.type,
-      ]
-        .filter(Boolean)
-        .map((v) => String(v).toLowerCase())
+//     // Check if token symbol matches search - if so, show all products for this token
+//     const tokenSymbolLower = tokenSymbol.toLowerCase()
+//     if (tokenSymbolLower.includes(lowerSearch)) {
+//       return filtered
+//     }
 
-      return haystack.some((text) => text.includes(lowerSearch))
-    })
-  }, [allProducts, search, tokenSymbol])
+//     // Otherwise, filter products by search query
+//     return filtered.filter((product) => {
+//       const haystack: string[] = [
+//         product.metadata.name,
+//         product.metadata.description,
+//         product.inputTokens?.[0]?.symbol,
+//         product.outputToken?.symbol,
+//         product.mechanics?.type,
+//       ]
+//         .filter(Boolean)
+//         .map((v) => String(v).toLowerCase())
 
-  // Sort products by reward rate (highest first)
-  const sortedProducts = useMemo(() => {
-    return [...availableProducts].sort(
-      (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
-    )
-  }, [availableProducts])
+//       return haystack.some((text) => text.includes(lowerSearch))
+//     })
+//   }, [allProducts, search, tokenSymbol])
 
-  // Slice products for display (max 100)
-  const visibleProducts = useMemo(
-    () => sortedProducts.slice(0, Math.min(visibleProductCount, 100)),
-    [sortedProducts, visibleProductCount],
-  )
+//   // Sort products by reward rate (highest first)
+//   const sortedProducts = useMemo(() => {
+//     return [...availableProducts].sort(
+//       (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+//     )
+//   }, [availableProducts])
 
-  // Update show more handler
-  const handleShowMore = useCallback(() => {
-    setVisibleProductCount((prev) => Math.min(prev + 20, 100))
-  }, [])
+//   // Slice products for display (max 100)
+//   const visibleProducts = useMemo(
+//     () => sortedProducts.slice(0, Math.min(visibleProductCount, 100)),
+//     [sortedProducts, visibleProductCount],
+//   )
 
-  // Determine if show more should be visible
-  const shouldShowMore = visibleProductCount < 100 && visibleProductCount < sortedProducts.length
+//   // Update show more handler
+//   const handleShowMore = useCallback(() => {
+//     setVisibleProductCount((prev) => Math.min(prev + 20, 100))
+//   }, [])
 
-  // Don't render if network is not in allowed networks
-  if (!mappedNetwork || !allowedNetworks.includes(mappedNetwork)) {
-    return null
-  }
+//   // Determine if show more should be visible
+//   const shouldShowMore = visibleProductCount < 100 && visibleProductCount < sortedProducts.length
 
-  // Don't render if no products found (after filtering)
-  if (!isLoadingNetworkProducts && availableProducts.length === 0) {
-    return null
-  }
+//   // Don't render if network is not in allowed networks
+//   if (!mappedNetwork || !allowedNetworks.includes(mappedNetwork)) {
+//     return null
+//   }
 
-  return (
-    <DiscoverTokenRow
-      tokenSymbol={tokenSymbol}
-      tokenLogoURI={tokenLogoURI}
-      networkId={networkId}
-      tokenId={tokenId}
-      products={visibleProducts}
-      onProductClick={onProductClick}
-      isPopup={isPopup}
-      isLoading={isLoadingNetworkProducts}
-      hasMoreProducts={shouldShowMore}
-      onShowMore={handleShowMore}
-    />
-  )
-}
+//   // Don't render if no products found (after filtering)
+//   if (!isLoadingNetworkProducts && availableProducts.length === 0) {
+//     return null
+//   }
+
+//   return (
+//     <DiscoverTokenRow
+//       tokenSymbol={tokenSymbol}
+//       tokenLogoURI={tokenLogoURI}
+//       networkId={networkId}
+//       tokenId={tokenId}
+//       products={visibleProducts}
+//       onProductClick={onProductClick}
+//       isPopup={isPopup}
+//       isLoading={isLoadingNetworkProducts}
+//       hasMoreProducts={shouldShowMore}
+//       onShowMore={handleShowMore}
+//     />
+//   )
+// }
 
 export const EarnOnYourAssets: FC<{
   isPopup?: boolean
   search: string
-}> = ({ isPopup = false, search }) => {
-  const { t } = useTranslation()
-  const { userTokens, isLoading } = useUserTokensWithYield()
-  const navigate = useNavigate()
-  const remoteConfig = useRemoteConfig()
+}> = () =>
+  // {
+  // TODO
+  //  isPopup = false, search
+  //  }
+  {
+    const { t } = useTranslation()
+    const { userTokens, isLoading } = useUserTokensWithYield()
+    const navigate = useNavigate()
+    // const remoteConfig = useRemoteConfig()
 
-  // Modal state management
-  const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
-  const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
-  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
-  const [selectedValidator, setSelectedValidator] = useState<string | null>(null)
-  const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
-  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
+    // Modal state management
+    const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
+    const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
+    const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+    const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
+    const [selectedValidator, setSelectedValidator] = useState<string | null>(null)
+    const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
+    const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
 
-  // Get allowed yield networks from remote config
-  const allowedNetworks = useMemo(() => {
-    const configuredNetworks = Object.keys(remoteConfig.earn?.yieldxyzNetworks || {})
+    // Get allowed yield networks from remote config
+    // const allowedNetworks = useMemo(() => {
+    //   const configuredNetworks = Object.keys(remoteConfig.earn?.yieldxyzNetworks || {})
 
-    // If no networks are configured, use default fallback networks
-    if (configuredNetworks.length === 0) {
-      return ["ethereum", "base", "polygon", "arbitrum", "optimism"]
+    //   // If no networks are configured, use default fallback networks
+    //   if (configuredNetworks.length === 0) {
+    //     return ["ethereum", "base", "polygon", "arbitrum", "optimism"]
+    //   }
+
+    //   return configuredNetworks
+    // }, [remoteConfig.earn?.yieldxyzNetworks])
+
+    // Group tokens by yield network using custom hook
+    // const tokensByNetwork = useTokensByYieldNetwork(
+    //   userTokens,
+    //   allowedNetworks,
+    //   remoteConfig.earn?.yieldxyzNetworks || {
+    //     // Fallback network mapping when remote config is empty
+    //     ethereum: "1",
+    //     base: "8453",
+    //     polygon: "137",
+    //     arbitrum: "42161",
+    //     optimism: "10",
+    //   },
+    // )
+
+    // Group tokens by network (sorting now happens in NetworkTokensGroup by APY)
+    // Note: We don't filter tokens here based on search - we filter products later
+    // This allows tokens to show up if they have products matching the search,
+    // even if the token symbol itself doesn't match (same as DiscoverOpportunities)
+    // const sortedTokensByNetwork = useMemo(() => {
+    //   return Object.entries(tokensByNetwork).map(([network, tokens]) => ({
+    //     network,
+    //     tokens, // No sorting here, will be sorted in NetworkTokensGroup by APY
+    //   }))
+    // }, [tokensByNetwork])
+
+    // const handleProductClick = useCallback(
+    //   (product: YieldDto) => {
+    //     // Find the token that matches this product
+    //     const matchingToken = userTokens.find((token) =>
+    //       product.inputTokens?.some(
+    //         (inputToken) => inputToken.symbol?.toLowerCase() === token.symbol.toLowerCase(),
+    //       ),
+    //     )
+
+    //     if (!matchingToken) return
+
+    //     setSelectedProduct(product)
+    //     setSelectedTokenId(matchingToken.tokenId)
+
+    //     // Check if this product requires validator selection
+    //     if (product?.mechanics?.requiresValidatorSelection) {
+    //       if (IS_POPUP) {
+    //         // Navigate to validator picker page in popup mode
+    //         const params = new URLSearchParams({
+    //           tokenId: matchingToken.tokenId,
+    //           productId: product.id,
+    //         })
+    //         navigate(`/select-product/select-validator?${params.toString()}`)
+    //       } else {
+    //         // Show validator picker modal in dashboard mode
+    //         setIsValidatorPickerOpen(true)
+    //       }
+    //       return
+    //     }
+
+    //     // Always show account picker (per user requirement)
+    //     if (IS_POPUP) {
+    //       // Navigate to account picker page in popup mode
+    //       navigate(
+    //         `/select-product/select-account?tokenId=${encodeURIComponent(matchingToken.tokenId)}&productId=${encodeURIComponent(product.id)}`,
+    //       )
+    //     } else {
+    //       // Show account picker modal in dashboard mode
+    //       setIsAccountPickerOpen(true)
+    //     }
+    //   },
+    //   [navigate, userTokens],
+    // )
+
+    // Modal callbacks
+    const handleValidatorSelect = useCallback(
+      (validator: { address: string }) => {
+        setSelectedValidator(validator.address)
+        setIsValidatorPickerOpen(false)
+
+        // Always show account picker after validator selection
+        if (IS_POPUP) {
+          navigate(
+            `/select-product/select-account?tokenId=${encodeURIComponent(selectedTokenId || "")}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
+          )
+        } else {
+          setIsAccountPickerOpen(true)
+        }
+      },
+      [navigate, selectedTokenId, selectedProduct?.id],
+    )
+
+    const handleAccountSelect = useCallback(
+      (address: string) => {
+        setSelectedAccount(address)
+        setIsAccountPickerOpen(false)
+
+        if (IS_POPUP) {
+          // Navigate to deposit amount page without account in URL (account is stored in local state)
+          const params = new URLSearchParams({
+            tokenId: selectedTokenId || "",
+            productId: selectedProduct?.id || "",
+          })
+          if (selectedValidator) {
+            params.set("validatorAddress", selectedValidator)
+          }
+          navigate(`/select-product/deposit/amount?${params.toString()}`)
+        } else {
+          // Open deposit modal in dashboard mode
+          setIsDepositModalOpen(true)
+        }
+      },
+      [navigate, selectedTokenId, selectedProduct?.id, selectedValidator],
+    )
+
+    const handleDepositNext = useCallback(() => {
+      setIsDepositModalOpen(false)
+      setIsConfirmModalOpen(true)
+    }, [])
+
+    const handleDepositClose = useCallback(() => {
+      setIsDepositModalOpen(false)
+      setSelectedProduct(null)
+      setSelectedValidator(null)
+      setSelectedAccount(null)
+      setSelectedTokenId(null)
+    }, [])
+
+    const handleConfirmClose = useCallback(() => {
+      setIsConfirmModalOpen(false)
+      setSelectedProduct(null)
+      setSelectedValidator(null)
+      setSelectedAccount(null)
+      setSelectedTokenId(null)
+    }, [])
+
+    const tokenOpportunities = useOpportunitiesByTokenId()
+
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-grey-700 h-20 w-full animate-pulse rounded"></div>
+          ))}
+        </div>
+      )
     }
 
-    return configuredNetworks
-  }, [remoteConfig.earn?.yieldxyzNetworks])
-
-  // Group tokens by yield network using custom hook
-  const tokensByNetwork = useTokensByYieldNetwork(
-    userTokens,
-    allowedNetworks,
-    remoteConfig.earn?.yieldxyzNetworks || {
-      // Fallback network mapping when remote config is empty
-      ethereum: "1",
-      base: "8453",
-      polygon: "137",
-      arbitrum: "42161",
-      optimism: "10",
-    },
-  )
-
-  // Group tokens by network (sorting now happens in NetworkTokensGroup by APY)
-  // Note: We don't filter tokens here based on search - we filter products later
-  // This allows tokens to show up if they have products matching the search,
-  // even if the token symbol itself doesn't match (same as DiscoverOpportunities)
-  const sortedTokensByNetwork = useMemo(() => {
-    return Object.entries(tokensByNetwork).map(([network, tokens]) => ({
-      network,
-      tokens, // No sorting here, will be sorted in NetworkTokensGroup by APY
-    }))
-  }, [tokensByNetwork])
-
-  const handleProductClick = useCallback(
-    (product: YieldDto) => {
-      // Find the token that matches this product
-      const matchingToken = userTokens.find((token) =>
-        product.inputTokens?.some(
-          (inputToken) => inputToken.symbol?.toLowerCase() === token.symbol.toLowerCase(),
-        ),
+    if (!userTokens.length) {
+      return (
+        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+          {t("No yield products available for your tokens")}
+        </div>
       )
+    }
 
-      if (!matchingToken) return
-
-      setSelectedProduct(product)
-      setSelectedTokenId(matchingToken.tokenId)
-
-      // Check if this product requires validator selection
-      if (product?.mechanics?.requiresValidatorSelection) {
-        if (IS_POPUP) {
-          // Navigate to validator picker page in popup mode
-          const params = new URLSearchParams({
-            tokenId: matchingToken.tokenId,
-            productId: product.id,
-          })
-          navigate(`/select-product/select-validator?${params.toString()}`)
-        } else {
-          // Show validator picker modal in dashboard mode
-          setIsValidatorPickerOpen(true)
-        }
-        return
-      }
-
-      // Always show account picker (per user requirement)
-      if (IS_POPUP) {
-        // Navigate to account picker page in popup mode
-        navigate(
-          `/select-product/select-account?tokenId=${encodeURIComponent(matchingToken.tokenId)}&productId=${encodeURIComponent(product.id)}`,
-        )
-      } else {
-        // Show account picker modal in dashboard mode
-        setIsAccountPickerOpen(true)
-      }
-    },
-    [navigate, userTokens],
-  )
-
-  // Modal callbacks
-  const handleValidatorSelect = useCallback(
-    (validator: { address: string }) => {
-      setSelectedValidator(validator.address)
-      setIsValidatorPickerOpen(false)
-
-      // Always show account picker after validator selection
-      if (IS_POPUP) {
-        navigate(
-          `/select-product/select-account?tokenId=${encodeURIComponent(selectedTokenId || "")}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
-        )
-      } else {
-        setIsAccountPickerOpen(true)
-      }
-    },
-    [navigate, selectedTokenId, selectedProduct?.id],
-  )
-
-  const handleAccountSelect = useCallback(
-    (address: string) => {
-      setSelectedAccount(address)
-      setIsAccountPickerOpen(false)
-
-      if (IS_POPUP) {
-        // Navigate to deposit amount page without account in URL (account is stored in local state)
-        const params = new URLSearchParams({
-          tokenId: selectedTokenId || "",
-          productId: selectedProduct?.id || "",
-        })
-        if (selectedValidator) {
-          params.set("validatorAddress", selectedValidator)
-        }
-        navigate(`/select-product/deposit/amount?${params.toString()}`)
-      } else {
-        // Open deposit modal in dashboard mode
-        setIsDepositModalOpen(true)
-      }
-    },
-    [navigate, selectedTokenId, selectedProduct?.id, selectedValidator],
-  )
-
-  const handleDepositNext = useCallback(() => {
-    setIsDepositModalOpen(false)
-    setIsConfirmModalOpen(true)
-  }, [])
-
-  const handleDepositClose = useCallback(() => {
-    setIsDepositModalOpen(false)
-    setSelectedProduct(null)
-    setSelectedValidator(null)
-    setSelectedAccount(null)
-    setSelectedTokenId(null)
-  }, [])
-
-  const handleConfirmClose = useCallback(() => {
-    setIsConfirmModalOpen(false)
-    setSelectedProduct(null)
-    setSelectedValidator(null)
-    setSelectedAccount(null)
-    setSelectedTokenId(null)
-  }, [])
-
-  if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-grey-700 h-20 w-full animate-pulse rounded"></div>
+      <div className="flex w-full flex-col gap-4 overflow-hidden">
+        {tokenOpportunities.map(({ tokenId, opportunities, bestApr, balances }) => (
+          <TokenOpportunities
+            key={tokenId}
+            opportunities={opportunities}
+            tokenId={tokenId}
+            bestApr={bestApr}
+            balances={balances}
+          />
         ))}
-      </div>
-    )
-  }
-
-  if (!userTokens.length) {
-    return (
-      <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-        {t("No yield products available for your tokens")}
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex w-full flex-col gap-4">
-      {sortedTokensByNetwork.map(({ network, tokens }) => (
+        {/* {sortedTokensByNetwork.map(({ network, tokens }) => (
         <NetworkTokensGroup
           key={network}
           network={network}
@@ -422,52 +460,219 @@ export const EarnOnYourAssets: FC<{
           allowedNetworks={allowedNetworks}
           search={search}
         />
-      ))}
+      ))} */}
 
-      {/* Modals for dashboard mode */}
-      {!IS_POPUP && (
-        <>
-          <ValidatorPicker
-            isOpen={isValidatorPickerOpen}
-            yieldId={selectedProduct?.id || ""}
-            onDismiss={() => {
-              setIsValidatorPickerOpen(false)
-              setSelectedProduct(null)
-              setSelectedTokenId(null)
-            }}
-            onSelect={handleValidatorSelect}
-          />
-
-          <EarnAccountPicker
-            isOpen={isAccountPickerOpen}
-            tokenId={selectedTokenId || ""}
-            onDismiss={() => setIsAccountPickerOpen(false)}
-            onSelect={handleAccountSelect}
-          />
-
-          {selectedProduct && (
-            <DepositModal
-              isOpen={isDepositModalOpen}
-              onClose={handleDepositClose}
-              onNext={handleDepositNext}
-              account={selectedAccount || ""}
-              tokenId={selectedTokenId || ""}
-              productId={selectedProduct.id}
-              validatorAddress={selectedValidator || undefined}
+        {/* Modals for dashboard mode */}
+        {!IS_POPUP && (
+          <>
+            <ValidatorPicker
+              isOpen={isValidatorPickerOpen}
+              yieldId={selectedProduct?.id || ""}
+              onDismiss={() => {
+                setIsValidatorPickerOpen(false)
+                setSelectedProduct(null)
+                setSelectedTokenId(null)
+              }}
+              onSelect={handleValidatorSelect}
             />
-          )}
 
-          {selectedProduct && (
-            <ConfirmDepositModal
-              isOpen={isConfirmModalOpen}
-              onClose={handleConfirmClose}
-              account={selectedAccount || ""}
+            <EarnAccountPicker
+              isOpen={isAccountPickerOpen}
               tokenId={selectedTokenId || ""}
-              productId={selectedProduct.id}
+              onDismiss={() => setIsAccountPickerOpen(false)}
+              onSelect={handleAccountSelect}
             />
-          )}
-        </>
-      )}
-    </div>
+
+            {selectedProduct && (
+              <DepositModal
+                isOpen={isDepositModalOpen}
+                onClose={handleDepositClose}
+                onNext={handleDepositNext}
+                account={selectedAccount || ""}
+                tokenId={selectedTokenId || ""}
+                productId={selectedProduct.id}
+                validatorAddress={selectedValidator || undefined}
+              />
+            )}
+
+            {selectedProduct && (
+              <ConfirmDepositModal
+                isOpen={isConfirmModalOpen}
+                onClose={handleConfirmClose}
+                account={selectedAccount || ""}
+                tokenId={selectedTokenId || ""}
+                productId={selectedProduct.id}
+              />
+            )}
+          </>
+        )}
+      </div>
+    )
+  }
+
+const useOpportunitiesByTokenId = () => {
+  const { selectedAccounts } = usePortfolioNavigation()
+  const remoteConfig = useRemoteConfig()
+  const balances = useBalances()
+  const opportunities = useYieldxyzOpportunities()
+
+  // all token ids where the selected accounts have any balance
+  const availableTokenIds = useMemo(() => {
+    const accountIds = new Set(selectedAccounts.map((acc) => normalizeAddress(acc.address)))
+    return uniq(
+      balances.find((b) => accountIds.has(normalizeAddress(b.address))).each.map((b) => b.tokenId),
+    ).sort()
+  }, [balances, selectedAccounts])
+
+  const mapToTalismanNetworkId = useMemo(
+    () => getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig),
+    [remoteConfig],
+  )
+
+  const networksMap = useNetworksMapById()
+
+  const getYieldxyzTokenId = useCallback(
+    (token: TokenDto): TokenId | null => {
+      const networkId = mapToTalismanNetworkId[token.network]
+      if (!networkId) return null
+
+      const network = networksMap[networkId]
+      if (!network) return null
+
+      switch (network.platform) {
+        case "ethereum":
+          return token.address
+            ? evmErc20TokenId(networkId, token.address as `0x${string}`)
+            : evmNativeTokenId(networkId)
+        case "polkadot": {
+          if (token.symbol === network.nativeCurrency.symbol) return subNativeTokenId(networkId)
+          log.warn("Unsupported polkadot token for yieldxyz:", token)
+          return null
+        }
+        case "solana": {
+          if (token.address) return solSplTokenId(networkId, token.address)
+          if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
+          log.warn("Unsupported solana token for yieldxyz:", token)
+          return null
+        }
+      }
+
+      return null
+    },
+    [mapToTalismanNetworkId, networksMap],
+  )
+
+  const opportunitiesByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
+    // keep only opportunities for which we have all input tokens
+    const oppsByTokenId =
+      opportunities.data
+        ?.filter((o) => o.rewardRate.total) // a bunch are 0 reward while they are "under maintenance"
+        .filter((opportunity) => {
+          const inputTokenIds = opportunity.inputTokens
+            ?.map((inputToken) => {
+              const tokenId = getYieldxyzTokenId(inputToken)
+              return availableTokenIds.includes(tokenId || "") ? tokenId : null
+              // TODO check that at least one account owns all tokens, or its not a valid opportunity
+            })
+            .filter(Boolean) as string[]
+
+          // check if all input token ids are in availableTokenIds
+          return inputTokenIds.length === opportunity.inputTokens.length
+        })
+        .reduce<Record<TokenId, YieldDto[]>>((acc, opportunity) => {
+          const inputTokenIds = opportunity.inputTokens
+            ?.map((inputToken) => getYieldxyzTokenId(inputToken))
+            .filter(isNotNil) as TokenId[]
+
+          inputTokenIds.forEach((tokenId) => {
+            if (!acc[tokenId]) acc[tokenId] = []
+            acc[tokenId].push(opportunity)
+          })
+
+          return acc
+        }, {}) || {}
+
+    // for each token, sort opportunities by reward rate descending
+    return Object.entries(oppsByTokenId).reduce(
+      (acc, [tokenId, opps]) => {
+        acc[tokenId as TokenId] = opps.sort(
+          (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+        )
+        return acc
+      },
+      {} as Record<TokenId, YieldDto[]>,
+    )
+  }, [opportunities.data, getYieldxyzTokenId, availableTokenIds])
+
+  const currency = useSelectedCurrency()
+
+  return useMemo(() => {
+    return Object.entries(opportunitiesByTokenId)
+      .map(([tokenId, opportunities]) => ({
+        tokenId,
+        opportunities,
+        bestApr: Math.max(...opportunities.map((opp) => opp.rewardRate.total * 100)),
+        balances: balances.find({ tokenId }),
+      }))
+      .sort((a, b) => {
+        const balance1 = a.balances.sum.fiat(currency).transferable
+        const balance2 = b.balances.sum.fiat(currency).transferable
+        return (balance2 || 0) - (balance1 || 0)
+      })
+  }, [opportunitiesByTokenId, balances, currency])
+}
+
+const TokenOpportunities: FC<{
+  tokenId: TokenId
+  opportunities: YieldDto[]
+  bestApr: number
+  balances: Balances
+}> = ({
+  tokenId,
+  // opportunities,
+  bestApr,
+  balances,
+}) => {
+  const { t } = useTranslation()
+  const token = useToken(tokenId)
+  const network = useNetworkById(token?.networkId)
+
+  if (!token || !network) return null
+
+  return (
+    <button type="button" className="bg-grey-800 flex h-28 items-center gap-6 rounded px-8">
+      <TokenLogo tokenId={tokenId} className="size-16" />
+      <div className="text-body-secondary flex w-full grow flex-col justify-center gap-2 text-left text-sm font-medium">
+        <div className="">
+          <span className="text-body font-bold">
+            <TokenDisplaySymbol tokenId={tokenId} />
+          </span>{" "}
+          {token.name}
+        </div>
+        <div className="flex w-full items-center gap-2 overflow-hidden">
+          <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+          <NetworkName networkId={token.networkId} className="truncate" />
+        </div>
+      </div>
+      <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
+        <div className="text-body-secondary">
+          <TokensAndFiat
+            tokenId={tokenId}
+            planck={balances.sum.planck.transferable}
+            tokensClassName="text-body"
+            fiatClassName=" text-sm font-medium"
+          />
+        </div>
+        <div>
+          <Trans
+            t={t}
+            defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
+            values={{ bestApr: bestApr.toFixed(2) }}
+            components={{ Highlight: <span className="text-primary font-bold" /> }}
+          />
+        </div>
+      </div>
+      <ChevronRightIcon className="size-10 shrink-0" />
+    </button>
   )
 }

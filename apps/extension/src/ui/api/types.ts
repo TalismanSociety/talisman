@@ -56,6 +56,7 @@ import {
   ValidRequests,
   WalletTransactionInfo,
   WatchAssetRequestId,
+  YieldDto,
   YieldxyzPosition,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
@@ -282,6 +283,7 @@ export default interface MessageTypes {
   yieldxyzPositionsSubscribe: (
     cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
+  yieldxyzOpportunitiesSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
 
   bittensorValidatorsSubscribe: (
     cb: (validators: Loadable<BittensorValidator[]>) => void,

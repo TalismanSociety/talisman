@@ -12,6 +12,10 @@ export const fetchYieldxyzProducts = async (
   try {
     log.debug("[Yield.xyz] Fetching yield products via SDK", { filter })
 
+    // yieldxyz.getYields({
+
+    // })
+
     const response = await yieldxyz.getYields(filter)
 
     log.debug("[Yield.xyz] SDK yields response", {

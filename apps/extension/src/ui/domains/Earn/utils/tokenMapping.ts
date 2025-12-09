@@ -4,7 +4,7 @@ import { useTokens } from "@ui/state"
 
 import { mapYieldNetworkToNetworkId } from "./networkMapping"
 // import { mapYieldNetworkToNetworkId } from "./networkMapping"
-import { getTokenAddress } from "./tokenUtils"
+import { getYieldxyzTokenAddress } from "./tokenUtils"
 
 /**
  * Maps a YieldDto input token to a chaindata tokenId
@@ -31,7 +31,7 @@ export const mapYieldInputTokenToTokenId = (
   // First try to match by address if both yield product and chaindata have addresses
   if (address) {
     const addressMatches = tokens.filter((token) => {
-      const tokenAddress = getTokenAddress(token)
+      const tokenAddress = getYieldxyzTokenAddress(token)
       return (
         tokenAddress &&
         tokenAddress.toLowerCase() === address.toLowerCase() &&
@@ -101,7 +101,7 @@ export const mapYieldTokenToTokenId = (
   if (isAddress) {
     // Try to match by address first
     const addressMatches = tokens.filter((token) => {
-      const tokenAddress = getTokenAddress(token)
+      const tokenAddress = getYieldxyzTokenAddress(token)
       return (
         tokenAddress &&
         tokenAddress.toLowerCase() === identifier.toLowerCase() &&

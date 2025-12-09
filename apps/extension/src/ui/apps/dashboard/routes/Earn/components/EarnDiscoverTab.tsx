@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
+// import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
 import { EarnOnYourAssets } from "@ui/domains/Earn/components/DiscoverTab/EarnOnYourAssets"
 
 export const EarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
@@ -16,12 +16,12 @@ export const EarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
       </div>
 
       {/* Discover opportunities section */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h2 className="text-body-secondary mb-4 text-sm font-medium">
           {t("Discover opportunities")}
         </h2>
         <DiscoverOpportunities search={search} isPopup={false} />
-      </div>
+      </div> */}
     </div>
   )
 }

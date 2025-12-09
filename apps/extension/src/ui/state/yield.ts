@@ -7,6 +7,7 @@ import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
   Networks,
+  YieldDto,
   YieldxyzControllerGetYieldsParamsExtended,
   YieldxyzPosition,
 } from "extension-core"
@@ -18,6 +19,28 @@ import { api } from "@ui/api"
 
 import { remoteConfig$ } from "./remoteConfig"
 import { debugObservable } from "./util/debugObservable"
+
+// Add new observable for grouped yield balances using bind()
+const rawYieldxyzOpportunities$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
+  // TODO rename to yieldPositionsSubscribe, or earn
+  const unsubscribe = api.yieldxyzOpportunitiesSubscribe((loadable: Loadable<YieldDto[]>) => {
+    subscriber.next(loadable)
+  })
+
+  return () => {
+    // TODO remove after unsubscribe works
+    log.debug("[frontend] Unsubscribing from api.yieldxyzOpportunitiesSubscribe")
+    unsubscribe()
+  }
+}).pipe(
+  debugObservable("rawYieldxyzOpportunities$", true),
+  shareReplay({ bufferSize: 1, refCount: true }),
+)
+
+export const [useYieldxyzOpportunities, yieldxyzOpportunities$] = bind(rawYieldxyzOpportunities$, {
+  status: "loading",
+  data: [],
+})
 
 // Add new observable for grouped yield balances using bind()
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {

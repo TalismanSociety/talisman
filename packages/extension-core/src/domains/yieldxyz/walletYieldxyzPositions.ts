@@ -1,4 +1,3 @@
-import TTLCache from "@isaacs/ttlcache"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { getQuery$, isNotNil, keepAlive, Loadable, QueryResult } from "@talismn/util"
 import { log } from "extension-shared"
@@ -19,13 +18,13 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { RemoteConfigStoreData } from "../app/types"
 import { walletBalances$ } from "../balances/walletBalances"
 import { yieldSdk } from "./exports"
+import { getYieldxyzProduct } from "./getYieldxyzProduct"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
 } from "./helpers"
 import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store"
-import { YieldDto, YieldxyzPosition } from "./types"
-import { yieldxyz } from "./yieldxyz"
+import { YieldxyzPosition } from "./types"
 
 const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
 const BATCH_SIZE = 50
@@ -34,15 +33,6 @@ const KEEP_ALIVE = 3_000
 type PositionsQuery = {
   address: string
   networkId: NetworkId
-}
-
-// Products dont change and can be kept in memory for 10 minutes
-const productCache = new TTLCache<string, Promise<YieldDto>>({ ttl: 600_000 })
-
-const getProduct = (yieldId: string, signal: AbortSignal): Promise<YieldDto | null> => {
-  signal.throwIfAborted()
-  if (!productCache.has(yieldId)) productCache.set(yieldId, yieldxyz.getYield(yieldId))
-  return productCache.get(yieldId)!
 }
 
 // Fetch a single batch of queries with shared product caching
@@ -79,7 +69,7 @@ const fetchPositionsBatch = async (
       if (!networkId) return null
 
       // associated product must exist
-      const product = await getProduct(item.yieldId, signal)
+      const product = await getYieldxyzProduct(item.yieldId, signal)
       if (!product) return null
 
       return {

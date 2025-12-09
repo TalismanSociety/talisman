@@ -20,14 +20,14 @@ export const fetchYieldxyzProductsByNetwork = async (
     })
 
     // Check cache first
-    const cachedProducts = await yieldxyzProductsCache.get(network)
-    if (cachedProducts) {
-      log.debug("[Yield.xyz] Using cached products for network", {
-        network,
-        productCount: cachedProducts.length,
-      })
-      return cachedProducts
-    }
+    // const cachedProducts = await yieldxyzProductsCache.get(network)
+    // if (cachedProducts) {
+    //   log.debug("[Yield.xyz] Using cached products for network", {
+    //     network,
+    //     productCount: cachedProducts.length,
+    //   })
+    //   return cachedProducts
+    // }
 
     // Build comma-separated inputToken string
     const inputTokenString = tokenAddresses.join(",")

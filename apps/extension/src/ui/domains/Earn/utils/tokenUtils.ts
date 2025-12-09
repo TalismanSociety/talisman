@@ -9,25 +9,15 @@ import { useBalances, useTokens } from "@ui/state"
  * @param token - The token to extract address from
  * @returns The token address if available, null for native tokens
  */
-export const getTokenAddress = (token: Token | null | undefined): string | null => {
+export const getYieldxyzTokenAddress = (token: Token | null | undefined): string | null => {
   if (!token) return null
 
+  // yield doesnt support psp22 tokens for now
   switch (token.type) {
     case "evm-erc20":
-    case "evm-uniswapv2":
-    case "substrate-psp22":
-      return "contractAddress" in token ? token.contractAddress || null : null
+      return token.contractAddress
     case "sol-spl":
-      return "mintAddress" in token ? token.mintAddress || null : null
-    case "evm-native":
-    case "substrate-native":
-    case "sol-native":
-    case "substrate-assets":
-    case "substrate-foreignassets":
-    case "substrate-tokens":
-    case "substrate-hydration":
-      // Native tokens don't have contract addresses
-      return null
+      return token.mintAddress
     default:
       return null
   }

@@ -10,7 +10,7 @@ import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { useYieldProductsByNetwork } from "@ui/domains/Earn/hooks/useYieldProductsByNetwork"
 import { mapYieldNetworkToNetworkId } from "@ui/domains/Earn/utils/networkMapping"
 import { mapYieldTokenToTokenId } from "@ui/domains/Earn/utils/tokenMapping"
-import { getTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
+import { getYieldxyzTokenAddress } from "@ui/domains/Earn/utils/tokenUtils"
 import { useAccounts, useRemoteConfig, useToken, useTokens } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -111,7 +111,7 @@ const TokenDiscovery: FC<{
 
   // Get token address if available, fallback to symbol
   const tokenIdentifier = useMemo(() => {
-    const address = getTokenAddress(token)
+    const address = getYieldxyzTokenAddress(token)
     return address || tokenSymbol
   }, [token, tokenSymbol])
 

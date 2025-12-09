@@ -10,7 +10,7 @@ import { useBalance, useNetworkById, useToken } from "@ui/state"
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi } from "../services/yieldApi"
 import { mapNetworkToYieldNetwork } from "../utils/networkMapping"
-import { getTokenAddress } from "../utils/tokenUtils"
+import { getYieldxyzTokenAddress } from "../utils/tokenUtils"
 import { useDepositValidation } from "./useDepositValidation"
 
 export const useYieldTransaction = () => {
@@ -24,7 +24,7 @@ export const useYieldTransaction = () => {
 
   // Get token address if available, fallback to symbol (unused but kept for potential future use)
   const _tokenIdentifier = useMemo(() => {
-    const address = getTokenAddress(token)
+    const address = getYieldxyzTokenAddress(token)
     return address || token?.symbol || ""
   }, [token])
 

@@ -1,12 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
 import { useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
 
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAccounts, useBalances, useIsBalanceInitializing } from "@ui/state"
 
-import { getTokenAddress } from "../utils/tokenUtils"
+import { getYieldxyzTokenAddress } from "../utils/tokenUtils"
 
 export interface UserTokenWithYield {
   tokenId: TokenId
@@ -30,33 +28,34 @@ export interface UserTokenWithYield {
 export const useUserTokensWithYield = () => {
   const balances = useBalances()
   const isBalancesInitializing = useIsBalanceInitializing()
-  const [searchParams] = useSearchParams()
-  const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
+  // const [searchParams] = useSearchParams()
+  const { selectedAccounts } = usePortfolioNavigation()
+  // const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
   const ownedAccounts = useAccounts("owned")
 
   // Get selected accounts from URL params, similar to usePortfolioNavigation
-  const selectedAccounts = useMemo(() => {
-    const accountAddress = searchParams.get("account")
-    const folderId = searchParams.get("folder")
+  // const selectedAccounts = useMemo(() => {
+  //   const accountAddress = searchParams.get("account")
+  //   const folderId = searchParams.get("folder")
 
-    if (accountAddress) {
-      const selectedAccount = allAccounts.find((acc) => isAddressEqual(acc.address, accountAddress))
-      return selectedAccount ? [selectedAccount] : portfolioAccounts
-    }
+  //   if (accountAddress) {
+  //     const selectedAccount = allAccounts.find((acc) => isAddressEqual(acc.address, accountAddress))
+  //     return selectedAccount ? [selectedAccount] : portfolioAccounts
+  //   }
 
-    if (folderId) {
-      const selectedFolder =
-        catalog.portfolio.find((folder) => folder.type === "folder" && folder.id === folderId) ||
-        catalog.watched.find((folder) => folder.type === "folder" && folder.id === folderId)
-      if (selectedFolder && selectedFolder.type === "folder") {
-        return allAccounts.filter((acc) =>
-          selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address)),
-        )
-      }
-    }
+  //   if (folderId) {
+  //     const selectedFolder =
+  //       catalog.portfolio.find((folder) => folder.type === "folder" && folder.id === folderId) ||
+  //       catalog.watched.find((folder) => folder.type === "folder" && folder.id === folderId)
+  //     if (selectedFolder && selectedFolder.type === "folder") {
+  //       return allAccounts.filter((acc) =>
+  //         selectedFolder.tree.some((treeAcc) => isAddressEqual(acc.address, treeAcc.address)),
+  //       )
+  //     }
+  //   }
 
-    return portfolioAccounts
-  }, [allAccounts, portfolioAccounts, catalog, searchParams])
+  //   return portfolioAccounts
+  // }, [allAccounts, portfolioAccounts, catalog, searchParams])
 
   // Get owned account addresses only - for "Earn on your assets" we only want owned accounts
   const ownedAddresses = useMemo(() => {
@@ -104,7 +103,7 @@ export const useUserTokensWithYield = () => {
           symbol: balance.token.symbol,
           logoURI: balance.token.logo,
           networkId: balance.networkId,
-          tokenAddress: getTokenAddress(balance.token) || undefined,
+          tokenAddress: getYieldxyzTokenAddress(balance.token) || undefined,
           totalBalance: balanceTokens,
           totalBalanceUsd: balanceUsd,
           accounts: [

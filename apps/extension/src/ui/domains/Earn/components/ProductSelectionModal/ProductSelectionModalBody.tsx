@@ -17,7 +17,7 @@ import {
   useSetEarnWizardAccount,
 } from "../../hooks/useEarnWizard"
 import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"
-import { getTokenAddress } from "../../utils/tokenUtils"
+import { getYieldxyzTokenAddress } from "../../utils/tokenUtils"
 import { EarnAccountPicker } from "../EarnAccountPicker"
 import { ProductList } from "../ProductList"
 import { TokenDetails } from "../TokenDetails"
@@ -78,7 +78,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
 
   // Get token address if available, fallback to symbol
   const tokenIdentifier = useMemo(() => {
-    const address = getTokenAddress(token)
+    const address = getYieldxyzTokenAddress(token)
     return address || token?.symbol || ""
   }, [token])
 

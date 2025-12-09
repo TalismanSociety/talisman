@@ -2,6 +2,7 @@ import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
+import { walletYieldxyzOpportunities$ } from "./walletYieldxyzOpportunities"
 import { walletYieldxyzPositions$ } from "./walletYieldxyzPositions"
 
 export class YieldxyzHandler extends ExtensionHandler {
@@ -14,6 +15,9 @@ export class YieldxyzHandler extends ExtensionHandler {
     switch (type) {
       case "pri(yieldxyz.positions.subscribe)":
         return genericSubscription(id, port, walletYieldxyzPositions$)
+
+      case "pri(yieldxyz.opportunities.subscribe)":
+        return genericSubscription(id, port, walletYieldxyzOpportunities$)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

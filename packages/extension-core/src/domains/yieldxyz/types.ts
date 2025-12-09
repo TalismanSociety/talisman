@@ -56,27 +56,14 @@ export type YieldxyzPosition = {
   address: Address
   product: YieldDto
   balances: BalanceDto[]
-
-  // Validator address if applicable
-  // validatorAddress?: string
-  // // Display-ready fields
-  // displayName: string
-  // totalAmountUsd: number
-  // networkId: string
 }
 
 export type YieldxyzPositionEnhanced = YieldxyzPosition & {
-  // yieldId: string
-  // networkId: NetworkId
-  // address: Address
-  // product: YieldDto
-
   // Validator address if applicable
   validatorAddress?: string
   // Display-ready fields
   displayName: string
   totalAmountUsd: number
-  // networkId: string
 }
 
 // UI subscription response type (store-backed), mirroring DeFi
@@ -84,9 +71,10 @@ export type YieldxyzPositionEnhanced = YieldxyzPosition & {
 //   YieldxyzBalancesDtoWithProduct[]
 // >
 export type YieldxyzPositionsResponse = Loadable<YieldxyzPosition[]>
+export type YieldxyzOpportunitiesResponse = Loadable<YieldDto[]>
 
 // Message type augmentation for handler routing
 export interface YieldxyzMessages {
-  // "pri(yieldxyz.balances.subscribe)": [null, boolean, YieldxyzPositionsResponse]
   "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsResponse]
+  "pri(yieldxyz.opportunities.subscribe)": [null, boolean, YieldxyzOpportunitiesResponse]
 }
