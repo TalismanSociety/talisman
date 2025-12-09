@@ -1,5 +1,5 @@
 import { NetworkId } from "@talismn/chaindata-provider"
-import { getQuery$, isNotNil, keepAlive, Loadable, QueryResult } from "@talismn/util"
+import { getLoadableQuery$, isNotNil, keepAlive, Loadable } from "@talismn/util"
 import { log } from "extension-shared"
 import { chunk, isEqual, uniq } from "lodash-es"
 import {
@@ -17,7 +17,7 @@ import {
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { RemoteConfigStoreData } from "../app/types"
 import { walletBalances$ } from "../balances/walletBalances"
-import { yieldSdk } from "./exports"
+import { yieldSdk } from "./exports" // TODO fix circular dependency
 import { getYieldxyzProduct } from "./getYieldxyzProduct"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
@@ -123,46 +123,25 @@ export const walletYieldxyzPositions$ = defer(() =>
     concatMap((defaultValue) =>
       combineLatest([walletYieldxyzQueries$, remoteConfigStore.observable]).pipe(
         switchMap(([queries, remoteConfig]) =>
-          getQuery$({
+          getLoadableQuery$({
             namespace: "walletYieldPositions$",
             args: [queries, remoteConfig] as const,
-            queryFn: ([queries, remoteConfig], signal) =>
-              fetchPositions(queries, remoteConfig, signal),
+            queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),
         ),
-        distinctUntilChanged<QueryResult<YieldxyzPosition[]>>(isEqual),
+        distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
         tap({
           next: (positions) => {
-            if (positions.status === "loaded") updateYieldxyzPositionsStore(positions.data)
+            if (positions.status === "success") updateYieldxyzPositionsStore(positions.data)
           },
-          subscribe: () => log.debug("[yield.xyz] starting yield balances subscription"),
-          unsubscribe: () => log.debug("[yield.xyz] stopping yield balances subscription"),
-        }),
-        // TODO consolidate Loadable<T> and QueryResult<T> with a common type
-        map((val): Loadable<YieldxyzPosition[]> => {
-          switch (val.status) {
-            case "loading":
-              return { status: "loading", data: val.data }
-            case "loaded":
-              return { status: "success", data: val.data }
-            case "error": {
-              const error = val.error as Error | undefined
-              return {
-                status: "error",
-                error: {
-                  name: error?.name ?? "QueryError",
-                  message: error?.message ?? "Failed to query yield balances",
-                },
-              }
-            }
-          }
+          subscribe: () => log.debug("[yield.xyz] starting yield positions subscription"),
+          unsubscribe: () => log.debug("[yield.xyz] stopping yield positions subscription"),
         }),
         shareReplay({ refCount: true, bufferSize: 1 }),
         keepAlive(KEEP_ALIVE),
       ),
     ),
-    tap((val) => log.debug("[yield.xyz] yield positions emit", val)),
   ),
 )

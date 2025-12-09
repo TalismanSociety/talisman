@@ -1,6 +1,6 @@
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
+import { debounceTime, map, pairwise, ReplaySubject, tap } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
@@ -37,7 +37,9 @@ subjectYieldxyzOpportunitiesStore$
     }
   })
 
-export const yieldxyzOpportunitiesStore$ = subjectYieldxyzOpportunitiesStore$.asObservable()
+export const yieldxyzOpportunitiesStore$ = subjectYieldxyzOpportunitiesStore$
+  .asObservable()
+  .pipe(tap((val) => log.debug("[yield.xyz] yieldxyzOpportunitiesStore$ emitted", val)))
 
 export const updateYieldxyzOpportunitiesStore = (items: YieldDto[]) => {
   subjectYieldxyzOpportunitiesStore$.next(items)

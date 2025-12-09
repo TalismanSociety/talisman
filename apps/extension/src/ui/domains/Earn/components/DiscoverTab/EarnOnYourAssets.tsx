@@ -9,7 +9,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { ChevronRightIcon } from "@talismn/icons"
-import { isNotNil } from "@talismn/util"
+import { cn, isNotNil, Loadable } from "@talismn/util"
 import { getYieldxyzNetworkIdToTalismanNetworkIdMap, TokenDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
 import { uniq } from "lodash-es"
@@ -23,7 +23,6 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EarnAccountPicker } from "@ui/domains/Earn/components/EarnAccountPicker"
 import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
-import { useUserTokensWithYield } from "@ui/domains/Earn/hooks/useUserTokensWithYield"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -262,7 +261,7 @@ export const EarnOnYourAssets: FC<{
   //  }
   {
     const { t } = useTranslation()
-    const { userTokens, isLoading } = useUserTokensWithYield()
+    // const { userTokens, isLoading } = useUserTokensWithYield()
     const navigate = useNavigate()
     // const remoteConfig = useRemoteConfig()
 
@@ -419,48 +418,26 @@ export const EarnOnYourAssets: FC<{
       setSelectedTokenId(null)
     }, [])
 
-    const tokenOpportunities = useOpportunitiesByTokenId()
-
-    if (isLoading) {
-      return (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-grey-700 h-20 w-full animate-pulse rounded"></div>
-          ))}
-        </div>
-      )
-    }
-
-    if (!userTokens.length) {
-      return (
-        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-          {t("No yield products available for your tokens")}
-        </div>
-      )
-    }
+    const { status, data: tokenOpportunities } = useOpportunitiesByTokenId()
 
     return (
       <div className="flex w-full flex-col gap-4 overflow-hidden">
-        {tokenOpportunities.map(({ tokenId, opportunities, bestApr, balances }) => (
+        {tokenOpportunities?.map(({ tokenId, opportunities, bestApr, balances }) => (
           <TokenOpportunities
             key={tokenId}
             opportunities={opportunities}
             tokenId={tokenId}
             bestApr={bestApr}
             balances={balances}
+            isLoading={status === "loading"}
           />
         ))}
-        {/* {sortedTokensByNetwork.map(({ network, tokens }) => (
-        <NetworkTokensGroup
-          key={network}
-          network={network}
-          tokens={tokens}
-          onProductClick={handleProductClick}
-          isPopup={isPopup}
-          allowedNetworks={allowedNetworks}
-          search={search}
-        />
-      ))} */}
+        {status === "loading" && <TokenOpportunitiesShimmer />}
+        {status === "success" && !tokenOpportunities?.length && (
+          <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+            {t("There are no yield opportunities available for your tokens")}
+          </div>
+        )}
 
         {/* Modals for dashboard mode */}
         {!IS_POPUP && (
@@ -510,7 +487,14 @@ export const EarnOnYourAssets: FC<{
     )
   }
 
-const useOpportunitiesByTokenId = () => {
+const useOpportunitiesByTokenId = (): Loadable<
+  {
+    tokenId: string
+    opportunities: YieldDto[]
+    bestApr: number
+    balances: Balances
+  }[]
+> => {
   const { selectedAccounts } = usePortfolioNavigation()
   const remoteConfig = useRemoteConfig()
   const balances = useBalances()
@@ -606,7 +590,7 @@ const useOpportunitiesByTokenId = () => {
 
   const currency = useSelectedCurrency()
 
-  return useMemo(() => {
+  const data = useMemo(() => {
     return Object.entries(opportunitiesByTokenId)
       .map(([tokenId, opportunities]) => ({
         tokenId,
@@ -620,6 +604,11 @@ const useOpportunitiesByTokenId = () => {
         return (balance2 || 0) - (balance1 || 0)
       })
   }, [opportunitiesByTokenId, balances, currency])
+
+  return {
+    ...opportunities,
+    data,
+  }
 }
 
 const TokenOpportunities: FC<{
@@ -627,11 +616,13 @@ const TokenOpportunities: FC<{
   opportunities: YieldDto[]
   bestApr: number
   balances: Balances
+  isLoading?: boolean
 }> = ({
   tokenId,
   // opportunities,
   bestApr,
   balances,
+  isLoading,
 }) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)
@@ -640,7 +631,10 @@ const TokenOpportunities: FC<{
   if (!token || !network) return null
 
   return (
-    <button type="button" className="bg-grey-800 flex h-28 items-center gap-6 rounded px-8">
+    <button
+      type="button"
+      className="bg-grey-900 hover:bg-grey-800 flex h-28 items-center gap-6 rounded px-8"
+    >
       <TokenLogo tokenId={tokenId} className="size-16" />
       <div className="text-body-secondary flex w-full grow flex-col justify-center gap-2 text-left text-sm font-medium">
         <div className="">
@@ -663,7 +657,7 @@ const TokenOpportunities: FC<{
             fiatClassName=" text-sm font-medium"
           />
         </div>
-        <div>
+        <div className={cn(isLoading && "animate-pulse")}>
           <Trans
             t={t}
             defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
@@ -676,3 +670,29 @@ const TokenOpportunities: FC<{
     </button>
   )
 }
+
+const TokenOpportunitiesShimmer = () => (
+  <div className="bg-grey-900 flex h-28 items-center gap-6 rounded px-8">
+    <div className="bg-grey-700 size-16 shrink-0 animate-pulse rounded-full"></div>
+    <div className="flex grow flex-col justify-center gap-2 text-left text-sm font-medium">
+      <div className="flex">
+        <div className="bg-grey-700 text-grey-700 rounded-xs animate-pulse font-bold">
+          XXXX Token Name
+        </div>
+      </div>
+      <div>
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="bg-grey-700 size-8 animate-pulse rounded-full"></div>
+          <div className="bg-grey-700 text-grey-700 rounded-xs animate-pulse truncate">
+            Network Name
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
+      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">0.0000 XXX ($0.00)</div>
+      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">APY up to 00.00%</div>
+    </div>
+    <ChevronRightIcon className="invisible size-10 shrink-0" />
+  </div>
+)

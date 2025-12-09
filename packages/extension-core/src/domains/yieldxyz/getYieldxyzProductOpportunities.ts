@@ -52,6 +52,45 @@ const fetchYieldXyzProductOpportunities = async ({
   return response.json() as Promise<YieldsControllerGetYields200>
 }
 
+export const fetchAllYieldxyzProductOpportunities = async ({
+  networks,
+  inputTokens,
+  signal,
+}: OpportunitiesQuery): Promise<YieldDto[]> => {
+  let offset = 0
+  const limit = 100
+  let all: YieldDto[] = []
+
+  for (;;) {
+    const res = await fetchYieldXyzProductOpportunities({
+      networks,
+      inputTokens,
+      offset,
+      limit,
+      signal,
+    })
+
+    const items = (res as YieldsControllerGetYields200AllOf).items ?? []
+    const total =
+      (
+        res as YieldsControllerGetYields200AllOf & {
+          total?: number
+          meta?: { total?: number }
+        }
+      ).total ??
+      (res as YieldsControllerGetYields200AllOf & { meta?: { total?: number } }).meta?.total
+
+    all = all.concat(items)
+
+    const fetchedCount = items.length
+    const reachedTotal = typeof total === "number" ? offset + fetchedCount >= total : false
+
+    if (fetchedCount < limit || reachedTotal) return all
+
+    offset += limit
+  }
+}
+
 type OpportunitiesObsQuery = Pick<OpportunitiesQuery, "networks" | "inputTokens">
 
 export const getYieldxyzProductOpportunities$ = ({
@@ -130,4 +169,4 @@ export const getYieldxyzProductOpportunities$ = ({
       cancelled = true
       controller.abort()
     }
-  }).pipe()
+  })
