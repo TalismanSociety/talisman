@@ -1336,6 +1336,9 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
     devDependencies:
+      '@swc/jest':
+        specifier: ^0.2.36
+        version: 0.2.36(@swc/core@1.7.39(@swc/helpers@0.5.13))
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config
@@ -1636,6 +1639,9 @@ importers:
         specifier: workspace:*
         version: link:../crypto
     devDependencies:
+      '@swc/jest':
+        specifier: ^0.2.36
+        version: 0.2.36(@swc/core@1.7.39(@swc/helpers@0.5.13))
       '@talismn/eslint-config':
         specifier: workspace:*
         version: link:../../config/eslint-config

@@ -1,8 +1,11 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
+  preset: "ts-jest",
   testEnvironment: "node",
+  transformIgnorePatterns: [],
   transform: {
-    "^.+.tsx?$": ["ts-jest", {}],
+    "^.+\\.(t|j)sx?$": ["@swc/jest"],
   },
+  extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
   setupFiles: ["<rootDir>/tests/setup.ts"],
 }
