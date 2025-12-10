@@ -71,11 +71,10 @@ const RESPONSIVE_FLEX_SPACING = classNames(
 const NavButton: FC<{
   label: ReactNode
   icon: FC<{ className?: string }>
-  activeIcon?: FC<{ className?: string }>
   route?: string | string[]
   className?: string
   onClick: () => void
-}> = ({ label, icon: Icon, activeIcon: ActiveIcon, route, className, onClick }) => {
+}> = ({ label, icon: Icon, route, className, onClick }) => {
   const location = useLocation()
   const routeMatch = useMemo(() => {
     const matches = Array.isArray(route) ? route : [route].filter(isTruthy)
@@ -92,11 +91,7 @@ const NavButton: FC<{
       )}
       onClick={onClick}
     >
-      {routeMatch && ActiveIcon ? (
-        <ActiveIcon className="shrink-0 text-[2rem]" />
-      ) : (
-        <Icon className="shrink-0 text-[2rem]" />
-      )}
+      <Icon className="shrink-0 text-[2rem]" />
       <div>{label}</div>
     </button>
   )
@@ -122,15 +117,6 @@ const HorizontalNav = () => {
     })
     navigate("/portfolio/tokens" + (searchParams.size ? `?${searchParams}` : ""))
   }, [navigate, searchParams])
-
-  // const handleStakingClick = useCallback(() => {
-  //   sendAnalyticsEvent({
-  //     ...ANALYTICS_PAGE,
-  //     name: "Goto",
-  //     action: "Staking button",
-  //   })
-  //   window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
-  // }, [])
 
   const handleEarnClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -167,7 +153,6 @@ const HorizontalNav = () => {
         icon={TalismanHandIcon}
         route="/portfolio/*"
       />
-      {/* <NavButton label={t("Staking")} onClick={handleStakingClick} icon={ZapIcon} /> */}
       <NavButton
         label={t("Earn")}
         onClick={handleEarnClick}
