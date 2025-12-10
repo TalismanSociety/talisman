@@ -11,13 +11,15 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
-import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioGlobalData } from "@ui/state"
-import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
+import {
+  useTalismanNetworkIdFromYieldNetworkId,
+  useYieldxyzPositionsEnhanced,
+} from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -292,7 +294,7 @@ export const EarnAssetsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
   const { isInitialising } = usePortfolioGlobalData()
   const { selectedAccount, selectedFolder, selectedAccounts } = usePortfolioNavigation()
-  const yieldBalancesGrouped = useYieldBalancesGrouped()
+  const yieldBalancesGrouped = useYieldxyzPositionsEnhanced()
   const isLoading = yieldBalancesGrouped.status === "loading"
 
   // Get expanded state from context

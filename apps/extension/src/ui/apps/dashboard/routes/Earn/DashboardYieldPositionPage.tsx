@@ -7,7 +7,7 @@ import { IconButton } from "talisman-ui"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { DashboardYieldPosition as DashboardYieldPositionDetails } from "@ui/domains/Earn/components/DashboardYieldPosition"
-import { useYieldPosition } from "@ui/domains/Earn/hooks/useYieldPosition"
+import { useYieldxyzPosition } from "@ui/domains/Earn/hooks/useYieldxyzPosition"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 
@@ -49,7 +49,7 @@ const YieldPositionHeader: FC<{
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
+  const position = useYieldxyzPosition(yieldId, accountAddress, validatorAddress)
 
   const handleBack = useCallback(() => {
     // Navigate to earn page while preserving current account/folder selection

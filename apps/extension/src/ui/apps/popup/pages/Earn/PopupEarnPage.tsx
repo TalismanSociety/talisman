@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
-import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
@@ -21,7 +21,7 @@ const PageHeader = () => {
 
 const PopupEarnHeader = () => {
   const { t } = useTranslation()
-  const yieldBalancesGrouped = useYieldBalancesGrouped()
+  const yieldBalancesGrouped = useYieldxyzPositionsEnhanced()
 
   const displayTotal = useMemo(() => {
     if (yieldBalancesGrouped.status === "success" && yieldBalancesGrouped.data) {

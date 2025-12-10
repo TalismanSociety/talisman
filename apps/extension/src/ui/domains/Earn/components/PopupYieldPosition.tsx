@@ -19,7 +19,7 @@ import { IS_POPUP } from "@ui/util/constants"
 import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"
 import { useEarnModal } from "../hooks/useEarnModal"
-import { useYieldPosition } from "../hooks/useYieldPosition"
+import { useYieldxyzPosition } from "../hooks/useYieldxyzPosition"
 import { mapYieldInputTokenToTokenId, mapYieldTokenToTokenId } from "../utils/tokenMapping"
 
 export const PopupYieldPosition: FC<{
@@ -27,7 +27,7 @@ export const PopupYieldPosition: FC<{
   accountAddress?: string | null
   validatorAddress?: string | null
 }> = ({ yieldId, accountAddress, validatorAddress }) => {
-  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
+  const position = useYieldxyzPosition(yieldId, accountAddress, validatorAddress)
   const { open } = useEarnModal()
   const tokens = useTokens()
   const navigate = useNavigate()

@@ -18,7 +18,7 @@ import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"
 import { ConfirmWithdrawModal } from "../ConfirmWithdrawModal"
 import { useEarnModal } from "../hooks/useEarnModal"
-import { useYieldPosition } from "../hooks/useYieldPosition"
+import { useYieldxyzPosition } from "../hooks/useYieldxyzPosition"
 import { mapYieldInputTokenToTokenId } from "../utils/tokenMapping"
 import { WithdrawModal } from "../WithdrawModal"
 
@@ -27,7 +27,7 @@ export const DashboardYieldPosition: FC<{
   accountAddress?: string | null
   validatorAddress?: string | null
 }> = ({ yieldId, accountAddress, validatorAddress }) => {
-  const position = useYieldPosition(yieldId, accountAddress, validatorAddress)
+  const position = useYieldxyzPosition(yieldId, accountAddress, validatorAddress)
   const { open } = useEarnModal()
   const tokens = useTokens()
 

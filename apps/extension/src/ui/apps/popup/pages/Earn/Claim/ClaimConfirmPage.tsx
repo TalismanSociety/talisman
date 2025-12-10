@@ -7,7 +7,7 @@ import { ClaimDetails } from "@ui/domains/Earn/components/ClaimDetails"
 import { ClaimSubmitButton } from "@ui/domains/Earn/components/ClaimSubmitButton"
 import { useClaim } from "@ui/domains/Earn/components/useClaim"
 import { ClaimWizardProvider, useClaimWizard } from "@ui/domains/Earn/context/ClaimWizardContext"
-import { useYieldPosition } from "@ui/domains/Earn/hooks/useYieldPosition"
+import { useYieldxyzPosition } from "@ui/domains/Earn/hooks/useYieldxyzPosition"
 import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 
 const ClaimConfirmPageContent: FC = () => {
@@ -24,7 +24,7 @@ const ClaimConfirmPageContent: FC = () => {
   const validatorAddress = searchParams.get("validatorAddress")
 
   // Get the position data to find the balance with claim action
-  const position = useYieldPosition(yieldId || undefined)
+  const position = useYieldxyzPosition(yieldId || undefined)
   const balanceWithClaim = position?.balances.find((b: BalanceDto) =>
     b.pendingActions?.some((a: PendingActionDto) => a.type === "CLAIM_REWARDS"),
   )

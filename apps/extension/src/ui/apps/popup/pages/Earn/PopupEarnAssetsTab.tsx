@@ -12,11 +12,13 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
-import { useYieldBalancesGrouped } from "@ui/domains/Earn/hooks/useYieldBalancesGrouped"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
-import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
+import {
+  useTalismanNetworkIdFromYieldNetworkId,
+  useYieldxyzPositionsEnhanced,
+} from "@ui/state/yield"
 
 interface GroupedTokenData {
   tokenSymbol: string
@@ -318,7 +320,7 @@ const PopupEarnTokenRow: FC<{
 
 export const PopupEarnAssetsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
-  const yieldBalancesGrouped = useYieldBalancesGrouped()
+  const yieldBalancesGrouped = useYieldxyzPositionsEnhanced()
   const [searchParams] = useSearchParams()
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()
 

@@ -1,13 +1,13 @@
 import { useMemo } from "react"
 
-import { useYieldBalancesGrouped } from "./useYieldBalancesGrouped"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
-export const useYieldPosition = (
+export const useYieldxyzPosition = (
   yieldId: string | undefined,
   accountAddress?: string | null,
   validatorAddress?: string | null,
 ) => {
-  const yieldBalancesGrouped = useYieldBalancesGrouped()
+  const yieldBalancesGrouped = useYieldxyzPositionsEnhanced()
 
   const position = useMemo(() => {
     if (!yieldId || yieldBalancesGrouped.status !== "success" || !yieldBalancesGrouped.data)

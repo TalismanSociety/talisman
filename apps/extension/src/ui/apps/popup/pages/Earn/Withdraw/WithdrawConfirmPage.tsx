@@ -14,7 +14,7 @@ import {
   useWithdrawWizard,
   WithdrawWizardProvider,
 } from "@ui/domains/Earn/context/WithdrawWizardContext"
-import { useYieldPosition } from "@ui/domains/Earn/hooks/useYieldPosition"
+import { useYieldxyzPosition } from "@ui/domains/Earn/hooks/useYieldxyzPosition"
 
 const WithdrawConfirmPageInner: FC<{
   balance: BalanceDto | undefined
@@ -64,7 +64,7 @@ const WithdrawConfirmPageContent: FC = () => {
   const amount = searchParams.get("amount")
 
   // Get the position data to find the balance
-  const position = useYieldPosition(yieldId || undefined)
+  const position = useYieldxyzPosition(yieldId || undefined)
   const balance = position?.balances.find(
     (b: BalanceDto) => b.address === account && (b.token.address || b.token.symbol) === tokenId,
   )

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { ClaimAmountForm } from "@ui/domains/Earn/components/ClaimAmountForm"
 import { ClaimWizardProvider, useClaimWizard } from "@ui/domains/Earn/context/ClaimWizardContext"
-import { useYieldPosition } from "@ui/domains/Earn/hooks/useYieldPosition"
+import { useYieldxyzPosition } from "@ui/domains/Earn/hooks/useYieldxyzPosition"
 
 const ClaimAmountPageContent: FC = () => {
   const { t } = useTranslation()
@@ -17,7 +17,7 @@ const ClaimAmountPageContent: FC = () => {
   const validatorAddress = searchParams.get("validatorAddress")
 
   // Get the position data to find the balance with claim action
-  const position = useYieldPosition(yieldId || undefined)
+  const position = useYieldxyzPosition(yieldId || undefined)
   const balanceWithClaim = position?.balances.find((b) =>
     b.pendingActions?.some((a) => a.type === "CLAIM_REWARDS"),
   )
