@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
 
-import { EarnAssetsTab } from "./components/EarnAssetsTab"
 import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
 import { EarnPageHeader } from "./components/EarnPageHeader"
+import { EarnPositionsTab } from "./components/EarnPositionsTab"
 
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
@@ -40,7 +40,7 @@ export const DashboardEarnPage: FC = () => {
 
       {/* Tab Content */}
       <div>
-        {selectedTab === "assets" && <EarnAssetsTab search={search} />}
+        {selectedTab === "assets" && <EarnPositionsTab search={search} />}
         {selectedTab === "discover" && <EarnDiscoverTab search={search} />}
       </div>
     </div>

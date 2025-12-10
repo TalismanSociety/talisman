@@ -51,7 +51,6 @@ export interface YieldxyzControllerGetYieldsParamsExtended extends YieldsControl
 //   // addressYieldxyzNetworkIdMap?: Record<Address, Networks>
 // }
 
-// Simplified yield position with validator grouping
 export type YieldxyzPosition = {
   yieldId: string
   networkId: NetworkId
@@ -60,6 +59,7 @@ export type YieldxyzPosition = {
   balances: BalanceDto[]
 }
 
+// Simplified yield position with validator grouping
 export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   // Validator address if applicable
   validatorAddress?: string

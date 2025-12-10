@@ -1,17 +1,9 @@
 import { Balances } from "@talismn/balances"
-import {
-  evmErc20TokenId,
-  evmNativeTokenId,
-  solNativeTokenId,
-  solSplTokenId,
-  subNativeTokenId,
-  TokenId,
-} from "@talismn/chaindata-provider"
+import { TokenId } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn, isNotNil, Loadable } from "@talismn/util"
-import { getYieldxyzNetworkIdToTalismanNetworkIdMap, TokenDto, YieldDto } from "extension-core"
-import { log } from "extension-shared"
+import { YieldDto } from "extension-core"
 import { t } from "i18next"
 import { uniq } from "lodash-es"
 import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
@@ -28,18 +20,13 @@ import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import {
-  useBalances,
-  useNetworkById,
-  useNetworksMapById,
-  useRemoteConfig,
-  useSelectedCurrency,
-  useToken,
-} from "@ui/state"
+import { useBalances, useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
 import { useYieldxyzOpportunities, useYieldxyzProviders } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
+import { EarnTypeBadge } from "../EarnTypeBadge"
+import { useGetYieldxyzToken } from "../useGetYieldxyzToken"
 import { YieldxyzProviderLogo } from "../YieldxyzProviderLogo"
 
 // // Network-level component that fetches once per network
@@ -500,7 +487,7 @@ const useOpportunitiesByTokenId = (): Loadable<
   }[]
 > => {
   const { selectedAccounts } = usePortfolioNavigation()
-  const remoteConfig = useRemoteConfig()
+  // const remoteConfig = useRemoteConfig()
   const balances = useBalances()
   const opportunities = useYieldxyzOpportunities()
 
@@ -512,43 +499,45 @@ const useOpportunitiesByTokenId = (): Loadable<
     ).sort()
   }, [balances, selectedAccounts])
 
-  const mapToTalismanNetworkId = useMemo(
-    () => getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig),
-    [remoteConfig],
-  )
+  // const mapToTalismanNetworkId = useMemo(
+  //   () => getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig),
+  //   [remoteConfig],
+  // )
 
-  const networksMap = useNetworksMapById()
+  // const networksMap = useNetworksMapById()
 
-  const getYieldxyzTokenId = useCallback(
-    (token: TokenDto): TokenId | null => {
-      const networkId = mapToTalismanNetworkId[token.network]
-      if (!networkId) return null
+  const { getYieldxyzTokenId } = useGetYieldxyzToken()
 
-      const network = networksMap[networkId]
-      if (!network) return null
+  // const getYieldxyzTokenId = useCallback(
+  //   (token: TokenDto): TokenId | null => {
+  //     const networkId = mapToTalismanNetworkId[token.network]
+  //     if (!networkId) return null
 
-      switch (network.platform) {
-        case "ethereum":
-          return token.address
-            ? evmErc20TokenId(networkId, token.address as `0x${string}`)
-            : evmNativeTokenId(networkId)
-        case "polkadot": {
-          if (token.symbol === network.nativeCurrency.symbol) return subNativeTokenId(networkId)
-          log.warn("Unsupported polkadot token for yieldxyz:", token)
-          return null
-        }
-        case "solana": {
-          if (token.address) return solSplTokenId(networkId, token.address)
-          if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
-          log.warn("Unsupported solana token for yieldxyz:", token)
-          return null
-        }
-      }
+  //     const network = networksMap[networkId]
+  //     if (!network) return null
 
-      return null
-    },
-    [mapToTalismanNetworkId, networksMap],
-  )
+  //     switch (network.platform) {
+  //       case "ethereum":
+  //         return token.address
+  //           ? evmErc20TokenId(networkId, token.address as `0x${string}`)
+  //           : evmNativeTokenId(networkId)
+  //       case "polkadot": {
+  //         if (token.symbol === network.nativeCurrency.symbol) return subNativeTokenId(networkId)
+  //         log.warn("Unsupported polkadot token for yieldxyz:", token)
+  //         return null
+  //       }
+  //       case "solana": {
+  //         if (token.address) return solSplTokenId(networkId, token.address)
+  //         if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
+  //         log.warn("Unsupported solana token for yieldxyz:", token)
+  //         return null
+  //       }
+  //     }
+
+  //     return null
+  //   },
+  //   [mapToTalismanNetworkId, networksMap],
+  // )
 
   const opportunitiesByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
     // keep only opportunities for which we have all input tokens
@@ -635,7 +624,7 @@ const TokenOpportunities: FC<{
         type="button"
         onClick={toggle}
         className={cn(
-          "hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden rounded px-8",
+          "hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
           isOpen && "bg-grey-800",
         )}
       >
@@ -696,7 +685,7 @@ const OpportunityRow: FC<{ opportunity: YieldDto }> = ({ opportunity }) => {
       <YieldxyzProviderLogo providerId={opportunity.providerId} className="size-16 shrink-0" />
       <div className="flex grow flex-col items-start justify-start gap-2">
         <div className="text-body">
-          {opportunity.metadata.name} <Badge>{opportunity.mechanics?.type}</Badge>
+          {opportunity.metadata.name} <EarnTypeBadge>{opportunity.mechanics?.type}</EarnTypeBadge>
         </div>
         <div className="flex items-center gap-4">
           {/* <span>{provider?.name}</span>
@@ -735,18 +724,6 @@ const Metric: FC<
     </TooltipTrigger>
     <TooltipContent>{tooltip}</TooltipContent>
   </Tooltip>
-)
-
-const Badge: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => (
-  <span
-    className={cn(
-      // TODO fix text-tiny which currently makes color white, use text-[1rem] for now
-      "rounded-xs text-body-inactive mx-3 border px-2 py-1 align-middle text-[1rem] font-medium uppercase",
-      className,
-    )}
-  >
-    {children}
-  </span>
 )
 
 const TokenOpportunitiesShimmer = () => (
