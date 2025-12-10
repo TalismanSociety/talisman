@@ -90,7 +90,7 @@ export class SubHandler extends ExtensionHandler {
       // increment nonce of the inner payload as it will be executed after the wrapper transaction
       const innerPayload: SignerPayloadJSON = {
         ...payload,
-        nonce: toPjsHex(Number(payload.nonce) + 1),
+        nonce: toPjsHex(BigInt(payload.nonce) + 1n),
       }
 
       const innerTxSignature = await withPjsKeyringPair(payload.address, async (pair) => {
@@ -115,7 +115,13 @@ export class SubHandler extends ExtensionHandler {
       const { builder } = parseMetadataRpc(metadataRpc)
       const storageCodec = builder.buildStorage("MevShield", "NextKey")
       const stateKey = storageCodec.keys.enc()
-      const hexValue = await chainConnector.send(chain.id, "state_getStorage", [stateKey], false)
+      const hexValue = await chainConnector.send<string | null>(
+        chain.id,
+        "state_getStorage",
+        [stateKey],
+        false,
+      )
+      if (!hexValue) throw new Error("MevShield NextKey not found")
       const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
 
       // encrypt the inner tx with next mev shield key
