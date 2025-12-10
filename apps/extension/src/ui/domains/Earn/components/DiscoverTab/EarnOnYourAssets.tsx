@@ -487,7 +487,6 @@ const useOpportunitiesByTokenId = (): Loadable<
   }[]
 > => {
   const { selectedAccounts } = usePortfolioNavigation()
-  // const remoteConfig = useRemoteConfig()
   const balances = useBalances()
   const opportunities = useYieldxyzOpportunities()
 
@@ -499,45 +498,7 @@ const useOpportunitiesByTokenId = (): Loadable<
     ).sort()
   }, [balances, selectedAccounts])
 
-  // const mapToTalismanNetworkId = useMemo(
-  //   () => getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig),
-  //   [remoteConfig],
-  // )
-
-  // const networksMap = useNetworksMapById()
-
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
-
-  // const getYieldxyzTokenId = useCallback(
-  //   (token: TokenDto): TokenId | null => {
-  //     const networkId = mapToTalismanNetworkId[token.network]
-  //     if (!networkId) return null
-
-  //     const network = networksMap[networkId]
-  //     if (!network) return null
-
-  //     switch (network.platform) {
-  //       case "ethereum":
-  //         return token.address
-  //           ? evmErc20TokenId(networkId, token.address as `0x${string}`)
-  //           : evmNativeTokenId(networkId)
-  //       case "polkadot": {
-  //         if (token.symbol === network.nativeCurrency.symbol) return subNativeTokenId(networkId)
-  //         log.warn("Unsupported polkadot token for yieldxyz:", token)
-  //         return null
-  //       }
-  //       case "solana": {
-  //         if (token.address) return solSplTokenId(networkId, token.address)
-  //         if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
-  //         log.warn("Unsupported solana token for yieldxyz:", token)
-  //         return null
-  //       }
-  //     }
-
-  //     return null
-  //   },
-  //   [mapToTalismanNetworkId, networksMap],
-  // )
 
   const opportunitiesByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
     // keep only opportunities for which we have all input tokens
@@ -624,7 +585,7 @@ const TokenOpportunities: FC<{
         type="button"
         onClick={toggle}
         className={cn(
-          "hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
+          "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
           isOpen && "bg-grey-800",
         )}
       >
@@ -663,7 +624,7 @@ const TokenOpportunities: FC<{
           className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
         />
       </button>
-      <div className={cn("flex w-full flex-col py-2 pl-12 pr-4", isOpen ? "block" : "hidden")}>
+      <div className={cn("flex w-full flex-col", isOpen ? "block" : "hidden")}>
         {isOpen &&
           opportunities.map((opportunity) => (
             <OpportunityRow key={opportunity.id} opportunity={opportunity} />
@@ -679,7 +640,7 @@ const OpportunityRow: FC<{ opportunity: YieldDto }> = ({ opportunity }) => {
   return (
     <button
       type="button"
-      className="hover:bg-grey-800 flex h-28 w-full items-center gap-6 rounded px-8 text-sm"
+      className="hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm"
     >
       {/* <img className="bg-grey-500 size-16 rounded-full" src={opportunity.metadata.logoURI} alt="" /> */}
       <YieldxyzProviderLogo providerId={opportunity.providerId} className="size-16 shrink-0" />

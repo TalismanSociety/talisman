@@ -57,7 +57,7 @@ const YieldPositionRow: FC<{
   return (
     <button
       type="button"
-      className="hover:bg-grey-800 flex h-28 w-full items-center gap-6 rounded px-8 text-sm"
+      className="hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm"
       onClick={handleClick}
     >
       <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
@@ -74,7 +74,9 @@ const YieldPositionRow: FC<{
       </div>
 
       <div className="flex grow-0 flex-col items-end justify-center gap-2 overflow-hidden">
-        <TokensList position={position} />
+        <div>
+          <TokensList position={position} />
+        </div>
         <div className={cn("", status === "loading" && "animate-pulse")}>
           <Fiat amount={position.totalAmountUsd} forceCurrency="usd" noCountUp />
         </div>
@@ -130,7 +132,7 @@ const TokenRow: FC<{
       type="button"
       onClick={onClick}
       className={cn(
-        "hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
+        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
         isExpanded && "bg-grey-800",
       )}
     >
@@ -157,7 +159,7 @@ const TokenRow: FC<{
         <ChevronRightIcon className="text-body-secondary size-8 shrink-0" />
       )}
     </button>
-    <div className={cn("flex w-full flex-col py-2 pl-12 pr-4", isExpanded ? "block" : "hidden")}>
+    <div className={cn("flex w-full flex-col", isExpanded ? "block" : "hidden")}>
       {isExpanded &&
         positions.map((position, i) => (
           <YieldPositionRow key={`${position.yieldId}-${i}`} status={status} position={position} />
