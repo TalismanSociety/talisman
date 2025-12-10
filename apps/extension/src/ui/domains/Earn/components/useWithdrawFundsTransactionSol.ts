@@ -1,10 +1,9 @@
+import { deserializeTransactionFromHex, isVersionedTransaction } from "@talismn/solana"
 import { useEffect, useMemo, useState } from "react"
 
 import { useToken, useTokens } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 
-import { isVersionedTransaction } from "../../../../inject/solana/solana"
-import { deserializeTransactionFromHex } from "../../../../inject/solana/util"
 import { useWithdrawWizard } from "../context/WithdrawWizardContext"
 import { useWithdrawTransaction } from "../hooks/useWithdrawTransaction"
 import { mapYieldTokenToTokenId } from "../utils/tokenMapping"

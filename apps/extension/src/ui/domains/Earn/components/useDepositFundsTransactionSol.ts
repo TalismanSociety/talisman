@@ -1,11 +1,10 @@
 import { isTokenSol } from "@talismn/chaindata-provider"
+import { deserializeTransactionFromHex, isVersionedTransaction } from "@talismn/solana"
 import { useEffect, useMemo, useState } from "react"
 
 import { useBalance, useToken } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 
-import { isVersionedTransaction } from "../../../../inject/solana/solana"
-import { deserializeTransactionFromHex } from "../../../../inject/solana/util"
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { useYieldTransaction } from "../hooks/useYieldTransaction"
 

@@ -1,3 +1,4 @@
+import { deserializeTransactionFromHex, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
 import {
   isAccountPlatformEthereum,
@@ -17,7 +18,6 @@ import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { deserializeTransactionFromHex, serializeTransaction } from "../../../../inject/solana/util"
 import { useDepositWizard } from "../context/DepositWizardContext"
 import { yieldApi } from "../services/yieldApi"
 import { useDepositFunds } from "./useDepositFunds"

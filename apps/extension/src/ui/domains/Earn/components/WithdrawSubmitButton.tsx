@@ -1,5 +1,6 @@
 import type { TransactionDto } from "extension-core"
 import { SignerPayloadJSON } from "@polkadot/types/types"
+import { deserializeTransactionFromHex, serializeTransaction } from "@talismn/solana"
 import {
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
@@ -7,7 +8,6 @@ import {
   serializeTransactionRequest,
 } from "extension-core"
 import { log } from "extension-shared"
-import { deserializeTransactionFromHex, serializeTransaction } from "inject/solana/util"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"

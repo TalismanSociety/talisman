@@ -1,3 +1,6 @@
+// import { IS_POPUP } from "@ui/util/constants"
+
+import { deserializeTransactionFromHex, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
 import {
   isAccountPlatformEthereum,
@@ -15,9 +18,6 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
 
-// import { IS_POPUP } from "@ui/util/constants"
-
-import { deserializeTransactionFromHex, serializeTransaction } from "../../../../inject/solana/util"
 import { useClaimWizard } from "../context/ClaimWizardContext"
 import { yieldApi } from "../services/yieldApi"
 import { useClaim } from "./useClaim"
