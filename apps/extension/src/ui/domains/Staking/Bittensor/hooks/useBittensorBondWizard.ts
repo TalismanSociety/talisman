@@ -5,7 +5,7 @@ import {
   subNativeTokenId,
   TokenId,
 } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
+import { Address, isAccountOfType } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
@@ -130,6 +130,7 @@ const useBittensorBondWizardProvider = () => {
   ] = useState(() => wizardOpenState$.getValue())
   const nativeTokenId = useMemo(() => (networkId ? subNativeTokenId(networkId) : null), [networkId])
   const dtaoToken = useDtaoToken(networkId ?? "", netuid ?? 0, hotkey ?? undefined)
+  const [isMevProtectionEnabled, setIsMevProtectionEnabled] = useState(false)
 
   const dtaoBalance = useBalance(allBalances, address, dtaoToken?.id)
   const nativeBalance = useBalance(allBalances, address, nativeTokenId)
@@ -145,6 +146,17 @@ const useBittensorBondWizardProvider = () => {
   const seekDiscountDrawer = useOpenClose()
 
   const { data: sapi } = useScaleApi(nativeToken?.networkId)
+
+  const isMevShieldDisabled = useMemo(() => {
+    // no need for root staking
+    // supported only for hot wallets
+    return !netuid || !isAccountOfType(account, "keypair")
+  }, [netuid, account])
+
+  const withMevShield = useMemo(
+    () => !isMevShieldDisabled && isMevProtectionEnabled,
+    [isMevShieldDisabled, isMevProtectionEnabled],
+  )
 
   const {
     alphaPrice,
@@ -511,6 +523,9 @@ const useBittensorBondWizardProvider = () => {
     talismanFee,
     amountOut,
     priceImpact,
+    withMevShield,
+    isMevShieldDisabled,
+    setIsMevProtectionEnabled,
     setAddress,
     setNetuid,
     setHotkey,
