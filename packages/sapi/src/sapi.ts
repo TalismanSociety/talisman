@@ -14,6 +14,7 @@ import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { isApiAvailable } from "./helpers/isApiAvailable"
+import { ScaleApiSubmitMode, submit } from "./helpers/submit"
 import { Chain } from "./helpers/types"
 import { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
 
@@ -85,8 +86,12 @@ export const getScaleApi = (
 
     getTypeRegistry: (payload: SignerPayloadJSON) => getTypeRegistry(chain, payload),
 
-    submit: (payload: SignerPayloadJSON, signature?: `0x${string}`, txInfo?: unknown) =>
-      chain.connector.submit(payload, signature, txInfo),
+    submit: (
+      payload: SignerPayloadJSON,
+      signature?: `0x${string}`,
+      txInfo?: unknown,
+      mode?: ScaleApiSubmitMode,
+    ) => submit(chain, payload, signature, txInfo, mode),
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),
 

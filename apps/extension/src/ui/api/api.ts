@@ -255,6 +255,11 @@ export const api: MessageTypes = {
       signature,
       txInfo,
     }),
+  subSubmitWithBittensorMevShield: (payload: SignerPayloadJSON, txInfo?: WalletTransactionInfo) =>
+    messageService.sendMessage("pri(substrate.rpc.submit.withBittensorMevShield)", {
+      payload,
+      txInfo,
+    }),
   subChainMetadata: (genesisHash, specVersion) =>
     messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,

@@ -30,7 +30,7 @@
       "wsUrl": "wss://entrypoint-finney.opentensor.ai:443",
       "metadata": ".papi/scale/bittensor.scale",
       "genesis": "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
-      "codeHash": "0xcfa060c16cb1bce3b10fb774ba25ab8e9e737f0b50e2faf6fb45c1196319687e"
+      "codeHash": "0x412cf9c1872eebb43a4b57670d94bed13ea1c3e15dda6c1be77751bc5a838aab"
     }
   },
   "options": {
