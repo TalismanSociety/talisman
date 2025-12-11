@@ -1,5 +1,12 @@
 # @talismn/crypto
 
+## 0.3.0
+
+### Minor Changes
+
+- b3b5ff5: bittensor mev shield
+- b3b5ff5: update dependencies
+
 ## 0.2.3
 
 ### Patch Changes
