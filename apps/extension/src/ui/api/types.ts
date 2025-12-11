@@ -256,6 +256,10 @@ export default interface MessageTypes {
     signature?: HexString,
     txInfo?: WalletTransactionInfo,
   ) => Promise<{ hash: HexString }>
+  subSubmitWithBittensorMevShield: (
+    payload: SignerPayloadJSON,
+    txInfo?: WalletTransactionInfo,
+  ) => Promise<{ hash: HexString }>
 
   solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
   solSubmit: (

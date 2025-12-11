@@ -36,6 +36,7 @@ export const useScaleApi = (
           chainId: chain.id,
           send: (...args) => api.subSend(chain.id, ...args),
           submit: api.subSubmit,
+          submitWithBittensorMevShield: api.subSubmitWithBittensorMevShield,
         },
         metadataRpc,
         token,
