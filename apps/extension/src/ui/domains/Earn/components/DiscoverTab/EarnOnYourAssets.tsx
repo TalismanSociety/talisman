@@ -1,12 +1,10 @@
 import { Balances } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { normalizeAddress } from "@talismn/crypto"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
-import { cn, isNotNil, Loadable } from "@talismn/util"
+import { cn } from "@talismn/util"
 import { YieldDto } from "extension-core"
 import { t } from "i18next"
-import { uniq } from "lodash-es"
-import { FC, PropsWithChildren, ReactNode, useCallback, useMemo, useState } from "react"
+import { FC, PropsWithChildren, ReactNode, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
@@ -19,14 +17,13 @@ import { ValidatorPicker } from "@ui/domains/Earn/components/ValidatorPicker"
 import { DepositModal } from "@ui/domains/Earn/DepositModal"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
-import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useBalances, useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
-import { useYieldxyzOpportunities, useYieldxyzProviders } from "@ui/state/yield"
+import { useNetworkById, useToken } from "@ui/state"
+import { useYieldxyzProviders } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
+import { useYieldxyzOpportunitiesByTokenId } from "../../hooks/useYieldxyzOpportunitiesByTokenId"
 import { EarnTypeBadge } from "../EarnTypeBadge"
-import { useGetYieldxyzToken } from "../useGetYieldxyzToken"
 import { YieldxyzProviderLogo } from "../YieldxyzProviderLogo"
 
 // // Network-level component that fetches once per network
@@ -409,7 +406,7 @@ export const EarnOnYourAssets: FC<{
       setSelectedTokenId(null)
     }, [])
 
-    const { status, data: tokenOpportunities } = useOpportunitiesByTokenId()
+    const { status, data: tokenOpportunities } = useYieldxyzOpportunitiesByTokenId()
 
     return (
       <div className="flex w-full flex-col gap-4 overflow-hidden">
@@ -477,93 +474,6 @@ export const EarnOnYourAssets: FC<{
       </div>
     )
   }
-
-const useOpportunitiesByTokenId = (): Loadable<
-  {
-    tokenId: string
-    opportunities: YieldDto[]
-    bestApr: number
-    balances: Balances
-  }[]
-> => {
-  const { selectedAccounts } = usePortfolioNavigation()
-  const balances = useBalances()
-  const opportunities = useYieldxyzOpportunities()
-
-  // all token ids where the selected accounts have any balance
-  const availableTokenIds = useMemo(() => {
-    const accountIds = new Set(selectedAccounts.map((acc) => normalizeAddress(acc.address)))
-    return uniq(
-      balances.find((b) => accountIds.has(normalizeAddress(b.address))).each.map((b) => b.tokenId),
-    ).sort()
-  }, [balances, selectedAccounts])
-
-  const { getYieldxyzTokenId } = useGetYieldxyzToken()
-
-  const opportunitiesByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
-    // keep only opportunities for which we have all input tokens
-    const oppsByTokenId =
-      opportunities.data
-        ?.filter((o) => o.rewardRate.total) // a bunch are 0 reward while they are "under maintenance"
-        .filter((opportunity) => {
-          const inputTokenIds = opportunity.inputTokens
-            ?.map((inputToken) => {
-              const tokenId = getYieldxyzTokenId(inputToken)
-              return availableTokenIds.includes(tokenId || "") ? tokenId : null
-              // TODO check that at least one account owns all tokens, or its not a valid opportunity
-            })
-            .filter(Boolean) as string[]
-
-          // check if all input token ids are in availableTokenIds
-          return inputTokenIds.length === opportunity.inputTokens.length
-        })
-        .reduce<Record<TokenId, YieldDto[]>>((acc, opportunity) => {
-          const inputTokenIds = opportunity.inputTokens
-            ?.map((inputToken) => getYieldxyzTokenId(inputToken))
-            .filter(isNotNil) as TokenId[]
-
-          inputTokenIds.forEach((tokenId) => {
-            if (!acc[tokenId]) acc[tokenId] = []
-            acc[tokenId].push(opportunity)
-          })
-
-          return acc
-        }, {}) || {}
-
-    // for each token, sort opportunities by reward rate descending
-    return Object.entries(oppsByTokenId).reduce(
-      (acc, [tokenId, opps]) => {
-        acc[tokenId as TokenId] = opps.sort(
-          (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
-        )
-        return acc
-      },
-      {} as Record<TokenId, YieldDto[]>,
-    )
-  }, [opportunities.data, getYieldxyzTokenId, availableTokenIds])
-
-  const currency = useSelectedCurrency()
-
-  const data = useMemo(() => {
-    return Object.entries(opportunitiesByTokenId)
-      .map(([tokenId, opportunities]) => ({
-        tokenId,
-        opportunities,
-        bestApr: Math.max(...opportunities.map((opp) => opp.rewardRate.total * 100)),
-        balances: balances.find({ tokenId }),
-      }))
-      .sort((a, b) => {
-        const balance1 = a.balances.sum.fiat(currency).transferable
-        const balance2 = b.balances.sum.fiat(currency).transferable
-        return (balance2 || 0) - (balance1 || 0)
-      })
-  }, [opportunitiesByTokenId, balances, currency])
-
-  return {
-    ...opportunities,
-    data,
-  }
-}
 
 const TokenOpportunities: FC<{
   tokenId: TokenId
