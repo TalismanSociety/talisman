@@ -383,7 +383,9 @@ const MevShieldInfoDrawer: FC<{ isOpen: boolean; onDismiss: () => void }> = ({
             )}
           </li>
           <li>
-            {t("You still pay fees for both the encrypted wrapper and the staking transaction.")}
+            {t(
+              "You still pay network fees for both the encrypted wrapper and the staking transaction.",
+            )}
           </li>
           <li>
             {t(
