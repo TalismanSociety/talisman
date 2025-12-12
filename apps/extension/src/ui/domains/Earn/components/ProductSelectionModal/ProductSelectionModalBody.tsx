@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useToken } from "@ui/state"
-import { useInfiniteYieldProductsForToken } from "@ui/state/yield"
+import { useYieldxyzOpportunities } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
@@ -16,7 +16,6 @@ import {
   useResetEarnWizard,
   useSetEarnWizardAccount,
 } from "../../hooks/useEarnWizard"
-import { mapNetworkToYieldNetwork } from "../../utils/networkMapping"
 import { getYieldxyzTokenAddress } from "../../utils/tokenUtils"
 import { EarnAccountPicker } from "../EarnAccountPicker"
 import { ProductList } from "../ProductList"
@@ -74,7 +73,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   }, [initialPopupAccount, selectedAccountAddress, setEarnWizardAccount])
 
   // Get the mapped network name
-  const mappedNetworkName = mapNetworkToYieldNetwork(network)
+  // const mappedNetworkName = mapNetworkToYieldNetwork(network)
 
   // Get token address if available, fallback to symbol
   const tokenIdentifier = useMemo(() => {
@@ -83,14 +82,11 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   }, [token])
 
   // Fetch yield products with infinite pagination
-  const { data, isLoading, error } = useInfiniteYieldProductsForToken(
-    tokenIdentifier,
-    mappedNetworkName || undefined,
-  )
+  const { data, status, error } = useYieldxyzOpportunities()
 
   // Flatten all pages and filter for exact token match
   const allYieldProducts = useMemo(() => {
-    const allProducts = data?.pages.flat() || []
+    const allProducts = data ?? []
     // Filter out products that don't match the requested inputToken exactly
     return allProducts.filter((product) =>
       product.inputTokens?.some((inputToken) => {
@@ -325,7 +321,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
           <ProductList
             products={visibleYieldProducts}
             tokenId={tokenId}
-            isLoading={isLoading}
+            isLoading={status === "loading"}
             error={error}
             onProductClick={handleProductClick}
             hasMoreProducts={shouldShowMore}

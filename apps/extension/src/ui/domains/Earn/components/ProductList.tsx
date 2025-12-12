@@ -10,7 +10,7 @@ interface ProductListProps {
   products: YieldDto[]
   tokenId: TokenId
   isLoading: boolean
-  error: Error | null
+  error: unknown
   onProductClick: (product: YieldDto) => void
   hasMoreProducts?: boolean
   onShowMore?: () => void

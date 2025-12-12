@@ -3,12 +3,9 @@ import {
   BalancesRequestDto,
   sdk,
   SubmitHashDto,
-  YieldBalancesRequestDto,
   YieldsControllerGetYieldsParams,
 } from "@yieldxyz/sdk"
 import { log, YIELD_API_BASE_URL } from "extension-shared"
-
-import { YieldxyzControllerGetYieldsBatchParams } from "./types"
 
 // TODO KISS like this?
 // sdk.configure({
@@ -46,14 +43,6 @@ class YieldSDKService {
     }
   }
 
-  /**
-   * Get balances for multiple addresses
-   */
-  async getBalances(yieldId: string, queries: YieldBalancesRequestDto) {
-    this.ensureConfigured()
-    return sdk.api.getYieldBalances(yieldId, queries)
-  }
-
   async getAggregateBalances(queries: BalancesRequestDto) {
     this.ensureConfigured()
     return sdk.api.getAggregateBalances(queries)
@@ -70,35 +59,6 @@ class YieldSDKService {
       limit: params?.limit || 100,
     }
     return sdk.api.getYields(enhancedParams)
-  }
-
-  /**
-   * Get yields with direct API call supporting comma-separated inputToken
-   * Bypasses SDK wrapper to use full REST API capabilities
-   */
-  async getYieldsBatch(params?: YieldxyzControllerGetYieldsBatchParams) {
-    this.ensureConfigured()
-
-    // Build query params manually
-    const queryParams = new URLSearchParams()
-    if (params?.network) queryParams.append("network", params.network)
-    if (params?.inputTokens) queryParams.append("inputTokens", params.inputTokens)
-    if (params?.limit) queryParams.append("limit", params.limit.toString())
-    if (params?.offset) queryParams.append("offset", params.offset.toString())
-
-    // Make direct fetch call
-    const url = `${YIELD_API_BASE_URL}/yields?${queryParams.toString()}`
-    const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Yield API error: ${response.status}`)
-    }
-
-    return response.json()
   }
 
   async getYield(yieldId: string) {

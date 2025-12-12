@@ -1,6 +1,6 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
 import { getLoadableQuery$, isNotNil, keepAlive, Loadable } from "@talismn/util"
-import { log } from "extension-shared"
+import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -15,11 +15,9 @@ import {
   tap,
 } from "rxjs"
 
-import { chaindataProvider } from "../../rpcs/chaindata"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { walletBalances$ } from "../balances/walletBalances"
 import { YieldDto } from "./exports"
-import { fetchAllYieldxyzProductOpportunities } from "./getYieldxyzProductOpportunities"
 import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
 import {
   updateYieldxyzOpportunitiesStore,
@@ -29,20 +27,39 @@ import {
 const REFRESH_INTERVAL = 30_000
 const KEEP_ALIVE = 3_000
 
-const tokenIds$ = walletBalances$.pipe(
+const ownedTokenIds$ = walletBalances$.pipe(
   map((balances) => uniq(balances.balances.map((b) => b.tokenId)).sort()),
   distinctUntilChanged<TokenId[]>(isEqual),
 )
 
-const getTokenAddressOrSymbol = (token: Token) => {
-  switch (token.type) {
-    case "evm-erc20":
-      return token.contractAddress
-    case "sol-spl":
-      return token.mintAddress
-    // some other token types have addresses but not sure if yieldxyz supports them
-    default:
-      return token.symbol
+const yieldxyzNetworkIds$ = combineLatest([ownedTokenIds$, remoteConfigStore.observable]).pipe(
+  map(([tokenIds, remoteConfig]) => {
+    const toYieldxyzNetworkIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
+
+    return uniq(
+      tokenIds
+        .map((tokenId) => toYieldxyzNetworkIdMap[parseTokenId(tokenId).networkId])
+        .filter(isNotNil),
+    ).sort()
+  }),
+  distinctUntilChanged<string[]>(isEqual),
+)
+
+const fetchYieldxyzOpportunities = async (networks: string[], signal?: AbortSignal) => {
+  if (!networks.length) return []
+
+  try {
+    const url = new URL(`/talisman/products`, YIELD_API_BASE_URL)
+    url.searchParams.append("networks", networks.join(","))
+
+    const req = await fetch(url.toString(), { signal })
+    if (!req.ok)
+      throw new Error(`Failed to fetch yieldxyz providers: ${req.status} ${req.statusText}`)
+
+    return req.json() as Promise<YieldDto[]>
+  } catch (err) {
+    log.error("Error fetching yieldxyz opportunities", err)
+    throw err
   }
 }
 
@@ -50,50 +67,24 @@ export const walletYieldxyzOpportunities$ = defer(() =>
   yieldxyzOpportunitiesStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
-      combineLatest([
-        chaindataProvider.getTokensMapById$(),
-        tokenIds$,
-        remoteConfigStore.observable,
-      ]).pipe(
-        map(([tokensMap, tokenIds, remoteConfig]) => {
-          const toYieldxyzNetworkIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
-          const tokens = tokenIds.map((tokenId) => tokensMap[tokenId]).filter(isNotNil)
-
-          return tokens.reduce<{ networks: string[]; inputTokens: string[] }>(
-            (acc, token) => {
-              const network = toYieldxyzNetworkIdMap[token.networkId]
-              if (network) {
-                if (!acc.networks.includes(network)) acc.networks.push(network)
-
-                const addressOrSymbol = getTokenAddressOrSymbol(token)
-                if (addressOrSymbol && !acc.inputTokens.includes(addressOrSymbol))
-                  acc.inputTokens.push(addressOrSymbol)
-              }
-
-              return acc
-            },
-            {
-              networks: [], // yieldxyz netwrork ids
-              inputTokens: [], // symbol for native tokens, addresses for ERC20 and SPL - unused atm
-            },
-          )
-        }),
-        switchMap(({ networks, inputTokens }) =>
+      yieldxyzNetworkIds$.pipe(
+        switchMap((networks) =>
           getLoadableQuery$({
-            namespace: "walletYieldOpportunities$",
-            args: [networks, inputTokens] as const,
-            queryFn: ([nets, tokens], signal) =>
-              fetchAllYieldxyzProductOpportunities({ networks: nets, inputTokens: tokens, signal }),
+            namespace: "walletYieldxyzOpportunities$",
+            args: networks,
+            queryFn: (networks, signal) => fetchYieldxyzOpportunities(networks, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),
         ),
-        tap({
-          next: (opportunities) => {
-            if (opportunities.status === "success")
-              updateYieldxyzOpportunitiesStore(opportunities.data)
-          },
+        tap((opportunities) => {
+          if (opportunities.status === "success")
+            updateYieldxyzOpportunitiesStore(opportunities.data)
         }),
+        map(
+          (loadable): Loadable<YieldDto[]> =>
+            loadable.status === "success" ? loadable : { status: "loading", data: defaultValue },
+        ),
         startWith({
           status: "loading",
           data: defaultValue,

@@ -9,6 +9,7 @@ import {
   distinctUntilChanged,
   map,
   shareReplay,
+  startWith,
   switchMap,
   take,
   tap,
@@ -104,9 +105,14 @@ const fetchPositions = async (
   }
 }
 
-const walletYieldxyzQueries$ = walletBalances$.pipe(
-  map((balances) => {
-    return uniq(balances.balances.map((b) => `${b.address}::${b.networkId}`))
+const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore.observable]).pipe(
+  map(([balances, remoteConfig]) => {
+    const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
+    return uniq(
+      balances.balances
+        .filter((b) => !!toYieldyxzNetworksIdMap[b.networkId])
+        .map((b) => `${b.address}::${b.networkId}`),
+    )
       .sort()
       .map((serialized): PositionsQuery => {
         const [address, networkId] = serialized.split("::") as [string, NetworkId]
@@ -115,6 +121,13 @@ const walletYieldxyzQueries$ = walletBalances$.pipe(
   }),
   distinctUntilChanged<PositionsQuery[]>(isEqual),
   shareReplay({ refCount: true, bufferSize: 1 }),
+  tap({
+    next: (queries) =>
+      log.debug("[yield.xyz] walletYieldxyzQueries$ updated", {
+        queriesCount: queries.length,
+        queries,
+      }),
+  }),
 )
 
 export const walletYieldxyzPositions$ = defer(() =>
@@ -131,17 +144,21 @@ export const walletYieldxyzPositions$ = defer(() =>
             defaultValue,
           }),
         ),
-        distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
-        tap({
-          next: (positions) => {
-            if (positions.status === "success") updateYieldxyzPositionsStore(positions.data)
-          },
-          subscribe: () => log.debug("[yield.xyz] starting yield positions subscription"),
-          unsubscribe: () => log.debug("[yield.xyz] stopping yield positions subscription"),
+        tap((positions) => {
+          if (positions.status === "success") updateYieldxyzPositionsStore(positions.data)
         }),
-        shareReplay({ refCount: true, bufferSize: 1 }),
-        keepAlive(KEEP_ALIVE),
+        map(
+          (loadable): Loadable<YieldxyzPosition[]> =>
+            loadable.status === "success" ? loadable : { status: "loading", data: defaultValue },
+        ),
+        startWith({
+          status: "loading",
+          data: defaultValue,
+        } as Loadable<YieldxyzPosition[]>),
       ),
     ),
+    distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
+    shareReplay({ refCount: true, bufferSize: 1 }),
+    keepAlive(KEEP_ALIVE),
   ),
 )

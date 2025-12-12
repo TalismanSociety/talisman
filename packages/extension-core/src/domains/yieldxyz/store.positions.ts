@@ -4,7 +4,7 @@ import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { YieldxyzPosition } from "./types"
+import { BalanceDto, YieldxyzPosition } from "./types"
 
 const blobStore = getBlobStore<YieldxyzPosition[]>("yieldxyz-positions")
 
@@ -29,14 +29,20 @@ const normalizeYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosition
       ?.map((p) => ({
         ...p,
         balances: p.balances.sort((a, b) => {
-          if (a.address !== b.address) return a.address.localeCompare(b.address)
-          if (a.token.address !== b.token.address)
-            return (a.token.address ?? "").localeCompare(b.token.address ?? "")
-          if (a.date !== b.date) return (a.date ?? "").localeCompare(b.date ?? "")
-          if (a.validator !== b.validator)
-            return (a.validator?.address ?? "").localeCompare(b.validator?.address ?? "")
-          log.warn("Cannot sort yield position balances:", { a, b })
-          return 0
+          const getSortKey = (balance: BalanceDto) =>
+            [
+              balance.address,
+              balance.type,
+              balance.validator?.address,
+              balance.validators?.map((v) => v.address).join(","),
+              balance.token.symbol,
+              balance.token.address,
+              balance.amountRaw,
+            ].join("::")
+          const s1 = getSortKey(a)
+          const s2 = getSortKey(b)
+          if (s1 === s2) log.warn("Cannot sort yield position balances:", { a, b })
+          return s1.localeCompare(s2)
         }),
       }))
       .sort((a, b) => a.yieldId.localeCompare(b.yieldId)) || []

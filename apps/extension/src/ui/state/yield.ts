@@ -1,18 +1,15 @@
 import { bind } from "@react-rxjs/core"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
-import { useInfiniteQuery } from "@tanstack/react-query"
 import {
-  fetchYieldProducts,
+  createYieldxyzPositions,
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
   Networks,
   YieldDto,
-  YieldxyzControllerGetYieldsParamsExtended,
   YieldxyzPosition,
+  YieldxyzProvider,
 } from "extension-core"
-import { createYieldxyzPositions } from "extension-core/src/domains/yieldxyz/createYieldxyzPositions"
-import { YieldxyzProvider } from "extension-core/src/domains/yieldxyz/fetchYieldxyzProviders"
 import { log } from "extension-shared"
 import { map, Observable, shareReplay } from "rxjs"
 
@@ -108,58 +105,6 @@ export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
     data: [],
   },
 )
-
-/**
- * Hook to fetch yield products for a specific token with infinite pagination
- * Fetches 20 items per page for better performance
- */
-export const useInfiniteYieldProductsForToken = (
-  tokenIdentifier: string,
-  network?: Omit<
-    YieldxyzControllerGetYieldsParamsExtended,
-    "limit" | "offset" | "inputTokens"
-  >["network"],
-) => {
-  return useInfiniteQuery({
-    queryKey: ["infiniteYieldProductsForToken", tokenIdentifier, network],
-    // TODO signal
-    queryFn: ({ pageParam = 0 }) =>
-      fetchYieldProducts({
-        network,
-        inputTokens: tokenIdentifier,
-        limit: 100,
-        offset: pageParam,
-      }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      // If we got less than 100 items, we've reached the end
-      if (lastPage.length < 100) {
-        return undefined
-      }
-      // Return next offset (current offset + 100)
-      return allPages.length * 100
-    },
-    enabled: !!tokenIdentifier && !!network, // Only fetch when token and network are available
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 1 * 60 * 1000, // Refetch every 1 minute for fresh APY data
-    refetchOnWindowFocus: false,
-    retry: 2,
-  })
-}
-
-// // Yield-specific search state (separate from portfolio search)
-// const subjectYieldSearch$ = new BehaviorSubject<string>("")
-
-// export const [useYieldSearch, yieldSearch$] = bind(subjectYieldSearch$)
-
-// export const setYieldSearch = (search: string) => subjectYieldSearch$.next(search)
-
-// // Discover tab search state (separate from assets tab search)
-// const subjectDiscoverSearch$ = new BehaviorSubject<string>("")
-
-// export const [useDiscoverSearch, discoverSearch$] = bind(subjectDiscoverSearch$)
-
-// export const setDiscoverSearch = (search: string) => subjectDiscoverSearch$.next(search)
 
 export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
   bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))

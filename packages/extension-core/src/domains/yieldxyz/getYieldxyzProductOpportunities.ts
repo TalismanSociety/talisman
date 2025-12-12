@@ -22,7 +22,7 @@ const fetchYieldXyzProductOpportunities = async ({
   limit = 100,
   signal,
 }: OpportunitiesQuery): Promise<YieldsControllerGetYields200> => {
-  const url = new URL(`${YIELD_API_BASE_URL}/yields`)
+  const url = new URL(`${YIELD_API_BASE_URL}/v1/yields`)
   // not filtering by inputTokens because that creates a too long url that results in errors (6K+ chars with dev wallet)
   // one optimization could be to maintain an array of valid inputTokens (that actually have a yield product associated) in our api
   // => for now filter the result set instead

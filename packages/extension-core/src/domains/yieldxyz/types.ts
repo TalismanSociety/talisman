@@ -3,8 +3,6 @@ import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
 import { BalanceDto, YieldDto, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
 
-import { YieldxyzProvider } from "./fetchYieldxyzProviders"
-
 // TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
@@ -40,16 +38,16 @@ export interface YieldxyzControllerGetYieldsParamsExtended extends YieldsControl
   inputTokens?: string // Comma-separated token addresses/symbols
 }
 
-// export interface YieldxyzPositionItem {
-//   yieldId: string
-//   balances: BalanceDto[]
-// }
-// export interface YieldxyzBalancesDtoWithProduct extends YieldBalancesDto {
-//   product?: YieldDto
-//   // Maps addresses to their originating Talisman and yield.xyz network IDs for reconstruction
-//   // addressNetworkIdMap?: Record<Address, NetworkId>
-//   // addressYieldxyzNetworkIdMap?: Record<Address, Networks>
-// }
+export type YieldxyzProvider = {
+  id: string
+  name: string
+  logoURI: string
+  description: string
+  website: string
+  tvlUsd: object | null
+  type: "protocol" | "validator_provider"
+  references: string[]
+}
 
 export type YieldxyzPosition = {
   yieldId: string
