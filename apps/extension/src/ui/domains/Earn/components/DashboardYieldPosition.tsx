@@ -1,9 +1,16 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
 import { BalanceDto, YieldxyzPosition } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { log } from "extension-shared"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "talisman-ui"
 import urlJoin from "url-join"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -12,7 +19,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
-import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
+import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"
@@ -141,6 +148,10 @@ export const DashboardYieldPosition: FC<{
     }
   }, [suppliedBalances, _handleWithdrawClick])
 
+  useEffect(() => {
+    log.debug("DashboardYieldPosition render", { position })
+  }, [position])
+
   if (!position) return null
 
   return (
@@ -236,8 +247,9 @@ const YieldPositionHeader: FC<{
 }> = ({ position, onAddToPosition, onClaimClick, onWithdrawClick, hasSuppliedBalances }) => {
   const { genericEvent } = useAnalytics()
 
-  const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network) //  mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
-  const network = useNetworkById(networkId)
+  // const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network) //  mapYieldNetworkToNetworkId(position.product?.network) || position.networkId
+  const network = useNetworkById(position.networkId)
+  const { data: product } = useYieldxyzProduct(position.yieldId)
 
   const hasClaimableRewards = useMemo(() => {
     return position.balances.some((balance) =>
@@ -259,20 +271,20 @@ const YieldPositionHeader: FC<{
 
   const tokenList = useMemo(() => {
     const tokens = []
-    if (position.product?.inputTokens?.[0]) {
-      tokens.push(position.product.inputTokens[0].symbol)
+    if (product?.inputTokens?.[0]) {
+      tokens.push(product.inputTokens[0].symbol)
     }
-    if (position.product?.outputToken) {
-      tokens.push(position.product.outputToken.symbol)
+    if (product?.outputToken) {
+      tokens.push(product.outputToken.symbol)
     }
     return tokens.join(" / ")
-  }, [position.product])
+  }, [product])
 
   // Get first balance for address info
   const firstBalance = position.balances[0]
 
   // Use product metadata for primary token info (more reliable than balances[0])
-  const primaryToken = position.product?.inputTokens?.[0] || firstBalance?.token
+  const primaryToken = product?.inputTokens?.[0] || firstBalance?.token
 
   // Generate URLs for external links
   const blockExplorerUrl = useMemo(() => {
@@ -305,9 +317,9 @@ const YieldPositionHeader: FC<{
         <div className="flex min-w-0 flex-col gap-2">
           <div className="truncate text-base font-bold text-white">{tokenList}</div>
           <div className="flex items-center gap-2">
-            <NetworkLogo networkId={networkId} className="text-base" />
+            <NetworkLogo networkId={position.networkId} className="text-base" />
             <span className="text-body-secondary truncate text-sm">
-              <NetworkName networkId={networkId} />
+              <NetworkName networkId={position.networkId} />
             </span>
           </div>
         </div>
@@ -377,24 +389,25 @@ const YieldPositionActionButtons: FC<{
 
   return (
     <div className="flex w-full max-w-full justify-end gap-4 overflow-hidden">
-      <button
-        type="button"
-        className="hover:bg-grey-800/20 text-md flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-2 rounded border-2 border-transparent border-white p-6 font-normal"
+      <Button
+        // type="button"
+        // className="hover:bg-grey-800/20 text-md flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-2 rounded border-2 border-transparent border-white p-6 font-normal"
         onClick={onAddToPosition}
       >
         {t("Add to Position")}
-      </button>
+      </Button>
       {hasClaimableRewards && (
-        <button
+        <Button
           type="button"
-          className="flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-1 rounded border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
+          // className="flex h-[5rem] min-w-80 max-w-full flex-col items-center justify-center gap-1 rounded border-transparent bg-[#D5FF5C] p-6 text-black hover:bg-[#D5FF5C]/80"
+          primary
           onClick={onClaimClick}
         >
           <div className="truncate text-sm font-normal text-black">{t("Claim")}</div>
           <div className="text-grey-800 truncate text-[1rem] font-normal">
             {claimableTokenAmount.toFixed(4)} {primaryToken?.symbol}
           </div>
-        </button>
+        </Button>
       )}
     </div>
   )

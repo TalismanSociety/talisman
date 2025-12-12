@@ -1,6 +1,6 @@
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { BalanceDto, YieldxyzPosition } from "extension-core"
+import { BalanceDto, YieldxyzPositionEnhanced } from "extension-core"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -13,7 +13,6 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
-import { useTalismanNetworkIdFromYieldNetworkId } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ClaimModal } from "../ClaimModal"
@@ -22,6 +21,7 @@ import { useEarnModal } from "../hooks/useEarnModal"
 import { useYieldxyzPosition } from "../hooks/useYieldxyzPosition"
 import { mapYieldInputTokenToTokenId, mapYieldTokenToTokenId } from "../utils/tokenMapping"
 
+// TODO rework this, inputs do not clearly identify a position, there could be duplicates
 export const PopupYieldPosition: FC<{
   yieldId: string | undefined
   accountAddress?: string | null
@@ -218,15 +218,14 @@ export const PopupYieldPosition: FC<{
 }
 
 const YieldPositionHeader: FC<{
-  position: YieldxyzPosition
+  position: YieldxyzPositionEnhanced
   onAddToPosition: () => void
   onClaimClick: () => void
   onWithdrawClick?: () => void
   hasSuppliedBalances?: boolean
 }> = ({ position, onAddToPosition, onClaimClick, onWithdrawClick, hasSuppliedBalances }) => {
   const { genericEvent } = useAnalytics()
-  const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network)
-  const network = useNetworkById(networkId)
+  const network = useNetworkById(position.networkId)
 
   const hasClaimableRewards = useMemo(() => {
     return position.balances.some((balance) =>
@@ -294,9 +293,9 @@ const YieldPositionHeader: FC<{
         <div className="flex min-w-0 flex-col gap-2">
           <div className="truncate text-sm font-bold text-white">{tokenList}</div>
           <div className="flex items-center gap-2">
-            <NetworkLogo networkId={networkId} className="text-sm" />
+            <NetworkLogo networkId={position.networkId} className="text-sm" />
             <span className="text-body-secondary truncate text-xs">
-              <NetworkName networkId={networkId} />
+              <NetworkName networkId={position.networkId} />
             </span>
           </div>
         </div>
@@ -338,7 +337,7 @@ const YieldPositionHeader: FC<{
 }
 
 const YieldPositionActionButtons: FC<{
-  position: YieldxyzPosition
+  position: YieldxyzPositionEnhanced
   onAddToPosition: () => void
   onClaimClick: () => void
 }> = ({ position, onAddToPosition, onClaimClick }) => {

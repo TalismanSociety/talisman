@@ -53,7 +53,6 @@ export type YieldxyzPosition = {
   yieldId: string
   networkId: NetworkId
   address: Address
-  product: YieldDto
   balances: BalanceDto[]
 }
 
@@ -64,6 +63,7 @@ export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   // Display-ready fields
   displayName: string
   totalAmountUsd: number
+  product: YieldDto
 }
 
 // UI subscription response type (store-backed), mirroring DeFi

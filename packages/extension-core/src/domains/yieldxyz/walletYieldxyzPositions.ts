@@ -1,6 +1,6 @@
 import { NetworkId } from "@talismn/chaindata-provider"
 import { getLoadableQuery$, isNotNil, keepAlive, Loadable } from "@talismn/util"
-import { log } from "extension-shared"
+import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { chunk, isEqual, uniq } from "lodash-es"
 import {
   combineLatest,
@@ -18,17 +18,14 @@ import {
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { RemoteConfigStoreData } from "../app/types"
 import { walletBalances$ } from "../balances/walletBalances"
-import { yieldSdk } from "./exports" // TODO fix circular dependency
-import { getYieldxyzProduct } from "./getYieldxyzProduct"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
 } from "./helpers"
 import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store.positions"
-import { YieldDto, YieldxyzPosition } from "./types"
-import { walletYieldxyzProducts$ } from "./walletYieldxyzProducts"
+import { BalancesResponseDto, YieldxyzPosition } from "./types"
 
-const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
+const REFRESH_INTERVAL = 60_000
 const BATCH_SIZE = 50
 const KEEP_ALIVE = 3_000
 
@@ -41,25 +38,40 @@ type PositionsQuery = {
 const fetchPositionsBatch = async (
   rawQueries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
-  products: YieldDto[] | undefined,
+  // products: YieldDto[] | undefined,
   signal: AbortSignal,
 ): Promise<YieldxyzPosition[]> => {
-  const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
-  const toTalismanNetworksIdMap = getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig)
+  try {
+    const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
+    const toTalismanNetworksIdMap = getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig)
 
-  // Only send yield.xyz-shaped queries to the SDK
-  const queries = rawQueries
-    .map(({ address, networkId }) => ({
-      address,
-      network: toYieldyxzNetworksIdMap[networkId],
-    }))
-    .filter((q) => !!q.network)
+    // Only send yield.xyz-shaped queries to the SDK
+    const queries = rawQueries
+      .map(({ address, networkId }) => ({
+        address,
+        network: toYieldyxzNetworksIdMap[networkId],
+      }))
+      .filter((q) => !!q.network)
 
-  const result = await yieldSdk.getAggregateBalances({ queries })
-  if (result.errors) log.warn("[Yield.xyz] getAggregateBalances returned errors", result.errors)
+    if (!queries.length) return []
 
-  const positions = await Promise.all(
-    result.items.map(async (item) => {
+    const req = await fetch(`${YIELD_API_BASE_URL}/v1/yields/balances`, {
+      signal,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ queries }),
+    })
+
+    if (!req.ok)
+      throw new Error(`Failed to fetch yieldxyz balances: ${req.status} ${req.statusText}`)
+
+    const result = (await req.json()) as BalancesResponseDto
+
+    if (result.errors) log.warn("[Yield.xyz] getAggregateBalances returned errors", result.errors)
+
+    const positions = result.items.map((item) => {
       // a position must be mono-account
       if (uniq(item.balances.map((b) => b.address)).length !== 1) return null
 
@@ -71,36 +83,31 @@ const fetchPositionsBatch = async (
       const networkId = toTalismanNetworksIdMap[item.balances[0].token.network]
       if (!networkId) return null
 
-      // associated product must exist
-      const product =
-        products?.find((p) => p.id === item.yieldId) ??
-        (await getYieldxyzProduct(item.yieldId, signal))
-      if (!product) return null
-
       return {
         address,
         networkId,
         ...item,
-        product,
       }
-    }),
-  )
+    })
 
-  return positions.filter(isNotNil)
+    return positions.filter(isNotNil)
+  } catch (err) {
+    log.error("[yield.xyz] fetchPositionsBatch error", { err, rawQueries })
+    throw err
+  }
 }
 
 // Main function that handles batching and parallel execution
 const fetchPositions = async (
   queries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
-  products: YieldDto[] | undefined,
   signal: AbortSignal,
 ): Promise<YieldxyzPosition[]> => {
   try {
     const batches = chunk(queries, BATCH_SIZE)
 
     const results = await Promise.all(
-      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, products, signal)),
+      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, signal)),
     )
 
     return results.flat()
@@ -126,29 +133,18 @@ const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore
   }),
   distinctUntilChanged<PositionsQuery[]>(isEqual),
   shareReplay({ refCount: true, bufferSize: 1 }),
-  tap({
-    next: (queries) =>
-      log.debug("[yield.xyz] walletYieldxyzQueries$ updated", {
-        queriesCount: queries.length,
-        queries,
-      }),
-  }),
 )
 
 export const walletYieldxyzPositions$ = defer(() =>
   yieldxyzPositionsStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
-      combineLatest([
-        walletYieldxyzQueries$,
-        remoteConfigStore.observable,
-        walletYieldxyzProducts$,
-      ]).pipe(
-        switchMap(([queries, remoteConfig, { data: products }]) =>
+      combineLatest([walletYieldxyzQueries$, remoteConfigStore.observable]).pipe(
+        switchMap(([queries, remoteConfig]) =>
           getLoadableQuery$({
             namespace: "walletYieldPositions$",
             args: [queries, remoteConfig] as const,
-            queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, products, signal),
+            queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),

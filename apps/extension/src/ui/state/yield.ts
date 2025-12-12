@@ -8,10 +8,11 @@ import {
   Networks,
   YieldDto,
   YieldxyzPosition,
+  YieldxyzPositionEnhanced,
   YieldxyzProvider,
 } from "extension-core"
 import { log } from "extension-shared"
-import { map, Observable, shareReplay } from "rxjs"
+import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
@@ -75,6 +76,18 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(rawYieldxyzProducts
   data: [],
 })
 
+export const [useYieldxyzProduct, yieldxyzProduct$] = bind(
+  (yieldId: string | null | undefined) =>
+    yieldxyzProducts$.pipe(
+      map((loadable) => {
+        if (!yieldId) return { status: "success", data: null } as Loadable<YieldDto | null>
+        const product = loadable.data?.find((p) => p.id === yieldId) || null
+        return { ...loadable, data: product } as Loadable<YieldDto | null>
+      }),
+    ),
+  { status: "loading", data: null },
+)
+
 // Add new observable for grouped yield balances using bind()
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
@@ -88,12 +101,19 @@ const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subs
 )
 
 export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
-  rawYieldxyzPositions$.pipe(
-    map((loadable) => ({
-      ...loadable,
-      // might want to move this to where its needed
-      data: loadable.data ? createYieldxyzPositions(loadable.data) : undefined,
-    })),
+  combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(
+    map(([positionsLoadable, productsLoadable]) => {
+      const status =
+        positionsLoadable.status === "loading" || productsLoadable.status === "loading"
+          ? "loading"
+          : "success"
+      const data =
+        positionsLoadable.data && productsLoadable.data
+          ? createYieldxyzPositions(positionsLoadable.data, productsLoadable.data)
+          : undefined
+
+      return { status, data } as Loadable<YieldxyzPositionEnhanced[]>
+    }),
   ),
   {
     status: "loading",

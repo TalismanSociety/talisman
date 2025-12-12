@@ -1,4 +1,6 @@
-import { BalanceDto, YieldxyzPosition, YieldxyzPositionEnhanced } from "./types"
+import { keyBy } from "lodash-es"
+
+import { BalanceDto, YieldDto, YieldxyzPosition, YieldxyzPositionEnhanced } from "./types"
 
 // Helper function to safely extract validatorAddress from an item
 function getValidatorAddressFromItem(item: YieldxyzPosition): string | undefined {
@@ -32,7 +34,12 @@ function getValidatorAddressFromBalance(balance: BalanceDto): string | undefined
 }
 
 // front end concerns only - group by validator and account address
-export const createYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPositionEnhanced[] => {
+export const createYieldxyzPositions = (
+  items: YieldxyzPosition[],
+  products: YieldDto[],
+): YieldxyzPositionEnhanced[] => {
+  const productById = keyBy(products, (p) => p.id)
+
   const positions: YieldxyzPositionEnhanced[] = []
 
   // Group balances by yieldId, validatorAddress, and accountAddress
@@ -133,13 +140,16 @@ export const createYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosi
     // Show positions that have any balances (including claimable ones)
     if (balances.length === 0) continue
 
+    const product = productById[item.yieldId]
+    if (!product) continue
+
     const firstBalance = balances[0]
 
     // Calculate total USD for this position (only balances for this account)
     const totalAmountUsd = balances.reduce((sum, b) => sum + parseFloat(b.amountUsd || "0"), 0)
 
     // Get display name - always use product metadata name
-    const displayName = item.product?.metadata.name || "Yield Position"
+    const displayName = product?.metadata.name || "Yield Position"
 
     // Extract validatorAddress and accountAddress from the key
     // Key format: yieldId::validatorAddress::accountAddress or yieldId::accountAddress
@@ -162,6 +172,7 @@ export const createYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosi
       validatorAddress, // Preserve validator address if available
       displayName,
       totalAmountUsd,
+      product,
     })
   }
 
