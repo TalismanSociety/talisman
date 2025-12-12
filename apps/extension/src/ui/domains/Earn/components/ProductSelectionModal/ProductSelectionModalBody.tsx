@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useToken } from "@ui/state"
-import { useYieldxyzOpportunities } from "@ui/state/yield"
+import { useYieldxyzProducts } from "@ui/state/yield"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
@@ -82,7 +82,7 @@ export const ProductSelectionModalBody: FC<ProductSelectionModalBodyProps> = ({ 
   }, [token])
 
   // Fetch yield products with infinite pagination
-  const { data, status, error } = useYieldxyzOpportunities()
+  const { data, status, error } = useYieldxyzProducts()
 
   // Flatten all pages and filter for exact token match
   const allYieldProducts = useMemo(() => {

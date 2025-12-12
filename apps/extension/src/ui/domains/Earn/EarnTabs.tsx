@@ -13,7 +13,7 @@ export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange, value = "a
   const { t } = useTranslation()
 
   const tabs = useMemo(() => {
-    const resTabs = [{ label: t("Earn Assets"), value: "assets" }]
+    const resTabs = [{ label: t("Positions"), value: "assets" }]
     resTabs.push({ label: t("Discover"), value: "discover" })
 
     return resTabs

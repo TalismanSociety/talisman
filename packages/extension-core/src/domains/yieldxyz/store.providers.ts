@@ -4,7 +4,7 @@ import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { YieldxyzProvider } from "./fetchYieldxyzProviders"
+import { YieldxyzProvider } from "./types"
 
 const blobStore = getBlobStore<YieldxyzProvider[]>("yieldxyz-providers")
 

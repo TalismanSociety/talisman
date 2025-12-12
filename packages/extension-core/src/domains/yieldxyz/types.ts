@@ -77,6 +77,6 @@ export type YieldxyzProvidersResponse = Loadable<YieldxyzProvider[]>
 // Message type augmentation for handler routing
 export interface YieldxyzMessages {
   "pri(yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsResponse]
-  "pri(yieldxyz.opportunities.subscribe)": [null, boolean, YieldxyzOpportunitiesResponse]
+  "pri(yieldxyz.products.subscribe)": [null, boolean, YieldxyzOpportunitiesResponse]
   "pri(yieldxyz.providers.subscribe)": [null, boolean, YieldxyzProvidersResponse]
 }

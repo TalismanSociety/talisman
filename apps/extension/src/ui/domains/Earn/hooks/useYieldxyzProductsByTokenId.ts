@@ -8,21 +8,21 @@ import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useSelectedCurrency } from "@ui/state"
-import { useYieldxyzOpportunities } from "@ui/state/yield"
+import { useYieldxyzProducts } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
 
-export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
+export const useYieldxyzProductsByTokenId = (): Loadable<
   {
     tokenId: string
-    opportunities: YieldDto[]
+    products: YieldDto[]
     bestApr: number
     balances: Balances
   }[]
 > => {
   const { selectedAccounts } = usePortfolioNavigation()
   const balances = useBalances()
-  const opportunities = useYieldxyzOpportunities()
+  const products = useYieldxyzProducts()
 
   const accountBalances = useMemo(() => {
     const accountIds = new Set(selectedAccounts.map((acc) => normalizeAddress(acc.address)))
@@ -36,37 +36,37 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
 
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
 
-  const opportunitiesByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
-    // keep only opportunities for which we have all input tokens
+  const productsByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
+    // keep only products for which we have all input tokens
     const oppsByTokenId =
-      opportunities.data
+      products.data
         ?.filter((o) => o.rewardRate.total) // a bunch are 0 reward while they are "under maintenance"
-        .filter((opportunity) => {
-          const inputTokenIds = opportunity.inputTokens
+        .filter((product) => {
+          const inputTokenIds = product.inputTokens
             ?.map((inputToken) => {
               const tokenId = getYieldxyzTokenId(inputToken)
               return availableTokenIds.includes(tokenId || "") ? tokenId : null
-              // TODO check that at least one account owns all tokens, or its not a valid opportunity
+              // TODO check that at least one account owns all tokens, or its not a valid product
             })
             .filter(Boolean) as string[]
 
           // check if all input token ids are in availableTokenIds
-          return inputTokenIds.length === opportunity.inputTokens.length
+          return inputTokenIds.length === product.inputTokens.length
         })
-        .reduce<Record<TokenId, YieldDto[]>>((acc, opportunity) => {
-          const inputTokenIds = opportunity.inputTokens
+        .reduce<Record<TokenId, YieldDto[]>>((acc, product) => {
+          const inputTokenIds = product.inputTokens
             ?.map((inputToken) => getYieldxyzTokenId(inputToken))
             .filter(isNotNil) as TokenId[]
 
           inputTokenIds.forEach((tokenId) => {
             if (!acc[tokenId]) acc[tokenId] = []
-            acc[tokenId].push(opportunity)
+            acc[tokenId].push(product)
           })
 
           return acc
         }, {}) || {}
 
-    // for each token, sort opportunities by reward rate descending
+    // for each token, sort products by reward rate descending
     return Object.entries(oppsByTokenId).reduce(
       (acc, [tokenId, opps]) => {
         acc[tokenId as TokenId] = opps.sort(
@@ -76,16 +76,16 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
       },
       {} as Record<TokenId, YieldDto[]>,
     )
-  }, [opportunities.data, getYieldxyzTokenId, availableTokenIds])
+  }, [products.data, getYieldxyzTokenId, availableTokenIds])
 
   const currency = useSelectedCurrency()
 
   const data = useMemo(() => {
-    return Object.entries(opportunitiesByTokenId)
-      .map(([tokenId, opportunities]) => ({
+    return Object.entries(productsByTokenId)
+      .map(([tokenId, products]) => ({
         tokenId,
-        opportunities,
-        bestApr: Math.max(...opportunities.map((opp) => opp.rewardRate.total * 100)),
+        products,
+        bestApr: Math.max(...products.map((opp) => opp.rewardRate.total * 100)),
         balances: accountBalances.find({ tokenId }),
       }))
       .sort((a, b) => {
@@ -93,10 +93,10 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
         const balance2 = b.balances.sum.fiat(currency).transferable
         return (balance2 || 0) - (balance1 || 0)
       })
-  }, [opportunitiesByTokenId, accountBalances, currency])
+  }, [productsByTokenId, accountBalances, currency])
 
   return {
-    ...opportunities,
+    ...products,
     data,
   }
 }

@@ -25,7 +25,8 @@ import {
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
 } from "./helpers"
 import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store.positions"
-import { YieldxyzPosition } from "./types"
+import { YieldDto, YieldxyzPosition } from "./types"
+import { walletYieldxyzProducts$ } from "./walletYieldxyzProducts"
 
 const REFRESH_INTERVAL = 30_000 // TODO push to 60s before release
 const BATCH_SIZE = 50
@@ -40,6 +41,7 @@ type PositionsQuery = {
 const fetchPositionsBatch = async (
   rawQueries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
+  products: YieldDto[] | undefined,
   signal: AbortSignal,
 ): Promise<YieldxyzPosition[]> => {
   const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
@@ -70,7 +72,9 @@ const fetchPositionsBatch = async (
       if (!networkId) return null
 
       // associated product must exist
-      const product = await getYieldxyzProduct(item.yieldId, signal)
+      const product =
+        products?.find((p) => p.id === item.yieldId) ??
+        (await getYieldxyzProduct(item.yieldId, signal))
       if (!product) return null
 
       return {
@@ -89,13 +93,14 @@ const fetchPositionsBatch = async (
 const fetchPositions = async (
   queries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
+  products: YieldDto[] | undefined,
   signal: AbortSignal,
 ): Promise<YieldxyzPosition[]> => {
   try {
     const batches = chunk(queries, BATCH_SIZE)
 
     const results = await Promise.all(
-      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, signal)),
+      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, products, signal)),
     )
 
     return results.flat()
@@ -134,12 +139,16 @@ export const walletYieldxyzPositions$ = defer(() =>
   yieldxyzPositionsStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
-      combineLatest([walletYieldxyzQueries$, remoteConfigStore.observable]).pipe(
-        switchMap(([queries, remoteConfig]) =>
+      combineLatest([
+        walletYieldxyzQueries$,
+        remoteConfigStore.observable,
+        walletYieldxyzProducts$,
+      ]).pipe(
+        switchMap(([queries, remoteConfig, { data: products }]) =>
           getLoadableQuery$({
             namespace: "walletYieldPositions$",
             args: [queries, remoteConfig] as const,
-            queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, signal),
+            queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, products, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),

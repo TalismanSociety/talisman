@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/hooks/useYieldxyzOpportunitiesByTokenId"
+import { useYieldxyzProductsByTokenId } from "@ui/domains/Earn/hooks/useYieldxyzProductsByTokenId"
 import { useSelectedCurrency } from "@ui/state"
 
 export const EarnPageHeader = () => {
@@ -12,14 +12,14 @@ export const EarnPageHeader = () => {
   const currency = useSelectedCurrency()
 
   // this hook already filters selected accounts
-  const { status, data: tokenOpportunities } = useYieldxyzOpportunitiesByTokenId()
+  const { status, data: tokenProducts } = useYieldxyzProductsByTokenId()
 
   const eligibleTotal = useMemo(() => {
-    if (!tokenOpportunities) return null
+    if (!tokenProducts) return null
 
-    const allBalances = new Balances(tokenOpportunities?.flatMap((to) => to.balances.each) || [])
+    const allBalances = new Balances(tokenProducts?.flatMap((to) => to.balances.each) || [])
     return allBalances.sum.fiat(currency).transferable
-  }, [currency, tokenOpportunities])
+  }, [currency, tokenProducts])
 
   return (
     <div className="text-body-secondary border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">

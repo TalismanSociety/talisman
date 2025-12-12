@@ -58,8 +58,8 @@ import {
   WatchAssetRequestId,
   YieldDto,
   YieldxyzPosition,
+  YieldxyzProvider,
 } from "extension-core"
-import { YieldxyzProvider } from "extension-core/src/domains/yieldxyz/fetchYieldxyzProviders"
 import { MetadataDef } from "inject/substrate/types"
 import { TransactionRequest } from "viem"
 
@@ -288,7 +288,7 @@ export default interface MessageTypes {
   yieldxyzPositionsSubscribe: (
     cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
-  yieldxyzOpportunitiesSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
+  yieldxyzProductsSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
   yieldxyzProvidersSubscribe: (
     cb: (positions: Loadable<YieldxyzProvider[]>) => void,
   ) => UnsubscribeFn

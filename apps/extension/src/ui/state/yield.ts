@@ -27,7 +27,7 @@ const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subs
 
   return () => {
     // TODO remove after unsubscribe works
-    log.debug("[frontend] Unsubscribing from api.yieldxyzOpportunitiesSubscribe")
+    log.debug("[frontend] Unsubscribing from api.yieldxyzProvidersSubscribe")
     unsubscribe()
   }
 }).pipe(
@@ -54,39 +54,34 @@ export const [useYieldxyzProvider, yieldxyzProvider$] = bind(
 )
 
 // Add new observable for grouped yield balances using bind()
-const rawYieldxyzOpportunities$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
+const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
   // TODO rename to yieldPositionsSubscribe, or earn
-  const unsubscribe = api.yieldxyzOpportunitiesSubscribe((loadable: Loadable<YieldDto[]>) => {
+  const unsubscribe = api.yieldxyzProductsSubscribe((loadable: Loadable<YieldDto[]>) => {
     subscriber.next(loadable)
   })
 
   return () => {
     // TODO remove after unsubscribe works
-    log.debug("[frontend] Unsubscribing from api.yieldxyzOpportunitiesSubscribe")
+    log.debug("[frontend] Unsubscribing from api.yieldxyzProductsSubscribe")
     unsubscribe()
   }
 }).pipe(
-  debugObservable("rawYieldxyzOpportunities$", true),
+  debugObservable("rawYieldxyzProducts$", true),
   shareReplay({ bufferSize: 1, refCount: true }),
 )
 
-export const [useYieldxyzOpportunities, yieldxyzOpportunities$] = bind(rawYieldxyzOpportunities$, {
+export const [useYieldxyzProducts, yieldxyzProducts$] = bind(rawYieldxyzProducts$, {
   status: "loading",
   data: [],
 })
 
 // Add new observable for grouped yield balances using bind()
 const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subscriber) => {
-  // TODO rename to yieldPositionsSubscribe, or earn
   const unsubscribe = api.yieldxyzPositionsSubscribe((loadable: Loadable<YieldxyzPosition[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => {
-    // TODO remove after unsubscribe works
-    log.debug("[frontend] Unsubscribing from api.yieldBalancesGroupedSubscribe")
-    unsubscribe()
-  }
+  return () => unsubscribe()
 }).pipe(
   debugObservable("rawYieldxyzPositions$", true),
   shareReplay({ bufferSize: 1, refCount: true }),

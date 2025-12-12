@@ -300,8 +300,8 @@ export const api: MessageTypes = {
   // yield
   yieldxyzPositionsSubscribe: (cb) =>
     messageService.subscribe("pri(yieldxyz.positions.subscribe)", null, cb),
-  yieldxyzOpportunitiesSubscribe: (cb) =>
-    messageService.subscribe("pri(yieldxyz.opportunities.subscribe)", null, cb),
+  yieldxyzProductsSubscribe: (cb) =>
+    messageService.subscribe("pri(yieldxyz.products.subscribe)", null, cb),
   yieldxyzProvidersSubscribe: (cb) =>
     messageService.subscribe("pri(yieldxyz.providers.subscribe)", null, cb),
 

@@ -19,10 +19,7 @@ import { remoteConfigStore } from "../app/store.remoteConfig"
 import { walletBalances$ } from "../balances/walletBalances"
 import { YieldDto } from "./exports"
 import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
-import {
-  updateYieldxyzOpportunitiesStore,
-  yieldxyzOpportunitiesStore$,
-} from "./store.opportunities"
+import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
 
 const REFRESH_INTERVAL = 30_000
 const KEEP_ALIVE = 3_000
@@ -45,7 +42,7 @@ const yieldxyzNetworkIds$ = combineLatest([ownedTokenIds$, remoteConfigStore.obs
   distinctUntilChanged<string[]>(isEqual),
 )
 
-const fetchYieldxyzOpportunities = async (networks: string[], signal?: AbortSignal) => {
+const fetchYieldxyzProducts = async (networks: string[], signal?: AbortSignal) => {
   if (!networks.length) return []
 
   try {
@@ -54,32 +51,31 @@ const fetchYieldxyzOpportunities = async (networks: string[], signal?: AbortSign
 
     const req = await fetch(url.toString(), { signal })
     if (!req.ok)
-      throw new Error(`Failed to fetch yieldxyz providers: ${req.status} ${req.statusText}`)
+      throw new Error(`Failed to fetch yieldxyz products: ${req.status} ${req.statusText}`)
 
     return req.json() as Promise<YieldDto[]>
   } catch (err) {
-    log.error("Error fetching yieldxyz opportunities", err)
+    log.error("Error fetching yieldxyz products", err)
     throw err
   }
 }
 
-export const walletYieldxyzOpportunities$ = defer(() =>
-  yieldxyzOpportunitiesStore$.pipe(
+export const walletYieldxyzProducts$ = defer(() =>
+  yieldxyzProductsStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
       yieldxyzNetworkIds$.pipe(
         switchMap((networks) =>
           getLoadableQuery$({
-            namespace: "walletYieldxyzOpportunities$",
+            namespace: "walletYieldxyzProducts$",
             args: networks,
-            queryFn: (networks, signal) => fetchYieldxyzOpportunities(networks, signal),
+            queryFn: (networks, signal) => fetchYieldxyzProducts(networks, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
           }),
         ),
-        tap((opportunities) => {
-          if (opportunities.status === "success")
-            updateYieldxyzOpportunitiesStore(opportunities.data)
+        tap((products) => {
+          if (products.status === "success") updateYieldxyzProductsStore(products.data)
         }),
         map(
           (loadable): Loadable<YieldDto[]> =>
@@ -93,9 +89,9 @@ export const walletYieldxyzOpportunities$ = defer(() =>
     ),
     distinctUntilChanged<Loadable<YieldDto[]>>(isEqual),
     tap({
-      next: (val) => log.debug("[yield.xyz] yield opportunities emitted", val),
-      subscribe: () => log.debug("[yield.xyz] starting yield opportunities subscription"),
-      unsubscribe: () => log.debug("[yield.xyz] stopping yield opportunities subscription"),
+      next: (val) => log.debug("[yield.xyz] yield products emitted", val),
+      subscribe: () => log.debug("[yield.xyz] starting yield products subscription"),
+      unsubscribe: () => log.debug("[yield.xyz] stopping yield products subscription"),
     }),
     shareReplay({ refCount: true, bufferSize: 1 }),
     keepAlive(KEEP_ALIVE),
