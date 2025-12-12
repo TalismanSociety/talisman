@@ -1,5 +1,16 @@
 # @talismn/sapi
 
+## 0.1.0
+
+### Minor Changes
+
+- b3b5ff5: bittensor mev shield
+
+### Patch Changes
+
+- Updated dependencies [b3b5ff5]
+  - @talismn/scale@0.3.0
+
 ## 0.0.12
 
 ### Patch Changes
