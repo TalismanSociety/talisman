@@ -15,9 +15,9 @@ import {
   tap,
 } from "rxjs"
 
-import { remoteConfigStore } from "../app/store.remoteConfig"
-import { RemoteConfigStoreData } from "../app/types"
-import { walletBalances$ } from "../balances/walletBalances"
+import { remoteConfigStore } from "../../app/store.remoteConfig"
+import { RemoteConfigStoreData } from "../../app/types"
+import { walletBalances$ } from "../../balances/walletBalances"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,

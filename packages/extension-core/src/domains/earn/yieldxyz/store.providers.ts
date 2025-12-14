@@ -2,8 +2,8 @@ import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
 import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
 
-import { getBlobStore } from "../../db"
-import { walletReady } from "../../libs/isWalletReady"
+import { getBlobStore } from "../../../db"
+import { walletReady } from "../../../libs/isWalletReady"
 import { YieldxyzProvider } from "./types"
 
 const blobStore = getBlobStore<YieldxyzProvider[]>("yieldxyz-providers")
