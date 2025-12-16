@@ -4,7 +4,7 @@ import { uniq } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useBalance } from "@ui/state"
+import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
@@ -17,7 +17,7 @@ export type EarnDepositWizardInit = {
 }
 
 export type EarnDepositWizardState = {
-  step: "product" | "account" | "validator" | "amount" | "review" | "follow-up"
+  step: "product" | "account" | "validator" | "amount" | "confirm" | "follow-up"
   address: string | null
   tokenId: string | null
   productId: string | null
@@ -51,12 +51,6 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
 
-  useEffect(() => {
-    log.debug("useEarnDepositWizardProvider args changed", args)
-    // reset state when init changes
-    setState(initializeState(args))
-  }, [args])
-
   const tokenIn = useMemo(() => {
     if (!product) return null
     const tokens = product.inputTokens.map(getYieldxyzToken)
@@ -71,6 +65,8 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     }
     return tokens[0]!
   }, [product, getYieldxyzToken])
+
+  const network = useNetworkById(tokenIn?.networkId)
 
   const balance = useBalance(state.address, tokenIn?.id)
 
@@ -108,9 +104,15 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     })
   }, [state, tokenIn, product, action, isLoadingAction, errorAction])
 
+  // const transactions = useMemo(() => {
+  //   if (!action) return []
+  //   return action.transactions.map((tx) =>  )
+  // }, [action])
+
   return {
     ...state,
     tokenIn,
+    network,
     balance,
     product,
     goTo,

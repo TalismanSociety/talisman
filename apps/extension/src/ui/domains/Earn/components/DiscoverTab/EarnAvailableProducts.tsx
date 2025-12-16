@@ -19,8 +19,8 @@ import { useYieldxyzProviders } from "@ui/state/yield"
 
 import { useEarnDepositModal } from "../../deposit/useEarnDepositModal"
 import { useYieldxyzProductsByTokenId } from "../../hooks/useYieldxyzProductsByTokenId"
+import { YieldxyzProviderLogo } from "../../shared/YieldxyzProviderLogo"
 import { EarnTypeBadge } from "../EarnTypeBadge"
-import { YieldxyzProviderLogo } from "../YieldxyzProviderLogo"
 
 export const EarnAvailableProducts: FC<{
   isPopup?: boolean

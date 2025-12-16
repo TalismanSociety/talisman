@@ -1,23 +1,22 @@
-import { useNetwork } from "@talismn/balances-react"
-import { cn } from "@talismn/util"
-import { FC, PropsWithChildren, ReactNode, useMemo } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, ModalDialog } from "talisman-ui"
 
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { YieldxyzProviderLogo } from "@ui/domains/Earn/components/YieldxyzProviderLogo"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
+import { YieldxyzProviderLogo } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 
+import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
 export const EarnDepositStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { address, goTo } = useEarnDepositWizard()
+  const { address, goTo, action } = useEarnDepositWizard()
 
   // if (!address || !tokenIn) return null
 
@@ -65,7 +64,9 @@ export const EarnDepositStepAmount = () => {
             </FormFieldSetRow>
           </FormFieldSet>
         </div>
-        <Button primary>{t("Review")}</Button>
+        <Button primary disabled={!action} onClick={() => goTo("confirm")}>
+          {t("Review")}
+        </Button>
       </div>
     </ModalDialog>
   )
@@ -135,14 +136,13 @@ const EstimatedFee = () => {
 
 const NetworkDisplay = () => {
   const { tokenIn } = useEarnDepositWizard()
-  const network = useNetwork(tokenIn?.networkId)
 
-  if (!network) return null
+  if (!tokenIn) return null
 
   return (
     <div className="text-body flex w-full items-center gap-2 overflow-hidden">
-      <NetworkLogo className="size-8" networkId={tokenIn?.networkId} />
-      <NetworkName className="truncate" networkId={tokenIn?.networkId} />
+      <NetworkLogo className="size-8" networkId={tokenIn.networkId} />
+      <NetworkName className="truncate" networkId={tokenIn.networkId} />
     </div>
   )
 }
@@ -175,36 +175,5 @@ const AvailableBalance = () => {
       isBalance
       tokensClassName="text-body"
     />
-  )
-}
-
-const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({ children, className }) => {
-  return (
-    <div
-      className={cn(
-        "bg-grey-850 flex w-full flex-col justify-center gap-2 rounded p-8 py-4",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  )
-}
-
-const FormFieldSetRow: FC<
-  PropsWithChildren<{ variant?: "xs" | "small" | "default"; label: ReactNode; className?: string }>
-> = ({ variant = "default", label, children, className }) => {
-  return (
-    <div
-      className={cn(
-        "text-body-secondary flex h-12 w-full items-center justify-between gap-4 overflow-hidden",
-        variant === "small" && "h-10 text-sm",
-        variant === "xs" && "h-9 text-xs",
-        className,
-      )}
-    >
-      <div className="shrink-0">{label}</div>
-      <div className="max-w-full truncate">{children}</div>
-    </div>
   )
 }
