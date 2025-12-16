@@ -5,13 +5,15 @@ import {
   subDTaoTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
+import { decodeScale, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
 import { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult, fetchStorageValue } from "../shared"
+import { fetchRuntimeCallResult } from "../shared"
+import { fetchRpcQueryPack, MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
@@ -250,6 +252,83 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   }
 }
 
+const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: string) => {
+  const { builder } = parseMetadataRpc(metadataRpc)
+  return builder.buildStorage(pallet, entry)
+}
+
+const buildRootClaimableStorageCoder = async (
+  connector: IChainConnectorDot,
+  networkId: string,
+  metadataRpc: `0x${string}` | null,
+): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
+  let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
+
+  if (metadataRpc) {
+    try {
+      storageCoder = buildStorageCoder(metadataRpc, "SubtensorModule", "RootClaimable")
+    } catch (cause) {
+      log.warn(
+        `Failed to build storage coder for SubtensorModule.RootClaimable using provided metadata on ${networkId}`,
+        { cause },
+      )
+    }
+  }
+
+  if (!storageCoder) {
+    try {
+      const fullMetadataRpc = await connector.send<`0x${string}`>(
+        networkId,
+        "state_getMetadata",
+        [],
+      )
+      storageCoder = buildStorageCoder(fullMetadataRpc, "SubtensorModule", "RootClaimable")
+    } catch (cause) {
+      log.warn(
+        `Failed to build storage coder for SubtensorModule.RootClaimable from chain metadata on ${networkId}`,
+        { cause },
+      )
+      return null
+    }
+  }
+
+  return storageCoder
+}
+
+const buildRootClaimableQueries = (
+  networkId: string,
+  hotkeys: string[],
+  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>,
+): Array<RpcQueryPack<[string, Map<number, bigint>]>> => {
+  return hotkeys.map((hotkey) => {
+    let stateKey: MaybeStateKey = null
+    try {
+      stateKey = storageCoder.keys.enc(hotkey) as MaybeStateKey
+    } catch (cause) {
+      log.warn(`Failed to encode storage key for hotkey ${hotkey} on ${networkId}`, { cause })
+    }
+
+    const decodeResult = (changes: MaybeStateKey[]): [string, Map<number, bigint>] => {
+      const hexValue = changes[0]
+      if (!hexValue) {
+        return [hotkey, new Map<number, bigint>()]
+      }
+
+      const decoded = decodeScale<[number, bigint][] | null>(
+        storageCoder,
+        hexValue,
+        `Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`,
+      )
+      return [hotkey, decoded ? new Map(decoded) : new Map<number, bigint>()]
+    }
+
+    return {
+      stateKeys: [stateKey],
+      decodeResult,
+    }
+  })
+}
+
 const fetchRootClaimableRates = async (
   connector: IChainConnectorDot,
   networkId: string,
@@ -258,26 +337,20 @@ const fetchRootClaimableRates = async (
 ): Promise<Map<string, Map<number, bigint>>> => {
   if (!hotkeys.length) return new Map<string, Map<number, bigint>>()
 
-  const entries = await Promise.all(
-    hotkeys.map(async (hotkey) => {
-      try {
-        const rootClaimable = await fetchStorageValue<[number, bigint][] | null>(
-          connector,
-          networkId,
-          metadataRpc,
-          "SubtensorModule",
-          "RootClaimable",
-          [hotkey],
-        )
-        return [hotkey, rootClaimable ? new Map(rootClaimable) : new Map()] as const
-      } catch (cause) {
-        log.warn(`Failed to fetch RootClaimable for hotkey ${hotkey} on ${networkId}`, {
-          cause,
-        })
-        return [hotkey, new Map<number, bigint>()] as const
-      }
-    }),
-  )
+  const storageCoder = await buildRootClaimableStorageCoder(connector, networkId, metadataRpc)
+  if (!storageCoder) {
+    // Fallback: return empty map for all hotkeys
+    return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
+  }
 
-  return new Map(entries)
+  const queries = buildRootClaimableQueries(networkId, hotkeys, storageCoder)
+
+  try {
+    const results = await fetchRpcQueryPack(connector, networkId, queries)
+    return new Map(results)
+  } catch (cause) {
+    log.warn(`Failed to fetch RootClaimable for hotkeys on ${networkId}`, { cause })
+    // Fallback: return empty map for all hotkeys
+    return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
+  }
 }
