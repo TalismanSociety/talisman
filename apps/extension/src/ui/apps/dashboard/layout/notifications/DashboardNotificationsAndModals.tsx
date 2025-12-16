@@ -7,6 +7,7 @@ import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { ProductSelectionModal } from "@ui/domains/Earn"
+import { EarnDepositWizardModal } from "@ui/domains/Earn/deposit/EarnDepositModal"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
 import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
@@ -59,6 +60,7 @@ export const DashboardNotificationsAndModals = () => {
       <SwapTokensModal />
       <UnbondModal />
       <SeekBenefitsModal />
+      <EarnDepositWizardModal />
     </Suspense>
   )
 }

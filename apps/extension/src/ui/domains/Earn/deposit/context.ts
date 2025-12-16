@@ -1,0 +1,131 @@
+import { Token } from "@talismn/chaindata-provider"
+import { log } from "extension-shared"
+import { uniq } from "lodash-es"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import { provideContext } from "@talisman/util/provideContext"
+import { useBalance } from "@ui/state"
+import { useYieldxyzProduct } from "@ui/state/yield"
+
+import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
+import { useYieldxyzEnterTransaction } from "./useYieldxyzEnterTransaction"
+
+export type EarnDepositWizardInit = {
+  address?: string
+  tokenId?: string
+  productId?: string
+}
+
+export type EarnDepositWizardState = {
+  step: "product" | "account" | "validator" | "amount" | "review" | "follow-up"
+  address: string | null
+  tokenId: string | null
+  productId: string | null
+  validatorAddress: string | null
+  amountIn: bigint | null
+}
+
+const advanceStep = (state: EarnDepositWizardState): EarnDepositWizardState => {
+  const selectStep = (state: EarnDepositWizardState) => {
+    if (!state.productId) return "product"
+    if (!state.address) return "account"
+    return state.step
+  }
+
+  const step = selectStep(state)
+  return { ...state, step }
+}
+
+const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardState =>
+  advanceStep({
+    step: "amount",
+    address: init?.address ?? null,
+    tokenId: init?.tokenId ?? null,
+    productId: init?.productId ?? null,
+    validatorAddress: null,
+    amountIn: null,
+  })
+
+const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | null }) => {
+  const [state, setState] = useState<EarnDepositWizardState>(() => initializeState(args))
+  const { status, data: product } = useYieldxyzProduct(state.productId)
+  const { getYieldxyzToken } = useGetYieldxyzToken()
+
+  useEffect(() => {
+    log.debug("useEarnDepositWizardProvider args changed", args)
+    // reset state when init changes
+    setState(initializeState(args))
+  }, [args])
+
+  const tokenIn = useMemo(() => {
+    if (!product) return null
+    const tokens = product.inputTokens.map(getYieldxyzToken)
+    if (!tokens.length) return null
+    if (tokens.some((t) => t === null)) return null
+    if (uniq(tokens.map((t) => t!.id)).length > 1) {
+      log.error("Product has multiple different input tokens, which is not supported", {
+        productId: product.id,
+        tokens,
+      })
+      return null
+    }
+    return tokens[0]!
+  }, [product, getYieldxyzToken])
+
+  const balance = useBalance(state.address, tokenIn?.id)
+
+  const {
+    data: action,
+    isLoading: isLoadingAction,
+    error: errorAction,
+  } = useYieldxyzEnterTransaction({
+    address: state.address,
+    yieldId: state.productId,
+    amount: state.amountIn,
+    validatorAddress: state.validatorAddress,
+  })
+
+  const onAmountInChanged = useCallback((amountIn: bigint | null) => {
+    setState((state) => ({ ...state, amountIn }))
+  }, [])
+
+  const onAccountChanged = useCallback((address: string | null) => {
+    setState((state) => advanceStep({ ...state, address, step: "amount" }))
+  }, [])
+
+  const goTo = useCallback((step: EarnDepositWizardState["step"]) => {
+    setState((state) => ({ ...state, step }))
+  }, [])
+
+  useEffect(() => {
+    log.debug("useEarnDepositWizard state changed", {
+      ...state,
+      tokenIn,
+      product,
+      action,
+      isLoadingAction,
+      errorAction,
+    })
+  }, [state, tokenIn, product, action, isLoadingAction, errorAction])
+
+  return {
+    ...state,
+    tokenIn,
+    balance,
+    product,
+    goTo,
+    onAmountInChanged,
+    onAccountChanged,
+    isLoadingProduct: status === "loading" && !product,
+    isLoadingAction,
+    action,
+    errorAction,
+
+    nativeToken: null as Token | null,
+    estimatedFeeTotal: null as bigint | null,
+  }
+}
+
+export const [EarnDepositWizardProvider, useEarnDepositWizard] = provideContext(
+  useEarnDepositWizardProvider,
+)
