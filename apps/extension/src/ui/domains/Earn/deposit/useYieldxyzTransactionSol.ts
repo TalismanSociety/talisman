@@ -1,6 +1,6 @@
-import { UseEarnDepositTransaction } from "./types"
+import { UseYieldxyzTransactionProps } from "./types"
 
-export const useEarnDepositTransactionSol = (_props: UseEarnDepositTransaction) => {
+export const useYieldxyzTransactionSol = (_props: UseYieldxyzTransactionProps | null) => {
   // const [isLocked, setIsLocked] = useState(false)
   // const { account, tokenId } = useDepositWizard()
   // const token = useToken(tokenId)

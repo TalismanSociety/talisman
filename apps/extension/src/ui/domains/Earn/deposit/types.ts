@@ -1,7 +1,8 @@
-export type UseEarnDepositTransaction = {
+import { TransactionDto } from "extension-core"
+
+export type UseYieldxyzTransactionProps = {
   address: string
-  tokenId: string
-  amount: bigint | null
-  productId: string
-  validatorAddress?: string
+  networkId: string
+  transactionDef: TransactionDto
+  lockTransaction?: boolean
 }

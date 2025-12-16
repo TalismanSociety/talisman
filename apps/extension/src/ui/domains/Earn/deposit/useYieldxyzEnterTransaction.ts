@@ -15,7 +15,7 @@ type UseYieldxyzEnterTransactionProps = {
 export const useYieldxyzEnterTransaction = (props: UseYieldxyzEnterTransactionProps) => {
   const product = useYieldxyzProduct(props.yieldId)
 
-  const enterArg = useMemo<ActionArgumentsDto | null>(() => {
+  const args = useMemo<ActionArgumentsDto | null>(() => {
     const expectedArgs = product.data?.mechanics.arguments?.enter
     if (!expectedArgs?.fields.length) return null // there should always be args (at least amount), not sure what to do if missing
 
@@ -49,10 +49,10 @@ export const useYieldxyzEnterTransaction = (props: UseYieldxyzEnterTransactionPr
   }, [product, props.amount, props.validatorAddress])
 
   return useQuery({
-    queryKey: ["yieldxyzEnterTransaction", props.address, props.yieldId, enterArg],
+    queryKey: ["yieldxyzEnterTransaction", props.address, props.yieldId, args],
     queryFn: ({ signal }) => {
-      if (!props.address || !props.yieldId || !enterArg) return null
-      return fetchYieldxyzEnterTransaction(props.yieldId, props.address, enterArg, signal)
+      if (!props.address || !props.yieldId || !args) return null
+      return fetchYieldxyzEnterTransaction(props.yieldId, props.address, args, signal)
     },
   })
 }

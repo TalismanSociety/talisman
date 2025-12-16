@@ -8,7 +8,9 @@ import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
+import { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzEnterTransaction } from "./useYieldxyzEnterTransaction"
+import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
 export type EarnDepositWizardInit = {
   address?: string
@@ -19,9 +21,8 @@ export type EarnDepositWizardInit = {
 export type EarnDepositWizardState = {
   step: "product" | "account" | "validator" | "amount" | "confirm" | "follow-up"
   address: string | null
-  tokenId: string | null
   productId: string | null
-  validatorAddress: string | null
+  validatorAddress: string | null // TODO remove, replace with generic "args"
   amountIn: bigint | null
 }
 
@@ -40,7 +41,6 @@ const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardS
   advanceStep({
     step: "amount",
     address: init?.address ?? null,
-    tokenId: init?.tokenId ?? null,
     productId: init?.productId ?? null,
     validatorAddress: null,
     amountIn: null,
@@ -93,6 +93,15 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     setState((state) => ({ ...state, step }))
   }, [])
 
+  const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
+    if (!action || !state.address || !network) return null
+    const transactionDef = action.transactions.find((tx) => !tx.broadcastedAt) ?? null
+    if (!transactionDef) return null
+    return { address: state.address, networkId: network.id, transactionDef }
+  }, [action, state.address, network])
+
+  const transaction = useYieldxyzTransaction(txInputs)
+
   useEffect(() => {
     log.debug("useEarnDepositWizard state changed", {
       ...state,
@@ -101,13 +110,9 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
       action,
       isLoadingAction,
       errorAction,
+      transaction,
     })
-  }, [state, tokenIn, product, action, isLoadingAction, errorAction])
-
-  // const transactions = useMemo(() => {
-  //   if (!action) return []
-  //   return action.transactions.map((tx) =>  )
-  // }, [action])
+  }, [state, tokenIn, product, action, isLoadingAction, errorAction, transaction])
 
   return {
     ...state,
@@ -122,9 +127,9 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     isLoadingAction,
     action,
     errorAction,
-
-    nativeToken: null as Token | null,
-    estimatedFeeTotal: null as bigint | null,
+    transaction,
+    nativeToken: null as Token | null, // TODO
+    estimatedFeeTotal: null as bigint | null, // TODO
   }
 }
 

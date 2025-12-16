@@ -1,3 +1,4 @@
+import { DEBUG } from "extension-shared"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,9 +9,11 @@ import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
 import { EarnPageHeader } from "./components/EarnPageHeader"
 import { EarnPositionsTab } from "./components/EarnPositionsTab"
 
+const DEFAULT_TAB = DEBUG ? "discover" : "assets"
+
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState<"assets" | "discover">("assets")
+  const [selectedTab, setSelectedTab] = useState<"assets" | "discover">(DEFAULT_TAB)
   const [search, setSearch] = useState("")
 
   return (
