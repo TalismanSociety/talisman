@@ -50,7 +50,7 @@ export const BittensorClaimSettingsToolbarButton: FC<{
       stakeDirection: "bond",
       step: "claim-settings",
     }
-  }, [accounts, balances.each, bittensorNetworkIds])
+  }, [accounts, balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
