@@ -33,7 +33,7 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
 
     const token = balance?.token as SubDTaoToken
 
-    const hasFreeBalance = balance?.free.planck && balance?.free.planck > balance?.locked.planck
+    const hasFreeBalance = !!balance?.free?.planck
 
     return balance && token && hasFreeBalance
       ? {
