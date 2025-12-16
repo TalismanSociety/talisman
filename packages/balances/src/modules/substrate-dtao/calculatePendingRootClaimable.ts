@@ -50,7 +50,7 @@ export const calculatePendingRootClaimable = ({
       netuid: netuid,
       scaledAlphaPrice,
       pendingRootClaim,
-      stake: pendingRootClaim,
+      stake: 0n,
     })
   }
 

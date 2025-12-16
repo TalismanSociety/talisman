@@ -207,18 +207,40 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         scaledAlphaPrice: stake?.scaledAlphaPrice.toString() ?? "0",
       }
 
+      const stakeAmount = BigInt(stake?.stake?.toString() ?? "0")
+      const pendingRootClaimAmount = BigInt(stake?.pendingRootClaim?.toString() ?? "0")
+      const hasZeroStake = stakeAmount === 0n
+      const hasPendingRootClaim = pendingRootClaimAmount > 0n
+
       const balanceValue: AmountWithLabel<string> = {
         type: "free",
         label: stake?.netuid === 0 ? "Root Staking" : `Subnet Staking`,
-        amount: stake?.stake?.toString() ?? "0",
+        amount: stakeAmount.toString(),
         meta,
       }
 
       const pendingRootClaimValue: AmountWithLabel<string> = {
         type: "locked",
         label: "Pending root claim",
-        amount: stake?.pendingRootClaim?.toString() ?? "0",
+        amount: pendingRootClaimAmount.toString(),
         meta,
+      }
+
+      const values: Array<AmountWithLabel<string>> = [balanceValue, pendingRootClaimValue]
+
+      // If stake is 0n but there's a pendingRootClaim, add it as an extra amount
+      // with includeInTotal: true so it counts toward the total balance.
+      // This ensures the balance isn't filtered out when stake is 0n.
+      // The total.planck calculation is: free + reserved + extra (with includeInTotal: true)
+      // So by adding pendingRootClaim as extra, it will be included in total.planck.
+      if (hasZeroStake && hasPendingRootClaim) {
+        values.push({
+          type: "extra",
+          label: "Pending root claim",
+          amount: pendingRootClaimAmount.toString(),
+          includeInTotal: true,
+          meta,
+        })
       }
 
       return {
@@ -227,7 +249,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         tokenId: def.token.id,
         source: MODULE_TYPE,
         status: "live",
-        values: [balanceValue, pendingRootClaimValue],
+        values,
       }
     })
 
