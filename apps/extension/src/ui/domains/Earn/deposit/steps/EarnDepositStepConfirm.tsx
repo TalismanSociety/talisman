@@ -11,16 +11,16 @@ import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shared/FormFieldSet"
-import { YieldxyzTransactionsSteps } from "../../shared/YieldxyzTransactionsSteps"
+import { YieldxyzTransactionsStepper } from "../../shared/YieldxyzTransactionsStepper"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
 export const EarnDepositStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { tokenIn, amountIn, address, network, transaction, goTo } = useEarnDepositWizard()
+  const { tokenIn, amountIn, address, network, product, transaction, goTo } = useEarnDepositWizard()
 
-  if (!tokenIn || !amountIn || !address) throw new Error("TokenIn is not defined")
+  if (!tokenIn || !amountIn || !address || !product) throw new Error("TokenIn is not defined")
 
   return (
     <RiskAnalysisProvider
@@ -33,7 +33,9 @@ export const EarnDepositStepConfirm = () => {
         onCloseClick={close}
       >
         <div className="flex size-full flex-col gap-8 overflow-hidden">
-          <div className="text-center text-lg font-bold">Entering Position</div>
+          <div className="text-md line-clamp-2 w-full text-center font-bold">
+            {product.metadata.description}
+          </div>
           <div className="grow">
             <StepsProgressDisplay />
           </div>
@@ -64,48 +66,8 @@ const StepsProgressDisplay = () => {
 
   if (!action || stepIndex === null) return null
 
-  return (
-    <YieldxyzTransactionsSteps
-      transactions={action.transactions.slice(0, 1)}
-      stepIndex={stepIndex}
-    />
-  )
+  return <YieldxyzTransactionsStepper transactions={action.transactions} stepIndex={stepIndex} />
 }
-
-// const TransactionDetails = () => {
-//   const { action, stepIndex: txIndex, transaction } = useEarnDepositWizard()
-
-//   // const transaction = useMemo(() => action?.transactions[txIndex] ?? null, [action, txIndex])
-//   const transactions = useMemo(() => {
-//     if (!action) return null
-//     return action.transactions.concat().sort((a, b) => {
-//       if (a.stepIndex === undefined) return 0
-//       if (b.stepIndex === undefined) return 0
-//       return a.stepIndex - b.stepIndex
-//     })
-//   }, [action])
-
-//   if (!transactions) return null
-
-//   return (
-//     <div>
-//       {transactions.map((tx, index) => (
-//         <div
-//           key={index}
-//           className={cn(
-//             (txIndex ?? 0) < index ? "text-body-secondary" : "text-body",
-//             txIndex === index ? "font-bold" : "",
-//           )}
-//         >
-//           {tx.title} {tx.status} {tx.broadcastedAt || "-"}
-//         </div>
-//       ))}
-//       <div>nonce: {transaction?.transaction?.nonce ?? "-"}</div>
-//     </div>
-//   )
-
-//   return <div>transaction.title </div>
-// }
 
 const SubmitButton = () => {
   const { t } = useTranslation()
