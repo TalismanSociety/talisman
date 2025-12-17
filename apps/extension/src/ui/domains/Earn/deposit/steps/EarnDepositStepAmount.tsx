@@ -1,10 +1,14 @@
+import { InfoIcon } from "@talismn/icons"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
@@ -13,6 +17,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { useYieldxyzProvider } from "@ui/state/yield"
 
+import { useGetYieldxyzToken } from "../../components/useGetYieldxyzToken"
 import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
@@ -38,7 +43,7 @@ export const EarnDepositStepAmount = () => {
     <WizardModalDialog className="size-full border-none" title="Deposit" onCloseClick={close}>
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
-          <FormFieldSetRow label={t("Account")}>
+          <FormFieldSetRow label={t("Account")} className="h-[2em]">
             <AddressPillButton
               className="!w-full"
               address={address}
@@ -54,15 +59,18 @@ export const EarnDepositStepAmount = () => {
             <FormFieldSetRow label={t("Available Balance")} variant="xs">
               <AvailableBalance />
             </FormFieldSetRow>
+            <FormFieldSetRow label={t("Network")} variant="xs">
+              <NetworkDisplay />
+            </FormFieldSetRow>
           </FormFieldSet>
           <FormFieldSet>
             <FormFieldSetRow label={t("DeFi Product")} variant="xs">
-              <ProductDisplay />
+              {product?.metadata.name ?? ""}
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Provider")} variant="xs">
               <ProviderDisplay />
             </FormFieldSetRow>
-            <FormFieldSetRow label={t("Expected Yield")} variant="xs">
+            <FormFieldSetRow label={t("Expected Rewards")} variant="xs">
               <YieldDisplay />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
@@ -86,20 +94,6 @@ export const EarnDepositStepAmount = () => {
                 <PeriodDisplay period={product.mechanics.cooldownPeriod} />
               </FormFieldSetRow>
             )}
-          </FormFieldSet>
-          <FormFieldSet>
-            <FormFieldSetRow label={t("Network")} variant="xs">
-              <NetworkDisplay />
-            </FormFieldSetRow>
-            {/* <FormFieldSetRow label={t("Transactions Count")} variant="xs">
-              <TransactionsCountDisplay />
-            </FormFieldSetRow>
-            <FormFieldSetRow label={t("Transaction Priority")} variant="xs">
-              <AvailableBalance />
-            </FormFieldSetRow> */}
-            <FormFieldSetRow label={t("Estimated Fee")} variant="xs">
-              <EstimatedFee />
-            </FormFieldSetRow>
           </FormFieldSet>
         </div>
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
@@ -153,18 +147,6 @@ const ClaimMechanismDisplay = () => {
   }, [product, t])
 }
 
-const ProductDisplay = () => {
-  const { product } = useEarnDepositWizard()
-
-  if (!product) return null
-
-  return product.metadata.name
-  // <div className="text-body flex w-full items-center gap-2 overflow-hidden">
-  //   <YieldxyzProviderLogo className="size-8" providerId={product.providerId} />
-  //   <div className="truncate">{}</div>
-  // </div>
-}
-
 const ProviderDisplay = () => {
   const { product } = useEarnDepositWizard()
   const { data: provider } = useYieldxyzProvider(product?.providerId)
@@ -172,13 +154,6 @@ const ProviderDisplay = () => {
   if (!provider) return null
 
   return <YieldxyzProviderDisplay providerId={product?.providerId} className="text-body" />
-
-  // return (
-  //   <div className="text-body flex w-full items-center gap-2 overflow-hidden">
-  //     <YieldxyzProviderLogo className="size-8" providerId={provider.id} />
-  //     <div className="truncate">{provider.name}</div>
-  //   </div>
-  // )
 }
 
 // TODO tooltip to detail rewards from product.rewardRate.components
@@ -196,17 +171,64 @@ const YieldDisplay = () => {
     return `${percent} ${product.rewardRate.rateType}`
   }, [product])
 
+  const { getYieldxyzToken } = useGetYieldxyzToken()
+
+  const rewards = useMemo(() => {
+    return (
+      product?.rewardRate.components.map((component) => ({
+        ...component,
+        talismanToken: getYieldxyzToken(component.token),
+      })) ?? []
+    )
+  }, [product, getYieldxyzToken])
+
   if (!text) return null
 
-  return <div className="text-body">{text}</div>
-}
-
-const EstimatedFee = () => {
-  const { estimatedFeeTotal, nativeToken } = useEarnDepositWizard()
-
-  if (!estimatedFeeTotal || !nativeToken) return null
-
-  return <TokensAndFiat planck={estimatedFeeTotal} tokenId={nativeToken.id} />
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="text-body flex items-center gap-[0.3rem]">
+          <InfoIcon className="inline-block size-[1.2rem] align-sub" />
+          <span>{text}</span>
+        </div>
+      </TooltipTrigger>
+      {!!rewards.length && (
+        <TooltipContent>
+          <div className="text-body flex min-w-[15rem] flex-col gap-2">
+            {rewards.map((reward, idx) => (
+              <div key={idx}>
+                <div className="flex items-center gap-2">
+                  {reward.talismanToken ? (
+                    <TokenLogo
+                      className="size-[1.2em] text-[1.2em]"
+                      tokenId={reward.talismanToken.id}
+                    />
+                  ) : (
+                    <AssetLogo className="size-[1.2em] text-[1.2em]" url={reward.token.logoURI} />
+                  )}
+                  {reward.talismanToken ? (
+                    <TokenDisplaySymbol tokenId={reward.talismanToken.id} />
+                  ) : (
+                    <div>{reward.token.symbol}</div>
+                  )}
+                  <div className="grow"></div>
+                  <div>
+                    {Intl.NumberFormat(undefined, {
+                      style: "percent",
+                      maximumFractionDigits: 1,
+                    }).format(reward.rate)}{" "}
+                    {reward.rateType}
+                  </div>
+                </div>
+                {/* <div>{reward.yieldSource}</div>
+                <div>{reward.description}</div> */}
+              </div>
+            ))}
+          </div>
+        </TooltipContent>
+      )}
+    </Tooltip>
+  )
 }
 
 const NetworkDisplay = () => {
@@ -248,6 +270,7 @@ const AvailableBalance = () => {
       tokenId={tokenIn.id}
       noCountUp
       isBalance
+      className="text-body-secondary"
       tokensClassName="text-body"
     />
   )
