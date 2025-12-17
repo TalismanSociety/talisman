@@ -12,10 +12,10 @@ import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
-import { UseYieldxyzTransactionProps } from "./types"
+import { UseYieldxyzTransactionProps } from "../shared/types"
+import { useYieldxyzTransaction } from "../shared/useYieldxyzTransaction"
 import { useEarnDepositModal } from "./useEarnDepositModal"
 import { useYieldxyzEnterAction } from "./useYieldxyzEnterAction"
-import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
 export type EarnDepositWizardInit = {
   address?: string
