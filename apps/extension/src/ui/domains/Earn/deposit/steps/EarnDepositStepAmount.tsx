@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, ModalDialog } from "talisman-ui"
 
@@ -16,9 +16,19 @@ import { useEarnDepositModal } from "../useEarnDepositModal"
 export const EarnDepositStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { address, goTo, action } = useEarnDepositWizard()
+  const { address, goTo, canCreateAction, createAction } = useEarnDepositWizard()
 
-  // if (!address || !tokenIn) return null
+  const [processing, setProcessing] = useState(false)
+
+  const handleSubmit = async () => {
+    setProcessing(true)
+    try {
+      await createAction()
+      goTo("confirm")
+    } finally {
+      setProcessing(false)
+    }
+  }
 
   return (
     <ModalDialog className="size-full border-none" title="Deposit" onClose={close}>
@@ -64,7 +74,7 @@ export const EarnDepositStepAmount = () => {
             </FormFieldSetRow>
           </FormFieldSet>
         </div>
-        <Button primary disabled={!action} onClick={() => goTo("confirm")}>
+        <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
           {t("Review")}
         </Button>
       </div>

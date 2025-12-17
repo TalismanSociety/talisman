@@ -13,7 +13,7 @@ export const EarnDepositWizardModal: FC = () => {
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
-      <PopupSizeModalContainer id="earn-deposit-modal">
+      <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="EarnDepositModal" />}>
           <EarnDepositWizardProvider args={args}>
             <EarnDepositWizard />
