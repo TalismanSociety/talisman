@@ -39,6 +39,8 @@ export const EarnDepositStepAmount = () => {
     }
   }
 
+  if (!product) return null
+
   return (
     <WizardModalDialog className="size-full border-none" title="Deposit" onCloseClick={close}>
       <div className="flex size-full flex-col gap-8 overflow-hidden">
@@ -76,24 +78,27 @@ export const EarnDepositStepAmount = () => {
             <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
               <ClaimMechanismDisplay />
             </FormFieldSetRow>
-            {!!product?.mechanics.lockupPeriod && (
-              <FormFieldSetRow
-                label={t("Lockup Period")}
-                description={t("Minimum time before exit can be initiated")}
-                variant="xs"
-              >
-                <PeriodDisplay period={product.mechanics.lockupPeriod} />
-              </FormFieldSetRow>
-            )}
-            {!!product?.mechanics.cooldownPeriod && (
-              <FormFieldSetRow
-                label={t("Cooldown Period")}
-                description={t("Time required before exit is allowed")}
-                variant="xs"
-              >
-                <PeriodDisplay period={product.mechanics.cooldownPeriod} />
-              </FormFieldSetRow>
-            )}
+            <FormFieldSetRow
+              label={t("Warmup Period")}
+              description={t("Warmup period before rewards start accruing")}
+              variant="xs"
+            >
+              <PeriodDisplay period={product.mechanics.warmupPeriod} />
+            </FormFieldSetRow>
+            <FormFieldSetRow
+              label={t("Lockup Period")}
+              description={t("Minimum time before exit can be initiated")}
+              variant="xs"
+            >
+              <PeriodDisplay period={product.mechanics.lockupPeriod} />
+            </FormFieldSetRow>
+            <FormFieldSetRow
+              label={t("Cooldown Period")}
+              description={t("Time required before exit is allowed")}
+              variant="xs"
+            >
+              <PeriodDisplay period={product.mechanics.cooldownPeriod} />
+            </FormFieldSetRow>
           </FormFieldSet>
         </div>
         <Button primary disabled={!canCreateAction} processing={processing} onClick={handleSubmit}>
@@ -104,14 +109,15 @@ export const EarnDepositStepAmount = () => {
   )
 }
 
-const PeriodDisplay = ({ period }: { period: TimePeriodDto }) => {
+const PeriodDisplay = ({ period }: { period: TimePeriodDto | undefined }) => {
+  const { t } = useTranslation()
   const locale = useDateFnsLocale()
-  const duration = useMemo(
-    () => intervalToDuration({ start: 0, end: period.seconds * 1000 }),
-    [period.seconds],
-  )
 
-  return formatDuration(duration, { locale })
+  return useMemo(() => {
+    if (!period?.seconds) return t("None")
+    const duration = intervalToDuration({ start: 0, end: period.seconds * 1000 })
+    return formatDuration(duration, { locale })
+  }, [locale, period?.seconds, t])
 }
 
 const ClaimMechanismDisplay = () => {
