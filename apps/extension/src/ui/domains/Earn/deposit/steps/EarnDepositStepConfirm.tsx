@@ -1,4 +1,3 @@
-import { cn } from "@talismn/util"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
@@ -12,6 +11,7 @@ import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shared/FormFieldSet"
+import { YieldxyzTransactionsSteps } from "../../shared/YieldxyzTransactionsSteps"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
@@ -35,7 +35,7 @@ export const EarnDepositStepConfirm = () => {
         <div className="flex size-full flex-col gap-8 overflow-hidden">
           <div className="text-center text-lg font-bold">Entering Position</div>
           <div className="grow">
-            <TransactionDetails />
+            <StepsProgressDisplay />
           </div>
           <FormFieldSet>
             <FormFieldSetRow label={t("Amount")}>
@@ -59,44 +59,57 @@ export const EarnDepositStepConfirm = () => {
   )
 }
 
-const TransactionDetails = () => {
-  const { action, txIndex, transaction } = useEarnDepositWizard()
+const StepsProgressDisplay = () => {
+  const { action, stepIndex } = useEarnDepositWizard()
 
-  // const transaction = useMemo(() => action?.transactions[txIndex] ?? null, [action, txIndex])
-  const transactions = useMemo(() => {
-    if (!action) return null
-    return action.transactions.concat().sort((a, b) => {
-      if (a.stepIndex === undefined) return 0
-      if (b.stepIndex === undefined) return 0
-      return a.stepIndex - b.stepIndex
-    })
-  }, [action])
-
-  if (!transactions) return null
+  if (!action || stepIndex === null) return null
 
   return (
-    <div>
-      {transactions.map((tx, index) => (
-        <div
-          key={index}
-          className={cn(
-            (txIndex ?? 0) < index ? "text-body-secondary" : "text-body",
-            txIndex === index ? "font-bold" : "",
-          )}
-        >
-          {tx.title} {tx.status} {tx.broadcastedAt || "-"}
-        </div>
-      ))}
-      <div>nonce: {transaction?.transaction?.nonce ?? "-"}</div>
-    </div>
+    <YieldxyzTransactionsSteps
+      transactions={action.transactions.slice(0, 1)}
+      stepIndex={stepIndex}
+    />
   )
-
-  return <div>transaction.title </div>
 }
+
+// const TransactionDetails = () => {
+//   const { action, stepIndex: txIndex, transaction } = useEarnDepositWizard()
+
+//   // const transaction = useMemo(() => action?.transactions[txIndex] ?? null, [action, txIndex])
+//   const transactions = useMemo(() => {
+//     if (!action) return null
+//     return action.transactions.concat().sort((a, b) => {
+//       if (a.stepIndex === undefined) return 0
+//       if (b.stepIndex === undefined) return 0
+//       return a.stepIndex - b.stepIndex
+//     })
+//   }, [action])
+
+//   if (!transactions) return null
+
+//   return (
+//     <div>
+//       {transactions.map((tx, index) => (
+//         <div
+//           key={index}
+//           className={cn(
+//             (txIndex ?? 0) < index ? "text-body-secondary" : "text-body",
+//             txIndex === index ? "font-bold" : "",
+//           )}
+//         >
+//           {tx.title} {tx.status} {tx.broadcastedAt || "-"}
+//         </div>
+//       ))}
+//       <div>nonce: {transaction?.transaction?.nonce ?? "-"}</div>
+//     </div>
+//   )
+
+//   return <div>transaction.title </div>
+// }
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { transaction, pendingTx, onSubmit, txIndex, action } = useEarnDepositWizard()
+  const { transaction, pendingTx, onSubmit, stepIndex: txIndex, action } = useEarnDepositWizard()
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!transaction?.transaction) return null

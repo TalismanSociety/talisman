@@ -223,7 +223,7 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     isLoadingAction,
     action,
     errorAction,
-    txIndex: stepIndex,
+    stepIndex,
     transaction,
     pendingTx,
     nativeToken: null as Token | null, // TODO
