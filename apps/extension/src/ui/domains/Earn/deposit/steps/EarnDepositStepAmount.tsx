@@ -1,3 +1,5 @@
+import { formatDuration } from "date-fns"
+import { TimePeriodDto } from "extension-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
@@ -5,9 +7,11 @@ import { Button, WizardModalDialog } from "talisman-ui"
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
-import { YieldxyzProviderLogo } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
+import { YieldxyzProviderDisplay } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useYieldxyzProvider } from "@ui/state/yield"
 
 import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
 import { useEarnDepositWizard } from "../context"
@@ -16,7 +20,7 @@ import { useEarnDepositModal } from "../useEarnDepositModal"
 export const EarnDepositStepAmount = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { address, goTo, canCreateAction, createAction } = useEarnDepositWizard()
+  const { address, goTo, canCreateAction, createAction, product } = useEarnDepositWizard()
 
   const [processing, setProcessing] = useState(false)
 
@@ -55,9 +59,33 @@ export const EarnDepositStepAmount = () => {
             <FormFieldSetRow label={t("DeFi Product")} variant="xs">
               <ProductDisplay />
             </FormFieldSetRow>
+            <FormFieldSetRow label={t("Provider")} variant="xs">
+              <ProviderDisplay />
+            </FormFieldSetRow>
             <FormFieldSetRow label={t("Expected Yield")} variant="xs">
               <YieldDisplay />
             </FormFieldSetRow>
+            <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
+              <ClaimMechanismDisplay />
+            </FormFieldSetRow>
+            {!!product?.mechanics.lockupPeriod && (
+              <FormFieldSetRow
+                label={t("Lockup Period")}
+                description={t("Minimum time before exit can be initiated")}
+                variant="xs"
+              >
+                <PeriodDisplay period={product.mechanics.lockupPeriod} />
+              </FormFieldSetRow>
+            )}
+            {!!product?.mechanics.cooldownPeriod && (
+              <FormFieldSetRow
+                label={t("Cooldown Period")}
+                description={t("Time required before exit is allowed")}
+                variant="xs"
+              >
+                <PeriodDisplay period={product.mechanics.cooldownPeriod} />
+              </FormFieldSetRow>
+            )}
           </FormFieldSet>
           <FormFieldSet>
             <FormFieldSetRow label={t("Network")} variant="xs">
@@ -82,38 +110,70 @@ export const EarnDepositStepAmount = () => {
   )
 }
 
-// const TransactionsCountDisplay = () => {
-//   const { action } = useEarnDepositWizard()
+const PeriodDisplay = ({ period }: { period: TimePeriodDto }) => {
+  const locale = useDateFnsLocale()
+  return formatDuration(period, { locale })
+}
 
-//   if (!action) return null
+const ClaimMechanismDisplay = () => {
+  const { t } = useTranslation()
 
-//   return (
-//     <Tooltip>
-//       <TooltipTrigger asChild>
-//         <div className="text-body">{action.transactions.length}</div>
-//       </TooltipTrigger>
-//       <TooltipContent>
-//         {action.transactions.map((tx, index) => (
-//           <div key={index} className="text-xs">
-//             {tx.title}
-//           </div>
-//         ))}
-//       </TooltipContent>
-//     </Tooltip>
-//   )
-// }
+  const { product } = useEarnDepositWizard()
+
+  return useMemo(() => {
+    if (!product) return null
+
+    const mode = product.mechanics.rewardClaiming === "auto" ? t("Automatic") : t("Manual")
+
+    switch (product.mechanics.rewardSchedule) {
+      case "block":
+        return t(`{{mode}} every block`, { mode })
+      case "campaign":
+        return t(`{{mode}} every campaign`, { mode })
+      case "day":
+        return t(`{{mode}} daily`, { mode })
+      case "week":
+        return t(`{{mode}} weekly`, { mode })
+      case "month":
+        return t(`{{mode}} monthly`, { mode })
+      case "epoch":
+        return t(`{{mode}} every epoch`, { mode })
+      case "era":
+        return t(`{{mode}} every era`, { mode })
+      case "hour":
+        return t(`{{mode}} hourly`, { mode })
+    }
+
+    return
+  }, [product, t])
+}
 
 const ProductDisplay = () => {
   const { product } = useEarnDepositWizard()
 
   if (!product) return null
 
-  return (
-    <div className="text-body flex w-full items-center gap-2 overflow-hidden">
-      <YieldxyzProviderLogo className="size-8" providerId={product.providerId} />
-      <div className="truncate">{product.metadata.name}</div>
-    </div>
-  )
+  return product.metadata.name
+  // <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+  //   <YieldxyzProviderLogo className="size-8" providerId={product.providerId} />
+  //   <div className="truncate">{}</div>
+  // </div>
+}
+
+const ProviderDisplay = () => {
+  const { product } = useEarnDepositWizard()
+  const { data: provider } = useYieldxyzProvider(product?.providerId)
+
+  if (!provider) return null
+
+  return <YieldxyzProviderDisplay providerId={product?.providerId} className="text-body" />
+
+  // return (
+  //   <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+  //     <YieldxyzProviderLogo className="size-8" providerId={provider.id} />
+  //     <div className="truncate">{provider.name}</div>
+  //   </div>
+  // )
 }
 
 // TODO tooltip to detail rewards from product.rewardRate.components

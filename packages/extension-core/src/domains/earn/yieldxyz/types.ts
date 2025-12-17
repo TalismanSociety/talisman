@@ -28,6 +28,7 @@ export type {
   YieldsControllerGetYieldValidators200,
   ArgumentFieldDto,
   ActionArgumentsDto,
+  TimePeriodDto,
 } from "@yieldxyz/sdk"
 
 // Extend SDK params to support comma-separated inputToken values

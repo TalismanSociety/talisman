@@ -1,5 +1,7 @@
+import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { FC, PropsWithChildren, ReactNode } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({
   children,
@@ -21,21 +23,40 @@ export const FormFieldSetRow: FC<
   PropsWithChildren<{
     variant?: "xs" | "small" | "default"
     label: ReactNode
+    description?: string
     className?: string
     labelClassName?: string
     valueClassName?: string
   }>
-> = ({ variant = "default", label, children, className, labelClassName, valueClassName }) => {
+> = ({
+  variant = "default",
+  label,
+  description,
+  children,
+  className,
+  labelClassName,
+  valueClassName,
+}) => {
   return (
     <div
       className={cn(
-        "text-body-secondary flex h-16 w-full items-center justify-between gap-4 overflow-hidden",
-        variant === "small" && "h-12 text-sm",
-        variant === "xs" && "h-10 text-xs",
+        "text-body-secondary flex h-[1.5em] w-full items-center justify-between gap-4 overflow-hidden text-base",
+        variant === "small" && "text-sm",
+        variant === "xs" && "text-xs",
         className,
       )}
     >
-      <div className={cn("shrink-0", labelClassName)}>{label}</div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className={cn("shrink-0", labelClassName)}>
+            <span>{label}</span>
+            {!!description && (
+              <InfoIcon className="ml-[0.5em] inline-block size-[1.2em] align-sub" />
+            )}
+          </div>
+        </TooltipTrigger>
+        {!!description && <TooltipContent>{description}</TooltipContent>}
+      </Tooltip>
       <div className={cn("text-body max-w-full truncate", valueClassName)}>{children}</div>
     </div>
   )
