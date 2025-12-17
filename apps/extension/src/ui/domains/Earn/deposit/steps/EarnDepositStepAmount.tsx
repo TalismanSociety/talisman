@@ -1,4 +1,4 @@
-import { formatDuration } from "date-fns"
+import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -112,7 +112,12 @@ export const EarnDepositStepAmount = () => {
 
 const PeriodDisplay = ({ period }: { period: TimePeriodDto }) => {
   const locale = useDateFnsLocale()
-  return formatDuration(period, { locale })
+  const duration = useMemo(
+    () => intervalToDuration({ start: 0, end: period.seconds * 1000 }),
+    [period.seconds],
+  )
+
+  return formatDuration(duration, { locale })
 }
 
 const ClaimMechanismDisplay = () => {
