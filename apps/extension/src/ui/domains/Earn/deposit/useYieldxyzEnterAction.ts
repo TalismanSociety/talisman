@@ -83,6 +83,7 @@ export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) 
         subtitle: (err as Error).message ?? err?.toString(),
       })
       setState({ isLoading: false, error: err as Error, action: null })
+      throw err
     }
   }, [args, props.address, props.yieldId])
 
@@ -98,6 +99,7 @@ export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) 
     } catch (err) {
       log.error("Failed to refresh Yieldxyz action", err)
       setState((state) => ({ ...state, isLoading: false, error: err as Error }))
+      throw err
     }
   }, [state.action])
 
@@ -123,6 +125,7 @@ export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) 
           subtitle: (err as Error).message ?? err?.toString(),
         })
         setState((state) => ({ ...state, isLoading: false, error: err as Error }))
+        throw err
       }
     },
     [state.action],

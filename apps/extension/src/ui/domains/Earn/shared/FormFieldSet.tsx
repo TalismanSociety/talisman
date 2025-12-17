@@ -29,9 +29,9 @@ export const FormFieldSetRow: FC<
   return (
     <div
       className={cn(
-        "text-body-secondary flex h-12 w-full items-center justify-between gap-4 overflow-hidden",
-        variant === "small" && "h-10 text-sm",
-        variant === "xs" && "h-9 text-xs",
+        "text-body-secondary flex h-16 w-full items-center justify-between gap-4 overflow-hidden",
+        variant === "small" && "h-12 text-sm",
+        variant === "xs" && "h-10 text-xs",
         className,
       )}
     >

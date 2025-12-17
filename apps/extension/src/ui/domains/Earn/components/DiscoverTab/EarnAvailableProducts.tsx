@@ -33,85 +33,12 @@ export const EarnAvailableProducts: FC<{
   {
     useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
     const { t } = useTranslation()
-    // const navigate = useNavigate()
 
-    // // Modal state management
-    // const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false)
-    // const [isValidatorPickerOpen, setIsValidatorPickerOpen] = useState(false)
-    // const [isDepositModalOpen, setIsDepositModalOpen] = useState(false)
-    // const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-    // const [selectedProduct, setSelectedProduct] = useState<YieldDto | null>(null)
-    // const [selectedValidator, setSelectedValidator] = useState<string | null>(null)
-    // const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
-    // const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
-
-    // Modal callbacks
-    // const handleValidatorSelect = useCallback(
-    //   (validator: { address: string }) => {
-    //     setSelectedValidator(validator.address)
-    //     setIsValidatorPickerOpen(false)
-
-    //     // Always show account picker after validator selection
-    //     if (IS_POPUP) {
-    //       navigate(
-    //         `/select-product/select-account?tokenId=${encodeURIComponent(selectedTokenId || "")}&productId=${encodeURIComponent(selectedProduct?.id || "")}&validatorAddress=${encodeURIComponent(validator.address)}`,
-    //       )
-    //     } else {
-    //       setIsAccountPickerOpen(true)
-    //     }
-    //   },
-    //   [navigate, selectedTokenId, selectedProduct?.id],
-    // )
-
-    // const handleAccountSelect = useCallback(
-    //   (address: string) => {
-    //     setSelectedAccount(address)
-    //     setIsAccountPickerOpen(false)
-
-    //     if (IS_POPUP) {
-    //       // Navigate to deposit amount page without account in URL (account is stored in local state)
-    //       const params = new URLSearchParams({
-    //         tokenId: selectedTokenId || "",
-    //         productId: selectedProduct?.id || "",
-    //       })
-    //       if (selectedValidator) {
-    //         params.set("validatorAddress", selectedValidator)
-    //       }
-    //       navigate(`/select-product/deposit/amount?${params.toString()}`)
-    //     } else {
-    //       // Open deposit modal in dashboard mode
-    //       setIsDepositModalOpen(true)
-    //     }
-    //   },
-    //   [navigate, selectedTokenId, selectedProduct?.id, selectedValidator],
-    // )
-
-    // const handleDepositNext = useCallback(() => {
-    //   setIsDepositModalOpen(false)
-    //   setIsConfirmModalOpen(true)
-    // }, [])
-
-    // const handleDepositClose = useCallback(() => {
-    //   setIsDepositModalOpen(false)
-    //   setSelectedProduct(null)
-    //   setSelectedValidator(null)
-    //   setSelectedAccount(null)
-    //   setSelectedTokenId(null)
-    // }, [])
-
-    // const handleConfirmClose = useCallback(() => {
-    //   setIsConfirmModalOpen(false)
-    //   setSelectedProduct(null)
-    //   setSelectedValidator(null)
-    //   setSelectedAccount(null)
-    //   setSelectedTokenId(null)
-    // }, [])
-
-    const { status, data: tokenProducts } = useYieldxyzProductsByTokenId()
+    const { status, data: products } = useYieldxyzProductsByTokenId()
 
     return (
       <div className="flex w-full flex-col gap-4 overflow-hidden">
-        {tokenProducts?.map(({ tokenId, products, bestApr, balances }) => (
+        {products?.map(({ tokenId, products, bestApr, balances }) => (
           <TokenProducts
             key={tokenId}
             products={products}
@@ -122,56 +49,11 @@ export const EarnAvailableProducts: FC<{
           />
         ))}
         {status === "loading" && <TokenProductsShimmer />}
-        {status === "success" && !tokenProducts?.length && (
+        {status === "success" && !products?.length && (
           <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
             {t("There are no yield opportunities available for your tokens")}
           </div>
         )}
-
-        {/* Modals for dashboard mode */}
-        {/* {!IS_POPUP && (
-          <>
-            <ValidatorPicker
-              isOpen={isValidatorPickerOpen}
-              yieldId={selectedProduct?.id || ""}
-              onDismiss={() => {
-                setIsValidatorPickerOpen(false)
-                setSelectedProduct(null)
-                setSelectedTokenId(null)
-              }}
-              onSelect={handleValidatorSelect}
-            />
-
-            <EarnAccountPicker
-              isOpen={isAccountPickerOpen}
-              tokenId={selectedTokenId || ""}
-              onDismiss={() => setIsAccountPickerOpen(false)}
-              onSelect={handleAccountSelect}
-            />
-
-            {selectedProduct && (
-              <DepositModal
-                isOpen={isDepositModalOpen}
-                onClose={handleDepositClose}
-                onNext={handleDepositNext}
-                account={selectedAccount || ""}
-                tokenId={selectedTokenId || ""}
-                productId={selectedProduct.id}
-                validatorAddress={selectedValidator || undefined}
-              />
-            )}
-
-            {selectedProduct && (
-              <ConfirmDepositModal
-                isOpen={isConfirmModalOpen}
-                onClose={handleConfirmClose}
-                account={selectedAccount || ""}
-                tokenId={selectedTokenId || ""}
-                productId={selectedProduct.id}
-              />
-            )}
-          </>
-        )} */}
       </div>
     )
   }

@@ -117,6 +117,11 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     setStepIndex(firstTx?.stepIndex ?? 0)
   }, [action, stepIndex])
 
+  useEffect(() => {
+    // reset in case we go back to amount form
+    if (state.step !== "confirm") setStepIndex(null)
+  }, [state.step])
+
   const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
     if (!action || !state.address || !network || stepIndex === null) return null
     const transactionDef = action.transactions[stepIndex] ?? null

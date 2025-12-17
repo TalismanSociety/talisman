@@ -40,7 +40,7 @@ export const useYieldxyzProductsByTokenId = (): Loadable<
     // keep only products for which we have all input tokens
     const oppsByTokenId =
       products.data
-        ?.filter((o) => o.rewardRate.total) // a bunch are 0 reward while they are "under maintenance"
+        ?.filter((p) => p.rewardRate.total && p.statistics?.tvl) // a bunch are 0 reward while they are "under maintenance"
         .filter((product) => {
           const inputTokenIds = product.inputTokens
             ?.map((inputToken) => {

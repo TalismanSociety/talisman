@@ -1,7 +1,7 @@
 import { cn } from "@talismn/util"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
+import { Button, WizardModalDialog } from "talisman-ui"
 import { TransactionRequest } from "viem"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -18,7 +18,7 @@ import { useEarnDepositModal } from "../useEarnDepositModal"
 export const EarnDepositStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { tokenIn, amountIn, address, network, transaction } = useEarnDepositWizard()
+  const { tokenIn, amountIn, address, network, transaction, goTo } = useEarnDepositWizard()
 
   if (!tokenIn || !amountIn || !address) throw new Error("TokenIn is not defined")
 
@@ -26,7 +26,12 @@ export const EarnDepositStepConfirm = () => {
     <RiskAnalysisProvider
       riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
     >
-      <ModalDialog className="size-full border-none" title={t("Confirm Deposit")} onClose={close}>
+      <WizardModalDialog
+        className="size-full border-none"
+        title={t("Confirm Deposit")}
+        onBackClick={() => goTo("amount")}
+        onCloseClick={close}
+      >
         <div className="flex size-full flex-col gap-8 overflow-hidden">
           <div className="text-center text-lg font-bold">Entering Position</div>
           <div className="grow">
@@ -49,7 +54,7 @@ export const EarnDepositStepConfirm = () => {
           </FormFieldSet>
           <SubmitButton />
         </div>
-      </ModalDialog>
+      </WizardModalDialog>
     </RiskAnalysisProvider>
   )
 }

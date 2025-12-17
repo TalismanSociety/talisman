@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, ModalDialog } from "talisman-ui"
+import { Button, WizardModalDialog } from "talisman-ui"
 
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -31,7 +31,7 @@ export const EarnDepositStepAmount = () => {
   }
 
   return (
-    <ModalDialog className="size-full border-none" title="Deposit" onClose={close}>
+    <WizardModalDialog className="size-full border-none" title="Deposit" onCloseClick={close}>
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")}>
@@ -78,7 +78,7 @@ export const EarnDepositStepAmount = () => {
           {t("Review")}
         </Button>
       </div>
-    </ModalDialog>
+    </WizardModalDialog>
   )
 }
 
