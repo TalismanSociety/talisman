@@ -5,7 +5,7 @@ import { Suspense } from "react"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
-import { BondAccountPillButton } from "../../../Bond/BondAccountPillButton"
+import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { AssetPill } from "./AssetPill"
 
 type BittensorAssetAccountSummaryProps = {

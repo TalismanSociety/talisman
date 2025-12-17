@@ -32,10 +32,10 @@ import { useToken } from "@ui/state"
 
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 

@@ -29,10 +29,10 @@ import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useToken } from "@ui/state"
 
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 
 type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
 

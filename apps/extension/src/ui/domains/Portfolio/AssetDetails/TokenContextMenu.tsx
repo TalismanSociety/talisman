@@ -1,4 +1,3 @@
-import { Balances } from "@talismn/balances"
 import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
@@ -95,7 +94,6 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
 
 type Props = {
   tokenId: TokenId
-  balances: Balances
   placement?: PopoverOptions["placement"]
   trigger?: React.ReactNode
   className?: string

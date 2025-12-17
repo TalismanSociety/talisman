@@ -14,13 +14,13 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useAccountByAddress, useSelectedCurrency } from "@ui/state"
 
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
   BittensorStakingPosition,
   useBittensorStakingPositions,
 } from "../../hooks/useBittensorStakingPositions"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 
