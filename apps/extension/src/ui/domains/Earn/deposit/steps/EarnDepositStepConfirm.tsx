@@ -146,9 +146,9 @@ const NetworkDisplay = () => {
 }
 
 const NetworkFeeRow = () => {
-  const { transaction } = useEarnDepositWizard()
+  const { network } = useEarnDepositWizard()
 
-  switch (transaction?.platform) {
+  switch (network?.platform) {
     case "ethereum":
       return <NetworkFeeRowEth />
     default:
