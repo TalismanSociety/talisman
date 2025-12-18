@@ -1,24 +1,20 @@
-import { InfoIcon } from "@talismn/icons"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
+import { Button, WizardModalDialog } from "talisman-ui"
 
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useYieldxyzProvider } from "@ui/state/yield"
 
-import { useGetYieldxyzToken } from "../../components/useGetYieldxyzToken"
 import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
+import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
+import { YieldxyzProductYieldDisplay } from "../components/YieldyxProductYieldDisplay"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
@@ -42,7 +38,11 @@ export const EarnDepositStepAmount = () => {
   if (!product) return null
 
   return (
-    <WizardModalDialog className="size-full border-none" title="Deposit" onCloseClick={close}>
+    <WizardModalDialog
+      className="size-full border-none"
+      title={"Enter Position"}
+      onCloseClick={close}
+    >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
@@ -67,13 +67,13 @@ export const EarnDepositStepAmount = () => {
           </FormFieldSet>
           <FormFieldSet>
             <FormFieldSetRow label={t("DeFi Product")} variant="xs">
-              {product?.metadata.name ?? ""}
+              <YieldxyzProductTitleDisplay product={product} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Provider")} variant="xs">
-              <ProviderDisplay />
+              <YieldxyzProviderDisplay providerId={product.providerId} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Expected Rewards")} variant="xs">
-              <YieldDisplay />
+              <YieldxyzProductYieldDisplay product={product} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
               <ClaimMechanismDisplay />
@@ -151,90 +151,6 @@ const ClaimMechanismDisplay = () => {
 
     return
   }, [product, t])
-}
-
-const ProviderDisplay = () => {
-  const { product } = useEarnDepositWizard()
-  const { data: provider } = useYieldxyzProvider(product?.providerId)
-
-  if (!provider) return null
-
-  return <YieldxyzProviderDisplay providerId={product?.providerId} className="text-body" />
-}
-
-// TODO tooltip to detail rewards from product.rewardRate.components
-const YieldDisplay = () => {
-  const { product } = useEarnDepositWizard()
-
-  const text = useMemo(() => {
-    if (!product) return null
-
-    const percent = Intl.NumberFormat(undefined, {
-      style: "percent",
-      maximumFractionDigits: 1,
-    }).format(product.rewardRate.total)
-
-    return `${percent} ${product.rewardRate.rateType}`
-  }, [product])
-
-  const { getYieldxyzToken } = useGetYieldxyzToken()
-
-  const rewards = useMemo(() => {
-    return (
-      product?.rewardRate.components.map((component) => ({
-        ...component,
-        talismanToken: getYieldxyzToken(component.token),
-      })) ?? []
-    )
-  }, [product, getYieldxyzToken])
-
-  if (!text) return null
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="text-body flex items-center gap-[0.3rem]">
-          <InfoIcon className="inline-block size-[1.2rem] align-sub" />
-          <span>{text}</span>
-        </div>
-      </TooltipTrigger>
-      {!!rewards.length && (
-        <TooltipContent>
-          <div className="text-body flex min-w-[15rem] flex-col gap-2">
-            {rewards.map((reward, idx) => (
-              <div key={idx}>
-                <div className="flex items-center gap-2">
-                  {reward.talismanToken ? (
-                    <TokenLogo
-                      className="size-[1.2em] text-[1.2em]"
-                      tokenId={reward.talismanToken.id}
-                    />
-                  ) : (
-                    <AssetLogo className="size-[1.2em] text-[1.2em]" url={reward.token.logoURI} />
-                  )}
-                  {reward.talismanToken ? (
-                    <TokenDisplaySymbol tokenId={reward.talismanToken.id} />
-                  ) : (
-                    <div>{reward.token.symbol}</div>
-                  )}
-                  <div className="grow"></div>
-                  <div>
-                    {Intl.NumberFormat(undefined, {
-                      style: "percent",
-                      maximumFractionDigits: 1,
-                    }).format(reward.rate)}{" "}
-                    {reward.rateType}
-                  </div>
-                </div>
-                {/* <div>{reward.yieldSource}</div>
-                <div>{reward.description}</div> */}
-              </div>
-            ))}
-          </div>
-        </TooltipContent>
-      )}
-    </Tooltip>
-  )
 }
 
 const NetworkDisplay = () => {

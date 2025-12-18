@@ -5,22 +5,28 @@ import { TransactionRequest } from "viem"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shared/FormFieldSet"
+import { YieldxyzProviderDisplay } from "../../shared/YieldxyzProviderLogo"
 import { YieldxyzTransactionsStepper } from "../../shared/YieldxyzTransactionsStepper"
+import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
+import { YieldxyzProductYieldDisplay } from "../components/YieldyxProductYieldDisplay"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
 export const EarnDepositStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useEarnDepositModal()
-  const { tokenIn, amountIn, address, network, product, transaction, goTo } = useEarnDepositWizard()
+  const { tokenIn, amountIn, address, action, network, product, transaction, goTo } =
+    useEarnDepositWizard()
 
-  if (!tokenIn || !amountIn || !address || !product) throw new Error("TokenIn is not defined")
+  if (!tokenIn || !amountIn || !address || !product || !action) return null
 
   return (
     <RiskAnalysisProvider
@@ -28,15 +34,17 @@ export const EarnDepositStepConfirm = () => {
     >
       <WizardModalDialog
         className="size-full border-none"
-        title={t("Confirm Deposit")}
+        title={t("Enter Position")}
         onBackClick={() => goTo("amount")}
         onCloseClick={close}
       >
         <div className="flex size-full flex-col gap-8 overflow-hidden">
           <div className="text-md line-clamp-2 w-full text-center font-bold">
-            {product.metadata.description}
+            {action.transactions.length > 1
+              ? t("Approve {{count}} Transactions", { count: action.transactions.length })
+              : t("Approve Transaction")}
           </div>
-          <div className="grow">
+          <div className="flex grow flex-col justify-center">
             <StepsProgressDisplay />
           </div>
           <FormFieldSet>
@@ -50,8 +58,19 @@ export const EarnDepositStepConfirm = () => {
               />
             </FormFieldSetRow>
             <FormFieldSetSeparator />
-            <FormFieldSetRow label={t("APY")}>12%</FormFieldSetRow>
+            <FormFieldSetRow label={t("DeFi Product")} variant="small">
+              <YieldxyzProductTitleDisplay product={product} />
+            </FormFieldSetRow>
+            <FormFieldSetRow label={t("Provider")} variant="small">
+              <YieldxyzProviderDisplay providerId={product.providerId} />
+            </FormFieldSetRow>
+            <FormFieldSetRow label={t("Expected Rewards")} variant="small">
+              <YieldxyzProductYieldDisplay product={product} />
+            </FormFieldSetRow>
             <FormFieldSetSeparator />
+            <FormFieldSetRow label={t("Network")} variant="small">
+              <NetworkDisplay />
+            </FormFieldSetRow>
             <NetworkFeeRow />
           </FormFieldSet>
           <SubmitButton />
@@ -116,6 +135,19 @@ const SubmitButton = () => {
       className="w-full"
       onSubmit={handleSubmit}
     />
+  )
+}
+
+const NetworkDisplay = () => {
+  const { tokenIn } = useEarnDepositWizard()
+
+  if (!tokenIn) return null
+
+  return (
+    <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+      <NetworkLogo className="size-8" networkId={tokenIn.networkId} />
+      <NetworkName className="truncate" networkId={tokenIn.networkId} />
+    </div>
   )
 }
 
