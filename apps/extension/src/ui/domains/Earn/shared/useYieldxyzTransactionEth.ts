@@ -1,4 +1,3 @@
-import { evmNativeTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
 import { TransactionDto } from "extension-core"
@@ -46,14 +45,8 @@ const deserializeYieldxyzEthTransaction = (
 }
 
 export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | null) => {
-  const network = useNetworkById(props?.networkId, "ethereum")
-
-  const feeTokenId = useMemo(
-    () => (props?.networkId ? evmNativeTokenId(props?.networkId) : null),
-    [props?.networkId],
-  )
-
   const publicClient = usePublicClient(props?.networkId)
+  const network = useNetworkById(props?.networkId, "ethereum")
 
   // we need to refresh nonce every time the transaction changes, because useEthTransaction wont do it
   const { data: nonce } = useQuery({
@@ -81,12 +74,12 @@ export const useYieldxyzTransactionEth = (props: UseYieldxyzTransactionProps | n
     disableCriticalPane: true,
   })
 
-  if (!network || !feeTokenId) return null
+  if (!network) return null
 
   return {
     platform: "ethereum" as const,
     networkId: network.id,
-    feeTokenId,
+    feeTokenId: network.nativeTokenId,
     riskAnalysis,
     ...result,
   }
