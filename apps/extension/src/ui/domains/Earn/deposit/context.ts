@@ -158,10 +158,10 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
 
   // TODO make its own hook
   useQuery({
-    queryKey: ["yieldxyz", "follow-up", pendingTxId],
+    queryKey: ["yieldxyz", "follow-up", pendingTx],
     enabled: ["BROADCASTED", "PENDING"].includes(pendingTx?.status ?? ""), // + check
     queryFn: async () => {
-      if (!pendingTxId) return null
+      if (!pendingTx) return null
       await refreshAction()
       return null
     },
