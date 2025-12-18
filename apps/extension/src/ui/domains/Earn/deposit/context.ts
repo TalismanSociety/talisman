@@ -107,7 +107,7 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     if (isOpen) close()
   }, [close, isOpen])
 
-  const { stepIndex, transaction, isProcessing, reset, onSubmit } = useYieldxyzTransactionManager({
+  const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
     action,
     address: state.address,
     networkId: tokenIn?.networkId ?? null,
@@ -115,11 +115,6 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     submitActionTransaction,
     onCompleted,
   })
-
-  useEffect(() => {
-    // reset manager in case we go back to amount form
-    if (state.step !== "confirm") reset()
-  }, [reset, state.step])
 
   useEffect(() => {
     log.debug("useEarnDepositWizard state changed", {

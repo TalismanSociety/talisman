@@ -33,16 +33,19 @@ export const useYieldxyzTransactionManager = ({
   onCompleted,
 }: UseYieldxyzTransactionManagerProps) => {
   const { t } = useTranslation()
-  const [stepIndex, setStepIndex] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pendingTxId, setPendingTxId] = useState<string | null>(null)
 
+  const nextTransaction = useMemo(() => {
+    return action?.transactions.find((tx) => !["CONFIRMED", "SKIPPED"].includes(tx.status)) ?? null
+  }, [action])
+
+  const stepIndex = useMemo(() => nextTransaction?.stepIndex ?? null, [nextTransaction])
+
   const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
-    if (!action || !address || !networkId || stepIndex === null) return null
-    const transactionDef = action.transactions[stepIndex] ?? null
-    if (!transactionDef) return null
-    return { address, networkId: networkId, transactionDef }
-  }, [action, address, networkId, stepIndex])
+    if (!address || !networkId || !nextTransaction) return null
+    return { address, networkId, transaction: nextTransaction }
+  }, [address, networkId, nextTransaction])
 
   const transaction = useYieldxyzTransaction(txInputs)
 
@@ -50,10 +53,6 @@ export const useYieldxyzTransactionManager = ({
     () => action?.transactions.find((tx) => tx.id === pendingTxId) ?? null,
     [action, pendingTxId],
   )
-
-  const reset = useCallback(() => {
-    setStepIndex(null)
-  }, [])
 
   const onSubmit = useCallback(
     async (txId: string) => {
@@ -95,7 +94,7 @@ export const useYieldxyzTransactionManager = ({
           subtitle: t("Transaction confirmed"),
         })
         setPendingTxId(null)
-        setStepIndex((index) => (index ?? 0) + 1)
+        // setStepIndex((index) => (index ?? 0) + 1)
         break
       case "BLOCKED":
       case "NOT_FOUND":
@@ -116,25 +115,13 @@ export const useYieldxyzTransactionManager = ({
 
   // signal parent wizard that all transactions are done
   useEffect(() => {
-    if (action?.transactions.every((tx) => ["CONFIRMED", "SKIPPED"].includes(tx.status)))
-      onCompleted()
-  }, [action, onCompleted])
-
-  // resets stepIndex when action is changed
-  useEffect(() => {
-    if (!action || typeof stepIndex === "number") return
-
-    // initialize to first non-skipped transaction (ex: if approval is already done, it's a skip)
-    const firstTx = action.transactions.find((tx) => tx.status !== "SKIPPED")
-    setStepIndex(firstTx?.stepIndex ?? 0)
-  }, [action, stepIndex])
+    if (action && !nextTransaction) onCompleted()
+  }, [action, nextTransaction, onCompleted])
 
   return {
     stepIndex,
     transaction,
     isProcessing: isSubmitting || !!pendingTx,
-    setStepIndex,
-    reset,
     onSubmit,
   }
 }
