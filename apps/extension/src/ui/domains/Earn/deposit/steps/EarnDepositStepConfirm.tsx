@@ -81,7 +81,7 @@ export const EarnDepositStepConfirm = () => {
 }
 
 const StepsProgressDisplay = () => {
-  const { action, stepIndex, isSubmitting } = useEarnDepositWizard()
+  const { action, stepIndex, isProcessing } = useEarnDepositWizard()
 
   if (!action || stepIndex === null) return null
 
@@ -89,21 +89,14 @@ const StepsProgressDisplay = () => {
     <YieldxyzTransactionsStepper
       transactions={action.transactions}
       stepIndex={stepIndex}
-      isSubmitting={isSubmitting}
+      isProcessing={isProcessing}
     />
   )
 }
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const {
-    transaction,
-    pendingTx,
-    isSubmitting,
-    onSubmit,
-    stepIndex: txIndex,
-    action,
-  } = useEarnDepositWizard()
+  const { transaction, isProcessing, onSubmit, stepIndex: txIndex, action } = useEarnDepositWizard()
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!transaction?.transaction) return null
@@ -127,7 +120,7 @@ const SubmitButton = () => {
       className="w-full"
       onSubmit={onSubmit}
       disabled={!tx}
-      isProcessing={isSubmitting || !!pendingTx}
+      isProcessing={isProcessing}
     />
   )
 }

@@ -6,8 +6,8 @@ import { FC } from "react"
 export const YieldxyzTransactionsStepper: FC<{
   transactions: TransactionDto[]
   stepIndex: number
-  isSubmitting?: boolean
-}> = ({ transactions, stepIndex, isSubmitting }) => {
+  isProcessing?: boolean
+}> = ({ transactions, stepIndex, isProcessing: isSubmitting }) => {
   if (!transactions?.length) return null
 
   const clampedStepIndex = Math.min(Math.max(stepIndex, 0), transactions.length - 1)

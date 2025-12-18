@@ -1,19 +1,14 @@
-import { Token } from "@talismn/chaindata-provider"
 import { planckToTokens } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
 import { log } from "extension-shared"
 import { uniq } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
 
-import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
-import { UseYieldxyzTransactionProps } from "../shared/types"
-import { useYieldxyzTransaction } from "../shared/useYieldxyzTransaction"
+import { useYieldxyzTransactionManager } from "../shared/useYieldxyzActionManager"
 import { useEarnDepositModal } from "./useEarnDepositModal"
 import { useYieldxyzEnterAction } from "./useYieldxyzEnterAction"
 
@@ -52,6 +47,7 @@ const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardS
   })
 
 const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | null }) => {
+  const { close, isOpen } = useEarnDepositModal()
   const [state, setState] = useState<EarnDepositWizardState>(() => initializeState(args))
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
@@ -107,102 +103,23 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     setState((state) => ({ ...state, step }))
   }, [])
 
-  const [stepIndex, setStepIndex] = useState<number | null>(null)
+  const onCompleted = useCallback(() => {
+    if (isOpen) close()
+  }, [close, isOpen])
 
-  useEffect(() => {
-    if (!action || typeof stepIndex === "number") return
-
-    // initialize to first non-skipped transaction (ex: if approval is already done, it's a skip)
-    const firstTx = action.transactions.find((tx) => tx.status !== "SKIPPED")
-    setStepIndex(firstTx?.stepIndex ?? 0)
-  }, [action, stepIndex])
-
-  useEffect(() => {
-    // reset in case we go back to amount form
-    if (state.step !== "confirm") setStepIndex(null)
-  }, [state.step])
-
-  const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
-    if (!action || !state.address || !network || stepIndex === null) return null
-    const transactionDef = action.transactions[stepIndex] ?? null
-    if (!transactionDef) return null
-    return { address: state.address, networkId: network.id, transactionDef }
-  }, [action, state.address, network, stepIndex])
-
-  const transaction = useYieldxyzTransaction(txInputs)
-
-  const { t } = useTranslation()
-  const [pendingTxId, setPendingTxId] = useState<string | null>(null)
-  const pendingTx = useMemo(
-    () => action?.transactions.find((tx) => tx.id === pendingTxId) ?? null,
-    [action, pendingTxId],
-  )
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const onSubmit = useCallback(
-    async (txId: string) => {
-      setIsSubmitting(true)
-      try {
-        if (stepIndex === null) return
-        const transactionId = action?.transactions[stepIndex]?.id
-        if (!transactionId) return
-        await submitActionTransaction(transactionId, txId)
-        setPendingTxId(transactionId)
-      } finally {
-        setIsSubmitting(false)
-      }
-    },
-    [action, stepIndex, submitActionTransaction],
-  )
-
-  // TODO make its own hook
-  useQuery({
-    queryKey: ["yieldxyz", "follow-up", pendingTx],
-    enabled: ["BROADCASTED", "PENDING"].includes(pendingTx?.status ?? ""), // + check
-    queryFn: async () => {
-      if (!pendingTx) return null
-      await refreshAction()
-      return null
-    },
-    refetchInterval: 2000,
+  const { stepIndex, transaction, isProcessing, reset, onSubmit } = useYieldxyzTransactionManager({
+    action,
+    address: state.address,
+    networkId: tokenIn?.networkId ?? null,
+    refreshAction,
+    submitActionTransaction,
+    onCompleted,
   })
 
   useEffect(() => {
-    if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
-
-    switch (pendingTx.status) {
-      case "CONFIRMED":
-        notify({
-          type: "success",
-          title: t("Success"),
-          subtitle: t("Transaction confirmed"),
-        })
-        setPendingTxId(null)
-        setStepIndex((index) => (index ?? 0) + 1)
-        break
-      case "BLOCKED":
-      case "NOT_FOUND":
-      case "FAILED":
-        notify({
-          type: "error",
-          title: t("Error"),
-          subtitle: t("Transaction failed"),
-        })
-        setPendingTxId(null)
-        break
-
-      default:
-        log.warn("Unhandled pendingTx status in EarnDepositWizard", { status: pendingTx.status })
-        break
-    }
-  }, [pendingTx?.status, refreshAction, t])
-
-  const { close, isOpen } = useEarnDepositModal()
-  useEffect(() => {
-    if (isOpen && action?.transactions.every((tx) => ["CONFIRMED", "SKIPPED"].includes(tx.status)))
-      close()
-  }, [action, close, isOpen])
+    // reset manager in case we go back to amount form
+    if (state.step !== "confirm") reset()
+  }, [reset, state.step])
 
   useEffect(() => {
     log.debug("useEarnDepositWizard state changed", {
@@ -228,14 +145,11 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     onSubmit,
     isLoadingProduct: status === "loading" && !product,
     isLoadingAction,
-    isSubmitting,
+    isProcessing,
     action,
     errorAction,
     stepIndex,
     transaction,
-    pendingTx,
-    nativeToken: null as Token | null, // TODO
-    estimatedFeeTotal: null as bigint | null, // TODO
     canCreateAction,
     createAction,
   }
