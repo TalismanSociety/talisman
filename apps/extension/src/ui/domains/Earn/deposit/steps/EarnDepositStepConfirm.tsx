@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WizardModalDialog } from "talisman-ui"
 import { TransactionRequest } from "viem"
@@ -160,22 +160,29 @@ const NetworkFeeRowEth = () => {
   const { t } = useTranslation()
   const { transaction } = useEarnDepositWizard()
 
-  if (transaction?.platform !== "ethereum") return null
+  // keep the latest valid tx in state so we still have content to display after tx is submitted.
+  // without this we'd be getting a lot of flickering and bad UX
+  const [tx, setTx] = useState(transaction)
+  useEffect(() => {
+    if (transaction?.platform === "ethereum" && transaction.transaction && transaction.txDetails)
+      setTx(transaction)
+  }, [transaction])
 
   return (
     <>
       <FormFieldSetRow label={t("Transaction Priority")} variant="small">
-        {!!transaction.transaction && !!transaction.txDetails && (
+        {!!tx?.transaction && !!tx.txDetails && (
           <EthFeeSelect
-            tokenId={transaction.feeTokenId}
+            key={tx.transaction.nonce} // reset internal state when tx changes
+            tokenId={tx.feeTokenId}
             drawerContainerId="earn-modal"
-            gasSettingsByPriority={transaction.gasSettingsByPriority}
-            priority={transaction.priority}
-            txDetails={transaction.txDetails}
-            networkUsage={transaction.networkUsage}
-            tx={transaction.transaction}
-            setCustomSettings={transaction.setCustomSettings}
-            onChange={transaction.setPriority}
+            gasSettingsByPriority={tx.gasSettingsByPriority}
+            priority={tx.priority}
+            txDetails={tx.txDetails}
+            networkUsage={tx.networkUsage}
+            tx={tx.transaction}
+            setCustomSettings={tx.setCustomSettings}
+            onChange={tx.setPriority}
           />
         )}
       </FormFieldSetRow>
@@ -184,10 +191,10 @@ const NetworkFeeRowEth = () => {
         variant="small"
         valueClassName="text-body-secondary"
       >
-        {!!transaction.txDetails && (
+        {!!tx?.txDetails && (
           <TokensAndFiat
-            planck={transaction.txDetails.estimatedFee.toString()}
-            tokenId={transaction.feeTokenId}
+            planck={tx.txDetails.estimatedFee.toString()}
+            tokenId={tx.feeTokenId}
             tokensClassName="text-body"
           />
         )}
