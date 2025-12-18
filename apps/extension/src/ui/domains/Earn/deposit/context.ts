@@ -138,13 +138,20 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     [action, pendingTxId],
   )
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   const onSubmit = useCallback(
     async (txId: string) => {
-      if (stepIndex === null) return
-      const transactionId = action?.transactions[stepIndex]?.id
-      if (!transactionId) return
-      await submitActionTransaction(transactionId, txId)
-      setPendingTxId(transactionId)
+      setIsSubmitting(true)
+      try {
+        if (stepIndex === null) return
+        const transactionId = action?.transactions[stepIndex]?.id
+        if (!transactionId) return
+        await submitActionTransaction(transactionId, txId)
+        setPendingTxId(transactionId)
+      } finally {
+        setIsSubmitting(false)
+      }
     },
     [action, stepIndex, submitActionTransaction],
   )
@@ -160,6 +167,8 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     },
     refetchInterval: 2000,
   })
+
+  // const onSubmit = useCallback((txId: string) => {}, [])
 
   useEffect(() => {
     if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
@@ -221,6 +230,7 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     onSubmit,
     isLoadingProduct: status === "loading" && !product,
     isLoadingAction,
+    isSubmitting,
     action,
     errorAction,
     stepIndex,

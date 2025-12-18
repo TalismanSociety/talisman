@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
+import { WizardModalDialog } from "talisman-ui"
 import { TransactionRequest } from "viem"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -16,7 +16,7 @@ import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shar
 import { YieldxyzProviderDisplay } from "../../shared/YieldxyzProviderLogo"
 import { YieldxyzTransactionsStepper } from "../../shared/YieldxyzTransactionsStepper"
 import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
-import { YieldxyzProductYieldDisplay } from "../components/YieldyxProductYieldDisplay"
+import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
@@ -41,8 +41,8 @@ export const EarnDepositStepConfirm = () => {
         <div className="flex size-full flex-col gap-8 overflow-hidden">
           <div className="text-md line-clamp-2 w-full text-center font-bold">
             {action.transactions.length > 1
-              ? t("Approve {{count}} Transactions", { count: action.transactions.length })
-              : t("Approve Transaction")}
+              ? t("Approve {{count}} transactions", { count: action.transactions.length })
+              : t("Approve transaction")}
           </div>
           <div className="flex grow flex-col justify-center">
             <StepsProgressDisplay />
@@ -81,16 +81,29 @@ export const EarnDepositStepConfirm = () => {
 }
 
 const StepsProgressDisplay = () => {
-  const { action, stepIndex } = useEarnDepositWizard()
+  const { action, stepIndex, isSubmitting } = useEarnDepositWizard()
 
   if (!action || stepIndex === null) return null
 
-  return <YieldxyzTransactionsStepper transactions={action.transactions} stepIndex={stepIndex} />
+  return (
+    <YieldxyzTransactionsStepper
+      transactions={action.transactions}
+      stepIndex={stepIndex}
+      isSubmitting={isSubmitting}
+    />
+  )
 }
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { transaction, pendingTx, onSubmit, stepIndex: txIndex, action } = useEarnDepositWizard()
+  const {
+    transaction,
+    pendingTx,
+    isSubmitting,
+    onSubmit,
+    stepIndex: txIndex,
+    action,
+  } = useEarnDepositWizard()
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!transaction?.transaction) return null
@@ -106,34 +119,15 @@ const SubmitButton = () => {
     }
   }, [transaction])
 
-  const [submitting, setSubmitting] = useState(false)
-  const handleSubmit = useCallback(
-    async (txId: string) => {
-      setSubmitting(true)
-      try {
-        await onSubmit(txId)
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [onSubmit],
-  )
-
-  // display a fake button while processing, as TxSubmitButton is designed with a redirect to TxProgress in mind
-  if (!tx || pendingTx || submitting)
-    return (
-      <Button primary fullWidth processing>
-        {t("Processing...")}
-      </Button>
-    )
-
   return (
     <TxSubmitButton
       containerId="earn-modal"
       tx={tx}
       label={`${t("Approve")} (${(txIndex ?? 0) + 1}/${action?.transactions.length ?? "?"})`}
       className="w-full"
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
+      disabled={!tx}
+      isProcessing={isSubmitting || !!pendingTx}
     />
   )
 }

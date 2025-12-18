@@ -46,6 +46,7 @@ export type TxSubmitButtonProps<
   label?: string
   className?: string
   disabled?: boolean
+  isProcessing?: boolean
   /**
    *
    * @param txId hash for polkadot and ethereum, signature for solana

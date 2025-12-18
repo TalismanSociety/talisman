@@ -6,7 +6,8 @@ import { FC } from "react"
 export const YieldxyzTransactionsStepper: FC<{
   transactions: TransactionDto[]
   stepIndex: number
-}> = ({ transactions, stepIndex }) => {
+  isSubmitting?: boolean
+}> = ({ transactions, stepIndex, isSubmitting }) => {
   if (!transactions?.length) return null
 
   const clampedStepIndex = Math.min(Math.max(stepIndex, 0), transactions.length - 1)
@@ -22,12 +23,12 @@ export const YieldxyzTransactionsStepper: FC<{
         {transactions.length > 1 && (
           <>
             <div
-              className="bg-grey-400 pointer-events-none absolute top-1/2 z-0 h-1 -translate-y-1/2"
+              className="bg-grey-600 pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2"
               style={{ left: `${lineLeftPct}%`, width: `${lineWidthPct}%` }}
               aria-hidden
             />
             <div
-              className="bg-primary-500 pointer-events-none absolute top-1/2 z-0 h-1 -translate-y-1/2"
+              className="bg-primary-500 pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2"
               style={{ left: `${lineLeftPct}%`, width: `${activeLineWidthPct}%` }}
               aria-hidden
             />
@@ -40,28 +41,29 @@ export const YieldxyzTransactionsStepper: FC<{
         >
           {transactions.map((transaction, index) => {
             const isActive = index <= clampedStepIndex
-            const isBroadcasted = transaction.status === "BROADCASTED"
+            const isProcessing =
+              transaction.status === "BROADCASTED" || (isSubmitting && index === clampedStepIndex)
 
             return (
               <div key={transaction.id ?? index} className="z-[1] flex justify-center">
                 <div
                   className={classNames(
                     "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
-                    isActive ? "bg-primary-500" : "bg-grey-400",
+                    isActive ? "bg-primary-500" : "bg-grey-600",
                   )}
                 >
-                  {isBroadcasted ? (
+                  {isProcessing ? (
                     <LoaderIcon
                       className={classNames(
-                        "animate-spin-slow h-5 w-5",
+                        "animate-spin-slow h-8 w-8",
                         isActive ? "text-black" : "text-grey-700",
                       )}
                     />
                   ) : (
                     <span
                       className={classNames(
-                        "text-sm font-bold",
-                        isActive ? "text-black" : "text-white",
+                        "text-sm font-bold leading-none",
+                        isActive ? "text-black" : "text-body-secondary",
                       )}
                     >
                       {index + 1}
@@ -86,8 +88,8 @@ export const YieldxyzTransactionsStepper: FC<{
             <div
               key={transaction.id ?? `label-${index}`}
               className={classNames(
-                "text-center text-sm font-bold capitalize leading-tight",
-                isActive ? "text-primary-500" : "text-grey-400",
+                "text-center text-base font-bold capitalize leading-tight",
+                isActive ? "text-primary-500" : "text-grey-600",
               )}
             >
               {label}

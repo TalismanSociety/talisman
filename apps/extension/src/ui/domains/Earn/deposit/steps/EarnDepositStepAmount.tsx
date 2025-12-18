@@ -14,7 +14,7 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
-import { YieldxyzProductYieldDisplay } from "../components/YieldyxProductYieldDisplay"
+import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
 import { useEarnDepositWizard } from "../context"
 import { useEarnDepositModal } from "../useEarnDepositModal"
 
