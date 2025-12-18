@@ -168,8 +168,6 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     refetchInterval: 2000,
   })
 
-  // const onSubmit = useCallback((txId: string) => {}, [])
-
   useEffect(() => {
     if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
 

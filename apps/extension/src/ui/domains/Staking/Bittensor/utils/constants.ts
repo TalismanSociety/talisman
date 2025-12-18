@@ -9,4 +9,4 @@ export const BITTENSOR_TOKEN_ID = subNativeTokenId("bittensor")
 export const TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR =
   "5DzsVV2L4M9r4uWoyarzPyhfeCv6DDAEs5rM2bpHjmerPcGa"
 
-export const TALISMAN_FEE_BITTENSOR = 0
+export const TALISMAN_FEE_BITTENSOR = 0.3
