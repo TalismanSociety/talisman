@@ -34,6 +34,8 @@ export const useYieldxyzTransactionManager = ({
 }: UseYieldxyzTransactionManagerProps) => {
   const { t } = useTranslation()
   const [stepIndex, setStepIndex] = useState<number | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [pendingTxId, setPendingTxId] = useState<string | null>(null)
 
   const txInputs = useMemo<UseYieldxyzTransactionProps | null>(() => {
     if (!action || !address || !networkId || stepIndex === null) return null
@@ -44,17 +46,14 @@ export const useYieldxyzTransactionManager = ({
 
   const transaction = useYieldxyzTransaction(txInputs)
 
-  const reset = useCallback(() => {
-    setStepIndex(null)
-  }, [])
-
-  const [pendingTxId, setPendingTxId] = useState<string | null>(null)
   const pendingTx = useMemo(
     () => action?.transactions.find((tx) => tx.id === pendingTxId) ?? null,
     [action, pendingTxId],
   )
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const reset = useCallback(() => {
+    setStepIndex(null)
+  }, [])
 
   const onSubmit = useCallback(
     async (txId: string) => {
@@ -72,6 +71,19 @@ export const useYieldxyzTransactionManager = ({
     [action, stepIndex, submitActionTransaction],
   )
 
+  // simple polling to refresh action while a tx is pending
+  useQuery({
+    queryKey: ["yieldxyz", "follow-up", pendingTx],
+    enabled: ["BROADCASTED", "PENDING"].includes(pendingTx?.status ?? ""),
+    queryFn: async () => {
+      if (!pendingTx) return null
+      await refreshAction()
+      return null
+    },
+    refetchInterval: 2000,
+  })
+
+  // maintain pendingTxId state
   useEffect(() => {
     if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
 
@@ -102,23 +114,13 @@ export const useYieldxyzTransactionManager = ({
     }
   }, [pendingTx?.status, refreshAction, t])
 
+  // signal parent wizard that all transactions are done
   useEffect(() => {
     if (action?.transactions.every((tx) => ["CONFIRMED", "SKIPPED"].includes(tx.status)))
       onCompleted()
   }, [action, onCompleted])
 
-  // simple polling to refresh action while a tx is pending
-  useQuery({
-    queryKey: ["yieldxyz", "follow-up", pendingTx],
-    enabled: ["BROADCASTED", "PENDING"].includes(pendingTx?.status ?? ""),
-    queryFn: async () => {
-      if (!pendingTx) return null
-      await refreshAction()
-      return null
-    },
-    refetchInterval: 2000,
-  })
-
+  // resets stepIndex when action is changed
   useEffect(() => {
     if (!action || typeof stepIndex === "number") return
 
