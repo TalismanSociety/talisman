@@ -50,8 +50,8 @@ export const EarnAvailableProducts: FC<{
         ))}
         {status === "loading" && <TokenProductsShimmer />}
         {status === "success" && !products?.length && (
-          <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-            {t("There are no yield opportunities available for your tokens")}
+          <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-base">
+            {t("No opportunities found for your assets")}
           </div>
         )}
       </div>
