@@ -1,5 +1,5 @@
-import { BittensorBondFollowUp } from "../../components/BittensorBondFollowUp"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
+import { BittensorClaimSettingsFollowUp } from "./BittensorClaimSettingsFollowUp"
 import { BittensorClaimSettingsForm } from "./BittensorClaimSettingsForm"
 
 export const BittensorClaimSettingsModalRouter = () => {
@@ -9,6 +9,6 @@ export const BittensorClaimSettingsModalRouter = () => {
     case "claim-settings":
       return <BittensorClaimSettingsForm />
     case "follow-up":
-      return <BittensorBondFollowUp />
+      return <BittensorClaimSettingsFollowUp />
   }
 }
