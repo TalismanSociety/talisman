@@ -6,7 +6,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 import { YieldxyzEnterWizardProvider } from "./useYieldxyzEnterWizard"
-import { YieldXyzEnterPositionWizard } from "./YieldXyzEnterPositionWizard"
+import { YieldXyzEnterPositionWizard } from "./YieldXyzEnterPositionWizards"
 
 export const YieldxyzEnterPositionModal: FC = () => {
   const { isOpen, close, args: stateInit } = useYieldxyzEnterModal()
