@@ -193,7 +193,6 @@ const FiatInput: FC<{
         className="text-body peer inline-block min-w-0 bg-transparent text-xl"
         onChange={handleChange}
       />
-      {/* {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>} */}
       <div className="block shrink-0">{currencyConfig[currency]?.symbol}</div>
     </div>
   )

@@ -1,3 +1,5 @@
+import { AlertCircleIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { WizardModalDialog } from "talisman-ui"
@@ -46,6 +48,7 @@ export const EarnDepositStepConfirm = () => {
           </div>
           <div className="flex grow flex-col justify-center">
             <StepsProgressDisplay />
+            <TransactionError />
           </div>
           <FormFieldSet>
             <FormFieldSetRow label={t("Amount")}>
@@ -77,6 +80,21 @@ export const EarnDepositStepConfirm = () => {
         </div>
       </WizardModalDialog>
     </RiskAnalysisProvider>
+  )
+}
+
+const TransactionError = () => {
+  const { transaction } = useEarnDepositWizard()
+
+  return (
+    <div
+      className={cn(
+        "text-brand-orange mt-4 text-center text-xs",
+        !transaction?.error && "invisible",
+      )}
+    >
+      <AlertCircleIcon className="inline-block align-text-top text-sm" /> {transaction?.error}
+    </div>
   )
 }
 
