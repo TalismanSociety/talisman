@@ -29,6 +29,7 @@ export type {
   ArgumentFieldDto,
   ActionArgumentsDto,
   TimePeriodDto,
+  ArgumentSchemaDto,
 } from "@yieldxyz/sdk"
 
 // Extend SDK params to support comma-separated inputToken values
