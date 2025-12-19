@@ -1,4 +1,5 @@
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
+import { isTalismanUrl } from "extension-shared"
 import { map } from "rxjs"
 
 import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
@@ -6,6 +7,7 @@ import type { Port } from "../../../types/base"
 import { TabStore } from "../../../handlers/stores"
 import { genericSubscription, unsubscribe } from "../../../handlers/subscriptions"
 import { TabsHandler } from "../../../libs/Handler"
+import { windowManager } from "../../../libs/WindowManager"
 import { chaindataProvider } from "../../../rpcs/chaindata"
 import TalismanRpcHandler from "./rpc"
 
@@ -28,6 +30,11 @@ export default class TalismanHandler extends TabsHandler {
     port: Port,
     url: string,
   ): Promise<ResponseType<TMessageType>> {
+    // these methods are pub() because they're exposed to dapps,
+    // BUT they're actually only exposed to dapps where isTalismanHostname is true
+    // which is only app.talisman.xyz in production, and also localhost in dev
+    if (!isTalismanUrl(url)) throw new Error(`Origin not allowed for message type ${type}`)
+
     switch (type) {
       case "pub(talisman.customSubstrateChains.subscribe)": {
         throw new Error("Not implemented")
@@ -76,6 +83,11 @@ export default class TalismanHandler extends TabsHandler {
         throw new Error("Not implemented")
         const subId = request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
         return unsubscribe(subId)
+      }
+
+      case "pub(talisman.extension.openPortfolio)": {
+        await windowManager.openDashboard({ route: "/portfolio" })
+        return true
       }
 
       default:

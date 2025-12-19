@@ -233,6 +233,8 @@ type TokensListProps = {
   activeOnly?: boolean
   showEmptyBalances?: boolean
   isInitializing?: boolean
+  /** these tokens will always be sorted to the top of the list */
+  priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
   onSelect?: (tokenId: TokenId) => void
 }
@@ -246,6 +248,7 @@ const TokensList: FC<TokensListProps> = ({
   activeOnly = true,
   showEmptyBalances,
   isInitializing,
+  priorityTokens,
   tokenFilter = DEFAULT_FILTER,
   onSelect,
 }) => {
@@ -292,10 +295,16 @@ const TokensList: FC<TokensListProps> = ({
       })
   }, [allTokens, filterAccountCompatibleTokens, networksMap, tokenFilter, tokenRatesMap])
 
-  // sort alphabetically by symbol + chain name
+  // sort by token balance
   const sortTokens = useCallback(
     (tokens: TokenData[]): TokenData[] =>
       sortBy(sortBy(tokens, "chainName"), "token.symbol").sort((a, b) => {
+        // priority tokens first
+        const isPriorityA = priorityTokens?.(a.token) ?? false
+        const isPriorityB = priorityTokens?.(b.token) ?? false
+        if (isPriorityA && !isPriorityB) return -1
+        if (!isPriorityA && isPriorityB) return 1
+
         // transferable tokens first
         const isTransferableA = isTransferableToken(a.token)
         const isTransferableB = isTransferableToken(b.token)
@@ -327,7 +336,7 @@ const TokensList: FC<TokensListProps> = ({
         // keep alphabetical sort
         return 0
       }),
-    [currency, selected],
+    [currency, selected, priorityTokens],
   )
 
   const tokensWithBalances = useMemo<TokenData[]>(() => {
@@ -426,6 +435,8 @@ type TokenPickerProps = {
   isInitializing?: boolean
   className?: string
   showEmptyBalances?: boolean
+  /** these tokens will always be sorted to the top of the list */
+  priorityTokens?: (token: Token) => boolean
   tokenFilter?: (token: Token) => boolean
   tokenFilterOptions?: Array<[string, string]>
   tokenFilterDefaultOption?: string
@@ -442,6 +453,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   isInitializing,
   className,
   showEmptyBalances,
+  priorityTokens,
   tokenFilter,
   tokenFilterOptions,
   tokenFilterDefaultOption,
@@ -484,6 +496,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           allowUntransferable={allowUntransferable}
           ownedOnly={ownedOnly}
           isInitializing={isInitializing}
+          priorityTokens={priorityTokens}
           tokenFilter={tokenFilter}
           onSelect={onSelect}
           showEmptyBalances={showEmptyBalances}

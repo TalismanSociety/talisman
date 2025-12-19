@@ -16,8 +16,7 @@ export const BLOCKAID_API_URL = "https://bap.talisman.xyz"
 export const TAOSTATS_BASE_PATH = process.env.TAOSTATS_BASE_PATH || "https://tsp.talisman.xyz"
 export const RAMPS_COINBASE_API_BASE_PATH = "https://coinbase-api.talisman.xyz"
 export const RAMPS_COINBASE_PAY_URL = "https://pay.coinbase.com"
-export const RAMPS_RAMP_API_BASE_PATH = "https://api.ramp.network/api/host-api/v3"
-export const RAMPS_RAMP_PAY_URL = "https://app.ramp.network"
+export const RAMPS_RAMP_API_URL = "https://ramp-api.talisman.xyz"
 export const ASSET_DISCOVERY_API_URL = "https://ada.talisman.xyz"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
@@ -26,8 +25,6 @@ export const TALISMAN_WEB_APP_NFTS_URL = "https://app.talisman.xyz/nfts"
 export const TALISMAN_WEB_APP_STAKING_URL = "https://app.talisman.xyz/staking"
 export const TALISMAN_WEB_APP_STAKING_POSITIONS_URL = "https://app.talisman.xyz/staking/positions"
 export const TALISMAN_WEB_APP_SWAP_URL = "https://app.talisman.xyz/transport/swap"
-
-export const TALISMAN_QUEST_APP_URL = "https://quest.talisman.xyz"
 
 export const SIGNET_LANDING_URL = "https://talisman.xyz/signet"
 export const SIGNET_APP_URL = "https://signet.talisman.xyz"

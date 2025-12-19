@@ -25,6 +25,7 @@ type SapiSendButtonProps = {
   disabled?: boolean
   className?: string
   onSubmitted: (hash: Hex) => void
+  mode?: "default" | "bittensor-mev-shield"
 }
 
 const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
@@ -34,6 +35,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
   txInfo,
   className,
   onSubmitted,
+  mode,
 }) => {
   const [error, setError] = useState<string>()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -51,7 +53,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo)
+        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -59,7 +61,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo],
   )
 
   return (
@@ -84,6 +86,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
   txMetadata,
   className,
   onSubmitted,
+  mode,
 }) => {
   const account = useAccountByAddress(payload?.address)
   const [error, setError] = useState<string>()
@@ -96,7 +99,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
 
       setError(undefined)
       try {
-        const { hash } = await sapi.submit(payload, signature, txInfo)
+        const { hash } = await sapi.submit(payload, signature, txInfo, mode)
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
@@ -104,7 +107,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo],
   )
 
   if (!account) return null
@@ -132,6 +135,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
   txInfo,
   className,
   onSubmitted,
+  mode,
 }) => {
   const { t } = useTranslation()
   const { data: sapi } = useScaleApi(payload?.genesisHash)
@@ -146,7 +150,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
     if (!payload) return
     setState({ isSubmitting: true, error: null })
     try {
-      const { hash } = await sapi.submit(payload, undefined, txInfo)
+      const { hash } = await sapi.submit(payload, undefined, txInfo, mode)
       setState({ isSubmitting: false, error: null })
       onSubmitted(hash)
     } catch (err) {
@@ -154,7 +158,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setState({ isSubmitting: false, error: (err as any)?.message ?? "Failed to submit" })
     }
-  }, [onSubmitted, payload, sapi, txInfo])
+  }, [mode, onSubmitted, payload, sapi, txInfo])
 
   return (
     <div className="flex w-full flex-col gap-6">

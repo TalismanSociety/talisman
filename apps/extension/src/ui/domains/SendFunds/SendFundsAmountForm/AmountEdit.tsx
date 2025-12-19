@@ -2,7 +2,6 @@ import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { log } from "extension-shared"
-import debounce from "lodash-es/debounce"
 import {
   ChangeEventHandler,
   FC,
@@ -43,22 +42,13 @@ const normalizeStringNumber = (value?: string | number | null, decimals = 18) =>
 
 const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   const { set, remove } = useSendFundsWizard()
-  const { tokenId, token, transfer, maxAmount, isEstimatingMaxAmount, sendMax, amount } =
-    useSendFunds()
+  const { tokenId, token, transfer, maxAmount, isEstimatingMaxAmount, sendMax } = useSendFunds()
 
   const refTokensInput = useRef<HTMLInputElement>(null)
   useSendFundsInputNumber(refTokensInput, token?.decimals)
   useInputAutoWidth(refTokensInput)
 
-  useEffect(() => {
-    if (sendMax && refTokensInput.current && maxAmount?.tokens) {
-      const expectedInputValue = normalizeStringNumber(maxAmount.tokens, token?.decimals)
-      if (refTokensInput.current.value !== expectedInputValue)
-        refTokensInput.current.value = expectedInputValue
-    }
-  }, [amount, sendMax, token, maxAmount])
-
-  const defaultValue = useMemo(
+  const formattedValue = useMemo(
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens,
@@ -67,17 +57,28 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     [maxAmount, sendMax, token?.decimals, transfer?.tokens],
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
+
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
+
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    debounce((e) => {
+    (e) => {
       if (sendMax) set("sendMax", false)
-
-      const text = e.target.value ?? ""
-      const num = Number(text)
-
-      if (token && text.length && !isNaN(num)) set("amount", tokensToPlanck(text, token.decimals))
+      const nextValue = e.target.value ?? ""
+      refSkipSync.current = true
+      setValue(nextValue)
+      const num = Number(nextValue)
+      if (token && nextValue.length && !isNaN(num))
+        set("amount", tokensToPlanck(nextValue, token.decimals))
       else remove("amount")
-    }, 250),
+    },
     [remove, sendMax, set, token],
   )
 
@@ -101,7 +102,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         ref={refTokensInput}
         type="text"
         inputMode="decimal"
-        defaultValue={defaultValue}
+        value={value}
         placeholder="0"
         className={classNames(
           "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
@@ -124,15 +125,7 @@ const FiatInput = () => {
   useInputAutoWidth(refFiatInput)
   const currency = useSelectedCurrency()
 
-  useEffect(() => {
-    if (sendMax && refFiatInput.current && typeof maxAmount?.fiat(currency) === "number") {
-      const expectedInputValue = maxAmount?.fiat(currency)?.toString() ?? ""
-      if (refFiatInput.current.value !== expectedInputValue)
-        refFiatInput.current.value = expectedInputValue
-    }
-  }, [sendMax, currency, maxAmount])
-
-  const defaultValue = useMemo(
+  const formattedValue = useMemo(
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
@@ -141,22 +134,33 @@ const FiatInput = () => {
     [currency, maxAmount, sendMax, transfer],
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    debounce((e) => {
-      if (sendMax) set("sendMax", false)
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
 
-      const text = e.target.value ?? ""
-      const num = Number(text)
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
+
+  const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (sendMax) set("sendMax", false)
+      const nextValue = e.target.value ?? ""
+      refSkipSync.current = true
+      setValue(nextValue)
+      const num = Number(nextValue)
       const tokenRate = tokenRates?.[currency]
 
-      if (token && tokenRate && text.length && !isNaN(num)) {
-        const fiat = parseFloat(text)
+      if (token && tokenRate && nextValue.length && !isNaN(num)) {
+        const fiat = parseFloat(nextValue)
         const tokens = (fiat / tokenRate.price).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
-    }, 250),
-    [remove, sendMax, set, token, tokenRates],
+    },
+    [currency, remove, sendMax, set, token, tokenRates],
   )
 
   if (!tokenRates) return null
@@ -173,7 +177,7 @@ const FiatInput = () => {
         key="fiatInput"
         ref={refFiatInput}
         type="text"
-        defaultValue={defaultValue}
+        value={value}
         // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}

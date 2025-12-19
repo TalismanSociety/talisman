@@ -9,16 +9,18 @@ export type RemoteConfigStoreData = {
   ramps: {
     coinbaseProjectId: string
     pinnedTokens: TokenId[]
-    rampApiKey: string
     rampNetworks: Record<string, string> // maps a Ramp network ID to an NetworkId
   }
   swaps: {
     questApi?: string
     lifiTalismanTokens?: string[]
+    lifiCustomFeeTokens?: Record<string, number>
     simpleswapApiKey?: string
     simpleswapApiKeyDiscounted?: string
     simpleswapDiscountedCurrencies?: string[]
     curatedTokens?: string[]
+    promotedBuyTokens?: string[]
+    promotedSellTokens?: string[]
   }
   coingecko: {
     apiUrl: string

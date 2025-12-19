@@ -50,15 +50,28 @@ type RouteProps = {
   fromAssetId?: string
   toAssetId?: string
 }
-const discountedRoute = async ({ fromAssetId, toAssetId }: RouteProps) => {
-  const lifiTalismanTokens = (await remoteConfigStore.get("swaps"))?.lifiTalismanTokens ?? []
-  return (
-    (fromAssetId && lifiTalismanTokens.includes(fromAssetId)) ||
-    (toAssetId && lifiTalismanTokens.includes(toAssetId))
-  )
+const customFeeForRoute = async ({
+  fromAssetId,
+  toAssetId,
+}: RouteProps): Promise<number | undefined> => {
+  const lifiCustomFeeTokens = (await remoteConfigStore.get("swaps"))?.lifiCustomFeeTokens ?? {}
+
+  // prefer toAsset fee
+  const toFee = toAssetId && lifiCustomFeeTokens[toAssetId]
+  if (typeof toFee === "number") return toFee
+
+  // fall back to fromAsset fee
+  const fromFee = fromAssetId && lifiCustomFeeTokens[fromAssetId]
+  if (typeof fromFee === "number") return fromFee
+
+  // use default fee
+  return undefined
 }
-const getTalismanFee = async (route: RouteProps) =>
-  (await discountedRoute(route)) ? 0 : TALISMAN_FEE
+const getTalismanFee = async (route: RouteProps) => {
+  const customFee = await customFeeForRoute(route)
+  if (customFee !== undefined) return customFee
+  return TALISMAN_FEE
+}
 
 const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
   const allSdkTokens = (

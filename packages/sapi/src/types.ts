@@ -22,4 +22,8 @@ export type SapiConnectorProps = {
     signature?: `0x${string}`,
     txInfo?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) => Promise<{ hash: `0x${string}` }>
+  submitWithBittensorMevShield?: (
+    payload: SignerPayloadJSON,
+    txInfo?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  ) => Promise<{ hash: `0x${string}` }>
 }

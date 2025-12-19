@@ -1,5 +1,35 @@
 # @talismn/balances
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies [b3b5ff5]
+- Updated dependencies [b3b5ff5]
+- Updated dependencies [0f26ccd]
+  - @talismn/crypto@0.3.0
+  - @talismn/scale@0.3.0
+  - @talismn/sapi@0.1.0
+  - @talismn/chaindata-provider@1.3.2
+  - @talismn/solana@0.0.5
+  - @talismn/chain-connectors@0.0.11
+  - @talismn/token-rates@3.0.13
+
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [7deed17]
+- Updated dependencies [2c395d3]
+- Updated dependencies [f97a95f]
+- Updated dependencies [05e1e30]
+- Updated dependencies [9b5618c]
+  - @talismn/chaindata-provider@1.3.1
+  - @talismn/solana@0.0.4
+  - @talismn/util@0.5.6
+  - @talismn/chain-connectors@0.0.10
+  - @talismn/token-rates@3.0.12
+
 ## 1.2.0
 
 ### Minor Changes

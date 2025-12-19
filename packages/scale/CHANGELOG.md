@@ -1,5 +1,11 @@
 # @talismn/scale
 
+## 0.3.0
+
+### Minor Changes
+
+- b3b5ff5: bittensor mev shield
+
 ## 0.2.2
 
 ### Patch Changes

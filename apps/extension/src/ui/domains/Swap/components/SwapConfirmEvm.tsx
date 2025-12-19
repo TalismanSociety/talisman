@@ -1,5 +1,7 @@
 import { LoaderIcon } from "@talismn/icons"
 import {
+  activeNetworksStore,
+  activeTokensStore,
   EthPriorityOptionName,
   serializeTransactionRequest,
   WalletTransactionInfo,
@@ -178,6 +180,8 @@ export const SwapConfirmEvm = ({
 
       closeSwapTokensModal()
       resetSwapForm()
+      if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
+      if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     } catch (cause) {
       // eslint-disable-next-line no-console
@@ -196,6 +200,7 @@ export const SwapConfirmEvm = ({
     navigate,
     resetSwapForm,
     swapModule?.protocol,
+    toAsset,
     transaction,
     txInfo,
   ])
@@ -226,6 +231,8 @@ export const SwapConfirmEvm = ({
 
         closeSwapTokensModal()
         resetSwapForm()
+        if (toAsset?.chainId) activeNetworksStore.setActive(String(toAsset.chainId), true)
+        if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
         navigate("/tx-history")
       } catch (cause) {
         // eslint-disable-next-line no-console
@@ -247,6 +254,7 @@ export const SwapConfirmEvm = ({
       swapModule?.protocol,
       transaction,
       txInfo,
+      toAsset,
     ],
   )
 

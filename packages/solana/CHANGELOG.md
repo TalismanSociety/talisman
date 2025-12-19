@@ -1,5 +1,19 @@
 # @talismn/solana
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [b3b5ff5]
+- Updated dependencies [b3b5ff5]
+  - @talismn/crypto@0.3.0
+
+## 0.0.4
+
+### Patch Changes
+
+- f97a95f: new txToHumanJson helper
+
 ## 0.0.3
 
 ### Patch Changes

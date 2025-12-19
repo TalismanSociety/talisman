@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.5.6
+
+### Patch Changes
+
+- 05e1e30: fix: dont throw from formatDecimals when maximumSignificantDigits is too big
+
 ## 0.5.5
 
 ### Patch Changes

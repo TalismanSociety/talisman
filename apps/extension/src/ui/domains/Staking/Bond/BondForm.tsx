@@ -12,6 +12,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -107,7 +108,18 @@ const TokenDisplay = () => {
 const TokenInput = () => {
   const { token, formatter, setPlancks } = useBondWizard()
 
-  const defaultValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
+  const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
+
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
+
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -115,12 +127,16 @@ const TokenInput = () => {
       if (token && e.target.value) {
         try {
           const plancks = tokensToPlanck(e.target.value, token.decimals)
+          refSkipSync.current = true
+          setValue(e.target.value)
           return setPlancks(BigInt(plancks))
         } catch (err) {
           // invalid input, ignore
         }
       }
 
+      refSkipSync.current = true
+      setValue(e.target.value)
       return setPlancks(null)
     },
     [setPlancks, token],
@@ -146,7 +162,7 @@ const TokenInput = () => {
         ref={refTokensInput}
         type="text"
         inputMode="decimal"
-        defaultValue={defaultValue}
+        value={value}
         placeholder="0"
         className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
         onChange={handleChange}
@@ -163,10 +179,21 @@ const FiatInput = () => {
   const { token, tokenRates, formatter, setPlancks } = useBondWizard()
   const currency = useSelectedCurrency()
 
-  const defaultValue = useMemo(() => {
+  const formattedValue = useMemo(() => {
     const val = formatter?.fiat(currency) ?? ""
     return val ? String(Number(val.toFixed(2))) : val
   }, [currency, formatter])
+
+  const [value, setValue] = useState(formattedValue)
+  const refSkipSync = useRef(false)
+
+  useEffect(() => {
+    if (refSkipSync.current) {
+      refSkipSync.current = false
+      return
+    }
+    setValue(formattedValue)
+  }, [formattedValue])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -175,12 +202,16 @@ const FiatInput = () => {
           const fiat = parseFloat(e.target.value)
           const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(token.decimals / 3))
           const plancks = tokensToPlanck(tokens, token.decimals)
+          refSkipSync.current = true
+          setValue(e.target.value)
           return setPlancks(BigInt(plancks))
         } catch (err) {
           // invalid input, ignore
         }
       }
 
+      refSkipSync.current = true
+      setValue(e.target.value)
       return setPlancks(null)
     },
 
@@ -211,7 +242,7 @@ const FiatInput = () => {
         key="fiatInput"
         ref={refFiatInput}
         type="text"
-        defaultValue={defaultValue}
+        value={value}
         placeholder={"0.00"}
         className="text-body peer inline-block min-w-0 bg-transparent text-xl"
         onChange={handleChange}

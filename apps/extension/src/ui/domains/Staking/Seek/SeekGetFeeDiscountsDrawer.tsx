@@ -8,7 +8,7 @@ import { Button, Drawer } from "talisman-ui"
 
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useAppState, useBalances, useRemoteConfig, useToken } from "@ui/state"
+import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 
 import { useGetSeekDiscount } from "./hooks/useGetSeekDiscount"
 import { useGetSeekStaked } from "./hooks/useGetSeekStaked"
@@ -47,11 +47,9 @@ export const SeekGetFeeDiscountsDrawer = ({
   } = useGetSeekStaked()
   const { tier } = useGetSeekDiscount()
 
-  const [, setHideSeekDiscountDrawer] = useAppState("hideSeekTaoDiscountDrawer")
   const handleDismiss = useCallback(() => {
-    setHideSeekDiscountDrawer(true)
     onDismiss()
-  }, [setHideSeekDiscountDrawer, onDismiss])
+  }, [onDismiss])
 
   const hasSeekStaked = totalStaked.planck > 0n
 

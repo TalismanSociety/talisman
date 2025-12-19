@@ -1,5 +1,21 @@
 # @talismn/chaindata-provider
 
+## 1.3.2
+
+### Patch Changes
+
+- 0f26ccd: init data
+
+## 1.3.1
+
+### Patch Changes
+
+- 7deed17: generate init data
+- 2c395d3: init data
+- 9b5618c: init chain data
+- Updated dependencies [05e1e30]
+  - @talismn/util@0.5.6
+
 ## 1.3.0
 
 ### Minor Changes
