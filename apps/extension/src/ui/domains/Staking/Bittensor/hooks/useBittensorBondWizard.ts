@@ -40,7 +40,6 @@ export type WizardStep =
   | "select-delegate"
   | "select-subnet"
   | "select-position"
-  | "claim-settings"
 export type StakeType = "root" | "subnet"
 export type StakeDirection = "bond" | "unbond"
 

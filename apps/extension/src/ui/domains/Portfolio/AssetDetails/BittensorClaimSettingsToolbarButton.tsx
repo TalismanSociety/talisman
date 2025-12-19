@@ -6,8 +6,8 @@ import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import { useBittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsModal"
+import { BittensorClaimSettingsOpenOptions } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal/hooks/useBittensorClaimSettingsWizard"
 import { ROOT_NETUID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts } from "@ui/state"
@@ -22,10 +22,10 @@ export const BittensorClaimSettingsToolbarButton: FC<{
   const { t } = useTranslation()
   const accounts = useAccounts("owned")
   const bittensorNetworkIds = useBittensorNetworkIds()
-  const { open: openBittensorModal } = useBittensorBondModal()
+  const { open: openBittensorClaimSettingsModal } = useBittensorClaimSettingsModal()
   const { genericEvent } = useAnalytics()
 
-  const openArgs = useMemo<BittensorStakingWizardOpenOptions | null>(() => {
+  const openArgs = useMemo<BittensorClaimSettingsOpenOptions | null>(() => {
     const balance = balances.each
       .filter(
         (b) =>
@@ -43,20 +43,16 @@ export const BittensorClaimSettingsToolbarButton: FC<{
     }
 
     return {
-      networkId: token.networkId,
       address: balance.address,
-      netuid: token.netuid,
-      hotkey: token.hotkey,
-      stakeDirection: "bond",
       step: "claim-settings",
     }
   }, [accounts, balances, bittensorNetworkIds])
 
   const handleClick = useCallback(() => {
     if (!openArgs) return
-    openBittensorModal(openArgs)
+    openBittensorClaimSettingsModal(openArgs)
     genericEvent("open bittensor claim settings", { from: "token menu" })
-  }, [genericEvent, openArgs, openBittensorModal])
+  }, [genericEvent, openArgs, openBittensorClaimSettingsModal])
 
   if (!openArgs) return null
 

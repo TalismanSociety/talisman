@@ -440,6 +440,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       </Button>
 
       <BondAccountPicker
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         isOpen={accountPicker.isOpen}
         account={account}
         token={nativeToken}

@@ -1,6 +1,5 @@
+import { BittensorBondFollowUp } from "../../components/BittensorBondFollowUp"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { BittensorBondFollowUp } from "./BittensorBondFollowUp"
-import { BittensorClaimSettings } from "./BittensorClaimSettings"
 import { BittensorRootBondForm } from "./BittensorRootBondForm"
 import { BittensorRootBondReview } from "./BittensorRootBondReview"
 import { BittensorStakingPositionSelect } from "./BittensorStakingPositionSelect"
@@ -25,7 +24,5 @@ export const BittensorBondModalRouter = () => {
       return stakeType === "subnet" ? <BittensorSubnetBondReview /> : <BittensorRootBondReview />
     case "follow-up":
       return <BittensorBondFollowUp />
-    case "claim-settings":
-      return <BittensorClaimSettings />
   }
 }

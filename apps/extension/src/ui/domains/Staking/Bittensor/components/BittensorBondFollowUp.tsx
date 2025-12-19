@@ -1,6 +1,6 @@
-import { TxProgress } from "../../../../Transactions"
-import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
-import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
+import { TxProgress } from "../../../Transactions"
+import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
+import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
 export const BittensorBondFollowUp = () => {
   const { close } = useBittensorBondModal()
