@@ -1,5 +1,6 @@
 import { encodeAnyAddress } from "@talismn/crypto"
 import { cn } from "@talismn/util"
+import { getAccountGenesisHash } from "extension-core"
 import { FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -31,7 +32,11 @@ export const AccountDisplay: FC<{
             className,
           )}
         >
-          <AccountIcon className={cn("text-[1.5em]", iconClassName)} address={formattedAddress} />
+          <AccountIcon
+            className={cn("text-[1.5em]", iconClassName)}
+            address={formattedAddress}
+            genesisHash={getAccountGenesisHash(account)}
+          />
           <span className={cn("max-w-full truncate", textClassName)}>
             {account?.name ?? <Address address={formattedAddress} noTooltip />}
           </span>
