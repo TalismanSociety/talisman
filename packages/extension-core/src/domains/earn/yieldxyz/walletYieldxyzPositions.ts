@@ -38,7 +38,6 @@ type PositionsQuery = {
 const fetchPositionsBatch = async (
   rawQueries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
-  // products: YieldDto[] | undefined,
   signal: AbortSignal,
 ): Promise<YieldxyzPosition[]> => {
   try {
@@ -55,7 +54,7 @@ const fetchPositionsBatch = async (
 
     if (!queries.length) return []
 
-    const req = await fetch(`${YIELD_API_BASE_URL}/v1/yields/balances`, {
+    const req = await fetch(`${YIELD_API_BASE_URL}/talisman/positions`, {
       signal,
       method: "POST",
       headers: {
