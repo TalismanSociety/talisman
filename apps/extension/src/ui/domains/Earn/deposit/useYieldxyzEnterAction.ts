@@ -3,19 +3,15 @@ import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 
 import { notify } from "@talisman/components/Notifications"
-import { useYieldxyzProduct } from "@ui/state/yield"
 
 type UseYieldxyzEnterTransactionProps = {
   address: string | null
   yieldId: string | null
-  amount: string | null // amount of tokens (not plancks)
-  validatorAddress?: string | null
+  args: ActionArgumentsDto | null
 }
 
 // TODO refactor so common logic can be shared with enter/exit/claim actions
 export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) => {
-  const product = useYieldxyzProduct(props.yieldId)
-
   const [state, setState] = useState<{
     isLoading: boolean
     error: Error | null
@@ -26,51 +22,18 @@ export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) 
     action: null,
   })
 
-  const args = useMemo<ActionArgumentsDto | null>(() => {
-    const expectedArgs = product.data?.mechanics.arguments?.enter
-    if (!expectedArgs?.fields.length) return null // there should always be args (at least amount), not sure what to do if missing
-
-    const args: ActionArgumentsDto = {}
-
-    for (const field of expectedArgs.fields) {
-      switch (field.name) {
-        case "amount":
-          if (!props.amount) return null
-          args.amount = props.amount
-          break
-        case "validatorAddress":
-          if (!props.validatorAddress) return null
-          args.validatorAddress = props.validatorAddress
-          break
-        default:
-          if (field.required) {
-            log.warn("useYieldxyzEnterTransaction: unsupported required field", {
-              product,
-              fieldName: field.name,
-            })
-            return null
-          }
-
-          // just skip non-required fields for now
-          break
-      }
-    }
-
-    return args
-  }, [product, props.amount, props.validatorAddress])
-
   const canCreateAction = useMemo(() => {
-    return !!(props.address && props.yieldId && args)
-  }, [props.address, props.yieldId, args])
+    return !!(props.address && props.yieldId && props.args)
+  }, [props.address, props.yieldId, props.args])
 
   // fetching the action needs to be a manual operation, it must be done using useQuery.
   // this is because every fetch creates a new action in yield.xyz backend.
   // additionally once created, we need to be able to refresh it on demand (eg. after user executes a tx)
   const createAction = useCallback(async () => {
-    if (!props.address || !props.yieldId || !args) return
+    if (!props.address || !props.yieldId || !props.args) return
     try {
       setState({ isLoading: true, error: null, action: null })
-      const fetchedAction = await fetchYieldxyzEnterAction(props.yieldId, props.address, args)
+      const fetchedAction = await fetchYieldxyzEnterAction(props.yieldId, props.address, props.args)
       // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
       fetchedAction.transactions.sort(sortTransactionsByStepIndex)
 
@@ -85,7 +48,7 @@ export const useYieldxyzEnterAction = (props: UseYieldxyzEnterTransactionProps) 
       setState({ isLoading: false, error: err as Error, action: null })
       throw err
     }
-  }, [args, props.address, props.yieldId])
+  }, [props.args, props.address, props.yieldId])
 
   const refreshAction = useCallback(async () => {
     try {
@@ -151,7 +114,7 @@ const fetchYieldxyzEnterAction = async (
     signal,
   })
 
-  if (!req.ok) throw new Error(`Yield.xyz API error: ${req.status} ${req.statusText}`)
+  if (!req.ok) throw new Error(await getErrorMessage(req))
 
   return req.json()
 }
@@ -163,7 +126,7 @@ const fetchYieldxyzAction = async (actionId: string, signal?: AbortSignal): Prom
     signal,
   })
 
-  if (!req.ok) throw new Error(`Yield.xyz API error: ${req.status} ${req.statusText}`)
+  if (!req.ok) throw new Error(await getErrorMessage(req))
 
   return req.json()
 }
@@ -180,9 +143,18 @@ const submitYieldxyzTransactionHash = async (
     signal,
   })
 
-  if (!req.ok) throw new Error(`Yield.xyz API error: ${req.status} ${req.statusText}`)
+  if (!req.ok) throw new Error(await getErrorMessage(req))
 
   return req.json()
+}
+
+const getErrorMessage = async (response: Response): Promise<string> => {
+  try {
+    const errorBody = await response.json()
+    return errorBody.message || `Yield.xyz API error: ${response.status} ${response.statusText}`
+  } catch (err) {
+    return `Yield.xyz API error: ${response.status} ${response.statusText}`
+  }
 }
 
 const sortTransactionsByStepIndex = (a: TransactionDto, b: TransactionDto) => {

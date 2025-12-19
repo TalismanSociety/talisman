@@ -8,6 +8,7 @@ import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
+import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
 import { useYieldxyzTransactionManager } from "../shared/useYieldxyzActionManager"
 import { useEarnDepositModal } from "./useEarnDepositModal"
 import { useYieldxyzEnterAction } from "./useYieldxyzEnterAction"
@@ -46,9 +47,13 @@ const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardS
     amountIn: null,
   })
 
-const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | null }) => {
+const useEarnDepositWizardProvider = ({
+  stateInit,
+}: {
+  stateInit: EarnDepositWizardInit | null
+}) => {
   const { close, isOpen } = useEarnDepositModal()
-  const [state, setState] = useState<EarnDepositWizardState>(() => initializeState(args))
+  const [state, setState] = useState<EarnDepositWizardState>(() => initializeState(stateInit))
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
 
@@ -71,10 +76,18 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
 
   const balance = useBalance(state.address, tokenIn?.id)
 
-  const amount = useMemo(() => {
-    if (state.amountIn === null || !tokenIn) return null
-    return planckToTokens(state.amountIn.toString(), tokenIn.decimals)
-  }, [state.amountIn, tokenIn])
+  const [inputs, talismanValidationError] = useMemo(() => {
+    if (!state.amountIn || !tokenIn || !balance) return [null, null]
+    if (state.amountIn > balance.transferable.planck) return [null, "Insufficient balance"]
+
+    const inputs = { amount: planckToTokens(state.amountIn.toString(), tokenIn.decimals) }
+    return [inputs, null]
+  }, [state.amountIn, tokenIn, balance])
+
+  const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
+    schema: product?.mechanics.arguments?.enter,
+    inputs,
+  })
 
   const {
     canCreateAction,
@@ -87,8 +100,7 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
   } = useYieldxyzEnterAction({
     address: state.address,
     yieldId: state.productId,
-    amount,
-    validatorAddress: state.validatorAddress,
+    args,
   })
 
   const onAmountInChanged = useCallback((amountIn: bigint | null) => {
@@ -134,6 +146,7 @@ const useEarnDepositWizardProvider = ({ args }: { args: EarnDepositWizardInit | 
     network,
     balance,
     product,
+    validationError: talismanValidationError ?? yieldxyzValidationError,
     goTo,
     onAmountInChanged,
     onAccountChanged,

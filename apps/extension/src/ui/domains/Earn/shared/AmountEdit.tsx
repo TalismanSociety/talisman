@@ -14,7 +14,7 @@ import {
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { PillButton } from "talisman-ui"
 
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -268,21 +268,10 @@ export type AmountEditErrorProps = {
   details?: string
 }
 
-const ErrorMessage: FC<AmountEditErrorProps> = ({ message, details }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div>
-        <AlertCircleIcon className="inline-block align-text-top text-sm" /> {message}
-      </div>
-    </TooltipTrigger>
-    {!!details && <TooltipContent>{details}</TooltipContent>}
-  </Tooltip>
-)
-
 export const AmountEdit: FC<{
   value: bigint | null
   tokenId: string
-  error?: AmountEditErrorProps
+  error?: string | null
   onValueChanged: (value: bigint | null) => void
   onMaxClick: () => void
   onTokenClick?: () => void
@@ -342,8 +331,8 @@ export const AmountEdit: FC<{
           {t("Max")}
         </PillButton>
       </div>
-      <div className="text-brand-orange mt-4 text-center text-xs">
-        {error && <ErrorMessage {...error} />}
+      <div className={cn("text-brand-orange mt-4 text-center text-xs", !error && "invisible")}>
+        <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
       </div>
     </div>
   )

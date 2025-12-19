@@ -9,13 +9,13 @@ import { EarnDepositWizard } from "./EarnDepositWizard"
 import { useEarnDepositModal } from "./useEarnDepositModal"
 
 export const EarnDepositWizardModal: FC = () => {
-  const { isOpen, close, args } = useEarnDepositModal()
+  const { isOpen, close, args: stateInit } = useEarnDepositModal()
 
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="EarnDepositModal" />}>
-          <EarnDepositWizardProvider args={args}>
+          <EarnDepositWizardProvider stateInit={stateInit}>
             <EarnDepositWizard />
           </EarnDepositWizardProvider>
         </Suspense>
