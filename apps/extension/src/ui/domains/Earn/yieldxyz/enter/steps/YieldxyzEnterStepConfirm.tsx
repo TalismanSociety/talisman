@@ -2,7 +2,7 @@ import { AlertCircleIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WizardModalDialog } from "talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 import { TransactionRequest } from "viem"
 
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -84,17 +84,23 @@ export const YieldxyzEnterStepConfirm = () => {
 }
 
 const TransactionError = () => {
-  const { transaction } = useYieldxyzEnterWizard()
+  const { transaction, isProcessing } = useYieldxyzEnterWizard()
 
   return (
-    <div
-      className={cn(
-        "text-brand-orange mt-4 text-center text-xs",
-        !transaction?.error && "invisible",
-      )}
-    >
-      <AlertCircleIcon className="inline-block align-text-top text-sm" /> {transaction?.error}
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={cn(
+            "text-brand-orange mt-4 text-center text-xs",
+            // do not display error while isProcessing=true, as it has already has been executed
+            (isProcessing || !transaction?.error) && "invisible",
+          )}
+        >
+          <AlertCircleIcon className="inline-block align-text-top text-sm" /> {transaction?.error}
+        </div>
+      </TooltipTrigger>
+      {!!transaction?.errorDetails && <TooltipContent>{transaction?.errorDetails}</TooltipContent>}
+    </Tooltip>
   )
 }
 
