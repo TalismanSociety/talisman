@@ -13,20 +13,20 @@ import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 
-import { AccountDisplay } from "../../shared/AccountDisplay"
-import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../shared/FormFieldSet"
-import { YieldxyzProviderDisplay } from "../../shared/YieldxyzProviderLogo"
-import { YieldxyzTransactionsStepper } from "../../shared/YieldxyzTransactionsStepper"
-import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
-import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
-import { useEarnDepositWizard } from "../context"
-import { useEarnDepositModal } from "../useEarnDepositModal"
+import { AccountDisplay } from "../../../shared/AccountDisplay"
+import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../../shared/FormFieldSet"
+import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
+import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
+import { YieldxyzProviderDisplay } from "../../components/YieldxyzProviderLogo"
+import { YieldxyzTransactionsStepper } from "../../components/YieldxyzTransactionsStepper"
+import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
+import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 
-export const EarnDepositStepConfirm = () => {
+export const YieldxyzEnterStepConfirm = () => {
   const { t } = useTranslation()
-  const { close } = useEarnDepositModal()
+  const { close } = useYieldxyzEnterModal()
   const { tokenIn, amountIn, address, action, network, product, transaction, goTo } =
-    useEarnDepositWizard()
+    useYieldxyzEnterWizard()
 
   if (!tokenIn || !amountIn || !address || !product || !action) return null
 
@@ -84,7 +84,7 @@ export const EarnDepositStepConfirm = () => {
 }
 
 const TransactionError = () => {
-  const { transaction } = useEarnDepositWizard()
+  const { transaction } = useYieldxyzEnterWizard()
 
   return (
     <div
@@ -99,7 +99,7 @@ const TransactionError = () => {
 }
 
 const StepsProgressDisplay = () => {
-  const { action, stepIndex, isProcessing } = useEarnDepositWizard()
+  const { action, stepIndex, isProcessing } = useYieldxyzEnterWizard()
 
   if (!action || stepIndex === null) return null
 
@@ -114,7 +114,13 @@ const StepsProgressDisplay = () => {
 
 const SubmitButton = () => {
   const { t } = useTranslation()
-  const { transaction, isProcessing, onSubmit, stepIndex: txIndex, action } = useEarnDepositWizard()
+  const {
+    transaction,
+    isProcessing,
+    onSubmit,
+    stepIndex: txIndex,
+    action,
+  } = useYieldxyzEnterWizard()
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!transaction?.transaction) return null
@@ -144,7 +150,7 @@ const SubmitButton = () => {
 }
 
 const NetworkDisplay = () => {
-  const { tokenIn } = useEarnDepositWizard()
+  const { tokenIn } = useYieldxyzEnterWizard()
 
   if (!tokenIn) return null
 
@@ -157,7 +163,7 @@ const NetworkDisplay = () => {
 }
 
 const NetworkFeeRow = () => {
-  const { network } = useEarnDepositWizard()
+  const { network } = useYieldxyzEnterWizard()
 
   switch (network?.platform) {
     case "ethereum":
@@ -169,7 +175,7 @@ const NetworkFeeRow = () => {
 
 const NetworkFeeRowEth = () => {
   const { t } = useTranslation()
-  const { transaction } = useEarnDepositWizard()
+  const { transaction } = useYieldxyzEnterWizard()
 
   // keep the latest valid tx in state so we still have content to display after tx is submitted.
   // without this we'd be getting a lot of flickering and bad UX

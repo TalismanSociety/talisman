@@ -10,7 +10,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useBalances, useSelectedCurrency } from "@ui/state"
 import { useYieldxyzProducts } from "@ui/state/yield"
 
-import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
+import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 
 export const useYieldxyzProductsByTokenId = (): Loadable<
   {

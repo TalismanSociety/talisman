@@ -7,7 +7,7 @@ import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 
-import { useGetYieldxyzToken } from "../../components/useGetYieldxyzToken"
+import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 
 export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product }) => {
   const text = useMemo(() => {

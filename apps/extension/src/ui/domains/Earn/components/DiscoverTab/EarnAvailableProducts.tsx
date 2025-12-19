@@ -17,9 +17,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useNetworkById, useToken } from "@ui/state"
 import { useYieldxyzProviders } from "@ui/state/yield"
 
-import { useEarnDepositModal } from "../../deposit/useEarnDepositModal"
 import { useYieldxyzProductsByTokenId } from "../../hooks/useYieldxyzProductsByTokenId"
-import { YieldxyzProviderLogo } from "../../shared/YieldxyzProviderLogo"
+import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
+import { useYieldxyzEnterModal } from "../../yieldxyz/enter/useYieldxyzEnterModal"
 import { EarnTypeBadge } from "../EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
@@ -127,7 +127,7 @@ const TokenProducts: FC<{
 const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
   const { t } = useTranslation()
   const { selectedAccount } = usePortfolioNavigation()
-  const { open } = useEarnDepositModal()
+  const { open } = useYieldxyzEnterModal()
 
   return (
     <button

@@ -2,14 +2,14 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { WizardModalDialog } from "talisman-ui"
 
-import { SenderAccountPicker } from "../../shared/SenderAccountPicker"
-import { useEarnDepositWizard } from "../context"
-import { useEarnDepositModal } from "../useEarnDepositModal"
+import { SenderAccountPicker } from "../../../shared/SenderAccountPicker"
+import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
+import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 
-export const EarnDepositStepAccount: FC = () => {
+export const YieldxyzEnterStepAccount: FC = () => {
   const { t } = useTranslation()
-  const { close } = useEarnDepositModal()
-  const { address, tokenIn, onAccountChanged } = useEarnDepositWizard()
+  const { close } = useYieldxyzEnterModal()
+  const { address, tokenIn, onAccountChanged } = useYieldxyzEnterWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 

@@ -8,20 +8,20 @@ import { provideContext } from "@talisman/util/provideContext"
 import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
-import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
-import { useDummyTransaction } from "../hooks/useDummyTransaction"
-import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
-import { useYieldxyzTransactionManager } from "../shared/useYieldxyzActionManager"
-import { useEarnDepositModal } from "./useEarnDepositModal"
+import { useDummyTransaction } from "../../hooks/useDummyTransaction"
+import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
+import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
+import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzEnterAction } from "./useYieldxyzEnterAction"
+import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
-export type EarnDepositWizardInit = {
+export type YieldxyzEnterWizardInit = {
   address?: string
   tokenId?: string
   productId?: string
 }
 
-export type EarnDepositWizardState = {
+export type YieldxyzEnterWizardState = {
   step: "product" | "account" | "validator" | "amount" | "confirm" | "follow-up"
   address: string | null
   productId: string | null
@@ -29,8 +29,8 @@ export type EarnDepositWizardState = {
   amountIn: bigint | null
 }
 
-const advanceStep = (state: EarnDepositWizardState): EarnDepositWizardState => {
-  const selectStep = (state: EarnDepositWizardState) => {
+const advanceStep = (state: YieldxyzEnterWizardState): YieldxyzEnterWizardState => {
+  const selectStep = (state: YieldxyzEnterWizardState) => {
     if (!state.productId) return "product"
     if (!state.address) return "account"
     return state.step
@@ -40,7 +40,7 @@ const advanceStep = (state: EarnDepositWizardState): EarnDepositWizardState => {
   return { ...state, step }
 }
 
-const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardState =>
+const initializeState = (init: YieldxyzEnterWizardInit | null): YieldxyzEnterWizardState =>
   advanceStep({
     step: "amount",
     address: init?.address ?? null,
@@ -49,13 +49,13 @@ const initializeState = (init: EarnDepositWizardInit | null): EarnDepositWizardS
     amountIn: null,
   })
 
-const useEarnDepositWizardProvider = ({
+const useYieldxyzEnterWizardProvider = ({
   stateInit,
 }: {
-  stateInit: EarnDepositWizardInit | null
+  stateInit: YieldxyzEnterWizardInit | null
 }) => {
-  const { close, isOpen } = useEarnDepositModal()
-  const [state, setState] = useState<EarnDepositWizardState>(() => initializeState(stateInit))
+  const { close, isOpen } = useYieldxyzEnterModal()
+  const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
   const { status, data: product } = useYieldxyzProduct(state.productId)
   const { getYieldxyzToken } = useGetYieldxyzToken()
 
@@ -118,7 +118,7 @@ const useEarnDepositWizardProvider = ({
     setState((state) => advanceStep({ ...state, address, step: "amount" }))
   }, [])
 
-  const goTo = useCallback((step: EarnDepositWizardState["step"]) => {
+  const goTo = useCallback((step: YieldxyzEnterWizardState["step"]) => {
     setState((state) => ({ ...state, step }))
   }, [])
 
@@ -191,6 +191,6 @@ const useEarnDepositWizardProvider = ({
   }
 }
 
-export const [EarnDepositWizardProvider, useEarnDepositWizard] = provideContext(
-  useEarnDepositWizardProvider,
+export const [YieldxyzEnterWizardProvider, useYieldxyzEnterWizard] = provideContext(
+  useYieldxyzEnterWizardProvider,
 )

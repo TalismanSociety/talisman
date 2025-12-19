@@ -20,9 +20,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAccountByAddress, usePortfolioGlobalData, useTokensMap } from "@ui/state"
 import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
-import { YieldxyzProviderLogo } from "../../shared/YieldxyzProviderLogo"
+import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
+import { useGetYieldxyzToken } from "../../yieldxyz/hooks/useGetYieldxyzToken"
 import { EarnTypeBadge } from "../EarnTypeBadge"
-import { useGetYieldxyzToken } from "../useGetYieldxyzToken"
 
 const YieldPositionRow: FC<{
   position: YieldxyzPositionEnhanced // TODO change back to YieldxyzPosition after moving display fields

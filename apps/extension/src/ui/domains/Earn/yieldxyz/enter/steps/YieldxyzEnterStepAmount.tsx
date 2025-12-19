@@ -7,21 +7,21 @@ import { Button, WizardModalDialog } from "talisman-ui"
 import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
-import { YieldxyzProviderDisplay } from "@ui/domains/Earn/shared/YieldxyzProviderLogo"
+import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
-import { FormFieldSet, FormFieldSetRow } from "../../shared/FormFieldSet"
-import { YieldxyzProductTitleDisplay } from "../components/YieldxyzProductTitleDisplay"
-import { YieldxyzProductYieldDisplay } from "../components/YieldxyzProductYieldDisplay"
-import { useEarnDepositWizard } from "../context"
-import { useEarnDepositModal } from "../useEarnDepositModal"
+import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
+import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
+import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
+import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
+import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 
-export const EarnDepositStepAmount = () => {
+export const YieldxyzEnterStepAmount = () => {
   const { t } = useTranslation()
-  const { close } = useEarnDepositModal()
-  const { address, goTo, canCreateAction, createAction, product } = useEarnDepositWizard()
+  const { close } = useYieldxyzEnterModal()
+  const { address, goTo, canCreateAction, createAction, product } = useYieldxyzEnterWizard()
 
   const [processing, setProcessing] = useState(false)
 
@@ -123,7 +123,7 @@ const PeriodDisplay = ({ period }: { period: TimePeriodDto | undefined }) => {
 const ClaimMechanismDisplay = () => {
   const { t } = useTranslation()
 
-  const { product } = useEarnDepositWizard()
+  const { product } = useYieldxyzEnterWizard()
 
   return useMemo(() => {
     if (!product) return null
@@ -154,7 +154,7 @@ const ClaimMechanismDisplay = () => {
 }
 
 const NetworkDisplay = () => {
-  const { tokenIn } = useEarnDepositWizard()
+  const { tokenIn } = useYieldxyzEnterWizard()
 
   if (!tokenIn) return null
 
@@ -168,7 +168,7 @@ const NetworkDisplay = () => {
 
 const DepositAmountEdit = () => {
   const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
-    useEarnDepositWizard()
+    useYieldxyzEnterWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
@@ -184,7 +184,7 @@ const DepositAmountEdit = () => {
 }
 
 const AvailableBalance = () => {
-  const { balance, tokenIn } = useEarnDepositWizard()
+  const { balance, tokenIn } = useYieldxyzEnterWizard()
 
   if (!balance || !tokenIn) return null
 
