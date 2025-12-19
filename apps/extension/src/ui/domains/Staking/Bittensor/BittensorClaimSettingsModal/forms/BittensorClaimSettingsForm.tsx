@@ -157,7 +157,7 @@ export const BittensorClaimSettingsForm = () => {
           </Button>
         ) : (
           <SapiSendButton
-            containerId="StakingModalDialog"
+            containerId={BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID}
             label={t("Confirm")}
             payload={setClaimTypePayload?.payload}
             onSubmitted={onSubmitted}
