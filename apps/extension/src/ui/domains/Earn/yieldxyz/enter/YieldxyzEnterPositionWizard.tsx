@@ -5,7 +5,7 @@ import { YieldxyzEnterStepAmount } from "./steps/YieldxyzEnterStepAmount"
 import { YieldxyzEnterStepConfirm } from "./steps/YieldxyzEnterStepConfirm"
 import { useYieldxyzEnterWizard } from "./useYieldxyzEnterWizard"
 
-export const YieldXyzEnterPositionWizard: FC = () => {
+export const YieldxyzEnterPositionWizard: FC = () => {
   const { step, isLoadingProduct } = useYieldxyzEnterWizard()
 
   if (isLoadingProduct) return null

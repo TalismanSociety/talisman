@@ -6,7 +6,7 @@ import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 import { YieldxyzEnterWizardProvider } from "./useYieldxyzEnterWizard"
-import { YieldXyzEnterPositionWizard } from "./YieldXyzEnterPositionWizards"
+import { YieldxyzEnterPositionWizard } from "./YieldxyzEnterPositionWizard"
 
 export const YieldxyzEnterPositionModal: FC = () => {
   const { isOpen, close, args: stateInit } = useYieldxyzEnterModal()
@@ -16,7 +16,7 @@ export const YieldxyzEnterPositionModal: FC = () => {
       <PopupSizeModalContainer id="earn-modal">
         <Suspense fallback={<SuspenseTracker name="EarnDepositModal" />}>
           <YieldxyzEnterWizardProvider stateInit={stateInit}>
-            <YieldXyzEnterPositionWizard />
+            <YieldxyzEnterPositionWizard />
           </YieldxyzEnterWizardProvider>
         </Suspense>
       </PopupSizeModalContainer>
