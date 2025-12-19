@@ -25,32 +25,12 @@ import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
 import { Tokens } from "../../Asset/Tokens"
 
-// const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
-//   try {
-//     // fixes the decimals and remove all leading/trailing zeros
-//     // NOTE: BigNumber is used to correctly format the string for tiny numbers.
-//     // `Number(0.000000123).toString()` becomes `1.23e-7`
-//     // `BigNumber(0.000000123).toString(10)` becomes `0.000000123`
-//     return value ? BigNumber(Number(value).toFixed(decimals)).toString(10) : ""
-//   } catch (err) {
-//     log.error("normalizeStringNumber", { value, decimals, err })
-//     return ""
-//   }
-// }
-
 const TokenInput: FC<{
   token: Token
   value: bigint | null
   onValueChanged: (value: bigint | null) => void
   onTokenClick?: () => void
 }> = ({ token, value, onValueChanged, onTokenClick }) => {
-  // const { set, remove } = useSendFundsWizard()
-  // const { tokenId, token, transfer, maxAmount, isEstimatingMaxAmount, sendMax } = useSendFunds()
-
-  // const formattedValue = useMemo(
-  //   () => (isSubnetUnbond ? (amountAlpha?.tokens ?? "") : (amountTao?.tokens ?? "")),
-  //   [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond],
-  // )
   const formatter = useMemo(
     () => (value !== null ? new BalanceFormatter(value, token.decimals) : null),
     [token.decimals, value],
@@ -148,11 +128,6 @@ const FiatInput: FC<{
     () => formatter?.fiat(currency)?.toString() ?? "",
     [currency, formatter],
   )
-
-  // const formattedValue = useMemo(() => {
-  //   const val = token.fiat(currency) ?? ""
-  //   return val ? String(Number(val.toFixed(2))) : val
-  // }, [currency, amountTao])
 
   const [inputValue, setInputValue] = useState(formattedValue)
   const refSkipSync = useRef(false)

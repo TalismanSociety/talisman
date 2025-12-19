@@ -167,7 +167,8 @@ const NetworkDisplay = () => {
 }
 
 const DepositAmountEdit = () => {
-  const { tokenIn, amountIn, validationError, onAmountInChanged } = useEarnDepositWizard()
+  const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
+    useEarnDepositWizard()
 
   if (!tokenIn) throw new Error("TokenIn is not defined")
 
@@ -176,7 +177,7 @@ const DepositAmountEdit = () => {
       tokenId={tokenIn.id}
       value={amountIn}
       onValueChanged={onAmountInChanged}
-      onMaxClick={() => {}}
+      onMaxClick={setMaxAmountIn}
       error={validationError}
     />
   )

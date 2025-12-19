@@ -1,3 +1,4 @@
+import { isTokenInTypes } from "@talismn/chaindata-provider"
 import { planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
 import { uniq } from "lodash-es"
@@ -8,6 +9,7 @@ import { useBalance, useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useGetYieldxyzToken } from "../components/useGetYieldxyzToken"
+import { useDummyTransaction } from "../hooks/useDummyTransaction"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
 import { useYieldxyzTransactionManager } from "../shared/useYieldxyzActionManager"
 import { useEarnDepositModal } from "./useEarnDepositModal"
@@ -76,6 +78,11 @@ const useEarnDepositWizardProvider = ({
 
   const balance = useBalance(state.address, tokenIn?.id)
 
+  const dummyTx = useDummyTransaction({
+    address: state.address ?? undefined,
+    tokenId: tokenIn?.id ?? undefined,
+  })
+
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountIn || !tokenIn || !balance) return [null, null]
     if (state.amountIn > balance.transferable.planck) return [null, "Insufficient balance"]
@@ -119,6 +126,26 @@ const useEarnDepositWizardProvider = ({
     if (isOpen) close()
   }, [close, isOpen])
 
+  const setMaxAmountIn = useCallback(() => {
+    if (!tokenIn || !balance) return
+
+    const feeMargin = (dummyTx?.estimatedFee ? BigInt(dummyTx.estimatedFee) : 0n) * 10n
+
+    // for native tokens, we need to keep some amount available for fees
+    // however we do not have access to the payloads here to estimate fees accurately,
+    // so we just leave a fixed buffer for now. this should be improved in the future
+    const maxAmmount = isTokenInTypes(tokenIn, ["evm-native", "substrate-native", "sol-native"])
+      ? balance.transferable.planck - feeMargin > 0n
+        ? balance.transferable.planck - feeMargin
+        : 0n
+      : balance.transferable.planck
+
+    setState((state) => ({
+      ...state,
+      amountIn: maxAmmount,
+    }))
+  }, [tokenIn, balance, dummyTx?.estimatedFee])
+
   const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
     action,
     address: state.address,
@@ -149,6 +176,7 @@ const useEarnDepositWizardProvider = ({
     validationError: talismanValidationError ?? yieldxyzValidationError,
     goTo,
     onAmountInChanged,
+    setMaxAmountIn,
     onAccountChanged,
     onSubmit,
     isLoadingProduct: status === "loading" && !product,
