@@ -11,9 +11,9 @@ import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/u
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
+import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
 export const BittensorClaimSettingsForm = () => {
@@ -21,7 +21,7 @@ export const BittensorClaimSettingsForm = () => {
   const { t } = useTranslation()
   const { nativeToken, account, accountPicker, setAddress, onSubmitted } =
     useBittensorClaimSettingsWizard()
-  const { close } = useBittensorBondModal()
+  const { close } = useBittensorClaimSettingsModal()
 
   const { data: claimType, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
     networkId: nativeToken?.networkId,
@@ -71,7 +71,9 @@ export const BittensorClaimSettingsForm = () => {
 
   return (
     <BittensorModalLayout
-      header={<BittensorStakingModalHeader title={t("Claim Settings")} withClose />}
+      header={
+        <BittensorStakingModalHeader title={t("Claim Settings")} withClose onCloseModal={close} />
+      }
       contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
     >
       <BittensorAssetAccountSummary

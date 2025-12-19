@@ -31,6 +31,7 @@ import { useToken } from "@ui/state"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BittensorAlphaPrice } from "../BittensorAlphaPrice"
 
@@ -62,6 +63,7 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
 export const BittensorSubnetSelect = () => {
   const { t } = useTranslation()
   const { setStep, setNetuid, netuid, networkId } = useBittensorBondWizard()
+  const { close } = useBittensorBondModal()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid") // netuid doesnt cause flickering
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
@@ -103,6 +105,7 @@ export const BittensorSubnetSelect = () => {
         <BittensorStakingModalHeader
           title={t("Select Subnet")}
           onBackClick={() => setStep("form")}
+          onCloseModal={close}
           withClose
         />
       }

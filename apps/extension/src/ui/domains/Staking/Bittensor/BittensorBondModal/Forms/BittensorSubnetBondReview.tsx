@@ -122,6 +122,7 @@ export const BittensorSubnetBondReview = () => {
     <BittensorModalLayout
       header={
         <BittensorStakingModalHeader
+          onCloseModal={close}
           title={t("Confirm")}
           onBackClick={() => setStep("form")}
           withClose

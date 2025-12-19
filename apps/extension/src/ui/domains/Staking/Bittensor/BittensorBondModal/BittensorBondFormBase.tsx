@@ -355,6 +355,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         <BittensorStakingModalHeader
           title={stakeDirection === "bond" ? t("Staking") : t("Unstake")}
           withClose
+          onCloseModal={close}
         />
       }
       contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"

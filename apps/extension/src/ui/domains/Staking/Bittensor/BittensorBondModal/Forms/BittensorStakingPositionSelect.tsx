@@ -16,6 +16,7 @@ import { useAccountByAddress, useSelectedCurrency } from "@ui/state"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
   BittensorStakingPosition,
@@ -34,6 +35,7 @@ export const BittensorStakingPositionSelect = () => {
   const { t } = useTranslation()
   const [searchSync, setSearch] = useState<string>("")
   const search = useDeferredValue(searchSync)
+  const { close } = useBittensorBondModal()
 
   const { networkId, position: currentPosition, setPosition, setStep } = useBittensorBondWizard()
 
@@ -72,6 +74,7 @@ export const BittensorStakingPositionSelect = () => {
           title={t("Select Position")}
           withClose
           onBackClick={currentPosition ? () => setStep("form") : undefined}
+          onCloseModal={close}
         />
       }
     >
