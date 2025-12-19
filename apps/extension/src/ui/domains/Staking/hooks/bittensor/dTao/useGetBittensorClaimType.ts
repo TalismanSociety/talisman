@@ -1,9 +1,10 @@
 import { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
+import { DEFAULT_ROOT_CLAIM_TYPE } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { DEFAULT_ROOT_CLAIM_TYPE, RootClaimType, RootClaimTypeEnum } from "./types"
+import { RootClaimType, RootClaimTypeEnum } from "./types"
 
 type GetBittensorClaimType = {
   networkId: DotNetworkId | null | undefined

@@ -1,18 +1,18 @@
 import { classNames } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
-import { DEFAULT_ROOT_CLAIM_TYPE } from "../../../hooks/bittensor/dTao/types"
 import { useGetBittensorClaimType } from "../../../hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
+import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
@@ -51,6 +51,12 @@ export const BittensorClaimSettingsForm = () => {
         title: t("Receive Rewards in Alpha"),
         description: t("Your rewards will be proportionally spread across Subnets."),
       },
+      {
+        value: "KeepSubnets" as RootClaimType,
+        title: t("Receive Rewards in selected Subnets"),
+        description: t("Your rewards will be proportionally spread across selected Subnets."),
+        disabled: true,
+      },
     ],
     [t],
   )
@@ -87,13 +93,12 @@ export const BittensorClaimSettingsForm = () => {
         <div className="mt-6 flex flex-col gap-6" role="radiogroup" aria-label={t("Reward Type")}>
           {claimTypeOptions.map((option) => {
             const isSelected = selectedClaimType === option.value
-            return (
+            const button = (
               <button
-                key={option.value}
                 type="button"
                 role="radio"
                 aria-checked={isSelected}
-                onClick={() => setSelectedClaimType(option.value)}
+                onClick={() => !option.disabled && setSelectedClaimType(option.value)}
                 disabled={isClaimTypeLoading}
                 className={classNames(
                   "border-light-gray relative w-full rounded-sm border px-6 py-5 text-left transition-colors",
@@ -101,6 +106,7 @@ export const BittensorClaimSettingsForm = () => {
                   isSelected
                     ? "text-body"
                     : "text-body-secondary hover:border-grey-700 hover:text-body border-transparent",
+                  option.disabled && "cursor-not-allowed opacity-50",
                 )}
               >
                 <div className="flex flex-col gap-1 pr-10">
@@ -125,6 +131,17 @@ export const BittensorClaimSettingsForm = () => {
                 </span>
               </button>
             )
+
+            if (option.disabled) {
+              return (
+                <Tooltip key={option.value}>
+                  <TooltipTrigger asChild>{button}</TooltipTrigger>
+                  <TooltipContent>{t("Coming soon")}</TooltipContent>
+                </Tooltip>
+              )
+            }
+
+            return <div key={option.value}>{button}</div>
           })}
         </div>
       </div>

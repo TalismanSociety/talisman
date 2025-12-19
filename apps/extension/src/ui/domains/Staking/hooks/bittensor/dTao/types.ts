@@ -176,8 +176,7 @@ export type SubnetsData = {
 export type RootClaimTypeEnum = Enum<{
   Swap: undefined
   Keep: undefined
+  KeepSubnets: undefined
 }>
 
 export type RootClaimType = RootClaimTypeEnum["type"]
-
-export const DEFAULT_ROOT_CLAIM_TYPE: RootClaimType = "Swap"
