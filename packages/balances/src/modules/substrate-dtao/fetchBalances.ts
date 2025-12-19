@@ -297,6 +297,7 @@ const buildRootClaimableStorageCoder = async (
     }
   }
 
+  // TODO: Remove this entire block once mini metadata is working.
   if (!storageCoder) {
     try {
       const fullMetadataRpc = await connector.send<`0x${string}`>(
