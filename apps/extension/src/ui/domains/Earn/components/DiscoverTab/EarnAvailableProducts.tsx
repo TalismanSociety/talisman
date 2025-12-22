@@ -4,7 +4,7 @@ import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { YieldDto } from "extension-core"
 import { t } from "i18next"
-import { FC, PropsWithChildren, ReactNode } from "react"
+import { FC, PropsWithChildren, ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -14,7 +14,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useNetworkById, useToken } from "@ui/state"
+import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state"
 import { useYieldxyzProviders } from "@ui/state/yield"
 
 import { useYieldxyzProductsByTokenId } from "../../hooks/useYieldxyzProductsByTokenId"
@@ -25,38 +25,49 @@ import { EarnTypeBadge } from "../EarnTypeBadge"
 export const EarnAvailableProducts: FC<{
   isPopup?: boolean
   search: string
-}> = () =>
-  // {
-  // TODO
-  //  isPopup = false, search
-  //  }
-  {
-    useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
-    const { t } = useTranslation()
+}> = ({ search }) => {
+  useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)
+  const { t } = useTranslation()
+  const tokensMap = useTokensMap()
+  const networksMap = useNetworksMapById()
 
-    const { status, data: products } = useYieldxyzProductsByTokenId()
+  const { status, data: products } = useYieldxyzProductsByTokenId()
 
-    return (
-      <div className="flex w-full flex-col gap-4 overflow-hidden">
-        {products?.map(({ tokenId, products, bestApr, balances }) => (
-          <TokenProducts
-            key={tokenId}
-            products={products}
-            tokenId={tokenId}
-            bestApr={bestApr}
-            balances={balances}
-            isLoading={status === "loading"}
-          />
-        ))}
-        {status === "loading" && <TokenProductsShimmer />}
-        {status === "success" && !products?.length && (
-          <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-base">
-            {t("No opportunities found for your assets")}
-          </div>
-        )}
-      </div>
-    )
-  }
+  const displayProducts = useMemo(() => {
+    if (!search) return products
+
+    const lowerSearch = search.toLowerCase()
+    return products?.filter((p) => {
+      const token = tokensMap[p.tokenId]
+      const network = token ? networksMap[token.networkId] : null
+      const searcheable = [token?.symbol ?? "", token.name ?? "", network?.name ?? ""]
+        .join(" ")
+        .toLowerCase()
+      return searcheable.includes(lowerSearch)
+    })
+  }, [products, search, tokensMap, networksMap])
+
+  return (
+    <div className="flex w-full flex-col gap-4 overflow-hidden">
+      {displayProducts?.map(({ tokenId, products, bestApr, balances }) => (
+        <TokenProducts
+          key={tokenId}
+          products={products}
+          tokenId={tokenId}
+          bestApr={bestApr}
+          balances={balances}
+          isLoading={status === "loading"}
+        />
+      ))}
+      {status === "loading" && <TokenProductsShimmer />}
+      {status === "success" && !products?.length && (
+        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-base">
+          {t("No opportunities found for your assets")}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const TokenProducts: FC<{
   tokenId: TokenId
