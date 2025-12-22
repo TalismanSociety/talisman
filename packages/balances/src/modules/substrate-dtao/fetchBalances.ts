@@ -297,24 +297,6 @@ const buildRootClaimableStorageCoder = async (
     }
   }
 
-  // TODO: Remove this entire block once mini metadata is working.
-  if (!storageCoder) {
-    try {
-      const fullMetadataRpc = await connector.send<`0x${string}`>(
-        networkId,
-        "state_getMetadata",
-        [],
-      )
-      storageCoder = buildStorageCoder(fullMetadataRpc, "SubtensorModule", "RootClaimable")
-    } catch (cause) {
-      log.warn(
-        `Failed to build storage coder for SubtensorModule.RootClaimable from chain metadata on ${networkId}`,
-        { cause },
-      )
-      return null
-    }
-  }
-
   return storageCoder
 }
 
