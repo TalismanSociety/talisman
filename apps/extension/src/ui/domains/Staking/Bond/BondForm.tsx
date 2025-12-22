@@ -29,6 +29,7 @@ import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { STAKING_APR_UNAVAILABLE } from "../helpers"
 import { useStakingAPR } from "../hooks/nomPools/useStakingAPR"
 import { NominationPoolName } from "../NominationPools/NominationPoolName"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../shared/ModalContent"
 import { StakingFeeEstimate } from "../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../shared/StakingUnbondingPeriod"
 import { BondAccountPicker } from "./BondAccountPicker"
@@ -483,6 +484,7 @@ export const BondForm = () => {
       </Button>
 
       <BondAccountPicker
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         isOpen={accountPicker.isOpen}
         account={account}
         token={token}

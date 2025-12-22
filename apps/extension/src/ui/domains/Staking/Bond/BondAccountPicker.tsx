@@ -20,12 +20,14 @@ type BondAccountPickerProps = {
   onBackClick?: () => void
   onCloseClick?: () => void
   onAddressSelected: (address: Address) => void
+  containerId: string
 }
 
 export const BondAccountPicker = ({
   account,
   token,
   isOpen,
+  containerId,
   onAddressSelected,
   onBackClick,
   onCloseClick,
@@ -68,7 +70,7 @@ export const BondAccountPicker = ({
 
   return (
     <Modal
-      containerId="StakingModalDialog"
+      containerId={containerId}
       isOpen={isOpen}
       onDismiss={onBackClick}
       className="relative z-50 size-full"

@@ -6,7 +6,6 @@ import {
   ChangeEventHandler,
   FC,
   PropsWithChildren,
-  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -16,7 +15,6 @@ import {
 import { useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
 import { useBalance, useSelectedCurrency } from "@ui/state"
 
@@ -26,28 +24,17 @@ import { TokenLogo } from "../../../Asset/TokenLogo"
 import { Tokens } from "../../../Asset/Tokens"
 import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
-import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { BittensorAssetAccountSummary } from "../components/BittensorAssetAccountSummary"
+import { BittensorStakingModalHeader } from "../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
 import { ROOT_NETUID } from "../utils/constants"
 import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
-import { BittensorStakingModalHeader } from "./BittensorModalHeader"
-import { BittensorModalLayout } from "./BittensorModalLayout"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
-
-const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
-  if (!token) return null
-
-  return (
-    <div className="flex h-16 items-center gap-4 px-4">
-      <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
-      <div className="text-body text-base">{token.symbol}</div>
-    </div>
-  )
-}
 
 const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, account }) => {
   const balance = useBalance(account.address, token.id)
@@ -394,31 +381,20 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         <BittensorStakingModalHeader
           title={stakeDirection === "bond" ? t("Staking") : t("Unstake")}
           withClose
+          onCloseModal={close}
         />
       }
       contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
     >
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
-        <div className="flex h-16 items-center justify-between gap-4">
-          <div className="whitespace-nowrap">{t("Asset")}</div>
-          <div className="overflow-hidden">
-            <AssetPill token={nativeToken} />
-          </div>
-        </div>
-        <div className="flex h-16 items-center justify-between gap-4">
-          <div className="whitespace-nowrap">{t("Account")}</div>
-          <div className="overflow-hidden">
-            <Suspense fallback={<SuspenseTracker name="AccountPillButton" />}>
-              <BondAccountPillButton
-                address={account?.address}
-                onClick={() => {
-                  stakeDirection === "bond" ? accountPicker.open() : setStep("select-position")
-                }}
-              />
-            </Suspense>
-          </div>
-        </div>
-      </div>
+      <BittensorAssetAccountSummary
+        token={nativeToken}
+        accountAddress={account?.address}
+        onAccountClick={() => {
+          stakeDirection === "bond" ? accountPicker.open() : setStep("select-position")
+        }}
+        assetLabel={t("Asset")}
+        accountLabel={t("Account")}
+      />
       <AmountEdit />
       <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
         <div className="flex items-center justify-between">
@@ -491,6 +467,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       </Button>
 
       <BondAccountPicker
+        containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
         isOpen={accountPicker.isOpen}
         account={account}
         token={nativeToken}
