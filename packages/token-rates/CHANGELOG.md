@@ -1,5 +1,13 @@
 # @talismn/token-rates
 
+## 3.0.14
+
+### Patch Changes
+
+- Updated dependencies [87f53ed]
+- Updated dependencies [4bb06de]
+  - @talismn/chaindata-provider@1.3.3
+
 ## 3.0.13
 
 ### Patch Changes
