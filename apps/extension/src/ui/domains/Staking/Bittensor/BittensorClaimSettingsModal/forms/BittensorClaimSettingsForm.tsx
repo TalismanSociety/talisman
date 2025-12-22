@@ -43,18 +43,20 @@ export const BittensorClaimSettingsForm = () => {
     () => [
       {
         value: "Swap" as RootClaimType,
-        title: t("Receive Rewards in Tao"),
-        description: t("Rewards will be received in TAO and re-staked."),
+        title: t("Receive rewards in Tao"),
+        description: t("Rewards are converted to Tao and automatically re-staked. (Default)"),
       },
       {
         value: "Keep" as RootClaimType,
-        title: t("Receive Rewards in Alpha"),
-        description: t("Your rewards will be proportionally spread across Subnets."),
+        title: t("Receive rewards in Alpha"),
+        description: t("Rewards are kept in subnet alpha tokens, across all subnets."),
       },
       {
         value: "KeepSubnets" as RootClaimType,
-        title: t("Receive Rewards in selected Subnets"),
-        description: t("Your rewards will be proportionally spread across selected Subnets."),
+        title: t("Receive rewards in Selected Alpha"),
+        description: t(
+          "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao.",
+        ),
         disabled: true,
       },
     ],
@@ -84,11 +86,11 @@ export const BittensorClaimSettingsForm = () => {
         accountLabel={t("Account")}
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="mt-4 flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <span className="text-body text-sm font-semibold leading-[1.1]">{t("Reward Type")}</span>
           <span className="text-body-secondary text-xs leading-[1.4]">
-            {t("Choose how to receive Root emission rewards for this account.")}
+            {t("Select how this account receives root emission rewards.")}
           </span>
         </div>
 

@@ -30,6 +30,8 @@ export const calculatePendingRootClaimable = ({
     const scaledAlphaPrice = dynamicInfo
       ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
       : 0n
+    // Calculate claimable = claimable_rate * root_stake
+    // Note: claimableRate is a I96F32, a fixed-point number format
 
     // Multiply claimable_rate by root_stake
     // I96F32 multiplication: round((a * b) / 2^32)
