@@ -14,6 +14,7 @@ import {
 
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
 import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
@@ -142,9 +143,11 @@ export const BittensorSubnetBondReview = () => {
       }
       contentClassName="p-12 pt-0 flex flex-col w-full"
     >
-      <h2 className="mb-12 text-center">
-        {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
-      </h2>
+      <div className="mb-6 flex justify-center">
+        <div className="bg-grey-800 text-body-secondary rounded-full px-6 py-[6px] text-xs">
+          {stakeDirection === "bond" ? t("Staking") : t("Unstaking")}
+        </div>
+      </div>
       <div className="space-y-[0.75rem]">
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pb-2">
@@ -181,6 +184,24 @@ export const BittensorSubnetBondReview = () => {
               <BittensorValidatorName hotkey={hotkey} />
             </div>
           </div>
+          {stakeDirection === "bond" && (
+            <div className="flex items-center justify-between gap-8 py-2 text-xs">
+              <div className="flex items-center gap-1 whitespace-nowrap">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      {t("APY")}
+                      <InfoIcon />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="text-body overflow-hidden">
+                <ValidatorApy />
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
             <div className="text-body truncate">
@@ -355,6 +376,33 @@ const FeeEstimate = () => {
       error={errorFeeEstimate}
       noCountUp
     />
+  )
+}
+
+const ValidatorApy = () => {
+  const { t } = useTranslation()
+  const { hotkey, netuid } = useBittensorBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
+
+  const apy = useMemo(() => {
+    const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)
+    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
+  }, [combinedValidatorsData, hotkey])
+
+  const display = useMemo(() => (apy ? `${(apy * 100).toFixed(2)}%` : "N/A"), [apy])
+
+  if (isLoading) {
+    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+  }
+
+  if (isError) {
+    return <div className="text-alert-warn">{t("Unable to fetch APY data")}</div>
+  }
+
+  return (
+    <span className={classNames(apy ? "text-alert-success" : "text-body-secondary")}>
+      {display}
+    </span>
   )
 }
 
