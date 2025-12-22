@@ -6,7 +6,7 @@ import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
 import { DashboardLayout } from "../../layout/DashboardLayout"
 import { DashboardEarnPage } from "./DashboardEarnPage"
-import { DashboardYieldPositionPage } from "./DashboardYieldPositionPage"
+import { DashboardYieldxyzYieldPositionsPage } from "./DashboardYieldxyzYieldPositionsPage"
 
 export const DashboardEarnRoutes: FC = () => {
   return (
@@ -15,7 +15,10 @@ export const DashboardEarnRoutes: FC = () => {
         <EarnAssetsStateProvider>
           <Routes>
             <Route path="" element={<DashboardEarnPage />} />
-            <Route path="yield/:yieldId" element={<DashboardYieldPositionPage />} />
+            <Route
+              path="positions/yieldxyz/:yieldId/:address"
+              element={<DashboardYieldxyzYieldPositionsPage />}
+            />
           </Routes>
         </EarnAssetsStateProvider>
       </DashboardLayout>

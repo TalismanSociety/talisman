@@ -6,10 +6,8 @@ import { YieldxyzPositionEnhanced } from "extension-core"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -17,9 +15,10 @@ import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateCont
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useAccountByAddress, usePortfolioGlobalData, useTokensMap } from "@ui/state"
+import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
 import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
+import { AccountDisplay } from "../../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
 import { useGetYieldxyzToken } from "../../yieldxyz/hooks/useGetYieldxyzToken"
 import { EarnTypeBadge } from "../EarnTypeBadge"
@@ -29,50 +28,31 @@ const YieldPositionRow: FC<{
   status: LoadableStatus
 }> = ({ position, status }) => {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  const handleClick = useCallback(() => {
-    // Get validator address for the position
-    const validatorAddress = position.validatorAddress
-
-    // Preserve current account/folder from URL to prevent sidebar from resetting
-    // (yield position page will ignore account param and not filter by it)
-    const params = new URLSearchParams(searchParams)
-    // Remove account and folder from params, then add them back if they exist
-    const currentAccount = searchParams.get("account")
-    const currentFolder = searchParams.get("folder")
-    params.delete("account")
-    params.delete("folder")
-    if (validatorAddress) params.set("validator", validatorAddress)
-    // Preserve account/folder for sidebar (yield position will ignore it)
-    if (currentAccount) params.set("account", currentAccount)
-    if (currentFolder) params.set("folder", currentFolder)
-
-    const queryString = params.toString()
-    navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)
-  }, [position, navigate, searchParams])
-
-  const account = useAccountByAddress(position.address)
 
   return (
     <button
       type="button"
       className="hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm"
-      onClick={handleClick}
+      onClick={() =>
+        navigate(
+          `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`,
+        )
+      }
     >
       <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
-
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
         <div className="text-body h-[1.8rem] w-full truncate">
           {position.product.metadata.name}{" "}
           <EarnTypeBadge className="shrink-0">{position.product.mechanics?.type}</EarnTypeBadge>
         </div>
         <div className="flex items-center gap-3">
-          <AccountIcon address={position.address} />
-          {account?.name || shortenAddress(position.address)}
+          <AccountDisplay
+            address={position.address}
+            className="gap-[0.4em]"
+            iconClassName="text-[1.2em]"
+          />
         </div>
       </div>
-
       <div className="flex grow-0 flex-col items-end justify-center gap-2 overflow-hidden">
         <div>
           <TokensList position={position} />
@@ -270,7 +250,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
   const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
     useEarnAssetsState()
 
-  // Toggle handlers
+  //   Toggle handlers
   const handleDefiToggle = useCallback(() => {
     toggleDefiExpanded()
   }, [toggleDefiExpanded])
@@ -298,9 +278,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
       <button
         type="button"
         onClick={handleDefiToggle}
-        className={cn(
-          "text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-2 text-sm font-medium",
-        )}
+        className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-2 text-sm font-medium"
       >
         <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
         <div className="flex items-center gap-2">

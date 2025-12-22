@@ -9,7 +9,8 @@ import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
 import { EarnPageHeader } from "./components/EarnPageHeader"
 import { EarnPositionsTab } from "./components/EarnPositionsTab"
 
-const DEFAULT_TAB = DEBUG ? "discover" : "assets"
+// const DEFAULT_TAB = DEBUG ? "discover" : "assets"
+const DEFAULT_TAB = DEBUG ? "assets" : "assets"
 
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
