@@ -13,4 +13,4 @@ export const TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR =
 
 export const TALISMAN_FEE_BITTENSOR = 0.3
 
-export const DEFAULT_ROOT_CLAIM_TYPE: RootClaimType = "Keep"
+export const DEFAULT_ROOT_CLAIM_TYPE: RootClaimType = "Swap"

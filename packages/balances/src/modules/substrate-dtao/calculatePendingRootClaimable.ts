@@ -30,17 +30,10 @@ export const calculatePendingRootClaimable = ({
     const scaledAlphaPrice = dynamicInfo
       ? getScaledAlphaPrice(dynamicInfo.alpha_in, dynamicInfo.tao_in)
       : 0n
-    // Calculate claimable = claimable_rate * root_stake
-    // Note: I96F32 is a fixed-point number format
-    // We'll need to handle the fixed-point multiplication correctly
-    // For now, we'll do a simple multiplication and assume I96F32 is represented
-    // as a bigint with appropriate scaling
 
     // Multiply claimable_rate by root_stake
-    // I96F32 multiplication: (a * b) / 2^32 to handle fixed-point
-    // But without knowing the exact scaling, we'll do simple multiplication
-    // This might need adjustment based on actual I96F32 implementation
-    const pendingRootClaim = (stake * claimableRate) / 2n ** 32n
+    // I96F32 multiplication: round((a * b) / 2^32)
+    const pendingRootClaim = (stake * claimableRate + (1n << 31n)) >> 32n
 
     pendingRootClaimBalances.push({
       address,
