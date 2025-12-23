@@ -72,6 +72,8 @@ export const BittensorValidatorSelect = () => {
     combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined,
   )
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
   const displayedValidators = useMemo(() => {
     if (!sortedValidators) return undefined
 
@@ -99,6 +101,11 @@ export const BittensorValidatorSelect = () => {
         setSortedValidators(sortBondOptions(combinedValidatorsData, sortMethod))
       })
   }, [combinedValidatorsData, sortMethod])
+
+  // Reset scroll to top when sort method or search changes
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0)
+  }, [sortMethod, search])
 
   return (
     <BittensorModalLayout
@@ -135,6 +142,7 @@ export const BittensorValidatorSelect = () => {
             <div>{t("30 days APY")}</div>
           </div>
           <ScrollContainer
+            ref={scrollContainerRef}
             className="w-full grow"
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
