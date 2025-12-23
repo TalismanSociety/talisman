@@ -1,5 +1,19 @@
 # @talismn/balances
 
+## 1.3.0
+
+### Minor Changes
+
+- 4bb06de: Added Root claimable rewards to bittensor balances
+
+### Patch Changes
+
+- Updated dependencies [87f53ed]
+- Updated dependencies [4bb06de]
+  - @talismn/chaindata-provider@1.3.3
+  - @talismn/chain-connectors@0.0.12
+  - @talismn/token-rates@3.0.14
+
 ## 1.2.2
 
 ### Patch Changes

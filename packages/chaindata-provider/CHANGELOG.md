@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 1.3.3
+
+### Patch Changes
+
+- 87f53ed: prepare release (gen init data)
+- 4bb06de: generate init data
+
 ## 1.3.2
 
 ### Patch Changes
