@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react"
+import { InfoIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 
 import { TokenLogo } from "../../../../Asset/TokenLogo"
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
@@ -85,6 +89,24 @@ export const BittensorRootBondReview = () => {
             <BittensorValidatorName hotkey={hotkey} />
           </div>
         </div>
+        {stakeDirection === "bond" && (
+          <div className="flex items-center justify-between gap-8 py-2 text-xs">
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1">
+                    {t("APY")}
+                    <InfoIcon />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="text-body overflow-hidden">
+              <ValidatorApy />
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-8 py-2 text-xs">
           <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
           <div className="text-body truncate">
@@ -124,5 +146,32 @@ const FeeEstimate = () => {
       error={errorFeeEstimate}
       noCountUp
     />
+  )
+}
+
+const ValidatorApy = () => {
+  const { t } = useTranslation()
+  const { hotkey } = useBittensorBondWizard()
+  const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(null)
+
+  const apy = useMemo(() => {
+    const validator = combinedValidatorsData.find((validator) => validator.hotkey === hotkey)
+    return Number(validator?.validatorYield?.thirty_day_apy ?? 0)
+  }, [combinedValidatorsData, hotkey])
+
+  const display = useMemo(() => (apy ? `${(apy * 100).toFixed(2)}%` : "N/A"), [apy])
+
+  if (isLoading) {
+    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+  }
+
+  if (isError) {
+    return <div className="text-alert-warn">{t("Unable to fetch APY data")}</div>
+  }
+
+  return (
+    <span className={classNames(apy ? "text-alert-success" : "text-body-secondary")}>
+      {display}
+    </span>
   )
 }
