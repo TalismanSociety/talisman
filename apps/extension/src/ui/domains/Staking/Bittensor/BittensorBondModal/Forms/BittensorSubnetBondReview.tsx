@@ -136,18 +136,13 @@ export const BittensorSubnetBondReview = () => {
       header={
         <BittensorStakingModalHeader
           onCloseModal={close}
-          title={t("Confirm")}
+          title={stakeDirection === "bond" ? t("Confirm Staking") : t("Confirm Unstaking")}
           onBackClick={() => setStep("form")}
           withClose
         />
       }
       contentClassName="p-12 pt-0 flex flex-col w-full"
     >
-      <div className="mb-6 flex justify-center">
-        <div className="bg-grey-800 text-body-secondary rounded-full px-6 py-[6px] text-xs">
-          {stakeDirection === "bond" ? t("Staking") : t("Unstaking")}
-        </div>
-      </div>
       <div className="space-y-[0.75rem]">
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pb-2">
