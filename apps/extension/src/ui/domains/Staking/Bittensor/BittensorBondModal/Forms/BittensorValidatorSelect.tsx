@@ -32,10 +32,11 @@ import { useToken } from "@ui/state"
 
 import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 
@@ -62,6 +63,7 @@ export const BittensorValidatorSelect = () => {
   const { hotkey, netuid, setStep, setHotkey } = useBittensorBondWizard()
   const { combinedValidatorsData, isLoading, isError } = useCombinedBittensorValidatorsData(netuid)
 
+  const { close } = useBittensorBondModal()
   const [sortMethod, setSortMethod] = useState<SortValue>("totalStaked")
   const [rawSearch, setSearch] = useState<string>("")
   const search = useDeferredValue(rawSearch)
@@ -102,6 +104,7 @@ export const BittensorValidatorSelect = () => {
     <BittensorModalLayout
       header={
         <BittensorStakingModalHeader
+          onCloseModal={close}
           title={t("Select Validator")}
           onBackClick={() => setStep("form")}
           withClose

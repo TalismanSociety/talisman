@@ -9,9 +9,10 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 
 export const BittensorRootBondReview = () => {
   const { t } = useTranslation()
@@ -26,6 +27,7 @@ export const BittensorRootBondReview = () => {
     stakeDirection,
     setStep,
   } = useBittensorBondWizard()
+  const { close } = useBittensorBondModal()
 
   const [isDisabled, setIsDisabled] = useState(true)
 
@@ -42,6 +44,7 @@ export const BittensorRootBondReview = () => {
     <BittensorModalLayout
       header={
         <BittensorStakingModalHeader
+          onCloseModal={close}
           title={t("Confirm")}
           onBackClick={() => setStep("form")}
           withClose

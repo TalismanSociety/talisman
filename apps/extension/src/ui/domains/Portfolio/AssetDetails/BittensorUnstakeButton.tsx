@@ -33,7 +33,9 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
 
     const token = balance?.token as SubDTaoToken
 
-    return balance && token
+    const hasFreeBalance = !!balance?.free?.planck
+
+    return balance && token && hasFreeBalance
       ? {
           networkId: token.networkId,
           address: balance.address,

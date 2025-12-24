@@ -24,6 +24,8 @@ import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { StakingAccountDisplay } from "../../../shared/StakingAccountDisplay"
 import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
+import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
+import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { useGetSubnetFee } from "../../hooks/useGetSubnetFee"
@@ -32,8 +34,6 @@ import {
   TALISMAN_FEE_BITTENSOR,
   VERY_HIGH_PRICE_IMPACT,
 } from "../../utils/constants"
-import { BittensorStakingModalHeader } from "../BittensorModalHeader"
-import { BittensorModalLayout } from "../BittensorModalLayout"
 import { BittensorSlippageDrawer } from "../Drawers/BittensorSlippageDrawer"
 import { BittensorWarningDrawer } from "../Drawers/BittensorWarningDrawer"
 
@@ -134,6 +134,7 @@ export const BittensorSubnetBondReview = () => {
     <BittensorModalLayout
       header={
         <BittensorStakingModalHeader
+          onCloseModal={close}
           title={t("Confirm")}
           onBackClick={() => setStep("form")}
           withClose

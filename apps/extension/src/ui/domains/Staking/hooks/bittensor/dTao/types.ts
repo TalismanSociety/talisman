@@ -1,3 +1,5 @@
+import { Enum } from "@polkadot-api/substrate-bindings"
+
 type Pagination = {
   current_page: number
   per_page: number
@@ -170,3 +172,11 @@ export type SubnetsData = {
   pagination: Pagination
   data: Subnet[]
 }
+
+export type RootClaimTypeEnum = Enum<{
+  Swap: undefined
+  Keep: undefined
+  KeepSubnets: undefined
+}>
+
+export type RootClaimType = RootClaimTypeEnum["type"]
