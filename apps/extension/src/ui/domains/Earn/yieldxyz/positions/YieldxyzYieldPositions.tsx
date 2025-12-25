@@ -1,15 +1,29 @@
-import { ChevronLeftIcon } from "@talismn/icons"
-import { YieldDto, YieldxyzPositionEnhanced } from "extension-core"
-import { FC } from "react"
+import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
+import { cn, isNotNil } from "@talismn/util"
+import { BalanceDto, YieldDto, YieldxyzPositionEnhanced } from "extension-core"
+import { log } from "extension-shared"
+import { t } from "i18next"
+import { uniq } from "lodash-es"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
+import { Button, IconButton } from "talisman-ui"
 
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useYieldxyzProduct } from "@ui/state/yield"
+import { useYieldNetworkIdToTalismanNetworkIdMap, useYieldxyzProduct } from "@ui/state/yield"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
+import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
 import { YieldxyzProviderLogo } from "../components/YieldxyzProviderLogo"
+import { useYieldxyzEnterModal } from "../enter/useYieldxyzEnterModal"
+import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzYieldPositions } from "../hooks/useYieldxyzYieldPositions"
 
 /**
@@ -23,19 +37,23 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
   address,
 }) => {
   const { data: product } = useYieldxyzProduct(yieldId)
-  const { status, data: balances } = useYieldxyzYieldPositions(yieldId, address)
+  const { status, data: positions } = useYieldxyzYieldPositions(yieldId, address)
+
+  useEffect(() => {
+    log.debug("[earn] YieldxyzYieldPositions", { positions })
+  }, [positions])
 
   if (!product) return null
 
   return (
-    <div>
+    <div className="flex w-full flex-col gap-6 overflow-hidden">
       <NavHeader isLoading={status === "loading"} address={address} product={product} />
-      {balances?.map((balance, index) => (
-        <PositionBalance key={index} balance={balance} isLoading={status === "loading"} />
+      <div className="bg-grey-900 text-body-secondary rounded p-10">
+        DEV NOTE Here we should display APY, lockdown mechanisms
+      </div>
+      {positions?.map((balance, index) => (
+        <Position key={index} position={balance} isLoading={status === "loading"} />
       ))}
-      {/* <div>
-          Yieldxyz Yield Positions for yieldId: {yieldId} and address: {address}
-        </div> */}
     </div>
   )
 }
@@ -54,15 +72,7 @@ const NavHeader: FC<{ address: string; product: YieldDto; isLoading: boolean }> 
           <ChevronLeftIcon />
         </IconButton>
         <YieldxyzProviderLogo providerId={product.providerId} className="size-[3.6rem]" />
-        {/* <AssetLogo
-              url={
-                (position.balances[0] as unknown as { validator?: { logoURI?: string } })?.validator
-                  ?.logoURI ||
-                position.product?.metadata.logoURI ||
-                position.balances[0]?.token.logoURI
-              }
-              className="size-[3.6rem]"
-            /> */}
+
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8">
             <div className="text-body flex grow items-center overflow-hidden">
@@ -78,28 +88,147 @@ const NavHeader: FC<{ address: string; product: YieldDto; isLoading: boolean }> 
             <div className="shrink-0">-</div>
           </div>
         </div>
-        {/* <div className="flex grow flex-col gap-2 overflow-hidden">
-              <div className="text-body flex items-center gap-2 truncate text-sm font-bold">
-                <div className="grow truncate">{product.metadata.name} <EarnTypeBadge>{product.mechanics?.type}</EarnTypeBadge></div>
-                <div className="text-body-secondary border-grey-500 rounded-xs shrink-0 border px-2 py-1 text-[0.8rem]">
-                  {(position.product?.mechanics.type || "").toLocaleUpperCase()}
-                </div>
-              </div>
-              <div className="text-body-secondary truncate text-xs">
-                <PortfolioAccount address={address} />
-              </div>
-            </div>
-            <div className="flex shrink-0 flex-col gap-2 text-right">
-              <div className="text-body-secondary text-sm">{t("Total")}</div>
-              <div className="text-body text-base font-bold">
-                <FiatFromUsd amount={totalValue} isBalance />
-              </div>
-            </div> */}
       </div>
     </div>
   )
 }
 
-const PositionBalance: FC<{ balance: YieldxyzPositionEnhanced; isLoading: boolean }> = () => {
-  return <div></div>
+const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> = ({
+  position,
+  isLoading,
+}) => {
+  const { t } = useTranslation()
+
+  const { supplied, rewards } = useMemo(() => {
+    return position.balances.reduce<{
+      supplied: BalanceDto[]
+      rewards: BalanceDto[]
+    }>(
+      (acc, balance) => {
+        if (balance.type === "claimable") {
+          acc.rewards.push(balance)
+        } else {
+          acc.supplied.push(balance)
+        }
+        return acc
+      },
+      { supplied: [], rewards: [] },
+    )
+  }, [position.balances])
+
+  return (
+    <div className="flex w-full flex-col gap-6 overflow-hidden">
+      <PositionHeader position={position} />
+      <PositionBalancesGroup label={t("Supplied")} balances={supplied} isLoading={isLoading} />
+      <PositionBalancesGroup label={t("Rewards")} balances={rewards} isLoading={isLoading} />
+      <PositionActions position={position} />
+    </div>
+  )
+}
+
+const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  return (
+    <div className="flex w-full justify-end gap-8">
+      <PositionActionAddMore position={position} />
+    </div>
+  )
+}
+
+const PositionActionAddMore: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  const { open } = useYieldxyzEnterModal()
+
+  const handleClick = useCallback(() => {
+    open({
+      address: position.address,
+      productId: position.product.id,
+    })
+  }, [open, position])
+
+  if (!position.product.mechanics.arguments?.enter) return null
+
+  return <Button onClick={handleClick}>{t("Add to Position")}</Button>
+}
+
+const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoading: boolean }> = ({
+  label,
+  balances,
+}) => {
+  if (!balances.length) return null
+
+  return (
+    <div className="bg-grey-850 flex flex-col gap-0 overflow-hidden rounded px-10">
+      <div className="flex h-20 w-full items-center truncate font-bold">{label}</div>
+      <div>
+        {balances.map((balance, index) => (
+          <PositionBalancesGroupRow key={index} balance={balance} isLoading={false} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const PositionBalancesGroupRow: FC<{ balance: BalanceDto; isLoading: boolean }> = ({
+  balance,
+  isLoading,
+}) => {
+  const { getYieldxyzToken } = useGetYieldxyzToken()
+  const token = useMemo(() => getYieldxyzToken(balance.token), [balance.token, getYieldxyzToken])
+
+  return (
+    <div className="flex h-32 w-full shrink-0 items-center gap-8">
+      {token ? (
+        <TokenLogo tokenId={token?.id} className="size-16 shrink-0" />
+      ) : (
+        <AssetLogo className="size-16 shrink-0" url={balance.token.logoURI} />
+      )}
+      <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
+        <div className="text-body flex w-full justify-between overflow-hidden font-bold">
+          <div>{token ? <TokenDisplaySymbol tokenId={token.id} /> : balance.token.symbol}</div>
+          <div className={cn(isLoading && "animate-pulse")}>
+            <Tokens amount={balance.amount} decimals={balance.token.decimals} noCountUp />{" "}
+            {balance.token.symbol}
+          </div>
+        </div>
+        <div className="text-body-secondary flex w-full justify-between overflow-hidden text-sm">
+          <div>
+            <YieldxyzBalanceTypeDisplay balance={balance} />
+          </div>
+          <div className={cn(isLoading && "animate-pulse")}>
+            {balance.amountUsd ? <FiatFromUsd amount={Number(balance.amountUsd)} noCountUp /> : "-"}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  const toTalismanNetworkId = useYieldNetworkIdToTalismanNetworkIdMap()
+
+  const networkId = useMemo(
+    () => toTalismanNetworkId[position.product.network],
+    [position.product.network, toTalismanNetworkId],
+  )
+
+  const productTokens = useMemo(() => {
+    if (position.product.outputToken)
+      return position.product.outputToken.name ?? position.product.outputToken.symbol
+
+    return uniq(position.product.inputTokens.filter(isNotNil).map((t) => t.symbol)).join("/")
+  }, [position.product.inputTokens, position.product.outputToken])
+
+  return (
+    <div className="bg-grey-800 flex h-32 w-full items-center gap-8 rounded px-10">
+      <div className="flex grow flex-col gap-2 overflow-hidden">
+        <div className="text-body truncate text-base font-bold">{productTokens}</div>
+        <div className="text-body-secondary flex max-w-full items-center gap-[0.3em] overflow-hidden">
+          <NetworkLogo networkId={networkId} className="size-8 shrink-0" />
+          <NetworkName networkId={networkId} className="truncate text-sm" />
+        </div>
+      </div>
+      <IconButton>
+        <MoreHorizontalIcon />
+      </IconButton>
+    </div>
+  )
 }

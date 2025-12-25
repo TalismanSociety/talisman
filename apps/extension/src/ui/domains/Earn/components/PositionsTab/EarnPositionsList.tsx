@@ -6,7 +6,6 @@ import { YieldxyzPositionEnhanced } from "extension-core"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -15,6 +14,7 @@ import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateCont
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
 import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
 
@@ -27,7 +27,7 @@ const YieldPositionRow: FC<{
   position: YieldxyzPositionEnhanced // TODO change back to YieldxyzPosition after moving display fields
   status: LoadableStatus
 }> = ({ position, status }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
 
   return (
     <button
