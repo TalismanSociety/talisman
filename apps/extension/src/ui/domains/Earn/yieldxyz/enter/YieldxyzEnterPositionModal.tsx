@@ -14,7 +14,7 @@ export const YieldxyzEnterPositionModal: FC = () => {
   return (
     <Modal containerId="main" isOpen={isOpen} onDismiss={close}>
       <PopupSizeModalContainer id="earn-modal">
-        <Suspense fallback={<SuspenseTracker name="EarnDepositModal" />}>
+        <Suspense fallback={<SuspenseTracker name="YieldxyzEnterPositionModal" />}>
           <YieldxyzEnterWizardProvider stateInit={stateInit}>
             <YieldxyzEnterPositionWizard />
           </YieldxyzEnterWizardProvider>

@@ -5,7 +5,14 @@ import { log } from "extension-shared"
 import { t } from "i18next"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, IconButton } from "talisman-ui"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  IconButton,
+} from "talisman-ui"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -22,6 +29,7 @@ import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
 import { YieldxyzProviderLogo } from "../components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../enter/useYieldxyzEnterModal"
+import { useYieldxyzExitModal } from "../exit/useYieldxyzExitModal"
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzYieldPositions } from "../hooks/useYieldxyzYieldPositions"
 
@@ -223,9 +231,38 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
           <NetworkName networkId={networkId} className="truncate text-sm" />
         </div>
       </div>
-      <IconButton>
-        <MoreHorizontalIcon />
-      </IconButton>
+      <PositionContextMenuButton position={position} />
     </div>
+  )
+}
+
+const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  const { open: openEnter } = useYieldxyzEnterModal()
+  const { open: openExit } = useYieldxyzExitModal()
+
+  const handleAddToPositionClick = useCallback(() => {
+    openEnter({
+      address: position.address,
+      productId: position.product.id,
+    })
+  }, [openEnter, position])
+
+  const handleWithdrawClick = useCallback(() => {
+    openExit(position)
+  }, [openExit, position])
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <IconButton>
+          <MoreHorizontalIcon />
+        </IconButton>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuItem onClick={handleAddToPositionClick}>{t("Add to Position")}</ContextMenuItem>
+        <ContextMenuItem>{t("Claim")}</ContextMenuItem>
+        <ContextMenuItem onClick={handleWithdrawClick}>{t("Withdraw")}</ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

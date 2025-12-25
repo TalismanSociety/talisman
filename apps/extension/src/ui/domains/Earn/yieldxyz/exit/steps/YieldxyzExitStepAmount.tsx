@@ -1,13 +1,12 @@
-import { cn } from "@talismn/util"
 import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
 
-import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -16,13 +15,13 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
-import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
-import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
+import { useYieldxyzExitModal } from "../useYieldxyzExitModal"
+import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
 
-export const YieldxyzEnterStepAmount = () => {
+export const YieldxyzExitStepAmount = () => {
   const { t } = useTranslation()
-  const { close } = useYieldxyzEnterModal()
-  const { address, goTo, canCreateAction, createAction, product } = useYieldxyzEnterWizard()
+  const { close } = useYieldxyzExitModal()
+  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzExitWizard()
 
   const [processing, setProcessing] = useState(false)
 
@@ -36,21 +35,21 @@ export const YieldxyzEnterStepAmount = () => {
     }
   }
 
-  if (!product) return null
+  if (!position?.product) return null
 
   return (
     <WizardModalDialog
       className="size-full border-none"
-      title={"Enter Position"}
+      title={"Exit Position"}
       onCloseClick={close}
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
-            <AddressPillButton
-              className="!w-full"
-              address={address}
-              onClick={() => goTo("account")}
+            <AccountDisplay
+              address={position.address}
+              ss58Format={network?.platform === "polkadot" ? network.prefix : undefined}
+              className="h-[2em]"
             />
           </FormFieldSetRow>
         </FormFieldSet>
@@ -68,13 +67,13 @@ export const YieldxyzEnterStepAmount = () => {
           </FormFieldSet>
           <FormFieldSet>
             <FormFieldSetRow label={t("DeFi Product")} variant="xs">
-              <YieldxyzProductTitleDisplay product={product} />
+              <YieldxyzProductTitleDisplay product={position.product} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Provider")} variant="xs">
-              <YieldxyzProviderDisplay providerId={product.providerId} />
+              <YieldxyzProviderDisplay providerId={position.product.providerId} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Expected Rewards")} variant="xs">
-              <YieldxyzProductYieldDisplay product={product} />
+              <YieldxyzProductYieldDisplay product={position.product} />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Claim Mechanism")} variant="xs">
               <ClaimMechanismDisplay />
@@ -84,21 +83,21 @@ export const YieldxyzEnterStepAmount = () => {
               description={t("Warmup period before rewards start accruing")}
               variant="xs"
             >
-              <PeriodDisplay period={product.mechanics.warmupPeriod} />
+              <PeriodDisplay period={position.product.mechanics.warmupPeriod} />
             </FormFieldSetRow>
             <FormFieldSetRow
               label={t("Lockup Period")}
               description={t("Minimum time before exit can be initiated")}
               variant="xs"
             >
-              <PeriodDisplay period={product.mechanics.lockupPeriod} />
+              <PeriodDisplay period={position.product.mechanics.lockupPeriod} />
             </FormFieldSetRow>
             <FormFieldSetRow
               label={t("Cooldown Period")}
               description={t("Time required before exit is allowed")}
               variant="xs"
             >
-              <PeriodDisplay period={product.mechanics.cooldownPeriod} />
+              <PeriodDisplay period={position.product.mechanics.cooldownPeriod} />
             </FormFieldSetRow>
           </FormFieldSet>
         </div>
@@ -124,14 +123,14 @@ const PeriodDisplay = ({ period }: { period: TimePeriodDto | undefined }) => {
 const ClaimMechanismDisplay = () => {
   const { t } = useTranslation()
 
-  const { product } = useYieldxyzEnterWizard()
+  const { position } = useYieldxyzExitWizard()
 
   return useMemo(() => {
-    if (!product) return null
+    if (!position?.product) return null
 
-    const mode = product.mechanics.rewardClaiming === "auto" ? t("Automatic") : t("Manual")
+    const mode = position.product.mechanics.rewardClaiming === "auto" ? t("Automatic") : t("Manual")
 
-    switch (product.mechanics.rewardSchedule) {
+    switch (position.product.mechanics.rewardSchedule) {
       case "block":
         return t(`{{mode}} every block`, { mode })
       case "campaign":
@@ -151,59 +150,60 @@ const ClaimMechanismDisplay = () => {
     }
 
     return
-  }, [product, t])
+  }, [position, t])
 }
 
 const NetworkDisplay = () => {
-  const { tokenIn } = useYieldxyzEnterWizard()
+  const { position } = useYieldxyzExitWizard()
 
-  if (!tokenIn) return null
+  if (!position) return null
 
   return (
     <div className="text-body flex w-full items-center gap-2 overflow-hidden">
-      <NetworkLogo className="size-8" networkId={tokenIn.networkId} />
-      <NetworkName className="truncate" networkId={tokenIn.networkId} />
+      <NetworkLogo className="size-8" networkId={position.networkId} />
+      <NetworkName className="truncate" networkId={position.networkId} />
     </div>
   )
 }
 
 const DepositAmountEdit = () => {
-  const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
-    useYieldxyzEnterWizard()
+  return null
+  // const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
+  //   useYieldxyzExitWizard()
 
-  if (!tokenIn) throw new Error("TokenIn is not defined")
+  // if (!tokenIn) throw new Error("TokenIn is not defined")
 
-  return (
-    <AmountEdit
-      tokenId={tokenIn.id}
-      value={amountIn}
-      onValueChanged={onAmountInChanged}
-      onMaxClick={setMaxAmountIn}
-      error={validationError}
-    />
-  )
+  // return (
+  //   <AmountEdit
+  //     tokenId={tokenIn.id}
+  //     value={amountIn}
+  //     onValueChanged={onAmountInChanged}
+  //     onMaxClick={setMaxAmountIn}
+  //     error={validationError}
+  //   />
+  // )
 }
 
 const AvailableBalance = () => {
-  const { balance, tokenIn, isLoadingBalance } = useYieldxyzEnterWizard()
+  const { balance } = useYieldxyzExitWizard()
 
-  if (!tokenIn) return null
-
-  if (!balance?.transferable.planck && isLoadingBalance)
-    return (
-      <div className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">
-        0 TNK ($0.00)
-      </div>
-    )
+  if (!balance) return null
 
   return (
-    <TokensAndFiat
-      planck={balance?.transferable.planck ?? 0n}
-      tokenId={tokenIn.id}
-      noCountUp
-      isBalance
-      className={cn("text-body-secondary", isLoadingBalance && "animate-pulse")}
-      tokensClassName="text-body"
-    />
+    <>
+      <Tokens
+        amount={balance.amount}
+        symbol={balance.token.symbol}
+        decimals={balance.token.decimals}
+        isBalance
+        noCountUp
+      />
+      {!!balance.amountUsd && (
+        <span className="text-body-secondary">
+          {" "}
+          (<FiatFromUsd amount={Number(balance.amountUsd)} noCountUp isBalance />)
+        </span>
+      )}
+    </>
   )
 }

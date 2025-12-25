@@ -1,3 +1,4 @@
+import { Balance } from "@talismn/balances"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
 import { planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
@@ -5,7 +6,8 @@ import { uniq } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useBalance, useNetworkById } from "@ui/state"
+import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yield"
 
 import { useDummyTransaction } from "../../hooks/useDummyTransaction"
@@ -22,7 +24,7 @@ export type YieldxyzEnterWizardInit = {
 }
 
 export type YieldxyzEnterWizardState = {
-  step: "product" | "account" | "amount" | "confirm"
+  step: "account" | "amount" | "confirm" // | "product"
   address: string | null
   productId: string | null
   validatorAddress: string | null // TODO remove, replace with generic "args"
@@ -31,7 +33,7 @@ export type YieldxyzEnterWizardState = {
 
 const advanceStep = (state: YieldxyzEnterWizardState): YieldxyzEnterWizardState => {
   const selectStep = (state: YieldxyzEnterWizardState) => {
-    if (!state.productId) return "product"
+    // if (!state.productId) return "product"
     if (!state.address) return "account"
     return state.step
   }
@@ -76,7 +78,20 @@ const useYieldxyzEnterWizardProvider = ({
 
   const network = useNetworkById(tokenIn?.networkId)
 
-  const balance = useBalance(state.address, tokenIn?.id)
+  const balanceParams = useMemo<BalanceByParamsProps>(() => {
+    if (!state.address || !tokenIn) return {}
+    return {
+      addressesAndTokens: {
+        addresses: [state.address],
+        tokenIds: [tokenIn.id],
+      },
+    }
+  }, [state.address, tokenIn])
+  const { status: balancesStatus, balances } = useBalancesByParams(balanceParams)
+  const balance = useMemo(() => {
+    return balances.each[0] as Balance | undefined
+  }, [balances])
+  //const balance = useBalance(state.address, tokenIn?.id) ?? 0n // TODO rework this hook so we can know the loading state
 
   const dummyTx = useDummyTransaction({
     address: state.address ?? undefined,
@@ -180,6 +195,7 @@ const useYieldxyzEnterWizardProvider = ({
     setMaxAmountIn,
     onAccountChanged,
     onSubmit,
+    isLoadingBalance: balancesStatus === "initialising",
     isLoadingProduct: status === "loading" && !product,
     isLoadingAction,
     isProcessing,

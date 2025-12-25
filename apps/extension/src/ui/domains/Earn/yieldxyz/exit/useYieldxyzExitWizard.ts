@@ -1,19 +1,15 @@
-import { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { planckToTokens } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
-import { TokenDto, YieldxyzPositionEnhanced } from "extension-core"
+import { YieldxyzPositionEnhanced } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { erc20Abi, isHex } from "viem"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useNetworkById } from "@ui/state"
 
 import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
-import { useYieldxyzEnterModal } from "./useYieldxyzExitModal"
+import { useYieldxyzExitModal } from "./useYieldxyzExitModal"
 
 export type YieldxyzExitWizardInit = YieldxyzPositionEnhanced
 
@@ -23,76 +19,12 @@ export type YieldxyzExitWizardState = {
   amountOut: bigint | null
 }
 
-const useErc20Balance = ({
-  networkId,
-  accountAddress,
-  tokenAddress,
-}: {
-  networkId: EthNetworkId | undefined
-  tokenAddress: string | null | undefined
-  accountAddress: string | null | undefined
-}) => {
-  const publicClient = usePublicClient(networkId)
-
-  return useQuery({
-    queryKey: ["erc20-balance", publicClient?.uid, accountAddress, tokenAddress],
-    enabled: !!publicClient && !!accountAddress && !!tokenAddress,
-    queryFn: async () => {
-      if (!publicClient || !isHex(accountAddress) || !isHex(tokenAddress)) return null
-
-      try {
-        const balance = await publicClient.readContract({
-          address: tokenAddress,
-          abi: erc20Abi,
-          functionName: "balanceOf",
-          args: [accountAddress],
-        })
-        return balance
-      } catch (error) {
-        log.error("Failed to fetch ERC20 balance", {
-          error,
-          accountAddress,
-          tokenAddress,
-          networkId,
-        })
-        return null
-      }
-    },
-  })
-}
-
-const useBalanceTokenOut = ({
-  token,
-  address,
-  network,
-}: {
-  network: Network | null | undefined
-  token: TokenDto | null | undefined
-  address: string | null | undefined
-}) => {
-  // here we need to consider the token is not known by talisman, as it's most likely a vault contract
-  // lets consider it can only be either a ERC20 or SPL token for now
-  const qErc20 = useErc20Balance({
-    networkId: network?.id ?? undefined,
-    tokenAddress: token?.address,
-    accountAddress: address,
-  })
-
-  // always return one of them
-  return useMemo(() => {
-    switch (network?.platform) {
-      default:
-        return qErc20
-    }
-  }, [network?.platform, qErc20])
-}
-
-const useYieldxyzEnterWizardProvider = ({
+const useYieldxyzExitWizardProvider = ({
   position,
 }: {
   position: YieldxyzPositionEnhanced | null
 }) => {
-  const { close, isOpen } = useYieldxyzEnterModal()
+  const { close, isOpen } = useYieldxyzExitModal()
   const [state, setState] = useState<YieldxyzExitWizardState>(() => ({
     step: "amount",
     position,
@@ -101,19 +33,28 @@ const useYieldxyzEnterWizardProvider = ({
 
   const network = useNetworkById(state.position?.networkId)
 
-  const { data: balance } = useBalanceTokenOut({
-    network,
-    token: state.position?.product.token,
-    address: state.position?.address,
-  })
+  const balance = useMemo(() => {
+    // here we assume there can only be one active balance per position
+    // might need to verify this later
+    const activeBalances = state.position?.balances.filter((b) => b.type === "active")
+    if (!activeBalances?.length) return undefined
+    if (activeBalances.length > 1) {
+      log.warn("Position has multiple active balances, which is not supported", {
+        position,
+        activeBalances,
+      })
+      return undefined
+    }
+
+    return activeBalances[0]
+  }, [position, state.position?.balances])
 
   const [inputs, talismanValidationError] = useMemo(() => {
-    if (!state.amountOut || !position?.product.token || typeof balance !== "bigint")
-      return [null, null]
-    if (state.amountOut > balance) return [null, "Insufficient balance"]
+    if (!state.amountOut || !position?.product.token || !balance) return [null, null]
+    if (state.amountOut > BigInt(balance.amountRaw)) return [null, "Insufficient balance"]
 
     const inputs = {
-      amount: planckToTokens(state.amountOut.toString(), position.product.token.decimals),
+      amount: planckToTokens(state.amountOut.toString(), balance.token.decimals),
     }
     return [inputs, null]
   }, [state.amountOut, position?.product.token, balance])
@@ -151,8 +92,8 @@ const useYieldxyzEnterWizardProvider = ({
   }, [close, isOpen])
 
   const setMaxAmountOut = useCallback(() => {
-    if (typeof balance !== "bigint") return
-    setState((state) => ({ ...state, amountOut: balance }))
+    if (!balance) return
+    setState((state) => ({ ...state, amountOut: BigInt(balance.amountRaw) }))
   }, [balance])
 
   const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
@@ -167,12 +108,13 @@ const useYieldxyzEnterWizardProvider = ({
   useEffect(() => {
     log.debug("useYieldxyzExitWizard state changed", {
       ...state,
+      balance,
       action,
       isLoadingAction,
       errorAction,
       transaction,
     })
-  }, [state, action, isLoadingAction, errorAction, transaction])
+  }, [state, action, isLoadingAction, errorAction, transaction, balance])
 
   return {
     ...state,
@@ -194,6 +136,6 @@ const useYieldxyzEnterWizardProvider = ({
   }
 }
 
-export const [YieldxyzEnterWizardProvider, useYieldxyzEnterWizard] = provideContext(
-  useYieldxyzEnterWizardProvider,
+export const [YieldxyzExitWizardProvider, useYieldxyzExitWizard] = provideContext(
+  useYieldxyzExitWizardProvider,
 )
