@@ -12,8 +12,8 @@ import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
 type UseYieldxyzTransactionManagerProps = {
   action: ActionDto | null
-  address: string | null
-  networkId: NetworkId | null
+  address: string | null | undefined
+  networkId: NetworkId | null | undefined
   refreshAction: () => Promise<void>
   submitActionTransaction: (transactionId: string, hash: string) => Promise<void>
   onCompleted: () => void

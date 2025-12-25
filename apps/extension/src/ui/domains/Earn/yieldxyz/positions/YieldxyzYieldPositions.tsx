@@ -1,9 +1,8 @@
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
-import { cn, isNotNil } from "@talismn/util"
+import { cn } from "@talismn/util"
 import { BalanceDto, YieldDto, YieldxyzPositionEnhanced } from "extension-core"
 import { log } from "extension-shared"
 import { t } from "i18next"
-import { uniq } from "lodash-es"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, IconButton } from "talisman-ui"
@@ -211,11 +210,9 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
   )
 
   const productTokens = useMemo(() => {
-    if (position.product.outputToken)
-      return position.product.outputToken.name ?? position.product.outputToken.symbol
-
-    return uniq(position.product.inputTokens.filter(isNotNil).map((t) => t.symbol)).join("/")
-  }, [position.product.inputTokens, position.product.outputToken])
+    return position.product.token.name ?? position.product.token.symbol
+    // return uniq(position.product.inputTokens.filter(isNotNil).map((t) => t.symbol)).join("/")
+  }, [position.product.token.name, position.product.token.symbol])
 
   return (
     <div className="bg-grey-800 flex h-32 w-full items-center gap-8 rounded px-10">

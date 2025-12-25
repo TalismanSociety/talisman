@@ -11,18 +11,18 @@ import { useYieldxyzProduct } from "@ui/state/yield"
 import { useDummyTransaction } from "../../hooks/useDummyTransaction"
 import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
+import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
-import { useYieldxyzEnterAction } from "./useYieldxyzEnterAction"
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {
   address?: string
-  tokenId?: string
+  tokenId?: string // TODO use this to filter products that accept this token
   productId?: string
 }
 
 export type YieldxyzEnterWizardState = {
-  step: "product" | "account" | "validator" | "amount" | "confirm" | "follow-up"
+  step: "product" | "account" | "amount" | "confirm"
   address: string | null
   productId: string | null
   validatorAddress: string | null // TODO remove, replace with generic "args"
@@ -104,7 +104,8 @@ const useYieldxyzEnterWizardProvider = ({
     createAction,
     refreshAction,
     submitActionTransaction,
-  } = useYieldxyzEnterAction({
+  } = useYieldxyzAction({
+    type: "enter",
     address: state.address,
     yieldId: state.productId,
     args,
