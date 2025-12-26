@@ -74,6 +74,8 @@ export const BittensorSubnetSelect = () => {
     sortSubnetOptions(subnetData, sortMethod),
   )
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
   const displayedSubnets = useMemo(() => {
     const lowerSearch = deferredSearch.toLowerCase()
     return sortedSubnets.filter((subnet) => {
@@ -98,6 +100,11 @@ export const BittensorSubnetSelect = () => {
       setSortedSubnets(sortSubnetOptions(subnetData, sortMethod))
     })
   }, [sortMethod, subnetData])
+
+  // Reset scroll to top when sort method or search changes
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0)
+  }, [sortMethod, deferredSearch])
 
   return (
     <BittensorModalLayout
@@ -135,6 +142,7 @@ export const BittensorSubnetSelect = () => {
             <div>{t("Emissions / Alpha Price")}</div>
           </div>
           <ScrollContainer
+            ref={scrollContainerRef}
             className="w-full grow"
             innerClassName="flex flex-col w-full bg-black-secondary"
           >
