@@ -16,7 +16,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
-import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"

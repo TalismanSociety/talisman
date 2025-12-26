@@ -18,7 +18,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import {
   useTalismanNetworkIdFromYieldNetworkId,
   useYieldxyzPositionsEnhanced,
-} from "@ui/state/yield"
+} from "@ui/state/yieldxyz"
 
 interface GroupedTokenData {
   tokenSymbol: string

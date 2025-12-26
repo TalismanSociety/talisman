@@ -3,7 +3,7 @@ import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { useYieldxyzProvider } from "@ui/state/yield"
+import { useYieldxyzProvider } from "@ui/state/yieldxyz"
 
 export const YieldxyzProviderLogo: FC<{
   providerId: string | null | undefined

@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworkById } from "@ui/state"
-import { useYieldxyzProduct } from "@ui/state/yield"
+import { useYieldxyzProduct } from "@ui/state/yieldxyz"
 
 import { useDummyTransaction } from "../../hooks/useDummyTransaction"
 import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"

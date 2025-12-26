@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
-import { useYieldxyzPositionsEnhanced } from "@ui/state/yield"
+import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
 
 import { PopupEarnAssetsTab } from "./PopupEarnAssetsTab"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"

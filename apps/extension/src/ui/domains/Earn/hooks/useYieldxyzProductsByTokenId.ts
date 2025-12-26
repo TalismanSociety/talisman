@@ -8,7 +8,7 @@ import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useSelectedCurrency } from "@ui/state"
-import { useYieldxyzProducts } from "@ui/state/yield"
+import { useYieldxyzProducts } from "@ui/state/yieldxyz"
 
 import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 

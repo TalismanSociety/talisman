@@ -19,7 +19,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNetworkById, useTokens } from "@ui/state"
-import { useYieldxyzProduct } from "@ui/state/yield"
+import { useYieldxyzProduct } from "@ui/state/yieldxyz"
 
 import { ClaimModal } from "../ClaimModal"
 import { ConfirmClaimModal } from "../ConfirmClaimModal"

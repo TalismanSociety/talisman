@@ -15,7 +15,7 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state"
-import { useYieldxyzProviders } from "@ui/state/yield"
+import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 
 import { useYieldxyzProductsByTokenId } from "../../hooks/useYieldxyzProductsByTokenId"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"

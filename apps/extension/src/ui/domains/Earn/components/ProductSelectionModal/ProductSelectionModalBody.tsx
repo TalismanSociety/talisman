@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useToken } from "@ui/state"
-import { useYieldxyzProducts } from "@ui/state/yield"
+import { useYieldxyzProducts } from "@ui/state/yieldxyz"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { ConfirmDepositModal } from "../.."
