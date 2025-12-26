@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldxyzProductsByTokenId } from "@ui/domains/Earn/hooks/useYieldxyzProductsByTokenId"
+import { useYieldxyzProductsByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzProductsByTokenId"
 import { useSelectedCurrency } from "@ui/state"
 
 export const EarnPageHeader = () => {

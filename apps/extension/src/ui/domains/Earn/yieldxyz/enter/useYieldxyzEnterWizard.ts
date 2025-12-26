@@ -11,10 +11,10 @@ import { useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yieldxyz"
 
 import { useDummyTransaction } from "../../hooks/useDummyTransaction"
-import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
+import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
 import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {

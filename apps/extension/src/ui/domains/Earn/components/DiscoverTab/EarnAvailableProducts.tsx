@@ -17,9 +17,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state"
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 
-import { useYieldxyzProductsByTokenId } from "../../hooks/useYieldxyzProductsByTokenId"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../../yieldxyz/enter/useYieldxyzEnterModal"
+import { useYieldxyzProductsByTokenId } from "../../yieldxyz/hooks/useYieldxyzProductsByTokenId"
 import { EarnTypeBadge } from "../EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{

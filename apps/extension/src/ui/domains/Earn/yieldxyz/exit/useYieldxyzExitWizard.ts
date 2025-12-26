@@ -6,9 +6,9 @@ import { provideContext } from "@talisman/util/provideContext"
 import { useNetworkById } from "@ui/state"
 import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 
-import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
+import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
 import { useYieldxyzExitModal } from "./useYieldxyzExitModal"
 
 export type YieldxyzExitWizardInit = YieldxyzPositionEnhanced
