@@ -1,14 +1,13 @@
 import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
-import { isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
 
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import { GenericTokensAndFiat } from "@ui/domains/Asset/GenericTokensAndFiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
-import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -17,13 +16,13 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
-import { useYieldxyzExitModal } from "../useYieldxyzExitModal"
-import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
+import { useYieldxyzClaimModal } from "../useYieldxyzClaimModal"
+import { useYieldxyzClaimWizard } from "../useYieldxyzClaimWizard"
 
-export const YieldxyzExitStepAmount = () => {
+export const YieldxyzClaimStepAmount = () => {
   const { t } = useTranslation()
-  const { close } = useYieldxyzExitModal()
-  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzExitWizard()
+  const { close } = useYieldxyzClaimModal()
+  const { position, goTo, canCreateAction, createAction, network } = useYieldxyzClaimWizard()
 
   const [processing, setProcessing] = useState(false)
 
@@ -42,7 +41,7 @@ export const YieldxyzExitStepAmount = () => {
   return (
     <WizardModalDialog
       className="size-full border-none"
-      title={"Exit Position"}
+      title={"Claim Rewards"}
       onCloseClick={close}
     >
       <div className="flex size-full flex-col gap-8 overflow-hidden">
@@ -56,7 +55,7 @@ export const YieldxyzExitStepAmount = () => {
           </FormFieldSetRow>
         </FormFieldSet>
         <div className="grow">
-          <ExitAmountEdit />
+          <AmountToClaim />
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
@@ -125,7 +124,7 @@ const PeriodDisplay = ({ period }: { period: TimePeriodDto | undefined }) => {
 const ClaimMechanismDisplay = () => {
   const { t } = useTranslation()
 
-  const { position } = useYieldxyzExitWizard()
+  const { position } = useYieldxyzClaimWizard()
 
   return useMemo(() => {
     if (!position?.product) return null
@@ -156,7 +155,7 @@ const ClaimMechanismDisplay = () => {
 }
 
 const NetworkDisplay = () => {
-  const { position } = useYieldxyzExitWizard()
+  const { position } = useYieldxyzClaimWizard()
 
   if (!position) return null
 
@@ -168,41 +167,25 @@ const NetworkDisplay = () => {
   )
 }
 
-const ExitAmountEdit = () => {
-  const { position, amountOut, validationError, onAmountOutChanged, setMaxAmountOut } =
-    useYieldxyzExitWizard()
+const AmountToClaim = () => {
+  const { balance } = useYieldxyzClaimWizard()
 
-  const priceUsd = useMemo(() => {
-    try {
-      if (!position) return null
-      const anyBalance = position?.balances.find((b) => isEqual(b.token, position.product.token))
-      if (!anyBalance?.amountUsd || !Number(anyBalance.amount)) return null
-      return Number(anyBalance.amountUsd) / Number(anyBalance.amount)
-    } catch {
-      // if anything goes wrong, just return null instead of crashing the whole component
-      return null
-    }
-  }, [position])
+  if (!balance) throw new Error("TokenIn is not defined")
 
-  if (!position) throw new Error("TokenIn is not defined")
-
-  // TODO if token is known by talisman use AmountEdit instead
   return (
-    <GenericAmountEdit
-      decimals={position.product.token.decimals}
-      symbol={position.product.token.symbol}
-      logo={position.product.token.logoURI}
-      priceUsd={priceUsd}
-      value={amountOut}
-      onValueChanged={onAmountOutChanged}
-      onMaxClick={setMaxAmountOut}
-      error={validationError}
-    />
+    <div className="text-md flex size-full flex-col items-center justify-center overflow-hidden">
+      <GenericTokensAndFiat
+        noFiat
+        symbol={balance.token.symbol}
+        decimals={balance.token.decimals}
+        planck={balance.amountRaw}
+      />
+    </div>
   )
 }
 
 const PositionBalance = () => {
-  const { balance } = useYieldxyzExitWizard()
+  const { balance } = useYieldxyzClaimWizard()
 
   if (!balance) return null
 

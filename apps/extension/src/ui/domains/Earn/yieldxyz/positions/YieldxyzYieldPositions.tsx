@@ -30,6 +30,7 @@ import {
 } from "@ui/state/yieldxyz"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
+import { useYieldxyzClaimModal } from "../claim/useYieldxyzClaimModal"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
 import { YieldxyzProviderLogo } from "../components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../enter/useYieldxyzEnterModal"
@@ -58,23 +59,34 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
 
   return (
     <div className="flex w-full flex-col gap-6 overflow-hidden">
-      <NavHeader isLoading={status === "loading"} address={address} product={product} />
+      <NavHeader
+        isLoading={status === "loading"}
+        address={address}
+        product={product}
+        positions={positions}
+      />
       <div className="bg-grey-900 text-body-secondary rounded p-10">
         DEV NOTE Here we should display APY, lockdown mechanisms
       </div>
-      {positions?.map((balance, index) => (
-        <Position key={index} position={balance} isLoading={status === "loading"} />
+      {positions?.map((position, index) => (
+        <Position key={index} position={position} isLoading={status === "loading"} />
       ))}
     </div>
   )
 }
 
-const NavHeader: FC<{ address: string; product: YieldDto; isLoading: boolean }> = ({
-  address,
-  product,
-}) => {
+const NavHeader: FC<{
+  address: string
+  product: YieldDto
+  positions: YieldxyzPositionEnhanced[] | undefined
+  isLoading: boolean
+}> = ({ address, product, positions }) => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
+  const totalUsd = useMemo(
+    () => positions?.reduce((acc, position) => acc + position.totalAmountUsd, 0),
+    [positions],
+  )
 
   return (
     <div className="flex h-28 w-full items-center gap-8">
@@ -96,7 +108,9 @@ const NavHeader: FC<{ address: string; product: YieldDto; isLoading: boolean }> 
             <div className="text-body-secondary grow">
               <PortfolioAccount address={address} />
             </div>
-            <div className="shrink-0">-</div>
+            <div className="shrink-0">
+              <FiatFromUsd amount={totalUsd} isBalance />
+            </div>
           </div>
         </div>
       </div>
@@ -223,7 +237,6 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 
   const productTokens = useMemo(() => {
     return position.product.token.name ?? position.product.token.symbol
-    // return uniq(position.product.inputTokens.filter(isNotNil).map((t) => t.symbol)).join("/")
   }, [position.product.token.name, position.product.token.symbol])
 
   return (
@@ -243,6 +256,7 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
   const { open: openEnter } = useYieldxyzEnterModal()
   const { open: openExit } = useYieldxyzExitModal()
+  const { open: openClaim } = useYieldxyzClaimModal()
 
   const handleAddToPositionClick = useCallback(() => {
     openEnter({
@@ -251,21 +265,44 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
     })
   }, [openEnter, position])
 
-  const handleWithdrawClick = useCallback(() => {
+  const handleExitClick = useCallback(() => {
     openExit(position)
   }, [openExit, position])
 
+  const handleClaimClick = useCallback(() => {
+    openClaim(position)
+  }, [openClaim, position])
+
+  const handleWithdrawClick = useCallback(() => {
+    log.debug("[earn] Withdraw clicked for position", { position })
+  }, [position])
+
+  const { canClaim, canWithdraw, canExit } = useMemo(() => {
+    return {
+      canClaim: position.balances.some((b) => b.type === "claimable"),
+      canWithdraw: position.balances.some((b) => b.type === "withdrawable"),
+      canExit: position.balances.some((b) => b.type === "active"), // TODO check that if there is a warm up period on the product, balances are typed as "locked" instead of "active"
+    }
+  }, [position])
+
   return (
-    <ContextMenu>
+    <ContextMenu placement="bottom-end">
       <ContextMenuTrigger asChild>
         <IconButton>
           <MoreHorizontalIcon />
         </IconButton>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={handleAddToPositionClick}>{t("Add to Position")}</ContextMenuItem>
-        <ContextMenuItem>{t("Claim")}</ContextMenuItem>
-        <ContextMenuItem onClick={handleWithdrawClick}>{t("Withdraw")}</ContextMenuItem>
+        <ContextMenuItem onClick={handleAddToPositionClick}>{t("Add to position")}</ContextMenuItem>
+        <ContextMenuItem disabled={!canClaim} onClick={handleClaimClick}>
+          {t("Claim")}
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!canExit} onClick={handleExitClick}>
+          {t("Exit position")}
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!canWithdraw} onClick={handleWithdrawClick}>
+          {t("Withdraw")}
+        </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>
   )

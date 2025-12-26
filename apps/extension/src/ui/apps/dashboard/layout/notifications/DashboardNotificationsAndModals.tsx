@@ -6,6 +6,7 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { YieldxyzClaimPositionModal } from "@ui/domains/Earn/yieldxyz/claim/YieldxyzClaimPositionModal"
 // import { ProductSelectionModal } from "@ui/domains/Earn"
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
@@ -65,6 +66,7 @@ export const DashboardNotificationsAndModals = () => {
       <SeekBenefitsModal />
       <YieldxyzEnterPositionModal />
       <YieldxyzExitPositionModal />
+      <YieldxyzClaimPositionModal />
     </Suspense>
   )
 }

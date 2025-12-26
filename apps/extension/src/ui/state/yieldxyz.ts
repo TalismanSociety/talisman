@@ -160,6 +160,20 @@ const enhanceYieldxyzPositions = (
       const product = productById[position.yieldId]
       if (!product) return null
 
+      // ignore the position if no balances
+      if (
+        !position.balances.filter((b) => {
+          // if only a claimable balance without a way to claim, ignore it.
+          // happens on some products from provider Upshift
+          if (b.type === "claimable" && !b.pendingActions.length) return false
+
+          // TODO identify other non-actionable balance types and ignore them too
+
+          return true
+        }).length
+      )
+        return null
+
       const totalAmountUsd = position.balances.reduce(
         (sum, b) => sum + parseFloat(b.amountUsd || "0"),
         0,

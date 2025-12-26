@@ -1,4 +1,3 @@
-import { planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -9,49 +8,52 @@ import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzActionValidation } from "../hooks/useYieldxyzActionValidation"
-import { useYieldxyzExitModal } from "./useYieldxyzExitModal"
+import { useYieldxyzClaimModal } from "./useYieldxyzClaimModal"
 
-export type YieldxyzExitWizardInit = YieldxyzPositionEnhanced
+export type YieldxyzClaimWizardInit = YieldxyzPositionEnhanced
 
-export type YieldxyzExitWizardState = {
+export type YieldxyzClaimWizardState = {
   step: "amount" | "confirm"
-  position: YieldxyzExitWizardInit | null
-  amountOut: bigint | null
+  position: YieldxyzClaimWizardInit | null
 }
 
-const useYieldxyzExitWizardProvider = ({
+const useYieldxyzClaimWizardProvider = ({
   position,
 }: {
   position: YieldxyzPositionEnhanced | null
 }) => {
-  const { close, isOpen } = useYieldxyzExitModal()
-  const [state, setState] = useState<YieldxyzExitWizardState>(() => {
-    const balance = position ? getExitableBalance(position) : undefined
-    return {
-      step: "amount",
-      position,
-      amountOut: balance?.amountRaw ? BigInt(balance.amountRaw) : null,
-    }
-  })
+  const { close, isOpen } = useYieldxyzClaimModal()
+  const [state, setState] = useState<YieldxyzClaimWizardState>(() => ({
+    step: "amount",
+    position,
+  }))
 
   const network = useNetworkById(state.position?.networkId)
 
-  const balance = useMemo(() => getExitableBalance(state.position), [state.position])
+  const balance = useMemo(() => {
+    // here we assume there can only be one active balance per position
+    // might need to verify this later
+    const activeBalances = state.position?.balances.filter((b) => b.type === "claimable")
+    if (!activeBalances?.length) return undefined
+    if (activeBalances.length > 1) {
+      log.warn("Position has multiple active balances, which is not supported", {
+        position,
+        activeBalances,
+      })
+      return undefined
+    }
+
+    return activeBalances[0]
+  }, [position, state.position?.balances])
 
   const [inputs, talismanValidationError] = useMemo(() => {
-    if (!state.amountOut || !position?.product.token || !balance) return [null, null]
-    if (state.amountOut > BigInt(balance.amountRaw)) return [null, "Insufficient balance"]
-
-    const inputs = {
-      amount: planckToTokens(state.amountOut.toString(), balance.token.decimals),
-      // ⚠️ on products that do not support useMaxAmount, if rewards are per block, we will always leave some dust in the vault.
-      useMaxAmount: state.amountOut === BigInt(balance.amountRaw),
-    }
-    return [inputs, null]
-  }, [state.amountOut, position?.product.token, balance])
+    // TODO look for gotchas here, this is a simplified version
+    if (!balance) return [null, null]
+    return [{ amount: balance.amount }, null]
+  }, [balance])
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
-    schema: state.position?.product?.mechanics.arguments?.exit,
+    schema: state.position?.product?.mechanics.arguments?.manage?.["CLAIM"], // TODO pick the correct action dynamically, from balance.pendingActions
     inputs,
   })
 
@@ -64,7 +66,7 @@ const useYieldxyzExitWizardProvider = ({
     refreshAction,
     submitActionTransaction,
   } = useYieldxyzAction({
-    type: "exit",
+    type: "exit", // TODO update to use  "manage"
     address: state.position?.address,
     yieldId: state.position?.yieldId,
     args,
@@ -74,7 +76,7 @@ const useYieldxyzExitWizardProvider = ({
     setState((state) => ({ ...state, amountOut }))
   }, [])
 
-  const goTo = useCallback((step: YieldxyzExitWizardState["step"]) => {
+  const goTo = useCallback((step: YieldxyzClaimWizardState["step"]) => {
     setState((state) => ({ ...state, step }))
   }, [])
 
@@ -97,7 +99,7 @@ const useYieldxyzExitWizardProvider = ({
   })
 
   useEffect(() => {
-    log.debug("useYieldxyzExitWizard state changed", {
+    log.debug("useYieldxyzClaimWizard state changed", {
       ...state,
       balance,
       action,
@@ -127,20 +129,6 @@ const useYieldxyzExitWizardProvider = ({
   }
 }
 
-export const [YieldxyzExitWizardProvider, useYieldxyzExitWizard] = provideContext(
-  useYieldxyzExitWizardProvider,
+export const [YieldxyzClaimWizardProvider, useYieldxyzClaimWizard] = provideContext(
+  useYieldxyzClaimWizardProvider,
 )
-
-const getExitableBalance = (position: YieldxyzPositionEnhanced | null) => {
-  const activeBalances = position?.balances.filter((b) => b.type === "active")
-  if (!activeBalances?.length) return undefined
-  if (activeBalances.length > 1) {
-    log.warn("Position has multiple active balances, which is not supported", {
-      position,
-      activeBalances,
-    })
-    return undefined
-  }
-
-  return activeBalances[0]
-}

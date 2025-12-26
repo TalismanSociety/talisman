@@ -1,8 +1,7 @@
 import { Balance } from "@talismn/balances"
 import { isTokenInTypes } from "@talismn/chaindata-provider"
-import { planckToTokens } from "@talismn/util"
+import { isNotNil, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
-import { uniq } from "lodash-es"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -27,7 +26,6 @@ export type YieldxyzEnterWizardState = {
   step: "account" | "amount" | "confirm" // | "product"
   address: string | null
   productId: string | null
-  validatorAddress: string | null // TODO remove, replace with generic "args"
   amountIn: bigint | null
 }
 
@@ -47,7 +45,6 @@ const initializeState = (init: YieldxyzEnterWizardInit | null): YieldxyzEnterWiz
     step: "amount",
     address: init?.address ?? null,
     productId: init?.productId ?? null,
-    validatorAddress: null,
     amountIn: null,
   })
 
@@ -62,17 +59,26 @@ const useYieldxyzEnterWizardProvider = ({
   const { getYieldxyzToken } = useGetYieldxyzToken()
 
   const tokenIn = useMemo(() => {
-    if (!product) return null
-    const tokens = product.inputTokens.map(getYieldxyzToken)
-    if (!tokens.length) return null
-    if (tokens.some((t) => t === null)) return null
-    if (uniq(tokens.map((t) => t!.id)).length > 1) {
+    if (!product?.inputTokens.length) return null
+
+    const tokens = product.inputTokens.map(getYieldxyzToken).filter(isNotNil)
+    if (tokens.length !== product.inputTokens.length) return null
+
+    if (tokens.length > 1) {
+      // some products support both ETH and WETH as inputs. allow those but force native token as input
+      // TODO: verify that if multiple tokens here, it's always ETH and WETH.
+      const natives = tokens.filter((t) =>
+        isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"]),
+      )
+      if (natives.length === 1) return natives[0]!
+
       log.error("Product has multiple different input tokens, which is not supported", {
-        productId: product.id,
+        product,
         tokens,
       })
       return null
     }
+
     return tokens[0]!
   }, [product, getYieldxyzToken])
 
@@ -91,7 +97,6 @@ const useYieldxyzEnterWizardProvider = ({
   const balance = useMemo(() => {
     return balances.each[0] as Balance | undefined
   }, [balances])
-  //const balance = useBalance(state.address, tokenIn?.id) ?? 0n // TODO rework this hook so we can know the loading state
 
   const dummyTx = useDummyTransaction({
     address: state.address ?? undefined,
