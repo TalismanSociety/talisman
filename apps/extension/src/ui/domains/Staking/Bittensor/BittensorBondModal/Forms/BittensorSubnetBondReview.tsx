@@ -26,6 +26,7 @@ import { StakingFeeEstimate } from "../../../shared/StakingFeeEstimate"
 import { StakingUnbondingPeriod } from "../../../shared/StakingUnbondingPeriod"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
+import { ValidatorApy } from "../../components/ValidatorApy"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import { useGetSubnetFee } from "../../hooks/useGetSubnetFee"
@@ -135,16 +136,13 @@ export const BittensorSubnetBondReview = () => {
       header={
         <BittensorStakingModalHeader
           onCloseModal={close}
-          title={t("Confirm")}
+          title={stakeDirection === "bond" ? t("Confirm Staking") : t("Confirm Unstaking")}
           onBackClick={() => setStep("form")}
           withClose
         />
       }
       contentClassName="p-12 pt-0 flex flex-col w-full"
     >
-      <h2 className="mb-12 text-center">
-        {stakeDirection === "bond" ? t("You are Staking") : t("You are Unstaking")}
-      </h2>
       <div className="space-y-[0.75rem]">
         <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
           <div className="flex items-center justify-between gap-8 pb-2">
@@ -181,6 +179,24 @@ export const BittensorSubnetBondReview = () => {
               <BittensorValidatorName hotkey={hotkey} />
             </div>
           </div>
+          {stakeDirection === "bond" && (
+            <div className="flex items-center justify-between gap-8 py-2 text-xs">
+              <div className="flex items-center gap-1 whitespace-nowrap">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      {t("APY")}
+                      <InfoIcon />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="text-body overflow-hidden">
+                <ValidatorApy />
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
             <div className="text-body truncate">
