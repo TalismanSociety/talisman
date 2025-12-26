@@ -1,5 +1,6 @@
 import { formatDuration, intervalToDuration } from "date-fns"
 import { TimePeriodDto } from "extension-core"
+import { isEqual } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
@@ -7,6 +8,7 @@ import { Button, WizardModalDialog } from "talisman-ui"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
+import { GenericAmountEdit } from "@ui/domains/Earn/shared/GenericAmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -58,8 +60,8 @@ export const YieldxyzExitStepAmount = () => {
         </div>
         <div className="flex w-full flex-col gap-4">
           <FormFieldSet>
-            <FormFieldSetRow label={t("Available Balance")} variant="xs">
-              <AvailableBalance />
+            <FormFieldSetRow label={t("Position Balance")} variant="xs">
+              <PositionBalance />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Network")} variant="xs">
               <NetworkDisplay />
@@ -167,24 +169,38 @@ const NetworkDisplay = () => {
 }
 
 const DepositAmountEdit = () => {
-  return null
-  // const { tokenIn, amountIn, validationError, onAmountInChanged, setMaxAmountIn } =
-  //   useYieldxyzExitWizard()
+  const { position, amountOut, validationError, onAmountOutChanged, setMaxAmountOut } =
+    useYieldxyzExitWizard()
 
-  // if (!tokenIn) throw new Error("TokenIn is not defined")
+  const priceUsd = useMemo(() => {
+    try {
+      if (!position) return null
+      const anyBalance = position?.balances.find((b) => isEqual(b.token, position.product.token))
+      if (!anyBalance?.amountUsd || !Number(anyBalance.amount)) return null
+      return Number(anyBalance.amountUsd) / Number(anyBalance.amount)
+    } catch {
+      // if anything goes wrong, just return null instead of crashing the whole component
+      return null
+    }
+  }, [position])
 
-  // return (
-  //   <AmountEdit
-  //     tokenId={tokenIn.id}
-  //     value={amountIn}
-  //     onValueChanged={onAmountInChanged}
-  //     onMaxClick={setMaxAmountIn}
-  //     error={validationError}
-  //   />
-  // )
+  if (!position) throw new Error("TokenIn is not defined")
+
+  return (
+    <GenericAmountEdit
+      decimals={position.product.token.decimals}
+      symbol={position.product.token.symbol}
+      logo={position.product.token.logoURI}
+      priceUsd={priceUsd}
+      value={amountOut}
+      onValueChanged={onAmountOutChanged}
+      onMaxClick={setMaxAmountOut}
+      error={validationError}
+    />
+  )
 }
 
-const AvailableBalance = () => {
+const PositionBalance = () => {
   const { balance } = useYieldxyzExitWizard()
 
   if (!balance) return null
