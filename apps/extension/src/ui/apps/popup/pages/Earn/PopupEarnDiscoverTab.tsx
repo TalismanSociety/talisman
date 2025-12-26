@@ -1,27 +1,27 @@
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
+// import { FC } from "react"
+// import { useTranslation } from "react-i18next"
 
-import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
-import { EarnAvailableProducts } from "@ui/domains/Earn/components/DiscoverTab/EarnAvailableProducts"
+// import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
+// import { EarnAvailableProducts } from "@ui/domains/Earn/components/DiscoverTab/EarnAvailableProducts"
 
-export const PopupEarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
-  const { t } = useTranslation()
+// export const PopupEarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
+//   const { t } = useTranslation()
 
-  return (
-    <div className="flex w-full flex-col gap-6">
-      {/* Earn on your assets section */}
-      <div className="mb-4">
-        <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Earn on your assets")}</h2>
-        <EarnAvailableProducts isPopup={true} search={search} />
-      </div>
+//   return (
+//     <div className="flex w-full flex-col gap-6">
+//       {/* Earn on your assets section */}
+//       <div className="mb-4">
+//         <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Earn on your assets")}</h2>
+//         <EarnAvailableProducts isPopup={true} search={search} />
+//       </div>
 
-      {/* Discover opportunities section */}
-      <div className="mb-6">
-        <h2 className="text-body-secondary mb-4 text-sm font-medium">
-          {t("Discover opportunities")}
-        </h2>
-        <DiscoverOpportunities isPopup={true} search={search} />
-      </div>
-    </div>
-  )
-}
+//       {/* Discover opportunities section */}
+//       <div className="mb-6">
+//         <h2 className="text-body-secondary mb-4 text-sm font-medium">
+//           {t("Discover opportunities")}
+//         </h2>
+//         <DiscoverOpportunities isPopup={true} search={search} />
+//       </div>
+//     </div>
+//   )
+// }

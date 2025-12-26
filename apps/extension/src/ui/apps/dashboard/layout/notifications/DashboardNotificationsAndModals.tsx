@@ -6,7 +6,7 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
-import { ProductSelectionModal } from "@ui/domains/Earn"
+// import { ProductSelectionModal } from "@ui/domains/Earn"
 import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
 import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
 import { GetStartedModals } from "@ui/domains/Portfolio/GetStarted/GetStartedModals"
@@ -51,7 +51,7 @@ export const DashboardNotificationsAndModals = () => {
       <AccountRenameModal />
       <BondModal />
       <BittensorBondModal />
-      <ProductSelectionModal />
+      {/* <ProductSelectionModal /> */}
       <BittensorClaimSettingsModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />

@@ -1,11 +1,11 @@
-import { FC, ReactNode } from "react"
+// import { FC, ReactNode } from "react"
 
-import { ClaimWizardProvider } from "../context/ClaimWizardContext"
+// import { ClaimWizardProvider } from "../context/ClaimWizardContext"
 
-interface ClaimProviderProps {
-  children: ReactNode
-}
+// interface ClaimProviderProps {
+//   children: ReactNode
+// }
 
-export const ClaimProvider: FC<ClaimProviderProps> = ({ children }) => {
-  return <ClaimWizardProvider>{children}</ClaimWizardProvider>
-}
+// export const ClaimProvider: FC<ClaimProviderProps> = ({ children }) => {
+//   return <ClaimWizardProvider>{children}</ClaimWizardProvider>
+// }

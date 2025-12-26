@@ -1,25 +1,25 @@
-import { createContext, ReactNode, useContext } from "react"
+// import { createContext, ReactNode, useContext } from "react"
 
-import { useWithdrawFunds } from "./useWithdrawFunds"
+// import { useWithdrawFunds } from "./useWithdrawFunds"
 
-type WithdrawFundsData = ReturnType<typeof useWithdrawFunds>
+// type WithdrawFundsData = ReturnType<typeof useWithdrawFunds>
 
-const WithdrawFundsContext = createContext<WithdrawFundsData | null>(null)
+// const WithdrawFundsContext = createContext<WithdrawFundsData | null>(null)
 
-export const WithdrawFundsProvider = ({ children }: { children: ReactNode }) => {
-  const withdrawFundsData = useWithdrawFunds()
+// export const WithdrawFundsProvider = ({ children }: { children: ReactNode }) => {
+//   const withdrawFundsData = useWithdrawFunds()
 
-  return (
-    <WithdrawFundsContext.Provider value={withdrawFundsData}>
-      {children}
-    </WithdrawFundsContext.Provider>
-  )
-}
+//   return (
+//     <WithdrawFundsContext.Provider value={withdrawFundsData}>
+//       {children}
+//     </WithdrawFundsContext.Provider>
+//   )
+// }
 
-export const useWithdrawFundsContext = () => {
-  const context = useContext(WithdrawFundsContext)
-  if (!context) {
-    throw new Error("useWithdrawFundsContext must be used within WithdrawFundsProvider")
-  }
-  return context
-}
+// export const useWithdrawFundsContext = () => {
+//   const context = useContext(WithdrawFundsContext)
+//   if (!context) {
+//     throw new Error("useWithdrawFundsContext must be used within WithdrawFundsProvider")
+//   }
+//   return context
+// }

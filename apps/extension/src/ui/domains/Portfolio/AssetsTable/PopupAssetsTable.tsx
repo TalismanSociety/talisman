@@ -1,9 +1,7 @@
 import { Balances } from "@talismn/balances"
-import { isAddressEqual } from "@talismn/crypto"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { isAccountOwned } from "extension-core"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -15,19 +13,13 @@ import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { EarnPillButton } from "@ui/domains/Earn"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
-import {
-  useNetworkById,
-  usePortfolioGlobalData,
-  useRemoteConfig,
-  useSelectedCurrency,
-} from "@ui/state"
+import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -68,7 +60,7 @@ const AssetRow: FC<{
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
-  const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
 
@@ -103,22 +95,22 @@ const AssetRow: FC<{
 
   const { canBond } = useBondButton({ balances })
   const showStakingButton = canBond && !locked
-  const remoteConfig = useRemoteConfig()
+  // const remoteConfig = useRemoteConfig()
 
-  const showEarnButton = useMemo(
-    () =>
-      !canBond &&
-      token?.id &&
-      remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
-      balances
-        .find({ tokenId: token.id })
-        .each.some((b) =>
-          selectedAccounts.some(
-            (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
-          ),
-        ),
-    [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
-  )
+  // const showEarnButton = useMemo(
+  //   () =>
+  //     !canBond &&
+  //     token?.id &&
+  //     remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
+  //     balances
+  //       .find({ tokenId: token.id })
+  //       .each.some((b) =>
+  //         selectedAccounts.some(
+  //           (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
+  //         ),
+  //       ),
+  //   [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
+  // )
 
   if (!token || !summary || !network) return null
 
@@ -199,11 +191,11 @@ const AssetRow: FC<{
         </div>
       </button>
       {/* Dynamic button positioning based on which buttons are shown */}
-      {showEarnButton && (
+      {/* {showEarnButton && (
         <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
           <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
         </div>
-      )}
+      )} */}
       {showStakingButton && (
         <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
           <BondPillButton
