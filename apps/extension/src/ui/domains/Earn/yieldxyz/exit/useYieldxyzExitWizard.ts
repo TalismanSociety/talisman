@@ -1,10 +1,10 @@
 import { planckToTokens } from "@talismn/util"
-import { YieldxyzPositionEnhanced } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { useNetworkById } from "@ui/state"
+import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 
 import { useYieldxyzActionValidation } from "../../hooks/useYieldxyzActionValidation"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"

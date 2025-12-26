@@ -2,7 +2,6 @@ import { Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
 import { classNames, cn, isNotNil, LoadableStatus } from "@talismn/util"
-import { YieldxyzPositionEnhanced } from "extension-core"
 import { isNil, toPairs, uniq } from "lodash-es"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -16,7 +15,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
-import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
+import { useYieldxyzPositionsEnhanced, YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
@@ -234,7 +233,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
       const search = [token.symbol, token.name]
       for (const position of positions) {
         search.push(
-          position.displayName,
+          position.product.metadata.name,
           position.product.providerId,
           ...(position.product.tags ?? []),
         )

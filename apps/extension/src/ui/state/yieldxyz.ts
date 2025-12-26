@@ -1,17 +1,16 @@
 import { bind } from "@react-rxjs/core"
 import { NetworkId } from "@talismn/chaindata-provider"
-import { Loadable } from "@talismn/util"
+import { isNotNil, Loadable } from "@talismn/util"
 import {
-  createYieldxyzPositions,
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
   Networks,
   YieldDto,
   YieldxyzPosition,
-  YieldxyzPositionEnhanced,
   YieldxyzProvider,
 } from "extension-core"
 import { log } from "extension-shared"
+import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
@@ -109,7 +108,7 @@ export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
           : "success"
       const data =
         positionsLoadable.data && productsLoadable.data
-          ? createYieldxyzPositions(positionsLoadable.data, productsLoadable.data)
+          ? enhanceYieldxyzPositions(positionsLoadable.data, productsLoadable.data)
           : undefined
 
       return { status, data } as Loadable<YieldxyzPositionEnhanced[]>
@@ -144,3 +143,29 @@ export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalis
       ),
     null,
   )
+
+export type YieldxyzPositionEnhanced = YieldxyzPosition & {
+  totalAmountUsd: number
+  product: YieldDto
+}
+
+const enhanceYieldxyzPositions = (
+  positions: YieldxyzPosition[],
+  products: YieldDto[],
+): YieldxyzPositionEnhanced[] => {
+  const productById = keyBy(products, (p) => p.id)
+
+  return positions
+    .map((position): YieldxyzPositionEnhanced | null => {
+      const product = productById[position.yieldId]
+      if (!product) return null
+
+      const totalAmountUsd = position.balances.reduce(
+        (sum, b) => sum + parseFloat(b.amountUsd || "0"),
+        0,
+      )
+
+      return { ...position, totalAmountUsd, product }
+    })
+    .filter(isNotNil)
+}

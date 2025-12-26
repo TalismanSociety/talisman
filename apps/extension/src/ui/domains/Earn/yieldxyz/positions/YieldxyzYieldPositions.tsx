@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { BalanceDto, YieldDto, YieldxyzPositionEnhanced } from "extension-core"
+import { BalanceDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
 import { t } from "i18next"
 import { FC, useCallback, useEffect, useMemo } from "react"
@@ -23,7 +23,11 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
-import { useYieldNetworkIdToTalismanNetworkIdMap, useYieldxyzProduct } from "@ui/state/yieldxyz"
+import {
+  useYieldNetworkIdToTalismanNetworkIdMap,
+  useYieldxyzProduct,
+  YieldxyzPositionEnhanced,
+} from "@ui/state/yieldxyz"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"

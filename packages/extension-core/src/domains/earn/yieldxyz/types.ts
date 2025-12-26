@@ -60,20 +60,6 @@ export type YieldxyzPosition = {
   balances: BalanceDto[]
 }
 
-// Simplified yield position with validator grouping
-export type YieldxyzPositionEnhanced = YieldxyzPosition & {
-  // Validator address if applicable
-  validatorAddress?: string
-  // Display-ready fields
-  displayName: string
-  totalAmountUsd: number
-  product: YieldDto
-}
-
-// UI subscription response type (store-backed), mirroring DeFi
-// export type YieldxyzPositionsResponse = import("@talismn/util").Loadable<
-//   YieldxyzBalancesDtoWithProduct[]
-// >
 export type YieldxyzPositionsResponse = Loadable<YieldxyzPosition[]>
 export type YieldxyzOpportunitiesResponse = Loadable<YieldDto[]>
 export type YieldxyzProvidersResponse = Loadable<YieldxyzProvider[]>

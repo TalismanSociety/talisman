@@ -1,11 +1,11 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon, ExternalLinkIcon, ZapIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { BalanceDto, YieldxyzPositionEnhanced } from "extension-core"
+import { BalanceDto } from "extension-core"
 import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
@@ -18,6 +18,7 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import {
   useTalismanNetworkIdFromYieldNetworkId,
   useYieldxyzPositionsEnhanced,
+  YieldxyzPositionEnhanced,
 } from "@ui/state/yieldxyz"
 
 interface GroupedTokenData {
@@ -35,36 +36,36 @@ const PopupYieldPositionRow: FC<{
   position: YieldxyzPositionEnhanced
   tokenBalance: BalanceDto
 }> = ({ position, tokenBalance }) => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  // const navigate = useNavigate()
+  // const [searchParams] = useSearchParams()
   const networkId = useTalismanNetworkIdFromYieldNetworkId(position.product?.network)
 
-  const handleClick = useCallback(() => {
-    // Get validator address for the position
-    const validatorAddress = position.validatorAddress
+  // const handleClick = useCallback(() => {
+  //   // Get validator address for the position
+  //   const validatorAddress = position.validatorAddress
 
-    // Preserve current account/folder from URL to prevent sidebar from resetting
-    // (yield position page will ignore account param and not filter by it)
-    const params = new URLSearchParams(searchParams)
-    // Remove account and folder from params, then add them back if they exist
-    const currentAccount = searchParams.get("account")
-    const currentFolder = searchParams.get("folder")
-    params.delete("account")
-    params.delete("folder")
-    if (validatorAddress) params.set("validator", validatorAddress)
-    // Preserve account/folder for sidebar (yield position will ignore it)
-    if (currentAccount) params.set("account", currentAccount)
-    if (currentFolder) params.set("folder", currentFolder)
+  //   // Preserve current account/folder from URL to prevent sidebar from resetting
+  //   // (yield position page will ignore account param and not filter by it)
+  //   const params = new URLSearchParams(searchParams)
+  //   // Remove account and folder from params, then add them back if they exist
+  //   const currentAccount = searchParams.get("account")
+  //   const currentFolder = searchParams.get("folder")
+  //   params.delete("account")
+  //   params.delete("folder")
+  //   if (validatorAddress) params.set("validator", validatorAddress)
+  //   // Preserve account/folder for sidebar (yield position will ignore it)
+  //   if (currentAccount) params.set("account", currentAccount)
+  //   if (currentFolder) params.set("folder", currentFolder)
 
-    const queryString = params.toString()
-    navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)
-  }, [navigate, position.yieldId, position.validatorAddress, searchParams])
+  //   const queryString = params.toString()
+  //   navigate(`/earn/yield/${position.yieldId}${queryString ? `?${queryString}` : ""}`)
+  // }, [navigate, position.yieldId, position.validatorAddress, searchParams])
 
   return (
     <button
       type="button"
       className="bg-grey-850 hover:bg-grey-800 flex h-auto w-full items-center gap-3 overflow-hidden rounded-sm p-4"
-      onClick={handleClick}
+      // onClick={handleClick}
     >
       <AssetLogo
         url={
@@ -77,8 +78,8 @@ const PopupYieldPositionRow: FC<{
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-sm font-[650]">
           <div className="flex max-w-full items-center gap-3 overflow-hidden">
-            <div className="truncate text-white" title={position.displayName}>
-              {position.displayName}
+            <div className="truncate text-white" title={position.product.metadata.name}>
+              {position.product.metadata.name}
             </div>
             <NetworkLogo networkId={networkId} className="inline-block text-base" />
           </div>
@@ -384,7 +385,7 @@ export const PopupEarnAssetsTab: FC<{ search: string }> = ({ search }) => {
       .filter((position) => {
         if (!lowerSearch) return true
         const haystack: string[] = [
-          position.displayName,
+          position.product.metadata.name,
           position.product?.inputTokens?.[0]?.symbol,
           position.product?.outputToken?.symbol,
           ...position.balances.map((b) => b.token.symbol),
