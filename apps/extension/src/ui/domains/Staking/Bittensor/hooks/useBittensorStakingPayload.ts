@@ -9,9 +9,15 @@ import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittenso
 import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorMinStake"
 import { useGetSeekDiscount } from "../../Seek/hooks/useGetSeekDiscount"
 import {
+  calculateEffectiveFeeRate,
+  calculateFee,
+  calculateMinimumStakeInput,
+} from "../utils/feeCalculations"
+import {
   getBittensorStakingPayload,
   getBittensorUnbondPayload,
   getLimitPrice,
+  getSwapSimulation,
 } from "../utils/helpers"
 import { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
@@ -69,6 +75,38 @@ export const useBittensorStakingPayload = ({
     return taoToAlpha(minTaoStake, alphaPrice)
   }, [minTaoStake, alphaPrice])
 
+  // simulate swap for minimum stake to get swap fee
+  const { data: minStakeSwapSimulation } = useQuery({
+    queryKey: ["minStakeSwapSimulation", sapi, netuid, minTaoStake?.toString()],
+    queryFn: async () => {
+      if (!sapi || typeof netuid !== "number" || netuid === 0 || typeof minTaoStake !== "bigint")
+        return null
+      return getSwapSimulation(sapi, netuid, "taoToAlpha", minTaoStake)
+    },
+  })
+
+  const effectiveFeeRate = useMemo(
+    () => calculateEffectiveFeeRate(netuid, subnetFee, tier.discount),
+    [netuid, subnetFee, tier.discount],
+  )
+
+  // minimum input that accounts for swap fee and talisman fee
+  const minTaoStakeForInput = useMemo(() => {
+    if (typeof minTaoStake !== "bigint") return null
+    if (netuid === 0 || netuid === null) return minTaoStake
+    if (!minStakeSwapSimulation) return null
+
+    return calculateMinimumStakeInput(minTaoStake, minStakeSwapSimulation.tao_fee, effectiveFeeRate)
+  }, [minTaoStake, netuid, minStakeSwapSimulation, effectiveFeeRate])
+
+  const minTaoBondForInput = useMemo(() => {
+    if (typeof minTaoBond !== "bigint") return null
+    if (netuid === 0 || netuid === null) return minTaoBond
+    if (!minStakeSwapSimulation) return null
+
+    return calculateMinimumStakeInput(minTaoBond, minStakeSwapSimulation.tao_fee, effectiveFeeRate)
+  }, [minTaoBond, netuid, minStakeSwapSimulation, effectiveFeeRate])
+
   // amount to be swapped. in case of taoToAlpha on a subnet, we need to subtract the talisman fee first or it will invalidate the simulation.
   const amount = useMemo(() => {
     if (typeof netuid !== "number" || typeof amountIn !== "bigint") return null
@@ -78,7 +116,7 @@ export const useBittensorStakingPayload = ({
       case "taoToAlpha": {
         const talismanFee = calculateFee({
           amount: amountIn,
-          fee: subnetFee,
+          feePercent: subnetFee,
           seekDiscount: tier.discount,
         })
         return amountIn - talismanFee
@@ -124,7 +162,7 @@ export const useBittensorStakingPayload = ({
     // WARNING: because of slippage it would make more sense to send alpha instead of tao when unstaking
     return calculateFee({
       amount: direction === "taoToAlpha" ? amountIn : simulation?.tao_amount,
-      fee: subnetFee,
+      feePercent: subnetFee,
       seekDiscount: tier.discount,
     })
   }, [amountIn, direction, simulation, subnetFee, tier.discount])
@@ -197,35 +235,14 @@ export const useBittensorStakingPayload = ({
     feeEstimatePayload: feeEstimatePayload?.payload,
 
     minTaoBond,
+    minTaoBondForInput,
     minAlphaBond,
     minTaoStake,
+    minTaoStakeForInput,
     minAlphaUnstake,
     priceImpact,
     slippage,
   }
-}
-
-const calculateFee = ({
-  amount,
-  fee,
-  seekDiscount,
-}: {
-  amount: bigint | null
-  fee: number
-  seekDiscount: number
-}): bigint => {
-  if (!amount) return 0n
-  if (fee < 0) {
-    throw new Error("Fee percentage cannot be negative")
-  }
-
-  if (seekDiscount === 0 || !seekDiscount) {
-    return (amount * BigInt(Math.round(fee * 100))) / BigInt(10000)
-  }
-
-  const discountedFee = fee * (1 - seekDiscount)
-
-  return (amount * BigInt(Math.round(discountedFee * 100))) / BigInt(10000)
 }
 
 type useBittensorAnyStakingPayloadProps = {
