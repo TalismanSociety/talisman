@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 import { TransactionRequest } from "viem"
 
-import { GenericTokensAndFiat } from "@ui/domains/Asset/GenericTokensAndFiat"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -19,6 +18,7 @@ import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../../s
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderDisplay } from "../../components/YieldxyzProviderLogo"
+import { YieldxyzTokensAndFiat } from "../../components/YieldxyzTokensAndFiat"
 import { YieldxyzTransactionsStepper } from "../../components/YieldxyzTransactionsStepper"
 import { useYieldxyzExitModal } from "../useYieldxyzExitModal"
 import { useYieldxyzExitWizard } from "../useYieldxyzExitWizard"
@@ -27,6 +27,7 @@ export const YieldxyzExitStepConfirm = () => {
   const { t } = useTranslation()
   const { close } = useYieldxyzExitModal()
   const { position, action, network, transaction, amountOut, goTo } = useYieldxyzExitWizard()
+
   if (!position || !action || !amountOut) return null
 
   return (
@@ -51,13 +52,12 @@ export const YieldxyzExitStepConfirm = () => {
           </div>
           <FormFieldSet>
             <FormFieldSetRow label={t("Amount")}>
-              <GenericTokensAndFiat
+              <YieldxyzTokensAndFiat
                 withLogo
-                noFiat
-                symbol={position.product.token.symbol}
-                decimals={position.product.token.decimals}
-                logo={position.product.token.logoURI}
-                planck={amountOut}
+                token={position.product.token}
+                amountRaw={amountOut}
+                className="text-body-secondary"
+                tokensClassName="text-body"
               />
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Account")} valueClassName="h-full">

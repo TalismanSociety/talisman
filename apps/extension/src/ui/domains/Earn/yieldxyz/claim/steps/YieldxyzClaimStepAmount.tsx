@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
 
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
-import { GenericTokensAndFiat } from "@ui/domains/Asset/GenericTokensAndFiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
@@ -16,6 +15,7 @@ import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
+import { YieldxyzTokensAndFiat } from "../../components/YieldxyzTokensAndFiat"
 import { useYieldxyzClaimModal } from "../useYieldxyzClaimModal"
 import { useYieldxyzClaimWizard } from "../useYieldxyzClaimWizard"
 
@@ -174,11 +174,12 @@ const AmountToClaim = () => {
 
   return (
     <div className="text-md flex size-full flex-col items-center justify-center overflow-hidden">
-      <GenericTokensAndFiat
+      <YieldxyzTokensAndFiat
         noFiat
-        symbol={balance.token.symbol}
-        decimals={balance.token.decimals}
-        planck={balance.amountRaw}
+        token={balance.token}
+        amountRaw={balance.amountRaw}
+        className="text-body-secondary"
+        tokensClassName="text-body"
       />
     </div>
   )

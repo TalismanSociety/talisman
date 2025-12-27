@@ -1,5 +1,6 @@
-import { AlertCircleIcon } from "@talismn/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { ActionDto } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
@@ -16,30 +17,28 @@ import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types
 import { AccountDisplay } from "../../../shared/AccountDisplay"
 import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
-import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderDisplay } from "../../components/YieldxyzProviderLogo"
 import { YieldxyzTokensAndFiat } from "../../components/YieldxyzTokensAndFiat"
 import { YieldxyzTransactionsStepper } from "../../components/YieldxyzTransactionsStepper"
-import { useYieldxyzClaimModal } from "../useYieldxyzClaimModal"
-import { useYieldxyzClaimWizard } from "../useYieldxyzClaimWizard"
+import { useYieldxyzManageModal } from "../useYieldxyzManageModal"
+import { useYieldxyzManageWizard } from "../useYieldxyzManageWizard"
 
-export const YieldxyzClaimStepConfirm = () => {
+export const YieldxyzManageStepConfirm = () => {
   const { t } = useTranslation()
-  const { close } = useYieldxyzClaimModal()
-  const { position, action, network, transaction, balance, goTo } = useYieldxyzClaimWizard()
+  const { close } = useYieldxyzManageModal()
+  const { position, action, network, transaction, balance, isLoadingAction } =
+    useYieldxyzManageWizard()
+  const actionTitle = useActionTitle(action)
 
-  if (!position || !action || !balance) return null
+  if (!action && isLoadingAction) return <ActionCreatingShimmer />
+
+  if (!position || !action) return null
 
   return (
     <RiskAnalysisProvider
       riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
     >
-      <WizardModalDialog
-        className="size-full border-none"
-        title={t("Claim Rewards")}
-        onBackClick={() => goTo("amount")}
-        onCloseClick={close}
-      >
+      <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
         <div className="flex size-full flex-col gap-8 overflow-hidden">
           <div className="text-md line-clamp-2 w-full text-center font-bold">
             {action.transactions.length > 1
@@ -51,16 +50,17 @@ export const YieldxyzClaimStepConfirm = () => {
             <TransactionError />
           </div>
           <FormFieldSet>
-            <FormFieldSetRow label={t("Amount")}>
-              <YieldxyzTokensAndFiat
-                withLogo
-                token={balance.token}
-                amountRaw={balance.amountRaw}
-                amountUsd={balance.amountUsd}
-                className="text-body-secondary"
-                tokensClassName="text-body"
-              />
-            </FormFieldSetRow>
+            {!!balance && (
+              <FormFieldSetRow label={t("Amount")}>
+                <YieldxyzTokensAndFiat
+                  withLogo
+                  token={balance.token}
+                  amountRaw={balance.amountRaw}
+                  className="text-body-secondary"
+                  tokensClassName="text-body"
+                />
+              </FormFieldSetRow>
+            )}
             <FormFieldSetRow label={t("Account")} valueClassName="h-full">
               <AccountDisplay
                 address={position.address}
@@ -73,9 +73,6 @@ export const YieldxyzClaimStepConfirm = () => {
             </FormFieldSetRow>
             <FormFieldSetRow label={t("Provider")} variant="small">
               <YieldxyzProviderDisplay providerId={position.product.providerId} />
-            </FormFieldSetRow>
-            <FormFieldSetRow label={t("Expected Rewards")} variant="small">
-              <YieldxyzProductYieldDisplay product={position.product} />
             </FormFieldSetRow>
             <FormFieldSetSeparator />
             <FormFieldSetRow label={t("Network")} variant="small">
@@ -90,8 +87,24 @@ export const YieldxyzClaimStepConfirm = () => {
   )
 }
 
+const ActionCreatingShimmer = () => {
+  {
+    const { t } = useTranslation()
+
+    return (
+      <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">
+        <LoaderIcon className="animate-spin-slow h-16 w-16" />
+        <div className="mt-4 text-base font-bold text-white opacity-70">
+          {t("Preparing operation")}
+        </div>
+        <div className="text-sm font-normal opacity-70">{t("This shouldn't take long...")}</div>
+      </div>
+    )
+  }
+}
+
 const TransactionError = () => {
-  const { transaction, isProcessing } = useYieldxyzClaimWizard()
+  const { transaction, isProcessing } = useYieldxyzManageWizard()
 
   return (
     <Tooltip>
@@ -112,7 +125,7 @@ const TransactionError = () => {
 }
 
 const StepsProgressDisplay = () => {
-  const { action, stepIndex, isProcessing } = useYieldxyzClaimWizard()
+  const { action, stepIndex, isProcessing } = useYieldxyzManageWizard()
 
   if (!action || stepIndex === null) return null
 
@@ -133,7 +146,7 @@ const SubmitButton = () => {
     onSubmit,
     stepIndex: txIndex,
     action,
-  } = useYieldxyzClaimWizard()
+  } = useYieldxyzManageWizard()
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
     if (!transaction?.transaction) return null
@@ -163,7 +176,7 @@ const SubmitButton = () => {
 }
 
 const NetworkDisplay = () => {
-  const { position } = useYieldxyzClaimWizard()
+  const { position } = useYieldxyzManageWizard()
 
   if (!position) return null
 
@@ -176,7 +189,7 @@ const NetworkDisplay = () => {
 }
 
 const NetworkFeeRow = () => {
-  const { network } = useYieldxyzClaimWizard()
+  const { network } = useYieldxyzManageWizard()
 
   switch (network?.platform) {
     case "ethereum":
@@ -188,7 +201,7 @@ const NetworkFeeRow = () => {
 
 const NetworkFeeRowEth = () => {
   const { t } = useTranslation()
-  const { transaction } = useYieldxyzClaimWizard()
+  const { transaction } = useYieldxyzManageWizard()
 
   // keep the latest valid tx in state so we still have content to display after tx is submitted.
   // without this we'd be getting a lot of flickering and bad UX
@@ -231,4 +244,53 @@ const NetworkFeeRowEth = () => {
       </FormFieldSetRow>
     </>
   )
+}
+
+const useActionTitle = (action: ActionDto | null) => {
+  const { t } = useTranslation()
+
+  return useMemo(() => {
+    if (!action) return t("Manage Position")
+
+    switch (action.type) {
+      case "CLAIM_REWARDS":
+        return t("Claim Rewards")
+      case "CLAIM_UNSTAKED":
+        return t("Finalize Withdraw")
+      case "RESTAKE_REWARDS":
+        return t("Restake Rewards")
+      case "DELEGATE":
+        return t("Delegate Stake")
+      case "MIGRATE":
+        return t("Migrate")
+      case "REBOND":
+        return t("Rebond")
+      case "RESTAKE":
+        return t("Restake")
+      case "REVOKE":
+        return t("Revoke")
+      case "REVOTE":
+        return t("Revote")
+      case "STAKE":
+        return t("Stake")
+      case "STAKE_LOCKED":
+        return t("Stake Locked")
+      case "UNLOCK_LOCKED":
+        return t("Unlock")
+      case "UNSTAKE":
+        return t("Unstake")
+      case "VERIFY_WITHDRAW_CREDENTIALS":
+        return t("Verify Withdraw Credentials")
+      case "VOTE":
+        return t("Vote")
+      case "VOTE_LOCKED":
+        return t("Vote Locked")
+      case "WITHDRAW":
+        return t("Withdraw")
+      case "WITHDRAW_ALL":
+        return t("Withdraw All")
+      default:
+        return t("Manage Position")
+    }
+  }, [action, t])
 }

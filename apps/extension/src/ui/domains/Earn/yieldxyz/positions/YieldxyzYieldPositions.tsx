@@ -30,13 +30,13 @@ import {
 } from "@ui/state/yieldxyz"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
-import { useYieldxyzClaimModal } from "../claim/useYieldxyzClaimModal"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
 import { YieldxyzProviderLogo } from "../components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../enter/useYieldxyzEnterModal"
 import { useYieldxyzExitModal } from "../exit/useYieldxyzExitModal"
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzYieldPositions } from "../hooks/useYieldxyzYieldPositions"
+import { useYieldxyzManageModal } from "../manage/useYieldxyzManageModal"
 
 /**
  * ⚠️ yield.xyz api returns 1/n positions for a given yield and an address. Also, returned positions dont have an id.
@@ -256,7 +256,7 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
   const { open: openEnter } = useYieldxyzEnterModal()
   const { open: openExit } = useYieldxyzExitModal()
-  const { open: openClaim } = useYieldxyzClaimModal()
+  const { open: openManage } = useYieldxyzManageModal()
 
   const handleAddToPositionClick = useCallback(() => {
     openEnter({
@@ -270,17 +270,28 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
   }, [openExit, position])
 
   const handleClaimClick = useCallback(() => {
-    openClaim(position)
-  }, [openClaim, position])
+    //  openClaim(position)
+  }, [])
 
   const handleWithdrawClick = useCallback(() => {
-    log.debug("[earn] Withdraw clicked for position", { position })
-  }, [position])
+    const balance = position.balances.find(
+      (b) => b.type === "withdrawable" && b.pendingActions.length,
+    )
+    const pendingAction = balance?.pendingActions[0]
+    if (!balance || !pendingAction) return
+    openManage({
+      position,
+      pendingAction,
+      balance,
+    })
+  }, [openManage, position])
 
   const { canClaim, canWithdraw, canExit } = useMemo(() => {
     return {
-      canClaim: position.balances.some((b) => b.type === "claimable"),
-      canWithdraw: position.balances.some((b) => b.type === "withdrawable"),
+      canClaim: position.balances.some((b) => b.type === "claimable" && b.pendingActions.length),
+      canWithdraw: position.balances.some(
+        (b) => b.type === "withdrawable" && b.pendingActions.length,
+      ),
       canExit: position.balances.some((b) => b.type === "active"), // TODO check that if there is a warm up period on the product, balances are typed as "locked" instead of "active"
     }
   }, [position])
