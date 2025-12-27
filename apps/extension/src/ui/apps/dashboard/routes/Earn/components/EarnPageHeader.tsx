@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { useYieldxyzProductsByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzProductsByTokenId"
+import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
 import { useSelectedCurrency } from "@ui/state"
 
 export const EarnPageHeader = () => {
@@ -12,7 +12,7 @@ export const EarnPageHeader = () => {
   const currency = useSelectedCurrency()
 
   // this hook already filters selected accounts
-  const { status, data: tokenProducts } = useYieldxyzProductsByTokenId()
+  const { status, data: tokenProducts } = useYieldxyzOpportunitiesByTokenId()
 
   const eligibleTotal = useMemo(() => {
     if (!tokenProducts) return null

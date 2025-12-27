@@ -48,8 +48,6 @@ export const useGetYieldxyzToken = () => {
           return null
         }
       }
-
-      return null
     },
     [mapToTalismanNetworkId, networksMap],
   )

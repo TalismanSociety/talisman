@@ -19,6 +19,7 @@ import { remoteConfigStore } from "../../app/store.remoteConfig"
 import { walletBalances$ } from "../../balances/walletBalances"
 import { YieldDto } from "./exports"
 import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
+import { isSupportedYieldxyzProduct } from "./isSupportedYieldxyzProduct"
 import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
 
 const REFRESH_INTERVAL = 30_000
@@ -53,7 +54,9 @@ const fetchYieldxyzProducts = async (networks: string[], signal?: AbortSignal) =
     if (!req.ok)
       throw new Error(`Failed to fetch yieldxyz products: ${req.status} ${req.statusText}`)
 
-    return req.json() as Promise<YieldDto[]>
+    const products = (await req.json()) as YieldDto[]
+
+    return products.filter(isSupportedYieldxyzProduct)
   } catch (err) {
     log.error("Error fetching yieldxyz products", err)
     throw err

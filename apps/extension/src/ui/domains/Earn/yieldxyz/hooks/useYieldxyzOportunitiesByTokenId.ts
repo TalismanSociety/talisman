@@ -1,5 +1,5 @@
 import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { isNotNil, Loadable } from "@talismn/util"
 import { YieldDto } from "extension-core"
@@ -12,7 +12,10 @@ import { useYieldxyzProducts } from "@ui/state/yieldxyz"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 
-export const useYieldxyzProductsByTokenId = (): Loadable<
+const MIN_REWARD_RATE = 0.01
+const ALLOW_NO_STATISTICS = true
+
+export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
   {
     tokenId: string
     products: YieldDto[]
@@ -37,31 +40,40 @@ export const useYieldxyzProductsByTokenId = (): Loadable<
   const { getYieldxyzTokenId } = useGetYieldxyzToken()
 
   const productsByTokenId = useMemo((): Record<TokenId, YieldDto[]> => {
-    // keep only products for which we have all input tokens
+    // keep only products for which we have one the input tokens (or the native token if multiple input tokens)
     const oppsByTokenId =
       products.data
-        ?.filter((p) => p.rewardRate.total && p.statistics?.tvl) // a bunch are 0 reward while they are "under maintenance"
-        .filter((product) => {
-          const inputTokenIds = product.inputTokens
-            ?.map((inputToken) => {
-              const tokenId = getYieldxyzTokenId(inputToken)
-              return availableTokenIds.includes(tokenId || "") ? tokenId : null
-              // TODO check that at least one account owns all tokens, or its not a valid product
-            })
-            .filter(Boolean) as string[]
-
-          // check if all input token ids are in availableTokenIds
-          return inputTokenIds.length === product.inputTokens.length
-        })
+        ?.filter(
+          (p) =>
+            // filter out products that cannot be entered
+            p.status.enter &&
+            // filter out products with too low reward rate or unknown TVL
+            p.rewardRate.total >= MIN_REWARD_RATE &&
+            (ALLOW_NO_STATISTICS || p.statistics?.tvl) &&
+            // exclude products that require a field other than the amount
+            !p.mechanics.arguments?.enter?.fields?.some((f) => f.required && f.name !== "amount"),
+        )
         .reduce<Record<TokenId, YieldDto[]>>((acc, product) => {
+          // here we consider a product can only have one input token id.
+          // if technically it has multiple, then pick the native token from the list (we ensure at the store level that if multiple input tokens, one is a native token)
           const inputTokenIds = product.inputTokens
             ?.map((inputToken) => getYieldxyzTokenId(inputToken))
             .filter(isNotNil) as TokenId[]
 
-          inputTokenIds.forEach((tokenId) => {
-            if (!acc[tokenId]) acc[tokenId] = []
-            acc[tokenId].push(product)
-          })
+          const inputTokenId =
+            inputTokenIds.length === 1
+              ? inputTokenIds[0]
+              : inputTokenIds.find((tokenId) =>
+                  ["evm-native", "substrate-native", "sol-native"].includes(
+                    parseTokenId(tokenId).type,
+                  ),
+                )
+
+          // ensure we have balance for it
+          if (inputTokenId && availableTokenIds.includes(inputTokenId)) {
+            if (!acc[inputTokenId]) acc[inputTokenId] = []
+            acc[inputTokenId].push(product)
+          }
 
           return acc
         }, {}) || {}
@@ -94,6 +106,15 @@ export const useYieldxyzProductsByTokenId = (): Loadable<
         return (balance2 || 0) - (balance1 || 0)
       })
   }, [productsByTokenId, accountBalances, currency])
+
+  // useEffect(() => {
+  //   const products = Object.values(productsByTokenId).flat()
+  //   console.log("PRODUCTS ANALYSIS", {
+  //     warmup: products.filter((p) => p.mechanics.warmupPeriod),
+  //     lockup: products.filter((p) => p.mechanics.lockupPeriod),
+  //     cooldown: products.filter((p) => p.mechanics.cooldownPeriod),
+  //   })
+  // }, [productsByTokenId])
 
   return {
     ...products,

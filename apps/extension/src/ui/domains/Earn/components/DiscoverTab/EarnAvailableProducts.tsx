@@ -19,7 +19,7 @@ import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../../yieldxyz/enter/useYieldxyzEnterModal"
-import { useYieldxyzProductsByTokenId } from "../../yieldxyz/hooks/useYieldxyzProductsByTokenId"
+import { useYieldxyzOpportunitiesByTokenId } from "../../yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
 import { EarnTypeBadge } from "../EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
@@ -31,7 +31,7 @@ export const EarnAvailableProducts: FC<{
   const tokensMap = useTokensMap()
   const networksMap = useNetworksMapById()
 
-  const { status, data: products } = useYieldxyzProductsByTokenId()
+  const { status, data: products } = useYieldxyzOpportunitiesByTokenId()
 
   const displayProducts = useMemo(() => {
     if (!search) return products
@@ -156,11 +156,12 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
             {product.statistics?.uniqueUsers}
           </Metric>
           <Metric icon={<LockIcon />} tooltip={t("Total value locked")}>
-            {Intl.NumberFormat("en-US", {
-              style: "currency",
-              currency: "USD",
-              notation: "compact",
-            }).format(Number(product.statistics?.tvlUsd ?? 0))}
+            {product.statistics &&
+              Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                notation: "compact",
+              }).format(Number(product.statistics?.tvlUsd ?? 0))}
           </Metric>
         </div>
       </div>

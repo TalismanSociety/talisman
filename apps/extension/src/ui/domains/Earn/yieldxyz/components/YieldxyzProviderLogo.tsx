@@ -43,7 +43,7 @@ export const YieldxyzProviderDisplay: FC<{
       <TooltipTrigger asChild>
         <div className={cn("flex max-w-full items-center gap-[0.5em] overflow-hidden", className)}>
           <AssetLogo url={provider?.logoURI} className="size-[1.5em] shrink-0" />
-          <div className="truncate">{provider?.name}</div>
+          <div className="truncate">{provider?.name ?? providerId}</div>
         </div>
       </TooltipTrigger>
       {!!provider && (
