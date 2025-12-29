@@ -36,9 +36,9 @@ export const PopupEarnPositionsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="@container @2xl:gap-8 flex w-full flex-col gap-4">
       {/* Staking Section */}
-      <div className="mb-4">
+      <div>
         <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Staking")}</h2>
         <PopupStakingTile />
       </div>
