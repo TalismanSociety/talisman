@@ -11,6 +11,7 @@ export type DbBlobId =
   | "defi-positions"
   | "dynamic-tokens"
   | "bittensor-validators"
+  | "confirmed-addresses"
 
 export type DbBlobItem = { id: DbBlobId; data: Uint8Array }
 

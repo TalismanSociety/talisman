@@ -20,7 +20,7 @@ import { SolanaTabsMessages } from "../domains/solana/types.tabs"
 import { SubstrateMessages } from "../domains/substrate/types"
 import { TalismanMessages } from "../domains/talisman/types"
 import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { ChaindataMessages } from "./domains"
+import { ChaindataMessages, SendFundsMessages } from "./domains"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
@@ -95,6 +95,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   PingMessages &
   ChaindataMessages &
   BittensorMessages &
+  SendFundsMessages &
   UnsubscribeMessages
 
 interface PingMessages {
