@@ -18,10 +18,10 @@ import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
 import { useYieldxyzPositionsEnhanced, YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { AccountDisplay } from "../../shared/AccountDisplay"
-import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
-import { useGetYieldxyzToken } from "../../yieldxyz/hooks/useGetYieldxyzToken"
-import { EarnTypeBadge } from "../EarnTypeBadge"
+import { AccountDisplay } from "../shared/AccountDisplay"
+import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
+import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
+import { EarnTypeBadge } from "./EarnTypeBadge"
 
 const YieldPositionRow: FC<{
   position: YieldxyzPositionEnhanced // TODO change back to YieldxyzPosition after moving display fields

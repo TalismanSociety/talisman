@@ -18,10 +18,10 @@ import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
 import { IS_POPUP } from "@ui/util/constants"
 
-import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
-import { useYieldxyzEnterModal } from "../../yieldxyz/enter/useYieldxyzEnterModal"
-import { useYieldxyzOpportunitiesByTokenId } from "../../yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
-import { EarnTypeBadge } from "../EarnTypeBadge"
+import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
+import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
+import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
+import { EarnTypeBadge } from "./EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
   search: string

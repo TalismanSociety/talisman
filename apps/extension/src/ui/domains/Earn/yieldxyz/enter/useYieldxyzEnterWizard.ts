@@ -6,10 +6,10 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
 import { useNetworkById } from "@ui/state"
 import { useYieldxyzProduct } from "@ui/state/yieldxyz"
 
-import { useDummyTransaction } from "../../hooks/useDummyTransaction"
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"

@@ -3,7 +3,7 @@ import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { EarnPositionsList } from "@ui/domains/Earn/components/PositionsTab/EarnPositionsList"
+import { EarnPositionsList } from "@ui/domains/Earn/components/EarnPositionsList"
 
 const StakingTile = () => {
   const { t } = useTranslation()
