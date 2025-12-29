@@ -77,7 +77,7 @@ export const useBittensorStakingPayload = ({
 
   // simulate swap for minimum stake to get swap fee
   const { data: minStakeSwapSimulation } = useQuery({
-    queryKey: ["minStakeSwapSimulation", sapi, netuid, minTaoStake?.toString()],
+    queryKey: ["minStakeSwapSimulation", sapi?.id, netuid, minTaoStake?.toString()],
     queryFn: async () => {
       if (!sapi || typeof netuid !== "number" || netuid === 0 || typeof minTaoStake !== "bigint")
         return null
