@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 // import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
 import { EarnAvailableProducts } from "@ui/domains/Earn/components/DiscoverTab/EarnAvailableProducts"
 
-export const EarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
+export const DashboardEarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
 
   return (

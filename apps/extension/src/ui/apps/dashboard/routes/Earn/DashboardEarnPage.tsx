@@ -1,15 +1,19 @@
+import { Balances } from "@talismn/balances"
+import { cn } from "@talismn/util"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { SearchInput } from "@talisman/components/SearchInput"
+import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
+import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { useSelectedCurrency } from "@ui/state"
 
-import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
-import { EarnPageHeader } from "./components/EarnPageHeader"
-import { EarnPositionsTab } from "./components/EarnPositionsTab"
+import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
+import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
 
 type EarnTabKey = "assets" | "discover"
 
@@ -91,7 +95,7 @@ export const DashboardEarnPositionsRoute: FC = () => {
     page: "Earn Positions",
   })
 
-  return <EarnPositionsTab search={search} />
+  return <DashboardEarnPositionsTab search={search} />
 }
 
 export const DashboardEarnDiscoverRoute: FC = () => {
@@ -104,5 +108,35 @@ export const DashboardEarnDiscoverRoute: FC = () => {
     page: "Earn Discover",
   })
 
-  return <EarnDiscoverTab search={search} />
+  return <DashboardEarnDiscoverTab search={search} />
+}
+
+const EarnPageHeader = () => {
+  const { t } = useTranslation()
+  const currency = useSelectedCurrency()
+
+  // this hook already filters selected accounts
+  const { status, data: tokenProducts } = useYieldxyzOpportunitiesByTokenId()
+
+  const eligibleTotal = useMemo(() => {
+    if (!tokenProducts) return null
+
+    const allBalances = new Balances(tokenProducts?.flatMap((to) => to.balances.each) || [])
+    return allBalances.sum.fiat(currency).transferable
+  }, [currency, tokenProducts])
+
+  return (
+    <div className="text-body-secondary border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">
+      <div className="flex flex-col gap-4 px-6 py-8">
+        <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
+        <div className="text-body text-2xl font-bold">
+          {!eligibleTotal && status === "loading" ? (
+            <div className="bg-grey-700 text-grey-700 animate-pulse rounded">$0.00</div>
+          ) : (
+            <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }

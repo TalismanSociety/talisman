@@ -32,7 +32,7 @@ const StakingTile = () => {
   )
 }
 
-export const EarnPositionsTab: FC<{ search: string }> = ({ search }) => {
+export const DashboardEarnPositionsTab: FC<{ search: string }> = ({ search }) => {
   const { t } = useTranslation()
 
   return (
