@@ -16,6 +16,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state"
 import { useYieldxyzProviders } from "@ui/state/yieldxyz"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../../yieldxyz/enter/useYieldxyzEnterModal"
@@ -90,39 +91,45 @@ const TokenProducts: FC<{
         className={cn(
           "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
           isOpen && "bg-grey-800",
+          IS_POPUP && "gap-4 px-6",
         )}
       >
         <TokenLogo tokenId={tokenId} className="size-16" />
-        <div className="text-body-secondary flex grow flex-col justify-center gap-2 text-left text-sm font-medium">
-          <div className="">
-            <span className="text-body font-bold">
-              <TokenDisplaySymbol tokenId={tokenId} />
-            </span>{" "}
-            {token.name}
-          </div>
-          <div className="flex w-full items-center gap-2 overflow-hidden">
-            <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
-            <NetworkName networkId={token.networkId} className="truncate" />
-          </div>
-        </div>
-        <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
-          <div className="text-body-secondary">
+        <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
+          <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
+            <div className="truncate">
+              <span className="text-body font-bold">
+                <TokenDisplaySymbol tokenId={tokenId} />
+              </span>{" "}
+              {token.name}
+            </div>
             <TokensAndFiat
               tokenId={tokenId}
+              noFiat={IS_POPUP}
               planck={balances.sum.planck.transferable}
               tokensClassName="text-body"
               fiatClassName=" text-sm font-medium"
+              className="shrink-0"
             />
           </div>
-          <div className={cn(isLoading && "animate-pulse")}>
-            <Trans
-              t={t}
-              defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
-              values={{ bestApr: bestApr.toFixed(2) }}
-              components={{ Highlight: <span className="text-primary font-bold" /> }}
-            />
+          <div className="text-body-secondary flex w-full items-center justify-between gap-4 overflow-hidden">
+            <div className="flex w-full items-center gap-2 overflow-hidden">
+              <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+              <NetworkName networkId={token.networkId} className="truncate" />
+            </div>
+            <div className={cn("shrink-0", isLoading && "animate-pulse")}>
+              <Trans
+                t={t}
+                defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
+                values={{ bestApr: bestApr.toFixed(2) }}
+                components={{ Highlight: <span className="text-primary font-bold" /> }}
+              />
+            </div>
           </div>
         </div>
+        {/* <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
+          <div className="text-body-secondary"></div>
+        </div> */}
         <ChevronRightIcon
           className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
         />
@@ -142,15 +149,19 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
   return (
     <button
       type="button"
-      className="hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm"
+      className={cn(
+        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
+        IS_POPUP && "gap-4 px-6",
+      )}
       onClick={() => open({ productId: product.id, address: selectedAccount?.address })}
     >
       <YieldxyzProviderLogo providerId={product.providerId} className="size-16 shrink-0" />
-      <div className="flex grow flex-col items-start justify-start gap-2">
-        <div className="text-body">
-          {product.metadata.name} <EarnTypeBadge>{product.mechanics?.type}</EarnTypeBadge>
+      <div className="flex grow flex-col items-start justify-start gap-2 overflow-hidden">
+        <div className="text-body w-full truncate text-left">
+          {product.metadata.name}{" "}
+          {!IS_POPUP && <EarnTypeBadge>{product.mechanics?.type}</EarnTypeBadge>}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex w-full items-center gap-4 truncate text-left">
           <Metric icon={<UsersIcon />} tooltip={t("Number of unique holders")}>
             {product.statistics?.uniqueUsers}
           </Metric>

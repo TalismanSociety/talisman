@@ -16,6 +16,7 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { usePortfolioGlobalData, useTokensMap } from "@ui/state"
 import { useYieldxyzPositionsEnhanced, YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountDisplay } from "../../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../../yieldxyz/components/YieldxyzProviderLogo"
@@ -31,7 +32,10 @@ const YieldPositionRow: FC<{
   return (
     <button
       type="button"
-      className="hover:bg-grey-750 @2xl:text-sm flex h-28 w-full items-center gap-6 px-8 text-xs"
+      className={cn(
+        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
+        IS_POPUP && "text-xs",
+      )}
       onClick={() =>
         navigate(
           `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`,
@@ -43,7 +47,7 @@ const YieldPositionRow: FC<{
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
           <div className="text-body h-[1.8rem] w-full truncate">
             {position.product.metadata.name}{" "}
-            <EarnTypeBadge className={cn("shrink-0", "@2xl:inline-block hidden")}>
+            <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
               {position.product.mechanics?.type}
             </EarnTypeBadge>
           </div>
