@@ -269,7 +269,7 @@ const useBittensorAnyStakingPayload = ({
   return useQuery({
     queryKey: [
       "useBittensorAnyStakingPayload",
-      sapi,
+      sapi?.id,
       direction,
       address,
       netuid,
