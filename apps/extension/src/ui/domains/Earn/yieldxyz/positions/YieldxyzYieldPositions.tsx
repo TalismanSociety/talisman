@@ -2,7 +2,6 @@ import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { BalanceDto, YieldDto } from "extension-core"
 import { log } from "extension-shared"
-import { t } from "i18next"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -28,6 +27,7 @@ import {
   useYieldxyzProduct,
   YieldxyzPositionEnhanced,
 } from "@ui/state/yieldxyz"
+import { IS_POPUP } from "@ui/util/constants"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
@@ -151,29 +151,6 @@ const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> =
   )
 }
 
-const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
-  return (
-    <div className="flex w-full justify-end gap-8">
-      <PositionActionAddMore position={position} />
-    </div>
-  )
-}
-
-const PositionActionAddMore: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
-  const { open } = useYieldxyzEnterModal()
-
-  const handleClick = useCallback(() => {
-    open({
-      address: position.address,
-      productId: position.product.id,
-    })
-  }, [open, position])
-
-  if (!position.product.mechanics.arguments?.enter) return null
-
-  return <Button onClick={handleClick}>{t("Add to Position")}</Button>
-}
-
 const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoading: boolean }> = ({
   label,
   balances,
@@ -254,47 +231,17 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 }
 
 const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
-  const { open: openEnter } = useYieldxyzEnterModal()
-  const { open: openExit } = useYieldxyzExitModal()
-  const { open: openManage } = useYieldxyzManageModal()
-
-  const handleAddToPositionClick = useCallback(() => {
-    openEnter({
-      address: position.address,
-      productId: position.product.id,
-    })
-  }, [openEnter, position])
-
-  const handleExitClick = useCallback(() => {
-    openExit(position)
-  }, [openExit, position])
-
-  const handleClaimClick = useCallback(() => {
-    //  openClaim(position)
-  }, [])
-
-  const handleWithdrawClick = useCallback(() => {
-    const balance = position.balances.find(
-      (b) => b.type === "withdrawable" && b.pendingActions.length,
-    )
-    const pendingAction = balance?.pendingActions[0]
-    if (!balance || !pendingAction) return
-    openManage({
-      position,
-      pendingAction,
-      balance,
-    })
-  }, [openManage, position])
-
-  const { canClaim, canWithdraw, canExit } = useMemo(() => {
-    return {
-      canClaim: position.balances.some((b) => b.type === "claimable" && b.pendingActions.length),
-      canWithdraw: position.balances.some(
-        (b) => b.type === "withdrawable" && b.pendingActions.length,
-      ),
-      canExit: position.balances.some((b) => b.type === "active"), // TODO check that if there is a warm up period on the product, balances are typed as "locked" instead of "active"
-    }
-  }, [position])
+  const { t } = useTranslation()
+  const {
+    claimableBalances,
+    withdrawableBalances,
+    canEnter,
+    canExit,
+    onAddToPositionClick,
+    onExitClick,
+    onClaimClick,
+    onWithdrawClick,
+  } = usePositionActions(position)
 
   return (
     <ContextMenu placement="bottom-end">
@@ -304,17 +251,153 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
         </IconButton>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={handleAddToPositionClick}>{t("Add to position")}</ContextMenuItem>
-        <ContextMenuItem disabled={!canClaim} onClick={handleClaimClick}>
-          {t("Claim")}
+        <ContextMenuItem disabled={!canEnter} onClick={onAddToPositionClick}>
+          {t("Add to position")}
         </ContextMenuItem>
-        <ContextMenuItem disabled={!canExit} onClick={handleExitClick}>
+        <ContextMenuItem disabled={!canExit} onClick={onExitClick}>
           {t("Exit position")}
         </ContextMenuItem>
-        <ContextMenuItem disabled={!canWithdraw} onClick={handleWithdrawClick}>
-          {t("Withdraw")}
-        </ContextMenuItem>
+        {claimableBalances.map((balance, index) => (
+          <ContextMenuItem key={index} onClick={onClaimClick(balance)}>
+            <div className="flex items-center justify-between gap-4">
+              <div>{t("Claim")}</div>
+              <Tokens amount={balance.amount} noCountUp symbol={balance.token.symbol} />
+            </div>
+          </ContextMenuItem>
+        ))}
+        {withdrawableBalances.map((balance, index) => (
+          <ContextMenuItem key={index} onClick={onWithdrawClick(balance)}>
+            <div className="flex items-center justify-between gap-4">
+              <div>{t("Withdraw")}</div>
+              <Tokens amount={balance.amount} noCountUp symbol={balance.token.symbol} />
+            </div>
+          </ContextMenuItem>
+        ))}
       </ContextMenuContent>
     </ContextMenu>
   )
+}
+
+const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }) => {
+  const { t } = useTranslation()
+  const {
+    canEnter,
+    onAddToPositionClick,
+    claimableBalances,
+    onClaimClick,
+    withdrawableBalances,
+    onWithdrawClick,
+  } = usePositionActions(position)
+
+  const isGridLayout = useMemo(
+    () => IS_POPUP && (withdrawableBalances.length || claimableBalances.length),
+    [claimableBalances.length, withdrawableBalances.length],
+  )
+
+  return (
+    <div
+      className={cn(
+        "flex w-full justify-end gap-8 overflow-hidden",
+        isGridLayout && "grid grid-cols-2 gap-8",
+      )}
+    >
+      <Button
+        className={cn(!isGridLayout && "w-[17.5rem]")}
+        disabled={!canEnter}
+        onClick={onAddToPositionClick}
+      >
+        {t("Add to Position")}
+      </Button>
+      {withdrawableBalances.length > 0 && (
+        <Button
+          primary
+          className={cn(!isGridLayout && "w-[17.5rem]")}
+          onClick={onWithdrawClick(withdrawableBalances[0])}
+        >
+          {t("Withdraw")}
+        </Button>
+      )}
+      {claimableBalances.length > 0 && (
+        <Button
+          primary
+          className={cn(!isGridLayout && "w-[17.5rem]")}
+          onClick={onClaimClick(claimableBalances[0])}
+        >
+          <div className="flex h-full flex-col gap-1">
+            <div className="text-md font-normal">{t("Claim")}</div>
+            <div className="text-tiny font-light">
+              <Tokens
+                amount={claimableBalances[0].amount}
+                noCountUp
+                symbol={claimableBalances[0].token.symbol}
+              />
+            </div>
+          </div>
+        </Button>
+      )}
+    </div>
+  )
+}
+
+const usePositionActions = (position: YieldxyzPositionEnhanced) => {
+  const { open: openEnter } = useYieldxyzEnterModal()
+  const { open: openExit } = useYieldxyzExitModal()
+  const { open: openManage } = useYieldxyzManageModal()
+
+  const [claimableBalances, withdrawableBalances, canEnter, canExit] = useMemo(() => {
+    return [
+      position.balances.filter((b) => b.type === "claimable" && b.pendingActions.length),
+      position.balances.filter((b) => b.type === "withdrawable" && b.pendingActions.length),
+      position.product.status.enter,
+      position.product.status.exit && position.balances.some((b) => b.type === "active"),
+    ]
+  }, [position])
+
+  const onAddToPositionClick = useCallback(() => {
+    openEnter({
+      address: position.address,
+      productId: position.product.id,
+    })
+  }, [openEnter, position])
+
+  const onExitClick = useCallback(() => {
+    openExit(position)
+  }, [openExit, position])
+
+  const onClaimClick = useCallback(
+    (balance: BalanceDto) => () => {
+      const pendingAction = balance?.pendingActions[0]
+      if (!balance || !pendingAction) return
+      openManage({
+        position,
+        pendingAction,
+        balance,
+      })
+    },
+    [openManage, position],
+  )
+
+  const onWithdrawClick = useCallback(
+    (balance: BalanceDto) => () => {
+      const pendingAction = balance?.pendingActions[0]
+      if (!balance || !pendingAction) return
+      openManage({
+        position,
+        pendingAction,
+        balance,
+      })
+    },
+    [openManage, position],
+  )
+
+  return {
+    claimableBalances,
+    withdrawableBalances,
+    canEnter,
+    canExit,
+    onAddToPositionClick,
+    onExitClick,
+    onClaimClick,
+    onWithdrawClick,
+  }
 }
