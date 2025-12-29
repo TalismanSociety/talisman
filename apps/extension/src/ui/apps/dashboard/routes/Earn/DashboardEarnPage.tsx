@@ -1,21 +1,51 @@
-import { DEBUG } from "extension-shared"
-import { FC, useState } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
 import { EarnPageHeader } from "./components/EarnPageHeader"
 import { EarnPositionsTab } from "./components/EarnPositionsTab"
 
-// const DEFAULT_TAB = DEBUG ? "discover" : "assets"
-const DEFAULT_TAB = DEBUG ? "assets" : "assets"
+type EarnTabKey = "assets" | "discover"
+
+type DashboardEarnOutletContext = {
+  search: string
+}
+
+const TAB_TO_PATH: Record<EarnTabKey, string> = {
+  assets: "positions",
+  discover: "discover",
+}
+
+const getTabFromPath = (pathname: string): EarnTabKey =>
+  pathname.includes("/discover") ? "discover" : "assets"
+
+const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
 
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
-  const [selectedTab, setSelectedTab] = useState<"assets" | "discover">(DEFAULT_TAB)
+  const location = useLocation()
+  const navigate = useNavigate()
+  const selectedTab = useMemo<EarnTabKey>(
+    () => getTabFromPath(location.pathname),
+    [location.pathname],
+  )
   const [search, setSearch] = useState("")
+
+  const handleTabChange = useCallback(
+    (tab: EarnTabKey) => {
+      if (tab === selectedTab) return
+
+      navigate(TAB_TO_PATH[tab])
+    },
+    [navigate, selectedTab],
+  )
+
+  const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
   return (
     <div className="text-body-secondary flex w-full min-w-[45rem] flex-col gap-6 overflow-hidden text-left text-base">
@@ -26,7 +56,7 @@ export const DashboardEarnPage: FC = () => {
       <div className="mb-6 flex w-full items-center justify-between overflow-hidden">
         <div className="flex-shrink-0">
           <EarnTabs
-            onTabChange={setSelectedTab}
+            onTabChange={handleTabChange}
             value={selectedTab}
             className="text-md my-0 h-14 w-auto font-bold"
           />
@@ -44,9 +74,34 @@ export const DashboardEarnPage: FC = () => {
 
       {/* Tab Content */}
       <div>
-        {selectedTab === "assets" && <EarnPositionsTab search={search} />}
-        {selectedTab === "discover" && <EarnDiscoverTab search={search} />}
+        <Outlet context={outletContext} />
       </div>
     </div>
   )
+}
+
+export const DashboardEarnPositionsRoute: FC = () => {
+  const { search } = useDashboardEarnOutletContext()
+
+  useAnalyticsPageView({
+    container: "Fullscreen",
+    feature: "Earn Yield",
+    featureVersion: 1,
+    page: "Earn Positions",
+  })
+
+  return <EarnPositionsTab search={search} />
+}
+
+export const DashboardEarnDiscoverRoute: FC = () => {
+  const { search } = useDashboardEarnOutletContext()
+
+  useAnalyticsPageView({
+    container: "Fullscreen",
+    feature: "Earn Yield",
+    featureVersion: 1,
+    page: "Earn Discover",
+  })
+
+  return <EarnDiscoverTab search={search} />
 }
