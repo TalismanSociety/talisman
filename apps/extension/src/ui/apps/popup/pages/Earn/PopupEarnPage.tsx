@@ -119,7 +119,7 @@ export const PopupEarnPage: FC = () => {
           </div>
 
           {/* Tab Content */}
-          <div className="pb-4">
+          <div>
             <Outlet context={outletContext} />
           </div>
         </div>

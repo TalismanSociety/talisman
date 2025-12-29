@@ -6,7 +6,7 @@ import { isNil, toPairs, uniq } from "lodash-es"
 import { FC, Fragment, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Fiat } from "@ui/domains/Asset/Fiat"
+import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
@@ -31,7 +31,7 @@ const YieldPositionRow: FC<{
   return (
     <button
       type="button"
-      className="hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm"
+      className="hover:bg-grey-750 @2xl:text-sm flex h-28 w-full items-center gap-6 px-8 text-xs"
       onClick={() =>
         navigate(
           `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`,
@@ -40,24 +40,28 @@ const YieldPositionRow: FC<{
     >
       <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
-        <div className="text-body h-[1.8rem] w-full truncate">
-          {position.product.metadata.name}{" "}
-          <EarnTypeBadge className="shrink-0">{position.product.mechanics?.type}</EarnTypeBadge>
+        <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
+          <div className="text-body h-[1.8rem] w-full truncate">
+            {position.product.metadata.name}{" "}
+            <EarnTypeBadge className={cn("shrink-0", "@2xl:inline-block hidden")}>
+              {position.product.mechanics?.type}
+            </EarnTypeBadge>
+          </div>
+          <div>
+            <TokensList position={position} />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <AccountDisplay
-            address={position.address}
-            className="gap-[0.4em]"
-            iconClassName="text-[1.2em]"
-          />
-        </div>
-      </div>
-      <div className="flex grow-0 flex-col items-end justify-center gap-2 overflow-hidden">
-        <div>
-          <TokensList position={position} />
-        </div>
-        <div className={cn("", status === "loading" && "animate-pulse")}>
-          <Fiat amount={position.totalAmountUsd} forceCurrency="usd" noCountUp />
+        <div className="text-body-secondary flex w-full items-center justify-between gap-4 overflow-hidden">
+          <div className="flex items-center gap-3 truncate">
+            <AccountDisplay
+              address={position.address}
+              className="gap-[0.4em]"
+              iconClassName="text-[1.2em]"
+            />
+          </div>
+          <div className={cn("shrink-0", status === "loading" && "animate-pulse")}>
+            <FiatFromUsd amount={position.totalAmountUsd} noCountUp />
+          </div>
         </div>
       </div>
     </button>
@@ -116,8 +120,8 @@ const TokenRow: FC<{
       )}
     >
       <TokenLogo tokenId={token.id} className="size-16" />
-      <div className="text-body-secondary flex grow flex-col justify-center gap-2 text-left text-sm font-medium">
-        <div className="">
+      <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
+        <div className="truncate">
           <span className="text-body font-bold">
             <TokenDisplaySymbol tokenId={token.id} />
           </span>{" "}
@@ -129,8 +133,10 @@ const TokenRow: FC<{
         </div>
       </div>
 
-      <div className={cn("flex items-center gap-4", status === "loading" && "animate-pulse")}>
-        <Fiat amount={totalUsd} forceCurrency="usd" noCountUp />
+      <div
+        className={cn("flex shrink-0 items-center gap-4", status === "loading" && "animate-pulse")}
+      >
+        <FiatFromUsd amount={totalUsd} noCountUp />
       </div>
       {isExpanded ? (
         <ChevronDownIcon className="text-body-secondary size-8 shrink-0" />
@@ -282,7 +288,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
         <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
         <div className="flex items-center gap-2">
           <div className="text-body-secondary text-base font-normal">
-            <Fiat amount={totalDefiAmountUsd} forceCurrency="usd" />
+            <FiatFromUsd amount={totalDefiAmountUsd} />
           </div>
           {isDefiExpanded ? (
             <ChevronDownIcon className="text-body-secondary h-8 w-8" />
