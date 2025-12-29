@@ -12,7 +12,7 @@ export const EarnDiscoverTab: FC<{ search: string }> = ({ search }) => {
       {/* Earn on your assets section */}
       <div className="mb-6">
         <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Earn on your assets")}</h2>
-        <EarnAvailableProducts search={search} isPopup={false} />
+        <EarnAvailableProducts search={search} />
       </div>
 
       {/* Discover opportunities section */}

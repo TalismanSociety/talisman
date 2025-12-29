@@ -23,7 +23,6 @@ import { useYieldxyzOpportunitiesByTokenId } from "../../yieldxyz/hooks/useYield
 import { EarnTypeBadge } from "../EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{
-  isPopup?: boolean
   search: string
 }> = ({ search }) => {
   useYieldxyzProviders() // preload providers (so their names and logos are available when expanding token rows)

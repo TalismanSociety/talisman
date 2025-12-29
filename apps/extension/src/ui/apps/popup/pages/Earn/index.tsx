@@ -1,61 +1,31 @@
-// import { classNames } from "@talismn/util"
-// import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
-// import { Route, Routes, useLocation } from "react-router-dom"
+import { FC } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
 
-// import { ScrollContainer } from "@talisman/components/ScrollContainer"
-// import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-// import { EarnAssetsStateProvider } from "@ui/domains/Earn/context/EarnAssetsStateContext"
-// import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { EarnAssetsStateProvider } from "@ui/domains/Earn/context/EarnAssetsStateContext"
+import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 
-// import { BottomNav } from "../../components/Navigation/BottomNav"
-// import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
-// import { PopupEarnPage } from "./PopupEarnPage"
-// import { PopupYieldPosition } from "./PopupYieldPosition"
+import { PopupLayout } from "../../Layout/PopupLayout"
+import { PopupEarnDiscoverRoute, PopupEarnPage, PopupEarnPositionsRoute } from "./PopupEarnPage"
+import { PopupYieldxyzYieldPositionsPage } from "./PopupYieldxyzYieldPositionsPage"
 
-// const EarnRoutes = () => (
-//   <EarnAssetsStateProvider>
-//     <Routes>
-//       <Route path="" element={<PopupEarnPage />} />
-//       <Route path="yield/:yieldId" element={<PopupYieldPosition />} />
-//     </Routes>
-//     <Suspense fallback={<SuspenseTracker name="EarnContent" />}>
-//       <BottomNav />
-//     </Suspense>
-//   </EarnAssetsStateProvider>
-// )
-
-// const Content: FC<PropsWithChildren> = ({ children }) => {
-//   // scrollToTop on location change
-//   const scrollableRef = useRef<HTMLDivElement>(null)
-//   const location = useLocation()
-
-//   useEffect(() => {
-//     scrollableRef.current?.scrollTo(0, 0)
-//   }, [location.pathname])
-
-//   return (
-//     <ScrollContainer ref={scrollableRef} className={classNames("size-full overflow-hidden px-8")}>
-//       {children}
-//     </ScrollContainer>
-//   )
-// }
-
-// export const Earn = () => {
-//   const { popupOpenEvent } = useAnalytics()
-
-//   // Track analytics when earn page opens
-//   useEffect(() => {
-//     popupOpenEvent("earn")
-//   }, [popupOpenEvent])
-
-//   return (
-//     <div id="main" className="relative size-full overflow-hidden">
-//       <Content>
-//         <div className="flex size-full flex-col gap-4 py-8">
-//           <EarnRoutes />
-//         </div>
-//       </Content>
-//       <NavigationDrawer />
-//     </div>
-//   )
-// }
+export const PopupEarnRoutes: FC = () => {
+  return (
+    <PortfolioContainer>
+      <PopupLayout>
+        <EarnAssetsStateProvider>
+          <Routes>
+            <Route path="" element={<PopupEarnPage />}>
+              <Route index element={<Navigate to="positions" replace />} />
+              <Route path="positions" element={<PopupEarnPositionsRoute />} />
+              <Route path="discover" element={<PopupEarnDiscoverRoute />} />
+            </Route>
+            <Route
+              path="positions/yieldxyz/:yieldId/:address"
+              element={<PopupYieldxyzYieldPositionsPage />}
+            />
+          </Routes>
+        </EarnAssetsStateProvider>
+      </PopupLayout>
+    </PortfolioContainer>
+  )
+}

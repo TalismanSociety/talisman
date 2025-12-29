@@ -36,6 +36,7 @@ import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpg
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
+import { PopupEarnRoutes } from "./pages/Earn"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
@@ -50,34 +51,6 @@ import { SubstrateSignRequest } from "./pages/Sign/substrate"
 import { TryTalismanPage } from "./pages/TryTalisman"
 import { TxHistoryPage } from "./pages/TxHistory"
 import { WhatsNewPage } from "./pages/WhatsNew/WhatsNew"
-
-// const EarnAccountPickerPageWrapper = () => {
-//   const [searchParams] = useSearchParams()
-//   const tokenId = searchParams.get("tokenId") || ""
-//   const productId = searchParams.get("productId") || ""
-//   const validatorAddress = searchParams.get("validatorAddress") || ""
-
-//   return (
-//     <EarnAccountPickerPage
-//       tokenId={tokenId}
-//       productId={productId}
-//       validatorAddress={validatorAddress}
-//     />
-//   )
-// }
-
-// const EarnNetworkPickerPageWrapper = () => {
-//   const [searchParams] = useSearchParams()
-//   const navigate = useNavigate()
-//   const tokenSymbol = searchParams.get("tokenSymbol") || ""
-
-//   const handleNetworkSelect = (tokenId: string) => {
-//     // Navigate to product selection with the selected tokenId
-//     navigate(`/select-product?tokenId=${encodeURIComponent(tokenId)}`)
-//   }
-
-//   return <EarnNetworkPickerPage tokenSymbol={tokenSymbol} onSelect={handleNetworkSelect} />
-// }
 
 const Popup = () => {
   const { isLoggedIn, isOnboarded, isMigrating } = useLoginCheck()
@@ -102,7 +75,7 @@ const Popup = () => {
       <Suspense fallback={<SuspenseTracker name="Routes" />}>
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
-          {/* <Route path="earn/*" element={<Earn />} /> */}
+          <Route path="earn/*" element={<PopupEarnRoutes />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
           <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolanaSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
@@ -120,13 +93,6 @@ const Popup = () => {
           <Route path="manage-accounts" element={<ManageAccountsPage />} />
           <Route path="tx-history" element={<TxHistoryPage />} />
           <Route path="send/*" element={<SendFundsPage />} />
-          {/* <Route path="select-network" element={<EarnNetworkPickerPageWrapper />} />
-          <Route path="select-product" element={<ProductSelectionPage />} />
-          <Route path="select-product/select-validator" element={<ValidatorPickerPage />} />
-          <Route path="select-product/select-account" element={<EarnAccountPickerPageWrapper />} />
-          <Route path="select-product/deposit/*" element={<DepositPage />} />
-          <Route path="select-product/claim/*" element={<ClaimPage />} />
-          <Route path="select-product/withdraw/*" element={<WithdrawPage />} /> */}
           <Route path="*" element={<Navigate to="/portfolio" replace />} />
         </Routes>
       </Suspense>
@@ -137,7 +103,6 @@ const Popup = () => {
         <AccountRenameModal />
         <BondModal />
         <BittensorBondModal />
-        {/* <ProductSelectionModal /> */}
         <BittensorClaimSettingsModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />

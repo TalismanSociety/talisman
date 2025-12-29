@@ -112,7 +112,7 @@ export const BottomNav = () => {
             label={t("Earn")}
             icon={TrendingUpIcon}
             onClick={handleEarnClick}
-            route="/earn"
+            route="/earn/*"
           />
           <NavButton
             label={t("History")}

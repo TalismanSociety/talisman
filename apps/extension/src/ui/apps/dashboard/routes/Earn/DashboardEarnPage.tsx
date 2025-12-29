@@ -1,10 +1,11 @@
 import { FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useNavigate, useOutletContext } from "react-router-dom"
+import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { EarnTabs } from "@ui/domains/Earn/EarnTabs"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 
 import { EarnDiscoverTab } from "./components/EarnDiscoverTab"
 import { EarnPageHeader } from "./components/EarnPageHeader"
@@ -29,7 +30,7 @@ const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutlet
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
-  const navigate = useNavigate()
+  const navigate = useNavigateWithQuery()
   const selectedTab = useMemo<EarnTabKey>(
     () => getTabFromPath(location.pathname),
     [location.pathname],
