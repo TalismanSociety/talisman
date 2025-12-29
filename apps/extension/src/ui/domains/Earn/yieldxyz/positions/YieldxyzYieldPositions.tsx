@@ -89,7 +89,7 @@ const NavHeader: FC<{
   )
 
   return (
-    <div className="flex h-28 w-full items-center gap-8">
+    <div className="flex h-28 w-full items-center gap-8 overflow-hidden">
       <div className="flex h-full grow items-center gap-4 overflow-hidden">
         <IconButton onClick={() => navigate("/earn", true)}>
           <ChevronLeftIcon />
@@ -97,15 +97,15 @@ const NavHeader: FC<{
         <YieldxyzProviderLogo providerId={product.providerId} className="size-[3.6rem]" />
 
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
-          <div className="flex w-full items-center gap-8">
-            <div className="text-body flex grow items-center overflow-hidden">
+          <div className="flex w-full items-center gap-8 overflow-hidden">
+            <div className="text-body flex grow items-center overflow-hidden truncate">
               <div className="truncate">{product.metadata.name}</div>
               <EarnTypeBadge className="shrink-0 text-xs">{product.mechanics?.type}</EarnTypeBadge>
             </div>
             <div className="text-body-secondary shrink-0">{t("Total")}</div>
           </div>
-          <div className="flex w-full items-center gap-8 text-sm">
-            <div className="text-body-secondary grow">
+          <div className="flex w-full items-center gap-8 overflow-hidden text-sm">
+            <div className="text-body-secondary grow truncate">
               <PortfolioAccount address={address} />
             </div>
             <div className="shrink-0">

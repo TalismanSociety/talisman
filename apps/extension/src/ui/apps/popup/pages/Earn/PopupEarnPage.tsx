@@ -95,7 +95,7 @@ export const PopupEarnPage: FC = () => {
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
   return (
-    <div id="main" className="relative size-full overflow-hidden">
+    <>
       <Content>
         <div className="text-body-secondary flex w-full flex-col gap-6 text-left text-base">
           {/* Page Header */}
@@ -126,7 +126,7 @@ export const PopupEarnPage: FC = () => {
         <BottomNav />
       </Content>
       <NavigationDrawer />
-    </div>
+    </>
   )
 }
 

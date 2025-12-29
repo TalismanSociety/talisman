@@ -34,7 +34,7 @@ const YieldPositionRow: FC<{
       type="button"
       className={cn(
         "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
-        IS_POPUP && "text-xs",
+        IS_POPUP && "gap-4 px-6 text-xs",
       )}
       onClick={() =>
         navigate(
@@ -121,6 +121,7 @@ const TokenRow: FC<{
       className={cn(
         "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
         isExpanded && "bg-grey-800",
+        IS_POPUP && "gap-4 px-6",
       )}
     >
       <TokenLogo tokenId={token.id} className="size-16" />
