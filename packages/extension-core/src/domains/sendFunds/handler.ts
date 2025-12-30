@@ -1,7 +1,6 @@
-import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { addConfirmedAddress, confirmedAddresses$ } from "./store.confirmedAddresses"
+import { addConfirmedAddress, confirmedAddressesStore } from "./store.confirmedAddresses"
 
 export class SendFundsHandler extends ExtensionHandler {
   public async handle<
@@ -11,7 +10,7 @@ export class SendFundsHandler extends ExtensionHandler {
   >(id: string, type: Type, request: Request, port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(sendFunds.confirmedAddresses.subscribe)":
-        return genericSubscription(id, port, confirmedAddresses$) as Response
+        return confirmedAddressesStore.subscribe(id, port) as Response
 
       case "pri(sendFunds.confirmedAddresses.add)": {
         const { tokenId, address } =

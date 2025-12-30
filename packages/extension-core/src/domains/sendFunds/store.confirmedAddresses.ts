@@ -1,22 +1,40 @@
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { splitSubject } from "@talismn/util"
-import { log } from "extension-shared"
-import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, firstValueFrom, ReplaySubject, skip } from "rxjs"
 
-import { getBlobStore } from "../../db"
-import { walletReady } from "../../libs/isWalletReady"
+import { SubscribableStorageProvider } from "../../libs/Store"
 import { ConfirmedExternalAddresses } from "./types"
 
-const blobStore = getBlobStore<ConfirmedExternalAddresses>("confirmed-addresses")
+class ConfirmedAddressesStore extends SubscribableStorageProvider<
+  ConfirmedExternalAddresses,
+  "pri(sendFunds.confirmedAddresses.subscribe)"
+> {
+  constructor() {
+    super("confirmedAddresses", {})
+  }
 
-const DEFAULT_DATA: ConfirmedExternalAddresses = {}
+  async addConfirmedAddress(tokenId: string, address: string): Promise<void> {
+    const normalized = normalizeAddress(address)
 
-const [setConfirmedAddresses, confirmedAddresses$] = splitSubject(
-  new ReplaySubject<ConfirmedExternalAddresses>(1),
-)
+    await this.mutate((current) => {
+      const existingForToken = current[tokenId] ?? []
 
-export { confirmedAddresses$ }
+      if (existingForToken.some((a) => isAddressEqual(a, normalized))) {
+        return current
+      }
+
+      return {
+        ...current,
+        [tokenId]: [...existingForToken, normalized],
+      }
+    })
+  }
+}
+
+export const confirmedAddressesStore = new ConfirmedAddressesStore()
+
+export const confirmedAddresses$ = confirmedAddressesStore.observable
+
+export const addConfirmedAddress = (tokenId: string, address: string): Promise<void> =>
+  confirmedAddressesStore.addConfirmedAddress(tokenId, address)
 
 export const isAddressConfirmedForToken = (
   data: ConfirmedExternalAddresses,
@@ -26,38 +44,3 @@ export const isAddressConfirmedForToken = (
   const confirmedForToken = data[tokenId] ?? []
   return confirmedForToken.some((confirmed) => isAddressEqual(confirmed, address))
 }
-
-export const addConfirmedAddress = async (tokenId: string, address: string): Promise<void> => {
-  const normalized = normalizeAddress(address)
-  const current = await firstValueFrom(confirmedAddresses$)
-
-  const existingForToken = current[tokenId] ?? []
-
-  if (existingForToken.some((a) => isAddressEqual(a, normalized))) return
-
-  setConfirmedAddresses({
-    ...current,
-    [tokenId]: [...existingForToken, normalized],
-  })
-}
-
-walletReady.then(() => {
-  // load from storage
-  blobStore
-    .get()
-    .then((data) => {
-      setConfirmedAddresses(data ?? DEFAULT_DATA)
-    })
-    .catch((error) => {
-      log.error("[confirmedAddresses] failed to load on startup", error)
-      setConfirmedAddresses(DEFAULT_DATA)
-    })
-
-  // persist to storage on changes
-  confirmedAddresses$
-    .pipe(skip(1), debounceTime(1_000), distinctUntilChanged<ConfirmedExternalAddresses>(isEqual))
-    .subscribe((data) => {
-      log.debug("[confirmedAddresses] persisting to db")
-      blobStore.set(data)
-    })
-})
