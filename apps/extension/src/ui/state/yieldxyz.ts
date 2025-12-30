@@ -1,10 +1,19 @@
 import { bind } from "@react-rxjs/core"
-import { NetworkId } from "@talismn/chaindata-provider"
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  Network,
+  NetworkId,
+  solNativeTokenId,
+  solSplTokenId,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { isNotNil, Loadable } from "@talismn/util"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
   Networks,
+  TokenDto,
   YieldDto,
   YieldxyzPosition,
   YieldxyzProvider,
@@ -15,6 +24,7 @@ import { combineLatest, map, Observable, shareReplay } from "rxjs"
 
 import { api } from "@ui/api"
 
+import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
 import { debugObservable } from "./util/debugObservable"
 
@@ -147,6 +157,68 @@ export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalis
 export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   totalAmountUsd: number
   product: YieldDto
+}
+
+export const [useYieldxyzTalismanInputTokenIds, yieldxyzTalismanInputTokenIds$] = bind(
+  combineLatest([
+    yieldxyzProducts$,
+    yieldNetworkIdToTalismanNetworkIdMap$,
+    getNetworksMapById$(),
+  ]).pipe(
+    map(([loadable, yieldNetworkIdToTalismanNetworkIdMap, networksMap]) => {
+      if (loadable.status === "loading") return []
+
+      const tokenIds = new Set<string>()
+      for (const product of loadable.data ?? []) {
+        // if multiple tokens, consider only the native token (no address)
+        const inputToken =
+          product.inputTokens.length > 1
+            ? product.inputTokens.find((t) => !t.address)
+            : product.inputTokens[0]
+        if (!inputToken) continue
+
+        const tokenId = getYieldxyzTokenId(
+          inputToken,
+          yieldNetworkIdToTalismanNetworkIdMap,
+          networksMap,
+        )
+        if (tokenId) tokenIds.add(tokenId)
+      }
+
+      return Array.from(tokenIds)
+    }),
+  ),
+  [],
+)
+
+export const getYieldxyzTokenId = (
+  token: TokenDto,
+  yieldxyzToTalismanNetworkId: Record<string, string>,
+  networksMap: Record<NetworkId, Network>,
+) => {
+  const networkId = yieldxyzToTalismanNetworkId[token.network]
+  if (!networkId) return null
+
+  const network = networksMap[networkId]
+  if (!network) return null
+
+  switch (network.platform) {
+    case "ethereum":
+      return token.address
+        ? evmErc20TokenId(networkId, token.address as `0x${string}`)
+        : evmNativeTokenId(networkId)
+    case "polkadot": {
+      if (token.symbol === network.nativeCurrency.symbol) return subNativeTokenId(networkId)
+      log.warn("Unsupported polkadot token for yieldxyz:", token)
+      return null
+    }
+    case "solana": {
+      if (token.address) return solSplTokenId(networkId, token.address)
+      if (token.symbol === network.nativeCurrency.symbol) return solNativeTokenId(networkId)
+      log.warn("Unsupported solana token for yieldxyz:", token)
+      return null
+    }
+  }
 }
 
 const enhanceYieldxyzPositions = (

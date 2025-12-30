@@ -1,5 +1,5 @@
 import { Balance } from "@talismn/balances"
-import { isTokenInTypes } from "@talismn/chaindata-provider"
+import { isTokenInTypes, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -7,8 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
-import { useNetworkById } from "@ui/state"
-import { useYieldxyzProduct } from "@ui/state/yieldxyz"
+import { useNetworkById, useYieldxyzProduct } from "@ui/state"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
@@ -18,12 +17,13 @@ import { useYieldxyzEnterModal } from "./useYieldxyzEnterModal"
 
 export type YieldxyzEnterWizardInit = {
   address?: string
-  tokenId?: string // TODO use this to filter products that accept this token
+  pickerTokenIds?: TokenId[] // used to restrict token selection when opening the wizard from portfolio
   productId?: string
 }
 
 export type YieldxyzEnterWizardState = {
-  step: "account" | "amount" | "confirm" // | "product"
+  step: "token" | "product" | "account" | "amount" | "confirm"
+  pickerTokenId?: TokenId | null // only used when opening the wizard with a specific token selected
   address: string | null
   productId: string | null
   amountIn: bigint | null
@@ -31,7 +31,8 @@ export type YieldxyzEnterWizardState = {
 
 const advanceStep = (state: YieldxyzEnterWizardState): YieldxyzEnterWizardState => {
   const selectStep = (state: YieldxyzEnterWizardState) => {
-    // if (!state.productId) return "product"
+    if (!state.productId) return state.pickerTokenId ? "product" : "token"
+
     if (!state.address) return "account"
     return state.step
   }
@@ -139,6 +140,14 @@ const useYieldxyzEnterWizardProvider = ({
     setState((state) => advanceStep({ ...state, address, step: "amount" }))
   }, [])
 
+  const onPickerTokenChanged = useCallback((pickerTokenId: string | null) => {
+    setState((state) => advanceStep({ ...state, pickerTokenId, step: "product" }))
+  }, [])
+
+  const onProductChanged = useCallback((productId: string | null) => {
+    setState((state) => advanceStep({ ...state, productId, step: "amount" }))
+  }, [])
+
   const goTo = useCallback((step: YieldxyzEnterWizardState["step"]) => {
     setState((state) => ({ ...state, step }))
   }, [])
@@ -199,6 +208,8 @@ const useYieldxyzEnterWizardProvider = ({
     onAmountInChanged,
     setMaxAmountIn,
     onAccountChanged,
+    onProductChanged,
+    onPickerTokenChanged,
     onSubmit,
     isLoadingBalance: balancesStatus === "initialising",
     isLoadingProduct: status === "loading" && !product,
@@ -210,6 +221,7 @@ const useYieldxyzEnterWizardProvider = ({
     transaction,
     canCreateAction,
     createAction,
+    pickerTokenIds: stateInit?.pickerTokenIds,
   }
 }
 

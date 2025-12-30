@@ -3,8 +3,7 @@ import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
-import { useNetworkById } from "@ui/state"
-import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
 
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzPendingAction } from "../hooks/useYieldxyzPendingAction"

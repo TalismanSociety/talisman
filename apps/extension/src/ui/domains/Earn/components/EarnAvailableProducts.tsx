@@ -3,7 +3,6 @@ import { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { YieldDto } from "extension-core"
-import { t } from "i18next"
 import { FC, PropsWithChildren, ReactNode, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
@@ -14,8 +13,13 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useNetworkById, useNetworksMapById, useToken, useTokensMap } from "@ui/state"
-import { useYieldxyzProviders } from "@ui/state/yieldxyz"
+import {
+  useNetworkById,
+  useNetworksMapById,
+  useToken,
+  useTokensMap,
+  useYieldxyzProviders,
+} from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
@@ -187,17 +191,20 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
 
 const Metric: FC<
   PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
-> = ({ children, icon, tooltip, className }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
-        <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
-        <div>{children ?? t("N/A")}</div>
-      </div>
-    </TooltipTrigger>
-    <TooltipContent>{tooltip}</TooltipContent>
-  </Tooltip>
-)
+> = ({ children, icon, tooltip, className }) => {
+  const { t } = useTranslation()
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
+          <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
+          <div>{children ?? t("N/A")}</div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  )
+}
 
 const TokenProductsShimmer = () => (
   <div className="bg-grey-900 flex h-28 items-center gap-6 rounded px-8">

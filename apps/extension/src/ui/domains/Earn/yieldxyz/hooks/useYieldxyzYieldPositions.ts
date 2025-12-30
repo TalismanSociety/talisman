@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 
-import { useYieldxyzPositionsEnhanced } from "@ui/state/yieldxyz"
+import { useYieldxyzPositionsEnhanced } from "@ui/state"
 
 export const useYieldxyzYieldPositions = (
   yieldId: string | null | undefined,

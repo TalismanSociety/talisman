@@ -8,8 +8,7 @@ import { uniq } from "lodash-es"
 import { useEffect, useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
-import { useBalances, useSelectedCurrency } from "@ui/state"
-import { useYieldxyzProducts } from "@ui/state/yieldxyz"
+import { useBalances, useSelectedCurrency, useYieldxyzProducts } from "@ui/state"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 

@@ -1,13 +1,13 @@
 import { Balances } from "@talismn/balances"
-import { ZapFastIcon } from "@talismn/icons"
+import { TrendingUpIcon, ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
-// import { EarnPillButton } from "@ui/domains/Earn"
 import { BondPillButton } from "@ui/domains/Staking/Bond/BondPillButton"
 import { useBondButton } from "@ui/domains/Staking/Bond/hooks/useBondButton"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -18,6 +18,7 @@ import { useNetworkById } from "@ui/state"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
+import { usePortfolioEarnButton } from "../usePortfolioEarnButton"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -29,7 +30,6 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const { t } = useTranslation()
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
-  // const { selectedAccount, selectedAccounts } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -45,22 +45,8 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
   const isUniswapV2LpToken = token?.type === "evm-uniswapv2"
   const tvl = useUniswapV2LpTokenTotalValueLocked(token, rate?.price, balances)
 
-  // const remoteConfig = useRemoteConfig()
   const { canBond } = useBondButton({ balances })
-  // const showEarnButton = useMemo(
-  //   () =>
-  //     !canBond &&
-  //     token?.id &&
-  //     remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
-  //     balances
-  //       .find({ tokenId: token.id })
-  //       .each.some((b) =>
-  //         selectedAccounts.some(
-  //           (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
-  //         ),
-  //       ),
-  //   [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
-  // )
+  const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 
   if (!token || !network || !summary) return null
 
@@ -126,20 +112,14 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             symbol={isUniswapV2LpToken ? "" : token.symbol}
             balancesStatus={status}
             className={classNames(
-              canBond && "group-hover:hidden",
+              (canEarn || canBond) && "group-hover:hidden",
               status.status === "fetching" && "animate-pulse transition-opacity",
             )}
             noCountUp={noCountUp}
           />
         </div>
       </button>
-      {/* Dynamic button positioning based on which buttons are shown */}
-      {/* {showEarnButton && (
-        <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
-          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
-        </div>
-      )} */}
-      {canBond && (
+      {canBond ? (
         <>
           <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
             <BondPillButton
@@ -154,7 +134,26 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             </div>
           </div>
         </>
-      )}
+      ) : canEarn ? (
+        <>
+          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+            <PillButton
+              onClick={openEarnModal}
+              className="bg-primary/10 hover:bg-primary/20 text-primary [>svg]:text-[2rem] h-16 rounded-[28px] px-4 text-base font-light"
+            >
+              <div className="flex items-center gap-4">
+                <TrendingUpIcon className="shrink-0 text-base" />
+                <div>{t("Earn")}</div>
+              </div>
+            </PillButton>
+          </div>
+          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+              <TrendingUpIcon className="size-6" />
+            </div>
+          </div>
+        </>
+      ) : null}
     </div>
   )
 }

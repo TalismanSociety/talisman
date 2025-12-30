@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useNetworkById } from "@ui/state"
-import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
+import { useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
 
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"

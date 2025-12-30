@@ -26,7 +26,7 @@ import {
   useYieldNetworkIdToTalismanNetworkIdMap,
   useYieldxyzProduct,
   YieldxyzPositionEnhanced,
-} from "@ui/state/yieldxyz"
+} from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
