@@ -7,6 +7,7 @@ import {
   concatMap,
   defer,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   shareReplay,
   startWith,
@@ -23,7 +24,7 @@ import {
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
 } from "./helpers"
 import { updateYieldxyzPositionsStore, yieldxyzPositionsStore$ } from "./store.positions"
-import { BalancesResponseDto, YieldxyzPosition } from "./types"
+import { BalancesResponseDto, YieldBalancesDto, YieldxyzPosition } from "./types"
 
 const REFRESH_INTERVAL = 60_000
 const BATCH_SIZE = 50
@@ -116,6 +117,44 @@ const fetchPositions = async (
   }
 }
 
+const fetchPosition = async (
+  yieldId: string,
+  address: string,
+  signal: AbortSignal,
+): Promise<YieldxyzPosition | null> => {
+  try {
+    const remoteConfig = await firstValueFrom(remoteConfigStore.observable)
+    const toTalismanNetworksIdMap = getYieldxyzNetworkIdToTalismanNetworkIdMap(remoteConfig)
+
+    const req = await fetch(
+      `${YIELD_API_BASE_URL}/v1/yields/${encodeURIComponent(yieldId)}/balances`,
+      {
+        signal,
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ address }),
+      },
+    )
+
+    const { balances } = (await req.json()) as YieldBalancesDto
+
+    if (!balances.length) return null
+    const networkId = toTalismanNetworksIdMap[balances[0].token.network]
+    if (!networkId) {
+      log.warn("No networkId found for", balances)
+      return null
+    }
+
+    return { yieldId, networkId, address, balances }
+  } catch (err) {
+    log.error("[yield.xyz] fetchPositions error", { err })
+    throw err
+  }
+}
+
 const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore.observable]).pipe(
   map(([balances, remoteConfig]) => {
     const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
@@ -166,3 +205,13 @@ export const walletYieldxyzPositions$ = defer(() =>
     keepAlive(KEEP_ALIVE),
   ),
 )
+
+export const refreshYieldxyzPosition = ({
+  yieldId,
+  address,
+}: {
+  yieldId: string
+  address: string
+}) => {
+  log.log("Refreshing yield.xyz position", { yieldId, address, fetchPosition })
+}

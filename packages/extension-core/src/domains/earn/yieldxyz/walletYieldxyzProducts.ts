@@ -100,13 +100,3 @@ export const walletYieldxyzProducts$ = defer(() =>
     keepAlive(KEEP_ALIVE),
   ),
 )
-
-export const refreshYieldxyzPosition = ({
-  yieldId,
-  address,
-}: {
-  yieldId: string
-  address: string
-}) => {
-  log.log("Refreshing yield.xyz position", { yieldId, address })
-}
