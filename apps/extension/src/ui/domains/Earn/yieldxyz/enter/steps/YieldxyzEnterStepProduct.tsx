@@ -1,10 +1,10 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { CheckCircleIcon } from "@talismn/icons"
+import { CheckCircleIcon, LockIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
 import { YieldDto } from "extension-core"
-import { FC, useMemo, useState } from "react"
+import { FC, PropsWithChildren, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { WizardModalDialog } from "talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
@@ -102,6 +102,7 @@ const ProductRow: FC<{
   selected: boolean
   onClick: () => void
 }> = ({ product, selected, onClick }) => {
+  const { t } = useTranslation()
   return (
     <button
       type="button"
@@ -120,26 +121,38 @@ const ProductRow: FC<{
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
       </div>
-      <div className="shrink-0">
+      <div className="flex shrink-0 flex-col items-end justify-center gap-1 text-right">
         <YieldxyzProductYieldDisplay product={product} />
+        <Metric
+          icon={<LockIcon />}
+          tooltip={t("Total value locked")}
+          className="text-body-secondary text-xs"
+        >
+          {product.statistics &&
+            Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+              notation: "compact",
+            }).format(Number(product.statistics?.tvlUsd ?? 0))}
+        </Metric>
       </div>
     </button>
   )
 }
 
-// const Metric: FC<
-//   PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
-// > = ({ children, icon, tooltip, className }) => {
-//   const { t } = useTranslation()
-//   return (
-//     <Tooltip>
-//       <TooltipTrigger asChild>
-//         <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
-//           <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
-//           <div>{children ?? t("N/A")}</div>
-//         </div>
-//       </TooltipTrigger>
-//       <TooltipContent>{tooltip}</TooltipContent>
-//     </Tooltip>
-//   )
-// }
+const Metric: FC<
+  PropsWithChildren<{ icon: ReactNode; tooltip: ReactNode; className?: string }>
+> = ({ children, icon, tooltip, className }) => {
+  const { t } = useTranslation()
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={cn("inline-flex shrink-0 items-center gap-2", className)}>
+          <div className="shrink-0 align-text-bottom font-medium">{icon}</div>
+          <div>{children ?? t("N/A")}</div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  )
+}

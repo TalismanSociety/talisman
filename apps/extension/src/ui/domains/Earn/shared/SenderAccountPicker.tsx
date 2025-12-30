@@ -154,14 +154,14 @@ const AccountRow: FC<{
         className="shrink-0 !text-xl"
       />
       <div className="flex grow items-center overflow-hidden">
-        <div className="flex flex-col space-y-2">
-          <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col space-y-2 overflow-hidden">
+          <div className="flex items-center gap-2 overflow-hidden">
             <div className="truncate">
               {account.name ?? (
                 <Address address={address} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
-            <AccountTypeIcon type={account.type} className="text-primary" />
+            <AccountTypeIcon type={account.type} className="text-primary shrink-0" />
           </div>
           <Address className="text-body-secondary text-xs" address={address} />
         </div>
