@@ -1,9 +1,10 @@
 import { Balances } from "@talismn/balances"
-import { LockIcon } from "@talismn/icons"
+import { LockIcon, TrendingUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -24,6 +25,7 @@ import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
+import { usePortfolioEarnButton } from "../usePortfolioEarnButton"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
@@ -95,22 +97,7 @@ const AssetRow: FC<{
 
   const { canBond } = useBondButton({ balances })
   const showStakingButton = canBond && !locked
-  // const remoteConfig = useRemoteConfig()
-
-  // const showEarnButton = useMemo(
-  //   () =>
-  //     !canBond &&
-  //     token?.id &&
-  //     remoteConfig.earn.earnButtonTokenIds.includes(token.id) &&
-  //     balances
-  //       .find({ tokenId: token.id })
-  //       .each.some((b) =>
-  //         selectedAccounts.some(
-  //           (acc) => isAccountOwned(acc) && isAddressEqual(acc.address, b.address),
-  //         ),
-  //       ),
-  //   [canBond, token.id, remoteConfig.earn.earnButtonTokenIds, balances, selectedAccounts],
-  // )
+  const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 
   if (!token || !summary || !network) return null
 
@@ -190,13 +177,8 @@ const AssetRow: FC<{
           </div>
         </div>
       </button>
-      {/* Dynamic button positioning based on which buttons are shown */}
-      {/* {showEarnButton && (
-        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
-          <EarnPillButton tokenId={token.id} className="[>svg]:text-md text-base" />
-        </div>
-      )} */}
-      {showStakingButton && (
+
+      {showStakingButton ? (
         <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
           <BondPillButton
             balances={balances}
@@ -204,7 +186,19 @@ const AssetRow: FC<{
             className="[>svg]:text-[2rem] text-base"
           />
         </div>
-      )}
+      ) : canEarn ? (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <PillButton
+            onClick={openEarnModal}
+            className="bg-primary/10 hover:bg-primary/20 text-primary [>svg]:text-[2rem] h-16 rounded-[28px] px-4 text-base font-light"
+          >
+            <div className="flex items-center gap-4">
+              <TrendingUpIcon className="shrink-0 text-base" />
+              <div>{t("Earn")}</div>
+            </div>
+          </PillButton>
+        </div>
+      ) : null}
     </div>
   )
 }
