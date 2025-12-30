@@ -1,8 +1,11 @@
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { Port } from "../../types/base"
-import { walletYieldxyzPositions$ } from "./yieldxyz/walletYieldxyzPositions"
+import {
+  refreshYieldxyzPosition,
+  walletYieldxyzPositions$,
+} from "./yieldxyz/walletYieldxyzPositions"
 import { walletYieldxyzProducts$ } from "./yieldxyz/walletYieldxyzProducts"
 import { yieldxyzProviders$ } from "./yieldxyz/yieldxyzProviders"
 
@@ -18,7 +21,9 @@ export class EarnHandler extends ExtensionHandler {
         return genericSubscription(id, port, walletYieldxyzPositions$)
 
       case "pri(earn.yieldxyz.positions.refresh)":
-        return true
+        return refreshYieldxyzPosition(
+          request as RequestType<"pri(earn.yieldxyz.positions.refresh)">,
+        )
 
       case "pri(earn.yieldxyz.products.subscribe)":
         return genericSubscription(id, port, walletYieldxyzProducts$)

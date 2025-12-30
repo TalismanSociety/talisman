@@ -9,8 +9,11 @@ import {
   distinctUntilChanged,
   firstValueFrom,
   map,
+  merge,
+  scan,
   shareReplay,
   startWith,
+  Subject,
   switchMap,
   take,
   tap,
@@ -155,6 +158,23 @@ const fetchPosition = async (
   }
 }
 
+// Subject to emit single position overrides without interrupting the main query
+const positionOverride$ = new Subject<YieldxyzPosition>()
+
+type PositionsAction =
+  | { type: "main"; loadable: Loadable<YieldxyzPosition[]> }
+  | { type: "override"; position: YieldxyzPosition; timestamp: number }
+
+type PositionsState = {
+  loadable: Loadable<YieldxyzPosition[]>
+  // Track when the current main query started (on "loading" emission)
+  queryStartTime: number | null
+  // Overrides with their timestamps
+  pendingOverrides: Map<string, { position: YieldxyzPosition; timestamp: number }>
+}
+
+const getPositionKey = (pos: YieldxyzPosition) => `${pos.yieldId}::${pos.address}`
+
 const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore.observable]).pipe(
   map(([balances, remoteConfig]) => {
     const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
@@ -173,7 +193,7 @@ const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore
   shareReplay({ refCount: true, bufferSize: 1 }),
 )
 
-export const walletYieldxyzPositions$ = defer(() =>
+const mainPositionsQuery$ = defer(() =>
   yieldxyzPositionsStore$.pipe(
     take(1),
     concatMap((defaultValue) =>
@@ -200,18 +220,120 @@ export const walletYieldxyzPositions$ = defer(() =>
         } as Loadable<YieldxyzPosition[]>),
       ),
     ),
-    distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
-    shareReplay({ refCount: true, bufferSize: 1 }),
-    keepAlive(KEEP_ALIVE),
   ),
 )
 
-export const refreshYieldxyzPosition = ({
+export const walletYieldxyzPositions$ = merge(
+  mainPositionsQuery$.pipe(map((loadable): PositionsAction => ({ type: "main", loadable }))),
+  positionOverride$.pipe(
+    map((position): PositionsAction => ({ type: "override", position, timestamp: Date.now() })),
+  ),
+).pipe(
+  scan(
+    (state, action): PositionsState => {
+      if (action.type === "main") {
+        const isLoading = action.loadable.status === "loading"
+
+        if (isLoading) {
+          // Main query just started - record the start time, keep existing overrides
+          return {
+            ...state,
+            loadable: action.loadable,
+            queryStartTime: state.queryStartTime ?? Date.now(),
+          }
+        } else {
+          // Main query completed with success
+          // Keep overrides that happened AFTER this query started (they're fresher)
+          // Discard overrides from before the query started (main query has fresher data)
+          const queryStartTime = state.queryStartTime ?? 0
+
+          const freshOverrides = new Map<
+            string,
+            { position: YieldxyzPosition; timestamp: number }
+          >()
+          for (const [key, override] of state.pendingOverrides) {
+            if (override.timestamp > queryStartTime) {
+              freshOverrides.set(key, override)
+            }
+          }
+
+          // Start with main query data, then re-apply fresh overrides
+          let finalData = action.loadable.data ?? []
+          for (const { position } of freshOverrides.values()) {
+            const existingIndex = finalData.findIndex(
+              (pos) => pos.yieldId === position.yieldId && pos.address === position.address,
+            )
+            finalData =
+              existingIndex >= 0
+                ? finalData.map((pos, i) => (i === existingIndex ? position : pos))
+                : [...finalData, position]
+          }
+
+          return {
+            loadable: { ...action.loadable, data: finalData },
+            queryStartTime: null, // Reset for next query cycle
+            pendingOverrides: freshOverrides,
+          }
+        }
+      } else {
+        // Override - merge into current data without interrupting main query
+        const key = getPositionKey(action.position)
+        const newOverrides = new Map(state.pendingOverrides).set(key, {
+          position: action.position,
+          timestamp: action.timestamp,
+        })
+
+        const currentData = state.loadable.data ?? []
+        const existingIndex = currentData.findIndex(
+          (pos) =>
+            pos.yieldId === action.position.yieldId && pos.address === action.position.address,
+        )
+
+        const updatedData =
+          existingIndex >= 0
+            ? currentData.map((pos, i) => (i === existingIndex ? action.position : pos))
+            : [...currentData, action.position]
+
+        return {
+          ...state,
+          loadable: { ...state.loadable, data: updatedData },
+          pendingOverrides: newOverrides,
+        }
+      }
+    },
+    {
+      loadable: { status: "loading", data: [] } as Loadable<YieldxyzPosition[]>,
+      queryStartTime: null as number | null,
+      pendingOverrides: new Map<string, { position: YieldxyzPosition; timestamp: number }>(),
+    },
+  ),
+  map((state) => state.loadable),
+  distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
+  shareReplay({ refCount: true, bufferSize: 1 }),
+  keepAlive(KEEP_ALIVE),
+)
+
+export const refreshYieldxyzPosition = async ({
   yieldId,
   address,
 }: {
   yieldId: string
   address: string
 }) => {
-  log.log("Refreshing yield.xyz position", { yieldId, address, fetchPosition })
+  log.log("Refreshing yield.xyz position", { yieldId, address })
+  try {
+    const controller = new AbortController()
+    // Set a reasonable timeout for single position fetch
+    const timeoutId = setTimeout(() => controller.abort(), 30_000)
+
+    const position = await fetchPosition(yieldId, address, controller.signal)
+    clearTimeout(timeoutId)
+
+    if (position) {
+      positionOverride$.next(position)
+      log.log("Position refresh complete", { yieldId, address })
+    }
+  } catch (err) {
+    log.error("Failed to refresh position", { yieldId, address, err })
+  }
 }

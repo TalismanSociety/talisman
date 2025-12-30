@@ -3,6 +3,7 @@ import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state"
 import { YieldxyzPositionEnhanced } from "@ui/state/yieldxyz"
 
@@ -79,8 +80,10 @@ const useYieldxyzExitWizardProvider = ({
   }, [])
 
   const onCompleted = useCallback(() => {
+    // do not await the refresh or UI wont have a position to display
+    if (state.position) api.yieldxyzPositionRefresh(state.position)
     if (isOpen) close()
-  }, [close, isOpen])
+  }, [close, isOpen, state.position])
 
   const setMaxAmountOut = useCallback(() => {
     if (!balance) return
