@@ -58,6 +58,7 @@ import {
   WatchAssetRequestId,
   YieldDto,
   YieldxyzPosition,
+  YieldxyzPositionRefreshRequest,
   YieldxyzProvider,
 } from "extension-core"
 import { MetadataDef } from "inject/substrate/types"
@@ -288,6 +289,7 @@ export default interface MessageTypes {
   yieldxyzPositionsSubscribe: (
     cb: (positions: Loadable<YieldxyzPosition[]>) => void,
   ) => UnsubscribeFn
+  yieldxyzPositionRefresh: (args: YieldxyzPositionRefreshRequest) => Promise<void>
   yieldxyzProductsSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
   yieldxyzProvidersSubscribe: (
     cb: (positions: Loadable<YieldxyzProvider[]>) => void,

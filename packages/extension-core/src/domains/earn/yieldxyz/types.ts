@@ -1,12 +1,15 @@
 import { Address } from "@talismn/balances"
 import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
-import { BalanceDto, YieldDto, YieldsControllerGetYieldsParams } from "@yieldxyz/sdk"
+import { BalanceDto, YieldDto } from "@yieldxyz/sdk"
 
 // TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
+  ActionArgumentsDto,
   ActionDto,
+  ArgumentFieldDto,
+  ArgumentSchemaDto,
   BalanceDto,
   BalancesRequestDto,
   BalancesResponseDto,
@@ -18,6 +21,7 @@ export type {
   PendingActionDto,
   ProviderDto,
   SubmitHashDto,
+  TimePeriodDto,
   TokenDto,
   TransactionDto,
   ValidatorDto,
@@ -26,21 +30,7 @@ export type {
   YieldDto,
   YieldsControllerGetYieldsParams,
   YieldsControllerGetYieldValidators200,
-  ArgumentFieldDto,
-  ActionArgumentsDto,
-  TimePeriodDto,
-  ArgumentSchemaDto,
 } from "@yieldxyz/sdk"
-
-// Extend SDK params to support comma-separated inputToken values
-export interface YieldxyzControllerGetYieldsBatchParams extends YieldsControllerGetYieldsParams {
-  inputTokens?: string // Comma-separated token addresses/symbols
-}
-
-// Also extend the base SDK params to support inputTokens for backward compatibility
-export interface YieldxyzControllerGetYieldsParamsExtended extends YieldsControllerGetYieldsParams {
-  inputTokens?: string // Comma-separated token addresses/symbols
-}
 
 export type YieldxyzProvider = {
   id: string
@@ -64,9 +54,15 @@ export type YieldxyzPositionsResponse = Loadable<YieldxyzPosition[]>
 export type YieldxyzOpportunitiesResponse = Loadable<YieldDto[]>
 export type YieldxyzProvidersResponse = Loadable<YieldxyzProvider[]>
 
+export type YieldxyzPositionRefreshRequest = {
+  yieldId: string
+  address: Address
+}
+
 // Message type augmentation for handler routing
-export interface YieldxyzMessages {
+export interface EarnYieldxyzMessages {
   "pri(earn.yieldxyz.positions.subscribe)": [null, boolean, YieldxyzPositionsResponse]
+  "pri(earn.yieldxyz.positions.refresh)": [YieldxyzPositionRefreshRequest, void]
   "pri(earn.yieldxyz.products.subscribe)": [null, boolean, YieldxyzOpportunitiesResponse]
   "pri(earn.yieldxyz.providers.subscribe)": [null, boolean, YieldxyzProvidersResponse]
 }

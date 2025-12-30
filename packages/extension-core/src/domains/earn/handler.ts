@@ -17,6 +17,9 @@ export class EarnHandler extends ExtensionHandler {
       case "pri(earn.yieldxyz.positions.subscribe)":
         return genericSubscription(id, port, walletYieldxyzPositions$)
 
+      case "pri(earn.yieldxyz.positions.refresh)":
+        return true
+
       case "pri(earn.yieldxyz.products.subscribe)":
         return genericSubscription(id, port, walletYieldxyzProducts$)
 
