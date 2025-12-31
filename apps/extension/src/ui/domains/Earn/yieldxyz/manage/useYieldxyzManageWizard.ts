@@ -3,6 +3,7 @@ import { log } from "extension-shared"
 import { useCallback, useEffect, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
 import { useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
 
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
@@ -52,8 +53,10 @@ const useYieldxyzManageWizardProvider = ({
   }, [canCreateAction, createAction])
 
   const onCompleted = useCallback(() => {
+    // do not await the refresh or UI will flicker
+    if (position) api.yieldxyzPositionRefresh(position)
     if (isOpen) close()
-  }, [close, isOpen])
+  }, [close, isOpen, position])
 
   const { stepIndex, transaction, isProcessing, onSubmit } = useYieldxyzTransactionManager({
     action,

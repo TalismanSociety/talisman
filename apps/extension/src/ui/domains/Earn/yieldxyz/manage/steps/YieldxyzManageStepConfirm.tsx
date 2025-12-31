@@ -11,6 +11,7 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
+import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
 import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
 
@@ -37,6 +38,7 @@ export const YieldxyzManageStepConfirm = () => {
   return (
     <RiskAnalysisProvider
       riskAnalysis={transaction?.platform === "ethereum" ? transaction.riskAnalysis : undefined}
+      containerId="earn-modal"
     >
       <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
         <div className="flex size-full flex-col gap-8 overflow-hidden">
@@ -45,8 +47,9 @@ export const YieldxyzManageStepConfirm = () => {
               ? t("Approve {{count}} transactions", { count: action.transactions.length })
               : t("Approve transaction")}
           </div>
-          <div className="flex grow flex-col justify-center">
+          <div className="flex w-full grow flex-col items-center justify-center gap-6 overflow-hidden">
             <StepsProgressDisplay />
+            <RiskAnalysisButton />
             <TransactionError />
           </div>
           <FormFieldSet>
@@ -87,6 +90,18 @@ export const YieldxyzManageStepConfirm = () => {
   )
 }
 
+const RiskAnalysisButton = () => {
+  const { transaction } = useYieldxyzManageWizard()
+
+  if (transaction?.platform !== "ethereum") return null
+
+  return (
+    <div>
+      <RiskAnalysisPillButton />
+    </div>
+  )
+}
+
 const ActionCreatingShimmer = () => {
   {
     const { t } = useTranslation()
@@ -111,7 +126,7 @@ const TransactionError = () => {
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "text-brand-orange mt-4 text-center text-xs",
+            "text-brand-orange text-center text-xs",
             // do not display error while isProcessing=true, as it has already has been executed
             (isProcessing || !transaction?.error) && "invisible",
           )}

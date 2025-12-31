@@ -1,6 +1,6 @@
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
+import { debounceTime, firstValueFrom, map, pairwise, ReplaySubject } from "rxjs"
 
 import { getBlobStore } from "../../../db"
 import { walletReady } from "../../../libs/isWalletReady"
@@ -50,18 +50,44 @@ const normalizeYieldxyzPositions = (items: YieldxyzPosition[]): YieldxyzPosition
 }
 
 // persist to db when store is updated
-subjectYieldxyzPositionsStore$
-  .pipe(debounceTime(500), map(normalizeYieldxyzPositions), pairwise())
-  .subscribe(async ([prev, items]) => {
-    try {
-      if (!isEqual(prev, items)) await blobStore.set(items)
-    } catch (error) {
-      log.error("[yield.xyz] Error saving yield balances:", error)
-    }
-  })
+walletReady.then(() => {
+  subjectYieldxyzPositionsStore$
+    .pipe(debounceTime(500), map(normalizeYieldxyzPositions), pairwise())
+    .subscribe(async ([prev, items]) => {
+      try {
+        if (!isEqual(prev, items)) await blobStore.set(items)
+      } catch (error) {
+        log.error("[yield.xyz] Error saving yield balances:", error)
+      }
+    })
+})
 
 export const yieldxyzPositionsStore$ = subjectYieldxyzPositionsStore$.asObservable()
 
 export const updateYieldxyzPositionsStore = (items: YieldxyzPosition[]) => {
   subjectYieldxyzPositionsStore$.next(items)
+}
+
+const matchesYieldIdAndAddress = (position: YieldxyzPosition, yieldId: string, address: string) =>
+  position.yieldId === yieldId && position.address === address
+
+// Remove all 1/n entries matching yieldId + address.
+export const removeYieldxyzPositionsByYieldIdAndAddress = async (
+  yieldId: string,
+  address: string,
+) => {
+  const currentYieldxyzPositions = await firstValueFrom(subjectYieldxyzPositionsStore$)
+  const next = currentYieldxyzPositions.filter(
+    (p) => !matchesYieldIdAndAddress(p, yieldId, address),
+  )
+  if (!isEqual(next, currentYieldxyzPositions)) subjectYieldxyzPositionsStore$.next(next)
+}
+
+// Replace all 1/n entries matching yieldId + address with the refreshed (single) position.
+export const upsertYieldxyzPositionsByYieldIdAndAddress = async (position: YieldxyzPosition) => {
+  const currentYieldxyzPositions = await firstValueFrom(subjectYieldxyzPositionsStore$)
+  const remaining = currentYieldxyzPositions.filter(
+    (p) => !matchesYieldIdAndAddress(p, position.yieldId, position.address),
+  )
+  subjectYieldxyzPositionsStore$.next([...remaining, position])
 }

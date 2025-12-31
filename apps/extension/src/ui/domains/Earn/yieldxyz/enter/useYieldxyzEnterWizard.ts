@@ -5,6 +5,7 @@ import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
 import { useNetworkById, useYieldxyzProduct } from "@ui/state"
@@ -153,8 +154,14 @@ const useYieldxyzEnterWizardProvider = ({
   }, [])
 
   const onCompleted = useCallback(() => {
+    // do not await the refresh or UI will flicker
+    if (state.address && state.productId)
+      api.yieldxyzPositionRefresh({
+        address: state.address,
+        yieldId: state.productId,
+      })
     if (isOpen) close()
-  }, [close, isOpen])
+  }, [close, isOpen, state.address, state.productId])
 
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return

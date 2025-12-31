@@ -279,10 +279,10 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     return (
       <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
         {selectedAccount
-          ? t("No staking positions found for this account.")
+          ? t("No earning positions found for this account.")
           : selectedFolder
-            ? t("No staking positions found in this folder.")
-            : t("No staking positions found.")}
+            ? t("No earning positions found in this folder.")
+            : t("No earning positions found.")}
       </div>
     )
   }

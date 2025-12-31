@@ -79,7 +79,7 @@ const useYieldxyzExitWizardProvider = ({
   }, [])
 
   const onCompleted = useCallback(() => {
-    // do not await the refresh or UI wont have a position to display
+    // do not await the refresh or UI will flicker
     if (state.position) api.yieldxyzPositionRefresh(state.position)
     if (isOpen) close()
   }, [close, isOpen, state.position])

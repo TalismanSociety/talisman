@@ -131,17 +131,18 @@ const RiskAnalysisCriticalPane: FC<{
   )
 }
 
-export const RiskAnalysisDrawers: FC<{ riskAnalysis?: RiskAnalysis; onReject?: () => void }> = ({
-  riskAnalysis,
-  onReject,
-}) => {
+export const RiskAnalysisDrawers: FC<{
+  riskAnalysis?: RiskAnalysis
+  containerId?: string
+  onReject?: () => void
+}> = ({ riskAnalysis, containerId = "main", onReject }) => {
   if (!riskAnalysis) return null
 
   return (
     <>
       <Drawer
         anchor="bottom"
-        containerId="main"
+        containerId={containerId}
         isOpen={riskAnalysis.review.drawer.isOpen}
         onDismiss={riskAnalysis.review.drawer.close}
       >
