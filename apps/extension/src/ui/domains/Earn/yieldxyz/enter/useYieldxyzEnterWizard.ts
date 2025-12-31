@@ -1,6 +1,7 @@
 import { Balance } from "@talismn/balances"
 import { isTokenInTypes, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
+import { isAccountOwned } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 
@@ -8,7 +9,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
-import { useNetworkById, useYieldxyzProduct } from "@ui/state"
+import { useAccountByAddress, useNetworkById, useYieldxyzProduct } from "@ui/state"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
@@ -83,6 +84,7 @@ const useYieldxyzEnterWizardProvider = ({
     return tokens[0]!
   }, [product, getYieldxyzToken])
 
+  const account = useAccountByAddress(state.address)
   const network = useNetworkById(tokenIn?.networkId)
 
   const balanceParams = useMemo<BalanceByParamsProps>(() => {
@@ -106,11 +108,12 @@ const useYieldxyzEnterWizardProvider = ({
 
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountIn || !tokenIn || !balance) return [null, null]
+    if (!isAccountOwned(account)) return [null, "Unable to transact with external accounts"]
     if (state.amountIn > balance.transferable.planck) return [null, "Insufficient balance"]
 
     const inputs = { amount: planckToTokens(state.amountIn.toString(), tokenIn.decimals) }
     return [inputs, null]
-  }, [state.amountIn, tokenIn, balance])
+  }, [state.amountIn, tokenIn, balance, account])
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: product?.mechanics.arguments?.enter,

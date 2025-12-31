@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { BalanceDto, YieldDto } from "extension-core"
+import { BalanceDto, isAccountOwned, YieldDto } from "extension-core"
 import { log } from "extension-shared"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,6 +23,7 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import {
+  useAccountByAddress,
   useYieldNetworkIdToTalismanNetworkIdMap,
   useYieldxyzProduct,
   YieldxyzPositionEnhanced,
@@ -232,6 +233,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
     withdrawableBalances,
     canEnter,
     canExit,
+    canManage,
     onAddToPositionClick,
     onExitClick,
     onClaimClick,
@@ -253,7 +255,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           {t("Exit position")}
         </ContextMenuItem>
         {claimableBalances.map((balance, index) => (
-          <ContextMenuItem key={index} onClick={onClaimClick(balance)}>
+          <ContextMenuItem key={index} disabled={!canManage} onClick={onClaimClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Claim")}</div>
               <Tokens amount={balance.amount} noCountUp symbol={balance.token.symbol} />
@@ -261,7 +263,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           </ContextMenuItem>
         ))}
         {withdrawableBalances.map((balance, index) => (
-          <ContextMenuItem key={index} onClick={onWithdrawClick(balance)}>
+          <ContextMenuItem key={index} disabled={!canManage} onClick={onWithdrawClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Withdraw")}</div>
               <Tokens amount={balance.amount} noCountUp symbol={balance.token.symbol} />
@@ -277,6 +279,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
   const { t } = useTranslation()
   const {
     canEnter,
+    canManage,
     onAddToPositionClick,
     claimableBalances,
     onClaimClick,
@@ -306,6 +309,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
       {withdrawableBalances.length > 0 && (
         <Button
           primary
+          disabled={!canManage}
           className={cn(!isGridLayout && "w-[17.5rem]")}
           onClick={onWithdrawClick(withdrawableBalances[0])}
         >
@@ -315,6 +319,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
       {claimableBalances.length > 0 && (
         <Button
           primary
+          disabled={!canManage}
           className={cn(!isGridLayout && "w-[17.5rem]")}
           onClick={onClaimClick(claimableBalances[0])}
         >
@@ -335,18 +340,21 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
 }
 
 const usePositionActions = (position: YieldxyzPositionEnhanced) => {
+  const account = useAccountByAddress(position.address)
   const { open: openEnter } = useYieldxyzEnterModal()
   const { open: openExit } = useYieldxyzExitModal()
   const { open: openManage } = useYieldxyzManageModal()
 
-  const [claimableBalances, withdrawableBalances, canEnter, canExit] = useMemo(() => {
+  const [claimableBalances, withdrawableBalances, canEnter, canExit, canManage] = useMemo(() => {
+    const isOwned = isAccountOwned(account)
     return [
       position.balances.filter((b) => b.type === "claimable" && b.pendingActions.length),
       position.balances.filter((b) => b.type === "withdrawable" && b.pendingActions.length),
-      position.product.status.enter,
-      position.product.status.exit && position.balances.some((b) => b.type === "active"),
+      isOwned && position.product.status.enter,
+      isOwned && position.product.status.exit && position.balances.some((b) => b.type === "active"),
+      isOwned,
     ]
-  }, [position])
+  }, [account, position])
 
   const onAddToPositionClick = useCallback(() => {
     openEnter({
@@ -390,6 +398,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
     withdrawableBalances,
     canEnter,
     canExit,
+    canManage,
     onAddToPositionClick,
     onExitClick,
     onClaimClick,
