@@ -26,7 +26,7 @@ export const createGlobalOpenClose = <T>() => {
       map(
         ({ isOpen, args }) =>
           ({
-            isOpen: !!args && !!isOpen,
+            isOpen,
             open: (args: T) => state$.next({ isOpen: true, args }),
             close: () => state$.next({ isOpen: false, args }), // retain args so it can still be displayed while closing
             args,
