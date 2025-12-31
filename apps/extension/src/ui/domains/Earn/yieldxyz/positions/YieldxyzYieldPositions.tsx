@@ -63,9 +63,6 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
         product={product}
         positions={positions}
       />
-      <div className="bg-grey-900 text-body-secondary rounded p-10">
-        DEV NOTE Here we should display APY, lockdown mechanisms
-      </div>
       {positions?.map((position, index) => (
         <Position key={index} position={position} isLoading={status === "loading"} />
       ))}
