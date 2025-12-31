@@ -74,7 +74,8 @@ const fetchPositionsBatch = async (
 
     const result = (await req.json()) as BalancesResponseDto
 
-    if (result.errors) log.warn("[Yield.xyz] getAggregateBalances returned errors", result.errors)
+    if (result.errors.length)
+      log.warn("[Yield.xyz] getAggregateBalances returned errors", result.errors)
 
     const positions = result.items.map((item) => {
       // a position must be mono-account
