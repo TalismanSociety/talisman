@@ -4,6 +4,7 @@ import { isNotNil, planckToTokens } from "@talismn/util"
 import { isAccountOwned } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -56,6 +57,7 @@ const useYieldxyzEnterWizardProvider = ({
 }: {
   stateInit: YieldxyzEnterWizardInit | null
 }) => {
+  const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzEnterModal()
   const [state, setState] = useState<YieldxyzEnterWizardState>(() => initializeState(stateInit))
   const { status, data: product } = useYieldxyzProduct(state.productId)
@@ -108,12 +110,12 @@ const useYieldxyzEnterWizardProvider = ({
 
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountIn || !tokenIn || !balance) return [null, null]
-    if (!isAccountOwned(account)) return [null, "Unable to transact with external accounts"]
-    if (state.amountIn > balance.transferable.planck) return [null, "Insufficient balance"]
+    if (!isAccountOwned(account)) return [null, t("Unable to transact with external accounts")]
+    if (state.amountIn > balance.transferable.planck) return [null, t("Insufficient balance")]
 
     const inputs = { amount: planckToTokens(state.amountIn.toString(), tokenIn.decimals) }
     return [inputs, null]
-  }, [state.amountIn, tokenIn, balance, account])
+  }, [state.amountIn, tokenIn, balance, account, t])
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: product?.mechanics.arguments?.enter,

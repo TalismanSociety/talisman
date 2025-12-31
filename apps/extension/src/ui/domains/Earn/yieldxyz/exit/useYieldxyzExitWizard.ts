@@ -1,10 +1,12 @@
 import { planckToTokens } from "@talismn/util"
+import { isAccountOwned } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
+import { useAccountByAddress, useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
 
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
@@ -24,6 +26,7 @@ const useYieldxyzExitWizardProvider = ({
 }: {
   position: YieldxyzPositionEnhanced | null
 }) => {
+  const { t } = useTranslation()
   const { close, isOpen } = useYieldxyzExitModal()
   const [state, setState] = useState<YieldxyzExitWizardState>(() => {
     const balance = position ? getExitableBalance(position) : undefined
@@ -34,13 +37,15 @@ const useYieldxyzExitWizardProvider = ({
     }
   })
 
+  const account = useAccountByAddress(position?.address)
   const network = useNetworkById(state.position?.networkId)
 
   const balance = useMemo(() => getExitableBalance(state.position), [state.position])
 
   const [inputs, talismanValidationError] = useMemo(() => {
     if (!state.amountOut || !position?.product.token || !balance) return [null, null]
-    if (state.amountOut > BigInt(balance.amountRaw)) return [null, "Insufficient balance"]
+    if (!isAccountOwned(account)) return [null, t("Unable to transact with external accounts")]
+    if (state.amountOut > BigInt(balance.amountRaw)) return [null, t("Insufficient balance")]
 
     const inputs = {
       amount: planckToTokens(state.amountOut.toString(), balance.token.decimals),
@@ -48,7 +53,7 @@ const useYieldxyzExitWizardProvider = ({
       useMaxAmount: state.amountOut === BigInt(balance.amountRaw),
     }
     return [inputs, null]
-  }, [state.amountOut, position?.product.token, balance])
+  }, [state.amountOut, position?.product.token, balance, account, t])
 
   const { args, error: yieldxyzValidationError } = useYieldxyzActionValidation({
     schema: state.position?.product?.mechanics.arguments?.exit,

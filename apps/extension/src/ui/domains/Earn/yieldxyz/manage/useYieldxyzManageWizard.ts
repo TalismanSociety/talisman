@@ -1,10 +1,10 @@
-import { BalanceDto, PendingActionDto } from "extension-core"
+import { BalanceDto, isAccountOwned, PendingActionDto } from "extension-core"
 import { log } from "extension-shared"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
+import { useAccountByAddress, useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
 
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzPendingAction } from "../hooks/useYieldxyzPendingAction"
@@ -27,7 +27,10 @@ const useYieldxyzManageWizardProvider = ({
 }) => {
   const { close, isOpen } = useYieldxyzManageModal()
 
+  const account = useAccountByAddress(position?.address)
   const network = useNetworkById(position?.networkId)
+
+  const isOwned = useMemo(() => isAccountOwned(account), [account])
 
   const {
     canCreateAction,
@@ -40,7 +43,7 @@ const useYieldxyzManageWizardProvider = ({
   } = useYieldxyzPendingAction({
     address: position?.address,
     yieldId: position?.yieldId,
-    pendingAction,
+    pendingAction: isOwned ? pendingAction : undefined,
   })
 
   const refInitialized = useRef(false)
