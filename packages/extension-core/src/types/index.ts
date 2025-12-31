@@ -8,7 +8,7 @@ import { BalancesMessages } from "../domains/balances/types"
 import { BittensorMessages } from "../domains/bittensor/types"
 import { ChainsMessages } from "../domains/chains/types"
 import { DefiMessages } from "../domains/defi/types"
-import { EarnYieldxyzMessages } from "../domains/earn/yieldxyz/types"
+import { EarnMessages } from "../domains/earn/types"
 import { EncryptMessages } from "../domains/encrypt/types"
 import { EthMessages } from "../domains/ethereum/types"
 import { MetadataMessages } from "../domains/metadata/types"
@@ -93,7 +93,7 @@ type AllMessages = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AssetDiscoveryMessages &
   NftsMessages &
   DefiMessages &
-  EarnYieldxyzMessages &
+  EarnMessages &
   PingMessages &
   ChaindataMessages &
   BittensorMessages &

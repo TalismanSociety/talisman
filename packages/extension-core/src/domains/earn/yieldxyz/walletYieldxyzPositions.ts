@@ -236,20 +236,16 @@ export const refreshYieldxyzPosition = async ({
   log.log("Refreshing yield.xyz position", { yieldId, address })
   try {
     const controller = new AbortController()
-    // Set a reasonable timeout for single position fetch
     const timeoutId = setTimeout(() => controller.abort(), 30_000)
-
     const position = await fetchPosition(yieldId, address, controller.signal)
     clearTimeout(timeoutId)
 
     if (position) {
       upsertYieldxyzPositionsByYieldIdAndAddress(position)
-      log.log("Position refresh complete", { yieldId, address })
     } else {
       // Refresh can represent an exit/close, which yields empty balances.
       // In that case, remove all 1/n entries matching yieldId+address.
       removeYieldxyzPositionsByYieldIdAndAddress(yieldId, address)
-      log.log("Position refresh removed", { yieldId, address })
     }
   } catch (err) {
     log.error("Failed to refresh position", { yieldId, address, err })

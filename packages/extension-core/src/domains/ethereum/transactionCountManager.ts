@@ -16,7 +16,7 @@ export const getTransactionCount = async (address: `0x${string}`, evmNetworkId: 
   const provider = await chainConnectorEvm.getPublicClientForEvmNetwork(evmNetworkId)
   if (!provider) throw new Error(`Could not find provider for EVM chain ${evmNetworkId}`)
 
-  const transactionCount = await provider.getTransactionCount({ address, blockTag: "pending" })
+  const transactionCount = await provider.getTransactionCount({ address })
 
   if (!dicTransactionCount.has(key)) {
     // initial value

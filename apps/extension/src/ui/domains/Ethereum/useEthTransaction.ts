@@ -276,13 +276,12 @@ const getEthGasSettingsFromTransaction = (
   estimatedGas: bigint | undefined,
   blockGasLimit: bigint | undefined,
   isContractCall: boolean | undefined = true, // default to worse scenario
-  isL2Network?: boolean,
 ) => {
   if (!tx || hasEip1559Support === undefined || !isBigInt(blockGasLimit) || !isBigInt(estimatedGas))
     return undefined
 
   const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = tx
-  const gas = getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall, isL2Network)
+  const gas = getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
 
   if (hasEip1559Support && gas && maxFeePerGas && maxPriorityFeePerGas) {
     return {
@@ -342,23 +341,16 @@ const useGasSettings = ({
     )
       return undefined
 
-    // Check if this is an L2 network (OP Stack, Scroll, etc.)
-    const isL2Network = evmNetwork?.l2FeeType?.type !== undefined
-
-    // For L2 networks, always apply safety margins even if preserveGasEstimate is true
-    // L2 networks have more variable gas costs due to L1 data fees and other factors
-    const shouldApplySafetyMargin = !evmNetwork?.preserveGasEstimate || isL2Network
-
-    const gas = shouldApplySafetyMargin
-      ? getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall, isL2Network)
-      : estimatedGas // use the gas estimation provided by the chain, it is encoding specific values
+    const gas =
+      !evmNetwork || evmNetwork.preserveGasEstimate
+        ? estimatedGas // use the gas estimation provided by the chain, it is encoding specific values
+        : getGasLimit(blockGasLimit, estimatedGas, tx, isContractCall)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,
       estimatedGas,
       blockGasLimit,
       isContractCall,
-      isL2Network,
     )
 
     if (hasEip1559Support) {

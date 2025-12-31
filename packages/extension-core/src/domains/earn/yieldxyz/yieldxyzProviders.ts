@@ -12,7 +12,6 @@ import {
   tap,
 } from "rxjs"
 
-// import { YieldxyzProvider } from "./fetchYieldxyzProviders"
 import { updateYieldxyzProvidersStore, yieldxyzProvidersStore$ } from "./store.providers"
 import { YieldxyzProvider } from "./types"
 
