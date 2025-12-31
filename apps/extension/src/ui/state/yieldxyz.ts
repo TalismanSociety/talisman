@@ -27,6 +27,30 @@ import { api } from "@ui/api"
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
 
+export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
+  bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))
+
+export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYieldNetworkId$] =
+  bind(
+    (yieldNetworkId: Networks | null | undefined) =>
+      yieldNetworkIdToTalismanNetworkIdMap$.pipe(
+        map((map) => map[yieldNetworkId as Networks] ?? null),
+      ),
+    null,
+  )
+
+export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
+  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldxyzNetworkIdMap)))
+
+export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalismanNetworkId$] =
+  bind(
+    (talismanNetworkId: NetworkId | null | undefined) =>
+      talismanNetworkIdToYieldNetworkIdMap$.pipe(
+        map((map) => map[talismanNetworkId as NetworkId] ?? null),
+      ),
+    null,
+  )
+
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
     subscriber.next(loadable)
@@ -61,10 +85,33 @@ const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) =
   return () => unsubscribe()
 }).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
-export const [useYieldxyzProducts, yieldxyzProducts$] = bind(rawYieldxyzProducts$, {
-  status: "loading",
-  data: [],
-})
+export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
+  combineLatest([
+    rawYieldxyzProducts$,
+    yieldNetworkIdToTalismanNetworkIdMap$,
+    getNetworksMapById$(),
+  ]).pipe(
+    map(([productsLoadable, yieldNetworkIdToTalismanNetworkIdMap, networksMap]) => {
+      return {
+        ...productsLoadable,
+        data: productsLoadable.data?.filter((product) => {
+          // filter out non-EVM networks. this is only a safety net as all yieldxyz products for Talisman are EVM at this time.
+          // this filter should be removed as soon as we support signing for other platforms (see useYieldxyzTransactionDot / Sol)
+          // our wizards are platform agnostic but we did not have any working example to finalize the platform specific transaction hooks.
+          const talismanNetworkId = yieldNetworkIdToTalismanNetworkIdMap[product.network]
+          if (!talismanNetworkId) return false
+          const network = networksMap[talismanNetworkId]
+          if (!network) return false
+          return network.platform === "ethereum"
+        }),
+      }
+    }),
+  ),
+  {
+    status: "loading",
+    data: [],
+  },
+)
 
 export const [useYieldxyzProduct, yieldxyzProduct$] = bind(
   (yieldId: string | null | undefined) =>
@@ -107,30 +154,6 @@ export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
     data: [],
   },
 )
-
-export const [useYieldNetworkIdToTalismanNetworkIdMap, yieldNetworkIdToTalismanNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getYieldxyzNetworkIdToTalismanNetworkIdMap)))
-
-export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYieldNetworkId$] =
-  bind(
-    (yieldNetworkId: Networks | null | undefined) =>
-      yieldNetworkIdToTalismanNetworkIdMap$.pipe(
-        map((map) => map[yieldNetworkId as Networks] ?? null),
-      ),
-    null,
-  )
-
-export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
-  bind(remoteConfig$.pipe(map(getTalismanNetworkIdToYieldxyzNetworkIdMap)))
-
-export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalismanNetworkId$] =
-  bind(
-    (talismanNetworkId: NetworkId | null | undefined) =>
-      talismanNetworkIdToYieldNetworkIdMap$.pipe(
-        map((map) => map[talismanNetworkId as NetworkId] ?? null),
-      ),
-    null,
-  )
 
 export type YieldxyzPositionEnhanced = YieldxyzPosition & {
   totalAmountUsd: number
