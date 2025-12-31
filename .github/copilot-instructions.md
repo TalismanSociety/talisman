@@ -53,7 +53,7 @@
 
 ## Privacy, Security & Data Protection
 
-- **Never log or persist anything that could reveal user identity, portfolio contents, mnemonics, private keys, or passwords.** Diagnostics must be anonymized and minimal.
+- **Never log or persist secrets in plaintext (passwords, private keys, mnemonics/seed phrases, decrypted key material).** This can leak information that could directly lead to loss of user funds. Logging non-sensitive, public data for debugging (e.g. addresses, transaction hashes, chain IDs, balances) is acceptable.
 - Assume every PR is a security review: choose the safest approach even if it takes longer.
 - After touching sensitive data (mnemonics, passwords, seed phrases, decrypted material), **clear every reference immediately** (e.g., overwrite buffers, reset React state, drop references) even though JavaScript GC is best-effort.
 - Use any necessary technical control to protect users: encryption APIs, browser secure storage, zero-knowledge patterns, permission prompts, rate-limiting, etc.
