@@ -17,10 +17,10 @@ import {
 
 import { remoteConfigStore } from "../../app/store.remoteConfig"
 import { walletBalances$ } from "../../balances/walletBalances"
-import { YieldDto } from "./exports"
 import { getTalismanNetworkIdToYieldxyzNetworkIdMap } from "./helpers"
 import { isSupportedYieldxyzProduct } from "./isSupportedYieldxyzProduct"
 import { updateYieldxyzProductsStore, yieldxyzProductsStore$ } from "./store.products"
+import { YieldDto } from "./types"
 
 const REFRESH_INTERVAL = 30_000
 const KEEP_ALIVE = 3_000
