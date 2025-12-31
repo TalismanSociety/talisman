@@ -170,6 +170,7 @@ const useYieldxyzEnterWizardProvider = ({
   const setMaxAmountIn = useCallback(() => {
     if (!tokenIn || !balance) return
 
+    // fee margin 10x the cost of a transfer tx
     const feeMargin = (dummyTx?.estimatedFee ? BigInt(dummyTx.estimatedFee) : 0n) * 10n
 
     // for native tokens, we need to keep some amount available for fees

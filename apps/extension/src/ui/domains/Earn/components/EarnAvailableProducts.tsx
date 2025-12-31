@@ -24,7 +24,7 @@ import { IS_POPUP } from "@ui/util/constants"
 
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
-import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOportunitiesByTokenId"
+import { useYieldxyzOpportunitiesByTokenId } from "../yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { EarnTypeBadge } from "./EarnTypeBadge"
 
 export const EarnAvailableProducts: FC<{

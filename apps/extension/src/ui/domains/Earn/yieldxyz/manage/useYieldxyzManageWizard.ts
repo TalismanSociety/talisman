@@ -50,7 +50,9 @@ const useYieldxyzManageWizardProvider = ({
     // create the action on load, only once
     if (canCreateAction && !refInitialized.current) {
       refInitialized.current = true
-      createAction()
+      createAction().catch(() => {
+        refInitialized.current = false // Allow retry
+      })
     }
   }, [canCreateAction, createAction])
 

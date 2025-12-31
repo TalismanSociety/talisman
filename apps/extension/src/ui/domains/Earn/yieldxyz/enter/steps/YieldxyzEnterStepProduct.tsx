@@ -11,7 +11,7 @@ import { SearchInput } from "@talisman/components/SearchInput"
 
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderLogo } from "../../components/YieldxyzProviderLogo"
-import { useYieldxyzOpportunitiesForTokenId } from "../../hooks/useYieldxyzOportunitiesForTokenId"
+import { useYieldxyzOpportunitiesForTokenId } from "../../hooks/useYieldxyzOpportunitiesForTokenId"
 import { useYieldxyzEnterModal } from "../useYieldxyzEnterModal"
 import { useYieldxyzEnterWizard } from "../useYieldxyzEnterWizard"
 
