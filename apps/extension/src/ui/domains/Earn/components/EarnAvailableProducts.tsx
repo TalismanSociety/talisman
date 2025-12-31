@@ -168,7 +168,7 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
           </Metric>
           <Metric icon={<LockIcon />} tooltip={t("Total value locked")}>
             {product.statistics &&
-              Intl.NumberFormat("en-US", {
+              Intl.NumberFormat(undefined, {
                 style: "currency",
                 currency: "USD",
                 notation: "compact",

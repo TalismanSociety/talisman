@@ -150,6 +150,7 @@ const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> =
 const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoading: boolean }> = ({
   label,
   balances,
+  isLoading,
 }) => {
   if (!balances.length) return null
 
@@ -158,7 +159,7 @@ const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoadi
       <div className="flex h-20 w-full items-center truncate font-bold">{label}</div>
       <div>
         {balances.map((balance, index) => (
-          <PositionBalancesGroupRow key={index} balance={balance} isLoading={false} />
+          <PositionBalancesGroupRow key={index} balance={balance} isLoading={isLoading} />
         ))}
       </div>
     </div>
@@ -320,7 +321,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[17.5rem text-base]")}
+          className={cn(!isGridLayout && "w-[17.5rem] text-base")}
           onClick={onClaimClick(claimableBalances[0])}
         >
           <div className="flex h-full flex-col gap-1">
