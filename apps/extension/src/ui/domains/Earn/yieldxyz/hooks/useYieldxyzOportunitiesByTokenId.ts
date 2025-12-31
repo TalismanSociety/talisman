@@ -3,9 +3,8 @@ import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
 import { isNotNil, Loadable } from "@talismn/util"
 import { YieldDto } from "extension-core"
-import { log } from "extension-shared"
 import { uniq } from "lodash-es"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useSelectedCurrency, useYieldxyzProducts } from "@ui/state"
@@ -106,17 +105,6 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
         return (balance2 || 0) - (balance1 || 0)
       })
   }, [productsByTokenId, accountBalances, currency])
-
-  useEffect(() => {
-    const products = Object.values(productsByTokenId).flat()
-    log.debug("[earn] yield.xyz products with specifics", {
-      warmup: products.filter((p) => p.mechanics.warmupPeriod),
-      lockup: products.filter((p) => p.mechanics.lockupPeriod),
-      cooldown: products.filter((p) => p.mechanics.cooldownPeriod),
-      apr: products.filter((p) => p.rewardRate.rateType === "APR"),
-      manualClaim: products.filter((p) => p.mechanics.rewardClaiming === "manual"),
-    })
-  }, [productsByTokenId])
 
   return {
     ...products,
