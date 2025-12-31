@@ -107,8 +107,13 @@ const TotalAmountRow = () => {
 
 export const ExternalRecipientWarning = () => {
   const { t } = useTranslation()
-  const { warningType, isWarningAcknowledged, setIsWarningAcknowledged } =
-    useExternalAddressWarning()
+  const {
+    warningType,
+    isWarningAcknowledged,
+    setIsWarningAcknowledged,
+    dontRemindAgain,
+    setDontRemindAgain,
+  } = useExternalAddressWarning()
   const { network, token } = useSendFunds()
 
   const handleCheckChange = useCallback(
@@ -116,6 +121,13 @@ export const ExternalRecipientWarning = () => {
       setIsWarningAcknowledged(e.target.checked)
     },
     [setIsWarningAcknowledged],
+  )
+
+  const handleDontRemindChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDontRemindAgain(e.target.checked)
+    },
+    [setDontRemindAgain],
   )
 
   if (warningType === "none") return null
@@ -134,13 +146,18 @@ export const ExternalRecipientWarning = () => {
               i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
             />
           </div>
-          <div className="text-body mt-4">
+          <div className="text-body mt-4 space-y-2">
             <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
               {t("Recipient supports {{token}} on {{network}}", {
                 token: token.name,
                 network: network.name,
               })}
             </Checkbox>
+            {isWarningAcknowledged && (
+              <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
+                {t("Don't remind me again for this address")}
+              </Checkbox>
+            )}
           </div>
         </div>
       )}
@@ -151,10 +168,15 @@ export const ExternalRecipientWarning = () => {
               "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.",
             )}
           </div>
-          <div className="text-body mt-2">
+          <div className="text-body mt-2 space-y-2">
             <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
               {t("Recipient is not a centralized exchange")}
             </Checkbox>
+            {isWarningAcknowledged && (
+              <Checkbox checked={dontRemindAgain} onChange={handleDontRemindChange}>
+                {t("Don't remind me again for this address")}
+              </Checkbox>
+            )}
           </div>
         </div>
       )}
@@ -165,7 +187,7 @@ export const ExternalRecipientWarning = () => {
 const SendButton = () => {
   const { t } = useTranslation()
   const { network, onSubmitted, transaction, txInfo } = useSendFunds()
-  const { canConfirm } = useExternalAddressWarning()
+  const { canConfirm, saveConfirmation } = useExternalAddressWarning()
 
   const [isReady, setIsReady] = useState(false)
 
@@ -183,12 +205,14 @@ const SendButton = () => {
   const handleSubmit = useCallback(
     (txId: string) => {
       if (!network) return
+
+      saveConfirmation()
       onSubmitted({
         networkId: network.id,
         txId,
       })
     },
-    [network, onSubmitted],
+    [network, onSubmitted, saveConfirmation],
   )
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {

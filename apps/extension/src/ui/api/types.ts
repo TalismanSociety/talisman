@@ -23,6 +23,7 @@ import {
   BalanceSubscriptionResponse,
   BittensorValidator,
   ChangePasswordStatusUpdate,
+  ConfirmedExternalAddresses,
   DecryptRequestId,
   DefiPosition,
   EncryptRequestId,
@@ -298,4 +299,7 @@ export default interface MessageTypes {
   bittensorValidatorsSubscribe: (
     cb: (validators: Loadable<BittensorValidator[]>) => void,
   ) => UnsubscribeFn
+
+  confirmedAddressesSubscribe: (cb: (data: ConfirmedExternalAddresses) => void) => UnsubscribeFn
+  addConfirmedAddress: (tokenId: string, address: string) => Promise<boolean>
 }

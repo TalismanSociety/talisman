@@ -18,6 +18,7 @@ import { keyringStore } from "../domains/keyring/store"
 import { MetadataHandler } from "../domains/metadata"
 import MnemonicHandler from "../domains/mnemonics/handler"
 import { NftsHandler } from "../domains/nfts"
+import { SendFundsHandler } from "../domains/sendFunds/handler"
 import { SigningHandler } from "../domains/signing"
 import { SitesAuthorisationHandler } from "../domains/sitesAuthorised"
 import { SolanaExtensionHandler } from "../domains/solana/handler.extension"
@@ -60,6 +61,7 @@ export default class Extension extends ExtensionHandler {
       assetDiscovery: new AssetDiscoveryHandler(stores),
       nfts: new NftsHandler(stores),
       bittensor: new BittensorHandler(stores),
+      sendFunds: new SendFundsHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
