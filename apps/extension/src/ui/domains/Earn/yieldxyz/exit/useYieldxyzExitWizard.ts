@@ -1,6 +1,7 @@
 import { planckToTokens } from "@talismn/util"
 import { isAccountOwned } from "extension-core"
 import { log } from "extension-shared"
+import { isEqual } from "lodash-es"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -131,6 +132,10 @@ const getExitableBalance = (position: YieldxyzPositionEnhanced | null) => {
   const activeBalances = position?.balances.filter((b) => b.type === "active")
   if (!activeBalances?.length) return undefined
   if (activeBalances.length > 1) {
+    // if one matches the main product token, prefer that one
+    const mainTokenBalance = activeBalances.find((b) => isEqual(b.token, position?.product.token))
+    if (mainTokenBalance) return mainTokenBalance
+
     log.warn("Position has multiple active balances, which is not supported", {
       position,
       activeBalances,
