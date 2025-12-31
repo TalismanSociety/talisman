@@ -1,5 +1,4 @@
 import { BalanceDto, isAccountOwned, PendingActionDto } from "extension-core"
-import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -69,20 +68,6 @@ const useYieldxyzManageWizardProvider = ({
     submitActionTransaction,
     onCompleted,
   })
-
-  useEffect(() => {
-    log.debug("useYieldxyzManageWizard state changed", {
-      position,
-      pendingAction,
-      action,
-      isLoadingAction,
-      errorAction,
-      transaction,
-      canCreateAction,
-    })
-  }, [action, isLoadingAction, errorAction, transaction, position, pendingAction, canCreateAction])
-
-  useEffect(() => {})
 
   return {
     position,
