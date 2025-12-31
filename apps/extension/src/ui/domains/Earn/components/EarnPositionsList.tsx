@@ -3,13 +3,13 @@ import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
 import { classNames, cn, isNotNil, LoadableStatus } from "@talismn/util"
 import { isNil, toPairs, uniq } from "lodash-es"
-import { FC, Fragment, useCallback, useMemo } from "react"
+import { FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useOpenClose } from "talisman-ui"
 
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useEarnAssetsState } from "@ui/domains/Earn/context/EarnAssetsStateContext"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
@@ -115,53 +115,61 @@ const TokenRow: FC<{
   token: Token
   positions: YieldxyzPositionEnhanced[]
   totalUsd: number
-  isExpanded: boolean
-  onClick: () => void
-}> = ({ token, positions, totalUsd, status, isExpanded, onClick }) => (
-  <div className="bg-grey-900 w-full overflow-hidden rounded">
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
-        isExpanded && "bg-grey-800",
-        IS_POPUP && "gap-4 px-6",
-      )}
-    >
-      <TokenLogo tokenId={token.id} className="size-16" />
-      <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
-        <div className="truncate">
-          <span className="text-body font-bold">
-            <TokenDisplaySymbol tokenId={token.id} />
-          </span>{" "}
-          {token.name}
-        </div>
-        <div className="flex w-full items-center gap-2 overflow-hidden">
-          <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
-          <NetworkName networkId={token.networkId} className="truncate" />
-        </div>
-      </div>
+}> = ({ token, positions, totalUsd, status }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
-      <div
-        className={cn("flex shrink-0 items-center gap-4", status === "loading" && "animate-pulse")}
+  return (
+    <div className="bg-grey-900 w-full overflow-hidden rounded">
+      <button
+        type="button"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className={cn(
+          "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
+          !isCollapsed && "bg-grey-800",
+          IS_POPUP && "gap-4 px-6",
+        )}
       >
-        <FiatFromUsd amount={totalUsd} noCountUp />
-      </div>
-      {isExpanded ? (
-        <ChevronDownIcon className="text-body-secondary size-8 shrink-0" />
-      ) : (
-        <ChevronRightIcon className="text-body-secondary size-8 shrink-0" />
-      )}
-    </button>
-    <div className={cn("flex w-full flex-col", isExpanded ? "block" : "hidden")}>
-      {isExpanded &&
-        positions.map((position, i) => (
-          <YieldPositionRow key={`${position.yieldId}-${i}`} status={status} position={position} />
-        ))}
-    </div>
-  </div>
-)
+        <TokenLogo tokenId={token.id} className="size-16" />
+        <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
+          <div className="truncate">
+            <span className="text-body font-bold">
+              <TokenDisplaySymbol tokenId={token.id} />
+            </span>{" "}
+            {token.name}
+          </div>
+          <div className="flex w-full items-center gap-2 overflow-hidden">
+            <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
+            <NetworkName networkId={token.networkId} className="truncate" />
+          </div>
+        </div>
 
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-4",
+            status === "loading" && "animate-pulse",
+          )}
+        >
+          <FiatFromUsd amount={totalUsd} noCountUp />
+        </div>
+        {!isCollapsed ? (
+          <ChevronDownIcon className="text-body-secondary size-8 shrink-0" />
+        ) : (
+          <ChevronRightIcon className="text-body-secondary size-8 shrink-0" />
+        )}
+      </button>
+      <div className={cn("flex w-full flex-col", !isCollapsed ? "block" : "hidden")}>
+        {!isCollapsed &&
+          positions.map((position, i) => (
+            <YieldPositionRow
+              key={`${position.yieldId}-${i}`}
+              status={status}
+              position={position}
+            />
+          ))}
+      </div>
+    </div>
+  )
+}
 const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
@@ -260,11 +268,8 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     })
   }, [search, selectedAccountsPositions])
 
-  // Get expanded state from context
-  const { isDefiExpanded, expandedTokens, toggleDefiExpanded, toggleTokenExpanded } =
-    useEarnAssetsState()
-
   //   Toggle handlers
+  const { isOpen: isDefiExpanded, toggle: toggleDefiExpanded } = useOpenClose(true)
   const handleDefiToggle = useCallback(() => {
     toggleDefiExpanded()
   }, [toggleDefiExpanded])
@@ -315,8 +320,6 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
               positions={positions}
               totalUsd={totalUsd}
               status={status}
-              isExpanded={expandedTokens.has(token.id)}
-              onClick={() => toggleTokenExpanded(token.id)}
             />
           ))}
           {(isInitialising || isLoading) && <EarnTokenRowSkeleton />}

@@ -179,7 +179,7 @@ const PositionBalancesGroupRow: FC<{ balance: BalanceDto; isLoading: boolean }> 
       ) : (
         <AssetLogo className="size-16 shrink-0" url={balance.token.logoURI} />
       )}
-      <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
+      <div className="flex grow flex-col justify-center gap-1 overflow-hidden text-sm">
         <div className="text-body flex w-full justify-between overflow-hidden font-bold">
           <div>{token ? <TokenDisplaySymbol tokenId={token.id} /> : balance.token.symbol}</div>
           <div className={cn(isLoading && "animate-pulse")}>
@@ -300,7 +300,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
       )}
     >
       <Button
-        className={cn(!isGridLayout && "w-[17.5rem]")}
+        className={cn(!isGridLayout && "w-[17.5rem] text-base")}
         disabled={!canEnter}
         onClick={onAddToPositionClick}
       >
@@ -310,7 +310,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[17.5rem]")}
+          className={cn(!isGridLayout && "w-[17.5rem] text-base")}
           onClick={onWithdrawClick(withdrawableBalances[0])}
         >
           {t("Withdraw")}
@@ -320,7 +320,7 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
         <Button
           primary
           disabled={!canManage}
-          className={cn(!isGridLayout && "w-[17.5rem]")}
+          className={cn(!isGridLayout && "w-[17.5rem text-base]")}
           onClick={onClaimClick(claimableBalances[0])}
         >
           <div className="flex h-full flex-col gap-1">
