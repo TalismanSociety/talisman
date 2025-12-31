@@ -90,7 +90,7 @@ export const DashboardEarnPositionsRoute: FC = () => {
 
   useAnalyticsPageView({
     container: "Fullscreen",
-    feature: "Earn Yield",
+    feature: "Earn",
     featureVersion: 1,
     page: "Earn Positions",
   })
@@ -103,7 +103,7 @@ export const DashboardEarnDiscoverRoute: FC = () => {
 
   useAnalyticsPageView({
     container: "Fullscreen",
-    feature: "Earn Yield",
+    feature: "Earn",
     featureVersion: 1,
     page: "Earn Discover",
   })

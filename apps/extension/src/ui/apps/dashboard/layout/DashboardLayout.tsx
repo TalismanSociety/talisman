@@ -1,6 +1,5 @@
 import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
 import { classNames, isTruthy } from "@talismn/util"
-// import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"

@@ -189,7 +189,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
         </div>
       </div>
 
-      <Button fullWidth onClick={onClose} className="mt-8">
+      <Button fullWidth onClick={onClose}>
         {t("Close")}
       </Button>
     </div>

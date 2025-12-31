@@ -20,5 +20,4 @@ export const PopupSizeModalContainer: FC<PropsWithChildren<{ id: string; classNa
       {children}
     </div>
   )
-  return <div>{children}</div>
 }

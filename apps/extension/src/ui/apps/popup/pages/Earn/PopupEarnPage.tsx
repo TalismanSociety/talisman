@@ -151,7 +151,7 @@ export const PopupEarnPositionsRoute: FC = () => {
 
   useAnalyticsPageView({
     container: "Popup",
-    feature: "Earn Yield",
+    feature: "Earn",
     featureVersion: 1,
     page: "Earn Positions",
   })
@@ -164,7 +164,7 @@ export const PopupEarnDiscoverRoute: FC = () => {
 
   useAnalyticsPageView({
     container: "Popup",
-    feature: "Earn Yield",
+    feature: "Earn",
     featureVersion: 1,
     page: "Earn Discover",
   })

@@ -10,14 +10,14 @@ import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"
 import { Address } from "./Address"
 
-type AddressPillButtonProps = {
+type AccountPillButtonProps = {
   address?: string | null
   genesisHash?: `0x${string}` | null
   className?: string
   onClick?: () => void
 }
 
-export const AddressPillButton: FC<AddressPillButtonProps> = ({
+export const AccountPillButton: FC<AccountPillButtonProps> = ({
   address,
   genesisHash: tokenGenesisHash, // used for address format
   className,

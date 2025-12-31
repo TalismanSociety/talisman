@@ -169,7 +169,7 @@ const SubmitButton = () => {
       case "ethereum":
         return {
           platform: "ethereum",
-          payload: transaction.transaction as TransactionRequest, // TODO: check why we need to cast here
+          payload: transaction.transaction as TransactionRequest,
           networkId: transaction.networkId,
         }
       default:

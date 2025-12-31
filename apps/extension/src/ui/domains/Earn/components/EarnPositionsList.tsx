@@ -28,7 +28,7 @@ import { useGetYieldxyzToken } from "../yieldxyz/hooks/useGetYieldxyzToken"
 import { EarnTypeBadge } from "./EarnTypeBadge"
 
 const YieldPositionRow: FC<{
-  position: YieldxyzPositionEnhanced // TODO change back to YieldxyzPosition after moving display fields
+  position: YieldxyzPositionEnhanced
   status: LoadableStatus
 }> = ({ position, status }) => {
   const navigate = useNavigateWithQuery()

@@ -26,24 +26,14 @@ import { api } from "@ui/api"
 
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"
-import { debugObservable } from "./util/debugObservable"
 
-// Add new observable for grouped yield balances using bind()
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
-  // TODO rename to yieldPositionsSubscribe, or earn
   const unsubscribe = api.yieldxyzProvidersSubscribe((loadable: Loadable<YieldxyzProvider[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => {
-    // TODO remove after unsubscribe works
-    log.debug("[frontend] Unsubscribing from api.yieldxyzProvidersSubscribe")
-    unsubscribe()
-  }
-}).pipe(
-  debugObservable("rawYieldxyzProviders$", true),
-  shareReplay({ bufferSize: 1, refCount: true }),
-)
+  return () => unsubscribe()
+}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
 export const [useYieldxyzProviders, yieldxyzProviders$] = bind(rawYieldxyzProviders$, {
   status: "loading",
@@ -63,22 +53,13 @@ export const [useYieldxyzProvider, yieldxyzProvider$] = bind(
   { status: "loading", data: null },
 )
 
-// Add new observable for grouped yield balances using bind()
 const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
-  // TODO rename to yieldPositionsSubscribe, or earn
   const unsubscribe = api.yieldxyzProductsSubscribe((loadable: Loadable<YieldDto[]>) => {
     subscriber.next(loadable)
   })
 
-  return () => {
-    // TODO remove after unsubscribe works
-    log.debug("[frontend] Unsubscribing from api.yieldxyzProductsSubscribe")
-    unsubscribe()
-  }
-}).pipe(
-  debugObservable("rawYieldxyzProducts$", true),
-  shareReplay({ bufferSize: 1, refCount: true }),
-)
+  return () => unsubscribe()
+}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
 export const [useYieldxyzProducts, yieldxyzProducts$] = bind(rawYieldxyzProducts$, {
   status: "loading",
@@ -104,10 +85,7 @@ const rawYieldxyzPositions$ = new Observable<Loadable<YieldxyzPosition[]>>((subs
   })
 
   return () => unsubscribe()
-}).pipe(
-  debugObservable("rawYieldxyzPositions$", true),
-  shareReplay({ bufferSize: 1, refCount: true }),
-)
+}).pipe(shareReplay({ bufferSize: 1, refCount: true }))
 
 export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
   combineLatest([rawYieldxyzPositions$, rawYieldxyzProducts$]).pipe(

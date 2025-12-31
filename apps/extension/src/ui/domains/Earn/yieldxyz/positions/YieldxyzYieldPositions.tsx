@@ -41,8 +41,6 @@ import { useYieldxyzManageModal } from "../manage/useYieldxyzManageModal"
 /**
  * ⚠️ yield.xyz api returns 1/n positions for a given yield and an address. Also, returned positions dont have an id.
  * => we need to display n positions on this page.
- *
- * TODO think of a better name for both this component and associated hook
  */
 export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = ({
   yieldId,

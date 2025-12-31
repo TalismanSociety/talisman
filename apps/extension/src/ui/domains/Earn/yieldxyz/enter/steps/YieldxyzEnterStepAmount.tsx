@@ -5,7 +5,7 @@ import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, WizardModalDialog } from "talisman-ui"
 
-import { AddressPillButton } from "@ui/domains/Account/AccountPillButton"
+import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
 import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/YieldxyzProviderLogo"
@@ -47,7 +47,7 @@ export const YieldxyzEnterStepAmount = () => {
       <div className="flex size-full flex-col gap-8 overflow-hidden">
         <FormFieldSet>
           <FormFieldSetRow label={t("Account")} className="h-[2em]">
-            <AddressPillButton
+            <AccountPillButton
               className="!w-full"
               address={address}
               onClick={() => goTo("account")}

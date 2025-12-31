@@ -1,6 +1,6 @@
 import { planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -97,17 +97,6 @@ const useYieldxyzExitWizardProvider = ({
     submitActionTransaction,
     onCompleted,
   })
-
-  useEffect(() => {
-    log.debug("useYieldxyzExitWizard state changed", {
-      ...state,
-      balance,
-      action,
-      isLoadingAction,
-      errorAction,
-      transaction,
-    })
-  }, [state, action, isLoadingAction, errorAction, transaction, balance])
 
   return {
     ...state,

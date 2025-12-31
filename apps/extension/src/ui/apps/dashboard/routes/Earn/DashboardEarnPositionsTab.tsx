@@ -37,7 +37,6 @@ export const DashboardEarnPositionsTab: FC<{ search: string }> = ({ search }) =>
 
   return (
     <div className="text-body-secondary min-w-[45rem] text-left text-base">
-      {/* Staking Section */}
       <div className="mb-4">
         <h2 className="text-body-secondary mb-4 text-sm font-medium">{t("Staking")}</h2>
         <StakingTile />

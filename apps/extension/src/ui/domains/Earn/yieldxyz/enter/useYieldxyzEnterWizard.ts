@@ -2,7 +2,7 @@ import { Balance } from "@talismn/balances"
 import { isTokenInTypes, TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
 import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
@@ -68,7 +68,6 @@ const useYieldxyzEnterWizardProvider = ({
 
     if (tokens.length > 1) {
       // some products support both ETH and WETH as inputs. allow those but force native token as input
-      // TODO: verify that if multiple tokens here, it's always ETH and WETH.
       const natives = tokens.filter((t) =>
         isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"]),
       )
@@ -191,18 +190,6 @@ const useYieldxyzEnterWizardProvider = ({
     submitActionTransaction,
     onCompleted,
   })
-
-  useEffect(() => {
-    log.debug("useEarnDepositWizard state changed", {
-      ...state,
-      tokenIn,
-      product,
-      action,
-      isLoadingAction,
-      errorAction,
-      transaction,
-    })
-  }, [state, tokenIn, product, action, isLoadingAction, errorAction, transaction])
 
   return {
     ...state,

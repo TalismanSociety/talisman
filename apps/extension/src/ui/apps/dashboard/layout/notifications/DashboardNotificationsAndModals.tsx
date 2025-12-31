@@ -51,7 +51,6 @@ export const DashboardNotificationsAndModals = () => {
       <AccountRenameModal />
       <BondModal />
       <BittensorBondModal />
-      {/* <ProductSelectionModal /> */}
       <BittensorClaimSettingsModal />
       <CopyAddressModal />
       <ExplorerNetworkPickerModal />

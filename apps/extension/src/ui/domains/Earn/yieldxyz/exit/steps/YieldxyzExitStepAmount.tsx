@@ -186,7 +186,6 @@ const ExitAmountEdit = () => {
 
   if (!position) throw new Error("TokenIn is not defined")
 
-  // TODO if token is known by talisman use AmountEdit instead
   return (
     <GenericAmountEdit
       decimals={position.product.token.decimals}

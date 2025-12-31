@@ -9,11 +9,9 @@ import { useAccountByAddress } from "@ui/state"
 export const PortfolioAccount = ({
   address,
   className,
-  textClassName,
 }: {
   address: string
   className?: string
-  textClassName?: string
 }) => {
   const { t } = useTranslation()
   const account = useAccountByAddress(address)
@@ -21,16 +19,11 @@ export const PortfolioAccount = ({
   return (
     <div className={classNames("flex items-center gap-3", className)}>
       <AccountIcon
-        className={textClassName ?? "!text-[1em]"}
+        className="!text-[1em]"
         address={address}
         genesisHash={getAccountGenesisHash(account)}
       />
-      <div
-        className={classNames(
-          "max-w-lg overflow-hidden text-ellipsis whitespace-nowrap",
-          textClassName,
-        )}
-      >
+      <div className="max-w-lg overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? t("Unknown")}
       </div>
       <AccountTypeIcon

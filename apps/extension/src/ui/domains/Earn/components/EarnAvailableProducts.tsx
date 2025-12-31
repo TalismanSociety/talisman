@@ -131,9 +131,6 @@ const TokenProducts: FC<{
             </div>
           </div>
         </div>
-        {/* <div className="text-body-inactive flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
-          <div className="text-body-secondary"></div>
-        </div> */}
         <ChevronRightIcon
           className={cn("size-10 shrink-0 transition-transform", isOpen && "rotate-90")}
         />

@@ -188,26 +188,6 @@ const config = (env) => ({
           ? process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
           : "",
       ),
-      // prod build doesn't need an api key
-      // dev builds need one that should not change often
-      // canary/ci/qa builds need one that can be rotated easily and without impacting developers
-      "process.env.BLOWFISH_API_KEY": JSON.stringify(
-        env.build === "dev"
-          ? process.env.BLOWFISH_API_KEY || ""
-          : ["canary", "ci", "qa"].includes(env.build)
-            ? process.env.BLOWFISH_QA_API_KEY || ""
-            : "",
-      ),
-      "process.env.NFTS_API_KEY": JSON.stringify(
-        env.build === undefined
-          ? process.env.NFTS_API_KEY || ""
-          : ["canary", "ci", "qa"].includes(env.build)
-            ? process.env.NFTS_QA_API_KEY || ""
-            : "",
-      ),
-      "process.env.NFTS_API_BASE_PATH": JSON.stringify(
-        env.build === undefined ? process.env.NFTS_API_BASE_PATH || "" : "",
-      ),
       // computed values
       "process.env.DEBUG": JSON.stringify(
         String(

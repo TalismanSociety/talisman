@@ -57,14 +57,6 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     discountTiers: [],
   },
   earn: {
-    earnButtonTokenIds: [
-      // "1:evm-native", // ETH on mainnet
-      // "8453:evm-native", // ETH on base
-      // "1:evm-erc20:0xdac17f958d2ee523a2206206994597c13d831ec7", // USDT on mainnet
-      // "8453:evm-erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", // USDC on base
-      // "solana-mainnet:sol-native", // SOL on solana mainnet
-      // "polkadot:substrate-native", // DOT on polkadot
-    ],
     yieldxyzNetworks: {
       // ethereum: "1",
       // polygon: "137",

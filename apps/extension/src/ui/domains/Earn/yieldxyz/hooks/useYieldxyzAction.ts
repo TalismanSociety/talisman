@@ -13,7 +13,6 @@ type UseYieldxyzActionProps = {
   args: ActionArgumentsDto | null | undefined
 }
 
-// TODO refactor so common logic can be shared with enter/exit/claim actions
 export const useYieldxyzAction = (props: UseYieldxyzActionProps) => {
   const [state, setState] = useState<{
     isLoading: boolean

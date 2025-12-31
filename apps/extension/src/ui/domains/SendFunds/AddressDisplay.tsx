@@ -76,15 +76,9 @@ type AddressDisplayProps = {
   address: TAddress | null | undefined
   networkId: string | null | undefined
   className?: string
-  hideBlockExplorer?: boolean
 }
 
-export const AddressDisplay: FC<AddressDisplayProps> = ({
-  address,
-  networkId,
-  className,
-  hideBlockExplorer,
-}) => {
+export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, className }) => {
   const chain = useNetworkById(networkId as string, "polkadot")
   const account = useAccountByAddress(address)
   const blockExplorerUrl = useBlockExplorerUrl(address, networkId, !!account)
@@ -133,7 +127,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
           className="text-primary"
           signetUrl={getAccountSignetUrl(account)}
         />
-        {blockExplorerUrl && !hideBlockExplorer ? (
+        {blockExplorerUrl ? (
           <a href={blockExplorerUrl} target="_blank" className="text-grey-300 hover:text-white">
             <ExternalLinkIcon />
           </a>

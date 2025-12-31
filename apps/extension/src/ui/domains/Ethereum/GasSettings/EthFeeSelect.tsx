@@ -111,50 +111,39 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
         containerId={drawerContainerId}
         isOpen={isOpen && !disabled}
         anchor="bottom"
-        className={
-          drawerContainerId === "deposit-modal-content"
-            ? "z-30 flex w-full justify-center"
-            : undefined
-        }
         onDismiss={close}
       >
-        <div
-          className={
-            drawerContainerId === "deposit-modal-content" ? "w-[36rem] max-w-full" : undefined
-          }
-        >
-          {showCustomSettings && gasSettingsByPriority.type === "eip1559" && (
-            <CustomGasSettingsFormEip1559
-              tokenId={tokenId}
-              onCancel={handleCancelCustomSettings}
-              onConfirm={handleSetCustomSettings}
-              gasSettingsByPriority={gasSettingsByPriority}
-              txDetails={txDetails}
-              tx={tx}
-            />
-          )}
-          {showCustomSettings && gasSettingsByPriority.type === "legacy" && (
-            <CustomGasSettingsFormLegacy
-              tokenId={tokenId}
-              onCancel={handleCancelCustomSettings}
-              onConfirm={handleSetCustomSettings}
-              gasSettingsByPriority={gasSettingsByPriority}
-              txDetails={txDetails}
-              tx={tx}
-              networkUsage={networkUsage}
-            />
-          )}
-          {!showCustomSettings && (
-            <FeeOptionsSelectForm
-              gasSettingsByPriority={gasSettingsByPriority}
-              tokenId={tokenId}
-              priority={priority}
-              txDetails={txDetails}
-              onChange={handleSelect}
-              networkUsage={networkUsage}
-            />
-          )}
-        </div>
+        {showCustomSettings && gasSettingsByPriority.type === "eip1559" && (
+          <CustomGasSettingsFormEip1559
+            tokenId={tokenId}
+            onCancel={handleCancelCustomSettings}
+            onConfirm={handleSetCustomSettings}
+            gasSettingsByPriority={gasSettingsByPriority}
+            txDetails={txDetails}
+            tx={tx}
+          />
+        )}
+        {showCustomSettings && gasSettingsByPriority.type === "legacy" && (
+          <CustomGasSettingsFormLegacy
+            tokenId={tokenId}
+            onCancel={handleCancelCustomSettings}
+            onConfirm={handleSetCustomSettings}
+            gasSettingsByPriority={gasSettingsByPriority}
+            txDetails={txDetails}
+            tx={tx}
+            networkUsage={networkUsage}
+          />
+        )}
+        {!showCustomSettings && (
+          <FeeOptionsSelectForm
+            gasSettingsByPriority={gasSettingsByPriority}
+            tokenId={tokenId}
+            priority={priority}
+            txDetails={txDetails}
+            onChange={handleSelect}
+            networkUsage={networkUsage}
+          />
+        )}
 
         <OpenFeeSelectTracker />
       </Drawer>
