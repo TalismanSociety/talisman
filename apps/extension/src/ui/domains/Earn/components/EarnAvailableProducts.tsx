@@ -158,9 +158,11 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
     >
       <YieldxyzProviderLogo providerId={product.providerId} className="size-16 shrink-0" />
       <div className="flex grow flex-col items-start justify-start gap-2 overflow-hidden">
-        <div className="text-body w-full truncate text-left">
-          {product.metadata.name}{" "}
-          {!IS_POPUP && <EarnTypeBadge>{product.mechanics?.type}</EarnTypeBadge>}
+        <div className="text-body flex h-[1.8rem] w-full gap-1 overflow-hidden text-left">
+          <span className="truncate">{product.metadata.name}</span>
+          {!IS_POPUP && (
+            <EarnTypeBadge className="shrink-0">{product.mechanics?.type}</EarnTypeBadge>
+          )}
         </div>
         <div className="flex w-full items-center gap-4 truncate text-left">
           <Metric icon={<UsersIcon />} tooltip={t("Number of unique holders")}>
