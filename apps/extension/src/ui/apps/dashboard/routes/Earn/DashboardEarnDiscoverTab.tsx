@@ -1,7 +1,6 @@
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-// import { DiscoverOpportunities } from "@ui/domains/Earn/components/DiscoverTab/DiscoverOpportunities"
 import { EarnAvailableProducts } from "@ui/domains/Earn/components/EarnAvailableProducts"
 
 export const DashboardEarnDiscoverTab: FC<{ search: string }> = ({ search }) => {

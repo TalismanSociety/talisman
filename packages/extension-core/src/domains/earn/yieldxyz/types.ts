@@ -3,7 +3,6 @@ import { NetworkId } from "@talismn/chaindata-provider"
 import { Loadable } from "@talismn/util"
 import { BalanceDto, YieldDto } from "@yieldxyz/sdk"
 
-// TODO rename everything as yieldxyz
 // Re-export SDK types for use in UI
 export type {
   ActionArgumentsDto,
