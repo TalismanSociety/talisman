@@ -1,21 +1,19 @@
-import { alphaToTao, BalanceFormatter, TAO_DECIMALS } from "@talismn/balances"
-import { isTokenSubDTao, NetworkId, subNativeTokenId } from "@talismn/chaindata-provider"
+import { BalanceFormatter } from "@talismn/balances"
+import { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
-import { useQuery } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   isTxInfoApproval,
   isTxInfoSwap,
   isTxInfoTransfer,
-  SignerPayloadJSON,
   TransactionStatus,
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
 } from "extension-core"
-import { IS_FIREFOX, log } from "extension-shared"
+import { IS_FIREFOX } from "extension-shared"
 import { FC, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -25,17 +23,14 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { isBatchCall } from "@ui/domains/Sign/Substrate/types"
 import { useSwapStatus } from "@ui/domains/Swap/hooks/useSwapStatus"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import { useSubstratePayloadMetadata } from "@ui/hooks/useSubstratePayloadMetadata"
 import {
   useNetworkByGenesisHash,
   useNetworkById,
   useSelectedCurrency,
   useToken,
   useTokenRates,
-  useTokens,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
 
@@ -302,217 +297,6 @@ const SwapTransactionStatusLabelFallback = () => {
   )
 }
 
-const BITTENSOR_GENESIS_HASHES = new Set([
-  "0x2f0555cc76fc2840a25a6ea3b9637146806f1f44b090c175ffde2a7e5ab36c03",
-  "0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105",
-])
-
-const BITTENSOR_STAKING_METHODS = new Set([
-  "add_stake",
-  "add_stake_limit",
-  "remove_stake",
-  "remove_stake_limit",
-])
-
-const isBittensorTransaction = (payload: SignerPayloadJSON) =>
-  BITTENSOR_GENESIS_HASHES.has(payload.genesisHash)
-
-const isBittensorStakingCall = (pallet: string, method: string) =>
-  pallet === "SubtensorModule" && BITTENSOR_STAKING_METHODS.has(method)
-
-const getStakingAmount = (
-  method: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args: any,
-): { amount: bigint; isStake: boolean; netuid: number } | null => {
-  const netuid = args.netuid as number | undefined
-  if (netuid === undefined) return null
-
-  if (method === "add_stake" || method === "add_stake_limit") {
-    return args.amount_staked ? { amount: args.amount_staked, isStake: true, netuid } : null
-  }
-  if (method === "remove_stake" || method === "remove_stake_limit") {
-    return args.amount_unstaked ? { amount: args.amount_unstaked, isStake: false, netuid } : null
-  }
-  return null
-}
-
-const useBittensorStakingCalls = (payload: SignerPayloadJSON) => {
-  const { data } = useSubstratePayloadMetadata(payload)
-
-  return useMemo(() => {
-    if (!data?.sapi) return null
-
-    try {
-      const decodedCall = data.sapi.getDecodedCallFromPayload(payload)
-
-      if (isBatchCall(decodedCall)) {
-        const calls = decodedCall.args.calls as Array<{
-          type: string
-          value: { type: string; value: unknown }
-        }>
-        const filtered = calls
-          .map((call) => ({ pallet: call.type, method: call.value.type, args: call.value.value }))
-          .filter((call) => isBittensorStakingCall(call.pallet, call.method))
-        return filtered.length > 0 ? filtered : null
-      }
-
-      if (isBittensorStakingCall(decodedCall.pallet, decodedCall.method)) {
-        return [{ pallet: decodedCall.pallet, method: decodedCall.method, args: decodedCall.args }]
-      }
-
-      return null
-    } catch (err) {
-      log.error("Failed to decode bittensor staking call", { err })
-      return null
-    }
-  }, [data?.sapi, payload])
-}
-
-const useBittensorStakingAlphaPrices = (
-  payload: SignerPayloadJSON,
-  stakingCalls: Array<{ method: string; args: unknown }> | null,
-) => {
-  const { data } = useSubstratePayloadMetadata(payload)
-
-  const netuids = useMemo(() => {
-    if (!stakingCalls) return []
-    const uniqueNetuids = new Set<number>()
-    for (const call of stakingCalls) {
-      const info = getStakingAmount(call.method, call.args)
-      if (info && !info.isStake && info.netuid !== 0) {
-        uniqueNetuids.add(info.netuid)
-      }
-    }
-    return Array.from(uniqueNetuids)
-  }, [stakingCalls])
-
-  return useQuery({
-    queryKey: ["bittensorStakingAlphaPrices", data?.sapi?.id, netuids],
-    queryFn: async () => {
-      if (!data?.sapi || netuids.length === 0) return {}
-
-      const prices: Record<number, bigint> = {}
-      await Promise.all(
-        netuids.map(async (netuid) => {
-          try {
-            const price = await data.sapi!.getRuntimeCallValue<bigint>(
-              "SwapRuntimeApi",
-              "current_alpha_price",
-              [netuid],
-            )
-            prices[netuid] = price
-          } catch (err) {
-            log.error("Failed to fetch alpha price for netuid", { netuid, err })
-          }
-        }),
-      )
-      return prices
-    },
-    enabled: !!data?.sapi && netuids.length > 0,
-  })
-}
-
-const BittensorStakingTokens: FC<{ payload: SignerPayloadJSON }> = ({ payload }) => {
-  const stakingCalls = useBittensorStakingCalls(payload)
-  const network = useNetworkByGenesisHash(payload.genesisHash)
-  const allTokens = useTokens()
-
-  const subnetSymbols = useMemo(() => {
-    if (!network?.id) return {}
-    const symbols: Record<number, string> = {}
-    for (const token of allTokens) {
-      if (isTokenSubDTao(token) && token.networkId === network.id && !token.hotkey) {
-        symbols[token.netuid] = token.symbol
-      }
-    }
-    return symbols
-  }, [allTokens, network?.id])
-
-  if (!stakingCalls?.length) return null
-
-  const renderToken = (call: (typeof stakingCalls)[0], key?: number) => {
-    const info = getStakingAmount(call.method, call.args)
-    if (!info) return null
-
-    // For stakes, always use TAO. For unstakes, use subnet-specific symbol (or fallback to α)
-    const symbol = info.isStake ? "TAO" : (subnetSymbols[info.netuid] ?? "α")
-
-    return (
-      <Tokens
-        key={key}
-        className="pointer-events-none"
-        amount={planckToTokens(info.amount.toString(), Number(TAO_DECIMALS))}
-        symbol={symbol}
-        noCountUp
-        noTooltip
-        isBalance
-      />
-    )
-  }
-
-  if (stakingCalls.length > 1) {
-    return (
-      <div className="flex flex-col items-end">
-        {stakingCalls.map((call, i) => renderToken(call, i))}
-      </div>
-    )
-  }
-
-  return renderToken(stakingCalls[0])
-}
-
-const BittensorStakingTokensFallback = () => (
-  <div className="bg-grey-800 text-grey-800 rounded-xs animate-pulse text-sm">0.00 TAO</div>
-)
-
-const BittensorStakingFiat: FC<{ payload: SignerPayloadJSON }> = ({ payload }) => {
-  const stakingCalls = useBittensorStakingCalls(payload)
-  const network = useNetworkByGenesisHash(payload.genesisHash)
-  const taoTokenId = network?.id ? subNativeTokenId(network.id) : null
-  const taoRates = useTokenRates(taoTokenId)
-  const currency = useSelectedCurrency()
-  const { data: alphaPrices } = useBittensorStakingAlphaPrices(payload, stakingCalls)
-
-  const totalFiat = useMemo(() => {
-    if (!taoRates?.[currency]?.price) return null
-    if (!stakingCalls?.length) return null
-
-    let total = 0
-    for (const call of stakingCalls) {
-      const info = getStakingAmount(call.method, call.args)
-      if (!info) continue
-
-      let taoAmount: bigint
-      if (info.isStake) {
-        // Staking: amount is already in TAO
-        taoAmount = info.amount
-      } else if (info.netuid === 0) {
-        // Root subnet unstaking: amount is in TAO
-        taoAmount = info.amount
-      } else {
-        // Subnet unstaking: convert alpha to TAO using current price
-        const alphaPrice = alphaPrices?.[info.netuid]
-        if (!alphaPrice) continue
-        taoAmount = alphaToTao(info.amount, alphaPrice)
-      }
-
-      const tokens = Number(planckToTokens(taoAmount.toString(), Number(TAO_DECIMALS)))
-      total += tokens * taoRates[currency].price
-    }
-
-    return total > 0 ? total : null
-  }, [stakingCalls, taoRates, currency, alphaPrices])
-
-  if (!totalFiat) return null
-
-  return <Fiat amount={totalFiat} noCountUp isBalance />
-}
-
-const BittensorStakingFiatFallback = () => (
-  <div className="bg-grey-800 text-grey-800 rounded-xs animate-pulse text-xs">$0.00</div>
-)
-
 const TransactionRowBase: FC<{
   logo: ReactNode
   status: ReactNode
@@ -520,40 +304,44 @@ const TransactionRowBase: FC<{
   tokens: ReactNode
   fiat: ReactNode
   onClick?: () => void
-}> = ({ logo, status, wen, tokens, fiat, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    disabled={!onClick}
-    className={classNames(
-      "bg-grey-850 hover:bg-grey-800 relative z-0 flex w-full grow items-center rounded-sm text-left",
-      IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
-    )}
-  >
-    {logo}
-    <div className="leading-paragraph flex w-full grow justify-between">
-      <div className="flex flex-col items-start justify-center">
-        <div
-          className={classNames(
-            "text-body flex h-10 items-center gap-2 font-bold",
-            IS_POPUP ? "text-sm" : "text-base",
-          )}
-        >
-          {status}
+}> = ({ logo, status, wen, tokens, fiat, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!onClick}
+      className={classNames(
+        "bg-grey-850 hover:bg-grey-800 relative z-0 flex w-full grow items-center rounded-sm text-left",
+        IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
+      )}
+    >
+      {logo}
+      <div className="leading-paragraph flex w-full grow justify-between">
+        <div className="flex flex-col items-start justify-center">
+          <div
+            className={classNames(
+              "text-body flex h-10 items-center gap-2 font-bold",
+              IS_POPUP ? "text-sm" : "text-base",
+            )}
+          >
+            {status}
+          </div>
+          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
+            {wen}
+          </div>
         </div>
-        <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
-          {wen}
+        <div className="flex flex-col items-end justify-center text-right">
+          <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>
+            {tokens}
+          </div>
+          <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
+            {fiat}
+          </div>
         </div>
       </div>
-      <div className="flex flex-col items-end justify-center text-right">
-        <div className={classNames("text-body", IS_POPUP ? "text-sm" : "text-base")}>{tokens}</div>
-        <div className={classNames("text-body-disabled", IS_POPUP ? "text-xs" : "text-sm")}>
-          {fiat}
-        </div>
-      </div>
-    </div>
-  </button>
-)
+    </button>
+  )
+}
 
 const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx }) => {
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")
@@ -698,7 +486,9 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
   const currency = useSelectedCurrency()
 
   const { isTransfer, amount } = useMemo(() => {
+    // historically txInfo wasnt a property, transfer params were set on the tx object
     const isTransfer = token && txTransfer
+
     return {
       isTransfer,
       amount: isTransfer
@@ -712,9 +502,6 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
 
   const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 
-  const isBittensorStaking =
-    isBittensorTransaction(tx.payload) && tx.label === "Transaction" && !tx.txInfo?.type
-
   return (
     <TransactionRowBase
       onClick={handleRowClick}
@@ -725,10 +512,10 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
           </TxIconContainer>
         ) : txSwap ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken?.networkId}>
+            <TxIconContainer networkId={fromToken?.networkId ?? fromToken?.networkId}>
               <TokenLogo tokenId={fromToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer className="-ml-4" networkId={toToken?.networkId}>
+            <TxIconContainer className="-ml-4" networkId={toToken?.networkId ?? toToken?.networkId}>
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
@@ -743,21 +530,20 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
         )
       }
       status={
-        txSwap ? (
-          <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
-            <SwapTransactionStatusLabel tx={tx} />
-          </Suspense>
-        ) : (
-          <TransactionStatusLabel status={tx.status} />
-        )
+        <>
+          {txSwap ? (
+            <Suspense fallback={<SwapTransactionStatusLabelFallback />}>
+              <SwapTransactionStatusLabel tx={tx} />
+            </Suspense>
+          ) : (
+            <TransactionStatusLabel status={tx.status} />
+          )}
+        </>
       }
       wen={<DistanceToNow timestamp={tx.timestamp} />}
       tokens={
-        isBittensorStaking ? (
-          <Suspense fallback={<BittensorStakingTokensFallback />}>
-            <BittensorStakingTokens payload={tx.payload} />
-          </Suspense>
-        ) : txSwap ? (
+        txSwap ? (
+          // tx is a swap deposit
           <div className="flex flex-col">
             <div className="flex items-center justify-end gap-1">
               <Tokens
@@ -797,15 +583,9 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
         )
       }
       fiat={
-        isBittensorStaking ? (
-          <Suspense fallback={<BittensorStakingFiatFallback />}>
-            <BittensorStakingFiat payload={tx.payload} />
-          </Suspense>
-        ) : (
-          isTransfer &&
-          !!amount &&
-          !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
-        )
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
     />
   )
