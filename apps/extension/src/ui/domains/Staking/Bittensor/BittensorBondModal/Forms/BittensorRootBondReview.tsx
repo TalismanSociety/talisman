@@ -1,5 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
-import { useEffect, useState } from "react"
+import { WalletTransactionInfo } from "extension-core"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -33,6 +34,16 @@ export const BittensorRootBondReview = () => {
   const { close } = useBittensorBondModal()
 
   const [isDisabled, setIsDisabled] = useState(true)
+
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (!nativeToken?.id || amountIn === null) return undefined
+    return {
+      type: stakeDirection === "bond" ? "bittensor-stake" : "bittensor-unstake",
+      tokenId: nativeToken.id,
+      amount: amountIn.toString(),
+      netuid: 0, // root staking
+    }
+  }, [nativeToken?.id, amountIn, stakeDirection])
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
@@ -124,6 +135,7 @@ export const BittensorRootBondReview = () => {
           payload={payload}
           onSubmitted={onSubmitted}
           txMetadata={txMetadata}
+          txInfo={txInfo}
           disabled={isDisabled}
         />
       )}

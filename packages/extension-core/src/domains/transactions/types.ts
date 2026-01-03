@@ -58,6 +58,18 @@ export type WalletTransactionInfo =
       toAmount: string
       to: Address
     }
+  | {
+      type: "bittensor-stake"
+      tokenId: TokenId
+      amount: string
+      netuid: number
+    }
+  | {
+      type: "bittensor-unstake"
+      tokenId: TokenId
+      amount: string
+      netuid: number
+    }
 
 /** @deprecated */
 export type LegacyWalletTransactionBase = WalletTransactionTransferInfo & {

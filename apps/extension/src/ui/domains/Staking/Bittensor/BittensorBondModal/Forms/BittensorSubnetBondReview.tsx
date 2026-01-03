@@ -1,5 +1,6 @@
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { WalletTransactionInfo } from "extension-core"
 import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -116,6 +117,20 @@ export const BittensorSubnetBondReview = () => {
     () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
     [isSeekTaoDiscountEnabled, totalFeeDiscount],
   )
+
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (amountIn === null || netuid === null) return undefined
+    // For staking: use nativeToken (TAO) since that's what user is putting in
+    // For unstaking: use dtaoToken (alpha) since that's what user is unstaking
+    const tokenId = stakeDirection === "bond" ? nativeToken?.id : dtaoToken?.id
+    if (!tokenId) return undefined
+    return {
+      type: stakeDirection === "bond" ? "bittensor-stake" : "bittensor-unstake",
+      tokenId,
+      amount: amountIn.toString(),
+      netuid,
+    }
+  }, [nativeToken?.id, dtaoToken?.id, amountIn, stakeDirection, netuid])
 
   const { isLoading } = useCombinedSubnetData(networkId)
 
@@ -343,6 +358,7 @@ export const BittensorSubnetBondReview = () => {
             payload={payload}
             onSubmitted={onSubmitted}
             txMetadata={txMetadata}
+            txInfo={txInfo}
             disabled={isDisabled}
             mode={withMevShield ? "bittensor-mev-shield" : "default"}
           />
