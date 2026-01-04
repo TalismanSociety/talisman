@@ -10,12 +10,13 @@ import { useAccountByAddress, useToken } from "@ui/state"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
 
-export type ClaimSettingsStep = "claim-settings" | "follow-up"
+export type ClaimSettingsStep = "claim-settings" | "select-subnets" | "follow-up"
 
 type WizardState = {
   step: ClaimSettingsStep
   address: Address | null
   hash: Hex | null
+  selectedSubnets: number[]
   onSubmittedCallback: (() => void) | null
 }
 
@@ -29,6 +30,7 @@ const DEFAULT_STATE: WizardState = {
   step: "claim-settings",
   address: null,
   hash: null,
+  selectedSubnets: [],
   onSubmittedCallback: null,
 }
 
@@ -48,8 +50,8 @@ export const useResetBittensorClaimSettingsWizard = () => {
 }
 
 const useBittensorClaimSettingsWizardProvider = () => {
-  const [{ address, step, hash, onSubmittedCallback }, setWizardState] = useState(() =>
-    wizardOpenState$.getValue(),
+  const [{ address, step, hash, selectedSubnets, onSubmittedCallback }, setWizardState] = useState(
+    () => wizardOpenState$.getValue(),
   )
 
   const nativeTokenId = useMemo(() => subNativeTokenId(BITTENSOR_NETWORK_ID), [])
@@ -74,6 +76,11 @@ const useBittensorClaimSettingsWizardProvider = () => {
     [],
   )
 
+  const setSelectedSubnets = useCallback(
+    (subnets: number[]) => setWizardState((prev) => ({ ...prev, selectedSubnets: subnets })),
+    [],
+  )
+
   const onSubmitted = useCallback(
     (txHash?: Hex) => {
       if (txHash) {
@@ -90,11 +97,13 @@ const useBittensorClaimSettingsWizardProvider = () => {
     address,
     step,
     hash,
+    selectedSubnets,
     account,
     nativeToken,
     accountPicker,
     setAddress,
     setStep,
+    setSelectedSubnets,
     onSubmitted,
   }
 }

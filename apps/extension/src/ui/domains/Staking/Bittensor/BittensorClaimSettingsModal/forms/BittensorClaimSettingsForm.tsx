@@ -19,11 +19,18 @@ import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSetti
 export const BittensorClaimSettingsForm = () => {
   const [selectedClaimType, setSelectedClaimType] = useState<RootClaimType>(DEFAULT_ROOT_CLAIM_TYPE)
   const { t } = useTranslation()
-  const { nativeToken, account, accountPicker, setAddress, onSubmitted } =
-    useBittensorClaimSettingsWizard()
+  const {
+    nativeToken,
+    account,
+    accountPicker,
+    setAddress,
+    setStep,
+    setSelectedSubnets,
+    onSubmitted,
+  } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
 
-  const { data: claimType, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
+  const { data: claimTypeData, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
     networkId: nativeToken?.networkId,
     address: account?.address,
   })
@@ -36,8 +43,13 @@ export const BittensorClaimSettingsForm = () => {
     })
 
   useEffect(() => {
-    if (claimType) setSelectedClaimType(claimType)
-  }, [claimType])
+    if (claimTypeData) {
+      setSelectedClaimType(claimTypeData.claimType)
+      if (claimTypeData.subnets) {
+        setSelectedSubnets(claimTypeData.subnets)
+      }
+    }
+  }, [claimTypeData, setSelectedSubnets])
 
   const claimTypeOptions = useMemo(
     () => [
@@ -57,7 +69,7 @@ export const BittensorClaimSettingsForm = () => {
         description: t(
           "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao.",
         ),
-        disabled: true,
+        disabled: false,
       },
     ],
     [t],
@@ -153,7 +165,11 @@ export const BittensorClaimSettingsForm = () => {
       <div className={"mt-auto grid w-full grid-cols-2 gap-8"}>
         <Button onClick={close}>{t("Cancel")}</Button>
 
-        {isPayloadLoading || !setClaimTypePayload?.payload || isClaimTypeLoading ? (
+        {selectedClaimType === "KeepSubnets" ? (
+          <Button primary disabled={isClaimTypeLoading} onClick={() => setStep("select-subnets")}>
+            {t("Next")}
+          </Button>
+        ) : isPayloadLoading || !setClaimTypePayload?.payload || isClaimTypeLoading ? (
           <Button className="px-2" primary disabled>
             {t("Confirm")}
           </Button>
@@ -164,7 +180,7 @@ export const BittensorClaimSettingsForm = () => {
             payload={setClaimTypePayload?.payload}
             onSubmitted={onSubmitted}
             txMetadata={setClaimTypePayload?.txMetadata}
-            disabled={claimType === selectedClaimType}
+            disabled={claimTypeData?.claimType === selectedClaimType}
           />
         )}
       </div>
