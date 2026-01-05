@@ -169,9 +169,9 @@ const useBittensorBondWizardProvider = () => {
     errorFeeEstimate,
     isLoadingFeeEstimate,
     currentHotkey,
-    minTaoBond,
+    minTaoBondForInput,
     minAlphaBond,
-    minTaoStake,
+    minTaoStakeForInput,
     minAlphaUnstake,
     priceImpact,
     talismanFee,
@@ -262,10 +262,10 @@ const useBittensorBondWizardProvider = () => {
       !!hotkey &&
       (stakeType === "root" ? true : !!netuid) &&
       !!amountTao &&
-      typeof minTaoBond === "bigint" &&
+      typeof minTaoBondForInput === "bigint" &&
       amountIn &&
       amountIn > 0n,
-    [account, amountTao, minTaoBond, netuid, amountIn, hotkey, stakeType, nativeToken],
+    [account, amountTao, minTaoBondForInput, netuid, amountIn, hotkey, stakeType, nativeToken],
   )
 
   const isUnstakeFormValid = useMemo(() => amountIn && amountIn > 0n, [amountIn])
@@ -343,7 +343,7 @@ const useBittensorBondWizardProvider = () => {
   }, [amountOut, amountIn, stakeDirection, stakeType, totalStakedPlancks])
 
   const stakeInputErrorMessage = useMemo(() => {
-    if (!amountTao || typeof minTaoBond !== "bigint") return null
+    if (!amountTao || typeof minTaoBondForInput !== "bigint") return null
 
     if (
       !!nativeBalance &&
@@ -381,24 +381,24 @@ const useBittensorBondWizardProvider = () => {
         "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
       )
 
-    // if not staking yet, need minTaoBond or more
-    if (!dtaoBalance?.free.planck && amountTao.planck < minTaoBond)
+    // if not staking yet, need minTaoBondForInput or more
+    if (!dtaoBalance?.free.planck && amountTao.planck < minTaoBondForInput)
       return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoBond, nativeToken?.decimals).tokens,
+        amount: new BalanceFormatter(minTaoBondForInput, nativeToken?.decimals).tokens,
         symbol: nativeToken?.symbol,
       })
 
-    // no staking operation can be less than minTaoStake
-    if (amountTao.planck < minTaoStake)
+    // no staking operation can be less than minTaoStakeForInput
+    if (typeof minTaoStakeForInput === "bigint" && amountTao.planck < minTaoStakeForInput)
       return t("Minimum bond is {{amount}} {{symbol}}", {
-        amount: new BalanceFormatter(minTaoStake, nativeToken?.decimals).tokens,
+        amount: new BalanceFormatter(minTaoStakeForInput, nativeToken?.decimals).tokens,
         symbol: nativeToken?.symbol,
       })
 
     return null
   }, [
     amountTao,
-    minTaoBond,
+    minTaoBondForInput,
     nativeBalance,
     t,
     feeEstimate,
@@ -406,7 +406,7 @@ const useBittensorBondWizardProvider = () => {
     dtaoBalance?.free.planck,
     nativeToken?.decimals,
     nativeToken?.symbol,
-    minTaoStake,
+    minTaoStakeForInput,
   ])
 
   const unstakeInputErrorMessage = useMemo(() => {
