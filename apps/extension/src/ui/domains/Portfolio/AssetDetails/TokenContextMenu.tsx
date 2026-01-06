@@ -1,4 +1,4 @@
-import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
+import { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
@@ -14,11 +14,13 @@ import urlJoin from "url-join"
 
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
+import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state"
+import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -92,6 +94,25 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
 
+const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const { open } = useBittensorChangeValidatorModal()
+
+  const isBittensorDTao =
+    token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
+
+  const handleClick = useCallback(() => {
+    open({ tokenId: token.id })
+    genericEvent("open change validator modal", { tokenId: token.id })
+  }, [open, token.id, genericEvent])
+
+  if (!isBittensorDTao) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
+}
+
 type Props = {
   tokenId: TokenId
   placement?: PopoverOptions["placement"]
@@ -128,6 +149,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
+        {token && <ChangeValidatorMenuItem token={token} />}
       </ContextMenuContent>
     </ContextMenu>
   )

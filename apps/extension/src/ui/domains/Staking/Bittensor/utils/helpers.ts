@@ -123,6 +123,16 @@ type GetBittensorUnbondPayload = {
   netuid: number
 }
 
+type GetBittensorMoveStakePayload = {
+  sapi: ScaleApi
+  address: string
+  originHotkey: string
+  destinationHotkey: string
+  originNetuid: number
+  destinationNetuid: number
+  alphaAmount: bigint
+}
+
 export const getBittensorUnbondPayload = ({
   sapi,
   address,
@@ -166,6 +176,56 @@ export const getBittensorUnbondPayload = ({
         sapi.getDecodedCall("Balances", "transfer_keep_alive", {
           dest: Enum("Id", TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR),
           value: talismanFee,
+        }),
+        sapi.getDecodedCall("System", "remark_with_event", {
+          remark: Binary.fromText("talisman-bittensor"),
+        }),
+      ],
+    },
+    { address },
+  )
+}
+
+/**
+ * Creates a payload for moving stake between validators (hotkeys) and/or subnets.
+ * This uses the SubtensorModule.move_stake extrinsic.
+ *
+ * Use cases:
+ * - **Change validator within same subnet**: Pass the same netuid for both `originNetuid` and
+ *   `destinationNetuid`. This moves your staked alpha from one validator to another without
+ *   leaving the subnet.
+ *
+ * - **Move stake between subnets**: Pass different netuids for `originNetuid` and `destinationNetuid`
+ *   to move stake from one subnet to another (possibly to a different validator as well).
+ *
+ * @param sapi - The Scale API instance
+ * @param address - The account address performing the move
+ * @param originHotkey - The hotkey (validator) currently holding the stake
+ * @param destinationHotkey - The hotkey (validator) to move the stake to
+ * @param originNetuid - The subnet ID where the stake currently resides
+ * @param destinationNetuid - The subnet ID to move the stake to (same as origin for validator change)
+ * @param alphaAmount - The amount of alpha tokens to move (in planck)
+ */
+export const getBittensorMoveStakePayload = ({
+  sapi,
+  address,
+  originHotkey,
+  destinationHotkey,
+  originNetuid,
+  destinationNetuid,
+  alphaAmount,
+}: GetBittensorMoveStakePayload) => {
+  return sapi.getExtrinsicPayload(
+    "Utility",
+    "batch_all",
+    {
+      calls: [
+        sapi.getDecodedCall("SubtensorModule", "move_stake", {
+          origin_hotkey: originHotkey,
+          destination_hotkey: destinationHotkey,
+          origin_netuid: originNetuid,
+          destination_netuid: destinationNetuid,
+          alpha_amount: alphaAmount,
         }),
         sapi.getDecodedCall("System", "remark_with_event", {
           remark: Binary.fromText("talisman-bittensor"),
