@@ -26,6 +26,8 @@ export const TxHistoryDetailsTxInfo: FC<{
       return <SwapStealthExTxInfo txInfo={txInfo} networkId={tx.networkId} />
     case "swap-lifi":
       return <SwapLifiTxInfo txInfo={txInfo} networkId={tx.networkId} />
+    case "bittensor-staking":
+      return <BittensorStakingTxInfo txInfo={txInfo} />
     default:
       return <CodeBlock code={papiStringify(tx.txInfo, 2)} />
   }
@@ -174,3 +176,43 @@ const SwapLifiTxInfo: FC<{
 }> = ({ networkId, txInfo }) => (
   <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel={txInfo.protocolName} />
 )
+
+const BittensorStakingTxInfo: FC<{
+  txInfo: Extract<WalletTransaction["txInfo"], { type: "bittensor-staking" }>
+}> = ({ txInfo }) => {
+  const { t } = useTranslation()
+  const isStake = txInfo.action === "stake"
+
+  return (
+    <TxInfoCard>
+      <Trans
+        t={t}
+        defaults={
+          isStake
+            ? "Stake <FromTokens /> for <ToTokens />"
+            : "Unstake <FromTokens /> for <ToTokens />"
+        }
+        components={{
+          FromTokens: (
+            <TokensAndFiat
+              planck={txInfo.fromAmount}
+              tokenId={txInfo.fromTokenId}
+              withLogo
+              noFiat
+              className="text-body"
+            />
+          ),
+          ToTokens: (
+            <TokensAndFiat
+              planck={txInfo.toAmount}
+              tokenId={txInfo.toTokenId}
+              withLogo
+              noFiat
+              className="text-body"
+            />
+          ),
+        }}
+      />
+    </TxInfoCard>
+  )
+}

@@ -37,10 +37,14 @@ export const BittensorRootBondReview = () => {
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
     if (!nativeToken?.id || amountIn === null) return undefined
+    // Root staking: TAO -> TAO (no alpha token conversion)
     return {
-      type: stakeDirection === "bond" ? "bittensor-stake" : "bittensor-unstake",
-      tokenId: nativeToken.id,
-      amount: amountIn.toString(),
+      type: "bittensor-staking",
+      action: stakeDirection === "bond" ? "stake" : "unstake",
+      fromTokenId: nativeToken.id,
+      toTokenId: nativeToken.id,
+      fromAmount: amountIn.toString(),
+      toAmount: amountIn.toString(), // same amount for root staking
       netuid: 0, // root staking
     }
   }, [nativeToken?.id, amountIn, stakeDirection])

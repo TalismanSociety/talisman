@@ -480,7 +480,7 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
   const txSwap = isTxInfoSwap(tx.txInfo) ? tx.txInfo : undefined
   const txBittensorStaking = isTxInfoBittensorStaking(tx.txInfo) ? tx.txInfo : undefined
 
-  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || txBittensorStaking?.tokenId
+  const tokenId = txTransfer?.tokenId || txSwap?.fromTokenId || txBittensorStaking?.fromTokenId
 
   const chain = useNetworkByGenesisHash(genesisHash)
   const token = useToken(tokenId)
@@ -499,13 +499,13 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
     }
   }, [token, tokenRates, txTransfer])
 
-  const bittensorStakingAmount = useMemo(() => {
-    if (!token || !txBittensorStaking) return null
-    return new BalanceFormatter(txBittensorStaking.amount, token.decimals, tokenRates)
-  }, [token, tokenRates, txBittensorStaking])
-
+  // Swap tokens
   const fromToken = useToken(txSwap?.fromTokenId)
   const toToken = useToken(txSwap?.toTokenId)
+
+  // Bittensor staking tokens (similar to swap)
+  const stakingFromToken = useToken(txBittensorStaking?.fromTokenId)
+  const stakingToToken = useToken(txBittensorStaking?.toTokenId)
 
   const handleRowClick = useCallback(() => onSelectTx(tx), [onSelectTx, tx])
 
@@ -526,10 +526,15 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
               <TokenLogo tokenId={toToken?.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
-        ) : txBittensorStaking && token ? (
-          <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-            <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
-          </TxIconContainer>
+        ) : txBittensorStaking && stakingFromToken && stakingToToken ? (
+          <div className="flex items-center">
+            <TxIconContainer networkId={stakingFromToken.networkId}>
+              <TokenLogo tokenId={stakingFromToken.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+            <TxIconContainer className="-ml-4" networkId={stakingToToken.networkId}>
+              <TokenLogo tokenId={stakingToToken.id} className="!h-16 !w-16" />
+            </TxIconContainer>
+          </div>
         ) : isTransfer && token ? (
           <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
             <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
@@ -576,16 +581,31 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
               isBalance
             />
           </div>
-        ) : txBittensorStaking && bittensorStakingAmount && token ? (
-          <Tokens
-            className="pointer-events-none"
-            amount={bittensorStakingAmount.tokens}
-            decimals={token.decimals}
-            noCountUp
-            noTooltip
-            symbol={token.symbol}
-            isBalance
-          />
+        ) : txBittensorStaking && stakingFromToken && stakingToToken ? (
+          // Bittensor staking: display like a swap (from -> to)
+          <div className="flex flex-col">
+            <div className="flex items-center justify-end gap-1">
+              <Tokens
+                className="pointer-events-none"
+                amount={planckToTokens(txBittensorStaking.fromAmount, stakingFromToken.decimals)}
+                decimals={stakingFromToken.decimals}
+                symbol={stakingFromToken.symbol}
+                noCountUp
+                noTooltip
+                isBalance
+              />
+              <ArrowRightIcon className="text-body-inactive" />
+            </div>
+            <Tokens
+              className="pointer-events-none"
+              amount={planckToTokens(txBittensorStaking.toAmount, stakingToToken.decimals)}
+              decimals={stakingToToken.decimals}
+              symbol={stakingToToken.symbol}
+              noCountUp
+              noTooltip
+              isBalance
+            />
+          </div>
         ) : (
           !!amount &&
           !!token && (
@@ -602,13 +622,9 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
         )
       }
       fiat={
-        txBittensorStaking && bittensorStakingAmount?.fiat(currency) ? (
-          <Fiat amount={bittensorStakingAmount} noCountUp isBalance />
-        ) : (
-          isTransfer &&
-          !!amount &&
-          !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
-        )
+        isTransfer &&
+        !!amount &&
+        !!amount.fiat(currency) && <Fiat amount={amount} noCountUp isBalance />
       }
     />
   )

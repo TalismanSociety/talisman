@@ -272,4 +272,4 @@ export const isTxInfoApproval = (txInfo: WalletTransactionInfo | undefined | nul
   isTxInfoOfType(txInfo, "approve-erc20")
 
 export const isTxInfoBittensorStaking = (txInfo: WalletTransactionInfo | undefined | null) =>
-  isTxInfoInTypes(txInfo, ["bittensor-stake", "bittensor-unstake"])
+  isTxInfoOfType(txInfo, "bittensor-staking")
