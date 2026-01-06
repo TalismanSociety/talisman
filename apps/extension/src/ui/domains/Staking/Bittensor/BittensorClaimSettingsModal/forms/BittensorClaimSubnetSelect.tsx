@@ -27,6 +27,7 @@ import { SearchInputControlled } from "@talisman/components/SearchInputControlle
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state"
@@ -74,6 +75,21 @@ export const BittensorClaimSubnetSelect = () => {
   const confirmedSubnetsRef = useRef<number[]>(selectedSubnets)
 
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
+
+  // Fetch the current claim type from chain to populate selectedSubnets if not already set
+  // This handles the case where the modal is opened directly to this step
+  const { data: claimTypeData } = useGetBittensorClaimType({
+    networkId: nativeToken?.networkId,
+    address: account?.address,
+  })
+
+  useEffect(() => {
+    if (claimTypeData?.subnets && selectedSubnets.length === 0) {
+      setSelectedSubnets(claimTypeData.subnets)
+      // Also update the confirmed subnets ref so they appear at the top
+      confirmedSubnetsRef.current = claimTypeData.subnets
+    }
+  }, [claimTypeData, selectedSubnets.length, setSelectedSubnets])
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
     sortSubnetOptions(subnetData, sortMethod),
