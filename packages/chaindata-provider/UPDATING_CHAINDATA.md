@@ -1,48 +1,85 @@
-If minimetadatas change in anyway, it requires bumping the mini metadata version and setup a dedicated publishing folder in chaindata.
+# Updating Chaindata
 
-## phase 1 - development
+When mini-metadata requires changes (e.g., adding new storage items or runtime API calls to the balances library), you must bump the mini-metadata version and configure a dedicated publishing folder in chaindata.
 
-In the wallet monorepo
+---
 
-- bump CHAINDATA_PUB_FOLDER in `./src/constants.ts` (the mini metadata version that `chaindata` will build is based on that)
-- add a changeset so CI publishes a new version of the balances and chaindata provider packages
-- inspect CI and look for the "Publish snapshot packages" task, you will find the version of the packages there. ex: `@talismn/balances@0.0.0-pr2291-20260106100658`
+## Phase 1: Development
 
-In chaindata
+### Wallet Monorepo
 
-- create a PR. ex: `feat/chaindata-v9`
-- edit `package.json` to set versions to the packages that were published by CI. usually `@talisman/balances`, `@talisman/chaindata-provider` and `@talisman/chain-connectors`
-- in constants.ts update the output folder to `pub/v9`
-- run `pnpm fetch-external`, which will build mimetadata v9 for all the chains
-- run `pnpm build`, which will build the output `pub/v9/chaindata.json` file
-- publish the branch and create a PR for it
+1. Bump `CHAINDATA_PUB_FOLDER` in `./src/constants.ts`
+   - The mini-metadata version that chaindata builds is based on this value
+   ```ts
+   const CHAINDATA_PUB_FOLDER = "pub/v9"
+   ```
+2. Add a changeset so CI publishes new package versions
+3. Check the CI "Publish snapshot packages" task for the published versions
+   ```
+   Example: @talismn/balances@0.0.0-pr2291-20260106100658
+   ```
 
-In this mono repo
+### Chaindata Repository
 
-- in `./src/constants.ts` update `CHAINDATA_BRANCH` with the name of the chaindata branch created above (ex: `feat/chaindata-v9`)
+1. Create a new branch (e.g., `feat/chaindata-v9`)
+2. Update `package.json` with the snapshot versions published by CI:
+   - `@talismn/balances`
+   - `@talismn/chaindata-provider`
+   - `@talismn/chain-connectors`
+3. Update the output folder in `constants.ts` (e.g., `pub/v9`)
+4. Run the build commands:
+   ```sh
+   pnpm fetch-external  # Builds mini-metadata v9 for all chains
+   pnpm build           # Outputs pub/v9/chaindata.json
+   ```
+5. Push the branch and open a PR
 
-## phase 2 - review
+### Back in Wallet Monorepo
 
-At this stage, test the wallet, and wait for both chaindata and wallet PRs to be reviewed.
-it is important to delay merging the chaindata to the last minute, because the CI jobs that keep chaindata output file up to date only runs on the main branch, and for the current pub folder version.
-=> merging chaindata too early would leave production users without chaindata updates until next wallet release.
+1. Update `CHAINDATA_BRANCH` in `./src/constants.ts` to point to your chaindata branch
+   ```ts
+   const CHAINDATA_BRANCH = "feat/chaindata-v9"
+   ```
 
-## phase 3 - merge and ship
+---
 
-Before merging the chaindata PR, keep in mind that while both PRs were being reviewed, CI continuously updated main branch, creating a lot of conflicts that should not be handled manually.
+## Phase 2: Review
 
-In chaindata:
+Test the wallet and wait for both PRs (wallet + chaindata) to be reviewed.
 
-- Revert all changes to the data/ folders using `git checkout main -- data/` then push the changes
-- ⚠️ Ensure that the PR doesnt contain any changes to the data/cache and data/generated folders
-- merge the chaindata PR to main
-- wait until no actions are running then manually run the fetch-external job from the web GUI, on main branch
-- ensure it runs properly and is followed by a build job, which should output the `/pub/v9/chaindata.json` file
+> ⚠️ **Important:** Delay merging the chaindata PR until the last moment.
+>
+> CI jobs that keep chaindata up to date only run on the `main` branch for the _current_ pub folder version. Merging chaindata too early will leave production users without chaindata updates until the next wallet release.
 
-In wallet monorepo
+---
 
-- in `./src/constants.ts` change the `CHAINDATA_BRANCH` variable back to `main`
-- retest the wallet in dev mode, and update the branch
-- run `pnpm chore:generate-init-data` which will sync our default/compact minimetadata with chaindata
-- merge to main
-- ship a release
+## Phase 3: Merge & Ship
+
+While both PRs were under review, CI continuously updated the chaindata `main` branch, creating conflicts. **Do not resolve these manually.**
+
+### Chaindata Repository
+
+1. Revert all data folder changes:
+   ```sh
+   git checkout main -- data/
+   git push
+   ```
+2. ⚠️ **Verify** the PR contains no changes to `data/cache` or `data/generated`
+3. Merge the chaindata PR to `main`
+4. Wait for all running actions to complete
+5. Manually trigger the `fetch-external` job from the GitHub Actions UI (on `main`)
+6. Confirm it completes successfully and the subsequent `build` job outputs `/pub/v9/chaindata.json`
+
+### Wallet Monorepo
+
+1. Reset `CHAINDATA_BRANCH` in `./src/constants.ts` back to `main`
+   ```ts
+   const CHAINDATA_BRANCH = "main"
+   ```
+2. Re-test the wallet in dev mode
+3. Sync mini-metadata with chaindata:
+   ```sh
+   pnpm chore:generate-init-data
+   ```
+4. Merge to `main`
+5. Ship the release 🚀
