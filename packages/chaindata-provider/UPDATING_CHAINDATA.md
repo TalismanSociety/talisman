@@ -77,7 +77,7 @@ While both PRs were under review, CI continuously updated the chaindata `main` b
    const CHAINDATA_BRANCH = "main"
    ```
 2. Re-test the wallet in dev mode
-3. Sync mini-metadata with chaindata:
+3. Sync wallet's fallback mini-metadata with chaindata:
    ```sh
    pnpm chore:generate-init-data
    ```

@@ -332,7 +332,6 @@ const buildRootClaimableStorageCoder = async (
 }
 
 const buildRootClaimedStorageCoder = async (
-  connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}` | null,
 ): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
@@ -460,7 +459,7 @@ const fetchRootClaimedAmounts = async (
     return new Map<string, Map<string, Map<number, bigint>>>()
   }
 
-  const storageCoder = await buildRootClaimedStorageCoder(connector, networkId, metadataRpc)
+  const storageCoder = await buildRootClaimedStorageCoder(networkId, metadataRpc)
   if (!storageCoder) {
     // Fallback: return empty map for all pairs
     const result = new Map<string, Map<string, Map<number, bigint>>>()

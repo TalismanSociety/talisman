@@ -40,7 +40,6 @@ export const calculatePendingRootClaimable = ({
     const totalClaimable = (stake * claimableRate + (1n << 31n)) >> 32n
 
     // Subtract already claimed amount to get net pending claimable
-
     const alreadyClaimed = alreadyClaimedByNetuid.get(netuid) ?? 0n
     const pendingRootClaim = totalClaimable > alreadyClaimed ? totalClaimable - alreadyClaimed : 0n
 
