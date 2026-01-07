@@ -18,23 +18,25 @@ import { DashboardNotificationsAndModals } from "./notifications/DashboardNotifi
 // dynamic max height to apply on sidebar : max-h-[calc(100dvh-13.6rem)]
 export const DashboardLayout: FC<{
   children?: ReactNode
-  sidebar: "accounts" | "settings"
+  sidebar: "accounts" | "settings" | "none"
 }> = ({ children, sidebar }) => {
   return (
     <div id="main" className="h-dvh w-dvw overflow-x-auto overflow-y-scroll">
       <div className="relative mx-auto w-full max-w-[144rem]">
         <div className={classNames("flex w-full", RESPONSIVE_FLEX_SPACING)}>
           {/* Sidebar */}
-          <div className="w-[29.6rem] shrink-0 pb-20">
-            <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
-              <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
-              <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+          {sidebar !== "none" && (
+            <div className="w-[29.6rem] shrink-0 pb-20">
+              <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
+                <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
+                <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+              </div>
+              <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
+                {sidebar === "accounts" && <DashboardAccountsSidebar />}
+                {sidebar === "settings" && <DashboardSettingsSidebar />}
+              </Suspense>
             </div>
-            <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
-              {sidebar === "accounts" && <DashboardAccountsSidebar />}
-              {sidebar === "settings" && <DashboardSettingsSidebar />}
-            </Suspense>
-          </div>
+          )}
           {/* Main area */}
           <div className="grow pb-20">
             <div className="flex w-full flex-col items-center">

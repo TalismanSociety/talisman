@@ -42,6 +42,7 @@ import { MnemonicsPage } from "./routes/Settings/Mnemonics/MnemonicsPage"
 import { NetworksTokensPage } from "./routes/Settings/NetworksTokensPage"
 import { QrMetadataPage } from "./routes/Settings/QrMetadataPage"
 import { SecurityPrivacyPage } from "./routes/Settings/SecurityPrivacyPage"
+import { TaoDashboardRoutes } from "./routes/TaoDashboard"
 import { TestPage } from "./routes/TestPage"
 import { AddTokenPage } from "./routes/Tokens/AddTokenPage"
 import { EditTokenPage } from "./routes/Tokens/EditTokenPage"
@@ -54,6 +55,7 @@ const DashboardInner = () => {
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="tx-history/*" element={<TxHistory />} />
+        <Route path="bittensor/*" element={<TaoDashboardRoutes />} />
         <Route path="accounts">
           <Route path="add">
             <Route index element={<AccountAddMenu />} />
