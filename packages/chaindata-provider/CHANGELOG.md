@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 1.3.4
+
+### Patch Changes
+
+- 332e20f: minimetadata v9
+
 ## 1.3.3
 
 ### Patch Changes

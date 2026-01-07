@@ -1,5 +1,11 @@
 # @talismn/on-chain-id
 
+## 0.2.4
+
+### Patch Changes
+
+- @talismn/chain-connectors@0.0.13
+
 ## 0.2.3
 
 ### Patch Changes
