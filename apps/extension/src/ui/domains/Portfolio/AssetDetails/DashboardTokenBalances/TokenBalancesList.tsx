@@ -58,10 +58,10 @@ export const TokenBalancesList = ({
           <div className="shrink-0 p-8 pr-6 text-xl">
             <TokenLogo tokenId={tokenId} />
           </div>
-          <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
+          <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
             <div className="flex items-center gap-3">
-              <div className="text-body font-bold">{token.name}</div>
-              <div className="text-body flex items-center text-base font-bold">
+              <div className="text-body truncate font-bold">{token.name}</div>
+              <div className="text-body flex shrink-0 items-center text-base font-bold">
                 <CopyAddressButton networkId={chainOrNetworkId} />
                 <BittensorUnstakeButton balances={balances} />
                 <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>

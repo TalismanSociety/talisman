@@ -78,7 +78,8 @@ Balance modules in `packages/balances/src/modules/` follow a consistent structur
 
 ### Security Requirements
 
-- Never log/persist mnemonics, private keys, passwords, or portfolio data
+- Never log/persist mnemonics, private keys, passwords, or portfolio data.
+- Logging non-sensitive, public data for debugging (e.g. addresses, transaction hashes, chain IDs, balances) is acceptable.
 - Clear sensitive data immediately after use (overwrite buffers, reset React state)
 - Privacy features default to opt-in
 - Any keyring/secret storage changes require dedicated unit tests
