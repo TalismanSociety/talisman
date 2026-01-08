@@ -149,7 +149,11 @@ export const RiskAnalysisDrawers: FC<{
         <RiskAnalysisDrawerContent riskAnalysis={riskAnalysis} />
       </Drawer>
       <RiskAnalysisCriticalPane riskAnalysis={riskAnalysis} onReject={onReject} />
-      <Drawer anchor="bottom" containerId="main" isOpen={riskAnalysis.shouldPromptAutoRiskScan}>
+      <Drawer
+        anchor="bottom"
+        containerId={containerId}
+        isOpen={riskAnalysis.shouldPromptAutoRiskScan}
+      >
         <RiskAnalysisPromptAutoRiskScan />
       </Drawer>
     </>
