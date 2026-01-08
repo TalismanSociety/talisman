@@ -297,6 +297,16 @@ export const api: MessageTypes = {
   defiPositionsSubscribe: (cb) =>
     messageService.subscribe("pri(defi.positions.subscribe)", null, cb),
 
+  // yield
+  yieldxyzPositionsSubscribe: (cb) =>
+    messageService.subscribe("pri(earn.yieldxyz.positions.subscribe)", null, cb),
+  yieldxyzProductsSubscribe: (cb) =>
+    messageService.subscribe("pri(earn.yieldxyz.products.subscribe)", null, cb),
+  yieldxyzProvidersSubscribe: (cb) =>
+    messageService.subscribe("pri(earn.yieldxyz.providers.subscribe)", null, cb),
+  yieldxyzPositionRefresh: (args) =>
+    messageService.sendMessage("pri(earn.yieldxyz.positions.refresh)", args),
+
   // bittensor
   bittensorValidatorsSubscribe: (cb) =>
     messageService.subscribe("pri(bittensor.validators.subscribe)", null, cb),

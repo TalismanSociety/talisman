@@ -42,6 +42,8 @@ type QueryOptions<Output, Args> = {
  *   }
  * });
  * ```
+ *
+ * @deprecated use getLoadableQuery$ instead
  */
 export const getQuery$ = <Output, Args>({
   namespace,

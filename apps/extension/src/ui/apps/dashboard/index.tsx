@@ -22,6 +22,7 @@ import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAd
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
+import { DashboardEarnRoutes } from "./routes/Earn"
 import { AddNetworkPage } from "./routes/Networks/AddNetworkPage"
 import { EditNetworkPage } from "./routes/Networks/EditNetworkPage"
 import { NetworksPage } from "./routes/Networks/NetworksPage"
@@ -54,6 +55,7 @@ const DashboardInner = () => {
     <Suspense fallback={<SuspenseTracker name="Dashboard" />}>
       <Routes>
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
+        <Route path="earn/*" element={<DashboardEarnRoutes />} />
         <Route path="tx-history/*" element={<TxHistory />} />
         <Route path="bittensor/*" element={<TaoDashboardRoutes />} />
         <Route path="accounts">
