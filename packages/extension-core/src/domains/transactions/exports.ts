@@ -2,12 +2,7 @@ import { isAddressEqual } from "@talismn/crypto"
 
 import { WalletTransaction } from "./types"
 
-export {
-  isTxInfoSwap,
-  isTxInfoTransfer,
-  isTxInfoApproval,
-  isTxInfoBittensorStaking,
-} from "./helpers"
+export { isTxInfoSwap, isTxInfoTransfer, isTxInfoApproval } from "./helpers"
 
 export const filterIsSameNetworkAndAddressTx =
   (ref: WalletTransaction) => (tx: WalletTransaction) => {

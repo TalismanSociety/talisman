@@ -60,12 +60,10 @@ export type WalletTransactionInfo =
     }
   | {
       type: "bittensor-staking"
-      action: "stake" | "unstake"
       fromTokenId: TokenId
       toTokenId: TokenId
       fromAmount: string
       toAmount: string
-      netuid: number
     }
 
 /** @deprecated */

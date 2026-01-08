@@ -40,14 +40,12 @@ export const BittensorRootBondReview = () => {
     // Root staking: TAO -> TAO (no alpha token conversion)
     return {
       type: "bittensor-staking",
-      action: stakeDirection === "bond" ? "stake" : "unstake",
       fromTokenId: nativeToken.id,
       toTokenId: nativeToken.id,
       fromAmount: amountIn.toString(),
       toAmount: amountIn.toString(), // same amount for root staking
-      netuid: 0, // root staking
     }
-  }, [nativeToken?.id, amountIn, stakeDirection])
+  }, [nativeToken?.id, amountIn])
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)

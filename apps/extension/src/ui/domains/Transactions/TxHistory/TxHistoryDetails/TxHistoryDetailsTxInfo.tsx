@@ -1,4 +1,4 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { NetworkId, parseTokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { WalletTransaction } from "extension-core"
 import { FC, ReactNode } from "react"
@@ -181,7 +181,8 @@ const BittensorStakingTxInfo: FC<{
   txInfo: Extract<WalletTransaction["txInfo"], { type: "bittensor-staking" }>
 }> = ({ txInfo }) => {
   const { t } = useTranslation()
-  const isStake = txInfo.action === "stake"
+  // Stake: TAO (substrate-native) -> ALPHA, Unstake: ALPHA -> TAO
+  const isStake = parseTokenId(txInfo.fromTokenId).type === "substrate-native"
 
   return (
     <TxInfoCard>
