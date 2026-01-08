@@ -1,4 +1,4 @@
-import { DotNetworkId, EthNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { DotNetworkId, EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { ValidRequests } from "../../libs/requests/types"
 import { Address } from "../../types/base"
@@ -52,6 +52,11 @@ export type RemoteConfigStoreData = {
       discount: number
     }>
   }
+  earn: {
+    /** Yield.xyz network ID => Talisman NetworkId */
+    yieldxyzNetworks: Record<string, NetworkId>
+  }
+
   bittensor: {
     fee: {
       buy: Record<number, number>

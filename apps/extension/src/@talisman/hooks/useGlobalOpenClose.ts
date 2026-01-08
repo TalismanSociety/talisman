@@ -4,6 +4,7 @@ import { BehaviorSubject, distinctUntilChanged, map } from "rxjs"
 
 const allOpenCloseState$ = new BehaviorSubject<{ [key: string]: boolean }>({})
 
+// TODO existing consumers should use createGlobalOpenClose instead
 export const [useGlobalOpenCloseValue, getGlobalOpenCloseValue$] = bind((key: string) =>
   allOpenCloseState$.pipe(
     map((state) => state[key] ?? false),

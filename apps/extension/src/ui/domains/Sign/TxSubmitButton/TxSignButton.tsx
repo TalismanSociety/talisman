@@ -14,14 +14,17 @@ export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   label,
   className,
   disabled,
+  isProcessing,
   onSubmit,
 }) => {
   const { t } = useTranslation()
 
-  if (!tx || disabled)
+  if (!tx || disabled || isProcessing)
     return (
       <TxSubmitButtonFallback
         label={label ?? t("Confirm")}
+        disabled={disabled}
+        isProcessing={isProcessing}
         className={classNames("w-full", className)}
       />
     )

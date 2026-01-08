@@ -50,6 +50,7 @@
     "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
   },
   "dependencies": {
+    "@yieldxyz/sdk": "^0.0.4",
     "polkadot-api": "1.13.1"
   },
   "devDependencies": {

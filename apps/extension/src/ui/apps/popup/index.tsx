@@ -19,6 +19,9 @@ import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportP
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress"
+import { YieldxyzEnterPositionModal } from "@ui/domains/Earn/yieldxyz/enter/YieldxyzEnterPositionModal"
+import { YieldxyzExitPositionModal } from "@ui/domains/Earn/yieldxyz/exit/YieldxyzExitPositionModal"
+import { YieldxyzManagePositionModal } from "@ui/domains/Earn/yieldxyz/manage/YieldxyzManagePositionModal"
 import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
@@ -36,6 +39,7 @@ import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpg
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
+import { PopupEarnRoutes } from "./pages/Earn"
 import { Encrypt } from "./pages/Encrypt"
 import { LearnMorePage } from "./pages/LearnMore/LearnMore"
 import { LoginViewManager } from "./pages/Login"
@@ -74,6 +78,7 @@ const Popup = () => {
       <Suspense fallback={<SuspenseTracker name="Routes" />}>
         <Routes>
           <Route path="portfolio/*" element={<Portfolio />} />
+          <Route path="earn/*" element={<PopupEarnRoutes />} />
           <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />} />
           <Route path={`${AUTH_SOL_SIGN_IN_PREFIX}/:id`} element={<SolanaSignInPage />} />
           <Route path={`${SIGNING_TYPES.ETH_SIGN}/:id`} element={<EthereumSignRequest />} />
@@ -110,6 +115,9 @@ const Popup = () => {
         <SwapTokensModal />
         <UnbondModal />
         <SeekBenefitsModal />
+        <YieldxyzEnterPositionModal />
+        <YieldxyzExitPositionModal />
+        <YieldxyzManagePositionModal />
       </Suspense>
       {/* Render outside of suspense or it will never show in case of migration error */}
       <DatabaseErrorAlert container="popup" />

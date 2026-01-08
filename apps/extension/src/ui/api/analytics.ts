@@ -14,6 +14,7 @@ export type AnalyticsFeature =
   | "Transactions"
   | "Asset Discovery"
   | "Quick Settings"
+  | "Earn"
 
 export type AnalyticsPage = {
   container: AnalyticsContainer
