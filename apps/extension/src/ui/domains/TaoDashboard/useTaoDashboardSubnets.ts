@@ -26,6 +26,8 @@ export const useTaoDashboardSubnets = () => {
         name: t.subnetName,
         symbol: t.symbol,
         logo: t.logo,
+        price: Math.random() * 10, // TODO: fetch real price
+        score: Math.random() * 100, // TODO: fetch real score
       }))
       .sort((a, b) => a.netuid - b.netuid)
   }, [subnetTokens])
