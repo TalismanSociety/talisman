@@ -10,6 +10,7 @@
     "dev:astar": "tsx watch src/astar.ts",
     "dev:azero": "tsx watch src/aleph-zero.ts",
     "dev:bittensor": "tsx watch src/bittensor.ts",
+    "dev:bittensor-subscribe": "tsx watch src/bittensor-subscribe.ts",
     "dev:polkadot": "tsx watch src/polkadot.ts",
     "dev:neuroweb": "tsx watch src/neuroweb.ts",
     "dev:acala": "tsx watch src/acala.ts",
