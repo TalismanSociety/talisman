@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { FC, Fragment, ReactNode } from "react"
 
-type BreadcrumbItem = {
+export type BreadcrumbItem = {
   label: ReactNode
   className?: string
   onClick?: () => void

@@ -13,7 +13,7 @@ export const TaoDashboardRoutes = () => {
       <DashboardLayout sidebar="none">
         <Routes>
           <Route path="subnets" element={<TaoDashboardSubnetsPage />} />
-          <Route path="subnets/:subnetId" element={<TaoDashboardSubnetPage />} />
+          <Route path="subnets/:netuid" element={<TaoDashboardSubnetPage />} />
           <Route index element={<Navigate to="subnets" replace />} />
           <Route path="*" element={<Navigate to="subnets" replace />} />
         </Routes>
