@@ -15,7 +15,7 @@ export const TxSubmitButtonFallback: FC<{
     <Button
       className={classNames("w-full", className)}
       primary
-      disabled={disabled || isProcessing}
+      disabled={disabled && !isProcessing}
       processing={isProcessing}
     >
       {label ?? t("Confirm")}
