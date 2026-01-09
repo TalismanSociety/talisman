@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" class="popup scrollable scrollable-800">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#121212" />
+    <meta name="description" content="Traverse the Paraverse with Talisman" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
+    <title>Talisman</title>
+    <meta name="google" content="notranslate" />
+    <style>
+      html,
+      body {
+        /* prevents bg flickering on page load */
+        background: #121212;
+      }
+
+      /* prevents tiny box on page load */
+      html {
+        font-size: 10px;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-width: 400px;
+        min-height: 600px;
+      }
+      #root {
+        margin: 0 auto;
+        width: 40rem;
+        height: 60rem;
+        overflow: hidden;
+      }
+      /* no scrollbars if screen is large enough, prevents them from appearing on windows with 125% scale where only half a pixel might be missing */
+      @media screen and (min-width: 399px) and (min-height: 599px) {
+        html {
+          overflow: hidden;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="notranslate">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
