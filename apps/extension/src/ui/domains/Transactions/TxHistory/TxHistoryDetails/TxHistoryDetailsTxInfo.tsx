@@ -184,36 +184,34 @@ const BittensorStakingTxInfo: FC<{
   // Stake: TAO (substrate-native) -> ALPHA, Unstake: ALPHA -> TAO
   const isStake = parseTokenId(txInfo.fromTokenId).type === "substrate-native"
 
+  const components = {
+    FromTokens: (
+      <TokensAndFiat
+        planck={txInfo.fromAmount}
+        tokenId={txInfo.fromTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+    ToTokens: (
+      <TokensAndFiat
+        planck={txInfo.toAmount}
+        tokenId={txInfo.toTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+  }
+
   return (
     <TxInfoCard>
-      <Trans
-        t={t}
-        defaults={
-          isStake
-            ? "Stake <FromTokens /> for <ToTokens />"
-            : "Unstake <FromTokens /> for <ToTokens />"
-        }
-        components={{
-          FromTokens: (
-            <TokensAndFiat
-              planck={txInfo.fromAmount}
-              tokenId={txInfo.fromTokenId}
-              withLogo
-              noFiat
-              className="text-body"
-            />
-          ),
-          ToTokens: (
-            <TokensAndFiat
-              planck={txInfo.toAmount}
-              tokenId={txInfo.toTokenId}
-              withLogo
-              noFiat
-              className="text-body"
-            />
-          ),
-        }}
-      />
+      {isStake ? (
+        <Trans t={t} defaults="Stake <FromTokens /> for <ToTokens />" components={components} />
+      ) : (
+        <Trans t={t} defaults="Unstake <FromTokens /> for <ToTokens />" components={components} />
+      )}
     </TxInfoCard>
   )
 }
