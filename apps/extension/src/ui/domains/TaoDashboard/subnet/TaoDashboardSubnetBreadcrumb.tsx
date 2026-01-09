@@ -7,6 +7,7 @@ import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useToken } from "@ui/state"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
+import { useTaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
 export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid }) => {
   const { t } = useTranslation()
@@ -14,6 +15,7 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
 
   const tokenId = useMemo(() => subDTaoTokenId(BITTENSOR_NETWORK_ID, Number(netuid)), [netuid])
   const token = useToken(tokenId, "substrate-dtao")
+  const { open } = useTaoDashboardSubnetPickerModal()
 
   const items = useMemo(
     (): BreadcrumbItem[] =>
@@ -29,11 +31,11 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
             },
             {
               label: `${token.subnetName} ${token.symbol}` || t("Subnet {{netuid}}", { netuid }),
-              onClick: () => navigate("/bittensor/subnets"),
+              onClick: () => open({ netuid }),
             },
           ]
         : [],
-    [navigate, netuid, t, token],
+    [navigate, netuid, open, t, token],
   )
 
   return <Breadcrumb items={items} />
