@@ -8,6 +8,7 @@ import {
 import { decodeScale, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
+import { from, lastValueFrom, map, of, switchMap } from "rxjs"
 
 import log from "../../log"
 import { AmountWithLabel, IBalance } from "../../types"
@@ -78,60 +79,89 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   const addresses = uniq(balanceDefs.map((def) => def.address))
 
   try {
-    const [stakeInfos, dynamicInfos] = await Promise.all([
-      fetchRuntimeCallResult<GetStakeInfosResult>(
-        connector,
-        networkId,
-        miniMetadata.data!,
-        "StakeInfoRuntimeApi",
-        "get_stake_info_for_coldkeys",
-        [addresses],
-      ),
-      fetchRuntimeCallResult<GetDynamicInfosResult>(
-        connector,
-        networkId,
-        miniMetadata.data!,
-        "SubnetInfoRuntimeApi",
-        "get_all_dynamic_info",
-        [],
-      ),
-    ])
-
-    const rootHotkeys = uniq(
-      stakeInfos.flatMap(([, stakes]) =>
-        stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey),
-      ),
-    )
-    const rootClaimableRatesByHotkey =
-      rootHotkeys.length && miniMetadata.data
-        ? await fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys)
-        : new Map<string, Map<number, bigint>>()
-
-    // Collect all (address, hotkey, netuid) pairs for root stakes to fetch RootClaimed amounts
-    const addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]> = []
-    for (const [address, stakes] of stakeInfos) {
-      for (const stake of stakes) {
-        if (stake.netuid === ROOT_NETUID) {
-          const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey)
-          if (claimableRates) {
-            // For each netuid that has a claimable rate, we need to check RootClaimed
-            for (const netuid of claimableRates.keys()) {
-              addressHotkeyNetuidPairs.push([address, stake.hotkey, netuid])
-            }
-          }
-        }
-      }
-    }
-
-    const rootClaimedAmounts =
-      addressHotkeyNetuidPairs.length && miniMetadata.data
-        ? await fetchRootClaimedAmounts(
+    // Convert Promise.all to Observable chain for better composability and cancellation support
+    const result = await lastValueFrom(
+      from(
+        Promise.all([
+          fetchRuntimeCallResult<GetStakeInfosResult>(
             connector,
             networkId,
-            miniMetadata.data,
-            addressHotkeyNetuidPairs,
+            miniMetadata.data!,
+            "StakeInfoRuntimeApi",
+            "get_stake_info_for_coldkeys",
+            [addresses],
+          ),
+          fetchRuntimeCallResult<GetDynamicInfosResult>(
+            connector,
+            networkId,
+            miniMetadata.data!,
+            "SubnetInfoRuntimeApi",
+            "get_all_dynamic_info",
+            [],
+          ),
+        ]),
+      ).pipe(
+        switchMap(([stakeInfos, dynamicInfos]) => {
+          const rootHotkeys = uniq(
+            stakeInfos.flatMap(([, stakes]) =>
+              stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey),
+            ),
           )
-        : new Map<string, Map<string, Map<number, bigint>>>()
+
+          // Step 2: Fetch root claimable rates (depends on Step 1)
+          const rootClaimableRates$ =
+            rootHotkeys.length && miniMetadata.data
+              ? from(fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys))
+              : of(new Map<string, Map<number, bigint>>())
+
+          return rootClaimableRates$.pipe(
+            switchMap((rootClaimableRatesByHotkey) => {
+              // Collect all (address, hotkey, netuid) pairs for root stakes to fetch RootClaimed amounts
+              const addressHotkeyNetuidPairs: Array<
+                [address: string, hotkey: string, netuid: number]
+              > = []
+              for (const [address, stakes] of stakeInfos) {
+                for (const stake of stakes) {
+                  if (stake.netuid === ROOT_NETUID) {
+                    const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey)
+                    if (claimableRates) {
+                      // For each netuid that has a claimable rate, we need to check RootClaimed
+                      for (const netuid of claimableRates.keys()) {
+                        addressHotkeyNetuidPairs.push([address, stake.hotkey, netuid])
+                      }
+                    }
+                  }
+                }
+              }
+
+              // Step 3: Fetch root claimed amounts (depends on Step 1 and Step 2)
+              const rootClaimedAmounts$ =
+                addressHotkeyNetuidPairs.length && miniMetadata.data
+                  ? from(
+                      fetchRootClaimedAmounts(
+                        connector,
+                        networkId,
+                        miniMetadata.data,
+                        addressHotkeyNetuidPairs,
+                      ),
+                    )
+                  : of(new Map<string, Map<string, Map<number, bigint>>>())
+
+              return rootClaimedAmounts$.pipe(
+                map((rootClaimedAmounts) => ({
+                  stakeInfos,
+                  dynamicInfos,
+                  rootClaimableRatesByHotkey,
+                  rootClaimedAmounts,
+                })),
+              )
+            }),
+          )
+        }),
+      ),
+    )
+
+    const { stakeInfos, dynamicInfos, rootClaimableRatesByHotkey, rootClaimedAmounts } = result
 
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
 
@@ -310,11 +340,10 @@ const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: st
   return builder.buildStorage(pallet, entry)
 }
 
-const buildRootClaimableStorageCoder = async (
-  connector: IChainConnectorDot,
+const buildRootClaimableStorageCoder = (
   networkId: string,
   metadataRpc: `0x${string}` | null,
-): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
+): ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null => {
   let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
 
   if (metadataRpc) {
@@ -331,10 +360,10 @@ const buildRootClaimableStorageCoder = async (
   return storageCoder
 }
 
-const buildRootClaimedStorageCoder = async (
+const buildRootClaimedStorageCoder = (
   networkId: string,
   metadataRpc: `0x${string}` | null,
-): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
+): ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null => {
   let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
 
   if (metadataRpc) {
@@ -393,7 +422,7 @@ const fetchRootClaimableRates = async (
 ): Promise<Map<string, Map<number, bigint>>> => {
   if (!hotkeys.length) return new Map<string, Map<number, bigint>>()
 
-  const storageCoder = await buildRootClaimableStorageCoder(connector, networkId, metadataRpc)
+  const storageCoder = buildRootClaimableStorageCoder(networkId, metadataRpc)
   if (!storageCoder) {
     // Fallback: return empty map for all hotkeys
     return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
@@ -459,7 +488,7 @@ const fetchRootClaimedAmounts = async (
     return new Map<string, Map<string, Map<number, bigint>>>()
   }
 
-  const storageCoder = await buildRootClaimedStorageCoder(networkId, metadataRpc)
+  const storageCoder = buildRootClaimedStorageCoder(networkId, metadataRpc)
   if (!storageCoder) {
     // Fallback: return empty map for all pairs
     const result = new Map<string, Map<string, Map<number, bigint>>>()

@@ -1,5 +1,5 @@
 import { isEqual } from "lodash-es"
-import { distinctUntilChanged, Observable, of } from "rxjs"
+import { catchError, distinctUntilChanged, EMPTY, from, of, switchMap, timer } from "rxjs"
 
 import log from "../../log"
 import { IBalanceModule } from "../../types/IBalanceModule"
@@ -16,43 +16,32 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
 }) => {
   if (!tokensWithAddresses.length) return of({ success: [], errors: [] })
 
-  return new Observable((subscriber) => {
-    const abortController = new AbortController()
-
-    // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
-    // => poll values for each block
-    const poll = async () => {
-      try {
-        if (abortController.signal.aborted) return
-
-        const balances = await fetchBalances({
+  // on hydration balances are fetched using a runtimeApi, which can't be subscribed to.
+  // => poll values periodically using RxJS timer instead of blocking setTimeout
+  return timer(0, SUBSCRIPTION_INTERVAL).pipe(
+    switchMap(() =>
+      from(
+        fetchBalances({
           networkId,
-          tokensWithAddresses: tokensWithAddresses,
+          tokensWithAddresses,
           connector,
           miniMetadata,
-        })
-
-        if (abortController.signal.aborted) return
-
-        subscriber.next(balances)
-
-        setTimeout(poll, SUBSCRIPTION_INTERVAL)
-      } catch (error) {
-        log.error("Error", {
-          module: MODULE_TYPE,
-          networkId,
-          miniMetadata,
-          addressesByToken: tokensWithAddresses,
-          error,
-        })
-        subscriber.error(error)
-      }
-    }
-
-    poll()
-
-    return () => {
-      abortController.abort()
-    }
-  }).pipe(distinctUntilChanged(isEqual))
+        }),
+      ).pipe(
+        catchError((error) => {
+          log.error("Error", {
+            module: MODULE_TYPE,
+            networkId,
+            miniMetadata,
+            addressesByToken: tokensWithAddresses,
+            error,
+          })
+          // Return EMPTY to continue the stream instead of breaking it
+          // This allows the timer to continue and retry on the next interval
+          return EMPTY
+        }),
+      ),
+    ),
+    distinctUntilChanged(isEqual),
+  )
 }
