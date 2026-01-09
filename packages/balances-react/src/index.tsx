@@ -1,6 +1,7 @@
 import { useSetAtom } from "jotai"
 import { ReactNode, useEffect } from "react"
-import { z } from "zod/v4"
+
+// import { z } from "zod/v4"
 
 import {
   coinsApiConfigAtom,
@@ -10,7 +11,7 @@ import {
 } from "./atoms/config"
 
 // Use jitless mode for Firefox compatibility
-z.config({ jitless: true })
+// z.config({ jitless: true })
 
 export {
   evmErc20TokenId,
