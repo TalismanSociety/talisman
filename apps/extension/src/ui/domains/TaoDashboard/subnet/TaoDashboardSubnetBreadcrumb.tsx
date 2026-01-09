@@ -33,7 +33,11 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
             {
               label: (
                 <span className="text-body flex items-center gap-4">
-                  <span>{token.subnetName ?? t("Subnet {{netuid}}", { netuid })}</span>
+                  <span>
+                    {token.subnetName
+                      ? `SN${token.netuid} ${token.subnetName}`
+                      : t("Subnet {{netuid}}", { netuid })}
+                  </span>
                   <span className="text-primary">{token.symbol}</span>
                   <ChevronDownIcon className="text-md" />
                 </span>
