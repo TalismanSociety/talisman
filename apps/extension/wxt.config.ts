@@ -291,6 +291,18 @@ export default defineConfig({
         chunkSizeWarningLimit: 4000,
 
         rollupOptions: {
+          // Suppress noisy warnings from node_modules
+          onwarn(warning, warn) {
+            // Ignore PURE comment warnings from @polkadot and mlkem packages
+            if (warning.code === "INVALID_ANNOTATION" && warning.message.includes("__PURE__")) {
+              return
+            }
+            // Ignore eval warnings from store package
+            if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
+              return
+            }
+            warn(warning)
+          },
           output: {
             // Add document shim for service worker (background script)
             // Some packages like @polkadot/util reference document which doesn't exist in service workers
