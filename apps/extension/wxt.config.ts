@@ -84,6 +84,14 @@ export default defineConfig({
     server: {
       port: 3000,
     },
+    // Persist browser profile between restarts (keeps extension storage, logins, etc.)
+    reloadCommand: "Alt+R",
+  },
+
+  // Runner configuration - persist browser data directory
+  runner: {
+    chromiumProfile: ".wxt/chrome-data",
+    keepProfileChanges: true,
   },
 
   // Manifest configuration
