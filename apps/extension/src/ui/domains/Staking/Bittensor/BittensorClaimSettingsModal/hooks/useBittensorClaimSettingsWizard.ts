@@ -6,6 +6,7 @@ import { useOpenClose } from "talisman-ui"
 import { Hex } from "viem"
 
 import { provideContext } from "@talisman/util/provideContext"
+import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useAccountByAddress, useToken } from "@ui/state"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
@@ -59,12 +60,18 @@ const useBittensorClaimSettingsWizardProvider = () => {
   const nativeToken = useToken(nativeTokenId, "substrate-native")
   const accountPicker = useOpenClose()
 
+  // Fetch the current claim type from chain
+  const { data: claimTypeData, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
+    networkId: nativeToken?.networkId,
+    address: account?.address,
+  })
+
+  // Populate selectedSubnets from chain data when it loads
   useEffect(() => {
-    const subscription = wizardOpenState$.subscribe((state) => {
-      setWizardState(state)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
+    if (claimTypeData?.subnets) {
+      setWizardState((prev) => ({ ...prev, selectedSubnets: claimTypeData.subnets! }))
+    }
+  }, [claimTypeData])
 
   const setAddress = useCallback(
     (newAddress: Address) => setWizardState((prev) => ({ ...prev, address: newAddress })),
@@ -101,6 +108,8 @@ const useBittensorClaimSettingsWizardProvider = () => {
     account,
     nativeToken,
     accountPicker,
+    claimTypeData,
+    isClaimTypeLoading,
     setAddress,
     setStep,
     setSelectedSubnets,

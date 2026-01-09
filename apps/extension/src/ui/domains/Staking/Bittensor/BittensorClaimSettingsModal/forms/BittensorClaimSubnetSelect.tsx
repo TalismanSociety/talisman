@@ -27,7 +27,6 @@ import { SearchInputControlled } from "@talisman/components/SearchInputControlle
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
 import { useToken } from "@ui/state"
@@ -64,32 +63,30 @@ const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] 
 
 export const BittensorClaimSubnetSelect = () => {
   const { t } = useTranslation()
-  const { setStep, account, nativeToken, selectedSubnets, setSelectedSubnets, onSubmitted } =
-    useBittensorClaimSettingsWizard()
+  const {
+    setStep,
+    account,
+    nativeToken,
+    selectedSubnets,
+    setSelectedSubnets,
+    claimTypeData,
+    onSubmitted,
+  } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
   const [sortMethod, setSortMethod] = useState<SortValue>("netuid")
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
 
   // Track the initially confirmed subnets (from chain) - these stay at the top
-  const confirmedSubnetsRef = useRef<number[]>(selectedSubnets)
+  const confirmedSubnetsRef = useRef<number[]>(claimTypeData?.subnets ?? [])
 
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
-  // Fetch the current claim type from chain to populate selectedSubnets if not already set
-  // This handles the case where the modal is opened directly to this step
-  const { data: claimTypeData } = useGetBittensorClaimType({
-    networkId: nativeToken?.networkId,
-    address: account?.address,
-  })
-
   useEffect(() => {
-    if (claimTypeData?.subnets && selectedSubnets.length === 0) {
-      setSelectedSubnets(claimTypeData.subnets)
-      // Also update the confirmed subnets ref so they appear at the top
+    if (claimTypeData?.subnets) {
       confirmedSubnetsRef.current = claimTypeData.subnets
     }
-  }, [claimTypeData, selectedSubnets.length, setSelectedSubnets])
+  }, [claimTypeData?.subnets])
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
     sortSubnetOptions(subnetData, sortMethod),
@@ -148,8 +145,19 @@ export const BittensorClaimSubnetSelect = () => {
       selectedSubnets,
     })
 
+  const hasSubnetsChanged = useMemo(() => {
+    const originalSubnets = claimTypeData?.subnets ?? []
+    if (selectedSubnets.length !== originalSubnets.length) return true
+    const sortedSelected = [...selectedSubnets].sort((a, b) => a - b)
+    const sortedOriginal = [...originalSubnets].sort((a, b) => a - b)
+    return sortedSelected.some((subnet, i) => subnet !== sortedOriginal[i])
+  }, [selectedSubnets, claimTypeData?.subnets])
+
   const isConfirmDisabled =
-    selectedSubnets.length === 0 || isPayloadLoading || !setClaimTypePayload?.payload
+    selectedSubnets.length === 0 ||
+    isPayloadLoading ||
+    !setClaimTypePayload?.payload ||
+    !hasSubnetsChanged
 
   return (
     <BittensorModalLayout
@@ -226,8 +234,6 @@ const SortMethodButton: FC<{
   const sortMethods = useMemo<{ label: string; value: SortValue }[]>(
     () => [
       { label: t("UID"), value: "netuid" },
-      { label: t("Alpha in Pool"), value: "total_alpha" },
-      { label: t("TAO in Pool"), value: "total_tao" },
       { label: t("Emissions"), value: "emission" },
     ],
     [t],
@@ -351,7 +357,7 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "hover:bg-grey-750 focus-visible:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
         isSelected && "bg-grey-800",
       )}

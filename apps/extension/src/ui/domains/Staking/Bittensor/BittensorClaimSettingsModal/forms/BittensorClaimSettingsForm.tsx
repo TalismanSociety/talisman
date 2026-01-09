@@ -6,7 +6,6 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
-import { useGetBittensorClaimType } from "../../../hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
@@ -23,17 +22,13 @@ export const BittensorClaimSettingsForm = () => {
     nativeToken,
     account,
     accountPicker,
+    claimTypeData,
+    isClaimTypeLoading,
     setAddress,
     setStep,
-    setSelectedSubnets,
     onSubmitted,
   } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
-
-  const { data: claimTypeData, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
-    networkId: nativeToken?.networkId,
-    address: account?.address,
-  })
 
   const { data: setClaimTypePayload, isLoading: isPayloadLoading } =
     useGetBittensorClaimTypePayload({
@@ -45,11 +40,8 @@ export const BittensorClaimSettingsForm = () => {
   useEffect(() => {
     if (claimTypeData) {
       setSelectedClaimType(claimTypeData.claimType)
-      if (claimTypeData.subnets) {
-        setSelectedSubnets(claimTypeData.subnets)
-      }
     }
-  }, [claimTypeData, setSelectedSubnets])
+  }, [claimTypeData])
 
   const claimTypeOptions = useMemo(
     () => [
