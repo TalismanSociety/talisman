@@ -1,4 +1,5 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
+import { ChevronDownIcon } from "@talismn/icons"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -30,8 +31,15 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
               onClick: () => navigate("/bittensor/subnets"),
             },
             {
-              label: `${token.subnetName} ${token.symbol}` || t("Subnet {{netuid}}", { netuid }),
+              label: (
+                <span className="text-body flex items-center gap-4">
+                  <span>{token.subnetName ?? t("Subnet {{netuid}}", { netuid })}</span>
+                  <span className="text-primary">{token.symbol}</span>
+                  <ChevronDownIcon className="text-md" />
+                </span>
+              ),
               onClick: () => open({ netuid }),
+              className: "bg-grey-800 hover:bg-grey-750",
             },
           ]
         : [],

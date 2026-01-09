@@ -4,6 +4,7 @@ import { Modal, WizardModalDialog } from "talisman-ui"
 
 import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { createGlobalOpenClose } from "@talisman/hooks/createGlobalOpenClose"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
@@ -20,6 +21,9 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
   const { t } = useTranslation()
   const navigate = useNavigateWithQuery()
   const { isOpen, close, args } = useTaoDashboardSubnetPickerModal()
+
+  // preload data used by the subnet picker modal to avoid flickering on mount
+  useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   const handleSelect = useCallback(
     (netuid: number) => {
