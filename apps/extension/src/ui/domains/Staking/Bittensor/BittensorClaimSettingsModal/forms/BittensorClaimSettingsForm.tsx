@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -10,22 +10,22 @@ import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/u
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
 export const BittensorClaimSettingsForm = () => {
-  const [selectedClaimType, setSelectedClaimType] = useState<RootClaimType>(DEFAULT_ROOT_CLAIM_TYPE)
   const { t } = useTranslation()
   const {
     nativeToken,
     account,
     accountPicker,
-    claimTypeData,
+    selectedClaimType,
     isClaimTypeLoading,
+    canSubmit,
     setAddress,
     setStep,
+    setSelectedClaimType,
     onSubmitted,
   } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
@@ -36,12 +36,6 @@ export const BittensorClaimSettingsForm = () => {
       address: account?.address,
       claimType: selectedClaimType,
     })
-
-  useEffect(() => {
-    if (claimTypeData) {
-      setSelectedClaimType(claimTypeData.claimType)
-    }
-  }, [claimTypeData])
 
   const claimTypeOptions = useMemo(
     () => [
@@ -172,7 +166,7 @@ export const BittensorClaimSettingsForm = () => {
             payload={setClaimTypePayload?.payload}
             onSubmitted={onSubmitted}
             txMetadata={setClaimTypePayload?.txMetadata}
-            disabled={claimTypeData?.claimType === selectedClaimType}
+            disabled={!canSubmit}
           />
         )}
       </div>

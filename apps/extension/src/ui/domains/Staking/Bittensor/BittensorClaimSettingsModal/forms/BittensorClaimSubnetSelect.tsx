@@ -70,6 +70,7 @@ export const BittensorClaimSubnetSelect = () => {
     selectedSubnets,
     setSelectedSubnets,
     claimTypeData,
+    canSubmit,
     onSubmitted,
   } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
@@ -145,19 +146,8 @@ export const BittensorClaimSubnetSelect = () => {
       selectedSubnets,
     })
 
-  const hasSubnetsChanged = useMemo(() => {
-    const originalSubnets = claimTypeData?.subnets ?? []
-    if (selectedSubnets.length !== originalSubnets.length) return true
-    const sortedSelected = [...selectedSubnets].sort((a, b) => a - b)
-    const sortedOriginal = [...originalSubnets].sort((a, b) => a - b)
-    return sortedSelected.some((subnet, i) => subnet !== sortedOriginal[i])
-  }, [selectedSubnets, claimTypeData?.subnets])
-
   const isConfirmDisabled =
-    selectedSubnets.length === 0 ||
-    isPayloadLoading ||
-    !setClaimTypePayload?.payload ||
-    !hasSubnetsChanged
+    selectedSubnets.length === 0 || isPayloadLoading || !setClaimTypePayload?.payload || !canSubmit
 
   return (
     <BittensorModalLayout
