@@ -1,3 +1,8 @@
+const path = require("path")
+
+// Resolve workspace packages to their dist directories for testing
+const packagesDir = path.resolve(__dirname, "..")
+
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
   preset: "ts-jest",
@@ -8,4 +13,8 @@ module.exports = {
     "^.+\\.(t|j)sx?$": ["@swc/jest"],
   },
   extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
+  moduleNameMapper: {
+    // Map workspace packages to their dist (after tsup build)
+    "^@talismn/([^/]+)$": `${packagesDir}/$1/dist/index.js`,
+  },
 }

@@ -5,8 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs"
 
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
-import { TokenType } from "@talismn/chaindata-provider"
-import { SolNetwork } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
+import { SolNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {

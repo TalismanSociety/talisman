@@ -18,8 +18,6 @@ module.exports = {
     "dexie": require.resolve("dexie"),
     // Map workspace package internal paths to source
     "^@talismn/([^/]+)/src/(.*)$": `${packagesDir}/$1/src/$2`,
-    // Map @talismn/* package main imports to built dist
-    "^@talismn/([^/]+)$": `${packagesDir}/$1/dist/index.js`,
   },
   sandboxInjectedGlobals: ["Math"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "mjs"],

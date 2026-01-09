@@ -8,10 +8,10 @@ import {
   base58,
   base64,
   getAccountPlatformFromAddress,
+  getPublicKeySolana,
   hex,
   KeypairCurve,
 } from "@talismn/crypto"
-import { getPublicKeySolana } from "@talismn/crypto/src/derivation/deriveSolana"
 import { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"

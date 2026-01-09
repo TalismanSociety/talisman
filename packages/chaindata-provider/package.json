@@ -12,10 +12,10 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-chaindata-provider.cjs.js",
-  "module": "dist/talismn-chaindata-provider.esm.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "files": [
-    "/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=20"
@@ -25,7 +25,8 @@
     "test:watch": "jest --watch",
     "lint": "eslint src --max-warnings 0",
     "chore:generate-init-data": "tsx scripts/generateInitData.ts",
-    "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules"
+    "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules",
+    "build": "tsup"
   },
   "dependencies": {
     "@talismn/util": "workspace:*",
@@ -58,5 +59,18 @@
     "extends": [
       "@talismn/eslint-config/base"
     ]
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   }
 }

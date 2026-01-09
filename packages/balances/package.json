@@ -12,10 +12,10 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-balances.cjs.js",
-  "module": "dist/talismn-balances.esm.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "files": [
-    "/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=20"
@@ -23,7 +23,8 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "clean": "rm -rf dist .turbo node_modules",
+    "build": "tsup"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
@@ -85,5 +86,18 @@
     "extends": [
       "@talismn/eslint-config/base"
     ]
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   }
 }

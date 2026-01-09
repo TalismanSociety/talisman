@@ -1,4 +1,4 @@
-import { CheckCircleIcon, XIcon } from "@talismn/icons/"
+import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { PRIVACY_POLICY_URL } from "extension-shared"
 import { FC, ReactNode } from "react"

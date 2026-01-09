@@ -67,6 +67,14 @@ const config = (env) => ({
   },
   module: {
     rules: [
+      // Disable fullySpecified for ESM imports from built packages
+      // This allows lodash-es/upperFirst style imports without .js extension
+      {
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      },
       {
         test: /\.tsx?$/,
         use: {
