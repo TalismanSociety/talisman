@@ -49,18 +49,28 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 
    `pnpm install`
 
-1. Start the dev server, waiting for it to generate the `dist` directory.
+1. Start the dev server (uses WXT/Vite for fast rebuilds and HMR).
 
    `pnpm dev:extension`
 
 1. Open Chrome and navigate to `chrome://extensions`.
 1. Turn on the `Developer mode` toggle on the top right of the page.
-1. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist/chrome` directory.
-1. Change some code!
+1. Click `Load unpacked` on the top left of the page and select the `apps/extension/.output/chrome-mv3-dev` directory.
+1. Change some code! The extension will hot-reload automatically.
+
+### Firefox Development
+
+To develop for Firefox instead:
+
+```bash
+pnpm wxt:dev:firefox
+```
+
+Then load the extension from `apps/extension/.output/firefox-mv3-dev` in Firefox's `about:debugging` page.
 
 ## Apps and packages
 
-- `apps/extension`: the non-custodial Talisman Wallet browser extension
+- `apps/extension`: the non-custodial Talisman Wallet browser extension (built with [WXT](https://wxt.dev/)/Vite)
 - `packages/eslint-config`: shared `eslint` configurations
 - `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
 - `packages/util`: library containing shared non-react code. It is not meant to be npm published.
@@ -158,12 +168,19 @@ When building UI features, please follow the following spec to ensure they're tr
 ### Scripts
 
 - `chore:update-translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
-- `dev` : builds and watches all packages/apps with hot reloading
-- `dev:extension` : when working on extension only, for better color output
-- `build`: builds the wallet in `packages/apps/extension/dist/chrome` folder, without sentry keys
-- `build:firefox`: builds the wallet in `packages/apps/extension/dist/firefox` folder, without sentry keys
-- `build:extension:prod` builds the Talisman browser extension (requires sentry settings, Talisman team only)
-- `build:extension:canary` : builds the Talisman browser extension test version, with different ID and icon than prod
+
+#### Development
+
+- `dev` : starts the extension dev server (alias for `dev:extension`)
+- `dev:extension` : starts WXT dev server with hot module replacement for Chrome
+- `dev:extension:firefox` : starts WXT dev server for Firefox
+
+#### Production Builds
+
+- `build:extension` : builds the extension for Chrome (outputs to `.output/chrome-mv3`)
+- `build:extension:firefox` : builds the extension for Firefox (outputs to `.output/firefox-mv3`)
+- `build:extension:zip` : creates a distributable zip file for Chrome
+- `build:extension:zip:firefox` : creates a distributable zip file for Firefox
 
 ### Build the wallet browser extension using Docker
 

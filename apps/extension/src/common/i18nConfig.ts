@@ -3,14 +3,20 @@ import LanguageDetector from "i18next-browser-languagedetector"
 import HttpBackend, { HttpBackendOptions } from "i18next-http-backend"
 import { initReactI18next } from "react-i18next"
 
-import i18nextParserConfig from "../../i18next-parser.config.cjs"
+import {
+  defaultNamespace,
+  languages as i18nLanguages,
+  keySeparator,
+  namespaceSeparator,
+  pluralSeparator,
+} from "./i18nParserConfig"
 
 // juicy human-readable names
 export const languages: Record<string, string> = process.env.SUPPORTED_LANGUAGES
   ? // prod builds (fetched from SimpleLocalize)
     JSON.parse(process.env.SUPPORTED_LANGUAGES)
   : // dev builds (just English)
-    i18nextParserConfig.languages
+    i18nLanguages
 
 const locales = Object.keys(languages)
 
@@ -24,25 +30,25 @@ i18next
   .use(HttpBackend)
   .init<HttpBackendOptions>({
     // use 'common' as default and fallback namespace
-    // imported from i18next-parser.config.cjs so that these two files are kept in sync
-    ns: i18nextParserConfig.defaultNamespace,
-    defaultNS: i18nextParserConfig.defaultNamespace,
-    fallbackNS: i18nextParserConfig.defaultNamespace,
+    // kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
+    ns: defaultNamespace,
+    defaultNS: defaultNamespace,
+    fallbackNS: defaultNamespace,
 
     // natural language keys
-    // imported from i18next-parser.config.cjs so that these two files are kept in sync
-    nsSeparator: i18nextParserConfig.namespaceSeparator as false,
-    keySeparator: i18nextParserConfig.keySeparator as false,
-    pluralSeparator: i18nextParserConfig.pluralSeparator,
+    // kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
+    nsSeparator: namespaceSeparator as false,
+    keySeparator: keySeparator as false,
+    pluralSeparator: pluralSeparator,
 
     // supported languages
-    // make sure this is kept in sync with apps/extension/i18next-parser.config.cjs
+    // make sure this is kept in sync with i18nParserConfig.ts and i18next-parser.config.cjs
     supportedLngs: [
       // necessary (is the default before LanguageDetector chimes in)
       "dev",
 
       // the actual languages
-      // imported from i18next-parser.config.cjs in development so that these two files are kept in sync
+      // kept in sync with i18nParserConfig.ts for development
       // fetched from SimpleLocalize as part of the build process for production builds
       ...locales,
     ],

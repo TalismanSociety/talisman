@@ -1,9 +1,14 @@
 import { resolve } from "node:path"
 
 import type { Alias } from "vite"
+import replace from "@rollup/plugin-replace"
 import react from "@vitejs/plugin-react"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import { defineConfig } from "wxt"
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pkg = require("./package.json")
 
 // Resolve monorepo packages to their source directories for hot reload
 const packagesDir = resolve(__dirname, "../../packages")
@@ -71,8 +76,15 @@ export default defineConfig({
   // Entrypoints directory at project root
   entrypointsDir: "entrypoints",
 
-  // Output directory (use .output for dev, dist for prod)
-  outDir: ".output",
+  // Output directory - WXT appends browser name (e.g., dist/chrome-mv3)
+  outDir: "dist",
+
+  // Dev server configuration
+  dev: {
+    server: {
+      port: 3000,
+    },
+  },
 
   // Manifest configuration
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -157,11 +169,40 @@ export default defineConfig({
 
     return {
       plugins: [
-        react({
-          babel: {
-            plugins: ["@babel/plugin-transform-react-jsx"],
+        // Replace environment variables in all code including bundled dependencies
+        // This handles cases where variable names get mangled (e.g., process$1.env)
+        replace({
+          preventAssignment: true,
+          values: {
+            "process.env.VERSION": JSON.stringify(pkg.version),
+            "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
+            "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
+            "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+            "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+            "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
+            "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+            "process.env.RELEASE": JSON.stringify(`talisman-wallet@${pkg.version}`),
+            "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+            "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
+              process.env.SUPPORTED_LANGUAGES || "",
+            ),
+            "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
+            "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
+            "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
+              process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+            ),
           },
         }),
+        // Node.js polyfills for browser compatibility (buffer, crypto, etc.)
+        nodePolyfills({
+          include: ["buffer", "crypto", "stream", "util", "process"],
+          globals: {
+            Buffer: true,
+            global: true,
+            process: true,
+          },
+        }),
+        react(),
         // Transform SVG imports to React components (equivalent to @svgr/webpack)
         svgr({
           include: "**/*.svg",
@@ -182,17 +223,52 @@ export default defineConfig({
             }
           },
         },
+        // Replace environment variables in final chunks (handles mangled variable names)
+        {
+          name: "env-replace-final",
+          enforce: "post" as const,
+          renderChunk(code: string, chunk: { fileName: string }) {
+            // Only process background.js where the polkadot env vars are needed
+            if (chunk.fileName.includes("background")) {
+              // Replace patterns like process$1$1.env['EXTENSION_PREFIX'] or process.env['EXTENSION_PREFIX']
+              let result = code
+              result = result.replace(
+                /process(?:\$\d+)*\.env\s*\[\s*['"]EXTENSION_PREFIX['"]\s*\]/g,
+                JSON.stringify("talisman"),
+              )
+              result = result.replace(
+                /process(?:\$\d+)*\.env\s*\[\s*['"]PORT_PREFIX['"]\s*\]/g,
+                JSON.stringify("talisman"),
+              )
+              return { code: result, map: null }
+            }
+            return null
+          },
+        },
       ],
 
       resolve: {
         alias: aliases,
       },
 
-      // Handle node polyfills
+      // Define environment variables
+      // Note: @polkadot/extension-base uses bracket notation like process.env['PORT_PREFIX']
       define: {
-        "process.env.EXTENSION_PREFIX": JSON.stringify(""),
+        "process.env.VERSION": JSON.stringify(pkg.version),
+        "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
+        "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
         "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+        "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
         "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
+        "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+        "process.env.RELEASE": JSON.stringify(`talisman-wallet@${pkg.version}`),
+        "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+        "process.env.SUPPORTED_LANGUAGES": JSON.stringify(process.env.SUPPORTED_LANGUAGES || ""),
+        "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
+        "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
+        "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
+          process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+        ),
       },
 
       optimizeDeps: {
@@ -205,6 +281,24 @@ export default defineConfig({
 
         // Chunk size warnings
         chunkSizeWarningLimit: 4000,
+
+        rollupOptions: {
+          output: {
+            // Add document shim for service worker (background script)
+            // Some packages like @polkadot/util reference document which doesn't exist in service workers
+            banner: (chunk) => {
+              if (chunk.fileName === "background.js" || chunk.name === "background") {
+                return `
+// Document shim for service worker - some packages reference document which doesn't exist
+if (typeof document === "undefined") {
+  globalThis.document = { baseURI: self.location.href, currentScript: null };
+}
+`
+              }
+              return ""
+            },
+          },
+        },
       },
 
       // Enable WASM
