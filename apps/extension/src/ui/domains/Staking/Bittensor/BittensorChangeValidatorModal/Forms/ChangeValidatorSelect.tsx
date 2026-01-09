@@ -159,7 +159,7 @@ export const ChangeValidatorSelect = () => {
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
           <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
             <div>{t("Validator")}</div>
-            <div>{t("30 days APY")}</div>
+            <div>{t("APY")}</div>
           </div>
           <ScrollContainer
             ref={scrollContainerRef}
@@ -204,7 +204,7 @@ const SortMethodButton: FC<{
       { label: t("Total Staked"), value: "totalStaked" },
       { label: t("Name"), value: "name" },
       { label: t("N° of Stakers"), value: "totalStakers" },
-      { label: t("30 days APY"), value: "apr" },
+      { label: t("APY"), value: "apr" },
     ],
     [t],
   )

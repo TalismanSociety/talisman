@@ -122,7 +122,7 @@ export const ChangeValidatorForm = () => {
           <div className="shrink-0 whitespace-nowrap">{t("New Validator")}</div>
           <div className="text-body min-w-0 overflow-hidden">
             <ValidatorSelectButton
-              hotkey={newHotkey}
+              hotkey={newHotkey ?? currentHotkey}
               netuid={token.netuid}
               onClick={() => setStep("select-validator")}
             />
