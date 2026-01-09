@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./package.json": "./package.json",
     "./styles.css": "./src/styles/styles.css",
+    "./src/styles/styles.css": "./src/styles/styles.css",
     "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
   },
   "scripts": {
