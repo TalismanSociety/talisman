@@ -143,13 +143,14 @@ export default defineConfig({
         ? {
             browser_specific_settings: {
               gecko: {
-                strict_min_version: "109.0",
+                strict_min_version: "128.0",
                 id: "{f5727e03-b26c-41e0-95dd-7e315ff16410}",
               },
             },
           }
         : {
-            minimum_chrome_version: "102",
+            // ES module service workers require Chrome 121+
+            minimum_chrome_version: "121",
           }),
     }
   },
@@ -287,8 +288,8 @@ export default defineConfig({
         // Target modern browsers
         target: "esnext",
 
-        // Chunk size warnings
-        chunkSizeWarningLimit: 4000,
+        // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
+        chunkSizeWarningLimit: 3500,
 
         rollupOptions: {
           // Suppress noisy warnings from node_modules
