@@ -1,5 +1,5 @@
 import { classNames, cn } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
 import { t } from "i18next"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -131,7 +131,11 @@ const Position: FC<{
               genesisHash={getAccountGenesisHash(account)}
             />
             <div>{account.name}</div>
-            <AccountTypeIcon type={account?.type} className="text-primary" />
+            <AccountTypeIcon
+              type={account?.type}
+              className="text-primary"
+              signetUrl={getAccountSignetUrl(account)}
+            />
           </div>
           <div>
             <Tokens
