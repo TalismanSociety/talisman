@@ -1,11 +1,12 @@
 import { EvmNativeBalanceModule } from "./evm-native"
 import { SolNativeBalanceModule } from "./sol-native"
+import { SubDTaoBalanceModule } from "./substrate-dtao"
 import { SubNativeBalanceModule } from "./substrate-native"
 
 export const BALANCE_MODULES = [
   SubNativeBalanceModule,
   // SubAssetsBalanceModule,
-  // SubDTaoBalanceModule,
+  SubDTaoBalanceModule,
   // SubHydrationBalanceModule,
   // SubForeignAssetsBalanceModule,
   // SubPsp22BalanceModule,
