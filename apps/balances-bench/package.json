@@ -18,8 +18,7 @@
     "dev:ewx": "tsx watch src/ewx.ts",
     "dev:interlay": "tsx watch src/interlay.ts",
     "dev:solana": "tsx watch src/solana.ts",
-    "clean": "rm -rf node_modules",
-    "typecheck": "tsc --noEmit"
+    "clean": "rm -rf node_modules"
   },
   "keywords": [],
   "author": "",
