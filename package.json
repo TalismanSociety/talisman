@@ -70,8 +70,7 @@
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tsup": "8.5.1",
-    "vitest": "^3.2.4",
-    "vitest-webextension-mock": "0.0.7"
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [],

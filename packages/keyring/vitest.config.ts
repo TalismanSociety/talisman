@@ -8,7 +8,6 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    setupFiles: ["./tests/setup.ts"],
     alias: {
       "@talismn/(.+)": path.join(packagesDir, "$1/src"),
     },

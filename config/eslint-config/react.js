@@ -4,7 +4,7 @@ module.exports = {
       version: "detect",
     },
   },
-  plugins: ["react", "jest"],
+  plugins: ["react", "vitest"],
   extends: [
     "@talismn/eslint-config/base",
     "plugin:react/recommended",
