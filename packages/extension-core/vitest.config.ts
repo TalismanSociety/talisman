@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "rxjs/internal/": "rxjs/dist/cjs/internal/",
+      // Extension-shared (no @talismn prefix)
+      "extension-shared": path.join(packagesDir, "extension-shared/src"),
       // Map workspace package internal paths to source (must be before the main pattern)
       "@talismn/chaindata-provider/src/": path.join(packagesDir, "chaindata-provider/src/"),
       "@talismn/chaindata-provider": path.join(packagesDir, "chaindata-provider/src"),
