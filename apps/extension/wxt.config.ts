@@ -92,9 +92,9 @@ export default defineConfig({
     reloadCommand: "Alt+R",
   },
 
-  // Runner configuration - persist browser data directory
+  // Browser startup configuration - persist browser data directory
   // Stored in ~/.talisman-dev/ outside the repo for security (contains extension data)
-  runner: {
+  webExt: {
     chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
     keepProfileChanges: true,
   },
