@@ -1,6 +1,0 @@
-export * from "./types"
-export * from "./dcent"
-export * from "./useDcentAccountInfo"
-export * from "./useDcentAddress"
-export * from "./useDcentDeviceInfo"
-export * from "./useDcentInfo"
