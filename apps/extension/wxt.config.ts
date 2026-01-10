@@ -1,10 +1,12 @@
 import { execSync } from "node:child_process"
+import { existsSync, readdirSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
-import { resolve } from "node:path"
+import { join, resolve } from "node:path"
 
 import type { Alias, Plugin } from "vite"
 import type { WxtViteConfig } from "wxt"
 import replace from "@rollup/plugin-replace"
+import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
@@ -12,6 +14,10 @@ import { defineConfig } from "wxt"
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
+
+// Build type from environment variable (set by build:prod, build:canary, etc.)
+// Values: "production" | "canary" | undefined (dev/default)
+const BUILD_TYPE = process.env.BUILD_TYPE as "production" | "canary" | undefined
 
 // Get git SHA for build identification (used in zip filename)
 // Prefer COMMIT_SHA_SHORT env var (from CI), otherwise get it from git
@@ -23,6 +29,87 @@ function getGitSha(): string {
     return execSync("git rev-parse --short HEAD").toString().trim()
   } catch {
     return "unknown"
+  }
+}
+
+// Get release version for Sentry
+// For production builds, use semver. For other builds, use git SHA for traceability.
+function getSentryRelease(): string {
+  if (BUILD_TYPE === "production") return pkg.version
+  return getGitSha()
+}
+
+// Create Sentry Vite plugins for production/canary builds
+// Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
+// to prevent exposing source code in the distributed extension.
+// Returns an array of plugins (Sentry uses multiple internal plugins)
+function createSentryPlugins(_browser: string): Plugin[] {
+  // Only enable for production and canary builds
+  if (!["production", "canary"].includes(BUILD_TYPE ?? "")) return []
+
+  // Require auth token for Sentry uploads
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    // eslint-disable-next-line no-console
+    console.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
+    return []
+  }
+
+  return sentryVitePlugin({
+    // Sentry organization and project
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    org: "talisman",
+    project: "talisman-extension",
+
+    // Release identification
+    release: {
+      name: `talisman-wallet@${getSentryRelease()}`,
+    },
+
+    // Sourcemap configuration
+    // Let Sentry auto-detect sourcemaps from the build output
+    // Note: filesToDeleteAfterUpload is NOT used here because WXT builds in multiple steps,
+    // and Sentry would try to delete files between steps causing ENOENT errors.
+    // Instead, we use a post-build script or the zip step handles cleanup.
+    sourcemaps: {
+      // Exclude content scripts that run in page context (not useful for debugging our code)
+      ignore: ["**/content_script.js.map", "**/page.js.map"],
+    },
+
+    // Disable telemetry
+    telemetry: false,
+  }) as Plugin[]
+}
+
+// Delete sourcemap files from the output directory
+// This is called after build:done for production/canary builds
+// to ensure sourcemaps are not included in the final extension zip
+function deleteSourcemaps(outputDir: string): void {
+  if (!existsSync(outputDir)) return
+
+  const deleteMapFilesRecursively = (dir: string): number => {
+    let count = 0
+    const entries = readdirSync(dir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        count += deleteMapFilesRecursively(fullPath)
+      } else if (entry.name.endsWith(".map")) {
+        try {
+          unlinkSync(fullPath)
+          count++
+        } catch {
+          // Ignore errors (file might already be deleted)
+        }
+      }
+    }
+    return count
+  }
+
+  const deleted = deleteMapFilesRecursively(outputDir)
+  if (deleted > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
   }
 }
 
@@ -82,6 +169,19 @@ export default defineConfig({
 
   // Output directory - WXT appends browser name (e.g., dist/chrome-mv3)
   outDir: "dist",
+
+  // Build hooks
+  hooks: {
+    // Before zipping, delete sourcemaps for production/canary builds
+    // Sourcemaps are uploaded to Sentry during the build, then removed before zipping
+    // to prevent exposing source code in the distributed extension, and keep the package small
+    "zip:extension:start": (wxt) => {
+      if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
+        const outputDir = resolve(__dirname, "dist", `${wxt.config.browser}-mv3`)
+        deleteSourcemaps(outputDir)
+      }
+    },
+  },
 
   // Dev server configuration
   dev: {
@@ -389,6 +489,9 @@ export default defineConfig({
               },
             ]
           : []),
+        // Sentry plugins for production/canary builds - uploads sourcemaps then deletes them
+        // Must be last to ensure they run after all other transformations
+        ...createSentryPlugins(browser),
       ],
 
       resolve: {
@@ -446,15 +549,17 @@ export default defineConfig({
         // Target modern browsers
         target: "esnext",
 
-        // Dev mode: use separate sourcemaps (not inline) for reasonable file sizes
-        // WXT defaults to inline sourcemaps which creates 51MB background.js
-        // With separate .map files, background.js is ~25MB (unminified) - acceptable trade-off
-        // We skip minification for faster rebuilds (~5s vs ~12s)
-        ...(isDev
-          ? {
-              sourcemap: true, // Separate .js.map files instead of inline
-            }
-          : {}),
+        // Sourcemap configuration:
+        // - Dev mode: separate sourcemaps for debugging without bloating file sizes
+        // - Production/Canary: hidden sourcemaps (uploaded to Sentry, then deleted)
+        // - Other builds: no sourcemaps
+        // Note: "hidden" generates sourcemaps but doesn't add the //# sourceMappingURL comment
+        // This is ideal for Sentry uploads since the maps are deleted after upload anyway
+        sourcemap: isDev
+          ? true // Separate .js.map files for dev
+          : ["production", "canary"].includes(BUILD_TYPE ?? "")
+            ? "hidden" // Generate maps for Sentry upload (no inline reference)
+            : false, // No sourcemaps for other builds
 
         // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
         chunkSizeWarningLimit: 3500,
