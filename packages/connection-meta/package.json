@@ -22,7 +22,6 @@
   },
   "scripts": {
     "test": "vitest run",
-    "lint": "biome check src",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsup --silent",
     "typecheck": "tsc --noEmit"

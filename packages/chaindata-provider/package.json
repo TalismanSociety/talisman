@@ -23,7 +23,6 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "biome check src",
     "chore:generate-init-data": "tsx scripts/generateInitData.ts",
     "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules",
     "build": "tsup --silent",

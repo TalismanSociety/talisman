@@ -11,7 +11,6 @@
     "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
   },
   "scripts": {
-    "lint": "biome check src",
     "clean": "rm -rf .turbo node_modules dist",
     "typecheck": "tsc --noEmit"
   },

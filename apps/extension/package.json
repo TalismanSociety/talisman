@@ -158,8 +158,6 @@
     "build:analyze:firefox": "wxt build -b firefox --mv3 --analyze",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
     "clean": "rm -rf dist .wxt node_modules coverage .turbo .i18next-parser",
     "typecheck": "tsc --noEmit"
   },

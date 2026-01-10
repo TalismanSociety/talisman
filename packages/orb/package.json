@@ -15,7 +15,6 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "scripts": {
-    "lint": "biome check src",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsup --silent",
     "typecheck": "tsc --noEmit"

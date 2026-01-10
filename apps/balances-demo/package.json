@@ -8,8 +8,6 @@
     "dev": "vite --host localhost --port 3001",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
     "clean": "rm -rf dist .turbo node_modules",
     "typecheck": "tsc --noEmit"
   },
