@@ -1,7 +1,8 @@
 import { execSync } from "node:child_process"
 import { resolve } from "node:path"
 
-import type { Alias } from "vite"
+import type { Alias, Plugin } from "vite"
+import type { WxtViteConfig } from "wxt"
 import replace from "@rollup/plugin-replace"
 import react from "@vitejs/plugin-react"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
@@ -252,6 +253,7 @@ export default defineConfig({
     // In production, packages resolve normally to their dist/ outputs via pnpm workspace
     const aliases = isDev ? [...baseAliases, ...createPackageSourceAliases()] : baseAliases
 
+    // Cast to WxtViteConfig to handle Vite version mismatches between dependencies
     return {
       plugins: [
         // Replace environment variables in all code including bundled dependencies
@@ -306,8 +308,9 @@ export default defineConfig({
                 map: null,
               }
             }
+            return null
           },
-        },
+        } satisfies Plugin,
         // Replace environment variables in final chunks (handles mangled variable names)
         {
           name: "env-replace-final",
@@ -445,7 +448,7 @@ if (typeof document === "undefined") {
       worker: {
         format: "es",
       },
-    }
+    } as WxtViteConfig
   },
 
   // WXT-specific options
