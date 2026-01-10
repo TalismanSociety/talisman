@@ -25,7 +25,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # fetch all history for biome --changed to work
+          fetch-depth: 2
+      - name: Fetch base branch for comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }} --depth=1
       - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
@@ -38,7 +41,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Biome check
-        run: pnpm biome check --changed origin/${{ github.base_ref || 'dev' }} .
+        run: |
+          set +e
+          output=$(pnpm biome check --changed origin/${{ github.base_ref || 'dev' }} . 2>&1)
+          exit_code=$?
+          echo "$output"
+          if [ $exit_code -eq 0 ]; then
+            exit 0
+          elif echo "$output" | grep -q "No files were processed"; then
+            echo "No supported files changed - skipping biome check"
+            exit 0
+          elif echo "$output" | grep -q "The list is empty"; then
+            echo "No files changed - skipping biome check"
+            exit 0
+          else
+            exit $exit_code
+          fi
       - name: Test
         run: pnpm test
       - name: Build packages
