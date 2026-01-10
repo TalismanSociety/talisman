@@ -7,6 +7,12 @@ const config: KnipConfig = {
   // Global ignore patterns for build artifacts and generated files
   ignore: ["**/dist/**", "**/.wxt/**", "**/coverage/**", "test-results/**", "playwright-report/**"],
 
+  // Dependencies that are used but Knip can't detect (re-exports, dynamic imports, etc.)
+  ignoreDependencies: [
+    // Re-exported through extension-core, used by apps/extension
+    "@solana/wallet-standard-util",
+  ],
+
   // Treat interface/type exports as used if file is used (common pattern in TS)
   ignoreExportsUsedInFile: {
     interface: true,

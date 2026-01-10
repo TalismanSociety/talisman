@@ -29,8 +29,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.2",
-    "@talismn/crypto": "workspace:*",
-    "anylogger": "^1.0.11"
+    "@talismn/crypto": "workspace:*"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

@@ -52,7 +52,6 @@
     "knip:production": "knip --production"
   },
   "dependencies": {
-    "@yieldxyz/sdk": "^0.0.4",
     "polkadot-api": "1.13.1"
   },
   "devDependencies": {
@@ -62,13 +61,11 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
     "@playwright/test": "^1.51.1",
     "@talismn/eslint-config": "workspace:*",
-    "@testing-library/react": "^16.0.1",
     "@types/node": "^24.5.1",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "3.2.4",
-    "concurrently": "^9.0.1",
     "esbuild-plugin-svgr": "3.1.1",
     "eslint": "8.57.1",
     "husky": "^9.1.6",

@@ -16,10 +16,7 @@
   "devDependencies": {
     "@polkadot/api": "16.1.2",
     "@polkadot/extension-dapp": "0.59.2",
-    "@tailwindcss/forms": "^0.5.9",
-    "@talismn/balances": "workspace:*",
     "@talismn/balances-react": "workspace:*",
-    "@talismn/chaindata-provider": "workspace:*",
     "@talismn/eslint-config": "workspace:*",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -29,7 +26,6 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "jotai": "^2.10.1",
-    "jotai-effect": "^1.0.3",
     "loglevel": "^1.9.2",
     "postcss": "^8.4.47",
     "react": "^18.3.1",

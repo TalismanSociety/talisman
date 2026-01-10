@@ -26,7 +26,6 @@
   "license": "ISC",
   "packageManager": "pnpm@10.10.0",
   "dependencies": {
-    "@polkadot-api/utils": "0.2.0",
     "@polkadot/rpc-provider": "16.1.2",
     "@polkadot/util": "13.5.3",
     "@polkadot/util-crypto": "13.5.3",
@@ -35,14 +34,9 @@
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/sapi": "workspace:^",
     "@talismn/scale": "workspace:^",
-    "extension-shared": "workspace:^",
-    "lodash-es": "4.17.21",
-    "rxjs": "^7.8.2",
-    "viem": "^2.27.3",
-    "zod": "^3.25.76"
+    "extension-shared": "workspace:^"
   },
   "devDependencies": {
-    "@types/lodash-es": "4.17.12",
     "tsx": "^4.20.3"
   }
 }
