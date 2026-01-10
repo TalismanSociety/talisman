@@ -55,7 +55,7 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 
 1. Open Chrome and navigate to `chrome://extensions`.
 1. Turn on the `Developer mode` toggle on the top right of the page.
-1. Click `Load unpacked` on the top left of the page and select the `apps/extension/.output/chrome-mv3-dev` directory.
+1. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist/chrome-mv3-dev` directory.
 1. Change some code! The extension will hot-reload automatically.
 
 ### Firefox Development
@@ -63,10 +63,10 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 To develop for Firefox instead:
 
 ```bash
-pnpm wxt:dev:firefox
+pnpm dev:extension:firefox
 ```
 
-Then load the extension from `apps/extension/.output/firefox-mv3-dev` in Firefox's `about:debugging` page.
+Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's `about:debugging` page.
 
 ## Apps and packages
 
@@ -177,8 +177,8 @@ When building UI features, please follow the following spec to ensure they're tr
 
 #### Production Builds
 
-- `build:extension` : builds the extension for Chrome (outputs to `.output/chrome-mv3`)
-- `build:extension:firefox` : builds the extension for Firefox (outputs to `.output/firefox-mv3`)
+- `build:extension` : builds the extension for Chrome (outputs to `dist/chrome-mv3`)
+- `build:extension:firefox` : builds the extension for Firefox (outputs to `dist/firefox-mv3`)
 - `build:extension:zip` : creates a distributable zip file for Chrome
 - `build:extension:zip:firefox` : creates a distributable zip file for Firefox
 

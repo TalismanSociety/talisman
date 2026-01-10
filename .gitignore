@@ -34,7 +34,6 @@ yarn-error.log*
 # extension
 dist
 review
-.output
 .wxt
 
 # Playwright

@@ -30,7 +30,7 @@ Then load the extension in Chrome:
 1. Navigate to `chrome://extensions`
 2. Enable "Developer mode"
 3. Click "Load unpacked"
-4. Select `apps/extension/.output/chrome-mv3-dev`
+4. Select `apps/extension/dist/chrome-mv3-dev`
 
 ### Development Commands
 
@@ -68,12 +68,12 @@ pnpm wxt:zip:firefox
 
 ### Output Directories
 
-| Command             | Output Directory          |
-| ------------------- | ------------------------- |
-| `wxt:dev`           | `.output/chrome-mv3-dev`  |
-| `wxt:dev:firefox`   | `.output/firefox-mv3-dev` |
-| `wxt:build`         | `.output/chrome-mv3`      |
-| `wxt:build:firefox` | `.output/firefox-mv3`     |
+| Command         | Output Directory       |
+| --------------- | ---------------------- |
+| `dev`           | `dist/chrome-mv3-dev`  |
+| `dev:firefox`   | `dist/firefox-mv3-dev` |
+| `build`         | `dist/chrome-mv3`      |
+| `build:firefox` | `dist/firefox-mv3`     |
 
 ### How Production Builds Work
 
@@ -102,7 +102,7 @@ apps/extension/
 │   ├── inject/            # Page injection scripts
 │   └── ui/                # React UI components
 ├── wxt.config.ts          # WXT/Vite configuration
-└── .output/               # Build outputs (gitignored)
+└── dist/                  # Build outputs (gitignored)
 ```
 
 ## Configuration
@@ -141,7 +141,7 @@ pnpm test:e2e
 
 1. Ensure you've run `pnpm install` from the monorepo root
 2. Check that the dev server is running (`pnpm dev`)
-3. Verify the correct output directory is loaded (`.output/chrome-mv3-dev`)
+3. Verify the correct output directory is loaded (`dist/chrome-mv3-dev`)
 
 ### Changes not reflecting
 
@@ -152,7 +152,7 @@ pnpm test:e2e
 ### Build failures
 
 1. Ensure all packages are built: `pnpm build:packages` from monorepo root
-2. Clear the WXT cache: `rm -rf .output .wxt`
+2. Clear the WXT cache: `rm -rf dist .wxt`
 3. Reinstall dependencies: `pnpm install`
 
 ## License
