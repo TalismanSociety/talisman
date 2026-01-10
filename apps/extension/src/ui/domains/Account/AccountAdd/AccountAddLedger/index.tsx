@@ -5,7 +5,7 @@ import { AddLedgerSelectAccount } from "./AddLedgerSelectAccount"
 import { AddLedgerSelectNetwork } from "./AddLedgerSelectNetwork"
 import { AddLedgerAccountProvider } from "./context"
 
-export const AccountAddLedgerWizard = ({ onSuccess }: AccountAddPageProps) => (
+const AccountAddLedgerWizard = ({ onSuccess }: AccountAddPageProps) => (
   <AddLedgerAccountProvider onSuccess={onSuccess}>
     <Routes>
       <Route index element={<AddLedgerSelectNetwork />} />

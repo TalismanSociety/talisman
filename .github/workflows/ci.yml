@@ -37,6 +37,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
       - name: Test
         run: pnpm test
       - name: Extract short SHA + package version
