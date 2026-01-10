@@ -23,7 +23,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint src --max-warnings 0",
+    "lint": "biome check src",
     "chore:generate-init-data": "tsx scripts/generateInitData.ts",
     "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules",
     "build": "tsup --silent",
@@ -39,18 +39,10 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "eslint": "^8.57.1",
     "tsx": "^4.20.3",
     "typescript": "^5.6.3"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/base"
-    ]
   },
   "types": "./dist/index.d.ts",
   "exports": {
