@@ -133,6 +133,7 @@ jobs:
   # This job will build and publish a snapshot version of the packages which have changesets in this PR
   publish_snapshot:
     name: "Publish a snapshot version of any packages with changesets in this PR to npm"
+    needs: ensure_pr_has_changeset
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
