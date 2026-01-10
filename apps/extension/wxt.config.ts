@@ -265,6 +265,21 @@ export default defineConfig({
     // Cast to WxtViteConfig to handle Vite version mismatches between dependencies
     return {
       plugins: [
+        // Watch monorepo packages directory in dev mode for hot reload
+        // WXT's external file watching has a bug that skips step 0 (background script),
+        // so we need to explicitly add the packages directory to Vite's watcher
+        ...(isDev
+          ? [
+              {
+                name: "watch-packages",
+                configureServer(server) {
+                  // Add the packages directory to the file watcher
+                  // This enables hot reload when files in packages/* change
+                  server.watcher.add(packagesDir)
+                },
+              } satisfies Plugin,
+            ]
+          : []),
         // Replace environment variables in all code including bundled dependencies
         // This handles cases where variable names get mangled (e.g., process$1.env)
         replace({
@@ -401,12 +416,45 @@ export default defineConfig({
       },
 
       optimizeDeps: {
-        include: ["react", "react-dom", "rxjs"],
+        // Pre-bundle heavy dependencies that rarely change for faster rebuilds
+        // Vite caches these across rebuilds, avoiding repeated processing
+        include: [
+          // React ecosystem
+          "react",
+          "react-dom",
+          "react-router-dom",
+          // State management
+          "rxjs",
+          "@tanstack/react-query",
+          "@react-rxjs/core",
+          "@react-rxjs/utils",
+          // Data & storage
+          "dexie",
+          "lodash-es",
+          // Crypto (heavy dependencies)
+          "@polkadot/util",
+          "@polkadot/util-crypto",
+          "@polkadot/keyring",
+          // UI
+          "@headlessui/react",
+          "@floating-ui/react",
+          "framer-motion",
+        ],
       },
 
       build: {
         // Target modern browsers
         target: "esnext",
+
+        // Dev mode: use separate sourcemaps (not inline) for reasonable file sizes
+        // WXT defaults to inline sourcemaps which creates 51MB background.js
+        // With separate .map files, background.js is ~25MB (unminified) - acceptable trade-off
+        // We skip minification for faster rebuilds (~5s vs ~12s)
+        ...(isDev
+          ? {
+              sourcemap: true, // Separate .js.map files instead of inline
+            }
+          : {}),
 
         // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
         chunkSizeWarningLimit: 3500,

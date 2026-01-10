@@ -6,8 +6,16 @@ import { PORT_CONTENT } from "extension-shared"
 import { browser } from "wxt/browser"
 import { defineContentScript } from "wxt/utils/define-content-script"
 
+// file:// matching is not supported by WXT's dev mode hot reload (MatchPattern class)
+// This causes harmless errors in dev console, so we exclude file:// in dev mode
+// In production, file:// pages are fully supported
+const matches =
+  import.meta.env.MODE === "development"
+    ? ["http://*/*", "https://*/*"]
+    : ["file://*/*", "http://*/*", "https://*/*"]
+
 export default defineContentScript({
-  matches: ["file://*/*", "http://*/*", "https://*/*"],
+  matches,
   runAt: "document_start",
 
   main() {

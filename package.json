@@ -26,6 +26,7 @@
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "pnpm run --filter extension dev",
     "dev:extension:firefox": "pnpm run --filter extension dev:firefox",
+    "dev:kill": "pnpm run --filter extension dev:kill",
     "build": "pnpm build:packages && pnpm run --filter extension build",
     "build:packages": "pnpm -r --filter './packages/*' --filter '!extension-core' --filter '!extension-shared' --filter '!talisman-ui' run build",
     "build:extension": "pnpm build:packages && pnpm run --filter extension build",
