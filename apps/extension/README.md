@@ -129,6 +129,8 @@ In production mode:
 - Vite/Rollup performs full tree-shaking and minification
 - Result is ~10x smaller than development builds
 
+> **Note:** Use the root-level build commands (e.g., `pnpm build:extension`) which automatically build packages first. Running `pnpm build` directly in `apps/extension` requires packages to be pre-built.
+
 ## Project Structure
 
 ```
