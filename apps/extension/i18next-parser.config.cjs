@@ -1,5 +1,3 @@
-/* eslint-env es6 */
-
 // The key is the `locale` as passed to i18next.
 // The value is the `human-readable name` as passed to the language settings UI in the wallet.
 // This config is only used for generating translations during CI, prior to upload new keys to SimpleLocalize.
