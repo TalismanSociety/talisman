@@ -38,12 +38,6 @@
     "react": "*",
     "react-dom": "*"
   },
-  "preconstruct": {
-    "globals": {
-      "react": "React",
-      "react-dom": "ReactDOM"
-    }
-  },
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {

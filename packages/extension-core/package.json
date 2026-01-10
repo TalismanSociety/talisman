@@ -3,20 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "main": "dist/extension-core.cjs.js",
-  "module": "dist/extension-core.esm.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "sideEffects": [
     "./src/background.ts"
-  ],
-  "files": [
-    "/dist",
-    "/background"
   ],
   "scripts": {
     "lint": "eslint src --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf dist background/dist .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
     "@isaacs/ttlcache": "1.4.1",
@@ -87,11 +85,5 @@
     "mock-socket": "^9.3.1",
     "sinon-chrome": "^3.0.1",
     "typescript": "^5.6.3"
-  },
-  "preconstruct": {
-    "entrypoints": [
-      "index.ts",
-      "background.ts"
-    ]
   }
 }

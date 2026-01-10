@@ -3,22 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "main": "dist/extension-shared.cjs.js",
-  "module": "dist/extension-shared.esm.js",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
   "sideEffects": false,
   "scripts": {
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "eslint": "^8.57.1",
     "typescript": "^5.6.3"
-  },
-  "preconstruct": {
-    "entrypoints": [
-      "index.ts"
-    ]
   }
 }

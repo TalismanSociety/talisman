@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "main": "dist/talisman-ui.cjs.js",
-  "module": "dist/talisman-ui.esm.js",
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json",
@@ -14,7 +12,7 @@
   },
   "scripts": {
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules"
   },
   "dependencies": {
     "@talismn/icons": "workspace:*",
@@ -59,14 +57,5 @@
     "react-router-dom": ">=6.3.0",
     "react-use": ">=17.4.0",
     "tailwindcss": ">=3.1.8"
-  },
-  "preconstruct": {
-    "exports": {
-      "extra": {
-        ".": "./src/index.ts",
-        "./styles.css": "./src/styles/styles.css",
-        "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
-      }
-    }
   }
 }

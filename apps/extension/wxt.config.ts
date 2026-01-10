@@ -31,19 +31,7 @@ const packagesDir = resolve(__dirname, "../../packages")
 // This enables hot reload in dev mode - changes to package source are reflected immediately
 function createPackageSourceAliases(): Alias[] {
   return [
-    // Internal packages - match subpath imports like "extension-core/background" or "talisman-ui/src/styles"
-    {
-      find: /^extension-core\/(.*)$/,
-      replacement: resolve(packagesDir, "extension-core/src/$1"),
-    },
-    {
-      find: /^extension-shared\/(.*)$/,
-      replacement: resolve(packagesDir, "extension-shared/src/$1"),
-    },
-    {
-      find: /^talisman-ui\/src\/(.*)$/,
-      replacement: resolve(packagesDir, "talisman-ui/src/$1"),
-    },
+    // Internal packages - exact matches for main entry (subpath patterns are in baseAliases)
     { find: /^talisman-ui$/, replacement: resolve(packagesDir, "talisman-ui/src") },
 
     // Map workspace packages to source for hot reload in dev (exact matches)
@@ -244,6 +232,20 @@ export default defineConfig({
       { find: "@tests", replacement: resolve(__dirname, "src/tests") },
       // Base-relative imports from src/
       { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
+      // Internal packages subpath imports (needed in both dev and production)
+      // These packages don't have proper exports in package.json for subpaths
+      {
+        find: /^extension-core\/(.*)$/,
+        replacement: resolve(packagesDir, "extension-core/src/$1"),
+      },
+      {
+        find: /^extension-shared\/(.*)$/,
+        replacement: resolve(packagesDir, "extension-shared/src/$1"),
+      },
+      {
+        find: /^talisman-ui\/src\/(.*)$/,
+        replacement: resolve(packagesDir, "talisman-ui/src/$1"),
+      },
     ]
 
     // In dev mode, add package source aliases for hot reload

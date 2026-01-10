@@ -73,11 +73,6 @@
     "@polkadot/util-crypto": "*",
     "@substrate/txwrapper-core": "*"
   },
-  "preconstruct": {
-    "entrypoints": [
-      "index.ts"
-    ]
-  },
   "eslintConfig": {
     "root": true,
     "extends": [
