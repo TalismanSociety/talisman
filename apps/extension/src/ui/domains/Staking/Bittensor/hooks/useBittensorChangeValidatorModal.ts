@@ -1,3 +1,4 @@
+import { log } from "extension-shared"
 import { useCallback } from "react"
 
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
@@ -12,6 +13,7 @@ export const useBittensorChangeValidatorModal = () => {
 
   const open = useCallback(
     (opts: ChangeValidatorOpenOptions) => {
+      log.debug("[tao] Resetting Bittensor Change Validator Wizard", opts)
       reset(opts)
       innerOpen()
     },

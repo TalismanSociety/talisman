@@ -1,6 +1,5 @@
 import { classNames, cn } from "@talismn/util"
 import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { t } from "i18next"
 import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -107,6 +106,7 @@ const Position: FC<{
   isSelected?: boolean
   onClick?: () => void
 }> = ({ position, isSelected, onClick }) => {
+  const { t } = useTranslation()
   const currency = useSelectedCurrency()
   const account = useAccountByAddress(position.balance.address)
 
