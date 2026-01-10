@@ -65,9 +65,6 @@ const config: KnipConfig = {
       project: ["src/**/*.ts"],
     },
 
-    // ESLint config package - Knip's ESLint plugin handles this
-    "config/eslint-config": {},
-
     // TSConfig package - JSON files, not really code
     "config/tsconfig": {
       entry: ["*.json"],
