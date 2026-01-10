@@ -46,7 +46,10 @@
     "test:e2e:debug": "pnpm exec playwright test --debug",
     "test:e2e:trace": "pnpm exec playwright test --trace on && pnpm exec playwright show-report",
     "test:e2e:stress": "pnpm exec playwright test --repeat-each=20 --workers 1 --trace on",
-    "clean": "pnpm run -r --parallel clean & rm -rf .wxt dist coverage test-results playwright-report .turbo node_modules review & wait"
+    "clean": "pnpm run -r --parallel clean & rm -rf .wxt dist coverage test-results playwright-report .turbo node_modules review & wait",
+    "knip": "knip",
+    "knip:fix": "knip --fix",
+    "knip:production": "knip --production"
   },
   "dependencies": {
     "@yieldxyz/sdk": "^0.0.4",
@@ -69,10 +72,12 @@
     "esbuild-plugin-svgr": "3.1.1",
     "eslint": "8.57.1",
     "husky": "^9.1.6",
+    "knip": "5.80.0",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tsup": "8.5.1",
+    "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },
   "pnpm": {
