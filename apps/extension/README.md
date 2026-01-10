@@ -70,26 +70,56 @@ The Chrome profile is stored **outside the repository** for security, since it m
 
 ### Build Commands
 
+All build commands produce both an unpacked extension directory and a distributable zip file.
+
 ```bash
-# Build for Chrome
-pnpm wxt:build
+# Build for Chrome (local testing)
+pnpm build
 
-# Build for Firefox
-pnpm wxt:build:firefox
+# Build for Firefox (local testing)
+pnpm build:firefox
 
-# Create distributable zip files
-pnpm wxt:zip
-pnpm wxt:zip:firefox
+# Production builds (Chrome Web Store / Firefox Add-ons)
+# Enables Sentry sourcemap upload
+pnpm build:prod
+pnpm build:prod:firefox
+
+# Canary builds (internal testing)
+pnpm build:canary
+pnpm build:canary:firefox
 ```
+
+#### Environment Variables for Production Builds
+
+| Variable            | Required | Description                                     |
+| ------------------- | -------- | ----------------------------------------------- |
+| `SENTRY_AUTH_TOKEN` | Yes      | Sentry authentication token                     |
+| `SENTRY_ORG`        | Yes      | Sentry organization slug                        |
+| `BUILD_TYPE`        | Auto     | Set by build scripts (`production` or `canary`) |
+
+#### Sourcemap Handling
+
+- **Production/Canary builds**: Generate hidden sourcemaps (no inline reference in JS)
+- **Sentry upload**: Sourcemaps are uploaded to Sentry for error tracking
+- **Cleanup**: Sourcemaps are automatically deleted before zipping to keep them out of the final distribution
 
 ### Output Directories
 
-| Command         | Output Directory       |
-| --------------- | ---------------------- |
-| `dev`           | `dist/chrome-mv3-dev`  |
-| `dev:firefox`   | `dist/firefox-mv3-dev` |
-| `build`         | `dist/chrome-mv3`      |
-| `build:firefox` | `dist/firefox-mv3`     |
+| Command             | Unpacked Directory     | Zip File                                        |
+| ------------------- | ---------------------- | ----------------------------------------------- |
+| `dev`               | `dist/chrome-mv3-dev`  | -                                               |
+| `dev:firefox`       | `dist/firefox-mv3-dev` | -                                               |
+| `build` / `build:*` | `dist/chrome-mv3`      | `.output/talisman-wallet-{version}-chrome.zip`  |
+| `build:*:firefox`   | `dist/firefox-mv3`     | `.output/talisman-wallet-{version}-firefox.zip` |
+
+### Build Variants
+
+| Build Type  | Name Suffix | Version Name Example   | Sentry Upload |
+| ----------- | ----------- | ---------------------- | ------------- |
+| Production  | (none)      | `3.1.16`               | ✅            |
+| Canary      | ` - Canary` | `3.1.16 - abc1234`     | ✅            |
+| Dev Server  | ` - Dev`    | `3.1.16 - abc1234 dev` | ❌            |
+| Local Build | (none)      | `3.1.16 - abc1234 dev` | ❌            |
 
 ### How Production Builds Work
 
@@ -134,12 +164,13 @@ The main configuration file controls:
 
 ### Environment-Specific Behavior
 
-| Feature            | Development     | Production      |
-| ------------------ | --------------- | --------------- |
-| Package resolution | Source (`src/`) | Built (`dist/`) |
-| Icon suffix        | `-dev`          | `-prod`         |
-| Minification       | Disabled        | Enabled         |
-| Source maps        | Inline          | Separate        |
+| Feature            | Development     | Production/Canary                         |
+| ------------------ | --------------- | ----------------------------------------- |
+| Package resolution | Source (`src/`) | Built (`dist/`)                           |
+| Icon suffix        | `-dev`          | `-prod`                                   |
+| Minification       | Disabled        | Enabled                                   |
+| Source maps        | Inline          | Hidden (uploaded to Sentry, then deleted) |
+| Sentry upload      | No              | Yes                                       |
 
 ## Testing
 
