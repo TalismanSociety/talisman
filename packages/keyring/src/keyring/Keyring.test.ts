@@ -2,7 +2,7 @@ import {
   base58,
   deriveKeypair,
   entropyToSeed,
-  KeypairCurve,
+  type KeypairCurve,
   mnemonicToEntropy,
 } from "@talismn/crypto"
 
@@ -41,10 +41,10 @@ describe("keyring", () => {
 
   it("cannot retrieve mnemonic text with wrong password", async () => {
     await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD)).rejects.toThrow(
-      "Failed to decrypt data",
+      "Failed to decrypt data"
     )
     await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD_2)).rejects.toThrow(
-      "Failed to decrypt data",
+      "Failed to decrypt data"
     )
   })
 
@@ -58,8 +58,8 @@ describe("keyring", () => {
           derivationPath: DERIVATION_PATH_SUBSTRATE,
           name: "My account",
         },
-        WRONG_PASSWORD,
-      ),
+        WRONG_PASSWORD
+      )
     ).rejects.toThrow("Invalid password")
   })
 
@@ -71,8 +71,8 @@ describe("keyring", () => {
           name: "duplicate",
           confirmed: false,
         },
-        VALID_PASSWORD,
-      ),
+        VALID_PASSWORD
+      )
     ).rejects.toThrow("Mnemonic already exists")
   })
 
@@ -85,8 +85,8 @@ describe("keyring", () => {
           mnemonic: MNEMONIC.mnemonic.replace("junk", "test"),
           confirmed: false,
         },
-        VALID_PASSWORD,
-      ),
+        VALID_PASSWORD
+      )
     ).rejects.toThrow("Invalid mnemonic")
   })
 
@@ -144,7 +144,7 @@ describe("keyring", () => {
         derivationPath: DERIVATION_PATH_SUBSTRATE,
         name: "My account",
       },
-      VALID_PASSWORD,
+      VALID_PASSWORD
     )
 
     const restored = Keyring.load(keyring.toJson())
@@ -172,7 +172,7 @@ const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) =>
       secretKey: pair.secretKey,
       name: "My account",
     },
-    VALID_PASSWORD,
+    VALID_PASSWORD
   )
 
   expect(keyring.getAccount(pair.address)).toBeTruthy()
@@ -189,7 +189,7 @@ const testAddFromMnemonic = async (curve: KeypairCurve, derivationPath: string) 
       derivationPath,
       name: "My account",
     },
-    VALID_PASSWORD,
+    VALID_PASSWORD
   )
 
   expect(keyring.getAccount(address)).toBeTruthy()

@@ -1,5 +1,5 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { describe, expect, vi } from "vitest"
@@ -23,7 +23,7 @@ const createAccount = () => {
       derivationPath: "",
       confirmed: true,
     },
-    password,
+    password
   )
 }
 
@@ -68,13 +68,10 @@ describe("Signing requests store", () => {
       "http://test.com",
       new RequestExtrinsicSign(payload),
       account,
-      {} as chrome.runtime.Port,
+      {} as chrome.runtime.Port
     )
 
     await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
     expect(windowManager.popupOpen).toBeCalled()
   })
 })
-
-// load bearing export
-export {}

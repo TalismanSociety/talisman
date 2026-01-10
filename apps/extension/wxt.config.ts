@@ -2,15 +2,14 @@ import { execSync } from "node:child_process"
 import { existsSync, readdirSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
-
-import type { Alias, Plugin } from "vite"
-import type { Logger, WxtViteConfig } from "wxt"
 import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
+import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
+import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -412,7 +411,7 @@ export default defineConfig({
       // Our banner already defines "var browser = globalThis.browser" at the top
       result = result.replace(
         /const browser = browser\$\d+;/g,
-        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner",
+        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner"
       )
 
       // Only return if we made changes
@@ -484,12 +483,12 @@ export default defineConfig({
             "process.env.RELEASE": JSON.stringify(`talisman-wallet@${pkg.version}`),
             "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
             "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
-              process.env.SUPPORTED_LANGUAGES || "",
+              process.env.SUPPORTED_LANGUAGES || ""
             ),
             "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
             "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
             "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
-              process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+              process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
             ),
           },
         }),
@@ -535,11 +534,11 @@ export default defineConfig({
               let result = code
               result = result.replace(
                 /process(?:\$\d+)*\.env\s*\[\s*['"]EXTENSION_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman"),
+                JSON.stringify("talisman")
               )
               result = result.replace(
                 /process(?:\$\d+)*\.env\s*\[\s*['"]PORT_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman"),
+                JSON.stringify("talisman")
               )
               return { code: result, map: null }
             }
@@ -603,7 +602,7 @@ export default defineConfig({
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
         "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
         "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
-          process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+          process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
         ),
       },
 

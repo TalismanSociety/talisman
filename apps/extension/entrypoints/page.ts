@@ -3,14 +3,13 @@
 import type { Message } from "@polkadot/extension-base/types"
 import { DEBUG, isTalismanHostname } from "extension-shared"
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script"
-
-import type { Injected } from "../src/inject/substrate/types"
 import WindowMessageService from "../src/common/WindowMessageService"
 import { injectEthereum } from "../src/inject/ethereum/injectEthereum"
 import { injectSolana } from "../src/inject/solana/injectSolana"
 import TalismanInjected from "../src/inject/substrate/Injected"
 import { injectExtension } from "../src/inject/substrate/injectExtension"
 import { injectSubstrate } from "../src/inject/substrate/injectSubstrate"
+import type { Injected } from "../src/inject/substrate/types"
 
 export default defineUnlistedScript(() => {
   const messageService = new WindowMessageService()

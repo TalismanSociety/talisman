@@ -10,7 +10,7 @@ vi.mock("bcryptjs", async () => {
     genSalt: vi.fn((rounds: number) => `salt-${rounds}`),
     hash: vi.fn((password: string, salt: string) => `${password}.${salt}`),
     compare: vi.fn(
-      (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf(".")),
+      (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf("."))
     ),
   }
 })
@@ -22,7 +22,7 @@ vi.mock("../../src/util/fetchRemoteConfig", () => ({
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component
         LINK_STAKING: true,
       },
-    }),
+    })
   ),
 }))
 
@@ -49,5 +49,3 @@ vi.mock("@polkadot/apps-config/api", () => {
 vi.mock("../../src/util/isBackgroundPage", () => ({
   isBackgroundPage: vi.fn().mockImplementation(() => true),
 }))
-
-export {}

@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
-import { dirname } from "path"
 
-import { BALANCE_MODULES, MiniMetadata } from "@talismn/balances"
-import { ChainConnectorDotStub, IChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
+import { BALANCE_MODULES, type MiniMetadata } from "@talismn/balances"
+import { ChainConnectorDotStub, type IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import {
   decAnyMetadata,
@@ -16,6 +14,8 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { log } from "extension-shared"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
+import { dirname } from "path"
 import { Enum } from "polkadot-api"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
@@ -36,7 +36,7 @@ type TestOptions = {
 
 const DEFAULT_OPTIONS: TestOptions = {
   modules: BALANCE_MODULES.filter((mod) => mod.platform === "polkadot").map(
-    (mod) => mod.type as TokenType,
+    (mod) => mod.type as TokenType
   ),
   fetchBalances: true,
   transfer: true,
@@ -58,7 +58,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     const { specVersion } = await connector.send<{ specVersion: number }>(
       network.id,
       "state_getRuntimeVersion",
-      [],
+      []
     )
     stop2()
     log.log("RuntimeVersion", { specVersion })
@@ -73,7 +73,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
       const stop = log.timer("Fetched metadata")
       const metadataRpc = await fetchBestMetadata(
         (...args) => connector.send(networkId, ...args),
-        false,
+        false
       )
       stop()
       writeFileSync(metadataFilePath, metadataRpc)
@@ -85,7 +85,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
     log.log("Metadata version", metadata.version)
 
     for (const mod of BALANCE_MODULES.filter(
-      (mod) => mod.platform === "polkadot", // then we can use a ChainConnector
+      (mod) => mod.platform === "polkadot" // then we can use a ChainConnector
     ).filter((mod) => opts.modules?.includes(mod.type as TokenType))) {
       const source = mod.type
       log.log()
@@ -170,7 +170,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
         (b) =>
           b.address === TEST_ADDRESS_SUB &&
           ((b.value && !!BigInt(b.value)) ||
-            b.values?.find((v) => v.type === "free" && !!BigInt(v.amount))),
+            b.values?.find((v) => v.type === "free" && !!BigInt(v.amount)))
       )
       if (!anyPositiveBalance) {
         log.log("No positive balance found for the test address")
@@ -188,7 +188,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
       const available =
         anyPositiveBalance.value ??
-        anyPositiveBalance.values?.find((v) => v.type === "free")!.amount
+        anyPositiveBalance.values?.find((v) => v.type === "free")?.amount
       if (!available || BigInt(available) <= BigInt(0)) {
         log.error("No available balance found for the test address")
         continue
