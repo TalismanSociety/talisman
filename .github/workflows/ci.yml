@@ -42,21 +42,17 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Biome check
         run: |
-          set +e
-          output=$(pnpm biome check --changed origin/${{ github.base_ref || 'dev' }} . 2>&1)
-          exit_code=$?
-          echo "$output"
-          if [ $exit_code -eq 0 ]; then
-            exit 0
-          elif echo "$output" | grep -q "No files were processed"; then
+          BASE_REF="${{ github.base_ref || 'dev' }}"
+          # Get changed files using two-dot diff (works with shallow clones)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs' | tr '\n' ' ')
+          
+          if [ -z "$CHANGED_FILES" ]; then
             echo "No supported files changed - skipping biome check"
             exit 0
-          elif echo "$output" | grep -q "The list is empty"; then
-            echo "No files changed - skipping biome check"
-            exit 0
-          else
-            exit $exit_code
           fi
+          
+          echo "Changed files: $CHANGED_FILES"
+          pnpm biome check $CHANGED_FILES
       - name: Test
         run: pnpm test
       - name: Build packages
