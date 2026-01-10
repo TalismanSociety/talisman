@@ -1,24 +1,25 @@
+import { vi } from "vitest"
+
 import { mockedApi } from "./api"
 
-jest.setTimeout(20_000)
-
 // prevent chaindata-provider from trying to connect to the network
-jest.mock("@talismn/chaindata-provider/src/state/net")
+vi.mock("@talismn/chaindata-provider/src/state/net")
 
-jest.mock("bcryptjs", () => {
+vi.mock("bcryptjs", async () => {
+  const actual = await vi.importActual<typeof import("bcryptjs")>("bcryptjs")
   return {
-    ...jest.requireActual("bcryptjs"),
-    genSalt: jest.fn((rounds: number) => `salt-${rounds}`),
-    hash: jest.fn((password: string, salt: string) => `${password}.${salt}`),
-    compare: jest.fn(
+    ...actual,
+    genSalt: vi.fn((rounds: number) => `salt-${rounds}`),
+    hash: vi.fn((password: string, salt: string) => `${password}.${salt}`),
+    compare: vi.fn(
       (password: string, hash: string) => password === hash.slice(0, hash.lastIndexOf(".")),
     ),
   }
 })
 
-jest.mock("@ui/api", () => ({ api: mockedApi }))
+vi.mock("@ui/api", () => ({ api: mockedApi }))
 
-jest.mock("react-i18next", () => ({
+vi.mock("react-i18next", () => ({
   // this mock makes sure any components using the translate hook can use it without a warning being shown
   useTranslation: () => {
     return {
@@ -38,8 +39,8 @@ jest.mock("react-i18next", () => ({
   },
 }))
 
-jest.mock("extension-core/src/util/fetchRemoteConfig", () => ({
-  fetchRemoteConfig: jest.fn(() =>
+vi.mock("extension-core/src/util/fetchRemoteConfig", () => ({
+  fetchRemoteConfig: vi.fn(() =>
     Promise.resolve({
       featureFlags: {
         BUY_CRYPTO: true, // nav buttons + button in fund wallet component

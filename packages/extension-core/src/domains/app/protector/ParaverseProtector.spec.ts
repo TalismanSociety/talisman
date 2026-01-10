@@ -1,17 +1,19 @@
+import { afterAll, expect, it, vi } from "vitest"
+
 import { db } from "../../../db"
 import ParaverseProtector from "./ParaverseProtector"
 
-const mockGetCommitSha = jest.fn(async () => "newCommit")
-const mockGetPolkadotData = jest.fn(async () => ({
+const mockGetCommitSha = vi.fn(async () => "newCommit")
+const mockGetPolkadotData = vi.fn(async () => ({
   deny: ["badsite.com", "an.other-badsite.io"],
   allow: ["goodsite.com", "polkadot.js.org"],
 }))
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const mockGetMetamaskData = jest.fn(() => require("eth-phishing-detect/src/config.json"))
+const mockGetMetamaskData = vi.fn(() => require("eth-phishing-detect/src/config.json"))
 
-jest.spyOn(ParaverseProtector.prototype, "getCommitSha").mockImplementation(mockGetCommitSha)
-jest.spyOn(ParaverseProtector.prototype, "getPolkadotData").mockImplementation(mockGetPolkadotData)
-jest.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(mockGetMetamaskData)
+vi.spyOn(ParaverseProtector.prototype, "getCommitSha").mockImplementation(mockGetCommitSha)
+vi.spyOn(ParaverseProtector.prototype, "getPolkadotData").mockImplementation(mockGetPolkadotData)
+vi.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(mockGetMetamaskData)
 const protector = new ParaverseProtector()
 // mock fire the ready event on the database
 db.on.ready.fire(db)
@@ -45,5 +47,5 @@ it("Can add an exception to phishing sites", async () => {
 })
 
 afterAll(() => {
-  jest.clearAllMocks()
+  vi.clearAllMocks()
 })

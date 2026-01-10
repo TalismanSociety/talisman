@@ -39,17 +39,17 @@ describe("keyring", () => {
     expect(mnemonic).toEqual(MNEMONIC.mnemonic)
   })
 
-  it("cannot retrieve mnemonic text with wrong password", () => {
-    expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD)).rejects.toThrow(
+  it("cannot retrieve mnemonic text with wrong password", async () => {
+    await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD)).rejects.toThrow(
       "Failed to decrypt data",
     )
-    expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD_2)).rejects.toThrow(
+    await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD_2)).rejects.toThrow(
       "Failed to decrypt data",
     )
   })
 
-  it("cannot add an account with a wrong password", () => {
-    expect(() =>
+  it("cannot add an account with a wrong password", async () => {
+    await expect(() =>
       keyring.addAccountDerive(
         {
           type: "existing-mnemonic",
@@ -76,8 +76,8 @@ describe("keyring", () => {
     ).rejects.toThrow("Mnemonic already exists")
   })
 
-  it("rejects invalid mnemonic", () => {
-    expect(() =>
+  it("rejects invalid mnemonic", async () => {
+    await expect(() =>
       keyring.addMnemonic(
         {
           ...MNEMONIC,

@@ -2,6 +2,7 @@ import type { SignerPayloadJSON } from "@polkadot/types/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
+import { describe, expect, vi } from "vitest"
 
 import { signSubstrate } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
@@ -26,10 +27,10 @@ const createAccount = () => {
   )
 }
 
-jest.mock("../../../libs/WindowManager", () => {
+vi.mock("../../../libs/WindowManager", () => {
   return {
     windowManager: {
-      popupOpen: jest.fn().mockImplementation(async () => {
+      popupOpen: vi.fn().mockImplementation(async () => {
         return 1
       }),
     },

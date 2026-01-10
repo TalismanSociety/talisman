@@ -7,6 +7,7 @@ import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
 import { Account } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../tests/util"
 import { db } from "../db"
@@ -17,7 +18,7 @@ import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
-jest.setTimeout(10_000)
+vi.setConfig({ testTimeout: 10_000 })
 
 describe("Extension", () => {
   let extension: Extension

@@ -17,6 +17,7 @@ import { TokenRatesStorage } from "@talismn/token-rates"
 import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { vi } from "vitest"
 
 import { ADDRESSES } from "../constants"
 
@@ -43,12 +44,12 @@ const authorisedSites = {
 const sitesStore = new SitesAuthorizedStore(authorisedSites)
 
 const mockedApiMethods = {
-  analyticsCapture: jest
+  analyticsCapture: vi
     .fn()
     .mockImplementation(
       (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true)),
     ),
-  accountsSubscribe: jest.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
+  accountsSubscribe: vi.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
     cb([
       {
         type: "keypair",
@@ -78,7 +79,7 @@ const mockedApiMethods = {
     ])
     return () => undefined
   }),
-  accountsCatalogSubscribe: jest.fn().mockImplementation((cb: (accounts: Trees) => void) => {
+  accountsCatalogSubscribe: vi.fn().mockImplementation((cb: (accounts: Trees) => void) => {
     cb({
       portfolio: [
         { address: ADDRESSES.GAV, type: "account" },
@@ -89,19 +90,19 @@ const mockedApiMethods = {
     })
     return () => undefined
   }),
-  authorizedSitesSubscribe: jest.fn().mockImplementation((cb: (site: AuthorizedSites) => void) => {
+  authorizedSitesSubscribe: vi.fn().mockImplementation((cb: (site: AuthorizedSites) => void) => {
     const sub = sitesStore.observable.subscribe(cb)
     return () => sub.unsubscribe()
   }),
-  authorizedSiteUpdate: jest
+  authorizedSiteUpdate: vi
     .fn()
     .mockImplementation((id: string, update: Partial<AuthorizedSite>) =>
       sitesStore.updateSite(id, update),
     ),
-  authorizedSiteForget: jest
+  authorizedSiteForget: vi
     .fn()
     .mockImplementation((id: string, type: ProviderType) => sitesStore.forgetSite(id, type)),
-  balances: jest.fn().mockImplementation((cb: (balances: BalanceSubscriptionResponse) => void) => {
+  balances: vi.fn().mockImplementation((cb: (balances: BalanceSubscriptionResponse) => void) => {
     cb({
       status: "initialising",
       balances: [],
@@ -110,17 +111,19 @@ const mockedApiMethods = {
 
     return () => {}
   }),
-  networks: jest.fn().mockImplementation((cb: (chains: Network[]) => void) => {
+  networks: vi.fn().mockImplementation((cb: (chains: Network[]) => void) => {
     cb(networks)
   }),
-  tokens: jest.fn().mockImplementation((cb: (tokens: Token[]) => void) => {
+  tokens: vi.fn().mockImplementation((cb: (tokens: Token[]) => void) => {
     cb(mockTokens)
   }),
-  tokenRates: jest.fn(getMockTokenRates),
+  tokenRates: vi.fn(getMockTokenRates),
 }
 
 // Create a proxy to handle the mocking, this enables us to log if a method is being accessed
-export const mockedApi = new Proxy(jest.requireActual("@ui/api"), {
+// Note: We use an empty object as target since vi.importActual is async
+// All real methods should be added to mockedApiMethods if needed
+export const mockedApi = new Proxy({} as Record<string, unknown>, {
   get(target, prop) {
     if (Object.prototype.hasOwnProperty.call(mockedApiMethods, prop)) {
       // Use specific mock if defined
@@ -129,7 +132,7 @@ export const mockedApi = new Proxy(jest.requireActual("@ui/api"), {
     // Use generic mock for any other property
     // eslint-disable-next-line no-console
     console.log("Attempting to access un-mocked api method: ", prop)
-    return target[prop as keyof typeof target]
+    return undefined
   },
 })
 

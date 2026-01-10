@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { assert } from "@polkadot/util"
 import { KeyringStorage } from "@talismn/keyring"
+import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
@@ -12,7 +13,7 @@ import {
 } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 
-jest.setTimeout(20_000)
+vi.setConfig({ testTimeout: 20_000 })
 
 describe("App handler when password is not trimmed", () => {
   let extension: Extension

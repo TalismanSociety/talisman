@@ -34,7 +34,10 @@
     "build:extension:zip": "pnpm build:packages && pnpm run --filter extension build:zip",
     "build:extension:zip:firefox": "pnpm build:packages && pnpm run --filter extension build:zip:firefox",
     "lint": "pnpm run -r --parallel lint",
-    "test": "pnpm run -r --parallel test",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "pnpm exec playwright test",
     "test:e2e:ui": "pnpm exec playwright test --ui",
     "test:e2e:debug": "pnpm exec playwright test --debug",
@@ -57,6 +60,8 @@
     "@types/node": "^24.5.1",
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "3.2.4",
     "concurrently": "^9.0.1",
     "esbuild-plugin-svgr": "3.1.1",
     "eslint": "8.57.1",
@@ -64,7 +69,9 @@
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
-    "tsup": "8.5.1"
+    "tsup": "8.5.1",
+    "vitest": "^3.2.4",
+    "vitest-webextension-mock": "0.0.7"
   },
   "pnpm": {
     "onlyBuiltDependencies": [],
