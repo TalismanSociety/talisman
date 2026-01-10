@@ -151,7 +151,6 @@
       "@substrate/txwrapper-substrate": "7.5.3",
       "@substrate/txwrapper-template": "7.5.3",
       "braces@<3.0.3": ">=3.0.3",
-      "caniuse-lite": "1.0.30001669",
       "cookie@<0.7.0": ">=0.7.0",
       "decode-uri-component": "0.2.2",
       "elliptic": ">=6.6.1",
