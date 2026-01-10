@@ -8,10 +8,10 @@
 
 ## Coding & Tooling Standards
 
-- Use **Node >= 20**, `corepack enable`, and **pnpm** commands from `package.json`/`turbo.json`.
+- Use **Node >= 20**, `corepack enable`, and **pnpm** commands from `package.json`.
 - Formatting & linting: Prettier + `@talismn/eslint-config` (`eslint --max-warnings 0`). Keep `_`-prefixed unused vars if needed.
-- Write/maintain unit tests (Jest) and E2E tests (Playwright). Commands:
-  - `pnpm test` (workspace-wide Jest)
+- Write/maintain unit tests (Vitest) and E2E tests (Playwright). Commands:
+  - `pnpm test` (workspace-wide Vitest)
   - `pnpm exec playwright test` (E2E) and variants in `package.json`
 - Use `pnpm changeset` for versioned packages; respect CI expectations in `.github/workflows/ci.yml`.
 - I18n: wrap UI strings with `t()`/`Trans` and run `pnpm chore:update-translations` when keys change.
@@ -69,9 +69,9 @@
 
 ## Testing & Verification Checklist
 
-1. Re-use existing Jest/Playwright helpers when adding tests; keep mocks aligned with `apps/extension/tests`.
+1. Re-use existing Vitest/Playwright helpers when adding tests; keep mocks aligned with `apps/extension/tests`.
 2. Validate new hooks/components with real APIs (RxJS streams, Dexie, background APIs) and cover race/error paths.
-3. Ensure new commands/config entries work with `turbo run build` and `pnpm build:extension*` matrix.
+3. Ensure new commands/config entries work with `pnpm build` and `pnpm build:extension*` matrix.
 4. Any change that touches the keyring or secret storage must ship with dedicated unit tests.
 
 ## Commenting & Documentation
