@@ -54,18 +54,19 @@ function createQuietLogger(): Logger {
 
   return {
     level: 3, // warn level
-    debug: (...args) => consola.debug(...args),
-    log: (...args) => consola.log(...args),
-    info: (...args) => consola.info(...args),
-    warn: (...args) => consola.warn(...args),
-    error: (...args) => consola.error(...args),
-    fatal: (...args) => consola.fatal(...args),
-    success: (...args) => {
+    debug: consola.debug.bind(consola),
+    log: consola.log.bind(consola),
+    info: consola.info.bind(consola),
+    warn: consola.warn.bind(consola),
+    error: consola.error.bind(consola),
+    fatal: consola.fatal.bind(consola),
+    success: (...args: unknown[]) => {
       const filtered = args
         .map((arg) => (typeof arg === "string" ? filterSuccessMessage(arg) : arg))
         .filter((arg) => arg !== null)
       if (filtered.length > 0) {
-        consola.success(...filtered)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(consola.success as (...args: any[]) => void)(...filtered)
       }
     },
   }
