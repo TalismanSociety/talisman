@@ -17,7 +17,7 @@
   "scripts": {
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup",
+    "build": "tsup --silent",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
