@@ -56,6 +56,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
       log.log()
 
       const tokenConfigs =
+        // biome-ignore lint/suspicious/noExplicitAny: token config shape varies by module type
         mod.type === "sol-native" ? [network.nativeCurrency] : (network.tokens[mod.type] as any)
       log.log("Token configs", tokenConfigs)
       log.log()

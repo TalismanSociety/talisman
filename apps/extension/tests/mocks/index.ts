@@ -23,7 +23,7 @@ vi.mock("react-i18next", () => ({
   // this mock makes sure any components using the translate hook can use it without a warning being shown
   useTranslation: () => {
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: i18n interpolation options are dynamic
       t: (str: string, options: any) =>
         str.replace(/\{\{(.*?)\}\}/g, (substring, ...args) => {
           return args?.[0] && options?.[args[0]] ? options[args[0]] : substring

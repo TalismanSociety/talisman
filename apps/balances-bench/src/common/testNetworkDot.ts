@@ -25,6 +25,7 @@ const TEST_ADDRESS_EMPTY = "14BbPtmnepvdw2t34CvUbNGDxXazc4iHJZPc8vS3MiCDFzpn"
 export type DotNetworkConfig = Pick<DotNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<DotNetwork["nativeCurrency"]>
   tokens: Partial<Record<TokenType, unknown[]>>
+  // biome-ignore lint/suspicious/noExplicitAny: balances config varies per token type
   balancesConfig?: Partial<Record<TokenType, any>>
 }
 
@@ -51,6 +52,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null
+  // biome-ignore lint/suspicious/noExplicitAny: dry run result shape is dynamic
   let dryRun: any = null
 
   try {
@@ -117,8 +119,10 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
       tokens = await mod.fetchTokens({
         networkId,
+        // biome-ignore lint/suspicious/noExplicitAny: partial config types don't match module expectations
         tokens: tokenConfigs as any,
         connector,
+        // biome-ignore lint/suspicious/noExplicitAny: miniMetadata type varies per module
         miniMetadata: miniMetadata as any,
         cache: {},
       })
@@ -136,6 +140,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
         networkId,
         tokensWithAddresses: tokens.map((token) => [token, BALANCES_ADDRESSES] as const),
         connector,
+        // biome-ignore lint/suspicious/noExplicitAny: miniMetadata type varies per module
         miniMetadata: miniMetadata as any,
       })
 
@@ -147,6 +152,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
             .concat(balances.dynamicTokens)
             .map((token) => [token, BALANCES_ADDRESSES] as const),
           connector,
+          // biome-ignore lint/suspicious/noExplicitAny: miniMetadata type varies per module
           miniMetadata: miniMetadata as any,
         })
       }

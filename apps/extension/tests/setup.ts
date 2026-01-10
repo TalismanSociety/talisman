@@ -20,7 +20,9 @@ function createStorageArea() {
     changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
     areaName: string
   ) => {
-    listeners.forEach((listener) => listener(changes, areaName))
+    listeners.forEach((listener) => {
+      listener(changes, areaName)
+    })
   }
 
   return {
@@ -135,7 +137,9 @@ function createMockPort(name?: string): chrome.runtime.Port {
   const port: chrome.runtime.Port = {
     name: name || "",
     disconnect: vi.fn(() => {
-      disconnectListeners.forEach((listener) => listener(port))
+      disconnectListeners.forEach((listener) => {
+        listener(port)
+      })
     }),
     postMessage: vi.fn(),
     onDisconnect: {
@@ -220,6 +224,7 @@ process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
 globalThis.structuredClone = cloneDeep
 
 // Remove useless warnings
+// biome-ignore lint/suspicious/noConsole: intentionally overriding console.warn to filter test noise
 const originalWarn = console.warn
 console.warn = (...args: unknown[]) => {
   const msg = args[0]?.toString?.()

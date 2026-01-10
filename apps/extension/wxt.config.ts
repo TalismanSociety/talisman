@@ -65,7 +65,7 @@ function createQuietLogger(): Logger {
         .map((arg) => (typeof arg === "string" ? filterSuccessMessage(arg) : arg))
         .filter((arg) => arg !== null)
       if (filtered.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: consola types require any for spread args
         ;(consola.success as (...args: any[]) => void)(...filtered)
       }
     },
@@ -279,8 +279,7 @@ export default defineConfig({
   },
 
   // Manifest configuration
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  manifest: ({ browser, manifestVersion, mode, command }) => {
+  manifest: ({ browser, mode }) => {
     // Pick the right icon suffix based on mode (dev vs prod/canary)
     const iconSuffix = mode === "development" ? "-dev" : "-prod"
 
