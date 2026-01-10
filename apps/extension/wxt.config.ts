@@ -181,6 +181,32 @@ export default defineConfig({
         deleteSourcemaps(outputDir)
       }
     },
+    // Fix manifest values after WXT generates it
+    // WXT auto-generates some fields from entrypoints, overriding our custom values
+    "build:manifestGenerated": (_wxt, manifest) => {
+      const isDev = _wxt.config.mode === "development"
+      const isChrome = _wxt.config.browser === "chrome"
+      const nameSuffix = isDev ? " - Dev" : BUILD_TYPE === "canary" ? " - Canary" : ""
+
+      // Fix action title to match manifest name suffix
+      if (manifest.action) {
+        manifest.action.default_title = `Talisman${nameSuffix}`
+        // WXT strips query params and hash from popup URL, restore them
+        manifest.action.default_popup = "popup.html?embedded#/portfolio"
+      }
+
+      // Set version_name for Chrome (helps distinguish builds in extensions list)
+      // Production: "1.2.3", Canary: "1.2.3 - abc1234", Dev: "1.2.3 - abc1234 dev"
+      if (isChrome) {
+        if (BUILD_TYPE === "production") {
+          manifest.version_name = pkg.version
+        } else if (BUILD_TYPE === "canary") {
+          manifest.version_name = `${pkg.version} - ${getGitSha()}`
+        } else {
+          manifest.version_name = `${pkg.version} - ${getGitSha()} dev`
+        }
+      }
+    },
   },
 
   // Dev server configuration
@@ -205,8 +231,13 @@ export default defineConfig({
     // Pick the right icon suffix based on mode (dev vs prod/canary)
     const iconSuffix = mode === "development" ? "-dev" : "-prod"
 
+    // Determine name suffix based on build type
+    // Dev builds get " - Dev", canary builds get " - Canary", production builds have no suffix
+    const nameSuffix =
+      mode === "development" ? " - Dev" : BUILD_TYPE === "canary" ? " - Canary" : ""
+
     return {
-      name: "Talisman Wallet",
+      name: `Talisman Wallet${nameSuffix}`,
       description:
         "The self-custody wallet for the next era of DeFi. One unified portfolio for Ethereum, Solana, Bittensor, Polkadot, and more.",
       author: "Talisman",
@@ -223,7 +254,7 @@ export default defineConfig({
       },
 
       action: {
-        default_title: "Talisman",
+        default_title: `Talisman${nameSuffix}`,
         default_popup: "popup.html?embedded#/portfolio",
       },
 
@@ -258,6 +289,8 @@ export default defineConfig({
         : {
             // ES module service workers require Chrome 121+
             minimum_chrome_version: "121",
+            // Note: version_name is set in the build:manifestGenerated hook
+            // because WXT filters unknown manifest fields here
             // Dev-only key for stable extension ID during development
             // This is stripped by Chrome Web Store on upload, so it won't affect production
             ...(mode === "development"
