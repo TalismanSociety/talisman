@@ -6,9 +6,6 @@
     "useIgnoreFile": true,
     "defaultBranch": "dev"
   },
-  "files": {
-    "includes": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json", "**/*.css"]
-  },
   "assist": {
     "actions": {
       "source": {
