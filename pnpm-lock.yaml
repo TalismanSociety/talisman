@@ -731,6 +731,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.5.2
         version: 4.7.0(vite@7.3.0(@types/node@24.5.1)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0))
+      '@wxt-dev/webextension-polyfill':
+        specifier: 1.0.0
+        version: 1.0.0(webextension-polyfill@0.12.0)(wxt@0.20.13(@types/node@24.5.1)(jiti@2.6.1)(rollup@4.52.5)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0))
       archiver:
         specifier: 7.0.1
         version: 7.0.1
@@ -788,6 +791,9 @@ importers:
       vite-plugin-svgr:
         specifier: 4.5.0
         version: 4.5.0(rollup@4.52.5)(typescript@5.8.3)(vite@7.3.0(@types/node@24.5.1)(jiti@2.6.1)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0))
+      webextension-polyfill:
+        specifier: 0.12.0
+        version: 0.12.0
       wxt:
         specifier: 0.20.13
         version: 0.20.13(@types/node@24.5.1)(jiti@2.6.1)(rollup@4.52.5)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0)
@@ -5543,6 +5549,12 @@ packages:
 
   '@wxt-dev/storage@1.2.6':
     resolution: {integrity: sha512-f6AknnpJvhNHW4s0WqwSGCuZAj0fjP3EVNPBO5kB30pY+3Zt/nqZGqJN6FgBLCSkYjPJ8VL1hNX5LMVmvxQoDw==}
+
+  '@wxt-dev/webextension-polyfill@1.0.0':
+    resolution: {integrity: sha512-F83YdA5Dmy8u9QjRMY2r5h2GlzcYi/Ur+pvM1jTqPDj32qZlG53vqBLxRzptSrqahweahECBnJMe9GFegArgkQ==}
+    peerDependencies:
+      webextension-polyfill: '*'
+      wxt: '>=0.20.0'
 
   '@xobotyi/scrollbar-width@1.9.5':
     resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
@@ -11274,6 +11286,9 @@ packages:
 
   webextension-polyfill@0.10.0:
     resolution: {integrity: sha512-c5s35LgVa5tFaHhrZDnr3FpQpjj1BB+RXhLTYUxGqBVN460HkbM8TBtEqdXWbpTKfzwCcjAZVF7zXCYSKtcp9g==}
+
+  webextension-polyfill@0.12.0:
+    resolution: {integrity: sha512-97TBmpoWJEE+3nFBQ4VocyCdLKfw54rFaJ6EVQYLBCXqCIpLSZkwGgASpv4oPt9gdKCJ80RJlcmNzNn008Ag6Q==}
 
   webfontloader@1.6.28:
     resolution: {integrity: sha512-Egb0oFEga6f+nSgasH3E0M405Pzn6y3/9tOVanv/DLfa1YBIgcv90L18YyWnvXkRbIM17v5Kv6IT2N6g1x5tvQ==}
@@ -17317,6 +17332,11 @@ snapshots:
       '@wxt-dev/browser': 0.1.32
       async-mutex: 0.5.0
       dequal: 2.0.3
+
+  '@wxt-dev/webextension-polyfill@1.0.0(webextension-polyfill@0.12.0)(wxt@0.20.13(@types/node@24.5.1)(jiti@2.6.1)(rollup@4.52.5)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0))':
+    dependencies:
+      webextension-polyfill: 0.12.0
+      wxt: 0.20.13(@types/node@24.5.1)(jiti@2.6.1)(rollup@4.52.5)(terser@5.44.0)(tsx@4.20.3)(yaml@2.6.0)
 
   '@xobotyi/scrollbar-width@1.9.5': {}
 
@@ -24201,6 +24221,8 @@ snapshots:
 
   webextension-polyfill@0.10.0:
     optional: true
+
+  webextension-polyfill@0.12.0: {}
 
   webfontloader@1.6.28: {}
 

@@ -142,6 +142,7 @@
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "@vitejs/plugin-react": "^4.5.2",
+    "@wxt-dev/webextension-polyfill": "1.0.0",
     "archiver": "7.0.1",
     "autoprefixer": "^10.4.20",
     "dotenv": "^16.4.5",
@@ -161,6 +162,7 @@
     "tsx": "^4.20.3",
     "vite-plugin-node-polyfills": "0.24.0",
     "vite-plugin-svgr": "4.5.0",
+    "webextension-polyfill": "0.12.0",
     "wxt": "0.20.13"
   },
   "scripts": {
@@ -170,9 +172,9 @@
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
+    "build:firefox": "wxt build -b firefox --mv3",
     "build:zip": "wxt zip",
-    "build:zip:firefox": "wxt zip -b firefox",
+    "build:zip:firefox": "wxt zip -b firefox --mv3",
     "test": "PORT_PREFIX=talisman jest --maxWorkers=50%",
     "test:watch": "PORT_PREFIX=talisman jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",

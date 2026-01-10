@@ -127,8 +127,10 @@ export default defineConfig({
         open_in_tab: true,
       },
 
+      // CSP - WXT handles MV2/MV3 conversion automatically
+      // Dev mode needs 'unsafe-eval' for some dependencies that use eval()
       content_security_policy: {
-        extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+        extension_pages: `script-src 'self' 'wasm-unsafe-eval'${mode === "development" ? " 'unsafe-eval'" : ""}; object-src 'self';`,
       },
 
       web_accessible_resources: [
@@ -158,8 +160,66 @@ export default defineConfig({
   // Vite configuration
   // In dev mode: alias packages to source for hot reload
   // In production: use pre-built tsup outputs from dist/ for smaller bundles
-  vite: ({ mode }) => {
+  vite: ({ mode, browser }) => {
     const isDev = mode === "development"
+    // WXT passes browser via the ConfigEnv parameter (e.g., "firefox", "chrome")
+    const isFirefox = browser === "firefox"
+
+    // Helper function to transform chrome.* to browser.* for Firefox
+    // Used by both transform (dev) and renderChunk (production) hooks
+    const transformChromeToBrowser = (code: string): { code: string; map: null } | null => {
+      let result = code
+
+      // Replace common chrome.* API namespaces with browser.*
+      // Use word boundaries to avoid partial matches
+      const chromeApis = [
+        "storage",
+        "runtime",
+        "tabs",
+        "windows",
+        "notifications",
+        "alarms",
+        "browserAction",
+        "action",
+        "permissions",
+        "webRequest",
+        "scripting",
+        "management",
+        "contextMenus",
+        "commands",
+        "cookies",
+        "downloads",
+        "history",
+        "bookmarks",
+        "identity",
+        "i18n",
+        "idle",
+        "extension",
+      ]
+
+      for (const api of chromeApis) {
+        // Match chrome.api (but not .chrome.api or _chrome.api)
+        const dotPattern = new RegExp(`\\bchrome\\.${api}\\b`, "g")
+        result = result.replace(dotPattern, `browser.${api}`)
+
+        // Also handle bracket notation: chrome["storage"], chrome['storage']
+        const bracketPattern = new RegExp(`\\bchrome\\s*\\[\\s*['"]${api}['"]\\s*\\]`, "g")
+        result = result.replace(bracketPattern, `browser["${api}"]`)
+      }
+
+      // Remove WXT's "const browser = browser$N" to avoid TDZ conflict
+      // Our banner already defines "var browser = globalThis.browser" at the top
+      result = result.replace(
+        /const browser = browser\$\d+;/g,
+        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner",
+      )
+
+      // Only return if we made changes
+      if (result !== code) {
+        return { code: result, map: null }
+      }
+      return null
+    }
 
     // Base aliases always needed (internal extension paths)
     const baseAliases: Alias[] = [
@@ -254,6 +314,38 @@ export default defineConfig({
             return null
           },
         },
+        // Firefox: Replace chrome.* with browser.* in both dev and production
+        // In Firefox MV2, the 'browser' API provides Promise-based methods,
+        // while 'chrome' uses callbacks. Since the codebase uses 'chrome.*' directly,
+        // we transform the code to use 'browser' instead.
+        ...(isFirefox
+          ? [
+              {
+                name: "firefox-chrome-to-browser",
+                enforce: "post" as const,
+                // Use transform hook for dev mode (serves files directly)
+                transform(code: string, id: string) {
+                  // Only transform JS/TS files from our source
+                  // Use a more flexible pattern that handles query strings
+                  if (!id.match(/\.(js|ts|tsx|jsx)(\?|$)/)) return null
+                  // Skip node_modules (they shouldn't use chrome.* directly)
+                  if (id.includes("node_modules")) return null
+
+                  // Only transform if the file uses chrome.* APIs
+                  if (!code.includes("chrome.")) return null
+
+                  return transformChromeToBrowser(code)
+                },
+                // Use renderChunk hook for production builds
+                renderChunk(code: string, chunk: { fileName: string }) {
+                  // Only transform JS files
+                  if (!chunk.fileName.endsWith(".js")) return null
+
+                  return transformChromeToBrowser(code)
+                },
+              },
+            ]
+          : []),
       ],
 
       resolve: {
@@ -305,11 +397,22 @@ export default defineConfig({
             warn(warning)
           },
           output: {
-            // Add document shim for service worker (background script)
+            // Add shims for service worker (background script)
             // Some packages like @polkadot/util reference document which doesn't exist in service workers
+            // For Firefox, we also need to set up 'browser' before any code runs
             banner: (chunk) => {
               if (chunk.fileName === "background.js" || chunk.name === "background") {
-                return `
+                // Firefox MV2: Create 'browser' var from globalThis.browser BEFORE any code runs
+                // This avoids TDZ issues with const browser declarations from polyfills
+                const firefoxShim = isFirefox
+                  ? `
+// Firefox browser API shim - must be var (not const) to avoid TDZ issues
+// Firefox MV2 provides globalThis.browser with Promise-based APIs
+var browser = globalThis.browser;
+`
+                  : ""
+
+                return `${firefoxShim}
 // Document shim for service worker - some packages reference document which doesn't exist
 if (typeof document === "undefined") {
   globalThis.document = { baseURI: self.location.href, currentScript: null };
