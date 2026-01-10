@@ -37,10 +37,12 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Typecheck
-        run: pnpm typecheck
       - name: Test
         run: pnpm test
+      - name: Build packages
+        run: pnpm build:packages
+      - name: Typecheck
+        run: pnpm typecheck
       - name: Extract short SHA + package version
         id: vars
         run: |
