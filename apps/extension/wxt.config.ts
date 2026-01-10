@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process"
 import { resolve } from "node:path"
 
 import type { Alias } from "vite"
@@ -9,6 +10,19 @@ import { defineConfig } from "wxt"
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
+
+// Get git SHA for build identification (used in zip filename)
+// Prefer COMMIT_SHA_SHORT env var (from CI), otherwise get it from git
+function getGitSha(): string {
+  if (process.env.COMMIT_SHA_SHORT) {
+    return process.env.COMMIT_SHA_SHORT
+  }
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim()
+  } catch {
+    return "unknown"
+  }
+}
 
 // Resolve monorepo packages to their source directories for hot reload
 const packagesDir = resolve(__dirname, "../../packages")
@@ -434,4 +448,12 @@ if (typeof document === "undefined") {
 
   // WXT-specific options
   imports: false, // Disable auto-imports for explicit control
+
+  // Zip configuration for build artifacts
+  zip: {
+    // Include git SHA in zip filename for build identification
+    // Format: talisman-1.2.3-abc1234-chrome.zip
+    artifactTemplate: `talisman-{{version}}-${getGitSha()}-{{browser}}.zip`,
+    sourcesTemplate: `talisman-{{version}}-${getGitSha()}-sources.zip`,
+  },
 })

@@ -42,7 +42,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Test
-        run: pnpm preconstruct:dev && pnpm test
+        run: pnpm test
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -60,7 +60,7 @@ jobs:
           cli-version: "2.2.0"
           args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
       - name: Build
-        run: pnpm build:extension:ci
+        run: pnpm build:extension:zip
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
           POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: ./apps/extension/dist/chrome/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}_chrome.zip
+          path: ./apps/extension/dist/*.zip
           retention-days: 5
 
   # This job will use the files from the build job to run Playwright tests
@@ -105,8 +105,8 @@ jobs:
           path: ./build-artifact
       - name: Unzip build artifact to the playwright extension path
         run: |
-          mkdir -p ./apps/extension/dist/chrome
-          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome
+          mkdir -p ./apps/extension/dist/chrome-mv3
+          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome-mv3
       - name: Cache playwright browsers
         uses: actions/cache@v3
         with:
