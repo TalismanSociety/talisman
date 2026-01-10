@@ -1,6 +1,8 @@
 // WXT Background Script Entry Point
 // Imports the main background logic from extension-core
 
+import { defineBackground } from "wxt/utils/define-background"
+
 // Import the background module - this is a side-effect module that initializes the extension
 // The import must happen at the top level, not inside defineBackground callback
 import "extension-core/background"

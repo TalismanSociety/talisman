@@ -2,26 +2,20 @@
   "extends": "@talismn/tsconfig/es6-react.json",
   "compilerOptions": {
     "noEmit": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "moduleResolution": "bundler",
     "paths": {
-      "@common": ["./common"],
-      "@common/*": ["./common/*"],
-      "@talisman": ["./@talisman"],
-      "@talisman/*": ["./@talisman/*"],
-      "@ui": ["./ui"],
-      "@ui/*": ["./ui/*"],
-      "@tests": ["./tests"],
-      "@tests/*": ["./tests/*"]
+      "@common": ["./src/common"],
+      "@common/*": ["./src/common/*"],
+      "@talisman": ["./src/@talisman"],
+      "@talisman/*": ["./src/@talisman/*"],
+      "@ui": ["./src/ui"],
+      "@ui/*": ["./src/ui/*"],
+      "@tests": ["./src/tests"],
+      "@tests/*": ["./src/tests/*"],
+      "inject/*": ["./src/inject/*"]
     }
   },
-  "include": [
-    ".wxt/wxt.d.ts",
-    "i18next-parser.config.cjs",
-    "src",
-    "entrypoints",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": ["**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
+  "include": [".wxt/wxt.d.ts", "i18next-parser.config.cjs", "src", "entrypoints", "wxt.config.ts"],
+  "exclude": ["**/node_modules", "**/*.spec.ts", "**/*.test.ts"]
 }

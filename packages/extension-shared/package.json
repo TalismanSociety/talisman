@@ -10,7 +10,8 @@
   "sideEffects": false,
   "scripts": {
     "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:*",

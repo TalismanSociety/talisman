@@ -26,7 +26,8 @@
     "lint": "eslint src --max-warnings 0",
     "chore:generate-init-data": "tsx scripts/generateInitData.ts",
     "clean": "rm -rf dist init/*/dist net/dist .turbo node_modules",
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@talismn/util": "workspace:*",

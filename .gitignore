@@ -31,6 +31,9 @@ yarn-error.log*
 # turbo
 .turbo
 
+# typescript
+*.tsbuildinfo
+
 # extension
 dist
 review

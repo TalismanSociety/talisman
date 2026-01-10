@@ -24,7 +24,8 @@
     "test": "vitest run",
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.2",

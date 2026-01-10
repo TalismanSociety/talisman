@@ -17,7 +17,8 @@
   "scripts": {
     "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@talismn/crypto": "workspace:*",

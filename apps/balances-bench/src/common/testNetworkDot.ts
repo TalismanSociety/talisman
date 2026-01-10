@@ -233,8 +233,11 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
       log.log(papiStringify(dryRun, 2))
     }
     stopAll()
+
+    return { tokens, miniMetadatas, dryRun }
   } catch (err) {
     log.error(err)
     connector.asProvider(network.id).disconnect()
+    return { tokens: null, miniMetadatas: [], dryRun: null }
   }
 }

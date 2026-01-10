@@ -3,6 +3,8 @@
 
 import type { Message } from "@polkadot/extension-base/types"
 import { PORT_CONTENT } from "extension-shared"
+import { browser } from "wxt/browser"
+import { defineContentScript } from "wxt/utils/define-content-script"
 
 export default defineContentScript({
   matches: ["file://*/*", "http://*/*", "https://*/*"],

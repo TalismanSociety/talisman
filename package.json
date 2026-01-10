@@ -34,6 +34,7 @@
     "build:extension:zip": "pnpm build:packages && pnpm run --filter extension build:zip",
     "build:extension:zip:firefox": "pnpm build:packages && pnpm run --filter extension build:zip:firefox",
     "lint": "pnpm run -r --parallel lint",
+    "typecheck": "pnpm run -r --parallel typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
