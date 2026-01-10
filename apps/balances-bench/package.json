@@ -1,8 +1,8 @@
 {
   "name": "balances-bench",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Benchmarking scripts for balances",
   "scripts": {
     "dev:ethereum": "tsx watch src/ethereum.ts",
     "dev:hydration": "tsx watch src/hydration.ts",
