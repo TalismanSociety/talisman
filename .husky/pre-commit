@@ -1,1 +1,22 @@
-pnpm biome check --staged --write
+# Run Biome on staged files and auto-fix issues
+# Disable errexit for this block since we handle exit codes manually
+set +e
+output=$(pnpm biome check --staged --write 2>&1)
+exit_code=$?
+set -e
+echo "$output"
+
+if [ $exit_code -eq 0 ]; then
+  # Biome succeeded - all checks passed
+  exit 0
+elif echo "$output" | grep -q "No files were processed"; then
+  # No supported files staged (e.g., only YAML/MD files) - skip gracefully
+  # Biome only supports JS/TS/JSX/TSX/JSON/CSS
+  exit 0
+elif echo "$output" | grep -q "The list is empty"; then
+  # No files staged at all (e.g., --allow-empty commit)
+  exit 0
+else
+  # Actual lint/format errors - fail the commit
+  exit $exit_code
+fi
