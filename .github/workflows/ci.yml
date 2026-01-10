@@ -37,6 +37,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Biome check
+        run: pnpm biome check --changed origin/${{ github.base_ref || 'dev' }} .
       - name: Test
         run: pnpm test
       - name: Build packages

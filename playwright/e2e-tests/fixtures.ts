@@ -15,7 +15,8 @@ export const test = base.extend<{
   addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
   walletPopup: (opts: { locator: Locator }) => Promise<Page>
 }>({
-  context: async (_ctx, utilize) => {
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
+  context: async ({}, utilize) => {
     const pathToExtension = "./apps/extension/dist/chrome-mv3"
     const context = await chromium.launchPersistentContext("", {
       headless: false,
