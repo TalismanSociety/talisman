@@ -50,6 +50,22 @@ In development mode:
 - Changes to package source files trigger immediate rebuilds without needing to rebuild packages
 - The Vite dev server provides hot module replacement for React components
 
+### Persistent Browser Profile
+
+Your extension data (accounts, settings) persists between dev sessions:
+
+| Browser | How It Works                                                                  |
+| ------- | ----------------------------------------------------------------------------- |
+| Chrome  | Profile stored in `~/.talisman-dev/chrome-data` (outside repo for security)   |
+| Firefox | Uses Firefox's native profile storage, identified by extension ID in manifest |
+
+The Chrome profile is stored **outside the repository** for security, since it may contain real wallet data. This location:
+
+- Is not synced to cloud drives (iCloud, Dropbox) if your repo is in a synced folder
+- Is not accessible to npm packages that might scan the repo
+- Survives `pnpm clean` and repo deletion
+- Is shared across all Talisman repo clones on your machine
+
 ## Production Builds
 
 ### Build Commands

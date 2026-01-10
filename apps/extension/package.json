@@ -161,6 +161,7 @@
     "wxt": "0.20.13"
   },
   "scripts": {
+    "postinstall": "mkdir -p ~/.talisman-dev/chrome-data",
     "chore:update-translations": "pnpm exec i18next --silent --config i18next-parser.config.cjs",
     "chore:download-translations": "pnpm tsx scripts/download-translations.ts",
     "chore:codegen:stealthex-swaps": "openapi-typescript https://stealthex.talisman.xyz/docs/openapi.json --export-type --root-types -o src/ui/domains/Swap/swap-modules/stealthex.api.d.ts",

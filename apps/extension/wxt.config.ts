@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process"
+import { homedir } from "node:os"
 import { resolve } from "node:path"
 
 import type { Alias, Plugin } from "vite"
@@ -92,8 +93,9 @@ export default defineConfig({
   },
 
   // Runner configuration - persist browser data directory
+  // Stored in ~/.talisman-dev/ outside the repo for security (contains extension data)
   runner: {
-    chromiumProfile: ".wxt/chrome-data",
+    chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
     keepProfileChanges: true,
   },
 
@@ -156,6 +158,13 @@ export default defineConfig({
         : {
             // ES module service workers require Chrome 121+
             minimum_chrome_version: "121",
+            // Dev-only key for stable extension ID during development
+            // This is stripped by Chrome Web Store on upload, so it won't affect production
+            ...(mode === "development"
+              ? {
+                  key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsyajFaxudigtQcdMmR/oBIBzR0OwKoXu7c7jACcevdm4ud9fJuGygThmQJLm03maSJWxfuVSJmPcjIDCZezgfwaGfIKFxrFeP5h8agwoH9CAj7aOz389bOaLD6u9iBrk6CgwI27AbYfpXRvn1XZrx+LQkedfNjpsfBxgmPS9lcTJnuB96CdgYPX4gk4FuTI8RdX2TCQRX9E/eNl/Y7bcqMBJob+IQ3MhMP3mCLXiQH0gCoLtXnZyB731tOR68EmKCZ9j5FJ9OghgOzZxoUoEtFniCxvlDrt5tDsnHSqW77OySWR76laW0ibV7ZFg191v2XeeiokIKRO5DolRBKq3owIDAQAB",
+                }
+              : {}),
           }),
     }
   },
