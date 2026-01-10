@@ -127,10 +127,10 @@ export default defineConfig({
         open_in_tab: true,
       },
 
-      // CSP - WXT handles MV2/MV3 conversion automatically
-      // Dev mode needs 'unsafe-eval' for some dependencies that use eval()
+      // CSP - Chrome MV3 doesn't allow 'unsafe-eval', only 'wasm-unsafe-eval'
+      // Firefox MV2 is more permissive but we use the same CSP for simplicity
       content_security_policy: {
-        extension_pages: `script-src 'self' 'wasm-unsafe-eval'${mode === "development" ? " 'unsafe-eval'" : ""}; object-src 'self';`,
+        extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
       },
 
       web_accessible_resources: [
