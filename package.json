@@ -23,7 +23,6 @@
     "chore:prepare-release": "pnpm generate-init-data && pnpm chore:download-translations",
     "dev": "pnpm dev:extension",
     "dev:firefox": "pnpm dev:extension:firefox",
-    "dev:*": "concurrently --prefix \"{name}\" --prefix-colors auto \"pnpm:dev:*\"",
     "dev:balances-demo": "pnpm run --filter balances-demo dev",
     "dev:extension": "pnpm run --filter extension dev",
     "dev:extension:firefox": "pnpm run --filter extension dev:firefox",
@@ -44,7 +43,7 @@
     "test:e2e:debug": "pnpm exec playwright test --debug",
     "test:e2e:trace": "pnpm exec playwright test --trace on && pnpm exec playwright show-report",
     "test:e2e:stress": "pnpm exec playwright test --repeat-each=20 --workers 1 --trace on",
-    "clean": "pnpm run -r --parallel clean & rm -rf dist .turbo node_modules & wait"
+    "clean": "pnpm run -r --parallel clean & rm -rf .wxt dist coverage test-results playwright-report .turbo node_modules review & wait"
   },
   "dependencies": {
     "@yieldxyz/sdk": "^0.0.4",

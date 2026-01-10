@@ -174,7 +174,7 @@
     "test:watch": "vitest",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "clean": "rm -rf dist .wxt node_modules coverage",
+    "clean": "rm -rf dist .wxt node_modules coverage .turbo .i18next-parser",
     "typecheck": "tsc --noEmit"
   },
   "browserslist": {

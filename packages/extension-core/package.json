@@ -14,7 +14,7 @@
     "lint": "eslint src --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf .turbo node_modules",
+    "clean": "rm -rf .turbo node_modules dist coverage",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
