@@ -6,6 +6,7 @@ import { defineBackground } from "wxt/utils/define-background"
 // Import the background module - this is a side-effect module that initializes the extension
 // The import must happen at the top level, not inside defineBackground callback
 import "extension-core/background"
+import { log } from "extension-shared"
 
 export default defineBackground({
   // Use ES modules for the service worker - this allows code splitting/chunking
@@ -16,7 +17,6 @@ export default defineBackground({
   main() {
     // Background initialization is handled by extension-core/background import above
     // This callback runs when the service worker starts
-    // eslint-disable-next-line no-console
-    console.log("[Talisman] Background script initialized")
+    log.log("[Talisman] Background script initialized")
   },
 })

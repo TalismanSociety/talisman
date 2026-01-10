@@ -67,7 +67,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       // match with legacy naming
       if (type === "polkadot") type = "substrate"
-    } catch (e) {
+    } catch {
       log.warn("Unknown encoding for address", address)
     }
 

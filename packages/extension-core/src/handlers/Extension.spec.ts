@@ -412,7 +412,7 @@ describe("Extension", () => {
     // app.talisman.xyz should already be in the authorised sites store after onboarding
     const account = await getAccount()
     const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(talismanSite && talismanSite.addresses)
+    expect(talismanSite?.addresses)
     expect(talismanSite.addresses?.includes(account.address))
 
     const [newAddress] = await messageSender("pri(accounts.add.derive)", [

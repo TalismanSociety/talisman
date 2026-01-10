@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
 import type { SolNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { existsSync, readFileSync, writeFileSync } from "fs"
 
 export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {
   nativeCurrency?: Partial<SolNetwork["nativeCurrency"]>

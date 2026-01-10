@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { dirname } from "node:path"
 import { BALANCE_MODULES, type MiniMetadata } from "@talismn/balances"
 import { ChainConnectorDotStub, type IChainConnectorDot } from "@talismn/chain-connectors"
 import type { DotNetwork, Token, TokenType } from "@talismn/chaindata-provider"
@@ -14,8 +16,6 @@ import {
   unifyMetadata,
 } from "@talismn/scale"
 import { log } from "extension-shared"
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs"
-import { dirname } from "path"
 import { Enum } from "polkadot-api"
 
 const TEST_ADDRESS_SUB = "5CcU6DRpocLUWYJHuNLjB4gGyHJrkWuruQD5XFbRYffCfSAP"
@@ -47,7 +47,7 @@ export const testNetworkDot = async (network: DotNetworkConfig, options?: TestOp
 
   const connector: IChainConnectorDot = new ChainConnectorDotStub(network as unknown as DotNetwork)
 
-  const stopAll = log.timer("testDotNetwork " + network.id)
+  const stopAll = log.timer(`testDotNetwork ${network.id}`)
 
   const miniMetadatas: MiniMetadata[] = []
   let tokens: Token[] | null = null

@@ -1,7 +1,7 @@
 // Page script - injected into web pages for dApp interaction
 
 import type { Message } from "@polkadot/extension-base/types"
-import { DEBUG, isTalismanHostname } from "extension-shared"
+import { DEBUG, isTalismanHostname, log } from "extension-shared"
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script"
 import WindowMessageService from "../src/common/WindowMessageService"
 import { injectEthereum } from "../src/inject/ethereum/injectEthereum"
@@ -20,8 +20,7 @@ export default defineUnlistedScript(() => {
     if (source !== window || data.origin !== "talisman-content") return
 
     if (data.id) messageService.handleResponse(data)
-    // eslint-disable-next-line no-console
-    else if (DEBUG) console.error("Missing id for response", { data })
+    else if (DEBUG) log.error("Missing id for response", { data })
   })
 
   // redirect users if this page is considered as phishing, otherwise return false

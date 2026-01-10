@@ -16,7 +16,7 @@ import type {
 } from "extension-core"
 import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 
 import { ADDRESSES } from "../constants"
@@ -24,8 +24,8 @@ import { ADDRESSES } from "../constants"
 const authorisedSites = {
   [TALISMAN_WEB_APP_DOMAIN]: {
     addresses: Object.entries(ADDRESSES)
-      .filter(([name, address]) => name !== "VITALIK")
-      .map(([name, address]) => address),
+      .filter(([name]) => name !== "VITALIK")
+      .map(([, address]) => address),
     connectAllSubstrate: true,
     id: TALISMAN_WEB_APP_DOMAIN,
     origin: "Talisman",
@@ -124,14 +124,13 @@ const mockedApiMethods = {
 // Note: We use an empty object as target since vi.importActual is async
 // All real methods should be added to mockedApiMethods if needed
 export const mockedApi = new Proxy({} as Record<string, unknown>, {
-  get(target, prop) {
+  get(_target, prop) {
     if (Object.hasOwn(mockedApiMethods, prop)) {
       // Use specific mock if defined
       return mockedApiMethods[prop as keyof typeof mockedApiMethods]
     }
     // Use generic mock for any other property
-    // eslint-disable-next-line no-console
-    console.log("Attempting to access un-mocked api method: ", prop)
+    log.log("Attempting to access un-mocked api method: ", prop)
     return undefined
   },
 })

@@ -37,6 +37,7 @@
     "build:extension:canary:firefox": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:canary:firefox",
     "check": "biome check --changed .",
     "check:fix": "biome check --changed --fix .",
+    "check:fix:unsafe": "biome check --changed --fix --unsafe .",
     "typecheck": "pnpm run -r --parallel typecheck",
     "test": "vitest run",
     "test:watch": "vitest",

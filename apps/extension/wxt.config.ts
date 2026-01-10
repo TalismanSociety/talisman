@@ -6,6 +6,7 @@ import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
+import { log } from "extension-shared"
 import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
@@ -101,8 +102,7 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
   // Require auth token for Sentry uploads
   if (!process.env.SENTRY_AUTH_TOKEN) {
-    // eslint-disable-next-line no-console
-    console.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
+    log.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
     return []
   }
 
@@ -160,8 +160,6 @@ function deleteSourcemaps(outputDir: string): void {
 
   const deleted = deleteMapFilesRecursively(outputDir)
   if (deleted > 0) {
-    // eslint-disable-next-line no-console
-    console.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
   }
 }
 
