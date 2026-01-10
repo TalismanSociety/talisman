@@ -4,10 +4,11 @@ import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 
 import type { Alias, Plugin } from "vite"
-import type { WxtViteConfig } from "wxt"
+import type { Logger, WxtViteConfig } from "wxt"
 import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
+import consola from "consola"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
 import { defineConfig } from "wxt"
@@ -18,6 +19,57 @@ const pkg = require("./package.json")
 // Build type from environment variable (set by build:prod, build:canary, etc.)
 // Values: "production" | "canary" | undefined (dev/default)
 const BUILD_TYPE = process.env.BUILD_TYPE as "production" | "canary" | undefined
+
+// Create a custom logger that filters out the verbose file list output
+// while still showing important success messages (build time, zip output with filename/size)
+function createQuietLogger(): Logger {
+  // Filter success messages to remove extension file list but keep zip file info
+  const filterSuccessMessage = (msg: string): string | null => {
+    if (typeof msg !== "string") return msg
+
+    // Check if this message contains tree structure (file list output)
+    if (!msg.includes("├─") && !msg.includes("└─")) return msg
+
+    // Split into lines and filter
+    const lines = msg.split("\n")
+    const filteredLines = lines.filter((line) => {
+      const trimmed = line.trim()
+      if (!trimmed) return true
+
+      // Keep lines with .zip files (we want to see zip output)
+      if (line.includes(".zip")) return true
+
+      // Keep the total size line only if it's for zips (follows a .zip line)
+      // Filter out tree structure lines for non-zip files
+      if (line.includes("├─") || line.includes("└─")) return false
+      if (line.includes("Σ Total size:")) return false
+
+      // Keep header lines
+      return true
+    })
+
+    const result = filteredLines.join("\n").trim()
+    return result || null
+  }
+
+  return {
+    level: 3, // warn level
+    debug: (...args) => consola.debug(...args),
+    log: (...args) => consola.log(...args),
+    info: (...args) => consola.info(...args),
+    warn: (...args) => consola.warn(...args),
+    error: (...args) => consola.error(...args),
+    fatal: (...args) => consola.fatal(...args),
+    success: (...args) => {
+      const filtered = args
+        .map((arg) => (typeof arg === "string" ? filterSuccessMessage(arg) : arg))
+        .filter((arg) => arg !== null)
+      if (filtered.length > 0) {
+        consola.success(...filtered)
+      }
+    },
+  }
+}
 
 // Get git SHA for build identification (used in zip filename)
 // Prefer COMMIT_SHA_SHORT env var (from CI), otherwise get it from git
@@ -158,6 +210,9 @@ function createPackageSourceAliases(): Alias[] {
 }
 
 export default defineConfig({
+  // Custom logger that filters out verbose file list output
+  logger: createQuietLogger(),
+
   // Project root directory
   root: __dirname,
 
@@ -606,6 +661,14 @@ export default defineConfig({
             }
             // Ignore eval warnings from store package
             if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
+              return
+            }
+            // Ignore "externalized for browser compatibility" warnings
+            // These are expected for Node.js modules (vm, http, https, zlib) in browser builds
+            if (
+              warning.code === "PLUGIN_WARNING" &&
+              warning.message?.includes("externalized for browser compatibility")
+            ) {
               return
             }
             warn(warning)
