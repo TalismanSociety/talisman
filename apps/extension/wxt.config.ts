@@ -247,7 +247,6 @@ export default defineConfig({
         }
       }
 
-      const isDev = _wxt.config.mode === "development"
       const isChrome = _wxt.config.browser === "chrome"
       const nameSuffix = getNameSuffix()
 
