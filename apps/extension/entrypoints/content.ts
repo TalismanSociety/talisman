@@ -17,6 +17,7 @@ const matches =
 export default defineContentScript({
   matches,
   runAt: "document_start",
+  allFrames: true,
 
   main() {
     class PortManager {

@@ -16,9 +16,8 @@ import { defineConfig } from "wxt"
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
 
-// Build type from environment variable (set by build:prod, build:canary, etc.)
-// Values: "production" | "canary" | undefined (dev/default)
-const BUILD_TYPE = process.env.BUILD_TYPE as "production" | "canary" | undefined
+// Build type from environment variable (set by build:prod, build:canary, etc.), default to dev
+const BUILD_TYPE = process.env.BUILD_TYPE ?? ("dev" as "production" | "canary" | "dev")
 
 // Create a custom logger that filters out the verbose file list output
 // while still showing important success messages (build time, zip output with filename/size)
@@ -233,9 +232,22 @@ export default defineConfig({
     // Fix manifest values after WXT generates it
     // WXT auto-generates some fields from entrypoints, overriding our custom values
     "build:manifestGenerated": (_wxt, manifest) => {
+      const getNameSuffix = () => {
+        switch (BUILD_TYPE) {
+          case "production":
+            return ""
+          case "canary":
+            return " - Canary"
+          case "dev":
+            return " - Dev"
+          default:
+            return " - Unknown"
+        }
+      }
+
       const isDev = _wxt.config.mode === "development"
       const isChrome = _wxt.config.browser === "chrome"
-      const nameSuffix = isDev ? " - Dev" : BUILD_TYPE === "canary" ? " - Canary" : ""
+      const nameSuffix = getNameSuffix()
 
       // Fix action title to match manifest name suffix
       if (manifest.action) {
