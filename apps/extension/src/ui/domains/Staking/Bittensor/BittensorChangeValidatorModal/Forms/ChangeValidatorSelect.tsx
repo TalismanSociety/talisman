@@ -39,21 +39,29 @@ import { BITTENSOR_TOKEN_ID } from "../../utils/constants"
 
 type SortValue = "name" | "totalStaked" | "totalStakers" | "apr"
 
-const sortBondOptions = (data: BondOptionType[], sortBy: SortValue): BondOptionType[] =>
-  data
-    .concat()
-    .sort((a, b) => {
-      if (sortBy === "name") {
-        if (a.name && !b.name) return -1
-        if (!a.name && b.name) return 1
-        return a.name.localeCompare(b.name)
-      } else {
-        if (a[sortBy] > b[sortBy]) return -1
-        if (a[sortBy] < b[sortBy]) return 1
-      }
-      return 0
-    })
-    .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1))
+const sortBondOptions = (
+  data: BondOptionType[],
+  sortBy: SortValue,
+  selected: string | null,
+): BondOptionType[] => {
+  return [
+    ...[data.find((d) => d.hotkey === selected)].filter((d): d is BondOptionType => !!d), // show selected up top
+    ...data
+      .filter((d) => d.hotkey !== selected)
+      .sort((a, b) => {
+        if (sortBy === "name") {
+          if (a.name && !b.name) return -1
+          if (!a.name && b.name) return 1
+          return a.name.localeCompare(b.name)
+        } else {
+          if (a[sortBy] > b[sortBy]) return -1
+          if (a[sortBy] < b[sortBy]) return 1
+        }
+        return 0
+      })
+      .sort((a, b) => (a.validatorYield ? -1 : 1) - (b.validatorYield ? -1 : 1)),
+  ]
+}
 
 export const ChangeValidatorSelect = () => {
   const { t } = useTranslation()
@@ -69,7 +77,9 @@ export const ChangeValidatorSelect = () => {
   const search = useDeferredValue(rawSearch)
 
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
-    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined,
+    combinedValidatorsData.length
+      ? sortBondOptions(combinedValidatorsData, sortMethod, newHotkey ?? currentHotkey)
+      : undefined,
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -78,14 +88,12 @@ export const ChangeValidatorSelect = () => {
     if (!sortedValidators) return undefined
 
     const lowerSearch = search.toLowerCase()
-    return sortedValidators
-      .filter((v) => v.hotkey !== currentHotkey) // Exclude current validator
-      .filter(
-        (delegate) =>
-          delegate.name.toLowerCase().includes(lowerSearch) ||
-          delegate.hotkey.toLowerCase().includes(lowerSearch),
-      )
-  }, [sortedValidators, search, currentHotkey])
+    return sortedValidators.filter(
+      (delegate) =>
+        delegate.name.toLowerCase().includes(lowerSearch) ||
+        delegate.hotkey.toLowerCase().includes(lowerSearch),
+    )
+  }, [sortedValidators, search])
 
   const handleSubmit = useCallback(
     (hotkey: string) => {
@@ -99,9 +107,11 @@ export const ChangeValidatorSelect = () => {
   useEffect(() => {
     if (combinedValidatorsData.length)
       startTransition(() => {
-        setSortedValidators(sortBondOptions(combinedValidatorsData, sortMethod))
+        setSortedValidators(
+          sortBondOptions(combinedValidatorsData, sortMethod, newHotkey ?? currentHotkey),
+        )
       })
-  }, [combinedValidatorsData, sortMethod])
+  }, [combinedValidatorsData, sortMethod, currentHotkey, newHotkey])
 
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
@@ -176,7 +186,7 @@ export const ChangeValidatorSelect = () => {
               <ValidatorRows
                 taoTokenId={BITTENSOR_TOKEN_ID}
                 validators={displayedValidators}
-                selectedHotkey={newHotkey}
+                selectedHotkey={newHotkey ?? currentHotkey}
                 isLoading={isLoading}
                 onSelect={handleSubmit}
               />
