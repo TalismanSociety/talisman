@@ -40,10 +40,10 @@ import {
 import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
-type SortValue = "netuid" | "price" | "total_tao" | "total_alpha" | "emission"
+type SortValue = "netuid" | "emission"
 
 const sortSubnetOptions = (data: SubnetData[], sortBy: SortValue): SubnetData[] => {
-  const descendingFilters: SortValue[] = ["total_alpha", "total_tao", "emission"]
+  const descendingFilters: SortValue[] = ["emission"]
   const sorted = data
     .filter((sn) => sn.netuid)
     .sort((a, b) => {
@@ -69,7 +69,6 @@ export const BittensorClaimSubnetSelect = () => {
     nativeToken,
     selectedSubnets,
     setSelectedSubnets,
-    claimTypeData,
     canSubmit,
     onSubmitted,
   } = useBittensorClaimSettingsWizard()
@@ -78,16 +77,9 @@ export const BittensorClaimSubnetSelect = () => {
   const [search, setSearch] = useState<string>("")
   const deferredSearch = useDeferredValue(search)
 
-  // Track the initially confirmed subnets (from chain) - these stay at the top
-  const confirmedSubnetsRef = useRef<number[]>(claimTypeData?.subnets ?? [])
+  const [preselectedSubnets, setPreselectedSubnets] = useState(() => selectedSubnets)
 
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
-
-  useEffect(() => {
-    if (claimTypeData?.subnets) {
-      confirmedSubnetsRef.current = claimTypeData.subnets
-    }
-  }, [claimTypeData?.subnets])
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
     sortSubnetOptions(subnetData, sortMethod),
@@ -104,16 +96,15 @@ export const BittensorClaimSubnetSelect = () => {
     })
 
     // Put confirmed subnets at the top, maintaining their relative order
-    const confirmedNetuids = confirmedSubnetsRef.current
     const confirmed = filtered.filter(
-      (s) => s.netuid !== undefined && confirmedNetuids.includes(s.netuid),
+      (s) => s.netuid !== undefined && preselectedSubnets.includes(s.netuid),
     )
     const others = filtered.filter(
-      (s) => s.netuid === undefined || !confirmedNetuids.includes(s.netuid),
+      (s) => s.netuid === undefined || !preselectedSubnets.includes(s.netuid),
     )
 
     return [...confirmed, ...others]
-  }, [deferredSearch, sortedSubnets])
+  }, [deferredSearch, preselectedSubnets, sortedSubnets])
 
   const handleToggleSubnet = useCallback(
     (netuid: number) => {
@@ -124,6 +115,15 @@ export const BittensorClaimSubnetSelect = () => {
       )
     },
     [selectedSubnets, setSelectedSubnets],
+  )
+
+  const handleSortMethodChange = useCallback(
+    (method: SortValue) => {
+      // if sort method changed, we want to update preselected subnets to match current selection
+      setPreselectedSubnets(selectedSubnets)
+      setSortMethod(method)
+    },
+    [selectedSubnets],
   )
 
   const [, startTransition] = useTransition()
@@ -176,7 +176,7 @@ export const BittensorClaimSubnetSelect = () => {
               autoFocus
             />
           </div>
-          <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
+          <SortMethodButton method={sortMethod} onChange={handleSortMethodChange} />
         </div>
 
         <div className="flex w-full grow flex-col overflow-hidden">
@@ -349,7 +349,6 @@ const SubnetRow: FC<{
       className={classNames(
         "hover:bg-grey-750 focus-visible:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected && "bg-grey-800",
       )}
     >
       <TokenLogo tokenId={tokenAlpha.id} className="size-16 shrink-0" />
