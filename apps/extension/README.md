@@ -105,12 +105,12 @@ pnpm build:canary:firefox
 
 ### Output Directories
 
-| Command             | Unpacked Directory     | Zip File                                        |
-| ------------------- | ---------------------- | ----------------------------------------------- |
-| `dev`               | `dist/chrome-mv3-dev`  | -                                               |
-| `dev:firefox`       | `dist/firefox-mv3-dev` | -                                               |
-| `build` / `build:*` | `dist/chrome-mv3`      | `.output/talisman-wallet-{version}-chrome.zip`  |
-| `build:*:firefox`   | `dist/firefox-mv3`     | `.output/talisman-wallet-{version}-firefox.zip` |
+| Command             | Unpacked Directory     | Zip File                                     |
+| ------------------- | ---------------------- | -------------------------------------------- |
+| `dev`               | `dist/chrome-mv3-dev`  | -                                            |
+| `dev:firefox`       | `dist/firefox-mv2-dev` | -                                            |
+| `build` / `build:*` | `dist/chrome-mv3`      | `dist/talisman-wallet-{version}-chrome.zip`  |
+| `build:*:firefox`   | `dist/firefox-mv3`     | `dist/talisman-wallet-{version}-firefox.zip` |
 
 ### Build Variants
 
