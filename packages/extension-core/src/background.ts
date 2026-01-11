@@ -19,10 +19,14 @@ sentry.init()
 // This must complete before any signing operations can occur
 // Previously this happened automatically with webpack's synchronous WASM loading,
 // but Vite loads WASM asynchronously so we need to explicitly wait for it
-cryptoWaitReady().catch((err) => {
-  log.error("Failed to initialize crypto WASM", err)
-  sentry.captureException(err)
-})
+cryptoWaitReady()
+  .then(() => {
+    log.debug("@polkadot/util-crypto WASM initialized")
+  })
+  .catch((err) => {
+    log.error("Failed to initialize crypto WASM", err)
+    sentry.captureException(err)
+  })
 
 // Use chrome.action (MV3) or chrome.browserAction (MV2) for badge
 const actionApi = chrome.action ?? chrome.browserAction
