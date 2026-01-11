@@ -22,6 +22,8 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
 
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
+
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
   const { genericEvent } = useAnalytics()
@@ -99,14 +101,15 @@ const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
   const { genericEvent } = useAnalytics()
   const bittensorNetworkIds = useBittensorNetworkIds()
   const { open } = useBittensorChangeValidatorModal()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const isBittensorDTao =
     token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
 
   const handleClick = useCallback(() => {
-    open({ tokenId: token.id })
+    open({ tokenId: token.id, address: selectedAccount?.address })
     genericEvent("open change validator modal", { tokenId: token.id })
-  }, [open, token.id, genericEvent])
+  }, [open, token.id, genericEvent, selectedAccount?.address])
 
   if (!isBittensorDTao) return null
 
