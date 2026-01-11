@@ -1,12 +1,12 @@
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { PRIVACY_POLICY_URL } from "extension-shared"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-const TickYes = () => <CheckCircleIcon className="text-md text-primary mr-6" />
+const TickYes = () => <CheckCircleIcon className="mr-6 text-md text-primary" />
 
-const TickNo = () => <XIcon className="text-md text-brand-orange mr-6" />
+const TickNo = () => <XIcon className="mr-6 text-brand-orange text-md" />
 
 export const AnalyticsOptInInfo: FC<{
   className?: string
@@ -19,12 +19,12 @@ export const AnalyticsOptInInfo: FC<{
       <h1 className="mb-4">{t("Help us improve Talisman")}</h1>
       <p className="text-body-secondary">
         {t(
-          "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time.",
+          "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time."
         )}
       </p>
       <div>
         <h3 className="mb-4">{t("What we track")}</h3>
-        <ul className="text-body-secondary m-0 list-none pl-0 [&>li]:flex [&>li]:items-center">
+        <ul className="m-0 list-none pl-0 text-body-secondary [&>li]:flex [&>li]:items-center">
           <li>
             <TickYes />
             {t("Anonymous user data")}
@@ -37,7 +37,7 @@ export const AnalyticsOptInInfo: FC<{
       </div>
       <div>
         <h3 className="mb-4">{t("What we don't track")}</h3>
-        <ul className="text-body-secondary m-0 list-none pl-0 [&>li]:flex [&>li]:items-center">
+        <ul className="m-0 list-none pl-0 text-body-secondary [&>li]:flex [&>li]:items-center">
           <li>
             <TickNo />
             {t("Identifying personal data such as IP addresses")}
@@ -60,7 +60,7 @@ export const AnalyticsOptInInfo: FC<{
             href={PRIVACY_POLICY_URL}
             target="_blank"
             rel="noreferrer noopener"
-            className="hover:text-grey-300 active:text-grey-300 underline"
+            className="underline hover:text-grey-300 active:text-grey-300"
           >
             Privacy Policy
           </a>

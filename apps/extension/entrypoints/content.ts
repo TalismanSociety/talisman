@@ -17,6 +17,7 @@ const matches =
 export default defineContentScript({
   matches,
   runAt: "document_start",
+  allFrames: true,
 
   main() {
     class PortManager {
@@ -52,7 +53,7 @@ export default defineContentScript({
         this.port.onDisconnect.addListener(handleDisconnect)
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: message data from port can be any shape
       handleResponse = (data: any) => {
         window.postMessage({ ...data, origin: "talisman-content" }, window.location.toString())
       }

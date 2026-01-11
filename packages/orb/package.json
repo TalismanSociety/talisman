@@ -15,7 +15,6 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsup --silent",
     "typecheck": "tsc --noEmit"
@@ -29,7 +28,6 @@
     "@talismn/tsconfig": "workspace:*",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
-    "eslint": "^8.57.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "typescript": "^5.6.3"

@@ -37,8 +37,8 @@ chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
       // open onboarding when reason === "install" and data?.talismanOnboarded !== true
       // open dashboard data?.talismanOnboarded === true
       const legacyOnboarded =
-        data && data.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
-      const currentOnboarded = data && data.app && data.app.onboarded === "TRUE"
+        data?.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
+      const currentOnboarded = data?.app && data.app.onboarded === "TRUE"
       if (!legacyOnboarded && !currentOnboarded) {
         chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") })
       }
@@ -83,7 +83,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   }
 })
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "wakeup") {
     sendResponse({ status: "awake" })
   }
@@ -94,11 +94,11 @@ chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
   assert(
     [PORT_CONTENT, PORT_EXTENSION].includes(_port.name),
-    `Unknown connection from ${_port.name}`,
+    `Unknown connection from ${_port.name}`
   )
   let port: chrome.runtime.Port | undefined = _port
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: it is literally anything
   const messageHandler = (data: any) => {
     if (port) talismanHandler(data, port)
   }
@@ -114,8 +114,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
 
 !DEBUG && chrome.runtime.setUninstallURL("https://thxbye.talisman.xyz/")
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const iconManager = new IconManager()
+const _iconManager = new IconManager()
 
 sessionStore.reset().catch((err) => {
   log.error("Failed to reset session store", err)

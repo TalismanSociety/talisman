@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
-import type { Browser } from "webextension-polyfill"
+
 import { cloneDeep } from "lodash-es"
 import { WebSocket } from "mock-socket"
 import sinon from "sinon-chrome"
 import { vi } from "vitest"
+import type { Browser } from "webextension-polyfill"
 
 // Mock WebSocket in tests
 globalThis.WebSocket = WebSocket as unknown as typeof globalThis.WebSocket
@@ -17,9 +18,11 @@ function createStorageArea() {
 
   const notifyListeners = (
     changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
-    areaName: string,
+    areaName: string
   ) => {
-    listeners.forEach((listener) => listener(changes, areaName))
+    listeners.forEach((listener) => {
+      listener(changes, areaName)
+    })
   }
 
   return {
@@ -79,16 +82,16 @@ function createStorageArea() {
     _addListener: (
       listener: (
         changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
-        areaName: string,
-      ) => void,
+        areaName: string
+      ) => void
     ) => {
       listeners.push(listener)
     },
     _removeListener: (
       listener: (
         changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
-        areaName: string,
-      ) => void,
+        areaName: string
+      ) => void
     ) => {
       const index = listeners.indexOf(listener)
       if (index > -1) listeners.splice(index, 1)
@@ -105,21 +108,21 @@ const storage = {
       (
         listener: (
           changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
-          areaName: string,
-        ) => void,
+          areaName: string
+        ) => void
       ) => {
         localStorage._addListener(listener)
-      },
+      }
     ),
     removeListener: vi.fn(
       (
         listener: (
           changes: Record<string, { newValue?: unknown; oldValue?: unknown }>,
-          areaName: string,
-        ) => void,
+          areaName: string
+        ) => void
       ) => {
         localStorage._removeListener(listener)
-      },
+      }
     ),
     hasListener: vi.fn(() => true),
     hasListeners: vi.fn(() => true),
@@ -134,7 +137,9 @@ function createMockPort(name?: string): chrome.runtime.Port {
   const port: chrome.runtime.Port = {
     name: name || "",
     disconnect: vi.fn(() => {
-      disconnectListeners.forEach((listener) => listener(port))
+      disconnectListeners.forEach((listener) => {
+        listener(port)
+      })
     }),
     postMessage: vi.fn(),
     onDisconnect: {
@@ -146,7 +151,7 @@ function createMockPort(name?: string): chrome.runtime.Port {
         if (index > -1) disconnectListeners.splice(index, 1)
       }),
       hasListener: vi.fn((listener: (port: chrome.runtime.Port) => void) =>
-        disconnectListeners.includes(listener),
+        disconnectListeners.includes(listener)
       ),
       hasListeners: vi.fn(() => disconnectListeners.length > 0),
       getRules: vi.fn(),
@@ -162,7 +167,7 @@ function createMockPort(name?: string): chrome.runtime.Port {
         if (index > -1) messageListeners.splice(index, 1)
       }),
       hasListener: vi.fn((listener: (message: unknown, port: chrome.runtime.Port) => void) =>
-        messageListeners.includes(listener),
+        messageListeners.includes(listener)
       ),
       hasListeners: vi.fn(() => messageListeners.length > 0),
       getRules: vi.fn(),
@@ -183,19 +188,19 @@ const chromeWithAsyncWindows = {
     connect: vi.fn(
       (
         extensionIdOrInfo?: string | chrome.runtime.ConnectInfo,
-        _connectInfo?: chrome.runtime.ConnectInfo,
+        _connectInfo?: chrome.runtime.ConnectInfo
       ) => {
         const name =
           typeof extensionIdOrInfo === "string" ? extensionIdOrInfo : extensionIdOrInfo?.name
         return createMockPort(name)
-      },
+      }
     ),
   },
   windows: {
     ...sinon.windows,
     create: (...args: unknown[]) =>
       new Promise((resolve) =>
-        resolve(sinon.windows.create(...(args as Parameters<typeof sinon.windows.create>))),
+        resolve(sinon.windows.create(...(args as Parameters<typeof sinon.windows.create>)))
       ),
   },
 }
@@ -219,6 +224,7 @@ process.env.POLKADOTJS_DISABLE_ESM_CJS_WARNING = "1"
 globalThis.structuredClone = cloneDeep
 
 // Remove useless warnings
+// biome-ignore lint/suspicious/noConsole: intentionally overriding console.warn to filter test noise
 const originalWarn = console.warn
 console.warn = (...args: unknown[]) => {
   const msg = args[0]?.toString?.()

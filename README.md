@@ -71,7 +71,6 @@ Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's 
 ## Apps and packages
 
 - `apps/extension`: the non-custodial Talisman Wallet browser extension (built with [WXT](https://wxt.dev/)/Vite)
-- `packages/eslint-config`: shared `eslint` configurations
 - `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
 - `packages/util`: library containing shared non-react code. It is not meant to be npm published.
 
@@ -79,10 +78,20 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 
 ## Writing and running tests
 
-- Testing is carried out with Jest.
+- Testing is carried out with [Vitest](https://vitest.dev/).
 - Tests can be written in `*.spec.ts` files, inside a `__tests__` folder.
 - Follow the pattern in `apps/extension/src/core/handlers/Extension.spec.ts` or `apps/extension/src/core/domains/signing/__tests__/requestsStore.spec.ts`
 - Tests are run with `pnpm test`
+
+## Code quality
+
+We use [Biome](https://biomejs.dev/) for linting and formatting across the monorepo.
+
+- **Format code**: `pnpm chore:format`
+- **Lint code**: `pnpm lint`
+- **Pre-commit hook**: Automatically runs Biome checks on staged files
+
+If you're using VS Code, install the [Biome extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) for automatic formatting on save.
 
 ## i18n (wallet extension development)
 
@@ -93,13 +102,13 @@ When building UI features, please follow the following spec to ensure they're tr
 1. Import the `useTranslation` hook into your React components:
 
    ```tsx
-   import { useTranslation } from "react-i18next"
+   import { useTranslation } from "react-i18next";
    ```
 
 1. Use the hook in your component to get access to the `t` function:
 
    ```tsx
-   const { t } = useTranslation()
+   const { t } = useTranslation();
    ```
 
 1. Wrap any user-visible language in your component with the `t` function:
@@ -112,7 +121,7 @@ When building UI features, please follow the following spec to ensure they're tr
          {t("Account has {{assetCount}} assets", { assetCount: assets.length })}
        </div>
      </div>
-   )
+   );
    ```
 
 1. If you want to include any react components in your translation, you will need to use the `Trans` component:

@@ -22,7 +22,6 @@
   },
   "scripts": {
     "test": "vitest run",
-    "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsup --silent",
     "typecheck": "tsc --noEmit"
@@ -41,11 +40,9 @@
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
     "@types/react": "^18.3.12",
-    "eslint": "^8.57.1",
     "react": "^18.3.1",
     "typescript": "^5.6.3"
   },
@@ -53,12 +50,6 @@
     "@polkadot/util-crypto": "*",
     "react": "*",
     "react-dom": "*"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/react"
-    ]
   },
   "types": "./dist/index.d.ts",
   "exports": {

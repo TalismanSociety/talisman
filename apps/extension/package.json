@@ -110,7 +110,6 @@
   },
   "devDependencies": {
     "@rollup/plugin-replace": "6.0.3",
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.0.1",
@@ -126,7 +125,6 @@
     "@types/webextension-polyfill": "0.12.1",
     "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
     "fake-indexeddb": "6.0.0",
     "i18next-parser": "^9.3.0",
     "mock-socket": "^9.3.1",
@@ -160,8 +158,6 @@
     "build:analyze:firefox": "wxt build -b firefox --mv3 --analyze",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . --max-warnings 0 --ext ts,tsx",
-    "lint:fix": "eslint . --ext ts,tsx --fix",
     "clean": "rm -rf dist .wxt node_modules coverage .turbo .i18next-parser",
     "typecheck": "tsc --noEmit"
   },
@@ -174,12 +170,6 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version"
-    ]
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/react"
     ]
   }
 }

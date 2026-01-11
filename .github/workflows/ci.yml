@@ -25,7 +25,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # also get the previous commit
+          fetch-depth: 2
+      - name: Fetch base branch for comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }} --depth=1
       - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
@@ -37,6 +40,19 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Biome check
+        run: |
+          BASE_REF="${{ github.base_ref || 'dev' }}"
+          # Get changed files using two-dot diff (works with shallow clones)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs' | tr '\n' ' ')
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No supported files changed - skipping biome check"
+            exit 0
+          fi
+
+          echo "Changed files: $CHANGED_FILES"
+          pnpm biome check $CHANGED_FILES
       - name: Test
         run: pnpm test
       - name: Build packages

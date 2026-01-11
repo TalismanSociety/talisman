@@ -11,7 +11,6 @@
     "./src/background.ts"
   ],
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf .turbo node_modules dist coverage",
@@ -78,7 +77,6 @@
     "@testing-library/dom": "^10.4.0",
     "@types/node": "^24.5.1",
     "@types/pako": "2.0.4",
-    "eslint": "^8.57.1",
     "fake-indexeddb": "6.0.0",
     "mock-socket": "^9.3.1",
     "sinon-chrome": "^3.0.1",

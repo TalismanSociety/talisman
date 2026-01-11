@@ -2,23 +2,22 @@ import { execSync } from "node:child_process"
 import { existsSync, readdirSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
-
-import type { Alias, Plugin } from "vite"
-import type { Logger, WxtViteConfig } from "wxt"
 import replace from "@rollup/plugin-replace"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
+import { log } from "extension-shared"
+import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
+import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
 
-// Build type from environment variable (set by build:prod, build:canary, etc.)
-// Values: "production" | "canary" | undefined (dev/default)
-const BUILD_TYPE = process.env.BUILD_TYPE as "production" | "canary" | undefined
+// Build type from environment variable (set by build:prod, build:canary, etc.), default to dev
+const BUILD_TYPE = process.env.BUILD_TYPE ?? ("dev" as "production" | "canary" | "dev")
 
 // Create a custom logger that filters out the verbose file list output
 // while still showing important success messages (build time, zip output with filename/size)
@@ -65,7 +64,7 @@ function createQuietLogger(): Logger {
         .map((arg) => (typeof arg === "string" ? filterSuccessMessage(arg) : arg))
         .filter((arg) => arg !== null)
       if (filtered.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: consola types require any for spread args
         ;(consola.success as (...args: any[]) => void)(...filtered)
       }
     },
@@ -85,13 +84,6 @@ function getGitSha(): string {
   }
 }
 
-// Get release version for Sentry
-// For production builds, use semver. For other builds, use git SHA for traceability.
-function getSentryRelease(): string {
-  if (BUILD_TYPE === "production") return pkg.version
-  return getGitSha()
-}
-
 // Create Sentry Vite plugins for production/canary builds
 // Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
 // to prevent exposing source code in the distributed extension.
@@ -102,8 +94,7 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
   // Require auth token for Sentry uploads
   if (!process.env.SENTRY_AUTH_TOKEN) {
-    // eslint-disable-next-line no-console
-    console.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
+    log.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
     return []
   }
 
@@ -115,7 +106,8 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
     // Release identification
     release: {
-      name: `talisman-wallet@${getSentryRelease()}`,
+      name: `${pkg.version}`,
+      dist: `${BUILD_TYPE}-${getGitSha()}`,
     },
 
     // Sourcemap configuration
@@ -130,6 +122,8 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
     // Disable telemetry
     telemetry: false,
+    // Do not output sourcemap files list
+    silent: true,
   }) as Plugin[]
 }
 
@@ -162,7 +156,7 @@ function deleteSourcemaps(outputDir: string): void {
   const deleted = deleteMapFilesRecursively(outputDir)
   if (deleted > 0) {
     // eslint-disable-next-line no-console
-    console.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
+    log.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
   }
 }
 
@@ -240,9 +234,21 @@ export default defineConfig({
     // Fix manifest values after WXT generates it
     // WXT auto-generates some fields from entrypoints, overriding our custom values
     "build:manifestGenerated": (_wxt, manifest) => {
-      const isDev = _wxt.config.mode === "development"
+      const getNameSuffix = () => {
+        switch (BUILD_TYPE) {
+          case "production":
+            return ""
+          case "canary":
+            return " - Canary"
+          case "dev":
+            return " - Dev"
+          default:
+            return " - Unknown"
+        }
+      }
+
       const isChrome = _wxt.config.browser === "chrome"
-      const nameSuffix = isDev ? " - Dev" : BUILD_TYPE === "canary" ? " - Canary" : ""
+      const nameSuffix = getNameSuffix()
 
       // Fix action title to match manifest name suffix
       if (manifest.action) {
@@ -252,14 +258,13 @@ export default defineConfig({
       }
 
       // Set version_name for Chrome (helps distinguish builds in extensions list)
-      // Production: "1.2.3", Canary: "1.2.3 - abc1234", Dev: "1.2.3 - abc1234 dev"
       if (isChrome) {
         if (BUILD_TYPE === "production") {
           manifest.version_name = pkg.version
         } else if (BUILD_TYPE === "canary") {
-          manifest.version_name = `${pkg.version} - ${getGitSha()}`
+          manifest.version_name = `${pkg.version} canary - ${getGitSha()}`
         } else {
-          manifest.version_name = `${pkg.version} - ${getGitSha()} dev`
+          manifest.version_name = `${pkg.version} dev - ${getGitSha()}`
         }
       }
     },
@@ -282,10 +287,10 @@ export default defineConfig({
   },
 
   // Manifest configuration
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  manifest: ({ browser, manifestVersion, mode, command }) => {
+  manifest: ({ browser, mode }) => {
     // Pick the right icon suffix based on mode (dev vs prod/canary)
-    const iconSuffix = mode === "development" ? "-dev" : "-prod"
+    const iconSuffix =
+      mode === "development" ? "-dev" : BUILD_TYPE === "canary" ? "-canary" : "-prod"
 
     // Determine name suffix based on build type
     // Dev builds get " - Dev", canary builds get " - Canary", production builds have no suffix
@@ -412,7 +417,7 @@ export default defineConfig({
       // Our banner already defines "var browser = globalThis.browser" at the top
       result = result.replace(
         /const browser = browser\$\d+;/g,
-        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner",
+        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner"
       )
 
       // Only return if we made changes
@@ -484,12 +489,12 @@ export default defineConfig({
             "process.env.RELEASE": JSON.stringify(`talisman-wallet@${pkg.version}`),
             "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
             "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
-              process.env.SUPPORTED_LANGUAGES || "",
+              process.env.SUPPORTED_LANGUAGES || ""
             ),
             "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
             "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
             "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
-              process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+              process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
             ),
           },
         }),
@@ -535,11 +540,11 @@ export default defineConfig({
               let result = code
               result = result.replace(
                 /process(?:\$\d+)*\.env\s*\[\s*['"]EXTENSION_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman"),
+                JSON.stringify("talisman")
               )
               result = result.replace(
                 /process(?:\$\d+)*\.env\s*\[\s*['"]PORT_PREFIX['"]\s*\]/g,
-                JSON.stringify("talisman"),
+                JSON.stringify("talisman")
               )
               return { code: result, map: null }
             }
@@ -603,7 +608,7 @@ export default defineConfig({
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
         "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
         "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
-          process.env.LOG_SUBSCRIPTION_CALLBACKS || "",
+          process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
         ),
       },
 
@@ -716,8 +721,8 @@ if (typeof document === "undefined") {
   // Zip configuration for build artifacts
   zip: {
     // Include git SHA in zip filename for build identification
-    // Format: talisman-1.2.3-abc1234-chrome.zip
-    artifactTemplate: `talisman-{{version}}-${getGitSha()}-{{browser}}.zip`,
-    sourcesTemplate: `talisman-{{version}}-${getGitSha()}-sources.zip`,
+    // Format: talisman-1.2.3-production-abc1234-chrome.zip
+    artifactTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-{{browser}}.zip`,
+    sourcesTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-sources.zip`,
   },
 })

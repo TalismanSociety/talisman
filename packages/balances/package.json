@@ -22,7 +22,6 @@
   },
   "scripts": {
     "test": "vitest run",
-    "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist .turbo node_modules",
     "build": "tsup --silent",
     "typecheck": "tsc --noEmit"
@@ -54,10 +53,8 @@
     "@polkadot/api-contract": "16.1.2",
     "@polkadot/types": "16.1.2",
     "@polkadot/util": "13.5.3",
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/lodash-es": "4.17.12",
-    "eslint": "^8.57.1",
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
@@ -66,12 +63,6 @@
     "@polkadot/util": "*",
     "@polkadot/util-crypto": "*",
     "@substrate/txwrapper-core": "*"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/base"
-    ]
   },
   "types": "./dist/index.d.ts",
   "exports": {

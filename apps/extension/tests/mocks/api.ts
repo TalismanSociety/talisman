@@ -1,3 +1,12 @@
+import {
+  evmErc20TokenId,
+  evmNativeTokenId,
+  type Network,
+  subAssetTokenId,
+  subNativeTokenId,
+  type Token,
+} from "@talismn/chaindata-provider"
+import type { TokenRatesStorage } from "@talismn/token-rates"
 import type {
   Account,
   AuthorizedSite,
@@ -5,18 +14,9 @@ import type {
   BalanceSubscriptionResponse,
   ProviderType,
 } from "extension-core"
-import {
-  evmErc20TokenId,
-  evmNativeTokenId,
-  Network,
-  subAssetTokenId,
-  subNativeTokenId,
-  Token,
-} from "@talismn/chaindata-provider"
-import { TokenRatesStorage } from "@talismn/token-rates"
-import { AnalyticsCaptureRequest, SitesAuthorizedStore, Trees } from "extension-core"
+import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "extension-core"
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 
 import { ADDRESSES } from "../constants"
@@ -24,8 +24,8 @@ import { ADDRESSES } from "../constants"
 const authorisedSites = {
   [TALISMAN_WEB_APP_DOMAIN]: {
     addresses: Object.entries(ADDRESSES)
-      .filter(([name, address]) => name !== "VITALIK")
-      .map(([name, address]) => address),
+      .filter(([name]) => name !== "VITALIK")
+      .map(([, address]) => address),
     connectAllSubstrate: true,
     id: TALISMAN_WEB_APP_DOMAIN,
     origin: "Talisman",
@@ -47,7 +47,7 @@ const mockedApiMethods = {
   analyticsCapture: vi
     .fn()
     .mockImplementation(
-      (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true)),
+      (_request: AnalyticsCaptureRequest) => new Promise((resolve) => resolve(true))
     ),
   accountsSubscribe: vi.fn().mockImplementation((cb: (accounts: Account[]) => void) => {
     cb([
@@ -97,7 +97,7 @@ const mockedApiMethods = {
   authorizedSiteUpdate: vi
     .fn()
     .mockImplementation((id: string, update: Partial<AuthorizedSite>) =>
-      sitesStore.updateSite(id, update),
+      sitesStore.updateSite(id, update)
     ),
   authorizedSiteForget: vi
     .fn()
@@ -124,14 +124,13 @@ const mockedApiMethods = {
 // Note: We use an empty object as target since vi.importActual is async
 // All real methods should be added to mockedApiMethods if needed
 export const mockedApi = new Proxy({} as Record<string, unknown>, {
-  get(target, prop) {
-    if (Object.prototype.hasOwnProperty.call(mockedApiMethods, prop)) {
+  get(_target, prop) {
+    if (Object.hasOwn(mockedApiMethods, prop)) {
       // Use specific mock if defined
       return mockedApiMethods[prop as keyof typeof mockedApiMethods]
     }
     // Use generic mock for any other property
-    // eslint-disable-next-line no-console
-    console.log("Attempting to access un-mocked api method: ", prop)
+    log.log("Attempting to access un-mocked api method: ", prop)
     return undefined
   },
 })

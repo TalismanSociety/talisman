@@ -9,7 +9,11 @@
 ## Coding & Tooling Standards
 
 - Use **Node >= 20**, `corepack enable`, and **pnpm** commands from `package.json`.
-- Formatting & linting: Prettier + `@talismn/eslint-config` (`eslint --max-warnings 0`). Keep `_`-prefixed unused vars if needed.
+- Formatting & linting: **[Biome](https://biomejs.dev/)** handles both. Commands:
+  - `pnpm lint` (check linting on changed files)
+  - `pnpm chore:format` (format changed files)
+  - Pre-commit hook runs `biome check --staged` automatically
+- Keep `_`-prefixed unused vars if needed (configured in `biome.json`).
 - Write/maintain unit tests (Vitest) and E2E tests (Playwright). Commands:
   - `pnpm test` (workspace-wide Vitest)
   - `pnpm exec playwright test` (E2E) and variants in `package.json`

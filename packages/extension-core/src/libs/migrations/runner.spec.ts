@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { MigrationRunner } from "./runner"
-import { Migration, MigrationFunction } from "./types"
+import { type Migration, MigrationFunction } from "./types"
 
 const migrationForward = new MigrationFunction(async () => {})
 const migrationBackward = new MigrationFunction(async () => {})
