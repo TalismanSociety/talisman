@@ -44,15 +44,18 @@ jobs:
         run: |
           BASE_REF="${{ github.base_ref || 'dev' }}"
           # Get changed files using two-dot diff (works with shallow clones)
-          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs' | tr '\n' ' ')
+          mapfile -t CHANGED_FILES < <(
+            git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
+          )
 
-          if [ -z "$CHANGED_FILES" ]; then
+          if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
             echo "No supported files changed - skipping biome check"
             exit 0
           fi
 
-          echo "Changed files: $CHANGED_FILES"
-          pnpm biome check $CHANGED_FILES
+          echo "Changed files:"
+          printf '  %q\n' "${CHANGED_FILES[@]}"
+          pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Test
         run: pnpm test
       - name: Build packages
