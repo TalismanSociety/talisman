@@ -37,9 +37,10 @@ export const ChangeValidatorReview = () => {
   useEffect(() => {
     // Enable confirm button 0.5 second after the screen is open
     // to ensure the user doesn't accidentally click it (e.g., double click from prev screen)
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setIsDisabled(false)
     }, 500)
+    return () => clearTimeout(timeout)
   }, [])
 
   if (!account || !token || !currentPosition) return null
