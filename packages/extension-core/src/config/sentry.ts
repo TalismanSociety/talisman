@@ -1,15 +1,15 @@
 import {
   BrowserClient,
-  captureEvent,
-  captureException,
-  captureMessage,
+  type captureEvent,
+  type captureException,
+  type captureMessage,
   defaultStackParser,
   getDefaultIntegrations,
   makeFetchTransport,
   Scope,
 } from "@sentry/browser"
-import { Event } from "@sentry/types"
-import { DEBUG } from "extension-shared"
+import type { Event } from "@sentry/types"
+import { DEBUG, log } from "extension-shared"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { trackIndexedDbErrorExtras } from "../domains/app/store.errors"
@@ -29,7 +29,7 @@ settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
   return !["BrowserApiErrors", "TryCatch", "Breadcrumbs", "GlobalHandlers"].includes(
-    defaultIntegration.name,
+    defaultIntegration.name
   )
 })
 
@@ -41,6 +41,7 @@ const client = new BrowserClient({
   stackParser: defaultStackParser,
   integrations: integrations,
   release: process.env.RELEASE,
+  dist: process.env.SENTRY_DIST,
   sampleRate: 1,
   maxBreadcrumbs: 20,
   ignoreErrors: [
@@ -58,7 +59,7 @@ const client = new BrowserClient({
 
     // Print to console instead of Sentry in DEBUG/development builds
     if (DEBUG) {
-      console.error("[DEBUG - Background] Sentry event occurred", event) // eslint-disable-line no-console
+      log.error("[DEBUG - Background] Sentry event occurred", event) // eslint-disable-line no-console
       return null
     }
 
@@ -66,7 +67,7 @@ const client = new BrowserClient({
     return errorTracking ? event : null
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  beforeBreadcrumb: (breadCrumb, hint) => {
+  beforeBreadcrumb: (breadCrumb, _hint) => {
     if (breadCrumb.data?.url) {
       breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
     }
@@ -87,16 +88,15 @@ const scope = new Scope()
 scope.setClient(client)
 
 scope.addEventProcessor(async (event: Event) => {
-  if (event.request && event.request.url) {
+  if (event.request?.url) {
     event.request.url = normalizeUrl(event.request.url)
   }
 
   if (event.exception?.values && event.exception.values.length > 0) {
     const firstValue = event.exception.values[0]
     if (!firstValue.stacktrace?.frames) return event
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
-      frame.filename = normalizeUrl(frame.filename)
+    firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame) => {
+      if (frame.filename) frame.filename = normalizeUrl(frame.filename)
       return frame
     })
   }
