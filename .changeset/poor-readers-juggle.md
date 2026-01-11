@@ -3,7 +3,6 @@
 "@talismn/chain-connectors": patch
 "@talismn/connection-meta": patch
 "@talismn/balances-react": patch
-"@talismn/eslint-config": patch
 "@talismn/on-chain-id": patch
 "@talismn/token-rates": patch
 "@talismn/balances": patch
