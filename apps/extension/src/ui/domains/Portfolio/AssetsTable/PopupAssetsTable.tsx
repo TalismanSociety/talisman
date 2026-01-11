@@ -1,9 +1,10 @@
 import { Balances } from "@talismn/balances"
-import { LockIcon } from "@talismn/icons"
+import { LockIcon, TrendingUpIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -24,6 +25,7 @@ import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { usePortfolioDisplayBalances } from "../useDisplayBalances"
+import { usePortfolioEarnButton } from "../usePortfolioEarnButton"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { PortfolioNetworksLogoStack } from "./PortfolioNetworksLogoStack"
@@ -60,6 +62,7 @@ const AssetRow: FC<{
 }> = ({ balances, locked, noCountUp }) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
+  const { selectedAccount } = usePortfolioNavigation()
 
   const status = useBalancesStatus(balances)
 
@@ -94,6 +97,7 @@ const AssetRow: FC<{
 
   const { canBond } = useBondButton({ balances })
   const showStakingButton = canBond && !locked
+  const { canEarn, openEarnModal } = usePortfolioEarnButton(balances)
 
   if (!token || !summary || !network) return null
 
@@ -147,7 +151,7 @@ const AssetRow: FC<{
               className={classNames(
                 "whitespace-nowrap text-sm font-bold",
                 locked ? "text-body-secondary" : "text-white",
-                showStakingButton && "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               <Tokens
@@ -165,7 +169,7 @@ const AssetRow: FC<{
             <div
               className={classNames(
                 "text-body-secondary leading-base text-xs",
-                showStakingButton && "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
@@ -173,7 +177,8 @@ const AssetRow: FC<{
           </div>
         </div>
       </button>
-      {showStakingButton && (
+
+      {showStakingButton ? (
         <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
           <BondPillButton
             balances={balances}
@@ -181,7 +186,19 @@ const AssetRow: FC<{
             className="[>svg]:text-[2rem] text-base"
           />
         </div>
-      )}
+      ) : canEarn ? (
+        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+          <PillButton
+            onClick={openEarnModal}
+            className="bg-primary/10 hover:bg-primary/20 text-primary [>svg]:text-[2rem] h-16 rounded-[28px] px-4 text-base font-light"
+          >
+            <div className="flex items-center gap-4">
+              <TrendingUpIcon className="shrink-0 text-base" />
+              <div>{t("Earn")}</div>
+            </div>
+          </PillButton>
+        </div>
+      ) : null}
     </div>
   )
 }

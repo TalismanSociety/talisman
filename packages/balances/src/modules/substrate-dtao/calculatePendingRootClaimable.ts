@@ -12,6 +12,7 @@ export const calculatePendingRootClaimable = ({
   networkId,
   validatorRootClaimableRate,
   dynamicInfoByNetuid,
+  alreadyClaimedByNetuid,
 }: {
   stake: bigint
   hotkey: string
@@ -19,6 +20,7 @@ export const calculatePendingRootClaimable = ({
   networkId: string
   validatorRootClaimableRate: Map<number, bigint>
   dynamicInfoByNetuid: Record<number, DynamicInfo | undefined>
+  alreadyClaimedByNetuid: Map<number, bigint>
 }): SubDTaoBalance[] => {
   const pendingRootClaimBalances: SubDTaoBalance[] = []
 
@@ -35,7 +37,11 @@ export const calculatePendingRootClaimable = ({
 
     // Multiply claimable_rate by root_stake
     // I96F32 multiplication: round((a * b) / 2^32)
-    const pendingRootClaim = (stake * claimableRate + (1n << 31n)) >> 32n
+    const totalClaimable = (stake * claimableRate + (1n << 31n)) >> 32n
+
+    // Subtract already claimed amount to get net pending claimable
+    const alreadyClaimed = alreadyClaimedByNetuid.get(netuid) ?? 0n
+    const pendingRootClaim = totalClaimable > alreadyClaimed ? totalClaimable - alreadyClaimed : 0n
 
     pendingRootClaimBalances.push({
       address,

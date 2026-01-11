@@ -1,5 +1,5 @@
 import { TokenRateCurrency } from "@talismn/token-rates"
-import { IS_FIREFOX } from "extension-shared"
+import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
 import { IdenticonType } from "../accounts/types"
@@ -51,3 +51,12 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
 }
 
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
+
+if (DEBUG) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hostObj = globalThis as any
+
+  hostObj.resetSettings = () => {
+    settingsStore.mutate(() => DEFAULT_SETTINGS)
+  }
+}

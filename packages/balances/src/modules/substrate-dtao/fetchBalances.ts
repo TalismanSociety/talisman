@@ -107,6 +107,32 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         ? await fetchRootClaimableRates(connector, networkId, miniMetadata.data, rootHotkeys)
         : new Map<string, Map<number, bigint>>()
 
+    // Collect all (address, hotkey, netuid) pairs for root stakes to fetch RootClaimed amounts
+    const addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]> = []
+    for (const [address, stakes] of stakeInfos) {
+      for (const stake of stakes) {
+        if (stake.netuid === ROOT_NETUID) {
+          const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey)
+          if (claimableRates) {
+            // For each netuid that has a claimable rate, we need to check RootClaimed
+            for (const netuid of claimableRates.keys()) {
+              addressHotkeyNetuidPairs.push([address, stake.hotkey, netuid])
+            }
+          }
+        }
+      }
+    }
+
+    const rootClaimedAmounts =
+      addressHotkeyNetuidPairs.length && miniMetadata.data
+        ? await fetchRootClaimedAmounts(
+            connector,
+            networkId,
+            miniMetadata.data,
+            addressHotkeyNetuidPairs,
+          )
+        : new Map<string, Map<string, Map<number, bigint>>>()
+
     const dynamicInfoByNetuid = keyBy(dynamicInfos.filter(isNotNil), (info) => info.netuid)
 
     // Upserts a balance into the accumulator, merging stake values if the balance already exists.
@@ -157,13 +183,18 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
           // Root stake cases, we need to calculate the pending root claim and add to the balances
           if (stake.netuid === ROOT_NETUID) {
+            const claimableRates = rootClaimableRatesByHotkey.get(stake.hotkey) ?? new Map()
+            const alreadyClaimedMap =
+              rootClaimedAmounts.get(address)?.get(stake.hotkey) ?? new Map<number, bigint>()
+
             const pendingRootClaimBalances = calculatePendingRootClaimable({
               stake: stake.stake,
               hotkey: stake.hotkey,
               address,
               networkId,
-              validatorRootClaimableRate: rootClaimableRatesByHotkey.get(stake.hotkey) ?? new Map(),
+              validatorRootClaimableRate: claimableRates,
               dynamicInfoByNetuid,
+              alreadyClaimedByNetuid: alreadyClaimedMap,
             })
             pendingRootClaimBalances.forEach((balance) => {
               upsertBalance(acc, address, balance.tokenId, balance)
@@ -300,6 +331,26 @@ const buildRootClaimableStorageCoder = async (
   return storageCoder
 }
 
+const buildRootClaimedStorageCoder = async (
+  networkId: string,
+  metadataRpc: `0x${string}` | null,
+): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
+  let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
+
+  if (metadataRpc) {
+    try {
+      storageCoder = buildStorageCoder(metadataRpc, "SubtensorModule", "RootClaimed")
+    } catch (cause) {
+      log.warn(
+        `Failed to build storage coder for SubtensorModule.RootClaimed using provided metadata on ${networkId}`,
+        { cause },
+      )
+    }
+  }
+
+  return storageCoder
+}
+
 const buildRootClaimableQueries = (
   networkId: string,
   hotkeys: string[],
@@ -357,5 +408,95 @@ const fetchRootClaimableRates = async (
     log.warn(`Failed to fetch RootClaimable for hotkeys on ${networkId}`, { cause })
     // Fallback: return empty map for all hotkeys
     return new Map(hotkeys.map((hotkey) => [hotkey, new Map<number, bigint>()]))
+  }
+}
+
+const buildRootClaimedQueries = (
+  networkId: string,
+  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>,
+  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>,
+): Array<RpcQueryPack<[string, string, number, bigint]>> => {
+  return addressHotkeyNetuidPairs.map(([address, hotkey, netuid]) => {
+    let stateKey: MaybeStateKey = null
+    try {
+      // RootClaimed storage takes params: [netuid, hotkey, coldkey_ss58]
+      stateKey = storageCoder.keys.enc(netuid, hotkey, address) as MaybeStateKey
+    } catch (cause) {
+      log.warn(
+        `Failed to encode storage key for RootClaimed (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
+        { cause },
+      )
+    }
+
+    const decodeResult = (changes: MaybeStateKey[]): [string, string, number, bigint] => {
+      const hexValue = changes[0]
+      if (!hexValue) {
+        return [address, hotkey, netuid, 0n]
+      }
+
+      const decoded = decodeScale<bigint | null>(
+        storageCoder,
+        hexValue,
+        `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
+      )
+      return [address, hotkey, netuid, decoded ?? 0n]
+    }
+
+    return {
+      stateKeys: [stateKey],
+      decodeResult,
+    }
+  })
+}
+
+const fetchRootClaimedAmounts = async (
+  connector: IChainConnectorDot,
+  networkId: string,
+  metadataRpc: `0x${string}`,
+  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>,
+): Promise<Map<string, Map<string, Map<number, bigint>>>> => {
+  if (!addressHotkeyNetuidPairs.length) {
+    return new Map<string, Map<string, Map<number, bigint>>>()
+  }
+
+  const storageCoder = await buildRootClaimedStorageCoder(networkId, metadataRpc)
+  if (!storageCoder) {
+    // Fallback: return empty map for all pairs
+    const result = new Map<string, Map<string, Map<number, bigint>>>()
+    for (const [address, hotkey, netuid] of addressHotkeyNetuidPairs) {
+      if (!result.has(address)) result.set(address, new Map())
+      const addressMap = result.get(address)!
+      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
+      addressMap.get(hotkey)!.set(netuid, 0n)
+    }
+    return result
+  }
+
+  const queries = buildRootClaimedQueries(networkId, addressHotkeyNetuidPairs, storageCoder)
+
+  try {
+    const results = await fetchRpcQueryPack(connector, networkId, queries)
+    // Build a nested map: address -> hotkey -> netuid -> claimed amount
+    const result = new Map<string, Map<string, Map<number, bigint>>>()
+    for (const [address, hotkey, netuid, claimed] of results) {
+      if (!result.has(address)) result.set(address, new Map())
+      const addressMap = result.get(address)!
+      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
+      addressMap.get(hotkey)!.set(netuid, claimed)
+    }
+    return result
+  } catch (cause) {
+    log.warn(`Failed to fetch RootClaimed for address-hotkey-netuid pairs on ${networkId}`, {
+      cause,
+    })
+    // Fallback: return empty map for all pairs
+    const result = new Map<string, Map<string, Map<number, bigint>>>()
+    for (const [address, hotkey, netuid] of addressHotkeyNetuidPairs) {
+      if (!result.has(address)) result.set(address, new Map())
+      const addressMap = result.get(address)!
+      if (!addressMap.has(hotkey)) addressMap.set(hotkey, new Map())
+      addressMap.get(hotkey)!.set(netuid, 0n)
+    }
+    return result
   }
 }

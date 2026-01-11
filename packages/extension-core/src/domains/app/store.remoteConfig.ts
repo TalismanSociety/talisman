@@ -56,6 +56,14 @@ export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
     stakingEarlyRewardBoost: "",
     discountTiers: [],
   },
+  earn: {
+    yieldxyzNetworks: {
+      // ethereum: "1",
+      // polygon: "137",
+      // optimism: "10",
+      // solana: "solana-mainnet",
+    },
+  },
   bittensor: {
     fee: {
       buy: {},

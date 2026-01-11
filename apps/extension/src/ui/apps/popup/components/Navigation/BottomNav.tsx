@@ -4,10 +4,9 @@ import {
   HistoryIcon,
   MenuIcon,
   TalismanHandIcon,
-  ZapIcon,
+  TrendingUpIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TALISMAN_WEB_APP_STAKING_URL } from "extension-shared"
 import { FC, ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation, useMatch, useNavigate } from "react-router-dom"
@@ -56,15 +55,15 @@ export const BottomNav = () => {
     closeQuickSettings()
   }, [closeQuickSettings, navigate])
 
-  const handleStakingClick = useCallback(() => {
+  const handleEarnClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Staking button",
+      action: "Earn button",
     })
-    window.open(TALISMAN_WEB_APP_STAKING_URL, "_blank")
-    window.close()
-  }, [])
+    navigate("/earn")
+    closeQuickSettings()
+  }, [closeQuickSettings, navigate])
 
   const handleExpandClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -109,7 +108,12 @@ export const BottomNav = () => {
             onClick={handleHomeClick}
             route="/portfolio/*"
           />
-          <NavButton label={t("Staking")} icon={ZapIcon} onClick={handleStakingClick} />
+          <NavButton
+            label={t("Earn")}
+            icon={TrendingUpIcon}
+            onClick={handleEarnClick}
+            route="/earn/*"
+          />
           <NavButton
             label={t("History")}
             icon={HistoryIcon}

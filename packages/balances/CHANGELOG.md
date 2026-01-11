@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 1.3.1
+
+### Patch Changes
+
+- 332e20f: minimetadata v9
+- 332e20f: fix tao root staking pending rewards calculation
+- Updated dependencies [332e20f]
+  - @talismn/chaindata-provider@1.3.4
+  - @talismn/chain-connectors@0.0.13
+  - @talismn/token-rates@3.0.15
+
 ## 1.3.0
 
 ### Minor Changes

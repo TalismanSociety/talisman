@@ -11,6 +11,7 @@ import { BittensorHandler } from "../domains/bittensor/handler"
 import { ChaindataHandler } from "../domains/chaindata/handler"
 import { ChainsHandler } from "../domains/chains"
 import { DefiHandler } from "../domains/defi/handler"
+import { EarnHandler } from "../domains/earn/handler"
 import { EncryptHandler } from "../domains/encrypt"
 import { EthHandler } from "../domains/ethereum"
 import { keyringStore } from "../domains/keyring/store"
@@ -47,6 +48,7 @@ export default class Extension extends ExtensionHandler {
       app: new AppHandler(stores),
       balances: new BalancesHandler(stores),
       defi: new DefiHandler(stores),
+      earn: new EarnHandler(stores),
       encrypt: new EncryptHandler(stores),
       eth: new EthHandler(stores),
       metadata: new MetadataHandler(stores),

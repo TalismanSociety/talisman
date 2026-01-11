@@ -32,7 +32,7 @@ const NetworkLogoBase: FC<NetworkLogoBaseProps> = ({ network, className }) => {
 
 type NetworkLogoProps = {
   className?: string
-  networkId?: NetworkId
+  networkId?: NetworkId | null
 }
 
 const NetworkLogoInner: FC<NetworkLogoProps> = ({ networkId: id, className }) => {

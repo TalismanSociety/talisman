@@ -16,12 +16,16 @@ const useRisksAnalysisProvider = ({ riskAnalysis }: RisksAnalysisProviderProps) 
 const [RiskAnalysisProviderInner, useRiskAnalysis] = provideContext(useRisksAnalysisProvider)
 
 export const RiskAnalysisProvider: FC<
-  RisksAnalysisProviderProps & { children: ReactNode; onReject?: () => void }
-> = ({ riskAnalysis, children, onReject }) => {
+  RisksAnalysisProviderProps & { children: ReactNode; onReject?: () => void; containerId?: string }
+> = ({ riskAnalysis, children, onReject, containerId }) => {
   return (
     <RiskAnalysisProviderInner riskAnalysis={riskAnalysis}>
       {children}
-      <RiskAnalysisDrawers riskAnalysis={riskAnalysis} onReject={onReject} />
+      <RiskAnalysisDrawers
+        riskAnalysis={riskAnalysis}
+        onReject={onReject}
+        containerId={containerId}
+      />
     </RiskAnalysisProviderInner>
   )
 }

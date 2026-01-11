@@ -9,6 +9,9 @@ export type DbBlobId =
   | "chaindata"
   | "tokenRates"
   | "defi-positions"
+  | "yieldxyz-positions"
+  | "yieldxyz-products"
+  | "yieldxyz-providers"
   | "dynamic-tokens"
   | "bittensor-validators"
 

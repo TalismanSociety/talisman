@@ -1,5 +1,5 @@
 import { XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
+import { classNames, cn } from "@talismn/util"
 import { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"
@@ -11,6 +11,7 @@ type ModalDialogProps = {
   onClose?: () => void
   children?: ReactNode
   id?: string
+  contentClassName?: string
 }
 
 export const ModalDialog: FC<ModalDialogProps> = ({
@@ -20,6 +21,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
   centerTitle,
   onClose,
   children,
+  contentClassName,
 }) => {
   return (
     <div
@@ -51,7 +53,14 @@ export const ModalDialog: FC<ModalDialogProps> = ({
           </IconButton>
         )}
       </header>
-      <div className="scrollable scrollable-800 flex-grow overflow-auto p-10 pt-0">{children}</div>
+      <div
+        className={cn(
+          "scrollable scrollable-800 flex-grow overflow-auto p-10 pt-0",
+          contentClassName,
+        )}
+      >
+        {children}
+      </div>
     </div>
   )
 }
