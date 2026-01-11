@@ -1,7 +1,6 @@
 import { SubDTaoToken, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
 import { Address } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
-import { BehaviorSubject } from "rxjs"
 import { Hex } from "viem"
 
 import { provideContext } from "@talisman/util/provideContext"
@@ -46,25 +45,11 @@ const DEFAULT_STATE: WizardState = {
   hash: null,
 }
 
-const wizardOpenState$ = new BehaviorSubject(DEFAULT_STATE)
-
-export const useResetBittensorChangeValidatorWizard = () => {
-  const reset = useCallback((init: ChangeValidatorOpenOptions) => {
-    wizardOpenState$.next({
-      ...DEFAULT_STATE,
-      tokenId: init.tokenId,
-      address: init.address ?? null,
-    })
-  }, [])
-
-  return reset
-}
-
 const useBittensorChangeValidatorWizardProvider = () => {
   const { genericEvent } = useAnalytics()
-  const { close } = useBittensorChangeValidatorModal()
-  const [{ step, tokenId, address, newHotkey, hash }, setWizardState] = useState<WizardState>(
-    () => wizardOpenState$.value,
+  const { close, args } = useBittensorChangeValidatorModal()
+  const [{ step, newHotkey, hash, tokenId, address }, setWizardState] = useState<WizardState>(
+    () => Object.assign({}, DEFAULT_STATE, args), // init with params passed to modal
   )
 
   const token = useToken(tokenId) as SubDTaoToken | null
@@ -73,7 +58,11 @@ const useBittensorChangeValidatorWizardProvider = () => {
   const nativeToken = useToken(nativeTokenId, "substrate-native")
   const feeToken = useFeeToken(nativeToken?.id)
 
-  const positions = useBittensorStakingPositions(networkId)
+  const allPositions = useBittensorStakingPositions(networkId)
+  const positions = useMemo(() => {
+    if (!args?.tokenId) return allPositions
+    return allPositions.filter((pos) => pos.token.id === args.tokenId)
+  }, [allPositions, args?.tokenId])
 
   // Find the current position based on the token
   const currentPosition = useMemo<BittensorStakingPosition | null>(() => {
