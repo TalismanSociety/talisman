@@ -276,7 +276,8 @@ export default defineConfig({
   // Manifest configuration
   manifest: ({ browser, mode }) => {
     // Pick the right icon suffix based on mode (dev vs prod/canary)
-    const iconSuffix = mode === "development" ? "-dev" : "-prod"
+    const iconSuffix =
+      mode === "development" ? "-dev" : BUILD_TYPE === "canary" ? "-canary" : "-prod"
 
     // Determine name suffix based on build type
     // Dev builds get " - Dev", canary builds get " - Canary", production builds have no suffix
