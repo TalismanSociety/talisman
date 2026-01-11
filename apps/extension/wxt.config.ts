@@ -122,6 +122,8 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
     // Disable telemetry
     telemetry: false,
+    // Do not output sourcemap files list
+    silent: true,
   }) as Plugin[]
 }
 
