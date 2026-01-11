@@ -263,7 +263,7 @@ export const isTxInfoInTypes = <T extends WalletTransactionInfo["type"]>(
 }
 
 export const isTxInfoSwap = (txInfo: WalletTransactionInfo | undefined | null) =>
-  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex", "swap-lifi"])
+  isTxInfoInTypes(txInfo, ["swap-simpleswap", "swap-stealthex", "swap-lifi", "bittensor-staking"])
 
 export const isTxInfoTransfer = (txInfo: WalletTransactionInfo | undefined | null) =>
   isTxInfoOfType(txInfo, "transfer")

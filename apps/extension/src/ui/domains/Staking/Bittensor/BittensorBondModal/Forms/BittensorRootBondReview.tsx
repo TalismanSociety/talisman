@@ -1,5 +1,7 @@
+import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
-import { useEffect, useState } from "react"
+import { WalletTransactionInfo } from "extension-core"
+import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -33,6 +35,24 @@ export const BittensorRootBondReview = () => {
   const { close } = useBittensorBondModal()
 
   const [isDisabled, setIsDisabled] = useState(true)
+
+  const rootAlphaTokenId = useMemo(
+    () => (nativeToken?.networkId ? subDTaoTokenId(nativeToken.networkId, 0) : null),
+    [nativeToken?.networkId],
+  )
+
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (!nativeToken?.id || !rootAlphaTokenId || amountIn === null) return undefined
+    // Root staking: TAO -> ALPHA (netuid 0) for stake, ALPHA -> TAO for unstake
+    const isStaking = stakeDirection === "bond"
+    return {
+      type: "bittensor-staking",
+      fromTokenId: isStaking ? nativeToken.id : rootAlphaTokenId,
+      toTokenId: isStaking ? rootAlphaTokenId : nativeToken.id,
+      fromAmount: amountIn.toString(),
+      toAmount: amountIn.toString(), // same amount for root staking (1:1 ratio)
+    }
+  }, [nativeToken?.id, rootAlphaTokenId, amountIn, stakeDirection])
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
@@ -124,6 +144,7 @@ export const BittensorRootBondReview = () => {
           payload={payload}
           onSubmitted={onSubmitted}
           txMetadata={txMetadata}
+          txInfo={txInfo}
           disabled={isDisabled}
         />
       )}
