@@ -85,13 +85,6 @@ function getGitSha(): string {
   }
 }
 
-// Get release version for Sentry
-// For production builds, use semver. For other builds, use git SHA for traceability.
-function getSentryRelease(): string {
-  if (BUILD_TYPE === "production") return pkg.version
-  return getGitSha()
-}
-
 // Create Sentry Vite plugins for production/canary builds
 // Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
 // to prevent exposing source code in the distributed extension.
@@ -114,7 +107,8 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
     // Release identification
     release: {
-      name: `talisman-wallet@${getSentryRelease()}`,
+      name: `${pkg.version}`,
+      dist: `${BUILD_TYPE}-${getGitSha()}`,
     },
 
     // Sourcemap configuration
@@ -251,14 +245,13 @@ export default defineConfig({
       }
 
       // Set version_name for Chrome (helps distinguish builds in extensions list)
-      // Production: "1.2.3", Canary: "1.2.3 - abc1234", Dev: "1.2.3 - abc1234 dev"
       if (isChrome) {
         if (BUILD_TYPE === "production") {
           manifest.version_name = pkg.version
         } else if (BUILD_TYPE === "canary") {
-          manifest.version_name = `${pkg.version} - ${getGitSha()}`
+          manifest.version_name = `${pkg.version} canary - ${getGitSha()}`
         } else {
-          manifest.version_name = `${pkg.version} - ${getGitSha()} dev`
+          manifest.version_name = `${pkg.version} dev - ${getGitSha()}`
         }
       }
     },
@@ -714,8 +707,8 @@ if (typeof document === "undefined") {
   // Zip configuration for build artifacts
   zip: {
     // Include git SHA in zip filename for build identification
-    // Format: talisman-1.2.3-abc1234-chrome.zip
-    artifactTemplate: `talisman-{{version}}-${getGitSha()}-{{browser}}.zip`,
-    sourcesTemplate: `talisman-{{version}}-${getGitSha()}-sources.zip`,
+    // Format: talisman-1.2.3-production-abc1234-chrome.zip
+    artifactTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-{{browser}}.zip`,
+    sourcesTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-sources.zip`,
   },
 })
