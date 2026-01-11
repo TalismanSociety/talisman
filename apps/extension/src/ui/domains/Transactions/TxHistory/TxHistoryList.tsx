@@ -213,9 +213,11 @@ const TxIconContainer = ({
         )}
       </div>
     </TooltipTrigger>
-    <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-      {tooltip}
-    </TooltipContent>
+    {!!tooltip && (
+      <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+        {tooltip}
+      </TooltipContent>
+    )}
   </Tooltip>
 )
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
@@ -498,7 +500,9 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
   }, [token, tokenRates, txTransfer])
 
   const fromToken = useToken(txSwap?.fromTokenId)
+  const fromNetwork = useNetworkById(fromToken?.networkId)
   const toToken = useToken(txSwap?.toTokenId)
+  const toNetwork = useNetworkById(toToken?.networkId)
 
   // Only use SwapTransactionStatusLabel for external swaps (not bittensor-staking)
   const isExternalSwap = txSwap && txSwap.type !== "bittensor-staking"
@@ -515,10 +519,17 @@ const TransactionRowDot: FC<TransactionRowDotProps> = ({ tx, onSelectTx }) => {
           </TxIconContainer>
         ) : txSwap && fromToken && toToken ? (
           <div className="flex items-center">
-            <TxIconContainer networkId={fromToken.networkId}>
+            <TxIconContainer
+              tooltip={`${fromToken.name}${fromNetwork?.name ? ` on ${fromNetwork.name}` : ""}`}
+              networkId={fromToken.networkId}
+            >
               <TokenLogo tokenId={fromToken.id} className="!h-16 !w-16" />
             </TxIconContainer>
-            <TxIconContainer className="-ml-4" networkId={toToken.networkId}>
+            <TxIconContainer
+              className="-ml-4"
+              tooltip={`${toToken.name}${toNetwork?.name ? ` on ${toNetwork.name}` : ""}`}
+              networkId={toToken.networkId}
+            >
               <TokenLogo tokenId={toToken.id} className="!h-16 !w-16" />
             </TxIconContainer>
           </div>
