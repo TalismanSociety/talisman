@@ -23,7 +23,6 @@ export const initSentryFrontend = () => {
     dsn: process.env.SENTRY_DSN,
     integrations: [SentryReact.browserTracingIntegration()],
     release: process.env.RELEASE,
-    dist: process.env.SENTRY_DIST,
     sampleRate: 1,
     maxBreadcrumbs: 20,
     ignoreErrors: [

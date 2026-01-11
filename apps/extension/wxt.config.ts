@@ -19,10 +19,10 @@ const pkg = require("./package.json")
 // Build type from environment variable (set by build:prod, build:canary, etc.), default to dev
 const BUILD_TYPE = process.env.BUILD_TYPE ?? ("dev" as "production" | "canary" | "dev")
 
-// Keep runtime Sentry release/dist in sync with the Sentry Vite plugin configuration.
+// Keep runtime Sentry release in sync with the Sentry Vite plugin configuration.
 // The plugin also supports SENTRY_RELEASE as an override.
-const SENTRY_RELEASE_NAME = process.env.SENTRY_RELEASE ?? `${pkg.version}`
-const SENTRY_RELEASE_DIST = `${BUILD_TYPE}-${getGitSha()}`
+const SENTRY_RELEASE_NAME =
+  process.env.SENTRY_RELEASE ?? `${pkg.version}-${BUILD_TYPE}-${getGitSha()}`
 
 // Create a custom logger that filters out the verbose file list output
 // while still showing important success messages (build time, zip output with filename/size)
@@ -103,9 +103,6 @@ function createSentryPlugins(_browser: string): Plugin[] {
     return []
   }
 
-  const releaseName = process.env.SENTRY_RELEASE ?? `${pkg.version}`
-  const releaseDist = `${BUILD_TYPE}-${getGitSha()}`
-
   return sentryVitePlugin({
     // Sentry organization and project
     authToken: process.env.SENTRY_AUTH_TOKEN,
@@ -114,8 +111,7 @@ function createSentryPlugins(_browser: string): Plugin[] {
 
     // Release identification
     release: {
-      name: releaseName,
-      dist: releaseDist,
+      name: SENTRY_RELEASE_NAME,
     },
 
     // Sourcemap configuration
@@ -495,7 +491,6 @@ export default defineConfig({
             "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
             "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
             "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
-            "process.env.SENTRY_DIST": JSON.stringify(SENTRY_RELEASE_DIST),
             "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
             "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
               process.env.SUPPORTED_LANGUAGES || ""
@@ -612,7 +607,6 @@ export default defineConfig({
         "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
         "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
         "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
-        "process.env.SENTRY_DIST": JSON.stringify(SENTRY_RELEASE_DIST),
         "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
         "process.env.SUPPORTED_LANGUAGES": JSON.stringify(process.env.SUPPORTED_LANGUAGES || ""),
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),

@@ -41,7 +41,6 @@ const client = new BrowserClient({
   stackParser: defaultStackParser,
   integrations: integrations,
   release: process.env.RELEASE,
-  dist: process.env.SENTRY_DIST,
   sampleRate: 1,
   maxBreadcrumbs: 20,
   ignoreErrors: [
