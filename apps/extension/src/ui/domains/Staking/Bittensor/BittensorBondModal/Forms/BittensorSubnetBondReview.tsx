@@ -139,9 +139,10 @@ export const BittensorSubnetBondReview = () => {
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setIsDisabled(false)
     }, 500)
+    return () => clearTimeout(timeout)
   }, [])
 
   if (!account) return null
