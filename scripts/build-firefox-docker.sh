@@ -38,8 +38,8 @@ CONTAINER_NAME="talisman-build-$$"
 COMMIT_SHA_SHORT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 log_info "Git SHA: $COMMIT_SHA_SHORT"
 
-log_info "Building Docker image for reproducible Firefox builds..."
-docker build -t "$IMAGE_NAME" -f Dockerfile.firefox --build-arg COMMIT_SHA_SHORT="$COMMIT_SHA_SHORT" .
+log_info "Building Docker image for reproducible Firefox builds (no cache)..."
+docker build --no-cache -t "$IMAGE_NAME" -f Dockerfile.firefox --build-arg COMMIT_SHA_SHORT="$COMMIT_SHA_SHORT" .
 
 log_info "Running production Firefox build in Docker..."
 mkdir -p apps/extension/dist

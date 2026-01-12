@@ -37,4 +37,6 @@ COPY . ./
 RUN pnpm install --frozen-lockfile
 
 # Build the production Firefox extension
-CMD ["sh", "-c", "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:prod:firefox"]
+# WXT bundles directly from package source directories via Vite aliases,
+# so we don't need to pre-build the @talismn/* packages with tsup
+CMD ["pnpm", "run", "--filter", "extension", "build:prod:firefox"]

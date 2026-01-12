@@ -494,9 +494,10 @@ export default defineConfig({
       },
     ]
 
-    // In dev mode, add package source aliases for hot reload
-    // In production, packages resolve normally to their dist/ outputs via pnpm workspace
-    const aliases = isDev ? [...baseAliases, ...createPackageSourceAliases()] : baseAliases
+    // Always use package source aliases for both dev and production builds
+    // This bundles directly from TypeScript source, avoiding the need to pre-build packages with tsup
+    // Benefits: simpler build process, single Vite/Rollup pass for potentially better reproducibility
+    const aliases = [...baseAliases, ...createPackageSourceAliases()]
 
     // Cast to WxtViteConfig to handle Vite version mismatches between dependencies
     return {
@@ -687,17 +688,21 @@ export default defineConfig({
         // Target modern browsers
         target: "esnext",
 
+        // For Firefox reproducible builds: disable module preload polyfill
+        // This avoids non-deterministic module ordering in preload chunks
+        modulePreload: isFirefox && !isDev ? false : undefined,
+
         // Sourcemap configuration:
         // - Dev mode: separate sourcemaps for debugging without bloating file sizes
-        // - Production/Canary: hidden sourcemaps (uploaded to Sentry, then deleted)
+        // - Production/Canary Chrome: hidden sourcemaps (uploaded to Sentry, then deleted)
+        // - Firefox: no sourcemaps (we don't use Sentry for Firefox)
         // - Other builds: no sourcemaps
         // Note: "hidden" generates sourcemaps but doesn't add the //# sourceMappingURL comment
-        // This is ideal for Sentry uploads since the maps are deleted after upload anyway
         sourcemap: isDev
           ? true // Separate .js.map files for dev
-          : ["production", "canary"].includes(BUILD_TYPE ?? "")
-            ? "hidden" // Generate maps for Sentry upload (no inline reference)
-            : false, // No sourcemaps for other builds
+          : ["production", "canary"].includes(BUILD_TYPE ?? "") && !isFirefox
+            ? "hidden" // Generate maps for Sentry upload (Chrome only)
+            : false, // No sourcemaps for Firefox or other builds
 
         // Memory optimization: limit minification workers to reduce peak memory usage
         // This helps on memory-constrained systems (e.g., WSL with limited RAM)
@@ -707,6 +712,15 @@ export default defineConfig({
         chunkSizeWarningLimit: 3500,
 
         rollupOptions: {
+          // For Firefox reproducible builds: disable caching and limit parallelism
+          // This ensures deterministic module ordering for Add-on Store review
+          ...(isFirefox && !isDev
+            ? {
+                cache: false, // Disable Rollup caching for reproducibility
+                maxParallelFileOps: 1, // Sequential file operations for deterministic ordering
+              }
+            : {}),
+
           // Suppress noisy warnings from node_modules
           onwarn(warning, warn) {
             // Ignore PURE comment warnings from @polkadot and mlkem packages
@@ -746,8 +760,12 @@ export default defineConfig({
             // Sort chunks alphabetically to avoid file system ordering variations
             manualChunks: undefined, // Let Rollup handle chunking automatically
 
-            // Minimize internal export names for consistent output
-            minifyInternalExports: true,
+            // For Firefox: disable minified exports for deterministic builds
+            // When true, Rollup assigns short names (a, b, c) in module traversal order,
+            // which varies based on file system ordering between machines.
+            // Disabling this uses original export names which are deterministic.
+            // For other browsers: enable for smaller bundle size.
+            minifyInternalExports: !isDev && !isFirefox,
 
             // Add shims for service worker (background script)
             // Some packages like @polkadot/util reference document which doesn't exist in service workers
@@ -802,6 +820,7 @@ if (typeof document === "undefined") {
     includeSources: [
       ".papi/**", // Polkadot API configuration and generated descriptors
       ".npmrc", // pnpm configuration (node version, hoisting, etc.)
+      ".dockerignore", // Docker ignore file for reproducible builds
       "apps/extension/.env", // Environment variables for build (no secrets)
     ],
 

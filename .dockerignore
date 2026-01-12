@@ -4,7 +4,9 @@
 .next
 .turbo
 .i18next-parser
-dist
+# Exclude dist directories except for .papi (pre-built polkadot-api descriptors)
+**/dist
+!.papi/**/dist
 review
 build
 node_modules
