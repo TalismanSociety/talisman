@@ -628,7 +628,6 @@ export default defineConfig({
           "rxjs",
           "@tanstack/react-query",
           "@react-rxjs/core",
-          "@react-rxjs/utils",
           // Data & storage
           "dexie",
           "lodash-es",
