@@ -1,5 +1,6 @@
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { WalletTransactionInfo } from "extension-core"
 import { FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -117,6 +118,20 @@ export const BittensorSubnetBondReview = () => {
     [isSeekTaoDiscountEnabled, totalFeeDiscount],
   )
 
+  const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
+    if (amountIn === null || !nativeToken?.id || !dtaoToken?.id) return undefined
+    // For staking: TAO -> ALPHA (input TAO, receive ALPHA)
+    // For unstaking: ALPHA -> TAO (input ALPHA, receive TAO)
+    const isStaking = stakeDirection === "bond"
+    return {
+      type: "bittensor-staking",
+      fromTokenId: isStaking ? nativeToken.id : dtaoToken.id,
+      toTokenId: isStaking ? dtaoToken.id : nativeToken.id,
+      fromAmount: amountIn.toString(),
+      toAmount: amountOut.toString(),
+    }
+  }, [nativeToken?.id, dtaoToken?.id, amountIn, amountOut, stakeDirection])
+
   const { isLoading } = useCombinedSubnetData(networkId)
 
   const { open } = slippageDrawer
@@ -124,9 +139,10 @@ export const BittensorSubnetBondReview = () => {
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setIsDisabled(false)
     }, 500)
+    return () => clearTimeout(timeout)
   }, [])
 
   if (!account) return null
@@ -343,6 +359,7 @@ export const BittensorSubnetBondReview = () => {
             payload={payload}
             onSubmitted={onSubmitted}
             txMetadata={txMetadata}
+            txInfo={txInfo}
             disabled={isDisabled}
             mode={withMevShield ? "bittensor-mev-shield" : "default"}
           />

@@ -1,4 +1,4 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { NetworkId, parseTokenId } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
 import { WalletTransaction } from "extension-core"
 import { FC, ReactNode } from "react"
@@ -26,6 +26,8 @@ export const TxHistoryDetailsTxInfo: FC<{
       return <SwapStealthExTxInfo txInfo={txInfo} networkId={tx.networkId} />
     case "swap-lifi":
       return <SwapLifiTxInfo txInfo={txInfo} networkId={tx.networkId} />
+    case "bittensor-staking":
+      return <BittensorStakingTxInfo txInfo={txInfo} />
     default:
       return <CodeBlock code={papiStringify(tx.txInfo, 2)} />
   }
@@ -174,3 +176,42 @@ const SwapLifiTxInfo: FC<{
 }> = ({ networkId, txInfo }) => (
   <SwapTxInfoCard networkId={networkId} txInfo={txInfo} protocolLabel={txInfo.protocolName} />
 )
+
+const BittensorStakingTxInfo: FC<{
+  txInfo: Extract<WalletTransaction["txInfo"], { type: "bittensor-staking" }>
+}> = ({ txInfo }) => {
+  const { t } = useTranslation()
+  // Stake: TAO (substrate-native) -> ALPHA, Unstake: ALPHA -> TAO
+  const isStake = parseTokenId(txInfo.fromTokenId).type === "substrate-native"
+
+  const components = {
+    FromTokens: (
+      <TokensAndFiat
+        planck={txInfo.fromAmount}
+        tokenId={txInfo.fromTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+    ToTokens: (
+      <TokensAndFiat
+        planck={txInfo.toAmount}
+        tokenId={txInfo.toTokenId}
+        withLogo
+        noFiat
+        className="text-body"
+      />
+    ),
+  }
+
+  return (
+    <TxInfoCard>
+      {isStake ? (
+        <Trans t={t} defaults="Stake <FromTokens /> for <ToTokens />" components={components} />
+      ) : (
+        <Trans t={t} defaults="Unstake <FromTokens /> for <ToTokens />" components={components} />
+      )}
+    </TxInfoCard>
+  )
+}

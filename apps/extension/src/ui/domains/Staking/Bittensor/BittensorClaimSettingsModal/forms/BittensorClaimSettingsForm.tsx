@@ -1,32 +1,34 @@
 import { classNames } from "@talismn/util"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
-import { useGetBittensorClaimType } from "../../../hooks/bittensor/dTao/useGetBittensorClaimType"
 import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
-import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_CLAIM_SETTINGS_MODAL_CONTENT_CONTAINER_ID } from "../constants"
 import { useBittensorClaimSettingsModal } from "../hooks/useBittensorClaimSettingsModal"
 import { useBittensorClaimSettingsWizard } from "../hooks/useBittensorClaimSettingsWizard"
 
 export const BittensorClaimSettingsForm = () => {
-  const [selectedClaimType, setSelectedClaimType] = useState<RootClaimType>(DEFAULT_ROOT_CLAIM_TYPE)
   const { t } = useTranslation()
-  const { nativeToken, account, accountPicker, setAddress, onSubmitted } =
-    useBittensorClaimSettingsWizard()
+  const {
+    nativeToken,
+    account,
+    accountPicker,
+    selectedClaimType,
+    isClaimTypeLoading,
+    canSubmit,
+    setAddress,
+    setStep,
+    setSelectedClaimType,
+    onSubmitted,
+  } = useBittensorClaimSettingsWizard()
   const { close } = useBittensorClaimSettingsModal()
-
-  const { data: claimType, isLoading: isClaimTypeLoading } = useGetBittensorClaimType({
-    networkId: nativeToken?.networkId,
-    address: account?.address,
-  })
 
   const { data: setClaimTypePayload, isLoading: isPayloadLoading } =
     useGetBittensorClaimTypePayload({
@@ -34,10 +36,6 @@ export const BittensorClaimSettingsForm = () => {
       address: account?.address,
       claimType: selectedClaimType,
     })
-
-  useEffect(() => {
-    if (claimType) setSelectedClaimType(claimType)
-  }, [claimType])
 
   const claimTypeOptions = useMemo(
     () => [
@@ -57,7 +55,7 @@ export const BittensorClaimSettingsForm = () => {
         description: t(
           "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao.",
         ),
-        disabled: true,
+        disabled: false,
       },
     ],
     [t],
@@ -153,7 +151,11 @@ export const BittensorClaimSettingsForm = () => {
       <div className={"mt-auto grid w-full grid-cols-2 gap-8"}>
         <Button onClick={close}>{t("Cancel")}</Button>
 
-        {isPayloadLoading || !setClaimTypePayload?.payload || isClaimTypeLoading ? (
+        {selectedClaimType === "KeepSubnets" ? (
+          <Button primary disabled={isClaimTypeLoading} onClick={() => setStep("select-subnets")}>
+            {t("Next")}
+          </Button>
+        ) : isPayloadLoading || !setClaimTypePayload?.payload || isClaimTypeLoading ? (
           <Button className="px-2" primary disabled>
             {t("Confirm")}
           </Button>
@@ -164,7 +166,7 @@ export const BittensorClaimSettingsForm = () => {
             payload={setClaimTypePayload?.payload}
             onSubmitted={onSubmitted}
             txMetadata={setClaimTypePayload?.txMetadata}
-            disabled={claimType === selectedClaimType}
+            disabled={!canSubmit}
           />
         )}
       </div>
