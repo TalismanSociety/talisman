@@ -91,23 +91,7 @@ pnpm build:canary:firefox
 
 #### Firefox Production Builds
 
-Firefox production builds use a **two-pass Docker build** to ensure reproducibility:
-
-1. **Pass 1**: Build from repo → generates `sources.zip`
-2. **Pass 2**: Rebuild from `sources.zip` → produces final deliverables
-
-This guarantees that the shipped extension is built from the exact sources that are shipped, which is what Firefox Add-on reviewers will do. The build produces byte-identical output with matching SHA-256 checksums.
-
-**Requirements**: Docker (any recent version) with network access
-
-**Verification**:
-
-```bash
-# Verify the build is reproducible
-./scripts/verify-reproducible-build.sh
-```
-
-See [FIREFOX_SOURCE_CODE_REVIEW.md](FIREFOX_SOURCE_CODE_REVIEW.md) for reviewer instructions.
+Firefox production builds use a **two-pass Docker build** to ensure reproducibility. See the [root README](../../README.md#firefox-production-builds) and [FIREFOX_SOURCE_CODE_REVIEW.md](../../FIREFOX_SOURCE_CODE_REVIEW.md) for details.
 
 #### Environment Variables for Production Builds
 

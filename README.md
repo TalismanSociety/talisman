@@ -9,7 +9,7 @@
 [![firefox-addon-link](https://img.shields.io/amo/v/talisman-wallet-extension?logo=firefox&logoColor=white&style=flat-square)](https://addons.mozilla.org/en-US/firefox/addon/talisman-wallet-extension)
 
 **Multi-Chain Made Easy** with Talisman Wallet.  
-An ultra-secure Ethereum and Polkadot wallet for both beginners and pros.
+An ultra-secure Ethereum, Polkadot and Solana wallet for both beginners and pros.
 
 ## What's inside?
 
@@ -188,15 +188,29 @@ When building UI features, please follow the following spec to ensure they're tr
 
 - `build:extension` : builds the extension for Chrome (outputs to `dist/chrome-mv3`)
 - `build:extension:firefox` : builds the extension for Firefox (outputs to `dist/firefox-mv3`)
-- `build:extension:zip` : creates a distributable zip file for Chrome
-- `build:extension:zip:firefox` : creates a distributable zip file for Firefox
+- `build:extension:prod` : production Chrome build with Sentry sourcemap upload
+- `build:extension:prod:firefox` : production Firefox build via Docker (reproducible)
+- `build:extension:canary` : canary Chrome build for internal testing
+- `build:extension:canary:firefox` : canary Firefox build for internal testing
 
-### Build the wallet browser extension using Docker
+### Firefox Production Builds
+
+Firefox production builds use a **two-pass Docker build** to ensure reproducibility:
+
+1. **Pass 1**: Build from repo → generates `sources.zip`
+2. **Pass 2**: Rebuild from `sources.zip` → produces final deliverables
+
+This guarantees that the shipped extension is built from the exact sources that are shipped, which is what Firefox Add-on reviewers will do. The build produces byte-identical output with matching SHA-256 checksums.
 
 ```bash
-# builds with docker, outputs in dist folder at the root of the monorepo
-rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
+# Build Firefox production extension (requires Docker with network access)
+pnpm build:extension:prod:firefox
+
+# Verify the build is reproducible
+./scripts/verify-reproducible-build.sh
 ```
+
+See [FIREFOX_SOURCE_CODE_REVIEW.md](FIREFOX_SOURCE_CODE_REVIEW.md) for reviewer instructions.
 
 ### Update packages
 
