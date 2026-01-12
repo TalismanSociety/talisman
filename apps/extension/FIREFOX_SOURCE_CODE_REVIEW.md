@@ -4,7 +4,8 @@ This document provides instructions for Firefox Add-on reviewers to build the Ta
 
 ## Prerequisites
 
-- **Docker**: Any recent version
+- **Docker**: Any recent version (20.10+)
+- **Network access**: Docker must be able to reach the npm registry to download dependencies during the build
 
 ## Build Instructions
 
@@ -13,49 +14,32 @@ This document provides instructions for Firefox Add-on reviewers to build the Ta
 2. **Build using Docker**:
 
    ```bash
-   docker build -t talisman-builder -f Dockerfile.firefox .
-   docker run --rm -v $(pwd)/apps/extension/dist:/talisman/apps/extension/dist talisman-builder
-   ```
-
-   Or use the convenience script:
-
-   ```bash
-   ./scripts/build-firefox-docker.sh
+   docker build --no-cache -t talisman-builder -f Dockerfile.firefox .
+   docker run --rm -v $(pwd)/output:/output talisman-builder
    ```
 
 3. **Find the built extension**:
-   The built extension ZIP will be at `apps/extension/dist/`
+   The built extension ZIP will be in the `output/` directory.
 
 ## Build Reproducibility
 
-Docker builds produce **100% deterministic output**. Running the same Docker build twice will produce identical file contents with matching SHA-256 hashes.
+This build produces **byte-identical, reproducible output**. The ZIP file checksums will match exactly when rebuilt from the same sources.
 
-> **Note**: ZIP file checksums may differ due to timestamps in the archive metadata, but the extracted contents will be byte-for-byte identical.
+### Key reproducibility features:
+
+- **Docker isolation**: Deterministic Node.js environment with fixed locale/timezone
+- **Normalized timestamps**: All ZIP entries use a fixed timestamp (2000-01-01T00:00:00Z)
+- **Deterministic bundling**: Rollup output is sorted and consistent across builds
+- **Two-pass build**: Production builds are always built from `sources.zip` to ensure what's shipped matches what reviewers build
 
 ### Verification
 
-To verify the build matches the submitted extension:
-
-1. Extract both the original Firefox ZIP and the rebuilt ZIP
-2. Compare the file contents using SHA-256 hashes
+To verify the build matches the submitted extension, compare SHA-256 checksums:
 
 ```bash
-# Extract and compare
-unzip -q original-firefox.zip -d original/
-unzip -q rebuilt-firefox.zip -d rebuilt/
-
-# Generate and compare file hashes
-find original -type f -exec shasum -a 256 {} \; | sort > original.sha
-find rebuilt -type f -exec shasum -a 256 {} \; | sort > rebuilt.sha
-
-# Normalize paths and compare
-sed 's|original/|build/|g' original.sha > original_normalized.sha
-sed 's|rebuilt/|build/|g' rebuilt.sha > rebuilt_normalized.sha
-diff original_normalized.sha rebuilt_normalized.sha
+# The rebuilt ZIP should have the exact same hash
+shasum -a 256 output/*-firefox.zip
+shasum -a 256 submitted-firefox.zip
 ```
 
-A verification script is also included:
-
-```bash
-./scripts/verify-reproducible-build.sh
-```
+The hashes should be **identical**. No extraction or file-by-file comparison is needed.
