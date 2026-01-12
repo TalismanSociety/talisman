@@ -3,6 +3,7 @@ import { existsSync, readdirSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 import replace from "@rollup/plugin-replace"
+import JSZip from "jszip"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
@@ -26,11 +27,72 @@ const SENTRY_RELEASE_NAME =
 
 // Create a plugin that ensures deterministic module ordering for reproducible builds.
 // This is critical for Firefox Add-on Store review where builds must be byte-identical.
-// The plugin normalizes timestamps and sorts module order to eliminate non-determinism.
+// The plugin normalizes timestamps, sorts module order, and normalizes export statements
+// to eliminate non-determinism from Rollup's deconflicting which assigns $N suffixes
+// based on module processing order.
 function createDeterministicBuildPlugin(): Plugin {
   return {
     name: "deterministic-build",
     enforce: "post",
+
+    // Normalize export statements to have deterministic ordering.
+    // Rollup's deconflicting assigns $N suffixes in module processing order which is
+    // non-deterministic. This hook rewrites export { } statements to sort exports
+    // alphabetically by their exported name, ensuring identical output regardless
+    // of processing order.
+    renderChunk(code, _chunk, options) {
+      // Only apply to Firefox production builds (ES modules)
+      if (options.format !== "es") return null
+
+      // Match export statements at the start of a line: export { ... } or export { ... } from '...'
+      // The regex requires exports to be valid JS identifiers (letters, digits, $, _)
+      // and must be at the start of a line (after newline or start of string)
+      const exportRegex = /(?:^|\n)(export\s*\{\s*)([\w$\s,]+)(\s*\}(?:\s*from\s*['"][^'"]+['"])?\s*;?)/g
+
+      let modified = false
+      const newCode = code.replace(
+        exportRegex,
+        (match, prefix: string, exportsStr: string, suffix: string) => {
+          // Parse individual exports: "a, b as c, d as e" -> [{local: 'a', exported: 'a'}, ...]
+          const exports = exportsStr
+            .split(",")
+            .map((exp: string) => {
+              const trimmed = exp.trim()
+              if (!trimmed) return null
+              // Match: "localName as exportedName" or just "name"
+              const asMatch = trimmed.match(/^([\w$]+)\s+as\s+([\w$]+)$/)
+              if (asMatch) {
+                return { local: asMatch[1], exported: asMatch[2] }
+              }
+              // Simple export without alias
+              if (/^[\w$]+$/.test(trimmed)) {
+                return { local: trimmed, exported: trimmed }
+              }
+              return null
+            })
+            .filter((e): e is { local: string; exported: string } => e !== null)
+
+          if (exports.length === 0) return match
+
+          // Sort by exported name for deterministic ordering
+          exports.sort((a, b) => a.exported.localeCompare(b.exported))
+
+          // Rebuild the export statement
+          const newExports = exports
+            .map((e) => (e.local === e.exported ? e.local : `${e.local} as ${e.exported}`))
+            .join(", ")
+
+          modified = true
+          // Preserve the leading newline if present
+          const leadingNewline = match.startsWith("\n") ? "\n" : ""
+          return `${leadingNewline}${prefix}${newExports}${suffix}`
+        }
+      )
+
+      if (!modified) return null
+      return { code: newCode, map: null }
+    },
+
     generateBundle(_options, bundle) {
       // Sort bundle keys deterministically
       const sortedKeys = Object.keys(bundle).sort()
@@ -202,6 +264,64 @@ function deleteSourcemaps(outputDir: string): void {
   }
 }
 
+// Normalize zip file timestamps for reproducible builds.
+// ZIP files store file modification times, which causes different hashes between builds
+// even when file contents are identical. This function re-creates the zip with a fixed
+// epoch timestamp (2000-01-01 00:00:00 UTC) for all files.
+// This is required for Firefox Add-on Store review which verifies builds are reproducible.
+async function normalizeZipTimestamps(zipPath: string): Promise<void> {
+  // Fixed epoch timestamp for reproducible builds
+  // Using 2000-01-01 00:00:00 UTC as it's a common choice for reproducible builds
+  // and is within the valid range for ZIP timestamps (1980-2107)
+  const FIXED_DATE = new Date("2000-01-01T00:00:00Z")
+
+  // Read the existing zip using fs/promises for cleaner async code
+  const { readFile, writeFile } = await import("node:fs/promises")
+  const zipData = await readFile(zipPath)
+
+  // Load the zip
+  const zip = await JSZip.loadAsync(zipData)
+
+  // Create a new zip with normalized timestamps
+  const newZip = new JSZip()
+
+  // Get all file entries and sort them for deterministic ordering
+  const fileEntries = Object.entries(zip.files).sort(([a], [b]) => a.localeCompare(b))
+
+  for (const [relativePath, file] of fileEntries) {
+    if (file.dir) {
+      // Create directory with fixed timestamp using file() with dir option
+      // Note: folder() doesn't accept date option, so we use file() with dir:true
+      newZip.file(relativePath, null, {
+        dir: true,
+        date: FIXED_DATE,
+        unixPermissions: "755",
+      })
+    } else {
+      // Add file with fixed timestamp and explicit permissions
+      const content = await file.async("nodebuffer")
+      newZip.file(relativePath, content, {
+        date: FIXED_DATE,
+        unixPermissions: "644",
+      })
+    }
+  }
+
+  // Generate the new zip with deterministic settings
+  const newZipBuffer = await newZip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 9 },
+    // Use UNIX platform for consistent file attributes
+    platform: "UNIX",
+  })
+
+  // Write the normalized zip back
+  await writeFile(zipPath, newZipBuffer)
+
+  log.log(`📦 Normalized zip timestamps for reproducible build: ${zipPath}`)
+}
+
 // Resolve monorepo packages to their source directories for hot reload
 const packagesDir = resolve(__dirname, "../../packages")
 
@@ -271,6 +391,19 @@ export default defineConfig({
       if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
         const outputDir = resolve(__dirname, "dist", `${wxt.config.browser}-mv3`)
         deleteSourcemaps(outputDir)
+      }
+    },
+    // After zipping, normalize timestamps for Firefox builds to ensure reproducibility
+    // Firefox Add-on Store requires that source builds produce identical zip files
+    "zip:extension:done": async (wxt, zipPath) => {
+      if (wxt.config.browser === "firefox") {
+        await normalizeZipTimestamps(zipPath)
+      }
+    },
+    // Also normalize sources zip timestamps for Firefox
+    "zip:sources:done": async (wxt, zipPath) => {
+      if (wxt.config.browser === "firefox") {
+        await normalizeZipTimestamps(zipPath)
       }
     },
     // Fix manifest values after WXT generates it

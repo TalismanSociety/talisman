@@ -39,4 +39,5 @@ RUN pnpm install --frozen-lockfile
 # Build the production Firefox extension
 # WXT bundles directly from package source directories via Vite aliases,
 # so we don't need to pre-build the @talismn/* packages with tsup
-CMD ["pnpm", "run", "--filter", "extension", "build:prod:firefox"]
+# The entrypoint builds and then copies output to /output if mounted
+CMD ["sh", "-c", "pnpm run --filter extension build:prod:firefox && if [ -d /output ]; then cp /talisman/apps/extension/dist/*.zip /output/; fi"]
