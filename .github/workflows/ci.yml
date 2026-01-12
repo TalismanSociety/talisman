@@ -58,10 +58,11 @@ jobs:
           pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Test
         run: pnpm test
-      - name: Build packages
-        run: pnpm build:packages
       - name: Typecheck
-        run: pnpm typecheck
+        run: |
+          # All packages and apps use customConditions: ["@talismn/source"] to resolve
+          # @talismn/* packages directly from source. This means no package build is needed.
+          pnpm typecheck
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -78,7 +79,7 @@ jobs:
           command: "upload"
           cli-version: "2.2.0"
           args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
-      - name: Build
+      - name: Build extension
         run: pnpm build:extension
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
@@ -175,7 +176,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Bump changed package versions to a snapshot version
         run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
-      - name: Build snapshot packages
+      - name: Build packages for npm publish
         run: pnpm build:packages
       - name: Set publish config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
@@ -357,7 +358,7 @@ jobs:
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build packages
+      - name: Build packages for npm publish
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build:packages
       - name: Set publish config

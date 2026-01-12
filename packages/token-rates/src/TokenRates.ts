@@ -108,7 +108,7 @@ export async function fetchTokenRates(
     }),
   })
 
-  const rawTokenRates: RawTokenRates = await response.json()
+  const rawTokenRates = (await response.json()) as RawTokenRates
 
   if (hasVsTao) {
     // calculate the TAO<>USD rate

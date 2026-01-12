@@ -1,5 +1,6 @@
 /**
  * Minimal browser API type stubs for typechecking.
+ * This allows for balances-bench to typecheck without building @talismn/* packages
  *
  * balances-bench is a Node.js app, but it imports from @talismn/* packages
  * that have browser API references. These stubs allow typechecking to pass

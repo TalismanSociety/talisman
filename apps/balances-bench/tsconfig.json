@@ -15,7 +15,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "types": ["node"]
+    "types": ["node"],
+    "customConditions": ["@talismn/source"]
   },
   "include": ["src"],
   "exclude": ["**/node_modules", "dist", "test", "tests"]

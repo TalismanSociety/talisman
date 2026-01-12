@@ -8,10 +8,11 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noEmit": false,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "customConditions": ["@talismn/source"]
   },
   "exclude": ["**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
 }
