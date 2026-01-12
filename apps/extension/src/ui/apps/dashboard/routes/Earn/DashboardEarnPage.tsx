@@ -6,7 +6,7 @@ import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { EarnTabs } from "@ui/domains/Earn/components/EarnTabs"
+import { EarnTabs, EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -15,18 +15,17 @@ import { useSelectedCurrency } from "@ui/state"
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
 
-type EarnTabKey = "assets" | "discover"
-
 type DashboardEarnOutletContext = {
   search: string
 }
 
-const TAB_TO_PATH: Record<EarnTabKey, string> = {
-  assets: "positions",
-  discover: "discover",
+const TAB_TO_PATH: Record<EarnTabsKey, string> = {
+  assets: "/earn/positions",
+  discover: "/earn/discover",
+  bittensor: "/bittensor/subnets",
 }
 
-const getTabFromPath = (pathname: string): EarnTabKey =>
+const getTabFromPath = (pathname: string): EarnTabsKey =>
   pathname.includes("/discover") ? "discover" : "assets"
 
 const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
@@ -35,16 +34,15 @@ export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigateWithQuery()
-  const selectedTab = useMemo<EarnTabKey>(
+  const selectedTab = useMemo<EarnTabsKey>(
     () => getTabFromPath(location.pathname),
     [location.pathname],
   )
   const [search, setSearch] = useState("")
 
   const handleTabChange = useCallback(
-    (tab: EarnTabKey) => {
+    (tab: EarnTabsKey) => {
       if (tab === selectedTab) return
-
       navigate(TAB_TO_PATH[tab])
     },
     [navigate, selectedTab],

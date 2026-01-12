@@ -1,13 +1,15 @@
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
+import { log } from "extension-shared"
 import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { api } from "@ui/api"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { EarnTabs } from "@ui/domains/Earn/components/EarnTabs"
+import { EarnTabs, EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
@@ -18,18 +20,17 @@ import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
 import { PopupEarnDiscoverTab } from "./PopupEarnDiscoverTab"
 import { PopupEarnPositionsTab } from "./PopupEarnPositionsTab"
 
-type EarnTabKey = "assets" | "discover"
-
 type DashboardEarnOutletContext = {
   search: string
 }
 
-const TAB_TO_PATH: Record<EarnTabKey, string> = {
-  assets: "positions",
-  discover: "discover",
+const TAB_TO_PATH: Record<EarnTabsKey, string> = {
+  assets: "/earn/positions",
+  discover: "/earn/discover",
+  bittensor: "/bittensor/subnets",
 }
 
-const getTabFromPath = (pathname: string): EarnTabKey =>
+const getTabFromPath = (pathname: string): EarnTabsKey =>
   pathname.includes("/discover") ? "discover" : "assets"
 
 const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
@@ -78,17 +79,30 @@ export const PopupEarnPage: FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigateWithQuery()
-  const selectedTab = useMemo<EarnTabKey>(
+  const selectedTab = useMemo<EarnTabsKey>(
     () => getTabFromPath(location.pathname),
     [location.pathname],
   )
   const [search, setSearch] = useState("")
 
   const handleTabChange = useCallback(
-    (tab: EarnTabKey) => {
+    async (tab: EarnTabsKey) => {
       if (tab === selectedTab) return
+      switch (tab) {
+        case "assets":
+        case "discover":
+          navigate(TAB_TO_PATH[tab])
+          break
+        default:
+          try {
+            await api.dashboardOpen(TAB_TO_PATH[tab])
+            window.close()
+          } catch {
+            log.error(`Failed to open ${TAB_TO_PATH[tab]} in dashboard app`)
+          }
 
-      navigate(TAB_TO_PATH[tab])
+          return
+      }
     },
     [navigate, selectedTab],
   )

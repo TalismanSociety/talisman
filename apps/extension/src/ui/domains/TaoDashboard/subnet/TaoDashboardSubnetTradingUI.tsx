@@ -1,6 +1,7 @@
 import { cn } from "@talismn/util"
 import { FC, PropsWithChildren } from "react"
 
+import { TaoDashboardSwap } from "./swap/TaoDashboardSwap"
 import { TaoDashboardSubnetBreadcrumb } from "./TaoDashboardSubnetBreadcrumb"
 import { TaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
@@ -15,7 +16,9 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
             <Placeholder>GRAPH</Placeholder>
           </div>
           <div className="flex w-full gap-16">
-            <Placeholder>TRADE</Placeholder>
+            <Placeholder>
+              <TaoDashboardSwap />
+            </Placeholder>
             <Placeholder>TRANSACTIONS</Placeholder>
           </div>
         </div>

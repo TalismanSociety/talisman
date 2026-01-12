@@ -1,11 +1,13 @@
 import { SubDTaoToken } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useTokens } from "@ui/state"
 
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 export const useTaoDashboardSubnets = () => {
+  const { t } = useTranslation()
   const allTokens = useTokens()
 
   const subnetTokens = useMemo(() => {
@@ -20,17 +22,17 @@ export const useTaoDashboardSubnets = () => {
 
   return useMemo(() => {
     return subnetTokens
-      .map((t) => ({
-        tokenId: t.id,
-        netuid: t.netuid,
-        name: t.subnetName,
-        symbol: t.symbol,
-        logo: t.logo,
+      .map((token) => ({
+        tokenId: token.id,
+        netuid: token.netuid,
+        name: token.subnetName ?? t("Subnet {{netuid}}", { netuid: token.netuid }),
+        symbol: token.symbol,
+        logo: token.logo,
         price: Math.random() * 10, // TODO: fetch real price
         score: Math.random() * 100, // TODO: fetch real score
       }))
       .sort((a, b) => a.netuid - b.netuid)
-  }, [subnetTokens])
+  }, [subnetTokens, t])
 }
 
 export type TaoDashboardSubnet = ReturnType<typeof useTaoDashboardSubnets>[number]
