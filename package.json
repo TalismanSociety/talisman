@@ -32,7 +32,7 @@
     "build:extension": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build",
     "build:extension:firefox": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:firefox",
     "build:extension:prod": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:prod",
-    "build:extension:prod:firefox": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:prod:firefox",
+    "build:extension:prod:firefox": "./scripts/build-firefox-docker.sh",
     "build:extension:canary": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:canary",
     "build:extension:canary:firefox": "./scripts/build-packages-if-needed.sh && pnpm run --filter extension build:canary:firefox",
     "check": "biome check --changed .",

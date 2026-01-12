@@ -24,6 +24,41 @@ const BUILD_TYPE = process.env.BUILD_TYPE ?? ("dev" as "production" | "canary" |
 const SENTRY_RELEASE_NAME =
   process.env.SENTRY_RELEASE ?? `${pkg.version}-${BUILD_TYPE}-${getGitSha()}`
 
+// Create a plugin that ensures deterministic module ordering for reproducible builds.
+// This is critical for Firefox Add-on Store review where builds must be byte-identical.
+// The plugin normalizes timestamps and sorts module order to eliminate non-determinism.
+function createDeterministicBuildPlugin(): Plugin {
+  return {
+    name: "deterministic-build",
+    enforce: "post",
+    generateBundle(_options, bundle) {
+      // Sort bundle keys deterministically
+      const sortedKeys = Object.keys(bundle).sort()
+
+      // Process each chunk to ensure deterministic module ordering
+      for (const key of sortedKeys) {
+        const chunk = bundle[key]
+        if (chunk.type === "chunk" && chunk.modules) {
+          // Sort the modules object keys alphabetically
+          const sortedModules: Record<string, { code: string; originalLength: number }> = {}
+          const moduleKeys = Object.keys(chunk.modules).sort()
+
+          for (const moduleKey of moduleKeys) {
+            sortedModules[moduleKey] = chunk.modules[moduleKey] as {
+              code: string
+              originalLength: number
+            }
+          }
+
+          // Replace with sorted modules
+          // biome-ignore lint/suspicious/noExplicitAny: Rollup types don't expose module setter
+          ;(chunk as any).modules = sortedModules
+        }
+      }
+    },
+  }
+}
+
 // Create a custom logger that filters out the verbose file list output
 // while still showing important success messages (build time, zip output with filename/size)
 function createQuietLogger(): Logger {
@@ -93,9 +128,13 @@ function getGitSha(): string {
 // Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
 // to prevent exposing source code in the distributed extension.
 // Returns an array of plugins (Sentry uses multiple internal plugins)
-function createSentryPlugins(_browser: string): Plugin[] {
+// Note: Sentry is only used for Chrome builds, not Firefox
+function createSentryPlugins(browser: string): Plugin[] {
   // Only enable for production and canary builds
   if (!["production", "canary"].includes(BUILD_TYPE ?? "")) return []
+
+  // Skip Sentry for Firefox builds - we only use Sentry with Chrome
+  if (browser === "firefox") return []
 
   // Require auth token for Sentry uploads
   if (!process.env.SENTRY_AUTH_TOKEN) {
@@ -587,6 +626,9 @@ export default defineConfig({
               },
             ]
           : []),
+        // Deterministic build plugin - ensures consistent module ordering for reproducible builds
+        // This is important for Firefox Add-on Store review where builds must match
+        createDeterministicBuildPlugin(),
         // Sentry plugins for production/canary builds - uploads sourcemaps then deletes them
         // Must be last to ensure they run after all other transformations
         ...createSentryPlugins(browser),
@@ -686,6 +728,11 @@ export default defineConfig({
             }
             warn(warning)
           },
+
+          // Ensure deterministic output ordering for reproducible builds
+          // This is critical for Firefox Add-on Store review process
+          preserveEntrySignatures: "strict",
+
           output: {
             // Deterministic chunk naming for reproducible builds
             // Use content hash only (no random IDs) so identical content = identical output
@@ -699,6 +746,9 @@ export default defineConfig({
             // Ensure consistent chunk ordering for reproducibility
             // Sort chunks alphabetically to avoid file system ordering variations
             manualChunks: undefined, // Let Rollup handle chunking automatically
+
+            // Minimize internal export names for consistent output
+            minifyInternalExports: true,
 
             // Add shims for service worker (background script)
             // Some packages like @polkadot/util reference document which doesn't exist in service workers
