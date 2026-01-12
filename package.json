@@ -28,7 +28,7 @@
     "dev:extension:firefox": "pnpm run --filter extension dev:firefox",
     "dev:kill": "pnpm run --filter extension dev:kill",
     "build": "pnpm run --filter extension build",
-    "build:packages": "pnpm -r --filter './packages/*' --filter '!extension-core' --filter '!extension-shared' --filter '!talisman-ui' run build",
+    "build:packages": "pnpm -r --filter './packages/*' run build",
     "build:extension": "pnpm run --filter extension build",
     "build:extension:firefox": "pnpm run --filter extension build:firefox",
     "build:extension:prod": "pnpm run --filter extension build:prod",
