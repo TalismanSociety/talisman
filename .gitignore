@@ -50,3 +50,5 @@ review
 
 # tmp folder for translations extraction
 .i18next-parser/
+
+/.verify-build/

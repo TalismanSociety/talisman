@@ -687,6 +687,19 @@ export default defineConfig({
             warn(warning)
           },
           output: {
+            // Deterministic chunk naming for reproducible builds
+            // Use content hash only (no random IDs) so identical content = identical output
+            chunkFileNames: "chunks/[name]-[hash].js",
+            entryFileNames: "[name].js",
+            assetFileNames: "assets/[name]-[hash][extname]",
+
+            // Use hex hashes for reproducibility (avoids base64 character variations)
+            hashCharacters: "hex",
+
+            // Ensure consistent chunk ordering for reproducibility
+            // Sort chunks alphabetically to avoid file system ordering variations
+            manualChunks: undefined, // Let Rollup handle chunking automatically
+
             // Add shims for service worker (background script)
             // Some packages like @polkadot/util reference document which doesn't exist in service workers
             // For Firefox, we also need to set up 'browser' before any code runs
@@ -731,5 +744,37 @@ if (typeof document === "undefined") {
     // Format: talisman-1.2.3-production-abc1234-chrome.zip
     artifactTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-{{browser}}.zip`,
     sourcesTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-sources.zip`,
+
+    // Include the full monorepo in sources zip for reproducible builds
+    // This allows Firefox reviewers to rebuild the extension from source
+    sourcesRoot: resolve(__dirname, "../.."),
+
+    // Include hidden files needed for builds (WXT excludes hidden files by default)
+    includeSources: [
+      ".papi/**", // Polkadot API configuration and generated descriptors
+      ".npmrc", // pnpm configuration (node version, hoisting, etc.)
+      "apps/extension/.env", // Environment variables for build (no secrets)
+    ],
+
+    // Exclude unnecessary files from sources zip
+    excludeSources: [
+      // Build outputs and caches
+      "**/dist/**",
+      "**/.output/**",
+      "**/coverage/**",
+      "**/.turbo/**",
+      "**/.wxt/**",
+      // Review/test artifacts
+      "review/**",
+      ".verify-build/**",
+      "test-results/**",
+      "playwright-report/**",
+      // IDE and editor files
+      ".idea/**",
+      ".vscode/**",
+      // Other apps we don't need to build the extension
+      "apps/balances-bench/**",
+      "apps/balances-demo/**",
+    ],
   },
 })
