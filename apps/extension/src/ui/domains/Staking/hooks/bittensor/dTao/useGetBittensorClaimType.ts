@@ -11,10 +11,15 @@ type GetBittensorClaimType = {
   address: string | undefined
 }
 
+type ClaimTypeResult = {
+  claimType: RootClaimType
+  subnets?: number[]
+}
+
 export const useGetBittensorClaimType = ({ networkId, address }: GetBittensorClaimType) => {
   const { data: sapi } = useScaleApi(networkId)
 
-  return useQuery<RootClaimType | null>({
+  return useQuery<ClaimTypeResult | null>({
     queryKey: ["useGetBittensorClaimType", sapi?.id, address],
     queryFn: async () => {
       if (!sapi || !address) return null
@@ -23,7 +28,16 @@ export const useGetBittensorClaimType = ({ networkId, address }: GetBittensorCla
         address,
       ])
 
-      return result?.type ?? DEFAULT_ROOT_CLAIM_TYPE
+      const claimType = result?.type ?? DEFAULT_ROOT_CLAIM_TYPE
+
+      // Ensure subnets are plain numbers (chain may return them as different types)
+      const subnets =
+        result?.type === "KeepSubnets" ? result.value?.subnets?.map((n) => Number(n)) : undefined
+
+      return {
+        claimType,
+        subnets,
+      }
     },
     enabled: !!sapi && !!address,
   })

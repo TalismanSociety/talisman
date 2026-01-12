@@ -58,6 +58,13 @@ export type WalletTransactionInfo =
       toAmount: string
       to: Address
     }
+  | {
+      type: "bittensor-staking"
+      fromTokenId: TokenId
+      toTokenId: TokenId
+      fromAmount: string
+      toAmount: string
+    }
 
 /** @deprecated */
 export type LegacyWalletTransactionBase = WalletTransactionTransferInfo & {
