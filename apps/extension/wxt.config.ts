@@ -658,6 +658,10 @@ export default defineConfig({
             ? "hidden" // Generate maps for Sentry upload (no inline reference)
             : false, // No sourcemaps for other builds
 
+        // Memory optimization: limit minification workers to reduce peak memory usage
+        // This helps on memory-constrained systems (e.g., WSL with limited RAM)
+        minify: "esbuild",
+
         // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
         chunkSizeWarningLimit: 3500,
 
