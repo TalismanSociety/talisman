@@ -49,7 +49,6 @@ function createDeterministicBuildPlugin(): Plugin {
               originalLength: number
             }
           }
-
           // Replace with sorted modules
           // biome-ignore lint/suspicious/noExplicitAny: Rollup types don't expose module setter
           ;(chunk as any).modules = sortedModules
