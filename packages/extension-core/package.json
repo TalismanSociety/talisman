@@ -16,7 +16,8 @@
     "lint": "eslint src --max-warnings 0",
     "test": "PORT_PREFIX=talisman jest --maxWorkers=50%",
     "test:watch": "PORT_PREFIX=talisman jest --watch",
-    "clean": "rm -rf dist background/dist .turbo node_modules"
+    "clean": "rm -rf dist background/dist .turbo node_modules",
+    "chore:generate-clients":  "pnpm dlx swagger-typescript-api generate -p https://sn45api.talisman.xyz/openapi.json -o ./src/domains/bittensor/sn45api -n Sn45Api --api-class-name Sn45Api"
   },
   "dependencies": {
     "@isaacs/ttlcache": "1.4.1",

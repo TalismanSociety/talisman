@@ -21,6 +21,7 @@
     "chore:download-translations": "pnpm run --filter extension chore:download-translations",
     "update:translations": "pnpm chore:update-translations",
     "chore:generate-init-data": "pnpm run --filter @talismn/chaindata-provider chore:generate-init-data",
+    "chore:generate-clients": "pnpm -r chore:generate-clients",
     "generate-init-data": "pnpm chore:generate-init-data",
     "chore:prepare-release": "pnpm generate-init-data && pnpm chore:download-translations",
     "dev": "pnpm dev:extension",
