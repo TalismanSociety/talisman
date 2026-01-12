@@ -3,11 +3,11 @@ import { existsSync, readdirSync, unlinkSync } from "node:fs"
 import { homedir } from "node:os"
 import { join, resolve } from "node:path"
 import replace from "@rollup/plugin-replace"
-import JSZip from "jszip"
 import { sentryVitePlugin } from "@sentry/vite-plugin"
 import react from "@vitejs/plugin-react"
 import consola from "consola"
 import { log } from "extension-shared"
+import JSZip from "jszip"
 import type { Alias, Plugin } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
@@ -47,7 +47,8 @@ function createDeterministicBuildPlugin(): Plugin {
       // Match export statements at the start of a line: export { ... } or export { ... } from '...'
       // The regex requires exports to be valid JS identifiers (letters, digits, $, _)
       // and must be at the start of a line (after newline or start of string)
-      const exportRegex = /(?:^|\n)(export\s*\{\s*)([\w$\s,]+)(\s*\}(?:\s*from\s*['"][^'"]+['"])?\s*;?)/g
+      const exportRegex =
+        /(?:^|\n)(export\s*\{\s*)([\w$\s,]+)(\s*\}(?:\s*from\s*['"][^'"]+['"])?\s*;?)/g
 
       let modified = false
       const newCode = code.replace(
