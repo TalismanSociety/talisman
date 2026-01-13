@@ -14,7 +14,6 @@ import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
 
 // Build type from environment variable (set by build:prod, build:canary, etc.), default to dev

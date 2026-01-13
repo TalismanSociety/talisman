@@ -55,7 +55,7 @@ declare module "*.webp" {
 }
 
 declare module "*.svg" {
-  import * as React from "react"
+  import type * as React from "react"
 
   export const ReactComponent: React.FunctionComponent<
     React.SVGProps<SVGSVGElement> & { title?: string }
@@ -85,7 +85,6 @@ declare module "*.module.sass" {
 declare module "react-router-transition"
 
 declare module "*.svg" {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   import React = require("react")
   export const ReactComponent: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
   const src: string

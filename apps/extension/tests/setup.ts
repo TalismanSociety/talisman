@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { cloneDeep } from "lodash-es"
 import { WebSocket } from "mock-socket"
 import sinon from "sinon-chrome"

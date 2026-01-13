@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { assert } from "@polkadot/util"
 import type { KeyringStorage } from "@talismn/keyring"
 import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest"
