@@ -1,6 +1,6 @@
-import { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
-import { KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import type { ResponseAccountsExport } from "@polkadot/extension-base/background/types"
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, objectSpread, stringToU8a } from "@polkadot/util"
 import { jsonEncrypt } from "@polkadot/util-crypto"
 import {
@@ -8,15 +8,26 @@ import {
   base58,
   base64,
   getAccountPlatformFromAddress,
+  getPublicKeySolana,
   hex,
-  KeypairCurve,
+  type KeypairCurve,
 } from "@talismn/crypto"
-import { getPublicKeySolana } from "@talismn/crypto/src/derivation/deriveSolana"
-import { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
+import type { AccountType, AddAccountKeypairOptions } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { combineLatest } from "rxjs"
-
+import { genericAsyncSubscription } from "../../handlers/subscriptions"
+import { talismanAnalytics } from "../../libs/Analytics"
+import { ExtensionHandler } from "../../libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
+import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
+import { keyringStore } from "../keyring/store"
+import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
+import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
+import { withSecretKey } from "../keyring/withSecretKey"
+import { sortAccounts } from "./helpers"
+import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
+import { type AccountsCatalogData, emptyCatalog } from "./store.catalog"
 import type {
   RequestAccountContactUpdate,
   RequestAccountCreateFromJson,
@@ -34,18 +45,6 @@ import type {
   RequestNextDerivationPath,
   ResponseAccountExport,
 } from "./types"
-import { genericAsyncSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
-import { ExtensionHandler } from "../../libs/Handler"
-import { Port } from "../../types/base"
-import { getSecretKeyFromPjsJson } from "../keyring/getSecretKeyFromPjsJson"
-import { keyringStore } from "../keyring/store"
-import { getNextDerivationPathForMnemonicId } from "../keyring/utils"
-import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
-import { withSecretKey } from "../keyring/withSecretKey"
-import { sortAccounts } from "./helpers"
-import { lookupAddresses, resolveNames } from "./helpers.onChainIds"
-import { AccountsCatalogData, emptyCatalog } from "./store.catalog"
 
 // existing values for the method field, prior to keyring migration
 type AnalyticsAccountMethod =
@@ -60,7 +59,7 @@ type AnalyticsAccountMethod =
 export default class AccountsHandler extends ExtensionHandler {
   private async captureAccountCreateEvent(
     address: string,
-    method: AccountType | AnalyticsAccountMethod,
+    method: AccountType | AnalyticsAccountMethod
   ) {
     let type = "unknown"
     try {
@@ -68,7 +67,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       // match with legacy naming
       if (type === "polkadot") type = "substrate"
-    } catch (e) {
+    } catch {
       log.warn("Unknown encoding for address", address)
     }
 
@@ -161,7 +160,7 @@ export default class AccountsHandler extends ExtensionHandler {
         // export only keypair accounts, others have metadata that are specific to each wallet
         account.type === "keypair" &&
         // only export pjs compatible accounts to be compatible with pjs json format
-        ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve),
+        ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve)
     )
 
     const jsonAccounts: KeyringPair$Json[] = []
@@ -182,7 +181,7 @@ export default class AccountsHandler extends ExtensionHandler {
           address: account.address,
           meta: account.meta,
         })),
-      },
+      }
     ) as KeyringPairs$Json
 
     return { exportedJson }
@@ -230,7 +229,7 @@ export default class AccountsHandler extends ExtensionHandler {
       port,
       // make sure the sort order is updated when the catalog changes
       combineLatest([keyringStore.accounts$, this.stores.accountsCatalog.observable]),
-      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts),
+      ([accounts]) => sortAccounts(this.stores.accountsCatalog)(accounts)
     )
   }
 
@@ -245,7 +244,7 @@ export default class AccountsHandler extends ExtensionHandler {
         //
         // when this happens, instead of sending `{}` or `undefined` to the frontend,
         // we'll send an empty catalog of the correct type `AccountsCatalogData`
-        Object.keys(catalog).length === 0 ? emptyCatalog : catalog,
+        Object.keys(catalog).length === 0 ? emptyCatalog : catalog
     )
   }
 
@@ -333,7 +332,7 @@ export default class AccountsHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(accounts.add.external)":

@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { existsSync, readFileSync, writeFileSync } from "fs"
-
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
-import { TokenType } from "@talismn/chaindata-provider"
-import { SolNetwork } from "@talismn/chaindata-provider/src/chaindata/networks/SolNetwork"
+import type { SolNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export type SolNetworkConfig = Pick<SolNetwork, "id" | "rpcs"> & {
@@ -26,7 +24,7 @@ type TestOptions = {
 
 const DEFAULT_OPTIONS: TestOptions = {
   modules: BALANCE_MODULES.filter((mod) => mod.platform === "solana").map(
-    (mod) => mod.type as TokenType,
+    (mod) => mod.type as TokenType
   ),
   fetchBalances: true,
   transfer: true,
@@ -48,7 +46,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
     const connector = new ChainConnectorSolStub(network)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "solana").filter((mod) =>
-      opts.modules?.includes(mod.type as TokenType),
+      opts.modules?.includes(mod.type as TokenType)
     )) {
       const source = mod.type
       log.log()
@@ -58,6 +56,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
       log.log()
 
       const tokenConfigs =
+        // biome-ignore lint/suspicious/noExplicitAny: token config shape varies by module type
         mod.type === "sol-native" ? [network.nativeCurrency] : (network.tokens[mod.type] as any)
       log.log("Token configs", tokenConfigs)
       log.log()
@@ -66,7 +65,7 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
         networkId,
         tokens: tokenConfigs,
         connector,
-        // @ts-ignore
+        // @ts-expect-error
         cache: cache[mod.type] ?? {},
       })
 

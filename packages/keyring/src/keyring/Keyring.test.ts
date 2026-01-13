@@ -2,7 +2,7 @@ import {
   base58,
   deriveKeypair,
   entropyToSeed,
-  KeypairCurve,
+  type KeypairCurve,
   mnemonicToEntropy,
 } from "@talismn/crypto"
 
@@ -39,17 +39,17 @@ describe("keyring", () => {
     expect(mnemonic).toEqual(MNEMONIC.mnemonic)
   })
 
-  it("cannot retrieve mnemonic text with wrong password", () => {
-    expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD)).rejects.toThrow(
-      "Failed to decrypt data",
+  it("cannot retrieve mnemonic text with wrong password", async () => {
+    await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD)).rejects.toThrow(
+      "Failed to decrypt data"
     )
-    expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD_2)).rejects.toThrow(
-      "Failed to decrypt data",
+    await expect(() => keyring.getMnemonicText(mnemonicId, WRONG_PASSWORD_2)).rejects.toThrow(
+      "Failed to decrypt data"
     )
   })
 
-  it("cannot add an account with a wrong password", () => {
-    expect(() =>
+  it("cannot add an account with a wrong password", async () => {
+    await expect(() =>
       keyring.addAccountDerive(
         {
           type: "existing-mnemonic",
@@ -58,8 +58,8 @@ describe("keyring", () => {
           derivationPath: DERIVATION_PATH_SUBSTRATE,
           name: "My account",
         },
-        WRONG_PASSWORD,
-      ),
+        WRONG_PASSWORD
+      )
     ).rejects.toThrow("Invalid password")
   })
 
@@ -71,13 +71,13 @@ describe("keyring", () => {
           name: "duplicate",
           confirmed: false,
         },
-        VALID_PASSWORD,
-      ),
+        VALID_PASSWORD
+      )
     ).rejects.toThrow("Mnemonic already exists")
   })
 
-  it("rejects invalid mnemonic", () => {
-    expect(() =>
+  it("rejects invalid mnemonic", async () => {
+    await expect(() =>
       keyring.addMnemonic(
         {
           ...MNEMONIC,
@@ -85,8 +85,8 @@ describe("keyring", () => {
           mnemonic: MNEMONIC.mnemonic.replace("junk", "test"),
           confirmed: false,
         },
-        VALID_PASSWORD,
-      ),
+        VALID_PASSWORD
+      )
     ).rejects.toThrow("Invalid mnemonic")
   })
 
@@ -144,7 +144,7 @@ describe("keyring", () => {
         derivationPath: DERIVATION_PATH_SUBSTRATE,
         name: "My account",
       },
-      VALID_PASSWORD,
+      VALID_PASSWORD
     )
 
     const restored = Keyring.load(keyring.toJson())
@@ -172,7 +172,7 @@ const testAddFromSecret = async (curve: KeypairCurve, derivationPath: string) =>
       secretKey: pair.secretKey,
       name: "My account",
     },
-    VALID_PASSWORD,
+    VALID_PASSWORD
   )
 
   expect(keyring.getAccount(pair.address)).toBeTruthy()
@@ -189,7 +189,7 @@ const testAddFromMnemonic = async (curve: KeypairCurve, derivationPath: string) 
       derivationPath,
       name: "My account",
     },
-    VALID_PASSWORD,
+    VALID_PASSWORD
   )
 
   expect(keyring.getAccount(address)).toBeTruthy()

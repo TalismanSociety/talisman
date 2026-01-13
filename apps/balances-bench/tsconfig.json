@@ -1,22 +1,11 @@
 {
+  "extends": "@talismn/tsconfig/es6-node.json",
   "compilerOptions": {
     "lib": ["ESNext"],
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
     "noEmit": true,
-    "composite": true,
-    "strict": true,
-    "downlevelIteration": true,
-    "skipLibCheck": true,
-    "jsx": "react-jsx",
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "types": ["node"]
+    "allowImportingTsExtensions": true,
+    "types": ["node"],
+    "skipLibCheck": true
   },
   "include": ["src"],
   "exclude": ["**/node_modules", "dist", "test", "tests"]

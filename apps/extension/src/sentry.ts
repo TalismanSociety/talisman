@@ -1,11 +1,11 @@
 import * as SentryReact from "@sentry/react"
-import { Event } from "@sentry/types"
+import type { Event } from "@sentry/types"
 import {
   settingsStore,
   trackIndexedDbErrorExtras,
   triggerIndexedDbUnavailablePopup,
 } from "extension-core"
-import { DEBUG, IS_FIREFOX } from "extension-shared"
+import { DEBUG, IS_FIREFOX, log } from "extension-shared"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 const normalizeUrl = (url: string) => {
@@ -40,7 +40,7 @@ export const initSentryFrontend = () => {
 
       // Print to console instead of Sentry in DEBUG/development builds
       if (DEBUG) {
-        console.error("[DEBUG - UI] Sentry event occurred", event) // eslint-disable-line no-console
+        log.error("[DEBUG - UI] Sentry event occurred", event) // eslint-disable-line no-console
         return null
       }
 
@@ -65,16 +65,15 @@ export const initSentryFrontend = () => {
   })
   const scope = SentryReact.getCurrentScope()
   scope.addEventProcessor(async (event: Event) => {
-    if (event.request && event.request.url) {
+    if (event.request?.url) {
       event.request.url = normalizeUrl(event.request.url)
     }
 
     if (event.exception?.values && event.exception.values.length > 0) {
       const firstValue = event.exception.values[0]
       if (!firstValue.stacktrace?.frames) return event
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
-        frame.filename = normalizeUrl(frame.filename)
+      firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame) => {
+        if (frame.filename) frame.filename = normalizeUrl(frame.filename)
         return frame
       })
     }

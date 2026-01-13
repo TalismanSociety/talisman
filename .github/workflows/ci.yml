@@ -20,16 +20,15 @@ jobs:
     name: "Build and test the wallet"
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    # To use Remote Caching, uncomment the next lines and follow the steps below.
-    # env:
-    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-    #  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # also get the previous commit
+          fetch-depth: 2
+      - name: Fetch base branch for comparison
+        if: github.event_name == 'pull_request'
+        run: git fetch origin ${{ github.base_ref }} --depth=1
       - name: Update & enable corepack
         run: npm install -g corepack@latest && corepack enable
       - name: Setup pnpm
@@ -37,12 +36,33 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Biome check
+        run: |
+          BASE_REF="${{ github.base_ref || 'dev' }}"
+          # Get changed files using two-dot diff (works with shallow clones)
+          mapfile -t CHANGED_FILES < <(
+            git diff --name-only --diff-filter=ACMR origin/$BASE_REF HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.json' '*.css' '*.cjs' '*.mjs'
+          )
+
+          if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
+            echo "No supported files changed - skipping biome check"
+            exit 0
+          fi
+
+          echo "Changed files:"
+          printf '  %q\n' "${CHANGED_FILES[@]}"
+          pnpm biome check --error-on-warnings -- "${CHANGED_FILES[@]}"
       - name: Test
-        run: pnpm preconstruct:dev && pnpm test
+        run: pnpm test
+      - name: Typecheck
+        run: |
+          # All packages and apps use customConditions: ["@talismn/source"] to resolve
+          # @talismn/* packages directly from source. This means no package build is needed.
+          pnpm typecheck
       - name: Extract short SHA + package version
         id: vars
         run: |
@@ -59,8 +79,8 @@ jobs:
           command: "upload"
           cli-version: "2.2.0"
           args: "--uploadPath ./apps/extension/.i18next-parser/locales/{lang}/{ns}.json --apiKey ${{ secrets.SIMPLE_LOCALIZE_API_KEY }}"
-      - name: Build
-        run: pnpm build:extension:ci
+      - name: Build extension
+        run: pnpm build:extension
         env:
           COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
           POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
@@ -71,7 +91,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: ./apps/extension/dist/chrome/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}_chrome.zip
+          path: ./apps/extension/dist/*.zip
           retention-days: 5
 
   # This job will use the files from the build job to run Playwright tests
@@ -92,7 +112,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -105,8 +125,8 @@ jobs:
           path: ./build-artifact
       - name: Unzip build artifact to the playwright extension path
         run: |
-          mkdir -p ./apps/extension/dist/chrome
-          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome
+          mkdir -p ./apps/extension/dist/chrome-mv3
+          unzip ./build-artifact/*.zip -d ./apps/extension/dist/chrome-mv3
       - name: Cache playwright browsers
         uses: actions/cache@v3
         with:
@@ -133,6 +153,7 @@ jobs:
   # This job will build and publish a snapshot version of the packages which have changesets in this PR
   publish_snapshot:
     name: "Publish a snapshot version of any packages with changesets in this PR to npm"
+    needs: ensure_pr_has_changeset
     timeout-minutes: 15
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
@@ -149,13 +170,13 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Bump changed package versions to a snapshot version
         run: pnpm changeset version --snapshot pr${{ github.event.pull_request.number }}
-      - name: Build snapshot packages
+      - name: Build packages for npm publish
         run: pnpm build:packages
       - name: Set publish config
         run: pnpm config set '//registry.npmjs.org/:_authToken' "${PNPM_TOKEN}"
@@ -185,7 +206,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -323,7 +344,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -337,7 +358,7 @@ jobs:
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build packages
+      - name: Build packages for npm publish
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: pnpm build:packages
       - name: Set publish config

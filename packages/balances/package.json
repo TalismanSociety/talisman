@@ -12,18 +12,19 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-balances.cjs.js",
-  "module": "dist/talismn-balances.esm.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "files": [
-    "/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "jest",
-    "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules",
+    "build": "tsup --silent",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
@@ -31,21 +32,17 @@
     "@polkadot-api/utils": "0.2.0",
     "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.2",
-    "@supercharge/promise-pool": "^3.2.0",
     "@talismn/chain-connectors": "workspace:*",
     "@talismn/chaindata-provider": "workspace:*",
     "@talismn/crypto": "workspace:*",
     "@talismn/sapi": "workspace:*",
     "@talismn/scale": "workspace:*",
-    "@talismn/solana": "workspace:*",
     "@talismn/token-rates": "workspace:*",
     "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11",
     "bignumber.js": "^9.1.2",
-    "dexie": "^4.0.9",
     "lodash-es": "4.17.21",
     "p-queue": "8.1.0",
-    "pako": "^2.1.0",
     "polkadot-api": "1.13.1",
     "rxjs": "^7.8.1",
     "scale-ts": "^1.6.1",
@@ -56,16 +53,8 @@
     "@polkadot/api-contract": "16.1.2",
     "@polkadot/types": "16.1.2",
     "@polkadot/util": "13.5.3",
-    "@polkadot/util-crypto": "13.5.3",
-    "@substrate/txwrapper-core": "7.5.3",
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
-    "@types/jest": "^29.5.14",
     "@types/lodash-es": "4.17.12",
-    "@types/pako": "^2.0.3",
-    "eslint": "^8.57.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
@@ -75,15 +64,18 @@
     "@polkadot/util-crypto": "*",
     "@substrate/txwrapper-core": "*"
   },
-  "preconstruct": {
-    "entrypoints": [
-      "index.ts"
-    ]
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/base"
-    ]
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@talismn/source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   }
 }

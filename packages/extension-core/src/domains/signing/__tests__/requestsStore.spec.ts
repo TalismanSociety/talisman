@@ -1,7 +1,8 @@
-import type { SignerPayloadJSON } from "@polkadot/types/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { Keyring } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
+import { describe, expect, vi } from "vitest"
 
 import { signSubstrate } from "../../../domains/signing/requests"
 import { requestStore } from "../../../libs/requests/store"
@@ -22,14 +23,14 @@ const createAccount = () => {
       derivationPath: "",
       confirmed: true,
     },
-    password,
+    password
   )
 }
 
-jest.mock("../../../libs/WindowManager", () => {
+vi.mock("../../../libs/WindowManager", () => {
   return {
     windowManager: {
-      popupOpen: jest.fn().mockImplementation(async () => {
+      popupOpen: vi.fn().mockImplementation(async () => {
         return 1
       }),
     },
@@ -67,13 +68,10 @@ describe("Signing requests store", () => {
       "http://test.com",
       new RequestExtrinsicSign(payload),
       account,
-      {} as chrome.runtime.Port,
+      {} as chrome.runtime.Port
     )
 
     await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
     expect(windowManager.popupOpen).toBeCalled()
   })
 })
-
-// load bearing export
-export {}

@@ -1,12 +1,13 @@
+import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
+import { TypeRegistry } from "@polkadot/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { TypeRegistry } from "@polkadot/types"
 import { cryptoWaitReady, signatureVerify } from "@polkadot/util-crypto"
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 import { waitFor } from "@testing-library/dom"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
+import { beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../tests/util"
 import { db } from "../db"
@@ -17,7 +18,7 @@ import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import { extensionStores } from "./stores"
 
-jest.setTimeout(10_000)
+vi.setConfig({ testTimeout: 10_000 })
 
 describe("Extension", () => {
   let extension: Extension
@@ -107,7 +108,7 @@ describe("Extension", () => {
         password,
         exportPw,
       },
-      {} as chrome.runtime.Port,
+      {} as chrome.runtime.Port
     )
 
     expect(result.exportedJson.address).toBe(address)
@@ -156,7 +157,7 @@ describe("Extension", () => {
         "http://test.com",
         new RequestExtrinsicSign(payload),
         account,
-        {} as chrome.runtime.Port,
+        {} as chrome.runtime.Port
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -230,7 +231,7 @@ describe("Extension", () => {
         "http://test.com",
         new RequestExtrinsicSign(payload),
         account,
-        {} as chrome.runtime.Port,
+        {} as chrome.runtime.Port
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -239,7 +240,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        }),
+        })
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -297,7 +298,7 @@ describe("Extension", () => {
         "http://test.com",
         new RequestExtrinsicSign(payload),
         account,
-        {} as chrome.runtime.Port,
+        {} as chrome.runtime.Port
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -306,7 +307,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        }),
+        })
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -384,7 +385,7 @@ describe("Extension", () => {
         "http://test.com",
         new RequestExtrinsicSign(payload),
         account,
-        {} as chrome.runtime.Port,
+        {} as chrome.runtime.Port
       )
 
       await waitFor(() => expect(requestStore.getCounts().get("substrate-sign")).toBe(1))
@@ -393,7 +394,7 @@ describe("Extension", () => {
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
-        }),
+        })
       ).resolves.toEqual(true)
 
       const { signature } = await requestPromise
@@ -411,7 +412,7 @@ describe("Extension", () => {
     // app.talisman.xyz should already be in the authorised sites store after onboarding
     const account = await getAccount()
     const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(talismanSite && talismanSite.addresses)
+    expect(talismanSite?.addresses)
     expect(talismanSite.addresses?.includes(account.address))
 
     const [newAddress] = await messageSender("pri(accounts.add.derive)", [

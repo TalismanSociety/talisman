@@ -1,0 +1,982 @@
+import { execSync } from "node:child_process"
+import { existsSync, readdirSync, unlinkSync } from "node:fs"
+import { homedir } from "node:os"
+import { join, resolve } from "node:path"
+import replace from "@rollup/plugin-replace"
+import { sentryVitePlugin } from "@sentry/vite-plugin"
+import react from "@vitejs/plugin-react"
+import consola from "consola"
+import { log } from "extension-shared"
+import JSZip from "jszip"
+import type { Alias, Plugin } from "vite"
+import { nodePolyfills } from "vite-plugin-node-polyfills"
+import svgr from "vite-plugin-svgr"
+import type { Logger, WxtViteConfig } from "wxt"
+import { defineConfig } from "wxt"
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pkg = require("./package.json")
+
+// Build type from environment variable (set by build:prod, build:canary, etc.), default to dev
+const BUILD_TYPE = process.env.BUILD_TYPE ?? ("dev" as "production" | "canary" | "dev")
+
+// Keep runtime Sentry release in sync with the Sentry Vite plugin configuration.
+// The plugin also supports SENTRY_RELEASE as an override.
+const SENTRY_RELEASE_NAME =
+  process.env.SENTRY_RELEASE ?? `${pkg.version}-${BUILD_TYPE}-${getGitSha()}`
+
+// Create a plugin that ensures deterministic module ordering for reproducible builds.
+// This is critical for Firefox Add-on Store review where builds must be byte-identical.
+// The plugin normalizes timestamps, sorts module order, and normalizes export statements
+// to eliminate non-determinism from Rollup's deconflicting which assigns $N suffixes
+// based on module processing order.
+function createDeterministicBuildPlugin(): Plugin {
+  return {
+    name: "deterministic-build",
+    enforce: "post",
+
+    // Normalize export statements to have deterministic ordering.
+    // Rollup's deconflicting assigns $N suffixes in module processing order which is
+    // non-deterministic. This hook rewrites export { } statements to sort exports
+    // alphabetically by their exported name, ensuring identical output regardless
+    // of processing order.
+    renderChunk(code, _chunk, options) {
+      // Only apply to Firefox production builds (ES modules)
+      if (options.format !== "es") return null
+
+      // Match export statements at the start of a line: export { ... } or export { ... } from '...'
+      // The regex requires exports to be valid JS identifiers (letters, digits, $, _)
+      // and must be at the start of a line (after newline or start of string)
+      const exportRegex =
+        /(?:^|\n)(export\s*\{\s*)([\w$\s,]+)(\s*\}(?:\s*from\s*['"][^'"]+['"])?\s*;?)/g
+
+      let modified = false
+      const newCode = code.replace(
+        exportRegex,
+        (match, prefix: string, exportsStr: string, suffix: string) => {
+          // Parse individual exports: "a, b as c, d as e" -> [{local: 'a', exported: 'a'}, ...]
+          const exports = exportsStr
+            .split(",")
+            .map((exp: string) => {
+              const trimmed = exp.trim()
+              if (!trimmed) return null
+              // Match: "localName as exportedName" or just "name"
+              const asMatch = trimmed.match(/^([\w$]+)\s+as\s+([\w$]+)$/)
+              if (asMatch) {
+                return { local: asMatch[1], exported: asMatch[2] }
+              }
+              // Simple export without alias
+              if (/^[\w$]+$/.test(trimmed)) {
+                return { local: trimmed, exported: trimmed }
+              }
+              return null
+            })
+            .filter((e): e is { local: string; exported: string } => e !== null)
+
+          if (exports.length === 0) return match
+
+          // Sort by exported name for deterministic ordering
+          exports.sort((a, b) => a.exported.localeCompare(b.exported))
+
+          // Rebuild the export statement
+          const newExports = exports
+            .map((e) => (e.local === e.exported ? e.local : `${e.local} as ${e.exported}`))
+            .join(", ")
+
+          modified = true
+          // Preserve the leading newline if present
+          const leadingNewline = match.startsWith("\n") ? "\n" : ""
+          return `${leadingNewline}${prefix}${newExports}${suffix}`
+        }
+      )
+
+      if (!modified) return null
+      return { code: newCode, map: null }
+    },
+
+    generateBundle(_options, bundle) {
+      // Sort bundle keys deterministically
+      const sortedKeys = Object.keys(bundle).sort()
+
+      // Process each chunk to ensure deterministic module ordering
+      for (const key of sortedKeys) {
+        const chunk = bundle[key]
+        if (chunk.type === "chunk" && chunk.modules) {
+          // Sort the modules object keys alphabetically
+          const sortedModules: Record<string, { code: string; originalLength: number }> = {}
+          const moduleKeys = Object.keys(chunk.modules).sort()
+
+          for (const moduleKey of moduleKeys) {
+            sortedModules[moduleKey] = chunk.modules[moduleKey] as {
+              code: string
+              originalLength: number
+            }
+          }
+          // Replace with sorted modules
+          // biome-ignore lint/suspicious/noExplicitAny: Rollup types don't expose module setter
+          ;(chunk as any).modules = sortedModules
+        }
+      }
+    },
+  }
+}
+
+// Create a custom logger that filters out the verbose file list output
+// while still showing important success messages (build time, zip output with filename/size)
+function createQuietLogger(): Logger {
+  // Filter success messages to remove extension file list but keep zip file info
+  const filterSuccessMessage = (msg: string): string | null => {
+    if (typeof msg !== "string") return msg
+
+    // Check if this message contains tree structure (file list output)
+    if (!msg.includes("├─") && !msg.includes("└─")) return msg
+
+    // Split into lines and filter
+    const lines = msg.split("\n")
+    const filteredLines = lines.filter((line) => {
+      const trimmed = line.trim()
+      if (!trimmed) return true
+
+      // Keep lines with .zip files (we want to see zip output)
+      if (line.includes(".zip")) return true
+
+      // Keep the total size line only if it's for zips (follows a .zip line)
+      // Filter out tree structure lines for non-zip files
+      if (line.includes("├─") || line.includes("└─")) return false
+      if (line.includes("Σ Total size:")) return false
+
+      // Keep header lines
+      return true
+    })
+
+    const result = filteredLines.join("\n").trim()
+    return result || null
+  }
+
+  return {
+    level: 3, // warn level
+    debug: consola.debug.bind(consola),
+    log: consola.log.bind(consola),
+    info: consola.info.bind(consola),
+    warn: consola.warn.bind(consola),
+    error: consola.error.bind(consola),
+    fatal: consola.fatal.bind(consola),
+    success: (...args: unknown[]) => {
+      const filtered = args
+        .map((arg) => (typeof arg === "string" ? filterSuccessMessage(arg) : arg))
+        .filter((arg) => arg !== null)
+      if (filtered.length > 0) {
+        // biome-ignore lint/suspicious/noExplicitAny: consola types require any for spread args
+        ;(consola.success as (...args: any[]) => void)(...filtered)
+      }
+    },
+  }
+}
+
+// Get git SHA for build identification (used in zip filename)
+// Prefer COMMIT_SHA_SHORT env var (from CI), otherwise get it from git
+function getGitSha(): string {
+  if (process.env.COMMIT_SHA_SHORT) {
+    return process.env.COMMIT_SHA_SHORT
+  }
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim()
+  } catch {
+    return "unknown"
+  }
+}
+
+// Create Sentry Vite plugins for production/canary builds
+// Uploads sourcemaps to Sentry for error tracking, then deletes them from the output
+// to prevent exposing source code in the distributed extension.
+// Returns an array of plugins (Sentry uses multiple internal plugins)
+// Note: Sentry is only used for Chrome builds, not Firefox
+function createSentryPlugins(browser: string): Plugin[] {
+  // Only enable for production and canary builds
+  if (!["production", "canary"].includes(BUILD_TYPE ?? "")) return []
+
+  // Skip Sentry for Firefox builds - we only use Sentry with Chrome
+  if (browser === "firefox") return []
+
+  // Require auth token for Sentry uploads
+  if (!process.env.SENTRY_AUTH_TOKEN) {
+    log.warn("Missing SENTRY_AUTH_TOKEN env variable, sourcemaps won't be uploaded to Sentry")
+    return []
+  }
+
+  return sentryVitePlugin({
+    // Sentry organization and project
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    org: "talisman",
+    project: "talisman-extension",
+
+    // Release identification
+    release: {
+      name: SENTRY_RELEASE_NAME,
+    },
+
+    // Sourcemap configuration
+    // Let Sentry auto-detect sourcemaps from the build output
+    // Note: filesToDeleteAfterUpload is NOT used here because WXT builds in multiple steps,
+    // and Sentry would try to delete files between steps causing ENOENT errors.
+    // Instead, we use a post-build script or the zip step handles cleanup.
+    sourcemaps: {
+      // Exclude content scripts that run in page context (not useful for debugging our code)
+      ignore: ["**/content_script.js.map", "**/page.js.map"],
+    },
+
+    // Disable telemetry
+    telemetry: false,
+    // Do not output sourcemap files list
+    silent: true,
+  }) as Plugin[]
+}
+
+// Delete sourcemap files from the output directory
+// This is called after build:done for production/canary builds
+// to ensure sourcemaps are not included in the final extension zip
+function deleteSourcemaps(outputDir: string): void {
+  if (!existsSync(outputDir)) return
+
+  const deleteMapFilesRecursively = (dir: string): number => {
+    let count = 0
+    const entries = readdirSync(dir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        count += deleteMapFilesRecursively(fullPath)
+      } else if (entry.name.endsWith(".map")) {
+        try {
+          unlinkSync(fullPath)
+          count++
+        } catch {
+          // Ignore errors (file might already be deleted)
+        }
+      }
+    }
+    return count
+  }
+
+  const deleted = deleteMapFilesRecursively(outputDir)
+  if (deleted > 0) {
+    // eslint-disable-next-line no-console
+    log.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
+  }
+}
+
+// Normalize zip file timestamps for reproducible builds.
+// ZIP files store file modification times, which causes different hashes between builds
+// even when file contents are identical. This function re-creates the zip with a fixed
+// epoch timestamp (2000-01-01 00:00:00 UTC) for all files.
+// This is required for Firefox Add-on Store review which verifies builds are reproducible.
+async function normalizeZipTimestamps(zipPath: string): Promise<void> {
+  // Fixed epoch timestamp for reproducible builds
+  // Using 2000-01-01 00:00:00 UTC as it's a common choice for reproducible builds
+  // and is within the valid range for ZIP timestamps (1980-2107)
+  const FIXED_DATE = new Date("2000-01-01T00:00:00Z")
+
+  // Read the existing zip using fs/promises for cleaner async code
+  const { readFile, writeFile } = await import("node:fs/promises")
+  const zipData = await readFile(zipPath)
+
+  // Load the zip
+  const zip = await JSZip.loadAsync(zipData)
+
+  // Create a new zip with normalized timestamps
+  const newZip = new JSZip()
+
+  // Get all file entries and sort them for deterministic ordering
+  const fileEntries = Object.entries(zip.files).sort(([a], [b]) => a.localeCompare(b))
+
+  for (const [relativePath, file] of fileEntries) {
+    if (file.dir) {
+      // Create directory with fixed timestamp using file() with dir option
+      // Note: folder() doesn't accept date option, so we use file() with dir:true
+      newZip.file(relativePath, null, {
+        dir: true,
+        date: FIXED_DATE,
+        unixPermissions: "755",
+      })
+    } else {
+      // Add file with fixed timestamp and explicit permissions
+      const content = await file.async("nodebuffer")
+      newZip.file(relativePath, content, {
+        date: FIXED_DATE,
+        unixPermissions: "644",
+      })
+    }
+  }
+
+  // Generate the new zip with deterministic settings
+  const newZipBuffer = await newZip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 9 },
+    // Use UNIX platform for consistent file attributes
+    platform: "UNIX",
+  })
+
+  // Write the normalized zip back
+  await writeFile(zipPath, newZipBuffer)
+
+  log.log(`📦 Normalized zip timestamps for reproducible build: ${zipPath}`)
+}
+
+// Resolve monorepo packages to their source directories for hot reload
+const packagesDir = resolve(__dirname, "../../packages")
+
+// Create aliases to map @talismn/* packages to their source directories
+// This enables hot reload in dev mode - changes to package source are reflected immediately
+function createPackageSourceAliases(): Alias[] {
+  return [
+    // Internal packages - exact matches for main entry (subpath patterns are in baseAliases)
+    { find: /^talisman-ui$/, replacement: resolve(packagesDir, "talisman-ui/src") },
+
+    // Map workspace packages to source for hot reload in dev (exact matches)
+    { find: "extension-core", replacement: resolve(packagesDir, "extension-core/src") },
+    { find: "extension-shared", replacement: resolve(packagesDir, "extension-shared/src") },
+
+    { find: "@talismn/balances", replacement: resolve(packagesDir, "balances/src") },
+    {
+      find: "@talismn/balances-react",
+      replacement: resolve(packagesDir, "balances-react/src"),
+    },
+    {
+      find: "@talismn/chain-connectors",
+      replacement: resolve(packagesDir, "chain-connectors/src"),
+    },
+    {
+      find: "@talismn/chaindata-provider",
+      replacement: resolve(packagesDir, "chaindata-provider/src"),
+    },
+    {
+      find: "@talismn/connection-meta",
+      replacement: resolve(packagesDir, "connection-meta/src"),
+    },
+    { find: "@talismn/crypto", replacement: resolve(packagesDir, "crypto/src") },
+    { find: "@talismn/icons", replacement: resolve(packagesDir, "icons/src") },
+    { find: "@talismn/keyring", replacement: resolve(packagesDir, "keyring/src") },
+    { find: "@talismn/on-chain-id", replacement: resolve(packagesDir, "on-chain-id/src") },
+    { find: "@talismn/orb", replacement: resolve(packagesDir, "orb/src") },
+    { find: "@talismn/sapi", replacement: resolve(packagesDir, "sapi/src") },
+    { find: "@talismn/scale", replacement: resolve(packagesDir, "scale/src") },
+    { find: "@talismn/solana", replacement: resolve(packagesDir, "solana/src") },
+    { find: "@talismn/token-rates", replacement: resolve(packagesDir, "token-rates/src") },
+    { find: "@talismn/util", replacement: resolve(packagesDir, "util/src") },
+  ]
+}
+
+export default defineConfig({
+  // Custom logger that filters out verbose file list output
+  logger: createQuietLogger(),
+
+  // Project root directory
+  root: __dirname,
+
+  // Source directory relative to root (entrypoints are at project root)
+  srcDir: ".",
+
+  // Entrypoints directory at project root
+  entrypointsDir: "entrypoints",
+
+  // Output directory - WXT appends browser name (e.g., dist/chrome-mv3)
+  outDir: "dist",
+
+  // Build hooks
+  hooks: {
+    // Before zipping, delete sourcemaps for production/canary builds
+    // Sourcemaps are uploaded to Sentry during the build, then removed before zipping
+    // to prevent exposing source code in the distributed extension, and keep the package small
+    "zip:extension:start": (wxt) => {
+      if (["production", "canary"].includes(BUILD_TYPE ?? "")) {
+        const outputDir = resolve(__dirname, "dist", `${wxt.config.browser}-mv3`)
+        deleteSourcemaps(outputDir)
+      }
+    },
+    // After zipping, normalize timestamps for Firefox builds to ensure reproducibility
+    // Firefox Add-on Store requires that source builds produce identical zip files
+    "zip:extension:done": async (wxt, zipPath) => {
+      if (wxt.config.browser === "firefox") {
+        await normalizeZipTimestamps(zipPath)
+      }
+    },
+    // Also normalize sources zip timestamps for Firefox
+    "zip:sources:done": async (wxt, zipPath) => {
+      if (wxt.config.browser === "firefox") {
+        await normalizeZipTimestamps(zipPath)
+      }
+    },
+    // Fix manifest values after WXT generates it
+    // WXT auto-generates some fields from entrypoints, overriding our custom values
+    "build:manifestGenerated": (_wxt, manifest) => {
+      const getNameSuffix = () => {
+        switch (BUILD_TYPE) {
+          case "production":
+            return ""
+          case "canary":
+            return " - Canary"
+          case "dev":
+            return " - Dev"
+          default:
+            return " - Unknown"
+        }
+      }
+
+      const isChrome = _wxt.config.browser === "chrome"
+      const nameSuffix = getNameSuffix()
+
+      // Fix action title to match manifest name suffix
+      if (manifest.action) {
+        manifest.action.default_title = `Talisman${nameSuffix}`
+        // WXT strips query params and hash from popup URL, restore them
+        manifest.action.default_popup = "popup.html?embedded#/portfolio"
+      }
+
+      // Set version_name for Chrome (helps distinguish builds in extensions list)
+      if (isChrome) {
+        if (BUILD_TYPE === "production") {
+          manifest.version_name = pkg.version
+        } else if (BUILD_TYPE === "canary") {
+          manifest.version_name = `${pkg.version} canary - ${getGitSha()}`
+        } else {
+          manifest.version_name = `${pkg.version} dev - ${getGitSha()}`
+        }
+      }
+    },
+  },
+
+  // Dev server configuration
+  dev: {
+    server: {
+      port: 3000,
+    },
+    // Persist browser profile between restarts (keeps extension storage, logins, etc.)
+    reloadCommand: "Alt+R",
+  },
+
+  // Browser startup configuration - persist browser data directory
+  // Stored in ~/.talisman-dev/ outside the repo for security (contains extension data)
+  webExt: {
+    chromiumProfile: resolve(homedir(), ".talisman-dev/chrome-data"),
+    keepProfileChanges: true,
+  },
+
+  // Manifest configuration
+  manifest: ({ browser, mode }) => {
+    // Pick the right icon suffix based on mode (dev vs prod/canary)
+    const iconSuffix =
+      mode === "development" ? "-dev" : BUILD_TYPE === "canary" ? "-canary" : "-prod"
+
+    // Determine name suffix based on build type
+    // Dev builds get " - Dev", canary builds get " - Canary", production builds have no suffix
+    const nameSuffix =
+      mode === "development" ? " - Dev" : BUILD_TYPE === "canary" ? " - Canary" : ""
+
+    return {
+      name: `Talisman Wallet${nameSuffix}`,
+      description:
+        "The self-custody wallet for the next era of DeFi. One unified portfolio for Ethereum, Solana, Bittensor, Polkadot, and more.",
+      author: "Talisman",
+
+      permissions: ["storage", "tabs", "notifications", "alarms"],
+
+      icons: {
+        16: `/favicon16x16${iconSuffix}.png`,
+        24: `/favicon24x24${iconSuffix}.png`,
+        32: `/favicon32x32${iconSuffix}.png`,
+        48: `/favicon48x48${iconSuffix}.png`,
+        64: `/favicon64x64${iconSuffix}.png`,
+        128: `/favicon128x128${iconSuffix}.png`,
+      },
+
+      action: {
+        default_title: `Talisman${nameSuffix}`,
+        default_popup: "popup.html?embedded#/portfolio",
+      },
+
+      options_ui: {
+        page: "dashboard.html#/settings/general",
+        open_in_tab: true,
+      },
+
+      // CSP - Chrome MV3 doesn't allow 'unsafe-eval', only 'wasm-unsafe-eval'
+      // Firefox MV2 is more permissive but we use the same CSP for simplicity
+      content_security_policy: {
+        extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+      },
+
+      web_accessible_resources: [
+        {
+          resources: ["page.js"],
+          matches: ["file://*/*", "http://*/*", "https://*/*"],
+        },
+      ],
+
+      // Browser-specific settings
+      ...(browser === "firefox"
+        ? {
+            browser_specific_settings: {
+              gecko: {
+                strict_min_version: "128.0",
+                id: "{f5727e03-b26c-41e0-95dd-7e315ff16410}",
+              },
+            },
+          }
+        : {
+            // ES module service workers require Chrome 121+
+            minimum_chrome_version: "121",
+            // Note: version_name is set in the build:manifestGenerated hook
+            // because WXT filters unknown manifest fields here
+            // Dev-only key for stable extension ID during development
+            // This is stripped by Chrome Web Store on upload, so it won't affect production
+            ...(mode === "development"
+              ? {
+                  key: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsyajFaxudigtQcdMmR/oBIBzR0OwKoXu7c7jACcevdm4ud9fJuGygThmQJLm03maSJWxfuVSJmPcjIDCZezgfwaGfIKFxrFeP5h8agwoH9CAj7aOz389bOaLD6u9iBrk6CgwI27AbYfpXRvn1XZrx+LQkedfNjpsfBxgmPS9lcTJnuB96CdgYPX4gk4FuTI8RdX2TCQRX9E/eNl/Y7bcqMBJob+IQ3MhMP3mCLXiQH0gCoLtXnZyB731tOR68EmKCZ9j5FJ9OghgOzZxoUoEtFniCxvlDrt5tDsnHSqW77OySWR76laW0ibV7ZFg191v2XeeiokIKRO5DolRBKq3owIDAQAB",
+                }
+              : {}),
+          }),
+    }
+  },
+
+  // Vite configuration
+  // In dev mode: alias packages to source for hot reload
+  // In production: use pre-built tsup outputs from dist/ for smaller bundles
+  vite: ({ mode, browser }) => {
+    const isDev = mode === "development"
+    // WXT passes browser via the ConfigEnv parameter (e.g., "firefox", "chrome")
+    const isFirefox = browser === "firefox"
+
+    // Helper function to transform chrome.* to browser.* for Firefox
+    // Used by both transform (dev) and renderChunk (production) hooks
+    const transformChromeToBrowser = (code: string): { code: string; map: null } | null => {
+      let result = code
+
+      // Replace common chrome.* API namespaces with browser.*
+      // Use word boundaries to avoid partial matches
+      const chromeApis = [
+        "storage",
+        "runtime",
+        "tabs",
+        "windows",
+        "notifications",
+        "alarms",
+        "browserAction",
+        "action",
+        "permissions",
+        "webRequest",
+        "scripting",
+        "management",
+        "contextMenus",
+        "commands",
+        "cookies",
+        "downloads",
+        "history",
+        "bookmarks",
+        "identity",
+        "i18n",
+        "idle",
+        "extension",
+      ]
+
+      for (const api of chromeApis) {
+        // Match chrome.api (but not .chrome.api or _chrome.api)
+        const dotPattern = new RegExp(`\\bchrome\\.${api}\\b`, "g")
+        result = result.replace(dotPattern, `browser.${api}`)
+
+        // Also handle bracket notation: chrome["storage"], chrome['storage']
+        const bracketPattern = new RegExp(`\\bchrome\\s*\\[\\s*['"]${api}['"]\\s*\\]`, "g")
+        result = result.replace(bracketPattern, `browser["${api}"]`)
+      }
+
+      // Remove WXT's "const browser = browser$N" to avoid TDZ conflict
+      // Our banner already defines "var browser = globalThis.browser" at the top
+      result = result.replace(
+        /const browser = browser\$\d+;/g,
+        "// const browser = browser$N; // Removed to avoid TDZ - using var browser from banner"
+      )
+
+      // Only return if we made changes
+      if (result !== code) {
+        return { code: result, map: null }
+      }
+      return null
+    }
+
+    // Base aliases always needed (internal extension paths)
+    const baseAliases: Alias[] = [
+      // Internal path aliases (from tsconfig.json with baseUrl: "src")
+      { find: "@common", replacement: resolve(__dirname, "src/common") },
+      { find: "@talisman", replacement: resolve(__dirname, "src/@talisman") },
+      { find: "@ui", replacement: resolve(__dirname, "src/ui") },
+      { find: "@tests", replacement: resolve(__dirname, "src/tests") },
+      // Base-relative imports from src/
+      { find: /^inject\/(.*)$/, replacement: resolve(__dirname, "src/inject/$1") },
+      // Internal packages subpath imports (needed in both dev and production)
+      // These packages don't have proper exports in package.json for subpaths
+      {
+        find: /^extension-core\/(.*)$/,
+        replacement: resolve(packagesDir, "extension-core/src/$1"),
+      },
+      {
+        find: /^extension-shared\/(.*)$/,
+        replacement: resolve(packagesDir, "extension-shared/src/$1"),
+      },
+      {
+        find: /^talisman-ui\/src\/(.*)$/,
+        replacement: resolve(packagesDir, "talisman-ui/src/$1"),
+      },
+    ]
+
+    // Always use package source aliases for both dev and production builds
+    // This bundles directly from TypeScript source, avoiding the need to pre-build packages with tsup
+    // Benefits: simpler build process, single Vite/Rollup pass for potentially better reproducibility
+    const aliases = [...baseAliases, ...createPackageSourceAliases()]
+
+    // Cast to WxtViteConfig to handle Vite version mismatches between dependencies
+    return {
+      plugins: [
+        // Watch monorepo packages directory in dev mode for hot reload
+        // WXT's external file watching has a bug that skips step 0 (background script),
+        // so we need to explicitly add the packages directory to Vite's watcher
+        ...(isDev
+          ? [
+              {
+                name: "watch-packages",
+                configureServer(server) {
+                  // Add the packages directory to the file watcher
+                  // This enables hot reload when files in packages/* change
+                  server.watcher.add(packagesDir)
+                },
+              } satisfies Plugin,
+            ]
+          : []),
+        // Replace environment variables in all code including bundled dependencies
+        // This handles cases where variable names get mangled (e.g., process$1.env)
+        replace({
+          preventAssignment: true,
+          values: {
+            "process.env.VERSION": JSON.stringify(pkg.version),
+            "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
+            "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
+            "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+            "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+            "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
+            "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+            "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
+            "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+            "process.env.SUPPORTED_LANGUAGES": JSON.stringify(
+              process.env.SUPPORTED_LANGUAGES || ""
+            ),
+            "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
+            "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
+            "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
+              process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
+            ),
+          },
+        }),
+        // Node.js polyfills for browser compatibility (buffer, crypto, etc.)
+        nodePolyfills({
+          include: ["buffer", "crypto", "stream", "util", "process"],
+          globals: {
+            Buffer: true,
+            global: true,
+            process: true,
+          },
+        }),
+        react(),
+        // Transform SVG imports to React components (equivalent to @svgr/webpack)
+        svgr({
+          include: "**/*.svg",
+          svgrOptions: {
+            exportType: "named",
+            namedExport: "ReactComponent",
+          },
+        }),
+        // Handle .md files as raw text (equivalent to webpack's raw-loader)
+        {
+          name: "raw-md-loader",
+          transform(code: string, id: string) {
+            if (id.endsWith(".md")) {
+              return {
+                code: `export default ${JSON.stringify(code)}`,
+                map: null,
+              }
+            }
+            return null
+          },
+        } satisfies Plugin,
+        // Replace environment variables in final chunks (handles mangled variable names)
+        {
+          name: "env-replace-final",
+          enforce: "post" as const,
+          renderChunk(code: string, chunk: { fileName: string }) {
+            // Only process background.js where the polkadot env vars are needed
+            if (chunk.fileName.includes("background")) {
+              // Replace patterns like process$1$1.env['EXTENSION_PREFIX'] or process.env['EXTENSION_PREFIX']
+              let result = code
+              result = result.replace(
+                /process(?:\$\d+)*\.env\s*\[\s*['"]EXTENSION_PREFIX['"]\s*\]/g,
+                JSON.stringify("talisman")
+              )
+              result = result.replace(
+                /process(?:\$\d+)*\.env\s*\[\s*['"]PORT_PREFIX['"]\s*\]/g,
+                JSON.stringify("talisman")
+              )
+              return { code: result, map: null }
+            }
+            return null
+          },
+        },
+        // Firefox: Replace chrome.* with browser.* in both dev and production
+        // In Firefox MV2, the 'browser' API provides Promise-based methods,
+        // while 'chrome' uses callbacks. Since the codebase uses 'chrome.*' directly,
+        // we transform the code to use 'browser' instead.
+        ...(isFirefox
+          ? [
+              {
+                name: "firefox-chrome-to-browser",
+                enforce: "post" as const,
+                // Use transform hook for dev mode (serves files directly)
+                transform(code: string, id: string) {
+                  // Only transform JS/TS files from our source
+                  // Use a more flexible pattern that handles query strings
+                  if (!id.match(/\.(js|ts|tsx|jsx)(\?|$)/)) return null
+                  // Skip node_modules (they shouldn't use chrome.* directly)
+                  if (id.includes("node_modules")) return null
+
+                  // Only transform if the file uses chrome.* APIs
+                  if (!code.includes("chrome.")) return null
+
+                  return transformChromeToBrowser(code)
+                },
+                // Use renderChunk hook for production builds
+                renderChunk(code: string, chunk: { fileName: string }) {
+                  // Only transform JS files
+                  if (!chunk.fileName.endsWith(".js")) return null
+
+                  return transformChromeToBrowser(code)
+                },
+              },
+            ]
+          : []),
+        // Deterministic build plugin - ensures consistent module ordering for reproducible builds
+        // This is important for Firefox Add-on Store review where builds must match
+        createDeterministicBuildPlugin(),
+        // Sentry plugins for production/canary builds - uploads sourcemaps then deletes them
+        // Must be last to ensure they run after all other transformations
+        ...createSentryPlugins(browser),
+      ],
+
+      resolve: {
+        alias: aliases,
+      },
+
+      // Define environment variables
+      // Note: @polkadot/extension-base uses bracket notation like process.env['PORT_PREFIX']
+      define: {
+        "process.env.VERSION": JSON.stringify(pkg.version),
+        "process.env.EXTENSION_PREFIX": JSON.stringify("talisman"),
+        "process.env['EXTENSION_PREFIX']": JSON.stringify("talisman"),
+        "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+        "process.env['PORT_PREFIX']": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
+        "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
+        "process.env.BUILD": JSON.stringify(isDev ? "dev" : "production"),
+        "process.env.RELEASE": JSON.stringify(SENTRY_RELEASE_NAME),
+        "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+        "process.env.SUPPORTED_LANGUAGES": JSON.stringify(process.env.SUPPORTED_LANGUAGES || ""),
+        "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
+        "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
+        "process.env.LOG_SUBSCRIPTION_CALLBACKS": JSON.stringify(
+          process.env.LOG_SUBSCRIPTION_CALLBACKS || ""
+        ),
+      },
+
+      optimizeDeps: {
+        // Pre-bundle heavy dependencies that rarely change for faster rebuilds
+        // Vite caches these across rebuilds, avoiding repeated processing
+        include: [
+          // React ecosystem
+          "react",
+          "react-dom",
+          "react-router-dom",
+          // State management
+          "rxjs",
+          "@tanstack/react-query",
+          "@react-rxjs/core",
+          // Data & storage
+          "dexie",
+          "lodash-es",
+          // Crypto (heavy dependencies)
+          "@polkadot/util",
+          "@polkadot/util-crypto",
+          "@polkadot/keyring",
+          // UI
+          "@headlessui/react",
+          "@floating-ui/react",
+          "framer-motion",
+        ],
+      },
+
+      build: {
+        // Target modern browsers
+        target: "esnext",
+
+        // For Firefox reproducible builds: disable module preload polyfill
+        // This avoids non-deterministic module ordering in preload chunks
+        modulePreload: isFirefox && !isDev ? false : undefined,
+
+        // Sourcemap configuration:
+        // - Dev mode: separate sourcemaps for debugging without bloating file sizes
+        // - Production/Canary Chrome: hidden sourcemaps (uploaded to Sentry, then deleted)
+        // - Firefox: no sourcemaps (we don't use Sentry for Firefox)
+        // - Other builds: no sourcemaps
+        // Note: "hidden" generates sourcemaps but doesn't add the //# sourceMappingURL comment
+        sourcemap: isDev
+          ? true // Separate .js.map files for dev
+          : ["production", "canary"].includes(BUILD_TYPE ?? "") && !isFirefox
+            ? "hidden" // Generate maps for Sentry upload (Chrome only)
+            : false, // No sourcemaps for Firefox or other builds
+
+        // Memory optimization: limit minification workers to reduce peak memory usage
+        // This helps on memory-constrained systems (e.g., WSL with limited RAM)
+        minify: "esbuild",
+
+        // Chunk size warnings (4MB is the store limit, warn at 3.5MB to leave margin)
+        chunkSizeWarningLimit: 3500,
+
+        rollupOptions: {
+          // For Firefox reproducible builds: disable caching and limit parallelism
+          // This ensures deterministic module ordering for Add-on Store review
+          ...(isFirefox && !isDev
+            ? {
+                cache: false, // Disable Rollup caching for reproducibility
+                maxParallelFileOps: 1, // Sequential file operations for deterministic ordering
+              }
+            : {}),
+
+          // Suppress noisy warnings from node_modules
+          onwarn(warning, warn) {
+            // Ignore PURE comment warnings from @polkadot and mlkem packages
+            if (warning.code === "INVALID_ANNOTATION" && warning.message.includes("__PURE__")) {
+              return
+            }
+            // Ignore eval warnings from store package
+            if (warning.code === "EVAL" && warning.id?.includes("node_modules")) {
+              return
+            }
+            // Ignore "externalized for browser compatibility" warnings
+            // These are expected for Node.js modules (vm, http, https, zlib) in browser builds
+            if (
+              warning.code === "PLUGIN_WARNING" &&
+              warning.message?.includes("externalized for browser compatibility")
+            ) {
+              return
+            }
+            warn(warning)
+          },
+
+          // Ensure deterministic output ordering for reproducible builds
+          // This is critical for Firefox Add-on Store review process
+          preserveEntrySignatures: "strict",
+
+          output: {
+            // Deterministic chunk naming for reproducible builds
+            // Use content hash only (no random IDs) so identical content = identical output
+            chunkFileNames: "chunks/[name]-[hash].js",
+            entryFileNames: "[name].js",
+            assetFileNames: "assets/[name]-[hash][extname]",
+
+            // Use hex hashes for reproducibility (avoids base64 character variations)
+            hashCharacters: "hex",
+
+            // Ensure consistent chunk ordering for reproducibility
+            // Sort chunks alphabetically to avoid file system ordering variations
+            manualChunks: undefined, // Let Rollup handle chunking automatically
+
+            // For Firefox: disable minified exports for deterministic builds
+            // When true, Rollup assigns short names (a, b, c) in module traversal order,
+            // which varies based on file system ordering between machines.
+            // Disabling this uses original export names which are deterministic.
+            // For other browsers: enable for smaller bundle size.
+            minifyInternalExports: !isDev && !isFirefox,
+
+            // Add shims for service worker (background script)
+            // Some packages like @polkadot/util reference document which doesn't exist in service workers
+            // For Firefox, we also need to set up 'browser' before any code runs
+            banner: (chunk) => {
+              if (chunk.fileName === "background.js" || chunk.name === "background") {
+                // Firefox MV2: Create 'browser' var from globalThis.browser BEFORE any code runs
+                // This avoids TDZ issues with const browser declarations from polyfills
+                const firefoxShim = isFirefox
+                  ? `
+// Firefox browser API shim - must be var (not const) to avoid TDZ issues
+// Firefox MV2 provides globalThis.browser with Promise-based APIs
+var browser = globalThis.browser;
+`
+                  : ""
+
+                return `${firefoxShim}
+// Document shim for service worker - some packages reference document which doesn't exist
+if (typeof document === "undefined") {
+  globalThis.document = { baseURI: self.location.href, currentScript: null };
+}
+`
+              }
+              return ""
+            },
+          },
+        },
+      },
+
+      // Enable WASM
+      worker: {
+        format: "es",
+      },
+    } as WxtViteConfig
+  },
+
+  // WXT-specific options
+  imports: false, // Disable auto-imports for explicit control
+
+  // Zip configuration for build artifacts
+  zip: {
+    // Include git SHA in zip filename for build identification
+    // Format: talisman-1.2.3-production-abc1234-chrome.zip
+    artifactTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-{{browser}}.zip`,
+    sourcesTemplate: `talisman-${pkg.version}-${BUILD_TYPE}-${getGitSha()}-sources.zip`,
+
+    // Include the full monorepo in sources zip for reproducible builds
+    // This allows Firefox reviewers to rebuild the extension from source
+    sourcesRoot: resolve(__dirname, "../.."),
+
+    // Include hidden files needed for builds (WXT excludes hidden files by default)
+    includeSources: [
+      ".papi/**", // Polkadot API configuration and generated descriptors
+      ".npmrc", // pnpm configuration (node version, hoisting, etc.)
+      ".dockerignore", // Docker ignore file for reproducible builds
+      "apps/extension/.env", // Environment variables for build (no secrets)
+    ],
+
+    // Exclude unnecessary files from sources zip
+    excludeSources: [
+      // Build outputs and caches
+      "**/dist/**",
+      "**/.output/**",
+      "**/coverage/**",
+      "**/.turbo/**",
+      "**/.wxt/**",
+      // Review/test artifacts
+      "review/**",
+      ".verify-build/**",
+      "test-results/**",
+      "playwright-report/**",
+      // IDE and editor files
+      ".idea/**",
+      ".vscode/**",
+      // Other apps we don't need to build the extension
+      "apps/balances-bench/**",
+      "apps/balances-demo/**",
+    ],
+  },
+})

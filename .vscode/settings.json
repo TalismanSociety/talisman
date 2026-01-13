@@ -11,5 +11,34 @@
 
   // defaults to 1rem=16px, but we use 1rem=10px in the extension
   // this setting will provide accurate intellisense values
-  "tailwindCSS.rootFontSize": 10
+  "tailwindCSS.rootFontSize": 10,
+
+  "biome.lsp.bin": "node_modules/.bin/biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "always"
+  },
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "prettier.enable": false,
+  "eslint.format.enable": false
 }
