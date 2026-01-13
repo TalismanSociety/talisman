@@ -114,7 +114,7 @@ export const decodeEvmTransaction = async (
             args: contractCall.args,
             name: contractCall.functionName,
           })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // biome-ignore lint/suspicious/noExplicitAny: legacy
           const tokenIdIndex = abiItem.inputs.findIndex((input: any) => input.name === "tokenId")
           const tokenId =
             tokenIdIndex > -1 ? (contractCall.args?.[tokenIdIndex] as bigint) : undefined

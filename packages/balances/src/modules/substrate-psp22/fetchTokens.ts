@@ -55,20 +55,20 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           ),
         ])
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         const symbolData = (symbolResult.toJSON()?.result as any)?.ok?.data
         symbol =
           typeof symbolData === "string" && symbolData.startsWith("0x")
             ? u8aToString(
                 registry.createType(
                   "Option<Vec<u8>>",
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  // biome-ignore lint/suspicious/noExplicitAny: legacy
                   (symbolResult.toJSON()?.result as any)?.ok?.data
                 )?.value
               )?.replace(/\p{C}/gu, "")
             : symbol
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         const decimalsData = (decimalsResult.toJSON()?.result as any)?.ok?.data
         decimals =
           typeof decimalsData === "string" && decimalsData.startsWith("0x")

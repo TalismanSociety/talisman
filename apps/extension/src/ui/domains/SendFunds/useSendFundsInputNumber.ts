@@ -30,7 +30,7 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
     if (!input) return () => {}
 
     const handler = getInputFilter((value: string) =>
-      // eslint-disable-next-line no-useless-escape
+      // biome-ignore lint/complexity/noUselessStringConcat: legacy
       new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value)
     )
 
@@ -52,6 +52,6 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
       events.forEach((eventName) => input.removeEventListener(eventName, handler, true))
     }
     // ref?.current will toggle between defined and not, it's imperative to resubscribe each time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [decimals, ref?.current])
 }

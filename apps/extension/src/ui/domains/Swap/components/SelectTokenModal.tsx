@@ -120,7 +120,7 @@ export const SelectTokenModal: React.FC<Props> = ({
             {assetWithWarning && (
               <FadeIn>
                 <div className="absolute top-0 left-0 flex h-full w-full flex-col items-center justify-center bg-black/70">
-                  {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
+                  {/* biome-ignore lint/a11y/useKeyWithClickEvents: legacy */}
                   <div
                     className="absolute top-0 left-0 h-full w-full"
                     onClick={() => setAssetWithWarning(null)}

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: KISS
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
@@ -56,7 +55,6 @@ export const testNetworkSol = async (network: SolNetworkConfig, options?: TestOp
       log.log()
 
       const tokenConfigs =
-        // biome-ignore lint/suspicious/noExplicitAny: token config shape varies by module type
         mod.type === "sol-native" ? [network.nativeCurrency] : (network.tokens[mod.type] as any)
       log.log("Token configs", tokenConfigs)
       log.log()

@@ -98,7 +98,7 @@ export const NetworksList: FC<{
     setDisplayedNetworks(ordered)
 
     // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [activeOnly, allSortedNetworks, platform, search])
 
   const ocResetAllModal = useOpenClose()

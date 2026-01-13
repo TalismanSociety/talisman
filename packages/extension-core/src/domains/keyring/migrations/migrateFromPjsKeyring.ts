@@ -296,7 +296,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 }
 
 // if (DEBUG) {
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   // biome-ignore lint/suspicious/noExplicitAny: legacy
 //   const hostObj = globalThis as any
 
 //   // utility to run the migration manually fron dev console

@@ -70,7 +70,7 @@ export const TokenAmountInput: FC<Props> = ({
     onChangeAmount?.(Decimal.fromPlanck(0n, 1))
 
     // only re-run this effect when `fromAddress` changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [fromAddress])
 
   const currency = useSelectedCurrency()

@@ -136,7 +136,7 @@ const formatArgs = (args: unknown): unknown => {
 
   if (typeof args === "object") {
     // workaround for AccountId32 - asText() returns glyphs so we need to decode it manually
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const anyArgs = args as any
     if (anyArgs.type === "AccountId32" && anyArgs.value.id)
       return {

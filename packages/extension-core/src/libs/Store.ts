@@ -16,7 +16,7 @@ import { createSubscription, unsubscribe } from "../handlers/subscriptions"
 import type { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
 import type { Port, RequestIdOnly } from "../types/base"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export interface Store<T extends { [index: string]: any }> {
   get(): Promise<T>
   get<K extends keyof T, V = T[K]>(key: K): Promise<V>
@@ -29,7 +29,7 @@ export interface Store<T extends { [index: string]: any }> {
   observable: Subject<T>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   readonly #prefix: string = ""
   readonly #initialData: Partial<T> = {}
@@ -243,7 +243,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 }
 
 class SubscribableStorageProvider<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
 > extends StorageProvider<T> {
@@ -263,7 +263,7 @@ class SubscribableStorageProvider<
 }
 
 class SubscribableByIdStorageProvider<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
   SubscribeByIdMessage extends MessageTypesWithSubscriptionsById,

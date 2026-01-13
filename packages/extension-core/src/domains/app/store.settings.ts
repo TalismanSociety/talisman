@@ -53,7 +53,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
 
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.resetSettings = () => {

@@ -159,7 +159,7 @@ export const ChangeValidatorSelect = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
+              // biome-ignore lint/a11y/noAutofocus: legacy
               autoFocus
             />
           </div>

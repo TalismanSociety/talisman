@@ -305,7 +305,7 @@ const AccountPicker = ({
             initialValue={query}
             onChange={setQuery}
             placeholder={allowInput ? t("Enter address") : t("Search by account name")}
-            autoFocus // eslint-disable-line jsx-a11y/no-autofocus
+            autoFocus
           />
         </div>
       </div>

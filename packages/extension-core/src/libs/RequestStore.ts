@@ -15,7 +15,7 @@ type CompletedRequestCallbackFn<TRequest, TResponse> = (
   response?: TResponse
 ) => void | Promise<void>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export abstract class RequestStore<TRequest extends { id: string; [key: string]: any }, TResponse> {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<string, TRespondableRequest<TRequest, TResponse>> = {}
@@ -104,7 +104,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   }
 
   protected mapRequestToData(request: TRespondableRequest<TRequest, TResponse>): TRequest {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // biome-ignore lint/correctness/noUnusedVariables: legacy
     const { reject, resolve, ...data } = request
     return data as TRequest
   }

@@ -15,7 +15,7 @@ export const getErc20ContractData = async (
   try {
     const contract = getTypedContract(client, erc20Abi, contractAddress)
 
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/style/noVar: legacy
     var [symbol, decimals, name] = await Promise.all([
       contract.read.symbol(),
       contract.read.decimals(),
@@ -26,7 +26,7 @@ export const getErc20ContractData = async (
       // try to perform the contract read with bytes32 symbol
       const contract = getTypedContract(client, erc20Abi_bytes32, contractAddress)
 
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/style/noVar: legacy
       var [bytesSymbol, decimals, nameSymbol] = await Promise.all([
         contract.read.symbol(),
         contract.read.decimals(),

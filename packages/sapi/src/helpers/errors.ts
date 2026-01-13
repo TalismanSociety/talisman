@@ -125,7 +125,7 @@ const getModuleErrorMessage = (chain: Chain, error: UnsafeModuleError): string =
 
 const tryFormatError = (err: unknown): string => {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const unsafeErr = err as any
     if (unsafeErr.type && unsafeErr.value?.type)
       return [unsafeErr.type, unsafeErr.value.type].join(": ")

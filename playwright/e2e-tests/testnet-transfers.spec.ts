@@ -11,7 +11,7 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   )
   // enables testnet networks
   for (const data of testAssets) {
-    if (data.needsEnabling == true) {
+    if (data.needsEnabling === true) {
       await test.step(`Enabling ${data.chain}`, async () => {
         await onboardedPage.getByTestId("platform-options-switch").getByText(data.chainType).click()
         const searchParameter = data.chain.replace(/\s*\(.*?\)\s*/g, "").trim()

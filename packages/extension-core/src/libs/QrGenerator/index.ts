@@ -96,7 +96,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   )
 
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/style/noVar: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
   } catch (e) {
     log.error("Failed to sign network specs", e)
@@ -146,7 +146,7 @@ export const generateQrUpdateNetworkMetadata = async (
     genesis_hash: hexToU8a(genesisHash),
   })
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/style/noVar: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
   } catch (e) {
     log.error("Failed to sign network metadata", e)

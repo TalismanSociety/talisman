@@ -28,7 +28,7 @@ import { Binary } from "@polkadot-api/substrate-bindings"
  * Output: `Enum("Stellar", { code: Binary.fromText("TZS"), issuer: Binary.fromHex("0x34c94b2a4ba9e8b57b22547dcbb30f443c4cb02da3829a89aa1bd4780e4466ba") })`
  */
 export const papiParse = <T = unknown>(text: string | T): T => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const reviver = (_key: string, value: any) => {
     if (typeof value !== "string") return value
     if (value.startsWith("bigint:")) return BigInt(value.slice("bigint:".length))
@@ -41,11 +41,8 @@ export const papiParse = <T = unknown>(text: string | T): T => {
   return JSON.parse(text, reviver)
 }
 
-export const papiStringify = (
-  value: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  space?: string | number
-): string => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const papiStringify = (value: any, space?: string | number): string => {
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const replacer = (_key: string, value: any) => {
     if (typeof value === "bigint") return `bigint:${String(value)}`
     if (value instanceof Binary) return `hex:${value.asHex()}`

@@ -255,7 +255,7 @@ export const getGasLimit = (
   tx: TransactionRequestBase | undefined,
   isContractCall?: boolean
 ) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const suggestedGasLimit = tx?.gas ?? 0n
   // for contract calls, gas cost can evolve overtime : add a safety margin
   const safeGasLimit = isContractCall

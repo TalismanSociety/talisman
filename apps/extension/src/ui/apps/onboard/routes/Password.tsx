@@ -74,6 +74,7 @@ export const PasswordPage = () => {
   const password = watch("password")
 
   // revalidate to get rid of "must match" error message after editing first field
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     trigger()
   }, [trigger, password])
@@ -113,7 +114,7 @@ export const PasswordPage = () => {
 
   return (
     <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[60rem] min-w-[60rem]">
-      {/* eslint-disable-next-line jsx-a11y/alt-text */}
+      {/* biome-ignore lint/a11y/useAltText: legacy */}
       <img src={imgPassword} width="960" className="fixed top-[25rem] left-32 opacity-30" />
       {passwordExists && (
         <OnboardDialog title={t("You've already set your password")}>
@@ -163,7 +164,6 @@ export const PasswordPage = () => {
                   autoComplete="new-password"
                   spellCheck={false}
                   data-lpignore
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                   containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                 />

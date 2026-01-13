@@ -26,7 +26,7 @@ export const ERRORS_STORE_INITIAL_DATA: ErrorsStoreData = {
 
 export const errorsStore = new ErrorsStore("errors", ERRORS_STORE_INITIAL_DATA)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export const triggerIndexedDbUnavailablePopup = (rootError: any) => {
   const [errorType] = findDexieErrors(rootError)
 
@@ -84,7 +84,7 @@ export const trackIndexedDbErrorExtras = async (event: ErrorEvent, hint: EventHi
   return
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export const findDexieErrors = (rootError: any) => {
   // recursively extract each child `error.cause` into this array
   const errorChain = []

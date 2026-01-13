@@ -221,7 +221,7 @@ export const SendFundsRecipientPicker = () => {
         <div className="mx-1 grow overflow-hidden px-1">
           <SearchInput
             onSubmit={handleSubmitSearch}
-            // eslint-disable-next-line jsx-a11y/no-autofocus
+            // biome-ignore lint/a11y/noAutofocus: legacy
             autoFocus
             onChange={setSearch}
             placeholder={t("Enter address")}

@@ -190,7 +190,7 @@ export class Websocket implements ProviderInterface {
    * @description The [[Websocket]] connects automatically by default, however if you decided otherwise, you may
    * connect manually using this method.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // biome-ignore lint/suspicious/useAwait: legacy
   public async connect(): Promise<void> {
     if (this.#websocket) {
       throw new Error("WebSocket is already connected")
@@ -204,7 +204,7 @@ export class Websocket implements ProviderInterface {
         typeof xglobal.WebSocket !== "undefined" &&
         isChildClass(xglobal.WebSocket as typeof WebSocket, WebSocket)
           ? new WebSocket(this.endpoint)
-          : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          : // biome-ignore lint/suspicious/noExplicitAny: legacy ts-comment usage
             // @ts-expect-error - WS may be an instance of ws, which supports options
             new WebSocket(this.endpoint, undefined, {
               headers: this.#headers,
@@ -269,7 +269,7 @@ export class Websocket implements ProviderInterface {
   /**
    * @description Manually disconnect from the connection, clearing auto-connect logic
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
+  // biome-ignore lint/suspicious/useAwait: legacy
   public async disconnect(): Promise<void> {
     // switch off autoConnect, we are in manual mode now
     this.#autoConnectBackoff.disable()
@@ -308,7 +308,7 @@ export class Websocket implements ProviderInterface {
    * @param params Encoded parameters as applicable for the method
    * @param subscription Subscription details (internally used)
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   public send<T = any>(
     method: string,
     params: unknown[],

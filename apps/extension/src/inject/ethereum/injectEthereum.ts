@@ -7,11 +7,11 @@ import { logProxy } from "./logProxy"
 
 type TalismanWindow = Window &
   typeof globalThis & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     ethereum: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     talismanEth?: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     web3?: any
   }
 

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
 import {

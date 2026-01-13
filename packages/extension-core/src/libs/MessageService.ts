@@ -24,10 +24,10 @@ import type {
 import type { Port } from "../types/base"
 
 export interface Handler {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   resolve: (data?: any) => void
   reject: (error: Error) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   subscriber?: (data: any) => void
 }
 

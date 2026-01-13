@@ -27,7 +27,7 @@ export type BalanceDetailRow = {
   fiat: number | null
   locked: boolean
   address?: Address
-  meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  meta?: any
   isLoading?: boolean
   balance: Balance | null
 }
@@ -93,7 +93,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       b.reserves.map((reserve, index) => ({
         key: `${b.id}-reserved-${index}`,
         title: getLockTitle(reserve, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         description: (reserve.meta as any)?.description ?? undefined,
         tokens: BigNumber(reserve.amount.tokens),
         fiat: reserve.amount.fiat(currency),
@@ -110,7 +110,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         description: cleanupNomPoolName((nomPool.meta as any).description) ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),

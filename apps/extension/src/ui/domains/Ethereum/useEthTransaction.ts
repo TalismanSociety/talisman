@@ -226,7 +226,7 @@ const useDecodeEvmTransaction = (
   })
 
   const updateCallArg = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     async (argName: string, argValue: any) => {
       if (!tx) throw new Error("Missing tx")
       if (!publicClient) throw new Error("Missing publicClient")
@@ -242,7 +242,7 @@ const useDecodeEvmTransaction = (
       const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
       if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       const args = [...contractCall.args] as any
       args[argIndex] = argValue
 

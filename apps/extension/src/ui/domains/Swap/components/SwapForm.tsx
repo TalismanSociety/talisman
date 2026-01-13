@@ -118,7 +118,7 @@ export const SwapForm = ({
     }
     const id = setInterval(() => setQuoteRefresher(new Date().getTime()), 20_000)
     return () => clearInterval(id)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     // mb-52 is composed of:

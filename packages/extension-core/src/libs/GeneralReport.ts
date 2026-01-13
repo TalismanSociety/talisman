@@ -162,7 +162,7 @@ async function getGeneralReport({
 
   // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
   try {
-    /* eslint-disable-next-line no-var */
+    // biome-ignore lint/style/noVar: legacy
     var [networks, tokens, tokenRates, allBalances] = await Promise.all([
       chaindataProvider.getNetworksMapById(),
       chaindataProvider.getTokensMapById(),
@@ -173,7 +173,7 @@ async function getGeneralReport({
     const balanceJsons = allBalances.filter((b) =>
       ownedAddresses.some((address) => isAddressEqual(address, b.address))
     )
-    /* eslint-disable-next-line no-var */
+    // biome-ignore lint/style/noVar: legacy
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })

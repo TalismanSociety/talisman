@@ -304,7 +304,7 @@ const decodeStakingLedgerResult = (
   networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   type DecodedType = {
     active: bigint
     legacy_claimed_rewards: number[]

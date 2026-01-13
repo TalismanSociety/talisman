@@ -406,7 +406,7 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
 
   if (!nft.audioUrl) return null
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    // biome-ignore lint/a11y/useKeyWithClickEvents: legacy
     <div className={classNames("relative", className)} onClick={handleBgClick}>
       <NftImage src={nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />

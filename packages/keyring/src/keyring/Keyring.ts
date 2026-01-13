@@ -55,7 +55,7 @@ export class Keyring {
 
     // automatic upgrade : set default values for newly introduced properties
     for (const account of data.accounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // biome-ignore lint/suspicious/noExplicitAny: legacy ts-comment usage
       // @ts-expect-error
       if (account.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
     }

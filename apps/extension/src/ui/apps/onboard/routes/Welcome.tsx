@@ -156,7 +156,8 @@ const LogoWithSupportPageRedirect = () => {
   }, [clickCount])
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    // biome-ignore lint/a11y/noStaticElementInteractions: secret debug feature
+    // biome-ignore lint/a11y/useKeyWithClickEvents: secret debug feature
     <div onClick={handleClick}>
       <TalismanColouredHandWhiteTextLogo className="h-auto w-96" />
     </div>

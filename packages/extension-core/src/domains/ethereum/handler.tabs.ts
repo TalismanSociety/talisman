@@ -555,7 +555,7 @@ export class EthTabsHandler extends TabsHandler {
           )
 
         try {
-          // eslint-disable-next-line no-var
+          // biome-ignore lint/style/noVar: legacy
           var tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address as Hex)
         } catch (err) {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)

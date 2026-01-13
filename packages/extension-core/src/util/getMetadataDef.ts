@@ -57,7 +57,7 @@ const getMetadataDefInner = async (
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/style/noVar: legacy
     var storeMetadata = await db.metadata.get(genesisHash)
 
     // having a metadataRpc on expected specVersion is ideal scenario, don't go further
@@ -206,7 +206,7 @@ export const fetchMetadataDefFromChain = async (
 
 // useful for developer when testing updates
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.clearMetadata = async () => {

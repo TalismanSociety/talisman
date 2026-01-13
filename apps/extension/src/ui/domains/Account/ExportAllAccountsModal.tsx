@@ -92,7 +92,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       try {
         const { exportedJson } = await api.accountExportAll(password, newPw)
         downloadJson(exportedJson, "talisman-accounts")
-        onSuccess && onSuccess()
+        onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
           message: (err as Error)?.message ?? "",
@@ -137,7 +137,6 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               placeholder={t("Enter New Password")}
               spellCheck={false}

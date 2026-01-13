@@ -43,7 +43,7 @@ const ACCOUNT_TYPES_EXTERNAL = [
   "signet",
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_ADDRESS_ETHEREUM = [
   "contact",
   "watch-only",
@@ -52,7 +52,7 @@ const ACCOUNT_TYPES_ADDRESS_ETHEREUM = [
   "ledger-polkadot",
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
   "contact",
   "watch-only",
@@ -60,7 +60,7 @@ const ACCOUNT_TYPES_PLATFORM_ETHEREUM = [
   "ledger-ethereum",
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
   "contact",
   "watch-only",
@@ -70,7 +70,7 @@ const ACCOUNT_TYPES_PLATFORM_POLKADOT = [
   "signet",
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_ADDRESS_SS58 = [
   "contact",
   "watch-only",
@@ -80,10 +80,10 @@ const ACCOUNT_TYPES_ADDRESS_SS58 = [
   "signet",
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_PLATFORM_SOLANA = ["contact", "watch-only", "keypair", "ledger-solana"] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const ACCOUNT_TYPES_BITCOIN = ["contact", "watch-only"] as const
 
 export const isAccountExternal = (

@@ -16,9 +16,11 @@ export const Breadcrumb: FC<{
     <div className={classNames("flex items-center gap-1 text-base text-body-secondary", className)}>
       {items.map(({ label, onClick, className }, index) => {
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <Fragment key={index}>
             {onClick ? (
               <button
+                type="button"
                 onClick={onClick}
                 className={classNames(
                   "h-[3.2rem] truncate rounded-sm bg-grey-900 px-4 hover:bg-grey-800 hover:text-grey-300",

@@ -92,7 +92,7 @@ export const TokensList: FC<{
     setDisplayedTokens(results)
 
     // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [defaultTokens, isActiveOnly, isCustomOnly, isHidePools, search])
 
   if (!displayedTokens.length)

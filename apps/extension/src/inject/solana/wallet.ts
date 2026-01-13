@@ -12,7 +12,6 @@ import type {
   SolanaSignTransactionMethod,
   SolanaSignTransactionOutput,
 } from "@solana/wallet-standard-features"
-// import { base58 } from "@scure/base" // smaller import than @talismn/crypto
 import {
   SolanaSignAndSendTransaction,
   SolanaSignIn,
@@ -126,6 +125,7 @@ export class TalismanSolWallet implements Wallet {
   }
 
   #on: StandardEventsOnMethod = (event, listener) => {
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     this.#listeners[event]?.push(listener) || (this.#listeners[event] = [listener])
     return (): void => this.#off(event, listener)
   }
@@ -134,7 +134,7 @@ export class TalismanSolWallet implements Wallet {
     event: E,
     ...args: Parameters<StandardEventsListeners[E]>
   ): void {
-    // eslint-disable-next-line prefer-spread
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     this.#listeners[event]?.forEach((listener) => listener.apply(null, args))
   }
 

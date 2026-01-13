@@ -4,7 +4,7 @@ import type { Chain, ChainContract } from "viem"
 import * as viemChains from "viem/chains"
 
 // exclude zoraTestnet which uses Hyperliquid's chain id
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// biome-ignore lint/correctness/noUnusedVariables: legacy
 const { zoraTestnet, ...validViemChains } = viemChains
 
 // viem chains benefit from multicall config & other viem goodies

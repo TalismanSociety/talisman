@@ -15,6 +15,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // reset if src changes
     setIsError(false)
@@ -26,6 +27,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(true)
       props.onLoadStart?.(e)
     },
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
     [isError, props]
   )
 
@@ -34,6 +36,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(false)
       props.onLoad?.(e)
     },
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
     [props]
   )
   const handleError: React.ReactEventHandler<HTMLImageElement> = useCallback(
@@ -42,6 +45,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsError(true)
       props.onError?.(e)
     },
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
     [props]
   )
 
@@ -57,7 +61,6 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       )}
       loading="lazy"
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
-      // eslint-disable-next-line react/no-unknown-property
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}

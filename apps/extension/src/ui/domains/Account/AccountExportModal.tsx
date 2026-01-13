@@ -29,6 +29,10 @@ const setLocalAccount = (account: Account | null) => {
 
 const [useLocalAccount] = bind(localAccount$)
 
+const canExportAccountFunc = (account?: Account | null) =>
+  isAccountOfType(account, "keypair") &&
+  (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
+
 export const useAccountExportModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
 
@@ -42,10 +46,6 @@ export const useAccountExportModal = () => {
     },
     [innerOpen]
   )
-
-  const canExportAccountFunc = (account?: Account | null) =>
-    isAccountOfType(account, "keypair") &&
-    (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
@@ -107,7 +107,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       if (!password) return
       try {
         await exportAccount(password, newPw)
-        onSuccess && onSuccess()
+        onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
           message: (err as Error)?.message ?? "",
@@ -148,7 +148,6 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               placeholder={t("Enter New Password")}
               spellCheck={false}

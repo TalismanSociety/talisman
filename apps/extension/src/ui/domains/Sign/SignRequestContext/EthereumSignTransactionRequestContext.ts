@@ -63,7 +63,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   })
 
   const reject = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     (...args: any[]) => {
       genericEvent("sign request cancel click", {
         networkType: "evm",

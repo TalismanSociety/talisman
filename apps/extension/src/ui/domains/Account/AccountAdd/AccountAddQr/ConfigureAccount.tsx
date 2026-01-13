@@ -105,7 +105,7 @@ export const ConfigureAccount = () => {
           containerProps={{ className: "!h-28" }}
           small
           value={accountConfig.name}
-          // eslint-disable-next-line jsx-a11y/no-autofocus
+          // biome-ignore lint/a11y/noAutofocus: legacy
           autoFocus
           onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
         />

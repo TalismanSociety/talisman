@@ -90,9 +90,7 @@ const Details = () => {
   ) {
     const cachedQuoteError = cachedQuotes
       .flatMap((cachedQuote) =>
-        cachedQuote.quote?.state === "hasError"
-          ? (cachedQuote.quote?.error as any)?.message // eslint-disable-line @typescript-eslint/no-explicit-any
-          : []
+        cachedQuote.quote?.state === "hasError" ? (cachedQuote.quote?.error as any)?.message : []
       )
       .join("\n")
     return (
@@ -100,7 +98,7 @@ const Details = () => {
         <SwapDetailsError
           messageClassName="whitespace-pre-wrap text-[12px] leading-6 mt-4"
           message={
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             (quotes.state === "hasError" ? (quotes.error as any) : {})?.message ??
             cachedQuoteError ??
             "No route found. Try larger amount."

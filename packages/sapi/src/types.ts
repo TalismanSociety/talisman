@@ -1,6 +1,6 @@
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }
 
 export type PayloadSignerConfig = {
@@ -20,10 +20,10 @@ export type SapiConnectorProps = {
   submit?: (
     payload: SignerPayloadJSON,
     signature?: `0x${string}`,
-    txInfo?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    txInfo?: any
   ) => Promise<{ hash: `0x${string}` }>
   submitWithBittensorMevShield?: (
     payload: SignerPayloadJSON,
-    txInfo?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    txInfo?: any
   ) => Promise<{ hash: `0x${string}` }>
 }

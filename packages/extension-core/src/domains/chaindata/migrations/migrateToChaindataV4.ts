@@ -176,7 +176,7 @@ const getChaindataV3Entities = async () => {
 
 const getChaindataV4TokenId = (
   oldTokenId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   oldTokens: Record<string, any>
 ): string | null => {
   if (oldTokenId.includes("-evm-native")) return oldTokenId.replace("-evm-native", ":evm-native")
@@ -219,14 +219,14 @@ const getChaindataV4TokenId = (
 
 const migrateCustomChains = async (
   oldChains: (LegacyChain | LegacyCustomChain)[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   oldTokensMap: Record<string, any>
 ) => {
   // custom networks and tokens
   for (const customChain of oldChains.filter(
     (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom
   )) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const oldNativeToken: any = oldTokensMap[customChain.nativeToken?.id ?? ""]
     if (!oldNativeToken) {
       log.warn(`No native token found for custom chain ${customChain.id}, skipping migration`)
@@ -281,13 +281,13 @@ const migrateCustomChains = async (
 
 const migrateCustomEvmNetworks = async (
   oldEvmNetworks: (LegacyEvmNetwork | LegacyCustomEvmNetwork)[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   oldTokensMap: Record<string, any>
 ) => {
   for (const customEvmNetwork of oldEvmNetworks.filter(
     (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom
   )) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const oldNativeToken: any = oldTokensMap[customEvmNetwork.nativeToken?.id ?? ""]
     if (!oldNativeToken) {
       log.warn(

@@ -210,7 +210,7 @@ export const CopyAddressChainForm = () => {
     <CopyAddressLayout title={t("Select network")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+          {/* biome-ignore lint/a11y/noAutofocus: legacy */}
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">

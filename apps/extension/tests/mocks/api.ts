@@ -15,7 +15,7 @@ import type {
   ProviderType,
 } from "extension-core"
 import { type AnalyticsCaptureRequest, SitesAuthorizedStore, type Trees } from "extension-core"
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// biome-ignore-all lint/correctness/noUnusedVariables: legacy
 import { log, TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 import { vi } from "vitest"
 

@@ -77,7 +77,7 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // biome-ignore lint/correctness/noUnusedVariables: legacy
   { balance }: { balance?: Balance } = {}
 ) => {
   if (!lock.label) return lock.label

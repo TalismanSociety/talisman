@@ -389,7 +389,7 @@ const filterNetworksByPlatform =
 
 type ObservableReturnType<O> = O extends Observable<infer T> ? T : O
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 const wrapObservableWithGetter = async <O extends Observable<any>>(
   errorReason: string,
   observable: O

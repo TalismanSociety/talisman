@@ -4,7 +4,7 @@ import { DEBUG } from "extension-shared"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }
 type InitSubscriptionCallback<S> = (subject: BehaviorSubject<S>) => UnsubscribeFn
 type MapSubjectToResult<S, R> = (subject: S) => R

@@ -10,15 +10,13 @@ export const Balances = () => {
 
   return (
     <div className="grid grid-cols-[repeat(7,_auto)] items-center gap-4">
-      <>
-        <div className="justify-self-center font-bold text-tiny">Logo</div>
-        <div className="font-bold text-tiny">Colour</div>
-        <div className="justify-self-center font-bold text-tiny">Status</div>
-        <div className="font-bold text-tiny">Chain</div>
-        <div className="font-bold text-tiny">Total</div>
-        <div className="font-bold text-tiny">Available</div>
-        <div className="font-bold text-tiny">Account</div>
-      </>
+      <div className="justify-self-center font-bold text-tiny">Logo</div>
+      <div className="font-bold text-tiny">Colour</div>
+      <div className="justify-self-center font-bold text-tiny">Status</div>
+      <div className="font-bold text-tiny">Chain</div>
+      <div className="font-bold text-tiny">Total</div>
+      <div className="font-bold text-tiny">Available</div>
+      <div className="font-bold text-tiny">Account</div>
       {balances?.each.map((balance) => (
         <Fragment key={balance.id}>
           <div

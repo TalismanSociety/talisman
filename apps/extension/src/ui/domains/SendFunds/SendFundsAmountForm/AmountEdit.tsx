@@ -177,7 +177,7 @@ const FiatInput = () => {
         ref={refFiatInput}
         type="text"
         value={value}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
+        // biome-ignore lint/a11y/noAutofocus: legacy
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
         className={classNames(

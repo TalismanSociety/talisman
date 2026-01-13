@@ -120,7 +120,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       disconnect: () => Promise.resolve(),
       on: () => () => {},
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       send: async <T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> =>
         await this.send(chainId, method, params, isCacheable),
 
@@ -151,7 +151,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     return providerFacade
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   async send<T = any>(
     chainId: DotNetworkId,
     method: string,
@@ -190,7 +190,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
 
     try {
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/style/noVar: legacy
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
@@ -207,7 +207,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     try {
       const timeout = 30_000 // throw after 30 seconds if no response
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/style/noVar: legacy
       var response = await Promise.race([
         ws.send(method, params, isCacheable),
         throwAfter(timeout, "TIMEOUT"),
@@ -286,7 +286,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
 
     try {
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/style/noVar: legacy
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
@@ -566,7 +566,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
   }
 
   private getTalismanSub() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const talismanSub = typeof window !== "undefined" && (window as any).talismanSub
 
     /* eslint-disable @typescript-eslint/no-unsafe-function-type */
@@ -580,7 +580,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     if (typeof rpcByGenesisHashUnsubscribe !== "function") return
 
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       send: <T = any>(genesisHash: string, method: string, params: unknown[]): Promise<T> =>
         rpcByGenesisHashSend(genesisHash, method, params),
 

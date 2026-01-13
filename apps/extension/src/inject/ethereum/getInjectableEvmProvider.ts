@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore lint/style/useNodejsImportProtocol: legacy
 import EventEmitter from "events"
 
 import type { SendRequest } from "extension-core"
@@ -43,6 +43,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   // return a provider object with methods that aren't bound to the instance
   // prevents errors on dapps which unbind methods of the object (ex: orbiter.finance)
   // makes it hard to type, but we don't need to as we don't consume it ourselves
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const provider: any = {
     isTalisman: true,
     isMetaMask: true, // dapps use this to determine if wallet supports adding custom networks and tokens
@@ -160,6 +161,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const send = (methodOrPayload: any, paramsOrCallback: any) => {
     if (typeof methodOrPayload === "string")
       return request({

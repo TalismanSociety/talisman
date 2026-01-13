@@ -1,8 +1,8 @@
 // biome-ignore-all lint/suspicious/noConsole: CLI script output
 import "dotenv/config"
 
-import { mkdirSync, writeFileSync } from "fs"
-import path from "path"
+import { mkdirSync, writeFileSync } from "node:fs"
+import path from "node:path"
 
 if (!process.env.SIMPLE_LOCALIZE_API_KEY)
   throw new Error("Missing SIMPLE_LOCALIZE_API_KEY env variable")

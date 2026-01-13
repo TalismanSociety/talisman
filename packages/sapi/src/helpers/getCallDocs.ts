@@ -6,7 +6,7 @@ export const getCallDocs = (chain: Chain, pallet: string, method: string): strin
     const typeIdCalls = chain.metadata.pallets.find(({ name }) => name === pallet)?.calls?.type
     if (!typeIdCalls) return null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     let palletCalls: any = chain.metadata.lookup[typeIdCalls]
     if (!palletCalls || palletCalls.id !== typeIdCalls)
       palletCalls = chain.metadata.lookup.find((v) => v.id === typeIdCalls)

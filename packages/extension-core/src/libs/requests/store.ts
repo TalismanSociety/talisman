@@ -188,7 +188,7 @@ export class RequestStore {
   protected extractBaseRequest<T extends KnownRequestTypes>(
     request: KnownRespondableRequest<T> | AnyRespondableRequest
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // biome-ignore lint/correctness/noUnusedVariables: legacy
     const { reject, resolve, ...data } = request
     return data as KnownRequest<T>
   }

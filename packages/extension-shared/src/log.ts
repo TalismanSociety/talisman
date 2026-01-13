@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: legacy
 // biome-ignore-all lint/suspicious/noConsole: this is the logging utility
 import { TEST } from "./constants"
 

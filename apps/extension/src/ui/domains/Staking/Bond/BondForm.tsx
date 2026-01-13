@@ -120,7 +120,7 @@ const TokenInput = () => {
     setValue(formattedValue)
   }, [formattedValue])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (token && e.target.value) {

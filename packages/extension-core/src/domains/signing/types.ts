@@ -140,7 +140,7 @@ export type TransactionMethod = {
   section: string
   method: string
   docs: string[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   args: any
 }
 
@@ -151,7 +151,7 @@ export type TransactionPayload = {
       period: string
       phase: string
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     ImmortalEra?: any
   }
   genesisHash: string

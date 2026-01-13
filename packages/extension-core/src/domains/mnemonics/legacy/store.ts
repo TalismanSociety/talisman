@@ -51,7 +51,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
     if (!cipher) return Ok(undefined)
 
     try {
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/style/noVar: legacy
       var decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
     } catch (e) {
       log.error(e)

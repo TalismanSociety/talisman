@@ -92,7 +92,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // biome-ignore lint/correctness/noUnusedVariables: legacy
     url: string
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {

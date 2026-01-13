@@ -178,7 +178,7 @@ const MetadataPortalContent = () => {
               components={{
                 LineBreak: <br />,
                 Link: (
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <a
                     href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"

@@ -83,7 +83,7 @@ export const AuthorisedSites = () => {
               t={t}
               components={{
                 Link: (
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <a
                     href={TALISMAN_WEB_APP_URL}
                     target="_blank"

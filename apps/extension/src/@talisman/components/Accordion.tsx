@@ -65,7 +65,7 @@ export const Accordion: FC<{
       observer.disconnect()
       container.removeEventListener("resize", updateContentHeight)
     }
-  }, [shouldRender, contentHeight])
+  }, [contentHeight])
 
   const style: CSSProperties = useMemo(
     () => ({

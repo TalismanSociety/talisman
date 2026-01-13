@@ -58,7 +58,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  // biome-ignore lint/style/noNonNullAssertion: legacy
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
   showLedgerPolkadotGenericMigrationAlert: false,
@@ -112,7 +112,7 @@ export const appStore = new AppStore()
 
 // helpers for developers
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.resetAppSettings = () => {

@@ -121,7 +121,7 @@ export const TooltipTrigger = forwardRef<
   HTMLProps<HTMLElement> & { asChild?: boolean }
 >(function TooltipTrigger({ children, asChild = false, ...props }, propRef) {
   const context = useTooltipContext()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const childrenRef = (children as any).ref
   const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 
@@ -143,7 +143,7 @@ export const TooltipTrigger = forwardRef<
       ref={ref}
       // The user can style the trigger based on the state
       data-state={context.open ? "open" : "closed"}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
     >
       {children}
@@ -175,7 +175,7 @@ export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
               visibility: context.x == null ? "hidden" : "visible",
               ...props.style,
             }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
           />
         )}

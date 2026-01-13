@@ -39,7 +39,7 @@ export const ErrorMessageDrawer: FC<{
               defaults="Please ensure that Ledger is authorized in your browser, using the Check tool in <Link>Talisman settings</Link>"
               components={{
                 Link: (
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
+                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <button
                     type="button"
                     onClick={() =>
@@ -71,7 +71,7 @@ const LedgerGenericRequired = () => {
       defaults="This network requires a new Ledger app. <br />Use the Polkadot Migration Ledger app to migrate your existing accounts. <DocsLink>Learn more.</DocsLink>"
       components={{
         DocsLink: (
-          // eslint-disable-next-line jsx-a11y/anchor-has-content
+          // biome-ignore lint/a11y/useAnchorContent: legacy
           <a
             href={CONNECT_LEDGER_DOCS_URL}
             target="_blank"

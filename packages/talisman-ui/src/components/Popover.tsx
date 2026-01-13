@@ -143,7 +143,7 @@ export interface PopoverTriggerProps {
 export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & PopoverTriggerProps>(
   function PopoverTrigger({ children, asChild = false, ...props }, propRef) {
     const context = usePopoverContext()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const childrenRef = (children as any).ref
     const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 
@@ -166,7 +166,7 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
         type="button"
         // The user can style the trigger based on the state
         data-state={context.open ? "open" : "closed"}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
       >
         {children}
@@ -193,7 +193,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
             }}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
             data-no-dnd="true"
           >

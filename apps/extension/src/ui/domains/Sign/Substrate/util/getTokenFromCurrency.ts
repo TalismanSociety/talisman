@@ -54,7 +54,7 @@ export const getTokenFromCurrency = (
       throw new Error("Token not found")
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const tokenSymbol = (currencyId.value as any)?.type?.toLowerCase()
 
     // FAFO mastery

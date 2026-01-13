@@ -56,7 +56,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
@@ -102,7 +102,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
@@ -154,7 +154,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
       onSubmitted(hash)
     } catch (err) {
       log.error("Failed to submit", { payload, err })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       setState({ isSubmitting: false, error: (err as any)?.message ?? "Failed to submit" })
     }
   }, [mode, onSubmitted, payload, sapi, txInfo])

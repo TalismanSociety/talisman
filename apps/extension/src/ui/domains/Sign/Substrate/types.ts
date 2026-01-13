@@ -48,19 +48,19 @@ export type DecodedCallComponent<Args, Props = object> = FC<
   } & Props
 >
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export type DecodedCallComponentDef<T = any, P = object> = [
   string,
   string,
   DecodedCallComponent<T, P>,
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export type DecodedCallComponentDefs<T = any, P = unknown> = DecodedCallComponentDef<T, P>[]
 
 export type DecodedCallSummaryComponent<T> = DecodedCallComponent<T, { mode: SummaryDisplayMode }>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export type DecodedCallSummaryComponentDef<T = any> = [
   string,
   string,

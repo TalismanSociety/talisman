@@ -75,7 +75,7 @@ const tAtom = atomWithObservable(() => t$)
 const getAssetsByChainId = async (
   get: Getter,
   allAssetsSelector: Atom<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     Promise<SwappableAssetBaseType<Partial<Record<SupportedSwapProtocol, any>>>[]>
   >[],
   signal: AbortSignal

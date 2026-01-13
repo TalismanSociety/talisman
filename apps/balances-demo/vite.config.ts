@@ -1,5 +1,5 @@
+import dns from "node:dns"
 import react from "@vitejs/plugin-react"
-import dns from "dns"
 import { defineConfig } from "vite"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 import svgr from "vite-plugin-svgr"
