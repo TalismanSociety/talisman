@@ -1,7 +1,6 @@
-import { format } from "date-fns"
-import { FC, useMemo } from "react"
-
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { format } from "date-fns"
+import { type FC, useMemo } from "react"
 
 export const TxHistoryDetailsTimestamp: FC<{
   timestamp: number

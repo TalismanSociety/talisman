@@ -1,11 +1,10 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import BigNumber from "bignumber.js"
-import { ReactNode } from "react"
-
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useSelectedCurrency } from "@ui/state"
+import type BigNumber from "bignumber.js"
+import type { ReactNode } from "react"
 
 import { currencyConfig } from "../Asset/currencyConfig"
 import { Fiat } from "../Asset/Fiat"
@@ -80,22 +79,23 @@ export const Statistics = ({
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8",
+        "flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded bg-black-secondary p-8",
         align === "right" ? "items-end" : "items-start",
-        className,
+        className
       )}
     >
-      <div className="text-body-secondary flex items-center gap-2 text-sm">
+      <div className="flex items-center gap-2 text-body-secondary text-sm">
         {locked && <LockIcon />}
         {title}
       </div>
       <div className="flex items-center gap-2">
         {showCurrencyToggle && (
           <button
+            type="button"
             className={classNames(
-              "border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center text-sm transition-colors duration-100 ease-out",
+              "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
               currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
             )}
             onClick={(event) => {
               event.stopPropagation()

@@ -1,13 +1,12 @@
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 import { isAccountCompatibleWithNetwork } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
@@ -26,7 +25,7 @@ export const SendFundsAccountPicker = () => {
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => network && isAccountCompatibleWithNetwork(network, account)),
-    [allAccounts, network, search],
+    [allAccounts, network, search]
   )
 
   const handleSelect = useCallback(
@@ -34,7 +33,7 @@ export const SendFundsAccountPicker = () => {
       if (to && encodeAnyAddress(to) === encodeAnyAddress(address)) remove("to")
       set("from", address, true)
     },
-    [remove, set, to],
+    [remove, set, to]
   )
 
   return (
@@ -45,7 +44,7 @@ export const SendFundsAccountPicker = () => {
           <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <SendFundsAccountsList
           accounts={accounts}
           genesisHash={getNetworkGenesisHash(network)}

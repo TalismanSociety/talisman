@@ -1,7 +1,7 @@
-import { map, Observable, startWith } from "rxjs"
+import { map, type Observable, startWith } from "rxjs"
 
-import { Loadable } from "./getLoadable"
-import { getQuery$, QueryResult } from "./getQuery"
+import type { Loadable } from "./getLoadable"
+import { getQuery$, type QueryResult } from "./getQuery"
 
 export type GetLoadableQueryParams<TArgs extends unknown[], TResult> = {
   namespace: string
@@ -18,7 +18,7 @@ export type GetLoadableQueryParams<TArgs extends unknown[], TResult> = {
  * TODO: consolidate with getQuery$
  */
 export const getLoadableQuery$ = <TArgs extends unknown[], TResult>(
-  params: GetLoadableQueryParams<TArgs, TResult>,
+  params: GetLoadableQueryParams<TArgs, TResult>
 ): Observable<Loadable<TResult>> => {
   const initial =
     params.defaultValue === undefined
@@ -44,6 +44,6 @@ export const getLoadableQuery$ = <TArgs extends unknown[], TResult>(
         }
       }
     }),
-    startWith(...initial),
+    startWith(...initial)
   )
 }

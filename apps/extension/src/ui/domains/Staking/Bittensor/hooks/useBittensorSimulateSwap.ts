@@ -1,10 +1,10 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 import { getSwapSimulation } from "../utils/helpers"
-import { StakeDirection } from "./types"
+import type { StakeDirection } from "./types"
 
 type UseBittensorSimulateSwapInputs = {
   networkId: DotNetworkId

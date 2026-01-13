@@ -1,0 +1,43 @@
+# Dockerfile for reproducible Firefox extension builds
+#
+# This Dockerfile creates a consistent build environment to ensure
+# deterministic output across different build machines.
+#
+# Usage:
+#   docker build -t talisman-builder -f Dockerfile.firefox .
+#   docker run --rm -v $(pwd)/apps/extension/dist:/talisman/apps/extension/dist talisman-builder
+#
+FROM node:24.8.0-slim
+
+# Set locale for consistent file sorting (critical for deterministic builds)
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8
+
+# Disable color output for consistency
+ENV NO_COLOR=1
+ENV FORCE_COLOR=0
+
+# Set timezone to UTC for consistent timestamps
+ENV TZ=UTC
+
+# Git SHA for build identification (passed from host where git is available)
+ARG COMMIT_SHA_SHORT=unknown
+ENV COMMIT_SHA_SHORT=$COMMIT_SHA_SHORT
+
+# Install corepack for pnpm support
+RUN npm install -g corepack@latest && corepack enable
+
+WORKDIR /talisman
+
+# Copy all source files (we need .papi for postinstall)
+COPY . ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build the production Firefox extension
+# WXT bundles directly from package source directories via Vite aliases,
+# so we don't need to pre-build the @talismn/* packages with tsup
+# The entrypoint builds and then copies output to /output if mounted
+CMD ["sh", "-c", "pnpm run --filter extension build:prod:firefox && if [ -d /output ]; then cp /talisman/apps/extension/dist/*.zip /output/; fi"]

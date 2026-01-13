@@ -1,19 +1,18 @@
-import { Network, Token } from "@talismn/chaindata-provider"
-import { CheckCircleIcon } from "@talismn/icons"
-import { TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { range } from "lodash-es"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useOpenCloseStatus } from "talisman-ui"
-
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import type { Network, Token } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
+import type { TokenRates, TokenRatesList } from "@talismn/token-rates"
+import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworksMapById, useRemoteConfig, useSelectedCurrency } from "@ui/state"
+import { range } from "lodash-es"
+import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useOpenCloseStatus } from "talisman-ui"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
@@ -45,7 +44,7 @@ export const RampsTokenPicker: FC<{
           rates: tokenRates?.[t.id],
         }))
         .filter((t) => !!t.network),
-    [tokens, networksMap, tokenRates],
+    [tokens, networksMap, tokenRates]
   )
 
   const sortedTokens = useMemo(
@@ -63,7 +62,7 @@ export const RampsTokenPicker: FC<{
           ? (t1.network.name ?? "").localeCompare(t2.network.name ?? "")
           : t1.symbol.localeCompare(t2.symbol)
       }),
-    [remoteConfig, selected, tokensWithNetwork],
+    [remoteConfig, selected, tokensWithNetwork]
   )
 
   const filteredTokens = useMemo(() => {
@@ -80,6 +79,7 @@ export const RampsTokenPicker: FC<{
 
   // scroll to top on search change
   const refContainer = useRef<HTMLDivElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!refContainer.current) return
     refContainer.current.scrollTo(0, 0)
@@ -100,7 +100,7 @@ export const RampsTokenPicker: FC<{
         </div>
         <ScrollContainer
           ref={refContainer}
-          className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t"
+          className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary"
         >
           {!filteredTokens ? (
             range(0, 10).map((i) => <TokenButtonRowSkeleton key={i} />)
@@ -130,7 +130,7 @@ const TokensList: FC<{
 
   if (!tokens.length)
     return (
-      <div className="text-body-secondary p-12 text-center text-base">
+      <div className="p-12 text-center text-base text-body-secondary">
         {t("No tokens match your search")}
       </div>
     )
@@ -150,7 +150,7 @@ const TokensList: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -183,8 +183,8 @@ const TokenButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
+        selected && "bg-grey-800 text-body-secondary"
       )}
     >
       <div className="flex w-full items-center gap-8 overflow-hidden">
@@ -198,10 +198,10 @@ const TokenButtonRow: FC<{
           </div>
           <div className="flex w-full items-center gap-2 overflow-hidden truncate text-xs">
             <NetworkLogo networkId={token.networkId} className="inline-block shrink-0" />
-            <div className="text-body-secondary grow truncate">{token.network.name}</div>
+            <div className="grow truncate text-body-secondary">{token.network.name}</div>
           </div>
         </div>
-        <div className="text-body-secondary truncate text-sm">
+        <div className="truncate text-body-secondary text-sm">
           <Fiat amount={token.rates?.[selectedCurrency]?.price} noCountUp />
         </div>
       </div>
@@ -214,13 +214,13 @@ const TokenButtonRowSkeleton: FC = () => {
     <div className="flex h-[5.8rem] w-full select-none items-center gap-4 px-12 text-left">
       <div className="flex items-center gap-8">
         <div className="flex-shrink-0">
-          <div className="bg-grey-750 size-16 animate-pulse rounded-full"></div>
+          <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
         </div>
         <div className="min-w-0 space-y-2 text-[16px]">
           <div className="flex items-center">
-            <div className="bg-grey-750 text-grey-750 rounded-xs animate-pulse">XXX</div>
+            <div className="animate-pulse rounded-xs bg-grey-750 text-grey-750">XXX</div>
           </div>
-          <div className="text-tiny bg-grey-750 text-grey-750 rounded-xs animate-pulse">
+          <div className="animate-pulse rounded-xs bg-grey-750 text-grey-750 text-tiny">
             XXXXXXXX XXXXXX
           </div>
         </div>

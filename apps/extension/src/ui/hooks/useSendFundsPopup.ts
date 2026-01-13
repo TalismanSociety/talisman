@@ -1,14 +1,13 @@
-import { Address, Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { type Address, Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
-import { Account } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { api } from "@ui/api"
 import { useAccounts, useBalances, useToken } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
+import type { Account } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 const isCompatibleAddress = (from: Address, to: Address) => {
   try {
@@ -23,7 +22,7 @@ export const useSendFundsPopup = (
   account: Account | null | undefined,
   tokenId?: TokenId,
   tokenSymbol?: string,
-  to?: Address,
+  to?: Address
 ) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)

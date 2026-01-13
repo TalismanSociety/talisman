@@ -1,27 +1,26 @@
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
-
+import type { AccountsMessages } from "../domains/accounts/types"
+import type { AppMessages } from "../domains/app/types"
+import type { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
+import type { BalancesMessages } from "../domains/balances/types"
+import type { BittensorMessages } from "../domains/bittensor/types"
+import type { ChainsMessages } from "../domains/chains/types"
+import type { DefiMessages } from "../domains/defi/types"
+import type { EarnMessages } from "../domains/earn/types"
+import type { EncryptMessages } from "../domains/encrypt/types"
+import type { EthMessages } from "../domains/ethereum/types"
+import type { MetadataMessages } from "../domains/metadata/types"
+import type { MnemonicMessages } from "../domains/mnemonics/types"
+import type { NftsMessages } from "../domains/nfts"
+import type { SigningMessages } from "../domains/signing/types"
+import type { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
+import type { SolanaExtensionMessages } from "../domains/solana"
+import type { SolanaTabsMessages } from "../domains/solana/types.tabs"
+import type { SubstrateMessages } from "../domains/substrate/types"
+import type { TalismanMessages } from "../domains/talisman/types"
+import type { TokenRatesMessages } from "../domains/tokenRates/types"
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, Port, RequestIdOnly } from "./base"
-import { AccountsMessages } from "../domains/accounts/types"
-import { AppMessages } from "../domains/app/types"
-import { AssetDiscoveryMessages } from "../domains/assetDiscovery/types"
-import { BalancesMessages } from "../domains/balances/types"
-import { BittensorMessages } from "../domains/bittensor/types"
-import { ChainsMessages } from "../domains/chains/types"
-import { DefiMessages } from "../domains/defi/types"
-import { EarnMessages } from "../domains/earn/types"
-import { EncryptMessages } from "../domains/encrypt/types"
-import { EthMessages } from "../domains/ethereum/types"
-import { MetadataMessages } from "../domains/metadata/types"
-import { MnemonicMessages } from "../domains/mnemonics/types"
-import { NftsMessages } from "../domains/nfts"
-import { SigningMessages } from "../domains/signing/types"
-import { AuthorisedSiteMessages } from "../domains/sitesAuthorised/types"
-import { SolanaExtensionMessages } from "../domains/solana"
-import { SolanaTabsMessages } from "../domains/solana/types.tabs"
-import { SubstrateMessages } from "../domains/substrate/types"
-import { TalismanMessages } from "../domains/talisman/types"
-import { TokenRatesMessages } from "../domains/tokenRates/types"
-import { ChaindataMessages, SendFundsMessages } from "./domains"
+import type { ChaindataMessages, SendFundsMessages } from "./domains"
 
 export declare type RequestTypes = {
   [MessageType in MessageTypes]: AllMessages[MessageType][0]
@@ -193,7 +192,7 @@ export declare type ResponseType<TMessageType extends MessageTypes> = AllMessage
  */
 export interface SubscriptionCallback<Result> {
   (error: null, result: Result): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   (error: any, result?: never): void
 }
 
@@ -204,16 +203,16 @@ export type UnsubscribeFn = () => void
 
 export interface SendRequest {
   <TMessageType extends MessageTypesWithNullRequest>(
-    message: TMessageType,
+    message: TMessageType
   ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithNoSubscriptions>(
     message: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
   ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
   ): Promise<ResponseTypes[TMessageType]>
 }
 

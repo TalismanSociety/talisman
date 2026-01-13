@@ -11,17 +11,17 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
       <div className="mb-4 flex flex-col gap-16">
         <div className="flex flex-col gap-12">
           <div className="flex items-center gap-6">
-            <span className="text-brand-pink flex h-20 items-center rounded-2xl bg-[#FD8FFF1A] p-6">
+            <span className="flex h-20 items-center rounded-2xl bg-[#FD8FFF1A] p-6 text-brand-pink">
               <LockIcon className="h-10 w-10" />
             </span>
             <span>
               {t(
-                "Protect your recovery phrase. Anyone who has it can access your wallet and funds.",
+                "Protect your recovery phrase. Anyone who has it can access your wallet and funds."
               )}
             </span>
           </div>
           <div className="flex items-center gap-6">
-            <span className="text-primary-700 flex h-20 items-center rounded-2xl bg-[#D5FF5C1A] p-6">
+            <span className="flex h-20 items-center rounded-2xl bg-[#D5FF5C1A] p-6 text-primary-700">
               <ShieldIcon className="h-10 w-10" />
             </span>
             <span>{t("Write down your recovery phrase and store it in a secure location.")}</span>
@@ -43,7 +43,7 @@ export const Acknowledgement = ({ onContinueClick }: { onContinueClick: () => vo
         <a
           href={MNEMONIC_BACKUP_DOCS_URL}
           target="_blank"
-          className="text-body-secondary hover:text-grey-300 text-sm"
+          className="text-body-secondary text-sm hover:text-grey-300"
         >
           {t("Learn More")}
         </a>

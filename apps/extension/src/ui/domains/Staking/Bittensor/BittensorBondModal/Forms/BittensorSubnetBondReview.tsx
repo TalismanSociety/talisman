@@ -1,7 +1,13 @@
 import { EditIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { WalletTransactionInfo } from "extension-core"
-import { FC, useEffect, useMemo, useState } from "react"
+import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
+import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
+import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
+import { useAppState, useFeatureFlag } from "@ui/state"
+import type { WalletTransactionInfo } from "extension-core"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
@@ -12,13 +18,6 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
-
-import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetSeekDiscount } from "@ui/domains/Staking/Seek/hooks/useGetSeekDiscount"
-import { SeekGetFeeDiscountsDrawer } from "@ui/domains/Staking/Seek/SeekGetFeeDiscountsDrawer"
-import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
-import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { TokensAndFiat } from "../../../../Asset/TokensAndFiat"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
@@ -115,7 +114,7 @@ export const BittensorSubnetBondReview = () => {
   const totalDiscountPercent = useMemo(() => `${totalFeeDiscount * 100}%`, [totalFeeDiscount])
   const isSeekDrawerEnabled = useMemo(
     () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
-    [isSeekTaoDiscountEnabled, totalFeeDiscount],
+    [isSeekTaoDiscountEnabled, totalFeeDiscount]
   )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
@@ -139,9 +138,10 @@ export const BittensorSubnetBondReview = () => {
 
   useEffect(() => {
     // enable confirm button 0.5 second after the screen is open, to ensure the user doesnt accidentally click it (ex: double click from prev screen)
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setIsDisabled(false)
     }, 500)
+    return () => clearTimeout(timeout)
   }, [])
 
   if (!account) return null
@@ -159,7 +159,7 @@ export const BittensorSubnetBondReview = () => {
       contentClassName="p-12 pt-0 flex flex-col w-full"
     >
       <div className="space-y-[0.75rem]">
-        <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
+        <div className="flex w-full flex-col rounded bg-grey-900 p-8 text-body-secondary">
           <div className="flex items-center justify-between gap-8 pb-2">
             <div className="whitespace-nowrap">{t("Amount")} </div>
             <div className="overflow-hidden">
@@ -186,11 +186,11 @@ export const BittensorSubnetBondReview = () => {
           </div>
           <div className="flex items-center justify-between gap-8 pb-2 text-xs">
             <div className="whitespace-nowrap">{t("Subnet")} </div>
-            <div className="text-body truncate">{dtaoToken?.name}</div>
+            <div className="truncate text-body">{dtaoToken?.name}</div>
           </div>
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Validator")} </div>
-            <div className="text-body truncate">
+            <div className="truncate text-body">
               <BittensorValidatorName hotkey={hotkey} />
             </div>
           </div>
@@ -207,14 +207,14 @@ export const BittensorSubnetBondReview = () => {
                   <TooltipContent>{t("Estimated Annual Percentage Yield (APY)")}</TooltipContent>
                 </Tooltip>
               </div>
-              <div className="text-body overflow-hidden">
+              <div className="overflow-hidden text-body">
                 <ValidatorApy />
               </div>
             </div>
           )}
           <div className="flex items-center justify-between gap-8 py-2 text-xs">
             <div className="whitespace-nowrap">{t("Unbonding Period")} </div>
-            <div className="text-body truncate">
+            <div className="truncate text-body">
               <StakingUnbondingPeriod chainId={nativeToken?.networkId} />
             </div>
           </div>
@@ -231,10 +231,10 @@ export const BittensorSubnetBondReview = () => {
             </div>
           </div>
         </div>
-        <div className="bg-grey-900 text-body-secondary flex w-full flex-col gap-2 rounded p-8 py-6">
+        <div className="flex w-full flex-col gap-2 rounded bg-grey-900 p-8 py-6 text-body-secondary">
           <div className="flex items-center justify-between gap-8 text-xs">
             <div className="whitespace-nowrap">{t("Alpha Price")} </div>
-            <div className="text-body-secondary flex items-center gap-2">
+            <div className="flex items-center gap-2 text-body-secondary">
               <TokensAndFiat
                 planck={swapPrice!}
                 tokenId={nativeToken?.id}
@@ -249,7 +249,7 @@ export const BittensorSubnetBondReview = () => {
               className={classNames(
                 "text-body",
                 !!priceImpact && priceImpact >= HIGH_PRICE_IMPACT && "text-orange-500",
-                !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500",
+                !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
               )}
             >
               {priceImpact?.toFixed(2)}%
@@ -257,12 +257,12 @@ export const BittensorSubnetBondReview = () => {
           </div>
           <div className="flex items-center justify-between gap-8 text-xs">
             <div className="whitespace-nowrap">{t("Slippage Tolerance")} </div>
-            <div className="text-body flex items-center gap-2">
+            <div className="flex items-center gap-2 text-body">
               <button
                 type="button"
                 onClick={open}
                 className={
-                  "flex cursor-pointer items-center gap-2 rounded-xl pl-2 text-xs font-light"
+                  "flex cursor-pointer items-center gap-2 rounded-xl pl-2 font-light text-xs"
                 }
               >
                 <EditIcon />
@@ -274,7 +274,7 @@ export const BittensorSubnetBondReview = () => {
             <div className="whitespace-nowrap">
               <button
                 type="button"
-                className="hover:text-body whitespace-nowrap"
+                className="whitespace-nowrap hover:text-body"
                 onClick={ocMevShieldInfo.open}
               >
                 <div>
@@ -282,7 +282,7 @@ export const BittensorSubnetBondReview = () => {
                 </div>
               </button>
             </div>
-            <div className="text-body flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-2 text-body text-xs">
               <Toggle
                 variant="tiny"
                 checked={withMevShield}
@@ -292,7 +292,7 @@ export const BittensorSubnetBondReview = () => {
             </div>
           </div>
         </div>
-        <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8 py-6">
+        <div className="flex w-full flex-col rounded bg-grey-900 p-8 py-6 text-body-secondary">
           <div className="flex items-center justify-between gap-8 pt-2 text-xs">
             <div className="whitespace-nowrap">{t("Estimated Fee")} </div>
             <FeeEstimate />
@@ -317,11 +317,11 @@ export const BittensorSubnetBondReview = () => {
                   type="button"
                   className={classNames(
                     "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
-                    !isSeekDrawerEnabled && "cursor-default",
+                    !isSeekDrawerEnabled && "cursor-default"
                   )}
                   onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
                 >
-                  <div className="text-[1rem] text-[#D5FF5C]">
+                  <div className="text-[#D5FF5C] text-[1rem]">
                     {totalFeeDiscount > 0 ? (
                       <>
                         {totalDiscountPercent} {t("Off Fees")}
@@ -402,37 +402,37 @@ const MevShieldInfoDrawer: FC<{ isOpen: boolean; onDismiss: () => void }> = ({
       onDismiss={onDismiss}
       containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
     >
-      <div className="bg-black-tertiary flex w-full flex-col gap-8 overflow-hidden rounded-t p-8 pt-12">
-        <div className="text-md text-center font-bold">{t("MEV Shield")}</div>
+      <div className="flex w-full flex-col gap-8 overflow-hidden rounded-t bg-black-tertiary p-8 pt-12">
+        <div className="text-center font-bold text-md">{t("MEV Shield")}</div>
         <p className="text-sm">
           {t(
-            'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.',
+            'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.'
           )}
         </p>
-        <ul className="text-body-secondary list-outside list-disc space-y-2 pl-8 text-sm">
+        <ul className="list-outside list-disc space-y-2 pl-8 text-body-secondary text-sm">
           <li>
             {t(
-              "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block.",
+              "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block."
             )}
           </li>
           <li>
             {t(
-              "You still pay network fees for both the encrypted wrapper and the staking transaction.",
+              "You still pay network fees for both the encrypted wrapper and the staking transaction."
             )}
           </li>
           <li>
             {t(
-              "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain).",
+              "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain)."
             )}
           </li>
           <li>
             {t(
-              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one.",
+              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one."
             )}
           </li>
           <li>
             {t(
-              "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking.",
+              "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking."
             )}
           </li>
         </ul>

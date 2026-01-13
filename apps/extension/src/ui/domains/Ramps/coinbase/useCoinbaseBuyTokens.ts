@@ -1,10 +1,9 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
+import { useTokensMap } from "@ui/state"
 import { log } from "extension-shared"
 import { groupBy } from "lodash-es"
 import { useMemo } from "react"
-
-import { useTokensMap } from "@ui/state"
 
 import { getTokenFromCoinbaseAsset } from "../shared/helpers"
 import { useCoinbaseBuyOptions } from "./useCoinbaseBuyOptions"

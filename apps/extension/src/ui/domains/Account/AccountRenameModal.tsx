@@ -1,11 +1,10 @@
 import { bind } from "@react-rxjs/core"
-import { Account } from "extension-core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import type { Account } from "extension-core"
 import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Modal, ModalDialog } from "talisman-ui"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountRename } from "./AccountRename"
@@ -29,9 +28,10 @@ export const useAccountRenameModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     close()
   }, [selectedAccount, close])

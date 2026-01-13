@@ -1,15 +1,14 @@
 import { base58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
+import { useAccountByAddress } from "@ui/state"
 import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { useAccountByAddress } from "@ui/state"
-
-import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "../SignLedgerSolana"
+import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
-import { MsgSignButtonProps } from "./types"
+import type { MsgSignButtonProps } from "./types"
 
 export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
   payload,
@@ -27,7 +26,7 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
 
       onSubmit(base58.encode(output.signature))
     },
-    [onSubmit],
+    [onSubmit]
   )
 
   const signerPayload = useMemo<SolSignPayload>(() => {

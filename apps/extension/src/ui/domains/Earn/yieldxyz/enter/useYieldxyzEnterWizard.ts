@@ -1,16 +1,15 @@
-import { Balance } from "@talismn/balances"
-import { isTokenInTypes, TokenId } from "@talismn/chaindata-provider"
+import { provideContext } from "@talisman/util/provideContext"
+import type { Balance } from "@talismn/balances"
+import { isTokenInTypes, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil, planckToTokens } from "@talismn/util"
+import { api } from "@ui/api"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
+import { useAccountByAddress, useNetworkById, useYieldxyzProduct } from "@ui/state"
 import { isAccountOwned } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
-import { useDummyTransaction } from "@ui/hooks/useDummyTransaction"
-import { useAccountByAddress, useNetworkById, useYieldxyzProduct } from "@ui/state"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 import { useYieldxyzAction } from "../hooks/useYieldxyzAction"
@@ -72,7 +71,7 @@ const useYieldxyzEnterWizardProvider = ({
     if (tokens.length > 1) {
       // some products support both ETH and WETH as inputs. allow those but force native token as input
       const natives = tokens.filter((t) =>
-        isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"]),
+        isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"])
       )
       if (natives.length === 1) return natives[0]!
 
@@ -226,5 +225,5 @@ const useYieldxyzEnterWizardProvider = ({
 }
 
 export const [YieldxyzEnterWizardProvider, useYieldxyzEnterWizard] = provideContext(
-  useYieldxyzEnterWizardProvider,
+  useYieldxyzEnterWizardProvider
 )

@@ -1,7 +1,7 @@
-import { EthNetworkId, EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
-import { Client } from "viem"
+import { type EthNetworkId, type EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import type { Client } from "viem"
 
-import { EvmAddress } from "../domains/ethereum/types"
+import type { EvmAddress } from "../domains/ethereum/types"
 import { getCoinGeckoErc20Coin } from "./coingecko/getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"
 
@@ -9,7 +9,7 @@ export const getErc20TokenInfo = async (
   client: Client,
   networkId: EthNetworkId,
   contractAddress: EvmAddress,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<EvmErc20Token> => {
   const [{ decimals, symbol, name }, coinGeckoData] = await Promise.all([
     getErc20ContractData(client, contractAddress),

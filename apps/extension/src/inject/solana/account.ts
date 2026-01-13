@@ -1,11 +1,11 @@
 // This is copied with modification from @wallet-standard/wallet
 
-import type { WalletAccount } from "@wallet-standard/base"
 import {
   SolanaSignAndSendTransaction,
   SolanaSignMessage,
   SolanaSignTransaction,
 } from "@solana/wallet-standard-features"
+import type { WalletAccount } from "@wallet-standard/base"
 
 import { SOLANA_CHAINS } from "./solana"
 

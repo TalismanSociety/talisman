@@ -1,6 +1,6 @@
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, type ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useRiskAnalysis } from "./risk-analysis/context"
 
@@ -30,7 +30,7 @@ export const SignApproveButton: FC<ButtonProps> = (props) => {
         return [true, t("You must acknowledge the risks before signing")]
 
       if (riskAnalysis.isValidating) return [true, null]
-    } catch (err) {
+    } catch {
       // This will crash if the button is not in a RiskAnalysisProvider container, resulting in riskAnalysis being an empty object
       // this is the case for substrate transactions
       // ignore until we implement a system in provideContext that allows fallback if a consumer is not in a provider

@@ -1,24 +1,28 @@
-import { EvmErc20Token, TokenId } from "@talismn/chaindata-provider"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
+import { api } from "@ui/api"
+import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
+import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
+import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useToken } from "@ui/state"
+import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import type React from "react"
+import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-  PopoverOptions,
+  type PopoverOptions,
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { api } from "@ui/api"
-import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
-import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useToken } from "@ui/state"
+import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
 const ViewOnExplorerMenuItem: FC<{ token: EvmErc20Token }> = ({ token }) => {
   const { t } = useTranslation()
@@ -92,6 +96,26 @@ const StakeMenuItem: FC<{ tokenId: string }> = ({ tokenId }) => {
   return <ContextMenuItem onClick={handleClick}>{t("Stake")}</ContextMenuItem>
 }
 
+const ChangeValidatorMenuItem: FC<{ token: Token }> = ({ token }) => {
+  const { t } = useTranslation()
+  const { genericEvent } = useAnalytics()
+  const bittensorNetworkIds = useBittensorNetworkIds()
+  const { open } = useBittensorChangeValidatorModal()
+  const { selectedAccount } = usePortfolioNavigation()
+
+  const isBittensorDTao =
+    token.type === "substrate-dtao" && bittensorNetworkIds.includes(token.networkId)
+
+  const handleClick = useCallback(() => {
+    open({ tokenId: token.id, address: selectedAccount?.address })
+    genericEvent("open change validator modal", { tokenId: token.id })
+  }, [open, token.id, genericEvent, selectedAccount?.address])
+
+  if (!isBittensorDTao) return null
+
+  return <ContextMenuItem onClick={handleClick}>{t("Change Validator")}</ContextMenuItem>
+}
+
 type Props = {
   tokenId: TokenId
   placement?: PopoverOptions["placement"]
@@ -101,7 +125,7 @@ type Props = {
 
 export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
   { tokenId, placement, trigger, className },
-  ref,
+  ref
 ) {
   const token = useToken(tokenId)
 
@@ -110,14 +134,14 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
       <ContextMenuTrigger
         ref={ref}
         className={classNames(
-          "hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6",
-          className,
+          "rounded p-6 text-body-secondary hover:bg-grey-800 hover:text-body",
+          className
         )}
         asChild={!!trigger}
       >
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
-      <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+      <ContextMenuContent className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg">
         {token?.type === "evm-erc20" && (
           <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Explorer" />}>
             <ViewOnExplorerMenuItem token={token} />
@@ -128,6 +152,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
           <StakeMenuItem tokenId={tokenId} />
         </Suspense>
         <ViewTokenDetailsMenuItem tokenId={tokenId} />
+        {token && <ChangeValidatorMenuItem token={token} />}
       </ContextMenuContent>
     </ContextMenu>
   )

@@ -1,10 +1,10 @@
 import {
   autoUpdate,
-  flip,
   FloatingFocusManager,
   FloatingPortal,
+  flip,
   offset,
-  Placement,
+  type Placement,
   shift,
   useClick,
   useDismiss,
@@ -16,12 +16,12 @@ import {
 import {
   cloneElement,
   createContext,
-  Dispatch,
+  type Dispatch,
   forwardRef,
-  HTMLProps,
+  type HTMLProps,
   isValidElement,
-  ReactNode,
-  SetStateAction,
+  type ReactNode,
+  type SetStateAction,
   useContext,
   useMemo,
   useState,
@@ -99,7 +99,7 @@ export function usePopover({
       setLabelId,
       setDescriptionId,
     }),
-    [open, setOpen, interactions, data, modal, labelId, descriptionId],
+    [open, setOpen, interactions, data, modal, labelId, descriptionId]
   )
 }
 
@@ -143,7 +143,7 @@ export interface PopoverTriggerProps {
 export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & PopoverTriggerProps>(
   function PopoverTrigger({ children, asChild = false, ...props }, propRef) {
     const context = usePopoverContext()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const childrenRef = (children as any).ref
     const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 
@@ -156,7 +156,7 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
           ...props,
           ...children.props,
           "data-state": context.open ? "open" : "closed",
-        }),
+        })
       )
     }
 
@@ -166,13 +166,13 @@ export const PopoverTrigger = forwardRef<HTMLElement, HTMLProps<HTMLElement> & P
         type="button"
         // The user can style the trigger based on the state
         data-state={context.open ? "open" : "closed"}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
       >
         {children}
       </button>
     )
-  },
+  }
 )
 
 export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElement>>(
@@ -185,6 +185,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
     return (
       <FloatingPortal>
         <FloatingFocusManager context={floatingContext} modal={context.modal}>
+          {/** biome-ignore lint/a11y/useAriaPropsSupportedByRole: legacy */}
           <div
             ref={ref}
             style={{
@@ -193,7 +194,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
             }}
             aria-labelledby={context.labelId}
             aria-describedby={context.descriptionId}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
             data-no-dnd="true"
           >
@@ -202,5 +203,5 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
         </FloatingFocusManager>
       </FloatingPortal>
     )
-  },
+  }
 )

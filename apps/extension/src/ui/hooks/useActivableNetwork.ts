@@ -1,15 +1,14 @@
-import { Network } from "@talismn/chaindata-provider"
+import type { Network } from "@talismn/chaindata-provider"
+import { useActiveNetworksState } from "@ui/state"
 import { activeNetworksStore, isNetworkActive } from "extension-core"
 import { useCallback, useMemo } from "react"
-
-import { useActiveNetworksState } from "@ui/state"
 
 export const useActivableNetwork = (network: Network | undefined) => {
   const activeNetworks = useActiveNetworksState()
 
   const isActive = useMemo(
     () => network && isNetworkActive(network, activeNetworks),
-    [activeNetworks, network],
+    [activeNetworks, network]
   )
 
   const setActive = useCallback(
@@ -17,7 +16,7 @@ export const useActivableNetwork = (network: Network | undefined) => {
       if (!network) throw new Error("Network not found")
       await activeNetworksStore.setActive(network.id, active)
     },
-    [network],
+    [network]
   )
 
   const toggleActive = useCallback(async () => {
@@ -27,7 +26,7 @@ export const useActivableNetwork = (network: Network | undefined) => {
 
   const isActiveSetByUser = useMemo(
     () => network && network.id in activeNetworks,
-    [network, activeNetworks],
+    [network, activeNetworks]
   )
 
   const resetToTalismanDefault = useCallback(() => {

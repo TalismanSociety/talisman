@@ -1,7 +1,7 @@
 import {
-  AnyEncryptRequest,
+  type AnyEncryptRequest,
   ENCRYPT_DECRYPT_PREFIX,
-  EncryptDecryptRequest,
+  type EncryptDecryptRequest,
 } from "../domains/encrypt/types"
 
 export const isDecryptRequest = (request: AnyEncryptRequest): request is EncryptDecryptRequest => {

@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { AddLedgerSelectAccount } from "./AddLedgerSelectAccount"
 import { AddLedgerSelectNetwork } from "./AddLedgerSelectNetwork"
 import { AddLedgerAccountProvider } from "./context"
 
-export const AccountAddLedgerWizard = ({ onSuccess }: AccountAddPageProps) => (
+const AccountAddLedgerWizard = ({ onSuccess }: AccountAddPageProps) => (
   <AddLedgerAccountProvider onSuccess={onSuccess}>
     <Routes>
       <Route index element={<AddLedgerSelectNetwork />} />

@@ -1,7 +1,6 @@
+import { provideContext } from "@talisman/util/provideContext"
 import { useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
-
-import { provideContext } from "@talisman/util/provideContext"
 
 const allMethodTypes = ["new", "import", "connect", "watched"] as const satisfies string[]
 export type MethodType = (typeof allMethodTypes)[number]
@@ -21,7 +20,7 @@ const useAccountCreate = () => {
         return params
       })
     },
-    [setSearchParams],
+    [setSearchParams]
   )
 
   return { methodType, setMethodType }

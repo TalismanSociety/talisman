@@ -1,10 +1,9 @@
-import { isJsonPayload, KnownSigningRequestIdOnly } from "extension-core"
-import { Suspense, useEffect, useMemo } from "react"
-import { useParams } from "react-router-dom"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { PolkadotSigningRequestProvider } from "@ui/domains/Sign/SignRequestContext"
 import { useRequest } from "@ui/state"
+import { isJsonPayload, type KnownSigningRequestIdOnly } from "extension-core"
+import { Suspense, useEffect, useMemo } from "react"
+import { useParams } from "react-router-dom"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { PolkadotSignMessageRequest } from "./Message"

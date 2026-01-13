@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: legacy
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from polkadot.js
 
 import { DEBUG } from "extension-shared"
-import { Observable } from "rxjs"
+import type { Observable } from "rxjs"
 
 import type {
   KnownSubscriptionDataTypes,
@@ -24,7 +24,7 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => Awaited<KnownSubscriptionDataTypes<TMessageType>> = (value) => value,
+  transformFn: (value: any) => Awaited<KnownSubscriptionDataTypes<TMessageType>> = (value) => value
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => cb(transformFn(data)))
@@ -46,7 +46,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   port: Port,
   observable: Observable<any>,
   transformFn: (value: any) => Promise<KnownSubscriptionDataTypes<TMessageType>> = async (value) =>
-    value,
+    value
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))
@@ -71,7 +71,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
  */
 export function createSubscription<TMessageType extends MessageTypesWithSubscriptions>(
   id: string,
-  port: Port,
+  port: Port
 ): (data: KnownSubscriptionDataTypes<TMessageType>) => void {
   subscriptions[id] = { port }
   return (data): void => {
@@ -80,12 +80,12 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
         port.postMessage({ id, subscription: data, timestamp: Date.now() })
       } catch (error) {
         DEBUG &&
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.error(
             "Error on posting message for subscription - subscription might be closed. ",
             { error },
             { id, subscription: subscriptions[id] },
-            { data },
+            { data }
           )
         unsubscribe(id)
       }

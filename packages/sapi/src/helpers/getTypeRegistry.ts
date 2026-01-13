@@ -1,8 +1,8 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { RegistryTypes, SignerPayloadJSON } from "@polkadot/types/types"
+import type { RegistryTypes, SignerPayloadJSON } from "@polkadot/types/types"
 
 import log from "../log"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const getTypeRegistry = (chain: Chain, payload: SignerPayloadJSON) => {
   log.log(`[sapi] getTypeRegistry begin: ${Date.now()}`)

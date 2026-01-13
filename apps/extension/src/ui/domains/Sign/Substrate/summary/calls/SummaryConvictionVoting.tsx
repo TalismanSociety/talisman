@@ -1,10 +1,9 @@
-import { PolkadotCalls, VotingConviction } from "@polkadot-api/descriptors"
+import type { PolkadotCalls, VotingConviction } from "@polkadot-api/descriptors"
+import { useNetworkById } from "@ui/state"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { decodeStandardVote } from "../../util/decodeStandardVote"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { getConvictionVotingTrackName } from "../../util/getGovernanceTrackName"

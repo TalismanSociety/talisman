@@ -1,16 +1,18 @@
 import { HelpCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useSelectedCurrency } from "@ui/state"
 import { useAtomValue } from "jotai"
-import { FC, ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useId, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSelectedCurrency } from "@ui/state"
-
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
-import { fromAddressAtom, SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
+import {
+  fromAddressAtom,
+  type SwappableAssetWithDecimals,
+} from "../swap-modules/common.swap-module"
 import { Decimal } from "../swaps-port/Decimal"
 import { SelectTokenModal } from "./SelectTokenModal"
 
@@ -64,11 +66,11 @@ export const TokenAmountInput: FC<Props> = ({
 
   // reset input when fromAddress changes
   const fromAddress = useAtomValue(fromAddressAtom)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     onChangeAmount?.(Decimal.fromPlanck(0n, 1))
 
     // only re-run this effect when `fromAddress` changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromAddress])
 
   const currency = useSelectedCurrency()
@@ -87,11 +89,11 @@ export const TokenAmountInput: FC<Props> = ({
         return Decimal.fromUserInput(formattedInput, selectedAsset.decimals, {
           currency: selectedAsset.symbol,
         })
-      } catch (e) {
+      } catch {
         return Decimal.fromPlanck(0, 1)
       }
     },
-    [selectedAsset],
+    [selectedAsset]
   )
 
   const handleChangeAsset = useCallback(
@@ -100,7 +102,7 @@ export const TokenAmountInput: FC<Props> = ({
       onChangeAsset?.(asset)
       onChangeAmount?.(Decimal.fromPlanck(0, asset?.decimals ?? 1))
     },
-    [onChangeAmount, onChangeAsset],
+    [onChangeAmount, onChangeAsset]
   )
 
   const handleChangeInput = useCallback(
@@ -109,7 +111,7 @@ export const TokenAmountInput: FC<Props> = ({
       const parsedDecimal = parseInput(value)
       onChangeAmount?.(parsedDecimal)
     },
-    [onChangeAmount, parseInput],
+    [onChangeAmount, parseInput]
   )
 
   const fiatValue = useFiatValueForAmount({ amount, asset: selectedAsset, usdOverride })
@@ -136,8 +138,8 @@ export const TokenAmountInput: FC<Props> = ({
       const hardcodedGasBufferWei = BigInt(
         tokensToPlanck(
           String(hardcodedGasBufferByTokenSymbol[selectedAsset.symbol.toLowerCase()] ?? 0),
-          decimals,
-        ),
+          decimals
+        )
       )
 
       const totalBufferWei = availableBalance.planck - hardcodedGasBufferWei - swapGasBufferWei
@@ -190,16 +192,16 @@ export const TokenAmountInput: FC<Props> = ({
   return (
     <div>
       {leadingLabel || trailingLabel ? (
-        <div className="text-body-secondary mb-2 flex items-center justify-between text-xs">
+        <div className="mb-2 flex items-center justify-between text-body-secondary text-xs">
           {leadingLabel && <label htmlFor={inputId}>{leadingLabel}</label>}
           {trailingLabel && <label htmlFor={inputId}>{trailingLabel}</label>}
         </div>
       ) : null}
       <div
         className={classNames(
-          "bg-black-tertiary flex items-center gap-5 rounded border border-red-400/0 py-4 pl-6 pr-4",
+          "flex items-center gap-5 rounded border border-red-400/0 bg-black-tertiary py-4 pr-4 pl-6",
           (insufficientBalance || (disableBtc && selectedAsset?.id === "btc-native")) &&
-            "border-red-400",
+            "border-red-400"
         )}
       >
         <div className="flex w-full flex-1 flex-col overflow-hidden">
@@ -208,22 +210,22 @@ export const TokenAmountInput: FC<Props> = ({
             id={inputId}
             autoComplete="off"
             disabled={disabled}
-            className="text-md text-grey-50 placeholder-grey-400 text-ellipsis bg-transparent font-semibold"
+            className="text-ellipsis bg-transparent font-semibold text-grey-50 text-md placeholder-grey-400"
             value={input}
             placeholder="0.00"
             onChange={(e) => handleChangeInput(e.target.value)}
           />
           <div className="flex items-center">
-            <p className="text-grey-400 truncate text-[10px] leading-none">
+            <p className="truncate text-[10px] text-grey-400 leading-none">
               {(fiatValue ?? 0)?.toLocaleString(undefined, { currency, style: "currency" })}
             </p>
             {insufficientBalance ? (
-              <p className="border-l-grey-600 ml-[8px] shrink-0 border-l pl-[8px] text-[10px] leading-none text-red-400">
+              <p className="ml-[8px] shrink-0 border-l border-l-grey-600 pl-[8px] text-[10px] text-red-400 leading-none">
                 {t("Insufficient balance")}
               </p>
             ) : accountWillBeReaped ? (
               <div className="flex shrink-0 items-center gap-1 text-orange-400">
-                <p className="border-l-grey-600 ml-[8px] shrink-0 border-l pl-[8px] text-[10px] leading-none">
+                <p className="ml-[8px] shrink-0 border-l border-l-grey-600 pl-[8px] text-[10px] leading-none">
                   {t("Account will be reaped")}
                 </p>
 
@@ -251,7 +253,7 @@ export const TokenAmountInput: FC<Props> = ({
                 </Tooltip>
               </div>
             ) : disableBtc && selectedAsset?.id === "btc-native" ? (
-              <p className="border-l-grey-600 ml-[8px] shrink-0 border-l pl-[8px] text-[10px] leading-none text-red-400">
+              <p className="ml-[8px] shrink-0 border-l border-l-grey-600 pl-[8px] text-[10px] text-red-400 leading-none">
                 {t("Swapping from BTC not supported.")}
               </p>
             ) : null}
@@ -260,11 +262,12 @@ export const TokenAmountInput: FC<Props> = ({
 
         {shouldDisplayBalance ? (
           <button
+            type="button"
             className={classNames(
-              "text-body-secondary rounded-xs border border-current px-3 py-1 text-[1rem]",
-              !maxAfterGas && "text-body-disabled animate-pulse",
+              "rounded-xs border border-current px-3 py-1 text-[1rem] text-body-secondary",
+              !maxAfterGas && "animate-pulse text-body-disabled",
               maxAfterGas && maxAfterGas.planck <= 0 && "text-body-disabled",
-              maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white",
+              maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white"
             )}
             onClick={onSetMaxAmount}
             disabled={!maxAfterGas || maxAfterGas.planck <= 0}

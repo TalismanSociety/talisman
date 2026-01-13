@@ -1,8 +1,8 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { BehaviorSubject } from "rxjs"
 
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
-import { Port } from "../../types/base"
+import type { Port } from "../../types/base"
 
 // chain genesisHash => is updating metadata
 type MetadataUpdates = Record<HexString, boolean>
@@ -24,7 +24,7 @@ class MetadataUpdatesStore {
   subscribe(id: string, port: Port, genesisHash: HexString) {
     const cb = createSubscription<"pri(metadata.updates.subscribe)">(id, port)
 
-    let value: boolean | undefined = undefined
+    let value: boolean | undefined
 
     const subscription = this.metadataUpdates.subscribe((metadataUpdates) => {
       const isUpdating = metadataUpdates[genesisHash]

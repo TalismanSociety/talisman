@@ -1,7 +1,6 @@
-import { FC } from "react"
-
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
-import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
+import type { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
+import type { FC } from "react"
 
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { EthSignMoonVotingDelegate } from "./convictionVoting/EthSignMoonVotingDelegate"

@@ -1,6 +1,6 @@
 import { TALISMAN_LOGO_BASE64 } from "inject/shared/logo"
 
-import { type EthProvider } from "./types"
+import type { EthProvider } from "./types"
 
 interface EIP6963ProviderInfo {
   icon: string

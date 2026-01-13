@@ -1,10 +1,19 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ArrowUpLeftIcon, CheckCircleIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import {
-  ChangeEventHandler,
-  FC,
-  FormEventHandler,
+  type ChangeEventHandler,
+  type FC,
+  type FormEventHandler,
   useCallback,
   useEffect,
   useMemo,
@@ -12,16 +21,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { useTryTalismanModal } from "./useTryTalismanModal"
 
@@ -103,7 +102,7 @@ export const TryTalismanContent: FC<{
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [analytics, address, isNsLookup, searchAddress, navigate, close, t],
+    [analytics, address, isNsLookup, searchAddress, navigate, close, t]
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -116,9 +115,9 @@ export const TryTalismanContent: FC<{
   }, [analytics, close, navigate])
 
   return (
-    <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
+    <div className="flex flex-col gap-12 pb-12 text-body-secondary text-sm">
       <div className="flex flex-col gap-8">
-        <div className="leading-paragraph px-16 text-center text-xs">
+        <div className="px-16 text-center text-xs leading-paragraph">
           {t("Explore Talisman’s unique features without importing a recovery phrase")}
         </div>
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
@@ -127,14 +126,14 @@ export const TryTalismanContent: FC<{
               <input
                 type="text"
                 className={classNames(
-                  "bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6",
-                  isNsLookup && "pr-16",
+                  "w-full rounded bg-black-secondary px-8 py-6 text-body placeholder:text-body-disabled",
+                  isNsLookup && "pr-16"
                 )}
                 placeholder={t("Enter any wallet address")}
                 value={searchAddress}
                 onChange={onInputChange}
               />
-              <div className="absolute right-4 top-0 flex h-full items-center">
+              <div className="absolute top-0 right-4 flex h-full items-center">
                 <AddressFieldNsBadge
                   small
                   nsLookup={nsLookup}
@@ -146,30 +145,32 @@ export const TryTalismanContent: FC<{
             </div>
 
             <button
+              type="button"
               className={classNames(
-                "text-body-disabled border-body-disabled rounded border px-8 py-6",
-                address.length && "bg-primary border-primary hover:bg-primary/95 text-black",
+                "rounded border border-body-disabled px-8 py-6 text-body-disabled",
+                address.length && "border-primary bg-primary text-black hover:bg-primary/95"
               )}
               disabled={!address.length}
             >
               {pending ? <LoaderIcon className="animate-spin-slow" /> : t("Add")}
             </button>
           </div>
-          {error && <div className="text-alert-error text-tiny text-center">{error}</div>}
+          {error && <div className="text-center text-alert-error text-tiny">{error}</div>}
         </form>
       </div>
 
       <div className="flex w-full items-center gap-10">
-        <div className="bg-grey-700 h-[1px] flex-1" />
+        <div className="h-[1px] flex-1 bg-grey-700" />
         <div className="text-grey-500 text-tiny">
           {t("Or follow some of the most popular accounts")}
         </div>
-        <div className="bg-grey-700 h-[1px] flex-1" />
+        <div className="h-[1px] flex-1 bg-grey-700" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         {POPULAR_ACCOUNTS.map((account, index) => (
           <FollowAccountButton
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
             key={index}
             name={account.name}
             address={account.address}
@@ -186,7 +187,7 @@ export const TryTalismanContent: FC<{
               ? t("{{number}} Account Added", { number: allAccounts.length })
               : t("{{number}} Accounts Added", { number: allAccounts.length })}
           </div>
-          <div className="text-primary flex items-center gap-2 text-base font-bold">
+          <div className="flex items-center gap-2 font-bold text-base text-primary">
             <ArrowUpLeftIcon className="text-lg" /> {t("View in Portfolio")}
           </div>
         </button>
@@ -228,7 +229,7 @@ const FollowAccountButton = ({
 
   const isAdded = useMemo(
     () => allAccounts.some((a) => isAddressEqual(a.address, address)),
-    [allAccounts, address],
+    [allAccounts, address]
   )
 
   const content = (
@@ -245,9 +246,9 @@ const FollowAccountButton = ({
 
   if (isAdded)
     return (
-      <div className="bg-grey-900 pointer-events-none relative flex items-center gap-4 rounded border border-[#131313] p-8 text-start">
+      <div className="pointer-events-none relative flex items-center gap-4 rounded border border-[#131313] bg-grey-900 p-8 text-start">
         {content}
-        <div className="text-primary absolute left-0 top-0 flex h-full w-full items-center justify-center gap-6 rounded bg-[#131313] p-8 text-xs">
+        <div className="absolute top-0 left-0 flex h-full w-full items-center justify-center gap-6 rounded bg-[#131313] p-8 text-primary text-xs">
           <CheckCircleIcon className="text-sm" /> {t("Account Added")}
         </div>
       </div>
@@ -256,7 +257,7 @@ const FollowAccountButton = ({
   return (
     <button
       type="button"
-      className="bg-grey-900 hover:bg-grey-800 hover:border-grey-800 focus:border-grey-800 border-grey-900 flex items-center gap-4 rounded border p-8 text-start"
+      className="flex items-center gap-4 rounded border border-grey-900 bg-grey-900 p-8 text-start hover:border-grey-800 hover:bg-grey-800 focus:border-grey-800"
       onClick={onClick}
     >
       {content}

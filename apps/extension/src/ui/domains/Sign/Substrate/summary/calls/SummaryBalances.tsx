@@ -1,13 +1,12 @@
-import { HydrationCalls, PolkadotCalls } from "@polkadot-api/descriptors"
-import { ScaleApi } from "@talismn/sapi"
+import type { HydrationCalls, PolkadotCalls } from "@polkadot-api/descriptors"
+import type { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { Address } from "extension-core"
+import { useNetworkById, useToken } from "@ui/state"
+import type { Address } from "extension-core"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById, useToken } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import {
@@ -17,8 +16,8 @@ import {
   SummarySeparator,
 } from "../shared/SummaryContainer"
 import { SummaryLineBreak } from "../shared/SummaryLineBreak"
-import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
 const TransferKeepAlive: DecodedCallSummaryComponent<
   | PolkadotCalls["Balances"]["transfer_keep_alive"]
@@ -246,7 +245,7 @@ const TransferAll: DecodedCallSummaryComponent<
           />
         ) : (
           t(
-            "This may remove the sender account from the chain state if it doesn't own any other sufficient assets.",
+            "This may remove the sender account from the chain state if it doesn't own any other sufficient assets."
           )
         )}
       </SummaryAlert>

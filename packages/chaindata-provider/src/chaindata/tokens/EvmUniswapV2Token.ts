@@ -1,8 +1,8 @@
 import z from "zod/v4"
 
-import { NetworkId } from "../networks"
+import type { NetworkId } from "../networks"
 import { EthereumAddressSchema } from "../shared"
-import { TokenId } from "./Token"
+import type { TokenId } from "./Token"
 import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 
@@ -36,7 +36,7 @@ export type EvmUniswapV2TokenIdSpecs = {
 
 export const evmUniswapV2TokenId = (
   networkId: NetworkId,
-  contractAddress: EvmUniswapV2Token["contractAddress"],
+  contractAddress: EvmUniswapV2Token["contractAddress"]
 ) => generateTokenId(networkId, TOKEN_TYPE, contractAddress.toLowerCase())
 
 export const parseEvmUniswapV2TokenId = (tokenId: TokenId): EvmUniswapV2TokenIdSpecs => {

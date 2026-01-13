@@ -1,13 +1,12 @@
 import { hexToString } from "@polkadot/util"
-import { ParsedMessage } from "@spruceid/siwe-parser"
+import type { ParsedMessage } from "@spruceid/siwe-parser"
 import { UserRightIcon } from "@talismn/icons"
-import { Account, EthSignRequest } from "extension-core"
+import { useNetworkById } from "@ui/state"
+import type { Account, EthSignRequest } from "extension-core"
 import { log } from "extension-shared"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
-
-import { useNetworkById } from "@ui/state"
 
 import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
@@ -28,12 +27,12 @@ const ViewDetailsContent: FC<{
   const message = useMemo(() => hexToString(request.request), [request.request])
 
   return (
-    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
         <p>
           {t(
-            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing.",
+            "You are about to sign in via Ethereum. Please ensure you trust the application before continuing."
           )}
         </p>
         <ViewDetailsAddress label={t("From")} address={account.address} network={evmNetwork} />
@@ -47,7 +46,7 @@ const ViewDetailsContent: FC<{
         <ViewDetailsField label={t("Expires At")}>{siwe.expirationTime}</ViewDetailsField>
         <ViewDetailsField label={t("Message")}>
           <div className="mt-2 pr-2">
-            <pre className="text-body-secondary scrollable scrollable-700 bg-grey-800 rounded-xs w-full overflow-x-auto p-4">
+            <pre className="scrollable scrollable-700 w-full overflow-x-auto rounded-xs bg-grey-800 p-4 text-body-secondary">
               {message}
             </pre>
           </div>
@@ -82,14 +81,14 @@ export const EthSignBodyMessageSIWE: FC<{
   return (
     <div className="scrollable scrollable-800 flex h-full max-h-full w-full flex-col items-center overflow-auto">
       <div className="flex w-full flex-col items-center pt-4">
-        <div className="bg-grey-800 rounded-full p-5">
-          <UserRightIcon className="text-primary text-[2.8rem]" />
+        <div className="rounded-full bg-grey-800 p-5">
+          <UserRightIcon className="text-[2.8rem] text-primary" />
         </div>
-        <div className="mt-8 text-lg font-bold">{t("Sign In")}</div>
-        <div className="text-body-secondary mt-16 flex w-full flex-col items-center gap-3 overflow-hidden">
-          <div className="text-body max-w-full truncate font-bold">{siwe.domain}</div>
+        <div className="mt-8 font-bold text-lg">{t("Sign In")}</div>
+        <div className="mt-16 flex w-full flex-col items-center gap-3 overflow-hidden text-body-secondary">
+          <div className="max-w-full truncate font-bold text-body">{siwe.domain}</div>
           <div className="text-body-secondary">{t("wants you to sign in with Ethereum")}</div>
-          <div className="[&>button>div>span]:text-body flex max-w-full items-center justify-center truncate [&>button>div>span]:font-bold">
+          <div className="flex max-w-full items-center justify-center truncate [&>button>div>span]:font-bold [&>button>div>span]:text-body">
             <span>{t("with")}</span>
             <SignParamAccountButton address={account.address} withIcon />
           </div>
@@ -97,9 +96,9 @@ export const EthSignBodyMessageSIWE: FC<{
           <RiskAnalysisPillButton />
         </div>
         {!!siwe.statement && (
-          <div className="bg-grey-850 mt-8 w-full rounded-sm p-4 text-sm">
+          <div className="mt-8 w-full rounded-sm bg-grey-850 p-4 text-sm">
             <div className="text-body-disabled text-xs">{t("Statement")}</div>
-            <div className="text-body leading-paragraph mt-2">{siwe.statement}</div>
+            <div className="mt-2 text-body leading-paragraph">{siwe.statement}</div>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
-import { BalanceDto } from "extension-core"
-import { FC } from "react"
+import type { BalanceDto } from "extension-core"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 export const YieldxyzBalanceTypeDisplay: FC<{ balance: BalanceDto }> = ({ balance }) => {

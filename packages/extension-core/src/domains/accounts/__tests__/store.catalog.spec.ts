@@ -1,13 +1,13 @@
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 
 import {
   addAccount,
   folderFilter,
-  RequestAccountsCatalogAction,
+  type RequestAccountsCatalogAction,
   runActionsOnTrees,
-  Tree,
-  TreeAccount,
-  TreeFolder,
+  type Tree,
+  type TreeAccount,
+  type TreeFolder,
 } from "../helpers.catalog"
 import { accountsCatalogStore } from "../store.catalog"
 
@@ -224,7 +224,7 @@ describe("runActionOnTrees", () => {
     expect(status).toStrictEqual(true)
 
     expect(tree.filter(folderFilter).find((folder) => folder.id === "folder-1")?.name).toBe(
-      "Renamed folder 1",
+      "Renamed folder 1"
     )
   })
 

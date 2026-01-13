@@ -1,8 +1,7 @@
-import { ArrowUpRightIcon, ExternalLinkIcon } from "@talismn/icons"
-import { FC, MouseEventHandler, ReactNode } from "react"
-import { useTranslation } from "react-i18next"
-
 import { FadeIn } from "@talisman/components/FadeIn"
+import { ArrowUpRightIcon, ExternalLinkIcon } from "@talismn/icons"
+import type { FC, MouseEventHandler, ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 
 import AdvancedAccountManagementUrl from "./assets/Learn More - Advanced Account Management.png"
 import MakeItYoursUrl from "./assets/Learn More - Make it Yours.png"
@@ -19,14 +18,14 @@ export const LearnMoreContent: FC<{
   const { t } = useTranslation()
 
   return (
-    <FadeIn className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
+    <FadeIn className="flex flex-col gap-12 pb-12 text-body-secondary text-sm">
       <LearnMoreSection
         title={t("Make it Yours")}
         subtitle={t("Sort and organize accounts into folders")}
         button={<LearnMoreButton onClick={onManageAccountsClick} />}
       >
         <img
-          className="bg-body-black aspect-[318/156] w-full rounded"
+          className="aspect-[318/156] w-full rounded bg-body-black"
           alt="demo screenshot"
           src={MakeItYoursUrl}
         />
@@ -38,7 +37,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onCurrenciesClick} />}
       >
         <img
-          className="bg-body-black aspect-[318/156] w-full rounded"
+          className="aspect-[318/156] w-full rounded bg-body-black"
           alt="demo screenshot"
           src={SeamlessUserExperienceUrl}
         />
@@ -50,7 +49,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onAddHardwareClick} />}
       >
         <img
-          className="bg-body-black aspect-[318/156] w-full rounded"
+          className="aspect-[318/156] w-full rounded bg-body-black"
           alt="demo screenshot"
           src={WorksWithExternalDevicesUrl}
         />
@@ -62,7 +61,7 @@ export const LearnMoreContent: FC<{
         button={<LearnMoreButton onClick={onMnemonicsClick} />}
       >
         <img
-          className="bg-body-black aspect-[318/156] w-full rounded"
+          className="aspect-[318/156] w-full rounded bg-body-black"
           alt="demo screenshot"
           src={AdvancedAccountManagementUrl}
         />
@@ -80,7 +79,7 @@ export const LearnMoreContent: FC<{
         }
       >
         <img
-          className="bg-body-black aspect-[318/156] w-full rounded"
+          className="aspect-[318/156] w-full rounded bg-body-black"
           alt="demo screenshot"
           src={SafeguardYourAssetsUrl}
         />
@@ -100,7 +99,7 @@ const LearnMoreSection = ({
   button?: ReactNode
   children?: ReactNode
 }) => (
-  <div className="bg-grey-800 flex w-full flex-col items-center gap-8 rounded p-8">
+  <div className="flex w-full flex-col items-center gap-8 rounded bg-grey-800 p-8">
     <div className="flex w-full items-center justify-between gap-2">
       <div className="flex flex-col gap-1">
         <div className="font-bold text-white">{title}</div>

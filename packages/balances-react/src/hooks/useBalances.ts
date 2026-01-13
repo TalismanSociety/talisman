@@ -1,4 +1,4 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useMemo } from "react"
 
@@ -54,6 +54,6 @@ export const getStaleChains = (balances: Balances): string[] => [
   ...new Set(
     balances.each
       .filter((b) => b.status === "stale")
-      .map((b) => b.network?.name ?? b.networkId ?? "Unknown"),
+      .map((b) => b.network?.name ?? b.networkId ?? "Unknown")
   ),
 ]

@@ -1,5 +1,5 @@
 import { isNotNil } from "@talismn/util"
-import { filterIsSameNetworkAndAddressTx, WalletTransaction } from "extension-core"
+import { filterIsSameNetworkAndAddressTx, type WalletTransaction } from "extension-core"
 import { useMemo } from "react"
 
 import { useTxHistory } from "./TxHistoryContext"

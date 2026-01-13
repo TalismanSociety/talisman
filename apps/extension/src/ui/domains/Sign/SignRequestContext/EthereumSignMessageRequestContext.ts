@@ -1,14 +1,13 @@
-import { HexString } from "@polkadot/util/types"
-import { KnownSigningRequestIdOnly } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo, useRef } from "react"
-
+import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById, useRequest } from "@ui/state"
+import type { KnownSigningRequestIdOnly } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useRef } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -35,7 +34,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
   })
 
   const reject = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     (...args: any[]) => {
       genericEvent("sign request cancel click", {
         networkType: "evm",
@@ -47,7 +46,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis?.validationResult]
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -103,7 +102,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
         baseRequest.setStatus.error((err as Error).message)
       }
     },
-    [baseRequest, riskAnalysis, genericEvent, network?.id, origin],
+    [baseRequest, riskAnalysis, genericEvent, network?.id, origin]
   )
 
   const isValid = useMemo(() => {
@@ -114,8 +113,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       // for now only check signTypedData's verifying contract's address
       const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
       const verifyingContract = typedMessage?.domain?.verifyingContract as string | undefined
-      if (verifyingContract && verifyingContract.toLowerCase().startsWith("javascript:"))
-        return false
+      if (verifyingContract?.toLowerCase().startsWith("javascript:")) return false
     }
 
     return true
@@ -134,5 +132,5 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
 }
 
 export const [EthSignMessageRequestProvider, useEthSignMessageRequest] = provideContext(
-  useEthSignMessageRequestProvider,
+  useEthSignMessageRequestProvider
 )

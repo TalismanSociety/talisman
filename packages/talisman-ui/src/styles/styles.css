@@ -7,7 +7,7 @@
   html {
     /* this defines the root font size, on which 'rem' units are based */
     font-size: 10px;
-    scrollbar-color: theme(colors.grey.700) transparent;
+    scrollbar-color: theme("colors.grey.700") transparent;
     @apply min-h-screen;
   }
 
@@ -121,31 +121,31 @@
   }
 
   .scrollable-500::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme(colors.grey.500);
+    box-shadow: inset 0 0 10px 10px theme("colors.grey.500");
   }
   .scrollable-500 {
-    scrollbar-color: theme(colors.grey.500) transparent;
+    scrollbar-color: theme("colors.grey.500") transparent;
   }
 
   .scrollable-600::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme(colors.grey.600);
+    box-shadow: inset 0 0 10px 10px theme("colors.grey.600");
   }
   .scrollable-600 {
-    scrollbar-color: theme(colors.grey.600) transparent;
+    scrollbar-color: theme("colors.grey.600") transparent;
   }
 
   .scrollable-700::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme(colors.grey.700);
+    box-shadow: inset 0 0 10px 10px theme("colors.grey.700");
   }
   .scrollable-700 {
-    scrollbar-color: theme(colors.grey.700) transparent;
+    scrollbar-color: theme("colors.grey.700") transparent;
   }
 
   .scrollable-800::-webkit-scrollbar-thumb {
-    box-shadow: inset 0 0 10px 10px theme(colors.grey.800);
+    box-shadow: inset 0 0 10px 10px theme("colors.grey.800");
   }
   .scrollable-800 {
-    scrollbar-color: theme(colors.grey.800) transparent;
+    scrollbar-color: theme("colors.grey.800") transparent;
   }
 
   /*****************************************************************************

@@ -71,7 +71,7 @@ export const getQuery$ = <Output, Args>({
           .pipe(distinctUntilChanged<QueryResult<Output>>(isEqual))
           .subscribe(subscriber)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         let timeout: any = null
 
         // fetch result subscription
@@ -101,6 +101,6 @@ export const getQuery$ = <Output, Args>({
           controller.abort(new Error("getQuery$ unsubscribed"))
         }
       }).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
-    serializer,
+    serializer
   )
 }

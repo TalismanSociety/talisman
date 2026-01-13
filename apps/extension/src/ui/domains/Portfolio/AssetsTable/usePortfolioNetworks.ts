@@ -1,7 +1,6 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
-
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { useMemo } from "react"
 
 export type PortfolioNetwork = {
   id: NetworkId
@@ -16,7 +15,7 @@ export const usePortfolioNetworks = (ids: NetworkId[] | undefined) => {
       ids
         ?.map((id) => ({ id, name: networkNamesMap[id] }))
         .filter((n): n is PortfolioNetwork => !!n.name) ?? [],
-    [networkNamesMap, ids],
+    [networkNamesMap, ids]
   )
 
   return networks

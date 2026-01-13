@@ -1,15 +1,11 @@
-import { Balances } from "@talismn/balances"
-import { LockIcon, TrendingUpIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
-
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import type { Balances } from "@talismn/balances"
+import { LockIcon, TrendingUpIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -21,6 +17,9 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById, usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { StaleBalancesIcon } from "../StaleBalancesIcon"
@@ -36,19 +35,19 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <div
       className={classNames(
-        "bg-black-secondary mt-4 flex h-28 items-center gap-6 rounded-sm px-6",
-        className,
+        "mt-4 flex h-28 items-center gap-6 rounded-sm bg-black-secondary px-6",
+        className
       )}
     >
-      <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full px-6 text-xl"></div>
+      <div className="h-16 w-16 animate-pulse rounded-full bg-grey-700 px-6 text-xl"></div>
       <div className="grow space-y-1">
         <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-20 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
+          <div className="h-7 w-20 animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-[10rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
         <div className="flex justify-between gap-1">
-          <div className="bg-grey-700 rounded-xs h-7 w-10 animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
+          <div className="h-7 w-10 animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-7 w-[6rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -105,7 +104,7 @@ const AssetRow: FC<{
     <div className="group relative h-28 w-full">
       <button
         type="button"
-        className="bg-grey-850 hover:bg-grey-800 flex size-full items-center overflow-hidden rounded-sm"
+        className="flex size-full items-center overflow-hidden rounded-sm bg-grey-850 hover:bg-grey-800"
         onClick={handleClick}
       >
         <div className="shrink-0 p-6 text-xl">
@@ -114,12 +113,12 @@ const AssetRow: FC<{
         <div className="relative flex grow items-center gap-4 overflow-hidden pr-6">
           <div className="flex grow flex-col gap-2 overflow-hidden text-left">
             <div className="flex w-full items-center gap-3 overflow-hidden">
-              <div className="text-body flex w-full items-center gap-3 overflow-hidden text-sm font-bold">
+              <div className="flex w-full items-center gap-3 overflow-hidden font-bold text-body text-sm">
                 <div className="truncate">
                   <TokenDisplaySymbol tokenId={token.id} />
                 </div>
                 {!!network.isTestnet && (
-                  <div className="text-tiny bg-alert-warn/10 text-alert-warn shrink-0 rounded px-3 py-1 font-light">
+                  <div className="shrink-0 rounded bg-alert-warn/10 px-3 py-1 font-light text-alert-warn text-tiny">
                     {t("Testnet")}
                   </div>
                 )}
@@ -132,7 +131,7 @@ const AssetRow: FC<{
             </div>
 
             {isUniswapV2LpToken && typeof tvl === "number" && (
-              <div className="text-body-secondary whitespace-nowrap text-xs">
+              <div className="whitespace-nowrap text-body-secondary text-xs">
                 <Fiat amount={tvl} noCountUp={noCountUp} />{" "}
                 <span className="text-[0.8rem]">TVL</span>
               </div>
@@ -144,14 +143,14 @@ const AssetRow: FC<{
           <div
             className={classNames(
               "flex min-w-[8rem] shrink-0 flex-col items-end gap-2 text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
             <div
               className={classNames(
-                "whitespace-nowrap text-sm font-bold",
+                "whitespace-nowrap font-bold text-sm",
                 locked ? "text-body-secondary" : "text-white",
-                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden"
               )}
             >
               <Tokens
@@ -168,8 +167,8 @@ const AssetRow: FC<{
             </div>
             <div
               className={classNames(
-                "text-body-secondary leading-base text-xs",
-                selectedAccount?.type !== "watch-only" && "group-hover:hidden",
+                "text-body-secondary text-xs leading-base",
+                selectedAccount?.type !== "watch-only" && "group-hover:hidden"
               )}
             >
               {fiat === null ? "-" : <Fiat amount={fiat} isBalance noCountUp={noCountUp} />}
@@ -179,18 +178,18 @@ const AssetRow: FC<{
       </button>
 
       {showStakingButton ? (
-        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+        <div className="absolute top-0 right-4 hidden h-28 flex-col justify-center group-hover:flex">
           <BondPillButton
             balances={balances}
             isPortfolio
-            className="[>svg]:text-[2rem] text-base"
+            className="text-base [>svg]:text-[2rem]"
           />
         </div>
       ) : canEarn ? (
-        <div className="absolute right-4 top-0 hidden h-28 flex-col justify-center group-hover:flex">
+        <div className="absolute top-0 right-4 hidden h-28 flex-col justify-center group-hover:flex">
           <PillButton
             onClick={openEarnModal}
-            className="bg-primary/10 hover:bg-primary/20 text-primary [>svg]:text-[2rem] h-16 rounded-[28px] px-4 text-base font-light"
+            className="h-16 rounded-[28px] bg-primary/10 px-4 font-light text-base text-primary hover:bg-primary/20 [>svg]:text-[2rem]"
           >
             <div className="flex items-center gap-4">
               <TrendingUpIcon className="shrink-0 text-base" />
@@ -220,11 +219,11 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
         className={classNames("flex cursor-pointer items-center gap-2 text-sm", className)}
         onClick={toggle}
       >
-        <div className="text-body-secondary grow text-left">{label}</div>
-        <div className="text-body-secondary truncate">
+        <div className="grow text-left text-body-secondary">{label}</div>
+        <div className="truncate text-body-secondary">
           <Fiat amount={fiatAmount} isBalance />
         </div>
-        <div className="text-body-secondary text-md flex flex-col justify-center">
+        <div className="flex flex-col justify-center text-body-secondary text-md">
           <AccordionIcon isOpen={isOpen} />
         </div>
       </button>
@@ -258,7 +257,7 @@ export const PopupAssetsTable = () => {
   if (!available.length && !lockedSymbolBalances.length && !isInitialising)
     return (
       <FadeIn>
-        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+        <div className="rounded-sm bg-black-secondary py-10 text-center text-body-secondary text-xs">
           {account ? t("No assets to display for this account.") : t("No assets to display.")}
         </div>
       </FadeIn>
@@ -269,9 +268,9 @@ export const PopupAssetsTable = () => {
       <div>
         {!!account && (
           <>
-            <div className="text-md flex items-center gap-2">
-              <div className="text-body grow text-left">{t("Total")}</div>
-              <div className="text-body-secondary truncate">
+            <div className="flex items-center gap-2 text-md">
+              <div className="grow text-left text-body">{t("Total")}</div>
+              <div className="truncate text-body-secondary">
                 <Fiat amount={total} isBalance />
               </div>
             </div>
@@ -282,7 +281,7 @@ export const PopupAssetsTable = () => {
           <VirtualizedRows rows={available} />
           {isInitialising && <AssetRowSkeleton />}
           {!isInitialising && !available.length && (
-            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
+            <div className="rounded-sm bg-black-secondary py-10 text-center text-body-secondary text-xs">
               {account
                 ? t("There are no available balances for this account.")
                 : t("There are no available balances.")}
@@ -355,7 +354,7 @@ const VirtualizedRows: FC<{ rows: [string, Balances][]; locked?: boolean; oversc
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 h-28 w-full"
+            className="absolute top-0 left-0 h-28 w-full"
             style={{
               transform: `translateY(${item.start}px)`,
             }}

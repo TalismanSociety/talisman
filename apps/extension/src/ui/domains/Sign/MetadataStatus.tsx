@@ -1,9 +1,8 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { ExternalLinkIcon } from "@talismn/icons"
-import { ReactNode } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
 import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
+import type { ReactNode } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "./SignAlertMessage"
 
@@ -45,7 +44,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
     return (
       <ErrorAlert>
         {t(
-          "Failed to update metadata. Please update metadata manually or your transaction may fail.",
+          "Failed to update metadata. Please update metadata manually or your transaction may fail."
         )}
       </ErrorAlert>
     )
@@ -75,7 +74,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
     return (
       <ErrorAlert>
         {t(
-          "This network requires a manual metadata update. Please update or your transaction may fail.",
+          "This network requires a manual metadata update. Please update or your transaction may fail."
         )}
       </ErrorAlert>
     )

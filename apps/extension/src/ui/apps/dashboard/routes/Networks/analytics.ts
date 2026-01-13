@@ -1,4 +1,4 @@
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 
 export const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

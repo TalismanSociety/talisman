@@ -1,16 +1,3 @@
-import {
-  AUTH_PREFIX,
-  AUTH_SOL_SIGN_IN_PREFIX,
-  ENCRYPT_DECRYPT_PREFIX,
-  ENCRYPT_ENCRYPT_PREFIX,
-  ETH_NETWORK_ADD_PREFIX,
-  METADATA_PREFIX,
-  SIGNING_TYPES,
-  WATCH_ASSET_PREFIX,
-} from "extension-core"
-import { Suspense, useEffect } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
-
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
@@ -26,6 +13,7 @@ import { SeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefi
 import { RampsModal } from "@ui/domains/Ramps/RampsModal"
 import { DatabaseErrorAlert } from "@ui/domains/Settings/DatabaseErrorAlert"
 import { BittensorBondModal } from "@ui/domains/Staking/Bittensor/BittensorBondModal"
+import { BittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/BittensorChangeValidatorModal"
 import { BittensorClaimSettingsModal } from "@ui/domains/Staking/Bittensor/BittensorClaimSettingsModal"
 import { BondModal } from "@ui/domains/Staking/Bond/BondModal"
 import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawModal"
@@ -34,6 +22,18 @@ import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { MigrationProgress } from "@ui/domains/System/MigrationProgress"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
 import { useLoginCheck } from "@ui/hooks/useLoginCheck"
+import {
+  AUTH_PREFIX,
+  AUTH_SOL_SIGN_IN_PREFIX,
+  ENCRYPT_DECRYPT_PREFIX,
+  ENCRYPT_ENCRYPT_PREFIX,
+  ETH_NETWORK_ADD_PREFIX,
+  METADATA_PREFIX,
+  SIGNING_TYPES,
+  WATCH_ASSET_PREFIX,
+} from "extension-core"
+import { Suspense, useEffect } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { LedgerPolkadotUpgradeAlertDrawer } from "./components/LedgerPolkadotUpgradeDrawer"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
@@ -106,6 +106,7 @@ const Popup = () => {
         <AccountRenameModal />
         <BondModal />
         <BittensorBondModal />
+        <BittensorChangeValidatorModal />
         <BittensorClaimSettingsModal />
         <CopyAddressModal />
         <ExplorerNetworkPickerModal />

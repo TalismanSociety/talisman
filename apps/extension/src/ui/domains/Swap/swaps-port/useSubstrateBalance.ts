@@ -1,8 +1,7 @@
+import { useNetworksMapById } from "@ui/state"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-
-import { useNetworksMapById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 import { computeSubstrateBalance } from "./computeSubstrateBalance"
@@ -32,8 +31,8 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
               assethubAssetId: props?.assetHubAssetId,
             }
           : undefined,
-      [props?.assetHubAssetId, props?.chainId],
-    ),
+      [props?.assetHubAssetId, props?.chainId]
+    )
   )
   const unsubRef = useRef<() => void>()
   const chains = useNetworksMapById({ platform: "polkadot" })
@@ -54,6 +53,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     if (props.assetHubAssetId === undefined) {
       return void api.query.system
         .account(props.address, (account) => void setBalance(computeSubstrateBalance(api, account)))
+        // biome-ignore lint/suspicious/noAssignInExpressions: legacy
         .then((unsub) => void (unsubRef.current = unsub))
     }
 
@@ -71,6 +71,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     if (!props && balance !== undefined) setBalance(undefined)
   }, [balance, props])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setBalance(undefined)
   }, [props?.address, props?.assetHubAssetId, props?.chainId])

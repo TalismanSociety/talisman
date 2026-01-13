@@ -1,12 +1,15 @@
-import { Token } from "@talismn/chaindata-provider"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Token } from "@talismn/chaindata-provider"
 import { InfoIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
-import { Account } from "extension-core"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useBalance, useSelectedCurrency } from "@ui/state"
+import type { Account } from "extension-core"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
-  ReactNode,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
   Suspense,
   useCallback,
   useEffect,
@@ -16,10 +19,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useBalance, useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -46,8 +45,8 @@ const AssetPill: FC<{ token: Token | null }> = ({ token }) => {
     <div className="flex h-16 items-center gap-4 px-4">
       <TokenLogo tokenId={token.id} className="shrink-0 text-lg" />
       <div className="flex items-center gap-2">
-        <div className="text-body text-base">{token.symbol}</div>
-        <div className="bg-body-disabled inline-block size-2 rounded-full"></div>
+        <div className="text-base text-body">{token.symbol}</div>
+        <div className="inline-block size-2 rounded-full bg-body-disabled"></div>
         <div className="text-body-secondary text-sm">{t("Pooled Staking")}</div>
       </div>
     </div>
@@ -72,7 +71,7 @@ const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, accou
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -121,7 +120,6 @@ const TokenInput = () => {
     setValue(formattedValue)
   }, [formattedValue])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (token && e.target.value) {
@@ -130,7 +128,7 @@ const TokenInput = () => {
           refSkipSync.current = true
           setValue(e.target.value)
           return setPlancks(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -139,13 +137,14 @@ const TokenInput = () => {
       setValue(e.target.value)
       return setPlancks(null)
     },
-    [setPlancks, token],
+    [setPlancks, token]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -164,10 +163,10 @@ const TokenInput = () => {
         inputMode="decimal"
         value={value}
         placeholder="0"
-        className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
+        className={"peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-body text-xl"}
         onChange={handleChange}
       />
-      <div className="text-body flex shrink-0 items-center gap-2 text-base font-normal">
+      <div className="flex shrink-0 items-center gap-2 font-normal text-base text-body">
         <TokenLogo className="text-lg" tokenId={token?.id} />
         <div>{token?.symbol}</div>
       </div>
@@ -205,7 +204,7 @@ const FiatInput = () => {
           refSkipSync.current = true
           setValue(e.target.value)
           return setPlancks(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -215,13 +214,14 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [currency, setPlancks, token, tokenRates],
+    [currency, setPlancks, token, tokenRates]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -244,7 +244,7 @@ const FiatInput = () => {
         type="text"
         value={value}
         placeholder={"0.00"}
-        className="text-body peer inline-block min-w-0 bg-transparent text-xl"
+        className="peer inline-block min-w-0 bg-transparent text-body text-xl"
         onChange={handleChange}
       />
       {/* {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>} */}
@@ -275,7 +275,7 @@ export const AmountEdit = () => {
       {!!token && (
         <>
           <div className="h-16">{/* mirrors the height of error message reserved space */}</div>
-          <div className="flex flex-col text-xl font-bold">
+          <div className="flex flex-col font-bold text-xl">
             {displayMode === "token" ? <TokenInput /> : <FiatInput />}
           </div>
           <div className={classNames("flex max-w-full items-center justify-center gap-4")}>
@@ -285,7 +285,7 @@ export const AmountEdit = () => {
                 <PillButton
                   onClick={toggleDisplayMode}
                   size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+                  className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -295,13 +295,13 @@ export const AmountEdit = () => {
               onClick={onSetMaxClick}
               disabled={!maxPlancks}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+              className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
             >
               {t("Max")}
             </PillButton>
           </div>
           <div className="h-16">
-            <div className="text-brand-orange line-clamp-2 text-center text-xs">
+            <div className="line-clamp-2 text-center text-brand-orange text-xs">
               {inputErrorMessage}
             </div>
           </div>
@@ -321,7 +321,7 @@ const StakeAprBase: FC<{
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
   if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+    return <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">15.00%</div>
 
   if (isError) {
     if (error?.message === STAKING_APR_UNAVAILABLE) return t("APR Unavailable")
@@ -414,12 +414,12 @@ export const BondForm = () => {
       setAddress(address)
       accountPicker.close()
     },
-    [accountPicker, setAddress],
+    [accountPicker, setAddress]
   )
 
   return (
-    <div className="text-body-secondary flex size-full flex-col gap-4">
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
+    <div className="flex size-full flex-col gap-4 text-body-secondary">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Asset")}</div>
           <div className="overflow-hidden">
@@ -436,16 +436,16 @@ export const BondForm = () => {
         </div>
       </div>
       <AmountEdit />
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">{t("Available Balance")}</div>
           <div>{!!token && !!account && <AvailableBalance token={token} account={account} />}</div>
         </div>
       </div>
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-6 rounded p-4 text-xs">
+      <div className="flex flex-col gap-6 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Pool")}</div>
-          <div className="text-body truncate">
+          <div className="truncate text-body">
             <NominationPoolName poolId={poolId} chainId={token?.networkId} />
           </div>
         </div>
@@ -467,7 +467,7 @@ export const BondForm = () => {
         </div>
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Unbonding Period")}</div>
-          <div className="text-body overflow-hidden">
+          <div className="overflow-hidden text-body">
             <StakingUnbondingPeriod chainId={token?.networkId} />
           </div>
         </div>

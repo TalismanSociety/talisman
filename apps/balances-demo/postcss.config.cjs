@@ -1,5 +1,3 @@
-/* eslint-env es2021 */
-
 /** @type {import('postcss-load-config').Config} */
 const config = {
   plugins: [

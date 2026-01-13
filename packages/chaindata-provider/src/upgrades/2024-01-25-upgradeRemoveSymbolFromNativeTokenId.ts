@@ -1,8 +1,8 @@
-import { Transaction } from "dexie"
+import type { Transaction } from "dexie"
 
-import { Token, TokenId } from "../chaindata"
-import { LegacyChain, LegacyChainId } from "../legacy/Chain"
-import { LegacyEvmNetwork, LegacyEvmNetworkId } from "../legacy/EvmNetwork"
+import type { Token, TokenId } from "../chaindata"
+import type { LegacyChain, LegacyChainId } from "../legacy/Chain"
+import type { LegacyEvmNetwork, LegacyEvmNetworkId } from "../legacy/EvmNetwork"
 
 const legacySubNativeTokenId = (chainId: LegacyChainId) =>
   `${chainId}-substrate-native`.toLowerCase().replace(/ /g, "-")
@@ -17,7 +17,7 @@ export const upgradeRemoveSymbolFromNativeTokenId = async (tx: Transaction) => {
   const evmNetworksTable = tx.table<LegacyEvmNetwork, LegacyEvmNetworkId>("evmNetworks")
 
   const nativeTokens = (await tokensTable.toArray()).filter((t) =>
-    ["substrate-native", "evm-native"].includes(t.type),
+    ["substrate-native", "evm-native"].includes(t.type)
   )
   const chains = await chainsTable.toArray()
   const evmNetworks = await evmNetworksTable.toArray()

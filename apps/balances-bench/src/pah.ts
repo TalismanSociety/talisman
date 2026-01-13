@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { webcrypto } from "crypto"
+import { webcrypto } from "node:crypto"
 
 import { log } from "extension-shared"
 

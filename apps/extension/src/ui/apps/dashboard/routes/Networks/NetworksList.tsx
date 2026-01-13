@@ -1,14 +1,7 @@
-import { isNetworkCustom, Network } from "@talismn/chaindata-provider"
+import { isNetworkCustom, type Network } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
-import { startCase } from "lodash-es"
-import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
-
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
@@ -20,10 +13,16 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
+import { type ActiveNetworks, activeNetworksStore, isNetworkActive } from "extension-core"
+import { startCase } from "lodash-es"
+import { type ChangeEventHandler, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button, ListButton, Modal, ModalDialog, Radio, Toggle, useOpenClose } from "talisman-ui"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { CustomPill, TestnetPill } from "./Pills"
-import { PlatformOption } from "./usePlatformOptions"
+import type { PlatformOption } from "./usePlatformOptions"
 
 export const NetworksList: FC<{
   activeOnly: boolean
@@ -59,6 +58,7 @@ export const NetworksList: FC<{
     })
   }, [networks, recommendedNetworks])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment below
   useEffect(() => {
     const lowerSearch = search?.toLowerCase().trim() ?? ""
 
@@ -99,7 +99,6 @@ export const NetworksList: FC<{
     setDisplayedNetworks(ordered)
 
     // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeOnly, allSortedNetworks, platform, search])
 
   const ocResetAllModal = useOpenClose()
@@ -107,7 +106,7 @@ export const NetworksList: FC<{
 
   if (!displayedNetworks.length)
     return (
-      <div className="text-body-secondary bg-grey-850 rounded-sm p-12 text-center">
+      <div className="rounded-sm bg-grey-850 p-12 text-center text-body-secondary">
         {t("No networks found")}
       </div>
     )
@@ -118,15 +117,15 @@ export const NetworksList: FC<{
         <button
           type="button"
           onClick={() => ocResetAllModal.open()}
-          className="text-body-disabled hover:text-body-secondary text-xs"
+          className="text-body-disabled text-xs hover:text-body-secondary"
         >
           {t("Reset")}
         </button>
-        <div className="bg-body-disabled h-6 w-0.5"></div>
+        <div className="h-6 w-0.5 bg-body-disabled"></div>
         <button
           type="button"
           onClick={() => ocDeactivateAllModal.open()}
-          className="text-body-disabled hover:text-body-secondary text-xs"
+          className="text-body-disabled text-xs hover:text-body-secondary"
         >
           {t("Deactivate all")}
         </button>
@@ -169,7 +168,7 @@ const VirtualizedRows: FC<{
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 w-full"
+            className="absolute top-0 left-0 w-full"
             style={{
               height: `${item.size}px`,
               transform: `translateY(${item.start}px)`,
@@ -189,7 +188,7 @@ const NetworkRow: FC<{
 }> = ({ network, activeNetworksState }) => {
   const isActive = useMemo(
     () => isNetworkActive(network, activeNetworksState),
-    [activeNetworksState, network],
+    [activeNetworksState, network]
   )
 
   const navigate = useNavigate()
@@ -209,28 +208,28 @@ const NetworkRow: FC<{
     (e) => {
       activeNetworksStore.setActive(network.id, e.target.checked)
     },
-    [network.id],
+    [network.id]
   )
 
   return (
     <div className="relative h-28" data-testid="network-list-row">
       <ListButton key={network.id} role="button" onClick={handleNetworkClick}>
         <NetworkLogo className="rounded-full text-xl" networkId={network.id} />
-        <div className="text-body flex flex-col justify-center gap-1 overflow-hidden">
+        <div className="flex flex-col justify-center gap-1 overflow-hidden text-body">
           <div className="truncate">
             <NetworkName networkId={network.id} />
           </div>
-          <div className="text-body-inactive truncate text-xs">
+          <div className="truncate text-body-inactive text-xs">
             <NetworkType networkId={network.id} />
           </div>
         </div>
         {network.isTestnet && <TestnetPill />}
         {isNetworkCustom(network) && <CustomPill />}
         <div className="min-w-[4.4rem] shrink-0 grow"></div>
-        <ChevronRightIcon className="transition-noneshrink-0 text-lg" />
+        <ChevronRightIcon className="text-lg transition-noneshrink-0" />
       </ListButton>
       <Toggle
-        className="absolute right-20 top-4 p-4"
+        className="absolute top-4 right-20 p-4"
         checked={!!isActive}
         onChange={handleEnableChanged}
       />
@@ -263,12 +262,12 @@ const ResetAllNetworksModalContent: FC<{
       }
       onClose={onClose}
     >
-      <p className="text-body-secondary mb-8 text-sm">
+      <p className="mb-8 text-body-secondary text-sm">
         {platform === "all"
           ? t("This will reset active state of all networks to their Talisman defaults.")
           : t(
               "This will reset active state of all {{platform}} networks to their Talisman defaults.",
-              { platform },
+              { platform }
             )}
       </p>
 
@@ -330,21 +329,21 @@ const DeactivateNetworksModalContent: FC<{
       }
       onClose={onClose}
     >
-      <p className="text-body-secondary mb-8 text-sm">
+      <p className="mb-8 text-body-secondary text-sm">
         {t("It is recommended to deactivate unused networks to improve Talisman performance.")}
       </p>
-      <div className="bg-grey-800 text-body-secondary flex h-28 w-full items-center gap-6 rounded-sm px-8 text-sm">
+      <div className="flex h-28 w-full items-center gap-6 rounded-sm bg-grey-800 px-8 text-body-secondary text-sm">
         {isBalancesInitializing ? (
           <>
-            <LoaderIcon className="text-md shrink-0 animate-spin" />
+            <LoaderIcon className="shrink-0 animate-spin text-md" />
             <div className="grow">
               {t("Scanning networks - found {{count}} unused", { count: unusedNetworkIds.length })}
             </div>
           </>
         ) : (
           <>
-            <InfoIcon className="text-md shrink-0" />
-            <div className="text-body-secondary grow">
+            <InfoIcon className="shrink-0 text-md" />
+            <div className="grow text-body-secondary">
               {t("Found {{count}} network(s) without token balances", {
                 count: unusedNetworkIds.length,
               })}
@@ -352,7 +351,7 @@ const DeactivateNetworksModalContent: FC<{
           </>
         )}
       </div>
-      <div className="text-body-secondary flex flex-col items-start py-8 text-sm">
+      <div className="flex flex-col items-start py-8 text-body-secondary text-sm">
         <Radio
           name="deactivateMode"
           label={

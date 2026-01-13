@@ -1,25 +1,6 @@
-import type { PrimitiveAtom } from "jotai"
-import type { Chain as ViemChain } from "viem/chains"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import BigNumber from "bignumber.js"
-import {
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-} from "extension-core"
-import { TFunction } from "i18next"
-import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
-import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
-import { useCallback, useEffect, useMemo } from "react"
-import { encodeFunctionData, erc20Abi, isAddress, publicActions } from "viem"
-
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import {
   getNetworks$,
@@ -30,6 +11,24 @@ import {
   useTokensMap,
 } from "@ui/state"
 import { t$ } from "@ui/state/i18n"
+import BigNumber from "bignumber.js"
+import {
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+  isAddressCompatibleWithNetwork,
+  remoteConfigStore,
+} from "extension-core"
+import type { TFunction } from "i18next"
+import type { PrimitiveAtom } from "jotai"
+import { type Atom, atom, type Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
+import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import { useCallback, useEffect, useMemo } from "react"
+import { encodeFunctionData, erc20Abi, isAddress, publicActions } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 
 import type {
   BaseQuote,
@@ -43,9 +42,9 @@ import {
   fromEvmAddressAtom,
   fromSubstrateAddressAtom,
   quoteSortingAtom,
+  type SwappableAssetWithDecimals,
   selectedProtocolAtom,
   selectedSubProtocolAtom,
-  SwappableAssetWithDecimals,
   swapQuoteRefresherAtom,
   toAssetAtom,
   toBtcAddressAtom,
@@ -76,10 +75,10 @@ const tAtom = atomWithObservable(() => t$)
 const getAssetsByChainId = async (
   get: Getter,
   allAssetsSelector: Atom<
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     Promise<SwappableAssetBaseType<Partial<Record<SupportedSwapProtocol, any>>>[]>
   >[],
-  signal: AbortSignal,
+  signal: AbortSignal
 ) => {
   const withRetry = async <T>(fn: () => Promise<T>, retries = 3): Promise<T | never[]> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -91,7 +90,7 @@ const getAssetsByChainId = async (
         if (signal.aborted) return []
 
         if (attempt === retries) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn(`assetsSelectorAtom failed ${retries} times, ignoring`, cause)
           return []
         }
@@ -110,7 +109,7 @@ const getAssetsByChainId = async (
     await Promise.all(
       allAssetsSelector.map((assetSelectorAtom) => {
         return withRetry(() => get(assetSelectorAtom))
-      }),
+      })
     )
   ).flat()
 
@@ -136,14 +135,14 @@ const getAssetsByChainId = async (
       acc[cur.chainId.toString()] = assets
       return acc
     },
-    {} as Record<string, Record<string, SwappableAssetWithDecimals>>,
+    {} as Record<string, Record<string, SwappableAssetWithDecimals>>
   )
 }
 
 const getCoingeckoCategoryTokens = async (
   get: Getter,
   categoryId: string,
-  tokens: SwappableAssetWithDecimals[],
+  tokens: SwappableAssetWithDecimals[]
 ): Promise<SwappableAssetWithDecimals[]> => {
   const platforms = await get(coingeckoAssetPlatformsAtom)
   const coinsList = await get(coingeckoListAtom)
@@ -153,9 +152,9 @@ const getCoingeckoCategoryTokens = async (
     image?: string
   }[]
   return coins
-    .map((c) => {
+    .flatMap((c) => {
       const coinPlatforms = Object.entries(
-        coinsList.find((coin) => coin.id === c.id)?.platforms ?? {},
+        coinsList.find((coin) => coin.id === c.id)?.platforms ?? {}
       )
       if (coinPlatforms.length === 0) {
         const token = tokens.find((t) => t.symbol.toLowerCase() === c.symbol.toLowerCase())
@@ -168,13 +167,12 @@ const getCoingeckoCategoryTokens = async (
         const token = tokens.find(
           (t) =>
             (t.networkType === "evm" ? +t.chainId : t.chainId) === platform?.chain_identifier &&
-            t.contractAddress?.toLowerCase() === address.toLowerCase(),
+            t.contractAddress?.toLowerCase() === address.toLowerCase()
         )
         if (token && !token.image && c.image) token.image = c.image
         return token
       })
     })
-    .flat()
     .filter((c) => !!c)
 }
 
@@ -271,11 +269,11 @@ export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
 
     const response = await fetch(
       `${apiUrl}/api/v3/coins/markets?vs_currency=usd&category=${category}&include_platform=true`,
-      { headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {} },
+      { headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {} }
     )
 
     return await response.json()
-  }),
+  })
 )
 
 const uniswapSafeTokensSet = atom(async () => {
@@ -326,7 +324,7 @@ const coingeckoCoinByAddressAtom = atomFamily((addressPlatform: string) =>
         thumb: string
       }
     }
-  }),
+  })
 )
 
 export const swapFromSearchAtom = atom<string>("")
@@ -338,7 +336,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
     if (!address || !chainIdString) return null
     const chainId = +chainIdString
     const isValidAddress = isAddress(address)
-    if (!isValidAddress || isNaN(chainId)) return null
+    if (!isValidAddress || Number.isNaN(chainId)) return null
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find((c) => c?.id === chainId)
     if (!chain) return null
@@ -391,13 +389,13 @@ const erc20Atom = atomFamily((addressChainId: string) =>
       contractAddress: address,
       image: coingeckoData?.image?.small,
     }
-  }),
+  })
 )
 
 const filterAndSortTokens = async (
   get: Getter,
   tokens: SwappableAssetWithDecimals[],
-  search: string,
+  search: string
 ): Promise<SwappableAssetWithDecimals[]> => {
   if (search.trim().length > 0) {
     const isSearchingAddress = isAddress(search)
@@ -406,7 +404,7 @@ const filterAndSortTokens = async (
       (t) =>
         t.symbol.toLowerCase().startsWith(searchLoweredCase) ||
         t.name.toLowerCase().startsWith(searchLoweredCase) ||
-        (isSearchingAddress && t.contractAddress?.startsWith(searchLoweredCase)),
+        (isSearchingAddress && t.contractAddress?.startsWith(searchLoweredCase))
     )
 
     if (isSearchingAddress && knownFilteredTokens.length === 0) {
@@ -423,7 +421,7 @@ const filterAndSortTokens = async (
           allEvmChains.zkSync,
         ]
           .flatMap((chain) => (chain ? chain : []))
-          .map((chain: ViemChain) => get(erc20Atom(`${search}:${chain?.id}`))),
+          .map((chain: ViemChain) => get(erc20Atom(`${search}:${chain?.id}`)))
       )
       return allOnChainTokens.filter((t) => t !== null)
     }
@@ -475,7 +473,7 @@ const filterAndSortTokens = async (
     filteredSortedTokens = await getCoingeckoCategoryTokens(
       get,
       coingeckoCategoryId,
-      filteredSortedTokens,
+      filteredSortedTokens
     )
 
   return filteredSortedTokens
@@ -492,13 +490,11 @@ export const fromAssetsAtom = atom(async (get, { signal }) => {
   const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
   const search = get(swapFromSearchAtom)
 
-  const tokens = Object.values(assetsByChains)
-    .map((tokens) =>
-      Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),
-      ),
+  const tokens = Object.values(assetsByChains).flatMap((tokens) =>
+    Object.values(tokens).sort((a, b) =>
+      a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
     )
-    .flat()
+  )
 
   const filteredTokens = await filterAndSortTokens(get, tokens, search)
   // from assets should not include btc
@@ -515,13 +511,11 @@ export const toAssetsAtom = atom(async (get, { signal }) => {
     .map((module) => module.toAssetsSelector)
 
   const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
-  const tokens = Object.values(assetsByChains)
-    .map((tokens) =>
-      Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),
-      ),
+  const tokens = Object.values(assetsByChains).flatMap((tokens) =>
+    Object.values(tokens).sort((a, b) =>
+      a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
     )
-    .flat()
+  )
 
   return await filterAndSortTokens(get, tokens, search)
 })
@@ -532,7 +526,7 @@ export const swapQuotesAtom = loadable(
     const toAsset = get(toAssetAtom)
     const allQuoters = swapModules
       .filter((m) =>
-        fromAsset && toAsset ? toAsset.context[m.protocol] && fromAsset.context[m.protocol] : true,
+        fromAsset && toAsset ? toAsset.context[m.protocol] && fromAsset.context[m.protocol] : true
       )
       .map((module) => module.quote)
     const fromAmount = get(fromAmountAtom)
@@ -546,8 +540,7 @@ export const swapQuotesAtom = loadable(
 
     const allQuotes = allQuoters
       .map(get)
-      .map((q) => (q.state === "hasData" ? (Array.isArray(q.data) ? q.data.flat() : q) : q))
-      .flat()
+      .flatMap((q) => (q.state === "hasData" ? (Array.isArray(q.data) ? q.data.flat() : q) : q))
 
     // map each, if loaded, return only if output > 0
     return allQuotes.filter((q) => {
@@ -555,7 +548,7 @@ export const swapQuotesAtom = loadable(
       if (!q.data || Array.isArray(q.data)) return false
       return q.data.outputAmountBN > 0n
     }) as Loadable<Promise<BaseQuote | null>>[] | null
-  }),
+  })
 )
 
 export const sortedQuotesAtom = atom(async (get) => {
@@ -610,7 +603,7 @@ export const selectedQuoteAtom = atom(async (get) => {
         q.quote.state === "hasData" &&
         q.quote.data &&
         q.quote.data.protocol === selectedProtocol &&
-        (q.quote.data.subProtocol ? q.quote.data.subProtocol === subProtocol : true),
+        (q.quote.data.subProtocol ? q.quote.data.subProtocol === subProtocol : true)
     ) ?? quotes[0]
   if (!quote) return null
 
@@ -638,14 +631,14 @@ export const approvalAtom = atom(async (get) => {
   if (!approval) return null
 
   const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-    (c) => c?.id === approval.chainId,
+    (c) => c?.id === approval.chainId
   )
   // chain unsupported
   if (!chain) return null
 
   const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
   const network = evmNetworks.find(
-    (network) => network.id.toString() === approval.chainId.toString(),
+    (network) => network.id.toString() === approval.chainId.toString()
   )
   if (!network) return null
 
@@ -729,14 +722,14 @@ export const useFromAccount = () => {
 
   const fromEvmAccount = useMemo(
     () => ethAccounts.find((a) => a.address.toLowerCase() === fromEvmAddress?.toLowerCase()),
-    [ethAccounts, fromEvmAddress],
+    [ethAccounts, fromEvmAddress]
   )
   const fromSubstrateAccount = useMemo(
     () =>
       substrateAccounts.find(
-        (a) => a.address.toLowerCase() === fromSubstrateAddress?.toLowerCase(),
+        (a) => a.address.toLowerCase() === fromSubstrateAddress?.toLowerCase()
       ),
-    [fromSubstrateAddress, substrateAccounts],
+    [fromSubstrateAddress, substrateAccounts]
   )
 
   // pick first account from keyring if no account is set
@@ -778,7 +771,7 @@ export const useSetToAddress = () => {
       fromAddress
         ? allAccounts.find((account) => isAddressEqual(account.address, fromAddress))
         : null,
-    [allAccounts, fromAddress],
+    [allAccounts, fromAddress]
   )
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
 
@@ -797,9 +790,11 @@ export const useSetToAddress = () => {
 
         // fromAddress isn't evm, set toAddress to null
         if (!isAccountPlatformEthereum(fromAccount))
+          // biome-ignore lint/complexity/noCommaOperator: legacy
           return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
 
         // fromAddress is evm, set toAddress to fromAddress
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(fromAddress), setToSubstrateAddress(null), setToBtcAddress(null)
       case "substrate":
         // toAddress is already substrate, don't change anything (if it's still compatible with this network)
@@ -815,21 +810,25 @@ export const useSetToAddress = () => {
           !isAccountPlatformPolkadot(fromAccount) ||
           (toNetwork && !isAccountCompatibleWithNetwork(toNetwork, fromAccount))
         )
+          // biome-ignore lint/complexity/noCommaOperator: legacy
           return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
 
         // fromAddress is substrate, set toAddress to fromAddress
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(fromAddress), setToBtcAddress(null)
       case "btc":
         // toAddress is already btc, don't change anything
         if (toBtcAddress) return
 
         // fromAddress is never btc, always set toAddress to null
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       default:
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error(
-          `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`,
+          `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`
         )
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     }
   }, [
@@ -861,7 +860,7 @@ export const useSwapErc20Approval = () => {
   const approval = useAtomValue(loadable(approvalAtom))
   const approvalData = useMemo(
     () => (approval.state === "hasData" && approval.data) || null,
-    [approval],
+    [approval]
   )
   const approveTxLoadable = useAtomValue(loadable(erc20ApprovalTxAtom))
 

@@ -31,9 +31,16 @@ yarn-error.log*
 # turbo
 .turbo
 
+# typescript
+*.tsbuildinfo
+
+# tsup temp files
+tsup.config.bundled_*
+
 # extension
 dist
 review
+.wxt
 
 # Playwright
 /test-results/
@@ -43,3 +50,5 @@ review
 
 # tmp folder for translations extraction
 .i18next-parser/
+
+/.verify-build/

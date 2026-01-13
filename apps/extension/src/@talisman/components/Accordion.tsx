@@ -1,8 +1,16 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { motion, TargetAndTransition, Transition } from "framer-motion"
+import { motion, type TargetAndTransition, type Transition } from "framer-motion"
 import throttle from "lodash-es/throttle"
-import { CSSProperties, FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import {
+  type CSSProperties,
+  type FC,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
 
@@ -17,7 +25,7 @@ export const AccordionIcon: FC<{ isOpen: boolean; className?: string }> = ({
     className={classNames(
       "transition-transform duration-300 ease-in-out",
       isOpen ? "rotate-0" : "rotate-[-90deg]",
-      className,
+      className
     )}
   >
     <ChevronDownIcon />
@@ -44,7 +52,7 @@ export const Accordion: FC<{
         if (container.scrollHeight !== contentHeight) setContentHeight(container.scrollHeight)
       },
       50,
-      { trailing: true },
+      { trailing: true }
     ) // prevent multiple re-renders in case of batch
 
     const observer = new MutationObserver(updateContentHeight)
@@ -57,13 +65,13 @@ export const Accordion: FC<{
       observer.disconnect()
       container.removeEventListener("resize", updateContentHeight)
     }
-  }, [shouldRender, contentHeight])
+  }, [contentHeight])
 
   const style: CSSProperties = useMemo(
     () => ({
       height: contentHeight,
     }),
-    [contentHeight],
+    [contentHeight]
   )
 
   const animate: TargetAndTransition = useMemo(
@@ -72,7 +80,7 @@ export const Accordion: FC<{
 
       transitionEnd: { height: isOpen ? "auto" : 0 },
     }),
-    [contentHeight, isOpen],
+    [contentHeight, isOpen]
   )
 
   useEffect(() => {

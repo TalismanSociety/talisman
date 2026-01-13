@@ -1,7 +1,6 @@
-import { DefiPosition } from "extension-core"
-import { FC, useMemo } from "react"
-
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
+import type { DefiPosition } from "extension-core"
+import { type FC, useMemo } from "react"
 
 export const PositionTotal: FC<{ position: DefiPosition; noCountUp?: boolean }> = ({
   position,
@@ -9,7 +8,7 @@ export const PositionTotal: FC<{ position: DefiPosition; noCountUp?: boolean }> 
 }) => {
   const totalValue = useMemo(
     () => position.breakdown.reduce((acc, item) => acc + item.valueUsd, 0),
-    [position.breakdown],
+    [position.breakdown]
   )
 
   return <FiatFromUsd amount={totalValue} isBalance noCountUp={noCountUp} />

@@ -1,7 +1,6 @@
-import { classNames } from "@talismn/util"
-import { ReactNode } from "react"
-
 import { HandMonoLogo } from "@talisman/theme/logos"
+import { classNames } from "@talismn/util"
+import type { ReactNode } from "react"
 
 import { FadeIn } from "./FadeIn"
 
@@ -15,14 +14,14 @@ export const FullScreenLocked = ({ className, title, subtitle }: Props) => (
   <FadeIn className="flex h-screen w-screen flex-col items-center justify-center">
     <section
       className={classNames(
-        "text-body-secondary flex select-none flex-col items-center",
-        className,
+        "flex select-none flex-col items-center text-body-secondary",
+        className
       )}
     >
       <div className="relative">
         <HandMonoLogo className={classNames("mb-8 block text-[12rem] text-white")} />
       </div>
-      {title && <h1 className="text-md text-grey-300 mb-2 font-bold">{title}</h1>}
+      {title && <h1 className="mb-2 font-bold text-grey-300 text-md">{title}</h1>}
       {subtitle && <h2 className="text-xs">{subtitle}</h2>}
     </section>
   </FadeIn>

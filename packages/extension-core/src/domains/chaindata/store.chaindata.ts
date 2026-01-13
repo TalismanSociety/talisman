@@ -1,7 +1,7 @@
-import { ChaindataStorage } from "@talismn/chaindata-provider"
+import type { ChaindataStorage } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, Observable } from "rxjs"
+import { debounceTime, distinctUntilChanged, type Observable } from "rxjs"
 
 import { getBlobStore } from "../../db"
 
@@ -20,7 +20,7 @@ export const streamChaindataStorageChangesToDisk = (storage$: Observable<Chainda
   // persist store to db on changes
   storage$.pipe(debounceTime(2_000), distinctUntilChanged(isEqual)).subscribe((storage) => {
     log.debug(
-      `[chaindata] updating db blob with data (networks:${storage.networks.length}, tokens:${storage.tokens.length}, meta:${storage.miniMetadatas.length})`,
+      `[chaindata] updating db blob with data (networks:${storage.networks.length}, tokens:${storage.tokens.length}, meta:${storage.miniMetadatas.length})`
     )
     blobStore.set(storage)
   })

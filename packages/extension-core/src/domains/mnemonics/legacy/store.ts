@@ -1,10 +1,10 @@
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../../libs/Store"
-import { decryptLegacyMnemonicObject, LegacySeedObj } from "./helpers"
+import { decryptLegacyMnemonicObject, type LegacySeedObj } from "./helpers"
 
 const storageKey = "nursery"
 
@@ -26,7 +26,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   public async add(
     seed: string,
     password: string,
-    confirmed = false,
+    confirmed = false
   ): Promise<Result<boolean, "Seed already exists in SeedPhraseStore">> {
     const storedCipher = await this.get("cipher")
     if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
@@ -42,7 +42,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
   }
 
   public async getSeed(
-    password: string,
+    password: string
   ): Promise<
     Result<string | undefined, "Incorrect password" | "Unable to decrypt seed" | "No seed present">
   > {
@@ -51,7 +51,7 @@ export class SeedPhraseStore extends StorageProvider<SeedPhraseData> {
     if (!cipher) return Ok(undefined)
 
     try {
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
       var decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
     } catch (e) {
       log.error(e)

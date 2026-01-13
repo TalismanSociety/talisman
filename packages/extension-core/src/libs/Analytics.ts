@@ -1,7 +1,7 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { analyticsStore } from "../domains/analytics/store"
-import { PostHogCaptureProperties } from "../domains/analytics/types"
+import type { PostHogCaptureProperties } from "../domains/analytics/types"
 import { settingsStore } from "../domains/app/store.settings"
 import { withGeneralReport } from "./GeneralReport"
 
@@ -21,14 +21,15 @@ class TalismanAnalytics {
       await analyticsStore.capture(eventName, captureProperties)
     } catch (cause) {
       const error = new Error("Failed to capture posthog event", { cause })
-      DEBUG && console.error(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      DEBUG && console.error(error)
     }
   }
 
   async captureDelayed(
     eventName: string,
     properties?: PostHogCaptureProperties,
-    delaySeconds = 900,
+    delaySeconds = 900
   ) {
     analyticsStore.captureDelayed(eventName, properties, delaySeconds)
   }

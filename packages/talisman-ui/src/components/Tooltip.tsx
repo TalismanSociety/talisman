@@ -1,8 +1,8 @@
 import type { Placement } from "@floating-ui/react"
 import {
   autoUpdate,
-  flip,
   FloatingPortal,
+  flip,
   offset,
   shift,
   useDismiss,
@@ -17,9 +17,9 @@ import {
   cloneElement,
   createContext,
   forwardRef,
-  HTMLProps,
+  type HTMLProps,
   isValidElement,
-  ReactNode,
+  type ReactNode,
   useContext,
   useMemo,
   useState,
@@ -91,7 +91,7 @@ export function useTooltip({
       ...interactions,
       ...data,
     }),
-    [open, setOpen, interactions, data],
+    [open, setOpen, interactions, data]
   )
 }
 
@@ -121,7 +121,7 @@ export const TooltipTrigger = forwardRef<
   HTMLProps<HTMLElement> & { asChild?: boolean }
 >(function TooltipTrigger({ children, asChild = false, ...props }, propRef) {
   const context = useTooltipContext()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const childrenRef = (children as any).ref
   const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 
@@ -134,7 +134,7 @@ export const TooltipTrigger = forwardRef<
         ...props,
         ...children.props,
         "data-state": context.open ? "open" : "closed",
-      }),
+      })
     )
   }
 
@@ -143,7 +143,7 @@ export const TooltipTrigger = forwardRef<
       ref={ref}
       // The user can style the trigger based on the state
       data-state={context.open ? "open" : "closed"}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       {...context.getReferenceProps({ ...props, crossOrigin: props.crossOrigin as any })}
     >
       {children}
@@ -157,7 +157,7 @@ export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
       className = "rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow",
       ...props
     },
-    propRef,
+    propRef
   ) {
     const context = useTooltipContext()
     const ref = useMergeRefs([context.refs.setFloating, propRef])
@@ -175,11 +175,11 @@ export const TooltipContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
               visibility: context.x == null ? "hidden" : "visible",
               ...props.style,
             }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             {...context.getFloatingProps({ ...props, crossOrigin: props.crossOrigin as any })}
           />
         )}
       </FloatingPortal>
     )
-  },
+  }
 )

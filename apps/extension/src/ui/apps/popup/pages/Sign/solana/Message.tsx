@@ -1,10 +1,5 @@
-import { base58 } from "@talismn/crypto"
-import { isAccountOfType, SolSigningRequest } from "extension-core"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
+import { base58 } from "@talismn/crypto"
 import { api } from "@ui/api"
 import {
   PopupContent,
@@ -15,8 +10,12 @@ import {
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
-import { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
+import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { isAccountOfType, type SolSigningRequest } from "extension-core"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 export const SolSignMessageRequest: FC<{
   request: SolSigningRequest
@@ -55,7 +54,7 @@ export const SolSignMessageRequest: FC<{
       address: account.address,
       message: Buffer.from(base58.decode(message)),
     }),
-    [account, message],
+    [account, message]
   )
 
   const handleReject = async () => {
@@ -81,8 +80,8 @@ export const SolSignMessageRequest: FC<{
         <AppPill url={url} />
       </PopupHeader>
       <PopupContent>
-        <div className="text-body-secondary flex h-full w-full flex-col items-center text-center">
-          <h1 className="text-body text-md my-12 font-bold leading-9">{t("Sign Request")}</h1>
+        <div className="flex h-full w-full flex-col items-center text-center text-body-secondary">
+          <h1 className="my-12 font-bold text-body text-md leading-9">{t("Sign Request")}</h1>
           <h2 className="mb-8 text-base leading-[3.2rem]">
             {t("You are signing a message with account")} <AccountPill account={account} />
           </h2>

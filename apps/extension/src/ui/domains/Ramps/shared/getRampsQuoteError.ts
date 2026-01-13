@@ -1,6 +1,6 @@
 import { t } from "i18next"
 
-import { RampsQuoteError } from "./types"
+import type { RampsQuoteError } from "./types"
 
 export const getRampsQuoteError = (description?: string): RampsQuoteError => ({
   type: "error",

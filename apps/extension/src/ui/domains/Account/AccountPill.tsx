@@ -1,9 +1,8 @@
 import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-
 import { copyAddress } from "@ui/util/copyAddress"
+import type { Account } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
 
 import { FormattedAddress } from "./FormattedAddress"
 
@@ -19,7 +18,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, classNa
       !!account && ss58Format !== undefined
         ? encodeAnyAddress(account.address, { ss58Format })
         : account?.address,
-    [account, ss58Format],
+    [account, ss58Format]
   )
 
   const handleClick = useCallback(() => {
@@ -33,8 +32,8 @@ export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, classNa
       type="button"
       onClick={handleClick}
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 text-body inline-block max-w-full rounded-3xl px-4",
-        className,
+        "inline-block max-w-full rounded-3xl bg-grey-850 px-4 text-body hover:bg-grey-800",
+        className
       )}
     >
       <FormattedAddress address={encodedAddress} />

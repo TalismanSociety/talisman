@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useRef, useState } from "react"
+import { type FC, useCallback, useEffect, useRef, useState } from "react"
 
 export type UnsafeImageProps = React.DetailedHTMLProps<
   React.ImgHTMLAttributes<HTMLImageElement>,
@@ -15,6 +15,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isError, setIsError] = useState(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // reset if src changes
     setIsError(false)
@@ -26,7 +27,8 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(true)
       props.onLoadStart?.(e)
     },
-    [isError, props],
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
+    [isError, props]
   )
 
   const handleLoad: React.ReactEventHandler<HTMLImageElement> = useCallback(
@@ -34,7 +36,8 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsLoading(false)
       props.onLoad?.(e)
     },
-    [props],
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
+    [props]
   )
   const handleError: React.ReactEventHandler<HTMLImageElement> = useCallback(
     (e) => {
@@ -42,7 +45,8 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       setIsError(true)
       props.onError?.(e)
     },
-    [props],
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
+    [props]
   )
 
   return (
@@ -53,11 +57,10 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
       className={classNames(
         props.className,
         "indent-[-999em] leading-[0]",
-        isLoading && "animate-pulse",
+        isLoading && "animate-pulse"
       )}
       loading="lazy"
       crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
-      // eslint-disable-next-line react/no-unknown-property
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}

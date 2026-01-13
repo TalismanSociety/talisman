@@ -1,9 +1,9 @@
 import type { MetadataDef as PjsMetadataDef } from "@polkadot/extension-inject/types"
 import type { HexString } from "@polkadot/util/types"
+import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import type { DotNetworkId } from "@talismn/chaindata-provider"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 
-import { WalletTransactionInfo } from "../transactions"
+import type { WalletTransactionInfo } from "../transactions"
 
 export interface TalismanMetadataDef extends PjsMetadataDef {
   metadataRpc?: `0x${string}`

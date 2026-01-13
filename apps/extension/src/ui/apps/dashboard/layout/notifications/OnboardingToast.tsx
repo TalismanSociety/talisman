@@ -1,10 +1,9 @@
+import { notifyCustom } from "@talisman/components/Notifications"
 import { ExtensionButtonIcon, PinIcon } from "@talismn/icons"
 import { IS_FIREFOX } from "extension-shared"
 import { useEffect, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-
-import { notifyCustom } from "@talisman/components/Notifications"
 
 // without this singleton, if the full page loader appears the hook and associated notification may trigger twice
 const CACHE = {
@@ -38,7 +37,7 @@ export const OnboardingToast = () => {
         </div>
       </div>
     ),
-    [t],
+    [t]
   )
 
   useEffect(() => {

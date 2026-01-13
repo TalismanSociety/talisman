@@ -1,9 +1,8 @@
-import { useCallback, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
-
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useCallback, useMemo } from "react"
+import { useSearchParams } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -22,7 +21,7 @@ export const SendFundsSubmitted = () => {
       (searchParams.get("txId") as string) ?? undefined,
       (searchParams.get("networkId") as string) ?? undefined,
     ],
-    [searchParams],
+    [searchParams]
   )
 
   const handleClose = useCallback(() => {

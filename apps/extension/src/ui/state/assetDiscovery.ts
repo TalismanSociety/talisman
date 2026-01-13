@@ -10,13 +10,13 @@ import { getTokensMap$ } from "./chaindata"
 // debounced to prevent hammering coingecko api
 const assetDiscoveryBalances$ = from(liveQuery(() => db.assetDiscovery.toArray())).pipe(
   throttleTime(500, undefined, { leading: true, trailing: true }),
-  shareReplay(1),
+  shareReplay(1)
 )
 
 export const [useAssetDiscoveryScan, assetDiscoveryScan$] = bind(
   assetDiscoveryStore.observable.pipe(
-    throttleTime(100, undefined, { leading: true, trailing: true }),
-  ),
+    throttleTime(100, undefined, { leading: true, trailing: true })
+  )
 )
 
 export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind(
@@ -39,7 +39,7 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
       const tokenIds = sortBy(
         Object.keys(balancesByTokenId).filter((id) => !!tokensMap[id]), // some tokens may have been deleted since the scan finished
         (tokenId) => Number(tokensMap[tokenId]?.networkId ?? 0),
-        (tokenId) => tokensMap[tokenId]?.symbol,
+        (tokenId) => tokensMap[tokenId]?.symbol
       )
 
       const isInProgress = !!currentScanScope
@@ -61,6 +61,6 @@ export const [useAssetDiscoveryScanProgress, assetDiscoveryScanProgress$] = bind
         networksCount,
         tokenIds,
       }
-    }),
-  ),
+    })
+  )
 )

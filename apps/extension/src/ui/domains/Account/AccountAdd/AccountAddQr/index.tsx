@@ -1,4 +1,4 @@
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { ConfigureAccount } from "./ConfigureAccount"
 import { ConfigureVerifierCertificateMnemonic } from "./ConfigureVerifierCertificateMnemonic"
 import { AccountAddQrProvider, useAccountAddQr } from "./context"

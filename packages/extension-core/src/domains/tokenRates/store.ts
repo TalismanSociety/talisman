@@ -1,6 +1,10 @@
-import { TokenList } from "@talismn/chaindata-provider"
-import { fetchTokenRates, TokenRateCurrency, TokenRatesStorage } from "@talismn/token-rates"
-import { Subscription } from "dexie"
+import type { TokenList } from "@talismn/chaindata-provider"
+import {
+  fetchTokenRates,
+  type TokenRateCurrency,
+  type TokenRatesStorage,
+} from "@talismn/token-rates"
+import type { Subscription } from "dexie"
 import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import debounce from "lodash-es/debounce"
@@ -17,7 +21,7 @@ import {
 import { getBlobStore } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Port } from "../../types/base"
+import type { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"
@@ -31,7 +35,7 @@ tokenRates$
   .pipe(debounceTime(2_000), distinctUntilChanged<TokenRatesStorage>(isEqual))
   .subscribe((storage) => {
     log.debug(
-      `[tokenRates] updating db blob with data (tokenRates:${Object.values(storage.tokenRates).length})`,
+      `[tokenRates] updating db blob with data (tokenRates:${Object.values(storage.tokenRates).length})`
     )
     blobStore.set(storage)
   })
@@ -44,7 +48,7 @@ blobStore.get().then(
   (error) => {
     log.error("[tokenRates] failed to load tokenRates store on startup", error)
     tokenRates$.next(DEFAULT_TOKEN_RATES)
-  },
+  }
 )
 
 // refresh token rates on subscription start if older than 1 minute
@@ -96,7 +100,7 @@ export class TokenRatesStore {
         const obsTokens = chaindataProvider.getTokensMapById$()
         const obsActiveTokens = activeTokensStore.observable
         const obsCurrencies = settingsStore.observable.pipe(
-          map((settings) => settings.selectableCurrencies),
+          map((settings) => settings.selectableCurrencies)
         )
 
         subTokenList = combineLatest([obsTokens, obsActiveTokens, obsCurrencies]).subscribe(
@@ -105,7 +109,7 @@ export class TokenRatesStore {
               const tokensList = filterActiveTokens(tokens, activeTokens)
               await this.updateTokenRates(tokensList, currencies)
             }
-          }, 500),
+          }, 500)
         )
       } else {
         // watching state check
@@ -148,7 +152,7 @@ export class TokenRatesStore {
    */
   private async updateTokenRates(
     tokens: TokenList,
-    currencies: TokenRateCurrency[],
+    currencies: TokenRateCurrency[]
   ): Promise<void> {
     const now = Date.now()
 

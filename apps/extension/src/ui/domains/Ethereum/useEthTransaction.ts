@@ -1,16 +1,19 @@
 import { bigIntMax } from "@ethereumjs/util"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt, isNotNil } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useNetworkById } from "@ui/state"
 import {
-  EthGasSettings,
-  EthGasSettingsEip1559,
-  EthGasSettingsLegacy,
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriority,
+  type EthGasSettings,
+  type EthGasSettingsEip1559,
+  type EthGasSettingsLegacy,
+  type EthPriorityOptionName,
+  type EthPriorityOptionNameEip1559,
+  type EthPriorityOptionNameLegacy,
+  type EthTransactionDetails,
+  type GasSettingsByPriority,
   getGasLimit,
   getGasSettingsEip1559,
   getHumanReadableErrorMessage,
@@ -20,17 +23,13 @@ import {
 } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
-
-import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useNetworkById } from "@ui/state"
+import { encodeFunctionData, type PublicClient, type TransactionRequest } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
-import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
+import { type FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
@@ -38,7 +37,7 @@ const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 const useNonce = (
   address: `0x${string}` | undefined,
   evmNetworkId: EthNetworkId | undefined,
-  forcedValue?: number,
+  forcedValue?: number
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: ["useNonce", address, evmNetworkId, forcedValue],
@@ -110,7 +109,7 @@ const estimateGas = async (publicClient: PublicClient, tx: TransactionRequest) =
 const useBlockFeeData = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
-  withFeeOptions: boolean | undefined,
+  withFeeOptions: boolean | undefined
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: [
@@ -200,7 +199,7 @@ const useBlockFeeData = (
 
 const useDecodeEvmTransaction = (
   publicClient: PublicClient | undefined,
-  request: TransactionRequest | undefined,
+  request: TransactionRequest | undefined
 ) => {
   const queryClient = useQueryClient()
   const [tx, setTx] = useState(() => request)
@@ -227,7 +226,7 @@ const useDecodeEvmTransaction = (
   })
 
   const updateCallArg = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     async (argName: string, argValue: any) => {
       if (!tx) throw new Error("Missing tx")
       if (!publicClient) throw new Error("Missing publicClient")
@@ -243,7 +242,7 @@ const useDecodeEvmTransaction = (
       const argIndex = abiCall.inputs.findIndex((input) => input.name === argName)
       if (argIndex === -1) throw new Error(`arg ${argName} not found in decoded transaction`)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       const args = [...contractCall.args] as any
       args[argIndex] = argValue
 
@@ -264,7 +263,7 @@ const useDecodeEvmTransaction = (
 
       setTx(newTx)
     },
-    [decodedTx, publicClient, queryClient, tx],
+    [decodedTx, publicClient, queryClient, tx]
   )
 
   return { tx, decodedTx, updateCallArg, ...rest }
@@ -275,7 +274,7 @@ const getEthGasSettingsFromTransaction = (
   hasEip1559Support: boolean | undefined,
   estimatedGas: bigint | undefined,
   blockGasLimit: bigint | undefined,
-  isContractCall: boolean | undefined = true, // default to worse scenario
+  isContractCall: boolean | undefined = true // default to worse scenario
 ) => {
   if (!tx || hasEip1559Support === undefined || !isBigInt(blockGasLimit) || !isBigInt(estimatedGas))
     return undefined
@@ -350,7 +349,7 @@ const useGasSettings = ({
       hasEip1559Support,
       estimatedGas,
       blockGasLimit,
-      isContractCall,
+      isContractCall
     )
 
     if (hasEip1559Support) {
@@ -380,19 +379,19 @@ const useGasSettings = ({
         baseFeePerGas,
         mapMaxPriority.low,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
       const medium = getGasSettingsEip1559(
         baseFeePerGas,
         mapMaxPriority.medium,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
       const high = getGasSettingsEip1559(
         baseFeePerGas,
         mapMaxPriority.high,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
 
       const custom: EthGasSettingsEip1559 =
@@ -471,7 +470,7 @@ export const useEthTransaction = (
   request: TransactionRequest | undefined,
   evmNetworkId: EthNetworkId | undefined,
   lockTransaction = false,
-  isReplacement = false,
+  isReplacement = false
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const {
@@ -484,7 +483,7 @@ export const useEthTransaction = (
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
     evmNetworkId,
-    isReplacement && tx?.nonce ? tx.nonce : undefined,
+    isReplacement && tx?.nonce ? tx.nonce : undefined
   )
   const {
     gasPrice,
@@ -500,11 +499,13 @@ export const useEthTransaction = (
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setPriority(undefined)
   }, [evmNetworkId])
 
   // set default priority based on EIP1559 support
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
     setPriority(hasEip1559Support ? "low" : "recommended")
@@ -538,7 +539,7 @@ export const useEthTransaction = (
 
   const { data: estimatedL1DataFee, error: l1FeeError } = useEthEstimateL1DataFee(
     publicClient,
-    transaction,
+    transaction
   )
 
   // TODO replace this wierd object name with something else... gasInfo ?
@@ -560,7 +561,7 @@ export const useEthTransaction = (
       gasSettings,
       estimatedGas,
       baseFeePerGas,
-      estimatedL1DataFee,
+      estimatedL1DataFee
     )
 
     return {
@@ -589,7 +590,7 @@ export const useEthTransaction = (
     publicClient,
     transaction,
     priority,
-    isReplacement,
+    isReplacement
   )
 
   const { t } = useTranslation()
@@ -613,7 +614,7 @@ export const useEthTransaction = (
 
   const isLoading = useMemo(
     () => tx && isDecoding && !txDetails && !error,
-    [tx, isDecoding, txDetails, error],
+    [tx, isDecoding, txDetails, error]
   )
 
   // @dev temporarily uncomment when troubleshooting

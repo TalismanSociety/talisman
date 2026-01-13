@@ -1,16 +1,16 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionRequest } from "extension-core"
 import { useMemo } from "react"
-import { TransactionRequest } from "viem"
+import type { TransactionRequest } from "viem"
 
-import { TxReplaceType } from "../Transactions"
+import type { TxReplaceType } from "../Transactions"
 import { useEthTransaction } from "./useEthTransaction"
 
 export const useEthReplaceTransaction = (
   txToReplace: TransactionRequest<string>,
   evmNetworkId: EthNetworkId,
   type: TxReplaceType,
-  lock?: boolean,
+  lock?: boolean
 ) => {
   const replaceTx = useMemo(() => {
     const parsed = parseTransactionRequest(txToReplace)

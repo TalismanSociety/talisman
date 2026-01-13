@@ -1,17 +1,16 @@
-import {
-  AccountLedgerPolkadot,
-  isAccountLedgerPolkadotGeneric,
-  isAccountOfType,
-} from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useMemo } from "react"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 import { useAccountByAddress } from "@ui/state"
+import {
+  type AccountLedgerPolkadot,
+  isAccountLedgerPolkadotGeneric,
+  isAccountOfType,
+} from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useMemo } from "react"
 
-import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
+import type { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { SignLedgerBase } from "./SignLedgerBase"
 import { useSignLedgerBase } from "./useSignLedgerBase"
 
@@ -29,7 +28,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
 
   const migrationAppName = useMemo(
     () => (isAccountOfType(account, "ledger-polkadot") ? account.app : null),
-    [account],
+    [account]
   )
 
   const legacyApp = useLedgerSubstrateAppByName(migrationAppName as string)
@@ -48,7 +47,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         payload,
         account as AccountLedgerPolkadot,
         registry,
-        shortMetadata,
+        shortMetadata
       )
 
       // await to keep loader spinning until popup closes

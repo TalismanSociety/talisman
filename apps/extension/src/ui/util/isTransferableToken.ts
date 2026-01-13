@@ -2,7 +2,7 @@ import {
   evmErc20TokenId,
   subNativeTokenId,
   subTokensTokenId,
-  Token,
+  type Token,
 } from "@talismn/chaindata-provider"
 
 // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)

@@ -1,13 +1,13 @@
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
 import { keyringStore } from "../../domains/keyring/store"
 import { getMetadataRpcFromDef } from "../../domains/metadata/helpers"
-import { SignerPayloadGenesisHash } from "../../domains/signing/types"
+import type { SignerPayloadGenesisHash } from "../../domains/signing/types"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import {
@@ -50,7 +50,7 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
     const { type, publicKey } = signingPair
     return { type, publicKey, signature: signingPair.sign(unsigned) }
   } catch (error) {
-    throw new Error("Failed to sign : " + (error as Error).message)
+    throw new Error(`Failed to sign : ${(error as Error).message}`)
   }
 }
 
@@ -92,11 +92,11 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   const payload = u8aToU8a(
     $addNetworkSpecsPayload.enc({
       specs,
-    }),
+    })
   )
 
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
   } catch (e) {
     log.error("Failed to sign network specs", e)
@@ -111,8 +111,8 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
       new Uint8Array([0xc1]), // c1 = add_specs
       publicKey,
       payload,
-      signature,
-    ),
+      signature
+    )
   )
 }
 
@@ -122,7 +122,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
 
 export const generateQrUpdateNetworkMetadata = async (
   chainIdOrHash: string,
-  specVersion?: number,
+  specVersion?: number
 ) => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
   if (!chain) return
@@ -134,7 +134,7 @@ export const generateQrUpdateNetworkMetadata = async (
     chain,
     genesisHash,
     runtimeSpecVersion,
-    getLegacyMetadataRpc,
+    getLegacyMetadataRpc
   )
   assert(metadataDef, "Failed to fetch metadata")
 
@@ -146,7 +146,7 @@ export const generateQrUpdateNetworkMetadata = async (
     genesis_hash: hexToU8a(genesisHash),
   })
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
   } catch (e) {
     log.error("Failed to sign network metadata", e)
@@ -161,7 +161,7 @@ export const generateQrUpdateNetworkMetadata = async (
       new Uint8Array([0x80]), // 0x80 = load_metadata
       publicKey,
       payload,
-      signature,
-    ),
+      signature
+    )
   )
 }

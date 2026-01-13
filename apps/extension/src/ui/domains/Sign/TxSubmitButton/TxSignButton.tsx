@@ -1,12 +1,12 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
 import { TxSubmitButtonDot } from "./TxSubmitButtonDot"
 import { TxSubmitButtonEth } from "./TxSubmitButtonEth"
 import { TxSubmitButtonSol } from "./TxSubmitButtonSol"
-import { TxSubmitButtonProps } from "./types"
+import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButton: FC<TxSubmitButtonProps> = ({
   tx,

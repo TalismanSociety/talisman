@@ -1,6 +1,6 @@
 import { assert, isHex } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
-import { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import type { DotNetwork, DotNetworkId, NetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata, MAX_SUPPORTED_METADATA_VERSION } from "@talismn/sapi"
 import { getConstantValueFromMetadata, getMetadataVersion } from "@talismn/scale"
 import { DEBUG, log } from "extension-shared"
@@ -10,7 +10,7 @@ import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { decodeMetadataRpc, encodeMetadataRpc } from "../domains/metadata/helpers"
 import { metadataUpdatesStore } from "../domains/metadata/metadataUpdates"
-import { TalismanMetadataDef } from "../domains/substrate/types"
+import type { TalismanMetadataDef } from "../domains/substrate/types"
 import { chainConnector } from "../rpcs/chain-connector"
 import { chaindataProvider } from "../rpcs/chaindata"
 import { getRuntimeVersion } from "./getRuntimeVersion"
@@ -31,7 +31,7 @@ const getPromiseCacheKey = (chainIdOrHash: string, specVersion?: number) =>
  */
 export const getMetadataDef = async (
   chainIdOrHash: string,
-  specVersion?: number,
+  specVersion?: number
 ): Promise<TalismanMetadataDef | undefined> => {
   const cacheKey = getPromiseCacheKey(chainIdOrHash, specVersion)
 
@@ -41,7 +41,7 @@ export const getMetadataDef = async (
       cacheKey,
       getMetadataDefInner(chainIdOrHash, specVersion).finally(() => {
         CACHE_PROMISES.delete(cacheKey)
-      }),
+      })
     )
 
   return CACHE_PROMISES.get(cacheKey)
@@ -49,7 +49,7 @@ export const getMetadataDef = async (
 
 const getMetadataDefInner = async (
   chainIdOrHash: string,
-  specVersion?: number,
+  specVersion?: number
 ): Promise<TalismanMetadataDef | undefined> => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
 
@@ -57,7 +57,7 @@ const getMetadataDefInner = async (
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
   try {
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var storeMetadata = await db.metadata.get(genesisHash)
 
     // having a metadataRpc on expected specVersion is ideal scenario, don't go further
@@ -109,7 +109,7 @@ const getMetadataDefInner = async (
 
     // fetch the metadataDef from the chain
     const newData = await withRetry(() =>
-      fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion),
+      fetchMetadataDefFromChain(chain, genesisHash, runtimeSpecVersion)
     )
     if (!newData) return // unable to get data from rpc, return nothing
 
@@ -159,7 +159,7 @@ export const fetchMetadataDefFromChain = async (
   runtimeSpecVersion?: number,
 
   /** defaults to `getLatestMetadataRpc`, but can be overridden */
-  fetchMethod: (chainId: NetworkId) => Promise<`0x${string}`> = getLatestMetadataRpc,
+  fetchMethod: (chainId: NetworkId) => Promise<`0x${string}`> = getLatestMetadataRpc
 ): Promise<TalismanMetadataDef | undefined> => {
   const [metadataRpc, chainProperties] = await Promise.all([
     fetchMethod(chain.id),
@@ -181,11 +181,11 @@ export const fetchMetadataDefFromChain = async (
   const { spec_version } = getConstantValueFromMetadata<{ spec_version: number }>(
     metadataRpc,
     "System",
-    "Version",
+    "Version"
   )
   if (runtimeSpecVersion !== undefined && spec_version !== runtimeSpecVersion)
     throw new Error(
-      `specVersion mismatch: expected ${runtimeSpecVersion}, metadata got ${spec_version}`,
+      `specVersion mismatch: expected ${runtimeSpecVersion}, metadata got ${spec_version}`
     )
 
   return {
@@ -206,7 +206,7 @@ export const fetchMetadataDefFromChain = async (
 
 // useful for developer when testing updates
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.clearMetadata = async () => {
@@ -223,7 +223,7 @@ if (DEBUG) {
 
 export const getLatestMetadataRpc = (chainId: DotNetworkId) =>
   fetchBestMetadata((method, params, isCacheable) =>
-    chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true }),
+    chainConnector.send(chainId, method, params, isCacheable, { expectErrors: true })
   )
 
 export const getLegacyMetadataRpc = (chainId: DotNetworkId) =>

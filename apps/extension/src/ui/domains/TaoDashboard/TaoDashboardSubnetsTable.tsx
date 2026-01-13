@@ -1,10 +1,10 @@
 import { cn } from "@talismn/util"
-import { FC, PropsWithChildren, useCallback, useMemo, useState } from "react"
+import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { TokenLogo } from "../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
-import { TaoDashboardSubnet, useTaoDashboardSubnets } from "./useTaoDashboardSubnets"
+import { type TaoDashboardSubnet, useTaoDashboardSubnets } from "./useTaoDashboardSubnets"
 
 type SortOrder = "asc" | "desc"
 type SortSetting = {
@@ -37,9 +37,9 @@ export const TaoDashboardSubnetsTable = () => {
   }, [subnets, sortSetting])
 
   return (
-    <div className="bg-black-secondary w-full overflow-hidden rounded-lg">
+    <div className="w-full overflow-hidden rounded-lg bg-black-secondary">
       <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
-      <div className="bg-grey-750 flex w-full flex-col gap-px overflow-hidden">
+      <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
         {sortedSubnets.map((subnet) => (
           <SubnetRow key={subnet.netuid} subnet={subnet} />
         ))}
@@ -52,8 +52,8 @@ const SortIndicator: FC<{ order?: SortOrder }> = ({ order }) => {
   return (
     <SortIcon
       className={cn(
-        order === "asc" && "text-primary rotate-180",
-        order === "desc" && "text-primary",
+        order === "asc" && "rotate-180 text-primary",
+        order === "desc" && "text-primary"
       )}
     />
   )
@@ -67,7 +67,7 @@ const HeaderCell: FC<
       type="button"
       className={cn(
         "flex max-h-24 gap-1 overflow-hidden uppercase",
-        onSortOrderToggle ? "cursor-pointer" : "cursor-default",
+        onSortOrderToggle ? "cursor-pointer" : "cursor-default"
       )}
       onClick={onSortOrderToggle}
     >
@@ -91,7 +91,7 @@ const HeaderRow: FC<{
           : DEFAULT_SORT_SETTING
       })
     },
-    [setSortSetting],
+    [setSortSetting]
   )
 
   const getSortOrder = useCallback(
@@ -99,11 +99,11 @@ const HeaderRow: FC<{
       if (sortSetting.key !== key) return undefined
       return sortSetting.order
     },
-    [sortSetting],
+    [sortSetting]
   )
 
   return (
-    <div className="text-body-inactive grid h-24 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-[#202020] px-10">
+    <div className="grid h-24 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-[#202020] px-10 text-body-inactive">
       <HeaderCell>#</HeaderCell>
       <HeaderCell>Subnet</HeaderCell>
       <HeaderCell
@@ -136,7 +136,7 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
   return (
     <Link
       to={`/bittensor/subnets/${subnet.netuid}`}
-      className="hover:bg-grey-800 bg-grey-850 text-body grid h-36 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden px-10 text-left"
+      className="grid h-36 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-grey-850 px-10 text-left text-body hover:bg-grey-800"
     >
       <DataCell>SN{subnet.netuid}</DataCell>
       <DataCell className="flex items-center gap-6">

@@ -1,8 +1,8 @@
-import { SubTokensToken, subTokensTokenId } from "@talismn/chaindata-provider"
+import { type SubTokensToken, subTokensTokenId } from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -29,7 +29,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           existentialDeposit: tokenConfig.existentialDeposit ?? "0",
           isDefault: true,
         },
-        tokenConfig,
-      ),
+        tokenConfig
+      )
   )
 }

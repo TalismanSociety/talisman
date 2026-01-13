@@ -1,9 +1,9 @@
-import { SolNetworkId } from "@talismn/chaindata-provider"
+import type { SolNetworkId } from "@talismn/chaindata-provider"
 
 // import { SolTransactionJson } from "@talismn/solana"
 
-import { SigningRequestID } from "../signing/types"
-import { WalletTransactionInfo } from "../transactions"
+import type { SigningRequestID } from "../signing/types"
+import type { WalletTransactionInfo } from "../transactions"
 
 export type SolRpcRequest = {
   id: string
@@ -54,5 +54,6 @@ export type RequestSolanaSignApprove = {
 export type SolanaExtensionMessages = {
   "pri(solana.rpc.send)": [RequestSolanaRpcSend, ResponseSolanaRpcSend]
   "pri(solana.rpc.submit)": [RequestSolanaSubmit, ResponseSolanaSubmit]
+  // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   "pri(solana.sign.approve)": [RequestSolanaSignApprove, void]
 }

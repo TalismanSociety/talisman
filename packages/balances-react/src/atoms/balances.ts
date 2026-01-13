@@ -1,5 +1,5 @@
-import { Address, BalanceJson, Balances, HydrateDb } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import { type Address, type BalanceJson, Balances, type HydrateDb } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { atom } from "jotai"
 import { atomEffect } from "jotai-effect"
 import { fromPairs, keyBy } from "lodash-es"

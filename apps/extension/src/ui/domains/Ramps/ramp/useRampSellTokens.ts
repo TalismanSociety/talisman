@@ -1,8 +1,7 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useMemo } from "react"
-
 import { useRemoteConfig, useTokensMap } from "@ui/state"
+import { useMemo } from "react"
 
 import { getTokenFromRampAsset } from "../shared/helpers"
 import { useRampTokens } from "./useRampTokens"

@@ -1,10 +1,9 @@
-import { isTokenSubDTao, NetworkId } from "@talismn/chaindata-provider"
+import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
+import { useTokens } from "@ui/state"
 import { assign, keyBy } from "lodash-es"
 import { useEffect, useMemo } from "react"
 
-import { useTokens } from "@ui/state"
-
-import { SubnetData } from "./types"
+import type { SubnetData } from "./types"
 import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
 import { useGetSubnets } from "./useGetInfiniteSubnets"
@@ -27,9 +26,9 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
             name: t.subnetName,
             subnet_name: t.subnetName,
             symbol: t.symbol,
-          }),
+          })
         ),
-    [allTokens, networkId],
+    [allTokens, networkId]
   )
 
   const { data: subnets, isLoading: isSubnetsLoading, isError: isSubnetsError } = useGetSubnets()
@@ -73,17 +72,17 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
         subnetDescriptionsData?.pages
           .flatMap((page) => page.data)
           .map((desc) => ({ ...desc, descriptionName: desc.subnet_name })) ?? [],
-        (desc) => desc.netuid,
+        (desc) => desc.netuid
       ),
-    [subnetDescriptionsData?.pages],
+    [subnetDescriptionsData?.pages]
   )
 
   const poolsMap = useMemo(
     () =>
       keyBy(subnetPoolsData?.pages.flatMap((page) => page.data) ?? [], (pool) =>
-        Number(pool.netuid),
+        Number(pool.netuid)
       ),
-    [subnetPoolsData?.pages],
+    [subnetPoolsData?.pages]
   )
 
   const subnetsMap = useMemo(() => keyBy(subnets ?? [], (subnet) => subnet.netuid), [subnets])
@@ -97,8 +96,8 @@ export const useCombinedSubnetData = (networkId: NetworkId) => {
             tokenSubnet,
             descriptionsMap[Number(tokenSubnet.netuid)] || {},
             poolsMap[Number(tokenSubnet.netuid)] || {},
-            subnetsMap[Number(tokenSubnet.netuid)] || {},
-          ),
+            subnetsMap[Number(tokenSubnet.netuid)] || {}
+          )
       )
       .sort((a, b) => (Number(a.netuid) || 0) - (Number(b.netuid) || 0))
   }, [alphaTokenSubnets, descriptionsMap, poolsMap, subnetsMap])

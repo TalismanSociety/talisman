@@ -1,4 +1,4 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { uniq } from "lodash-es"
 import { useMemo } from "react"
 

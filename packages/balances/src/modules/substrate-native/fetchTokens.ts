@@ -1,11 +1,15 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { SubNativeToken, subNativeTokenId, SubNativeTokenSchema } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import {
+  type SubNativeToken,
+  SubNativeTokenSchema,
+  subNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import type { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<
   typeof MODULE_TYPE,
@@ -17,7 +21,7 @@ export const fetchTokens: IBalanceModule<
 
   const { tokenSymbol: symbol, tokenDecimals: decimals } = await getChainProperties(
     connector,
-    networkId,
+    networkId
   )
 
   if (!miniMetadata.extra.existentialDeposit)

@@ -1,14 +1,14 @@
-import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
-import {
+import type {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
 } from "@polkadot/extension-base/background/types"
-import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
-import { Account } from "@talismn/keyring"
-import { RpcTransactionRequest } from "viem"
+import type { SignerPayloadJSON, SignerPayloadRaw, SignerResult } from "@polkadot/types/types"
+import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { Account } from "@talismn/keyring"
+import type { RpcTransactionRequest } from "viem"
 
-import { BaseRequest, BaseRequestId } from "../../types/base"
-import { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
+import type { BaseRequest, BaseRequestId } from "../../types/base"
+import type { EthGasSettingsEip1559, EthGasSettingsLegacy } from "../ethereum/types"
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -140,7 +140,7 @@ export type TransactionMethod = {
   section: string
   method: string
   docs: string[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   args: any
 }
 
@@ -151,7 +151,7 @@ export type TransactionPayload = {
       period: string
       phase: string
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     ImmortalEra?: any
   }
   genesisHash: string

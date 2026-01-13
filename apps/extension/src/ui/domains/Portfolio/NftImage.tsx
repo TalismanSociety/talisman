@@ -1,8 +1,7 @@
-import { classNames } from "@talismn/util"
-import { useState } from "react"
-
 import imgUnknownNft from "@talisman/theme/images/unknown-nft.svg?url"
+import { classNames } from "@talismn/util"
 import { getSafeImageUrl } from "@ui/util/getSafeImageUrl"
+import { useState } from "react"
 
 export const NftImage = ({
   src,
@@ -32,8 +31,8 @@ export const NftImage = ({
   return (
     <div
       className={classNames(
-        "bg-grey-800 relative size-16 shrink-0 overflow-hidden rounded-sm",
-        className,
+        "relative size-16 shrink-0 overflow-hidden rounded-sm bg-grey-800",
+        className
       )}
     >
       {isLoading && !hasError && (

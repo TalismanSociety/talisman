@@ -1,9 +1,15 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { GlobeIcon, LockIcon, ToolbarSortIcon, UserIcon } from "@talismn/icons"
 import { classNames, cn, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useToken } from "@ui/state"
 import {
-  FC,
+  type FC,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -23,14 +29,7 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useToken } from "@ui/state"
-
-import { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
+import type { BondOption as BondOptionType } from "../../../hooks/bittensor/types"
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
@@ -69,7 +68,7 @@ export const BittensorValidatorSelect = () => {
   const search = useDeferredValue(rawSearch)
 
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
-    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined,
+    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -81,7 +80,7 @@ export const BittensorValidatorSelect = () => {
     return sortedValidators.filter(
       (delegate) =>
         delegate.name.toLowerCase().includes(lowerSearch) ||
-        delegate.hotkey.toLowerCase().includes(lowerSearch),
+        delegate.hotkey.toLowerCase().includes(lowerSearch)
     )
   }, [sortedValidators, search])
 
@@ -90,7 +89,7 @@ export const BittensorValidatorSelect = () => {
       setStep("form")
       setHotkey(hotkey)
     },
-    [setHotkey, setStep],
+    [setHotkey, setStep]
   )
 
   const [, startTransition] = useTransition()
@@ -103,6 +102,7 @@ export const BittensorValidatorSelect = () => {
   }, [combinedValidatorsData, sortMethod])
 
   // Reset scroll to top when sort method or search changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, search])
@@ -123,21 +123,20 @@ export const BittensorValidatorSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search validators")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
           <SortMethodButton method={sortMethod} onChange={(method) => setSortMethod(method)} />
         </div>
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
+          <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
             <div>{t("Validator")}</div>
             <div>{t("30 days APY")}</div>
           </div>
@@ -150,6 +149,7 @@ export const BittensorValidatorSelect = () => {
               Array(10)
                 .fill(null)
                 .map((_, i) => {
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   return <ValidatorRowSkeleton key={i} />
                 })
             ) : (
@@ -162,7 +162,7 @@ export const BittensorValidatorSelect = () => {
               />
             )}
             {isError && (
-              <div className="text-alert-error flex h-full items-center justify-center">
+              <div className="flex h-full items-center justify-center text-alert-error">
                 {t("Unable to fetch validators")}
               </div>
             )}
@@ -186,12 +186,12 @@ const SortMethodButton: FC<{
       { label: t("N° of Stakers"), value: "totalStakers" },
       { label: t("30 days APY"), value: "apr" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -199,7 +199,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-[8px] py-[6px] text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -253,7 +253,7 @@ const ValidatorRows: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -279,22 +279,22 @@ const ValidatorRows: FC<{
 const ValidatorRowSkeleton = () => {
   return (
     <div className="flex h-[5.8rem] w-full shrink-0 items-center gap-6 px-12 pl-8 text-left">
-      <div className="bg-grey-750 size-16 animate-pulse rounded-full"></div>
+      <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
       <div className="grow space-y-[5px]">
-        <div className={"text-body flex w-full justify-between text-sm font-bold"}>
+        <div className={"flex w-full justify-between font-bold text-body text-sm"}>
           <div>
-            <div className="bg-grey-750 rounded-xs inline-block h-7 w-56 animate-pulse"></div>
+            <div className="inline-block h-7 w-56 animate-pulse rounded-xs bg-grey-750"></div>
           </div>
           <div>
-            <div className="bg-grey-750 rounded-xs inline-block h-7 w-20 animate-pulse"></div>
+            <div className="inline-block h-7 w-20 animate-pulse rounded-xs bg-grey-750"></div>
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
+        <div className="flex w-full items-center justify-between gap-2 text-right font-light text-body-secondary text-xs">
           <div>
-            <div className="bg-grey-800 rounded-xs inline-block h-6 w-40 animate-pulse"></div>
+            <div className="inline-block h-6 w-40 animate-pulse rounded-xs bg-grey-800"></div>
           </div>
           <div className="grow text-right">
-            <div className="bg-grey-800 rounded-xs inline-block h-6 w-36 animate-pulse"></div>
+            <div className="inline-block h-6 w-36 animate-pulse rounded-xs bg-grey-800"></div>
           </div>
         </div>
       </div>
@@ -318,15 +318,15 @@ const ValidatorRow: FC<{
       key={option.hotkey}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected && "bg-grey-800 text-body-secondary",
+        isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
       <AccountIcon address={option.hotkey} className="size-16 shrink-0 text-xl" />
       <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
-        <div className="text-body flex w-full justify-between text-sm">
-          <div className={cn(option.isRecommended && "text-primary font-bold")}>
+        <div className="flex w-full justify-between text-body text-sm">
+          <div className={cn(option.isRecommended && "font-bold text-primary")}>
             {option.name ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -346,8 +346,8 @@ const ValidatorRow: FC<{
         </div>
         <div
           className={cn(
-            "text-body-secondary flex w-full justify-between text-xs",
-            isLoading && "animate-pulse",
+            "flex w-full justify-between text-body-secondary text-xs",
+            isLoading && "animate-pulse"
           )}
         >
           <div className="flex items-center gap-4">
@@ -373,7 +373,7 @@ const ValidatorRow: FC<{
                 </div>
               </TooltipContent>
             </Tooltip>
-            <div className="bg-body-disabled inline-block size-2 rounded-full" />
+            <div className="inline-block size-2 rounded-full bg-body-disabled" />
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">
@@ -385,7 +385,7 @@ const ValidatorRow: FC<{
                 {t("{{count}} nominators", { count: option.totalStakers })}
               </TooltipContent>
             </Tooltip>
-            <div className="bg-body-disabled inline-block size-2 rounded-full" />
+            <div className="inline-block size-2 rounded-full bg-body-disabled" />
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-2">

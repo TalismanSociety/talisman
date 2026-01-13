@@ -1,10 +1,10 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 
-import { BalanceDetailRow } from "../useTokenBalances"
+import type { BalanceDetailRow } from "../useTokenBalances"
 import { AssetState } from "./AssetState"
 import { LockedExtra } from "./LockedExtra"
 
@@ -24,7 +24,7 @@ export const TokenBalancesDetailRow = ({
   return (
     <div
       key={row.key}
-      className={classNames("bg-grey-850 grid grid-cols-[40%_30%_30%]", isLastRow && "rounded-b")}
+      className={classNames("grid grid-cols-[40%_30%_30%] bg-grey-850", isLastRow && "rounded-b")}
     >
       <div>
         <AssetState
@@ -46,7 +46,7 @@ export const TokenBalancesDetailRow = ({
           locked={row.locked}
           balancesStatus={status}
           className={classNames(
-            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity"
           )}
         />
       </div>

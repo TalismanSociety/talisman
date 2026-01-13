@@ -1,13 +1,13 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { DotNetwork, Network } from "@talismn/chaindata-provider"
+import type { DotNetwork, Network } from "@talismn/chaindata-provider"
 import {
-  AccountPlatform,
+  type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
-  KeypairCurve,
+  type KeypairCurve,
 } from "@talismn/crypto"
 import {
-  Account,
+  type Account,
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
@@ -20,7 +20,7 @@ import { log } from "extension-shared"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
-import { AccountsCatalogStore } from "./store.catalog"
+import type { AccountsCatalogStore } from "./store.catalog"
 
 export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]
 
@@ -65,7 +65,7 @@ const getInjectedAccountType = (account: Account): InjectedAccount["type"] => {
 
 export const getPjsInjectedAccount = (
   account: Account,
-  options = { includePortalOnlyInfo: false },
+  options = { includePortalOnlyInfo: false }
 ): InjectedAccount | (InjectedAccount & { readonly: boolean; partOfPortfolio: boolean }) => {
   const genesisHash = getAccountGenesisHash(account)
   return {
@@ -107,7 +107,7 @@ export const getPublicAccounts = (
   options: GetPublicAccountsOptions = {
     developerMode: false,
     includePortalOnlyInfo: false,
-  },
+  }
 ) =>
   filterFn(accounts)
     .filter((a) => isAccountPlatformEthereum(a) || isAccountPlatformPolkadot(a))
@@ -118,7 +118,7 @@ export const getPublicAccounts = (
     })
     .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)) // TODO apply catalog order ?
     .map((x) =>
-      getPjsInjectedAccount(x, { includePortalOnlyInfo: !!options.includePortalOnlyInfo }),
+      getPjsInjectedAccount(x, { includePortalOnlyInfo: !!options.includePortalOnlyInfo })
     )
 
 export const getDefaultCurveForAccountPlatform = (platform: AccountPlatform): KeypairCurve => {
@@ -159,7 +159,7 @@ const getSolDerivationPath = (accountIndex: number) => {
 export const isCurveCompatibleWithChain = (
   chain: DotNetwork,
   curve: KeypairCurve,
-  genesisHash: `0x${string}` | null | undefined,
+  genesisHash: `0x${string}` | null | undefined
 ) => {
   if (genesisHash && genesisHash !== chain.genesisHash) return false
   return curve === "ethereum" ? chain.account === "secp256k1" : chain.account !== "secp256k1"
@@ -196,7 +196,7 @@ export const isAccountCompatibleWithNetwork = (network: Network, account: Accoun
 
 export const isAccountPlatformCompatibleWithNetwork = (
   network: Network,
-  platform: AccountPlatform,
+  platform: AccountPlatform
 ) => {
   switch (network.platform) {
     case "ethereum":

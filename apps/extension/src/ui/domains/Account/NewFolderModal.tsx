@@ -1,6 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountsCatalogTree } from "extension-core"
-import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { api } from "@ui/api"
+import { useAccountsCatalog } from "@ui/state"
+import type { AccountsCatalogTree } from "extension-core"
+import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
@@ -12,10 +15,6 @@ import {
   ModalDialog,
 } from "talisman-ui"
 import * as yup from "yup"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { api } from "@ui/api"
-import { useAccountsCatalog } from "@ui/state"
 
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 
@@ -54,7 +53,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
           followedOnly: yup.boolean(),
         })
         .required(),
-    [],
+    []
   )
 
   const defaultValues = useMemo(
@@ -62,7 +61,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       name: "",
       followedOnly: false,
     }),
-    [],
+    []
   )
 
   const {
@@ -92,7 +91,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
         })
       }
     },
-    [onConfirm, setError],
+    [onConfirm, setError]
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -114,7 +113,7 @@ const NewFolder = ({ onConfirm, onCancel, className }: NewFolderProps) => {
       refName(e)
       refNameRef.current = e
     },
-    [refName],
+    [refName]
   )
 
   useEffect(() => {

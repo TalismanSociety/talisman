@@ -1,11 +1,11 @@
-import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
+import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import { Binary, Enum } from "polkadot-api"
+import type { Binary, Enum } from "polkadot-api"
 
-import { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
-import { BalanceDef, buildNetworkStorageCoders } from "../../shared"
-import { MaybeStateKey, RpcQueryPack } from "../../shared/rpcQueryPack"
-import { MiniMetadataExtra } from "../config"
+import type { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
+import { type BalanceDef, buildNetworkStorageCoders } from "../../shared"
+import type { MaybeStateKey, RpcQueryPack } from "../../shared/rpcQueryPack"
+import type { MiniMetadataExtra } from "../config"
 import { getLockedType } from "../util/lockTypes"
 
 export type NomPoolMemberInfo = {
@@ -19,7 +19,7 @@ export type BaseBalance = { balance: IBalance; nomPoolMemberInfo: NomPoolMemberI
 export const buildBaseQueries = (
   networkId: string,
   balanceDefs: BalanceDef<"substrate-native">[],
-  miniMetadata: MiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>
 ): Array<RpcQueryPack<BaseBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     account: ["System", "Account"],
@@ -105,7 +105,7 @@ export const buildBaseQueries = (
             const baseValues = decodeBaseResult(
               networkStorageCoders.account,
               accountChange,
-              networkId,
+              networkId
             )
             balance.values.push(...baseValues)
           }
@@ -119,7 +119,7 @@ export const buildBaseQueries = (
             const freezesValues = decodeFreezesResult(
               networkStorageCoders.freezes,
               freezesChange,
-              networkId,
+              networkId
             )
             balance.values.push(...freezesValues)
           }
@@ -128,7 +128,7 @@ export const buildBaseQueries = (
             const holdsValues = decodeHoldsResult(
               networkStorageCoders.holds,
               holdsChange,
-              networkId,
+              networkId
             )
             balance.values.push(...holdsValues)
           }
@@ -137,7 +137,7 @@ export const buildBaseQueries = (
             const stakingLedgerValues = decodeStakingLedgerResult(
               networkStorageCoders.stakingLedger,
               stakingLedgerChange,
-              networkId,
+              networkId
             )
             balance.values.push(...stakingLedgerValues)
           }
@@ -146,7 +146,7 @@ export const buildBaseQueries = (
             const nomPoolMemberValue = decodePoolMemberResult(
               networkStorageCoders.poolMembers,
               nomPoolMemberChange,
-              networkId,
+              networkId
             )
 
             if (nomPoolMemberValue) nomPoolMemberInfo = nomPoolMemberValue
@@ -162,7 +162,7 @@ export const buildBaseQueries = (
 const decodeBaseResult = (
   coder: ScaleStorageCoder,
   value: string | null,
-  networkId: string,
+  networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = {
@@ -180,7 +180,7 @@ const decodeBaseResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode base native balance on chain ${networkId}`,
+    `Failed to decode base native balance on chain ${networkId}`
   )
 
   const free = (decoded?.data?.free ?? 0n).toString()
@@ -211,7 +211,7 @@ const decodeBaseResult = (
 const decodeLocksResult = (
   coder: ScaleStorageCoder,
   value: string | null,
-  networkId: string,
+  networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = Array<{
@@ -222,7 +222,7 @@ const decodeLocksResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode lock on chain ${networkId}`,
+    `Failed to decode lock on chain ${networkId}`
   )
 
   const locksQueryLocks: Array<AmountWithLabel<string>> =
@@ -240,7 +240,7 @@ const decodeLocksResult = (
 const decodeFreezesResult = (
   coder: ScaleStorageCoder,
   value: `0x${string}` | null,
-  networkId: string,
+  networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = Array<{
@@ -251,7 +251,7 @@ const decodeFreezesResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode freeze on chain ${networkId}`,
+    `Failed to decode freeze on chain ${networkId}`
   )
 
   const freezesValues: Array<AmountWithLabel<string>> =
@@ -268,7 +268,7 @@ const decodeFreezesResult = (
 const decodeHoldsResult = (
   coder: ScaleStorageCoder,
   value: `0x${string}` | null,
-  networkId: string,
+  networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = Array<{
@@ -279,7 +279,7 @@ const decodeHoldsResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode holds on chain ${networkId}`,
+    `Failed to decode holds on chain ${networkId}`
   )
 
   // at this time we re only interested in DelegatedStaking holds, to determine if nom pool staked amount is included in reserved or not
@@ -301,10 +301,9 @@ const decodeHoldsResult = (
 const decodeStakingLedgerResult = (
   coder: ScaleStorageCoder,
   value: `0x${string}` | null,
-  networkId: string,
+  networkId: string
 ): Array<AmountWithLabel<string>> => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type DecodedType = {
     active: bigint
     legacy_claimed_rewards: number[]
@@ -319,7 +318,7 @@ const decodeStakingLedgerResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode unbonding query on chain ${networkId}`,
+    `Failed to decode unbonding query on chain ${networkId}`
   )
 
   const totalUnlocking =
@@ -343,7 +342,7 @@ const decodeStakingLedgerResult = (
 const decodePoolMemberResult = (
   coder: ScaleStorageCoder,
   value: `0x${string}` | null,
-  networkId: string,
+  networkId: string
 ): NomPoolMemberInfo | null => {
   /** NOTE: This type is only a hint for typescript, the chain can actually return whatever it wants to */
   type DecodedType = {
@@ -357,7 +356,7 @@ const decodePoolMemberResult = (
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode poolMembers on chain ${networkId}`,
+    `Failed to decode poolMembers on chain ${networkId}`
   )
 
   if (!decoded) return null
@@ -365,7 +364,7 @@ const decodePoolMemberResult = (
   const poolId: string = decoded.pool_id.toString()
   const points: string = decoded.points.toString()
   const unbondingEras: Array<{ era: string; amount: string }> = Array.from(
-    decoded.unbonding_eras ?? [],
+    decoded.unbonding_eras ?? []
   ).flatMap((entry) => {
     if (entry === undefined) return []
     const [key, value] = Array.from(entry)

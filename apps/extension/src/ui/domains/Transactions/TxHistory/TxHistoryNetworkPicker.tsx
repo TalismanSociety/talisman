@@ -1,4 +1,6 @@
-import { Network } from "@talismn/chaindata-provider"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import type { Network } from "@talismn/chaindata-provider"
 import {
   CheckCircleIcon,
   ChevronLeftIcon,
@@ -7,15 +9,12 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
-
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkType } from "@ui/domains/Networks/NetworkType"
 import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Modal } from "talisman-ui"
 
 export const TxHistoryNetworkPicker: FC<{
   isOpen?: boolean
@@ -30,7 +29,7 @@ export const TxHistoryNetworkPicker: FC<{
 
   const networks = useMemo(
     () => allNetworks.filter((network) => !search || network.name?.toLowerCase().includes(search)),
-    [allNetworks, search],
+    [allNetworks, search]
   )
 
   return (
@@ -54,7 +53,7 @@ export const TxHistoryNetworkPicker: FC<{
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
             <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
           </div>
-          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable grow border-t">
+          <ScrollContainer className="scrollable grow border-grey-700 border-t bg-black-secondary">
             <NetworksList
               networks={networks}
               selectedNetworkId={selectedNetworkId}
@@ -90,7 +89,7 @@ const NetworksList: FC<{
         />
       ))}
       {networks.length === 0 && (
-        <div className="text-body-secondary p-16 text-center">{t("No networks found")}</div>
+        <div className="p-16 text-center text-body-secondary">{t("No networks found")}</div>
       )}
     </div>
   )
@@ -108,9 +107,9 @@ const NetworkRow: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary hover:text-body hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-12",
+        "flex h-28 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
-        selected && "!bg-grey-700",
+        selected && "!bg-grey-700"
       )}
     >
       {network ? (
@@ -118,7 +117,7 @@ const NetworkRow: FC<{
       ) : (
         <GlobeIcon className="shrink-0 text-xl" />
       )}
-      <div className="text-body flex grow flex-col gap-1 truncate text-left">
+      <div className="flex grow flex-col gap-1 truncate text-left text-body">
         <div>{network ? network.name : t("All Networks")}</div>
         {!!network && (
           <div className="text-body-inactive text-xs">

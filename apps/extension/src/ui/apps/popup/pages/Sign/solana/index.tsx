@@ -1,8 +1,7 @@
-import { SigningRequestID } from "extension-core"
+import { useRequest } from "@ui/state"
+import type { SigningRequestID } from "extension-core"
 import { Suspense, useEffect } from "react"
 import { useParams } from "react-router-dom"
-
-import { useRequest } from "@ui/state"
 
 import { SignPopupShimmer } from "../SignPopupShimmer"
 import { SolSignMessageRequest } from "./Message"

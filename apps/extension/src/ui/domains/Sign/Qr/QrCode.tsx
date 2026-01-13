@@ -1,10 +1,9 @@
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
-import { log } from "extension-shared"
-import { FC, Suspense, useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { log } from "extension-shared"
+import { type FC, Suspense, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
 
@@ -35,8 +34,7 @@ const QrCodeInner = ({ data, image, imageOptions }: Props) => {
 
   useEffect(() => {
     if (!data) return
-    if (data.length > Math.pow(2, 31))
-      return setError(t("Payload is too large to be encoded in a QR code"))
+    if (data.length > 2 ** 31) return setError(t("Payload is too large to be encoded in a QR code"))
     else setError(null)
 
     // reset
@@ -91,6 +89,7 @@ const QrCodeInner = ({ data, image, imageOptions }: Props) => {
   }, [data, image, imageOptions, t])
 
   const [qrCode, setQrCode] = useState<string | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const interval = 125 // 1000ms/125ms = 8 frames per second
     let index = 0
@@ -122,7 +121,7 @@ const QrCodeInner = ({ data, image, imageOptions }: Props) => {
 }
 
 export const QrCodeError = ({ error }: { error?: string | null }) => (
-  <div className="text-alert-error relative flex h-full w-full items-center justify-center whitespace-pre-wrap bg-white text-center text-xs">
+  <div className="relative flex h-full w-full items-center justify-center whitespace-pre-wrap bg-white text-center text-alert-error text-xs">
     {error}
   </div>
 )

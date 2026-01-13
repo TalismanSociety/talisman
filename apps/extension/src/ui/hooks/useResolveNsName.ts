@@ -1,10 +1,9 @@
 import { isEthereumAddress } from "@talismn/crypto"
-import { isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
+import { isPotentialEns, type NsLookupType } from "@talismn/on-chain-id"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"
-
-import { api } from "@ui/api"
 
 export type Options = {
   /** Enabled by default, set to false to disable */
@@ -82,7 +81,7 @@ export const useResolveNsName = (resolveName?: string, options?: Options) => {
 const cacheKey = "TalismanNsNamesCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const nsNamesCache = new Map<string, { result?: [string, NsLookupType] | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
 )
 const persistNsNamesCache = () =>
   localStorage.setItem(
@@ -95,9 +94,9 @@ const persistNsNamesCache = () =>
             // check that the updated field exists
             item?.updated &&
             // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration,
-        ),
-    ),
+            Date.now() - item.updated <= persistItemDuration
+        )
+    )
   )
 
 /** Removes any data left over in the @deprecated cache */

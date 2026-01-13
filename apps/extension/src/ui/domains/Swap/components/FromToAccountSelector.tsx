@@ -1,17 +1,16 @@
 import { isAddressEqual, isBitcoinAddress, isEthereumAddress } from "@talismn/crypto"
+import { useAccounts } from "@ui/state"
 import { isAccountOwned, isAccountPlatformEthereum } from "extension-core"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useAccounts } from "@ui/state"
 
 import {
   fromAddressAtom,
   fromAssetAtom,
   fromEvmAddressAtom,
   fromSubstrateAddressAtom,
-  SwappableAssetWithDecimals,
+  type SwappableAssetWithDecimals,
   toAddressAtom,
   toAssetAtom,
   toBtcAddressAtom,
@@ -42,7 +41,7 @@ export const FromToAccountSelector = () => {
   if (!shouldShowFromAccount && !shouldShowToAccount) return null
 
   return (
-    <div className="bg-grey-900 text-body-secondary flex w-full flex-col gap-5 rounded px-8 py-4">
+    <div className="flex w-full flex-col gap-5 rounded bg-grey-900 px-8 py-4 text-body-secondary">
       {shouldShowFromAccount && <FromAccount />}
       {/* TODO: Show `X` as right-icon for any ToAccount which is not equal to FromAccount.
        *  Clicking this icon will reset `ToAccount` back to the value of `FromAccount`.
@@ -72,13 +71,17 @@ const FromAccount = () => {
         setFromEvmAddress(address)
 
         // reset toAddress to none
-        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
+        setToEvmAddress(null)
+        setToSubstrateAddress(null)
+        setToBtcAddress(null)
       }
       const setAsPolkadot = () => {
         setFromSubstrateAddress(address)
 
         // reset toAddress to none
-        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
+        setToEvmAddress(null)
+        setToSubstrateAddress(null)
+        setToBtcAddress(null)
       }
 
       // if address is in keyring, check platform
@@ -99,7 +102,7 @@ const FromAccount = () => {
       setToBtcAddress,
       setToEvmAddress,
       setToSubstrateAddress,
-    ],
+    ]
   )
 
   return (
@@ -177,7 +180,7 @@ const ToAccount = () => {
         return
       }
     },
-    [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress],
+    [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress]
   )
 
   return (

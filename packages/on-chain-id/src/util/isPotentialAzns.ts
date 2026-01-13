@@ -1,3 +1,2 @@
 /** @deprecated */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const isPotentialAzns = (name?: string) => false
+export const isPotentialAzns = (_name?: string) => false

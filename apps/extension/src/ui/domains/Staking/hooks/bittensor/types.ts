@@ -1,4 +1,4 @@
-import { type ValidatorYield } from "./dTao/types"
+import type { ValidatorYield } from "./dTao/types"
 
 type Pagination = {
   current_page: number

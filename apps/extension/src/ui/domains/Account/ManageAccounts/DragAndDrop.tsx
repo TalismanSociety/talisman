@@ -1,4 +1,3 @@
-import type { KeyboardEvent, MouseEvent } from "react"
 import {
   KeyboardSensor as LibKeyboardSensor,
   MouseSensor as LibMouseSensor,
@@ -7,9 +6,10 @@ import {
 } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { classNames } from "@talismn/util"
-import { CSSProperties, FC, ReactNode, useMemo } from "react"
+import type { KeyboardEvent, MouseEvent } from "react"
+import { type CSSProperties, type FC, type ReactNode, useMemo } from "react"
 
-import { UiTreePosition } from "./types"
+import type { UiTreePosition } from "./types"
 
 export const TreeDraggable: FC<{
   id: string
@@ -31,16 +31,16 @@ export const TreeDraggable: FC<{
     () => ({
       transform: CSS.Transform.toString(transform),
     }),
-    [transform],
+    [transform]
   )
 
   return (
     <div className={"relative"}>
       <div
         className={classNames(
-          "absolute left-0 top-0 size-full",
-          "bg-grey-850/50 border-grey-800 rounded-sm border border-dashed",
-          isDragging ? "visible" : "invisible",
+          "absolute top-0 left-0 size-full",
+          "rounded-sm border border-grey-800 border-dashed bg-grey-850/50",
+          isDragging ? "visible" : "invisible"
         )}
       ></div>
       <div ref={setNodeRef} style={style} className={className} {...attributes} {...listeners}>
@@ -61,7 +61,7 @@ export const TreeDroppable: FC<{
 }> = ({ children, className, isOverClassName, hasOverClassName, disabled, parentId, index }) => {
   const [id, data] = useMemo<[string, UiTreePosition]>(
     () => [`${parentId}::${index}`, { parentId, index }],
-    [parentId, index],
+    [parentId, index]
   )
 
   const { setNodeRef, isOver, over } = useDroppable({ id, data, disabled })
@@ -72,7 +72,7 @@ export const TreeDroppable: FC<{
       className={classNames(
         className,
         !disabled && !!over && hasOverClassName,
-        !disabled && isOver && isOverClassName,
+        !disabled && isOver && isOverClassName
       )}
     >
       {children}
@@ -111,7 +111,7 @@ function shouldHandleEvent(element: HTMLElement | null) {
   let cur = element
 
   while (cur) {
-    if (cur.dataset && cur.dataset.noDnd) {
+    if (cur.dataset?.noDnd) {
       return false
     }
     cur = cur.parentElement

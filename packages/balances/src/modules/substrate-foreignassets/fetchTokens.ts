@@ -1,16 +1,16 @@
 import {
-  AnyMiniMetadata,
-  SubForeignAssetsToken,
+  type AnyMiniMetadata,
+  type SubForeignAssetsToken,
   SubForeignAssetsTokenSchema,
   subForeignAssetTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, papiStringify, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy, keys } from "lodash-es"
-import { Binary } from "polkadot-api"
+import type { Binary } from "polkadot-api"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { QueryStorageResult } from "../shared"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import type { QueryStorageResult } from "../shared"
+import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -56,7 +56,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       }
       return { onChainId, existentialDeposit: asset.min_balance, isSufficient: asset.is_sufficient }
     }),
-    (a) => a.onChainId,
+    (a) => a.onChainId
   )
 
   const metadataByOnChainId = keyBy(
@@ -78,11 +78,11 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         symbol: metadata.symbol?.asText(),
       }
     }),
-    (a) => a.onChainId,
+    (a) => a.onChainId
   )
 
   const allTokens = keys(assetByOnChainId).map((onChainId) =>
-    assign({}, assetByOnChainId[onChainId], metadataByOnChainId[onChainId] ?? undefined),
+    assign({}, assetByOnChainId[onChainId], metadataByOnChainId[onChainId] ?? undefined)
   )
 
   const configTokenByOnChainId = keyBy(tokens, (t) => t.onChainId)
@@ -103,7 +103,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals: asset.decimals ?? 0,
           existentialDeposit: String(asset.existentialDeposit),
           isDefault: true,
-        }),
+        })
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {

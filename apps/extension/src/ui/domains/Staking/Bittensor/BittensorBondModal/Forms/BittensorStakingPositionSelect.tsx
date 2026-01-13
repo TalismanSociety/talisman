@@ -1,11 +1,6 @@
-import { classNames, cn } from "@talismn/util"
-import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { t } from "i18next"
-import { FC, useCallback, useDeferredValue, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
+import { classNames, cn } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -13,13 +8,17 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { useAccountByAddress, useSelectedCurrency } from "@ui/state"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { t } from "i18next"
+import { type FC, useCallback, useDeferredValue, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../../hooks/useBittensorBondModal"
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 import {
-  BittensorStakingPosition,
+  type BittensorStakingPosition,
   useBittensorStakingPositions,
 } from "../../hooks/useBittensorStakingPositions"
 
@@ -56,7 +55,7 @@ export const BittensorStakingPositionSelect = () => {
       ]
         .join()
         .toLowerCase()
-        .includes(lowerSearch),
+        .includes(lowerSearch)
     )
   }, [positions, search])
 
@@ -64,7 +63,7 @@ export const BittensorStakingPositionSelect = () => {
     (position: BittensorStakingPosition) => () => {
       setPosition(position)
     },
-    [setPosition],
+    [setPosition]
   )
 
   return (
@@ -82,9 +81,9 @@ export const BittensorStakingPositionSelect = () => {
         <div className="p-12 pt-0">
           <SearchInputControlled
             containerClassName={classNames(
-              "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
-              "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
-              "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+              "!bg-field !px-4 h-[3.6rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+              "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
+              "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
             )}
             placeholder={t("Search")}
             value={searchSync}
@@ -104,7 +103,7 @@ export const BittensorStakingPositionSelect = () => {
               />
             ))}
             {!filteredPositions.length && (
-              <div className="text-body-secondary p-10">
+              <div className="p-10 text-body-secondary">
                 {!positions.length
                   ? t("No staking positions available")
                   : t("No staking positions match your search")}
@@ -132,8 +131,8 @@ const Position: FC<{
       type="button"
       onClick={onClick}
       className={cn(
-        "hover:bg-black-tertiary flex h-28 w-full shrink-0 items-center gap-4 overflow-hidden px-10",
-        isSelected && "bg-black-tertiary",
+        "flex h-28 w-full shrink-0 items-center gap-4 overflow-hidden px-10 hover:bg-black-tertiary",
+        isSelected && "bg-black-tertiary"
       )}
     >
       <TokenLogo tokenId={position.token.id} className="shrink-0 text-2xl" />
@@ -160,7 +159,7 @@ const Position: FC<{
             />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full justify-between gap-4 overflow-hidden text-xs">
+        <div className="flex w-full justify-between gap-4 overflow-hidden text-body-secondary text-xs">
           <div className="truncate">
             {position.token.netuid === 0
               ? t("Root Staking")

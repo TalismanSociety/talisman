@@ -1,4 +1,4 @@
-import { type SendRequest } from "extension-core"
+import type { SendRequest } from "extension-core"
 import { log } from "extension-shared"
 
 import { announceProvider } from "./eip6963"
@@ -7,11 +7,11 @@ import { logProxy } from "./logProxy"
 
 type TalismanWindow = Window &
   typeof globalThis & {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     ethereum: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     talismanEth?: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     web3?: any
   }
 
@@ -47,7 +47,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
           // This may never be called in practice due to Phantom's injection method
           if (newValue.isPhantom)
             throw new Error(
-              "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819",
+              "Prevent Phantom window.ethereum abuse - see https://github.com/TalismanSociety/talisman/issues/819"
             )
 
           // allow all other wallets to override window.ethereum

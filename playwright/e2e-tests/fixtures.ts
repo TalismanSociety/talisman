@@ -1,5 +1,5 @@
-import type { BrowserContext, Locator, Page } from "@playwright/test"
 import { randomBytes } from "@noble/hashes/utils"
+import type { BrowserContext, Locator, Page } from "@playwright/test"
 import { test as base, chromium } from "@playwright/test"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 
@@ -15,9 +15,9 @@ export const test = base.extend<{
   addNewAccount: (opts: { type: AccountType; name?: string }) => Promise<Page>
   walletPopup: (opts: { locator: Locator }) => Promise<Page>
 }>({
-  // eslint-disable-next-line no-empty-pattern
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require destructuring pattern
   context: async ({}, utilize) => {
-    const pathToExtension = "./apps/extension/dist/chrome"
+    const pathToExtension = "./apps/extension/dist/chrome-mv3"
     const context = await chromium.launchPersistentContext("", {
       headless: false,
       args: [
@@ -27,7 +27,7 @@ export const test = base.extend<{
     })
 
     context.on("weberror", (err) => {
-      throw new Error("Failing test due to error in browser context: " + err.error())
+      throw new Error(`Failing test due to error in browser context: ${err.error()}`)
     })
 
     await utilize(context)
@@ -45,7 +45,7 @@ export const test = base.extend<{
     const page = await context.newPage()
 
     page.on("pageerror", (err) => {
-      throw new Error("Failing test due to error in browser page: " + err)
+      throw new Error(`Failing test due to error in browser page: ${err}`)
     })
 
     await page.goto(`chrome-extension://${extensionId}/onboarding.html`)
@@ -93,7 +93,7 @@ export const test = base.extend<{
           : process.env.E2E_TESTS_MNEMONIC || constants.DOT_TEST_MNEMONIC)
 
       await onboardedPage.goto(
-        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`,
+        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/mnemonic`
       )
       await onboardedPage.getByTestId(`account-platform-selector-${type}`).click()
       await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
@@ -119,12 +119,12 @@ export const test = base.extend<{
       const randomBuffer = randomBytes(16)
       const getRandomChars = xxhashAsHex(randomBuffer).slice(
         "0x".length,
-        "0x".length + suffixLength,
+        "0x".length + suffixLength
       )
-      const accName = name || constants.NEW_ACC_NAME + " " + `(${getRandomChars})`
+      const accName = name || `${constants.NEW_ACC_NAME} (${getRandomChars})`
 
       await onboardedPage.goto(
-        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`,
+        `chrome-extension://${extensionId}/dashboard.html#/accounts/add/derived?platform=${type}`
       )
       await onboardedPage.getByPlaceholder("Choose a name").fill(accName)
 

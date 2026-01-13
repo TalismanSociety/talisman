@@ -4,8 +4,8 @@ import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
-import { IBalance } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { setDetectedTokenIds } from "../shared/detectedTokens"
 import { MODULE_TYPE } from "./config"
@@ -43,7 +43,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               status: "live",
               value,
             }
-          } catch (err) {
+          } catch {
             log.warn("Failed to parse token amount", {
               address,
               d,
@@ -57,16 +57,16 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       setDetectedTokenIds(
         address,
         MODULE_TYPE,
-        balances.map((b) => b.tokenId),
+        balances.map((b) => b.tokenId)
       )
 
       return [address, balances] as const
-    }),
+    })
   )
 
   const allBalancesByKey = keyBy(
     balancesPerAddress.flatMap(([, addressBalances]) => addressBalances),
-    (b) => getBalanceKey(b.tokenId, b.address),
+    (b) => getBalanceKey(b.tokenId, b.address)
   )
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)

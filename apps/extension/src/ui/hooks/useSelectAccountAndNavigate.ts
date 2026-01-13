@@ -1,8 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
+import { useAccounts } from "@ui/state"
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-
-import { useAccounts } from "@ui/state"
 
 export const useSelectAccountAndNavigate = (url: string) => {
   const navigate = useNavigate()

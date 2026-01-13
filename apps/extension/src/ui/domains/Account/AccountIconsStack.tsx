@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { FC } from "react"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import type { Account } from "extension-core"
+import type { FC } from "react"
 
 export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
   accounts,
@@ -14,14 +13,14 @@ export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
     <div
       className={classNames(
         "ml-[0.4em] inline-block h-9 pl-0.5 leading-none [&>div]:ml-[-0.4em]",
-        className,
+        className
       )}
     >
       {accounts.slice(0, 3).map((account) => (
         <AccountIcon
           key={account.address}
           address={account.address}
-          className="border-grey-800 box-content shrink-0 rounded-full border text-base"
+          className="box-content shrink-0 rounded-full border border-grey-800 text-base"
         />
       ))}
     </div>

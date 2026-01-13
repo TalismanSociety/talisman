@@ -1,16 +1,15 @@
+import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
 import {
-  AnySigningRequest,
+  type AnySigningRequest,
   isEthereumRequest,
-  KnownRespondableRequest,
-  SigningRequests,
+  type KnownRespondableRequest,
+  type SigningRequests,
 } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback } from "react"
 
-import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
-
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   approveSignFn: (requestId: T["id"], ...args: any[]) => Promise<boolean>
   cancelSignFn: (requestId: T["id"]) => Promise<boolean>
   currentRequest?: T
@@ -24,9 +23,9 @@ type SignableRequest<T extends keyof SigningRequests> = Pick<
   status: StatusOptions
   isEthereumRequest: boolean
   message?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   approve: (...args: any[]) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   reject: (...args: any[]) => void
   setReady: SetStatusFn["ready"]
 }
@@ -39,7 +38,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     async (...args: any) => {
       setStatus.processing("Approving request")
       if (!currentRequest) return
@@ -51,18 +50,18 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         setStatus.error(
           isEthereumRequest(currentRequest)
             ? (err as Error).message
-            : "Failed to approve sign request",
+            : "Failed to approve sign request"
         )
       }
     },
-    [approveSignFn, currentRequest, setStatus],
+    [approveSignFn, currentRequest, setStatus]
   )
 
   // handle request rejection
   const reject = useCallback(async () => {
     try {
       if (currentRequest) await cancelSignFn(currentRequest.id)
-    } catch (err) {
+    } catch {
       // ignore, request doesn't exist
       // we just want popup to close
     }

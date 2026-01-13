@@ -3,8 +3,8 @@ import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { isAddressEqual } from "@talismn/crypto"
 import {
-  AccountLedgerEthereum,
-  EthSignMessageMethod,
+  type AccountLedgerEthereum,
+  type EthSignMessageMethod,
   getTransactionSerializable,
 } from "extension-core"
 import { t } from "i18next"
@@ -13,10 +13,10 @@ import { useTranslation } from "react-i18next"
 import {
   hexToBigInt,
   isHex,
+  type Signature,
   serializeTransaction,
-  Signature,
   signatureToHex,
-  TransactionRequest,
+  type TransactionRequest,
 } from "viem"
 
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"
@@ -47,7 +47,7 @@ export const useLedgerEthereum = () => {
         refIsBusy.current = false
       }
     },
-    [closeTransport, ensureTransport, t],
+    [closeTransport, ensureTransport, t]
   )
 
   const sign = useCallback(
@@ -55,18 +55,18 @@ export const useLedgerEthereum = () => {
       chainId: number,
       method: EthSignMessageMethod | "eth_sendTransaction",
       payload: unknown,
-      account: AccountLedgerEthereum,
+      account: AccountLedgerEthereum
     ) => {
       return withLedger((ledger) => signWithLedger(ledger, chainId, method, payload, account))
     },
-    [withLedger],
+    [withLedger]
   )
 
   const getAddress = useCallback(
     (derivationPath: string) => {
       return withLedger((ledger) => ledger.getAddress(derivationPath, false))
     },
-    [withLedger],
+    [withLedger]
   )
 
   return {
@@ -80,14 +80,14 @@ const signWithLedger = async (
   chainId: number,
   method: EthSignMessageMethod | "eth_sendTransaction",
   payload: unknown,
-  account: AccountLedgerEthereum,
+  account: AccountLedgerEthereum
 ): Promise<`0x${string}`> => {
   const { address } = await ledger.getAddress(account.derivationPath, false)
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(
-        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
-      ),
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry."
+      )
     )
 
   switch (method) {
@@ -99,7 +99,7 @@ const signWithLedger = async (
         // Nano S doesn't support signEIP712Message, fallback to signEIP712HashedMessage in case of error
         // see https://github.com/LedgerHQ/ledger-live/tree/develop/libs/ledgerjs/packages/hw-app-eth#signeip712message
 
-        // eslint-disable-next-line no-var
+        // biome-ignore lint/correctness/noInnerDeclarations: legacy
         var sig = await ledger.signEIP712Message(account.derivationPath, jsonMessage)
       } catch {
         // fallback for ledger Nano S
@@ -108,19 +108,19 @@ const signWithLedger = async (
           "EIP712Domain",
           domain,
           types,
-          SignTypedDataVersion.V4,
+          SignTypedDataVersion.V4
         ).toString("hex")
         const hashStructMessageHex = TypedDataUtils.hashStruct(
           primaryType as string,
           message,
           types,
-          SignTypedDataVersion.V4,
+          SignTypedDataVersion.V4
         ).toString("hex")
 
         sig = await ledger.signEIP712HashedMessage(
           account.derivationPath,
           domainSeparatorHex,
-          hashStructMessageHex,
+          hashStructMessageHex
         )
       }
 
@@ -133,7 +133,7 @@ const signWithLedger = async (
 
       const sig = await ledger.signPersonalMessage(
         account.derivationPath,
-        stripHexPrefix(messageHex),
+        stripHexPrefix(messageHex)
       )
 
       return signatureToHex(toSignature(sig))
@@ -147,7 +147,7 @@ const signWithLedger = async (
       const sig = await ledger.signTransaction(
         account.derivationPath,
         stripHexPrefix(serialized),
-        null,
+        null
       )
 
       return serializeTransaction(baseTx, toSignature(sig))

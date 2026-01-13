@@ -1,12 +1,11 @@
 import { assert } from "@polkadot/util"
-import { AccountPlatform } from "@talismn/crypto"
-import { AddAccountExternalOptions } from "extension-core"
-import { useCallback, useState } from "react"
-import { useSearchParams } from "react-router-dom"
-
 import { provideContext } from "@talisman/util/provideContext"
+import type { AccountPlatform } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state"
+import type { AddAccountExternalOptions } from "extension-core"
+import { useCallback, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 
 export type LedgerAccountDefSubstrate = Extract<
   AddAccountExternalOptions,
@@ -61,7 +60,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
               const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
               return !!genesisHash && genesisHash === chain?.genesisHash
             }),
-            "Chain mismatch",
+            "Chain mismatch"
           )
       }
 
@@ -69,12 +68,12 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       return api.accountAddExternal(accounts)
     },
-    [chain?.genesisHash, data.substrateAppType, data.platform],
+    [chain?.genesisHash, data.substrateAppType, data.platform]
   )
 
   return { data, updateData, connectAccounts, onSuccess }
 }
 
 export const [AddLedgerAccountProvider, useAddLedgerAccount] = provideContext(
-  useAddLedgerAccountProvider,
+  useAddLedgerAccountProvider
 )

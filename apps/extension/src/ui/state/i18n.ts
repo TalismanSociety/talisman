@@ -1,4 +1,4 @@
-import i18next, { TFunction } from "i18next"
+import i18next, { type TFunction } from "i18next"
 import { Observable, shareReplay } from "rxjs"
 
 export const t$ = new Observable<TFunction>((subscriber) => {

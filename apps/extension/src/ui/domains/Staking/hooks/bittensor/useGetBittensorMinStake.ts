@@ -1,7 +1,6 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
-
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useMemo } from "react"
 
 /**
     #[pallet::type_value]

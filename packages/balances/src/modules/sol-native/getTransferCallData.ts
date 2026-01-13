@@ -1,7 +1,7 @@
 import { PublicKey, SystemProgram } from "@solana/web3.js"
 import { isTokenOfType } from "@talismn/chaindata-provider"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({

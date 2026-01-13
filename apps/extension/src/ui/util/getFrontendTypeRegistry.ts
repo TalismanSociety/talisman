@@ -2,11 +2,10 @@ import { typesBundle } from "@polkadot/apps-config/api"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
-import { DotNetwork } from "@talismn/chaindata-provider"
-import { getMetadataFromDef, getMetadataRpcFromDef } from "extension-core"
-
+import type { HexString } from "@polkadot/util/types"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import { getMetadataFromDef, getMetadataRpcFromDef } from "extension-core"
 
 /**
  * do not reuse getTypeRegistry because we're on frontend, we need to leverage backend's metadata cache
@@ -14,7 +13,7 @@ import { api } from "@ui/api"
 export const getFrontendTypeRegistry = async (
   network?: DotNetwork,
   specVersion?: number | string,
-  signedExtensions?: string[],
+  signedExtensions?: string[]
 ) => {
   const registry = new TypeRegistry()
 
@@ -37,7 +36,7 @@ export const getFrontendTypeRegistry = async (
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
       if (network.chainName) {
         registry.register(
-          getSpecTypes(registry, network.chainName, network.specName, network.specVersion),
+          getSpecTypes(registry, network.chainName, network.specName, network.specVersion)
         )
         registry.knownTypes.typesAlias = getSpecAlias(registry, network.chainName, network.specName)
       }

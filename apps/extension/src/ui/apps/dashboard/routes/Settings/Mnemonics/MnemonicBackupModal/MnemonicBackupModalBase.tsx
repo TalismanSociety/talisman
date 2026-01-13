@@ -16,7 +16,7 @@ export const MnemonicBackupModalBase = ({
   return (
     <ModalDialog
       className={classNames("w-auto p-2", className)}
-      title={title && <span className="text-md font-semibold">{title}</span>}
+      title={title && <span className="font-semibold text-md">{title}</span>}
       onClose={close}
     >
       {children}

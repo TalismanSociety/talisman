@@ -1,14 +1,13 @@
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-import { ReactNode, Suspense } from "react"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
 import { useToken } from "@ui/state"
+import { type ReactNode, Suspense } from "react"
 
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
@@ -39,8 +38,8 @@ export const TokenBalancesList = ({
     <div className={classNames("text-body-secondary text-sm")}>
       <div
         className={classNames(
-          "bg-grey-800 flex w-full items-center gap-4 overflow-hidden border-transparent px-7 py-6",
-          detailRowsLength ? "rounded-t-sm" : "rounded",
+          "flex w-full items-center gap-4 overflow-hidden border-transparent bg-grey-800 px-7 py-6",
+          detailRowsLength ? "rounded-t-sm" : "rounded"
         )}
       >
         <div className="text-xl">
@@ -48,7 +47,7 @@ export const TokenBalancesList = ({
         </div>
         <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
           <div className="flex grow items-center gap-3">
-            <div className="text-body truncate font-bold">{token.name}</div>
+            <div className="truncate font-bold text-body">{token.name}</div>
             <div className="flex items-center">
               <CopyAddressButton networkId={chainOrNetworkId} />
               <BittensorUnstakeButton balances={balances} />
@@ -80,7 +79,7 @@ export const TokenBalancesList = ({
           <div className="size-[3.8rem] shrink-0">
             <TokenContextMenu
               tokenId={tokenId}
-              className="hover:bg-grey-700 focus-visible:bg-grey-700 rounded-full"
+              className="rounded-full hover:bg-grey-700 focus-visible:bg-grey-700"
             />
           </div>
         )}

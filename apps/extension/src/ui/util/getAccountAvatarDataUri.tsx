@@ -1,9 +1,8 @@
 import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talismn/orb"
-import { IdenticonType } from "extension-core"
-import { renderToString } from "react-dom/server"
-
 import { PolkadotAvatar } from "@ui/domains/Account/AccountIcon"
+import type { IdenticonType } from "extension-core"
+import { renderToString } from "react-dom/server"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {
@@ -42,7 +41,7 @@ const cache: Record<string, string | null> = {}
 
 export const getAccountAvatarDataUri = (
   address: string,
-  iconType: IdenticonType = "talisman-orb",
+  iconType: IdenticonType = "talisman-orb"
 ) => {
   const cacheKey = `${address}-${iconType}`
   if (cache[cacheKey] === undefined)

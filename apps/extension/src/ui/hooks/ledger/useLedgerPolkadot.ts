@@ -1,14 +1,14 @@
-import { TypeRegistry } from "@polkadot/types"
+import type { TypeRegistry } from "@polkadot/types"
 import { hexToU8a, u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
 import { PolkadotGenericApp, supportedApps } from "@zondax/ledger-substrate"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
-  AccountLedgerPolkadot,
+  type AccountLedgerPolkadot,
   isJsonPayload,
-  LedgerPolkadotCurve,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
+  type LedgerPolkadotCurve,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
 } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
@@ -52,7 +52,7 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
         refIsBusy.current = false
       }
     },
-    [closeTransport, ensureTransport, legacyApp, t],
+    [closeTransport, ensureTransport, legacyApp, t]
   )
 
   const sign = useCallback(
@@ -60,13 +60,13 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
       payload: SignerPayloadJSON | SignerPayloadRaw,
       account: AccountLedgerPolkadot,
       registry?: TypeRegistry | null,
-      txMetadata?: string | null,
+      txMetadata?: string | null
     ) => {
       return withLedger((ledger) => {
         return signPayload(ledger, payload, account, registry, txMetadata)
       })
     },
-    [withLedger],
+    [withLedger]
   )
 
   const getAddressEd25519 = useCallback(
@@ -75,7 +75,7 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
         return ledger.getAddressEd25519(bip44path, ss58prefix, false)
       })
     },
-    [withLedger],
+    [withLedger]
   )
 
   const getAddressEcdsa = useCallback(
@@ -90,7 +90,7 @@ export const useLedgerPolkadot = ({ legacyApp } = DEFAULT_PROPS) => {
         return ledger.getAddressEcdsa(bip44path, false)
       })
     },
-    [withLedger],
+    [withLedger]
   )
 
   return {
@@ -118,7 +118,7 @@ const signWithMetadata = (
   curve: LedgerPolkadotCurve,
   path: string,
   txBlob: Buffer<ArrayBuffer>,
-  txMetadata: Buffer<ArrayBuffer>,
+  txMetadata: Buffer<ArrayBuffer>
 ) => {
   switch (curve) {
     case "ed25519":
@@ -132,7 +132,7 @@ const signRawPayload = async (
   ledger: PolkadotGenericApp,
   curve: LedgerPolkadotCurve,
   path: string,
-  txBlob: Buffer<ArrayBuffer>,
+  txBlob: Buffer<ArrayBuffer>
 ) => {
   switch (curve) {
     case "ed25519": {
@@ -152,7 +152,7 @@ const signPayload = async (
   payload: SignerPayloadJSON | SignerPayloadRaw,
   account: AccountLedgerPolkadot,
   registry?: TypeRegistry | null,
-  txMetadata?: string | null,
+  txMetadata?: string | null
 ) => {
   if (!ledger) throw new Error("Ledger not connected")
 
@@ -164,7 +164,7 @@ const signPayload = async (
   const app = supportedApps.find((a) => a.name === (account.app ?? "Polkadot"))
   if (!app)
     throw getTalismanLedgerError(
-      t("Could not find which Ledger app can be used with this account. Please contact support."),
+      t("Could not find which Ledger app can be used with this account. Please contact support.")
     )
 
   // check correct address
@@ -174,19 +174,19 @@ const signPayload = async (
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(
-        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
-      ),
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry."
+      )
     )
 
   if (isJsonPayload(payload)) {
     if (!payload.withSignedTransaction)
       throw getTalismanLedgerError(
-        t("This dapp needs to be updated in order to support Ledger signing."),
+        t("This dapp needs to be updated in order to support Ledger signing.")
       )
     if (!registry) throw getTalismanLedgerError(t("Missing registry."))
 
     const hasCheckMetadataHash = registry.metadata.extrinsic.transactionExtensions.some(
-      (ext) => ext.identifier.toString() === "CheckMetadataHash",
+      (ext) => ext.identifier.toString() === "CheckMetadataHash"
     )
     if (!hasCheckMetadataHash)
       throw getTalismanLedgerError(t("This network doesn't support Ledger Polkadot Generic App."))

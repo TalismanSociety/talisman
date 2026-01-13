@@ -1,11 +1,5 @@
-import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
-import { FC, Suspense, useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useMatch } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { PopupDefiPositions } from "@ui/domains/Portfolio/DeFi/PopupDefiPositions"
@@ -17,6 +11,11 @@ import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTo
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag, usePortfolioGlobalData } from "@ui/state"
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
+import { type FC, Suspense, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useMatch } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PortfolioAssetsHeader } from "./shared/PortfolioAssetsHeader"
 
@@ -30,7 +29,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   }, [type])
 
   return (
-    <div className="text-body-secondary mt-56 flex flex-col items-center justify-center gap-8 text-center">
+    <div className="mt-56 flex flex-col items-center justify-center gap-8 text-center text-body-secondary">
       <div>{t("Enable some networks to display your assets")}</div>
       <div>
         <Button onClick={handleClick} primary small type="button">

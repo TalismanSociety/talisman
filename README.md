@@ -9,7 +9,7 @@
 [![firefox-addon-link](https://img.shields.io/amo/v/talisman-wallet-extension?logo=firefox&logoColor=white&style=flat-square)](https://addons.mozilla.org/en-US/firefox/addon/talisman-wallet-extension)
 
 **Multi-Chain Made Easy** with Talisman Wallet.  
-An ultra-secure Ethereum and Polkadot wallet for both beginners and pros.
+An ultra-secure Ethereum, Polkadot and Solana wallet for both beginners and pros.
 
 ## What's inside?
 
@@ -49,19 +49,28 @@ Once you have installed **Node.js**, run `corepack enable` to turn it on, then f
 
    `pnpm install`
 
-1. Start the dev server, waiting for it to generate the `dist` directory.
+1. Start the dev server (uses WXT/Vite for fast rebuilds and HMR).
 
    `pnpm dev:extension`
 
 1. Open Chrome and navigate to `chrome://extensions`.
 1. Turn on the `Developer mode` toggle on the top right of the page.
-1. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist/chrome` directory.
-1. Change some code!
+1. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist/chrome-mv3-dev` directory.
+1. Change some code! The extension will hot-reload automatically.
+
+### Firefox Development
+
+To develop for Firefox instead:
+
+```bash
+pnpm dev:extension:firefox
+```
+
+Then load the extension from `apps/extension/dist/firefox-mv3-dev` in Firefox's `about:debugging` page.
 
 ## Apps and packages
 
-- `apps/extension`: the non-custodial Talisman Wallet browser extension
-- `packages/eslint-config`: shared `eslint` configurations
+- `apps/extension`: the non-custodial Talisman Wallet browser extension (built with [WXT](https://wxt.dev/)/Vite)
 - `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
 - `packages/util`: library containing shared non-react code. It is not meant to be npm published.
 
@@ -69,10 +78,20 @@ All our apps and packages are 100% [TypeScript](https://www.typescriptlang.org/)
 
 ## Writing and running tests
 
-- Testing is carried out with Jest.
+- Testing is carried out with [Vitest](https://vitest.dev/).
 - Tests can be written in `*.spec.ts` files, inside a `__tests__` folder.
 - Follow the pattern in `apps/extension/src/core/handlers/Extension.spec.ts` or `apps/extension/src/core/domains/signing/__tests__/requestsStore.spec.ts`
 - Tests are run with `pnpm test`
+
+## Code quality
+
+We use [Biome](https://biomejs.dev/) for linting and formatting across the monorepo.
+
+- **Format code**: `pnpm chore:format`
+- **Lint code**: `pnpm lint`
+- **Pre-commit hook**: Automatically runs Biome checks on staged files
+
+If you're using VS Code, install the [Biome extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome) for automatic formatting on save.
 
 ## i18n (wallet extension development)
 
@@ -83,13 +102,13 @@ When building UI features, please follow the following spec to ensure they're tr
 1. Import the `useTranslation` hook into your React components:
 
    ```tsx
-   import { useTranslation } from "react-i18next"
+   import { useTranslation } from "react-i18next";
    ```
 
 1. Use the hook in your component to get access to the `t` function:
 
    ```tsx
-   const { t } = useTranslation()
+   const { t } = useTranslation();
    ```
 
 1. Wrap any user-visible language in your component with the `t` function:
@@ -102,7 +121,7 @@ When building UI features, please follow the following spec to ensure they're tr
          {t("Account has {{assetCount}} assets", { assetCount: assets.length })}
        </div>
      </div>
-   )
+   );
    ```
 
 1. If you want to include any react components in your translation, you will need to use the `Trans` component:
@@ -158,19 +177,40 @@ When building UI features, please follow the following spec to ensure they're tr
 ### Scripts
 
 - `chore:update-translations` : finds all of the i18n strings in the codebase and adds them to the english translations files which i18next loads in development builds of the wallet
-- `dev` : builds and watches all packages/apps with hot reloading
-- `dev:extension` : when working on extension only, for better color output
-- `build`: builds the wallet in `packages/apps/extension/dist/chrome` folder, without sentry keys
-- `build:firefox`: builds the wallet in `packages/apps/extension/dist/firefox` folder, without sentry keys
-- `build:extension:prod` builds the Talisman browser extension (requires sentry settings, Talisman team only)
-- `build:extension:canary` : builds the Talisman browser extension test version, with different ID and icon than prod
 
-### Build the wallet browser extension using Docker
+#### Development
+
+- `dev` : starts the extension dev server (alias for `dev:extension`)
+- `dev:extension` : starts WXT dev server with hot module replacement for Chrome
+- `dev:extension:firefox` : starts WXT dev server for Firefox
+
+#### Production Builds
+
+- `build:extension` : builds the extension for Chrome (outputs to `dist/chrome-mv3`)
+- `build:extension:firefox` : builds the extension for Firefox (outputs to `dist/firefox-mv3`)
+- `build:extension:prod` : production Chrome build with Sentry sourcemap upload
+- `build:extension:prod:firefox` : production Firefox build via Docker (reproducible)
+- `build:extension:canary` : canary Chrome build for internal testing
+- `build:extension:canary:firefox` : canary Firefox build for internal testing
+
+### Firefox Production Builds
+
+Firefox production builds use a **two-pass Docker build** to ensure reproducibility:
+
+1. **Pass 1**: Build from repo → generates `sources.zip`
+2. **Pass 2**: Rebuild from `sources.zip` → produces final deliverables
+
+This guarantees that the shipped extension is built from the exact sources that are shipped, which is what Firefox Add-on reviewers will do. The build produces byte-identical output with matching SHA-256 checksums.
 
 ```bash
-# builds with docker, outputs in dist folder at the root of the monorepo
-rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
+# Build Firefox production extension (requires Docker with network access)
+pnpm build:extension:prod:firefox
+
+# Verify the build is reproducible
+./scripts/verify-reproducible-build.sh
 ```
+
+See [FIREFOX_SOURCE_CODE_REVIEW.md](FIREFOX_SOURCE_CODE_REVIEW.md) for reviewer instructions.
 
 ### Update packages
 

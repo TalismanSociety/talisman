@@ -1,6 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom"
-
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { DashboardLayout } from "../../layout"
 import { TaoDashboardSubnetPage } from "./TaoDashboardSubnetPage"

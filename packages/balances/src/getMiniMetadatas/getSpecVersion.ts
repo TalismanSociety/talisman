@@ -1,5 +1,5 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 
 // cache the promise so it can be shared across multiple calls
 const CACHE_GET_SPEC_VERSION = new Map<string, Promise<number>>()
@@ -9,7 +9,7 @@ const fetchSpecVersion = async (chainConnector: IChainConnectorDot, networkId: D
     networkId,
     "state_getRuntimeVersion",
     [],
-    true,
+    true
   )
   return specVersion
 }
@@ -19,7 +19,7 @@ const fetchSpecVersion = async (chainConnector: IChainConnectorDot, networkId: D
  */
 export const getSpecVersion = async (
   chainConnector: IChainConnectorDot,
-  networkId: DotNetworkId,
+  networkId: DotNetworkId
 ) => {
   if (CACHE_GET_SPEC_VERSION.has(networkId)) return CACHE_GET_SPEC_VERSION.get(networkId)!
 

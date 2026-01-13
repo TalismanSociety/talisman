@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 
 export const HeaderBlock: FC<{
   title?: ReactNode
@@ -7,6 +7,6 @@ export const HeaderBlock: FC<{
 }> = ({ title, text, className }) => (
   <header className={className}>
     {title && <h1 className="text-body text-lg">{title}</h1>}
-    {text && <p className="text-body-secondary mt-4 text-sm">{text}</p>}
+    {text && <p className="mt-4 text-body-secondary text-sm">{text}</p>}
   </header>
 )

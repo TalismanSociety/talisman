@@ -1,10 +1,4 @@
 import { cn } from "@talismn/util"
-import { formatDuration, intervalToDuration } from "date-fns"
-import { TimePeriodDto } from "extension-core"
-import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
-
 import { AccountPillButton } from "@ui/domains/Account/AccountPillButton"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { AmountEdit } from "@ui/domains/Earn/shared/AmountEdit"
@@ -12,6 +6,11 @@ import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/Yi
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
+import type { TimePeriodDto } from "extension-core"
+import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, WizardModalDialog } from "talisman-ui"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
@@ -160,7 +159,7 @@ const NetworkDisplay = () => {
   if (!tokenIn) return null
 
   return (
-    <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+    <div className="flex w-full items-center gap-2 overflow-hidden text-body">
       <NetworkLogo className="size-8" networkId={tokenIn.networkId} />
       <NetworkName className="truncate" networkId={tokenIn.networkId} />
     </div>
@@ -191,7 +190,7 @@ const AvailableBalance = () => {
 
   if (!balance?.transferable.planck && isLoadingBalance)
     return (
-      <div className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">
+      <div className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
         0 TNK ($0.00)
       </div>
     )

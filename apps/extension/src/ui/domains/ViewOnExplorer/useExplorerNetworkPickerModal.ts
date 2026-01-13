@@ -1,8 +1,7 @@
 import { bind } from "@react-rxjs/core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 type ExplorerNetworkPickerModalInputs = { address: string }
 
@@ -24,7 +23,7 @@ export const useExplorerNetworkPickerModal = () => {
       setInputs(opts)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   return {

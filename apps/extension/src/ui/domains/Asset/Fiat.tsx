@@ -1,12 +1,11 @@
-import { BalanceFormatter } from "@talismn/balances"
-import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames, Prettify } from "@talismn/util"
-import React, { FC, useCallback, useMemo } from "react"
-import CountUp from "react-countup"
-
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
+import type { BalanceFormatter } from "@talismn/balances"
+import type { TokenRateCurrency } from "@talismn/token-rates"
+import { classNames, type Prettify } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { useFiatFromUsd, useSelectedCurrency } from "@ui/state"
+import React, { type FC, useCallback, useMemo } from "react"
+import CountUp from "react-countup"
 
 type FiatProps = {
   amount?: number | BalanceFormatter | null
@@ -49,7 +48,7 @@ export const Fiat = ({
         "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
-        className,
+        className
       )}
     >
       {render && (
@@ -80,7 +79,7 @@ const DisplayValue = React.memo(
 
         return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance],
+      [currency, currencyDisplay, decimalPlaces, isBalance]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 
@@ -97,7 +96,7 @@ const DisplayValue = React.memo(
         preserveValue
       />
     )
-  },
+  }
 )
 DisplayValue.displayName = "DisplayValue"
 

@@ -1,10 +1,9 @@
 import { classNames, formatDecimals, MAX_DECIMALS_FORMAT } from "@talismn/util"
+import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
-import React, { FC, useMemo } from "react"
+import React, { type FC, useMemo } from "react"
 import CountUp from "react-countup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 
 type TokensProps = {
   amount?: string | number | null | BigNumber
@@ -27,12 +26,12 @@ type DisplayValueProps = {
 const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCountUp }) => {
   const num = useMemo(
     () => (BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)),
-    [amount],
+    [amount]
   )
 
   const formated = useMemo(() => formatDecimals(num), [num])
 
-  if (isNaN(num)) return null
+  if (Number.isNaN(num)) return null
 
   if (noCountUp || formated.startsWith("<")) return <>{`${formated} ${symbol ?? ""}`.trim()}</>
 
@@ -72,7 +71,7 @@ export const Tokens: FC<TokensProps> = ({
       `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
         symbol ?? ""
       }`.trim(),
-    [amount, decimals, symbol],
+    [amount, decimals, symbol]
   )
   const tooltip = useMemo(() => (noTooltip ? null : tooltipAmount), [noTooltip, tooltipAmount])
 
@@ -85,7 +84,7 @@ export const Tokens: FC<TokensProps> = ({
         "tokens",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
-        className,
+        className
       )}
     >
       {render && (

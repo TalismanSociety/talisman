@@ -1,12 +1,12 @@
 import { getSendRequestResult } from "./getSendRequestResult"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const getStorageValue = async <T>(
   chain: Chain,
   pallet: string,
   entry: string,
   keys: unknown[],
-  at?: string,
+  at?: string
 ) => {
   const storageCodec = chain.builder.buildStorage(pallet, entry)
   const stateKey = storageCodec.keys.enc(...keys)

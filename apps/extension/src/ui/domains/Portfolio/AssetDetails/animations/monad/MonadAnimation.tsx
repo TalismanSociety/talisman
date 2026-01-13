@@ -1,8 +1,7 @@
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
-
-import { useScrollContainer } from "@talisman/components/ScrollContainer"
 
 import imgAnimation1 from "./monad-animated-1.gif"
 import imgAnimation2 from "./monad-animated-2.gif"
@@ -35,7 +34,7 @@ export const MonadAnimation = () => {
         className={classNames(
           "relative h-[9.3rem] w-[10.5rem] -translate-x-[100%] opacity-100 duration-[2s] ease-out",
           step > 0 && "translate-x-[14.8rem]",
-          step === 3 && "opacity-0 duration-500 ease-out",
+          step === 3 && "opacity-0 duration-500 ease-out"
         )}
       >
         <img
@@ -50,6 +49,6 @@ export const MonadAnimation = () => {
         />
       </div>
     </div>,
-    refContainer.current as HTMLElement,
+    refContainer.current as HTMLElement
   )
 }

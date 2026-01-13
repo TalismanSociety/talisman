@@ -1,10 +1,18 @@
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
+import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { useToken } from "@ui/state"
 import {
-  FC,
+  type FC,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -21,15 +29,6 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "talisman-ui"
-
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useToken } from "@ui/state"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
@@ -82,7 +81,7 @@ export const BittensorClaimSubnetSelect = () => {
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
-    sortSubnetOptions(subnetData, sortMethod),
+    sortSubnetOptions(subnetData, sortMethod)
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -97,10 +96,10 @@ export const BittensorClaimSubnetSelect = () => {
 
     // Put confirmed subnets at the top, maintaining their relative order
     const confirmed = filtered.filter(
-      (s) => s.netuid !== undefined && preselectedSubnets.includes(s.netuid),
+      (s) => s.netuid !== undefined && preselectedSubnets.includes(s.netuid)
     )
     const others = filtered.filter(
-      (s) => s.netuid === undefined || !preselectedSubnets.includes(s.netuid),
+      (s) => s.netuid === undefined || !preselectedSubnets.includes(s.netuid)
     )
 
     return [...confirmed, ...others]
@@ -111,10 +110,10 @@ export const BittensorClaimSubnetSelect = () => {
       setSelectedSubnets(
         selectedSubnets.includes(netuid)
           ? selectedSubnets.filter((id) => id !== netuid)
-          : [...selectedSubnets, netuid],
+          : [...selectedSubnets, netuid]
       )
     },
-    [selectedSubnets, setSelectedSubnets],
+    [selectedSubnets, setSelectedSubnets]
   )
 
   const handleSortMethodChange = useCallback(
@@ -123,7 +122,7 @@ export const BittensorClaimSubnetSelect = () => {
       setPreselectedSubnets(selectedSubnets)
       setSortMethod(method)
     },
-    [selectedSubnets],
+    [selectedSubnets]
   )
 
   const [, startTransition] = useTransition()
@@ -134,6 +133,7 @@ export const BittensorClaimSubnetSelect = () => {
     })
   }, [sortMethod, subnetData])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
@@ -165,14 +165,13 @@ export const BittensorClaimSubnetSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search subnets")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
@@ -226,12 +225,12 @@ const SortMethodButton: FC<{
       { label: t("UID"), value: "netuid" },
       { label: t("Emissions"), value: "emission" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -239,7 +238,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-[8px] py-[6px] text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -293,7 +292,7 @@ const SubnetRows: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -326,7 +325,7 @@ const SubnetRow: FC<{
 
   const dtaoTokenId = useMemo(
     () => subDTaoTokenId(networkId, option.netuid!),
-    [networkId, option.netuid],
+    [networkId, option.netuid]
   )
   const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
@@ -336,7 +335,7 @@ const SubnetRow: FC<{
         ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
-    [option.emission, t],
+    [option.emission, t]
   )
 
   if (!tokenAlpha) return null
@@ -347,8 +346,8 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus-visible:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus-visible:bg-grey-700",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       <TokenLogo tokenId={tokenAlpha.id} className="size-16 shrink-0" />
@@ -363,7 +362,7 @@ const SubnetRow: FC<{
       <div
         className={classNames(
           "mx-2 h-4 w-4 shrink-0 rounded-full",
-          isSelected ? "bg-primary" : "bg-grey-700",
+          isSelected ? "bg-primary" : "bg-grey-700"
         )}
       />
     </button>

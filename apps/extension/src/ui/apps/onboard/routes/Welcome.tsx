@@ -1,14 +1,13 @@
+import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "extension-shared"
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { TalismanColouredHandWhiteTextLogo } from "@talisman/theme/logos"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import logoBase from "../assets/base.svg?url"
 import logoBittensor from "../assets/bittensor.svg?url"
@@ -54,11 +53,11 @@ const SupportedNetworks = () => {
       <NetworkItem logo={logoBittensor} label="Bittensor" />
       <NetworkItem logo={logoPolkadot} label="Polkadot" />
       <div className="ml-[-1rem] flex h-full w-auto p-1">
-        <div className="text-grey-200 ring-body-secondary bg-grey-750 relative flex w-auto flex-col justify-center rounded-full px-3 text-center ring-1">
+        <div className="relative flex w-auto flex-col justify-center rounded-full bg-grey-750 px-3 text-center text-grey-200 ring-1 ring-body-secondary">
           <div className="font-bold">800+</div>
         </div>
       </div>
-      <div className="text-body-secondary ml-2 content-center text-sm">Networks supported</div>
+      <div className="ml-2 content-center text-body-secondary text-sm">Networks supported</div>
     </div>
   )
 }
@@ -79,7 +78,7 @@ export const WelcomePage = () => {
       })
       navigate("/password")
     },
-    [navigate, reset],
+    [navigate, reset]
   )
 
   useEffect(() => {
@@ -104,7 +103,7 @@ export const WelcomePage = () => {
           </div>
           <div className="welcome-subtitle text-[2rem] lg:text-[2.8rem]">
             {t(
-              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic",
+              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic"
             )}
           </div>
           <SupportedNetworks />
@@ -118,7 +117,7 @@ export const WelcomePage = () => {
           >
             {t("Get Started")}
           </Button>
-          <div className="text-body-secondary text-center text-sm leading-[2rem]">
+          <div className="text-center text-body-secondary text-sm leading-[2rem]">
             <Trans t={t}>
               By continuing, you agree to the{" "}
               <a
@@ -157,7 +156,8 @@ const LogoWithSupportPageRedirect = () => {
   }, [clickCount])
 
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    // biome-ignore lint/a11y/noStaticElementInteractions: secret debug feature
+    // biome-ignore lint/a11y/useKeyWithClickEvents: secret debug feature
     <div onClick={handleClick}>
       <TalismanColouredHandWhiteTextLogo className="h-auto w-96" />
     </div>

@@ -1,5 +1,5 @@
-import { Address } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
+import type { Address } from "@talismn/balances"
+import type { NetworkId } from "@talismn/chaindata-provider"
 
 export type CopyAddressWizardInputs = {
   networkId?: NetworkId | null

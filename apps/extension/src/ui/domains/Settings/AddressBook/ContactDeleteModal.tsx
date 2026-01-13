@@ -1,12 +1,11 @@
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-
-import { ContactModalProps } from "./types"
+import type { ContactModalProps } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -36,7 +35,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
   return (
     <Modal isOpen={isOpen} onDismiss={close}>
       <ModalDialog title={t("Delete contact")}>
-        <div className="text-body-secondary my-12">
+        <div className="my-12 text-body-secondary">
           <Trans t={t}>
             You are deleting contact '<span className="font-bold text-white">{contactName}</span>'
             from your address book.

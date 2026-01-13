@@ -1,27 +1,26 @@
-import { Balance, BalanceFormatter, Balances, getBalanceId } from "@talismn/balances"
+import { provideContext } from "@talisman/util/provideContext"
+import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
 import {
-  DotNetworkId,
+  type DotNetworkId,
   subDTaoTokenId,
   subNativeTokenId,
-  TokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
-import { Address, isAccountOfType } from "extension-core"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import { type Address, isAccountOfType } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { useOpenClose } from "talisman-ui"
-import { Hex } from "viem"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
 import {
-  BittensorStakingPosition,
+  type BittensorStakingPosition,
   useBittensorStakingPositions,
 } from "./useBittensorStakingPositions"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"
@@ -85,7 +84,7 @@ export const useResetBittensorBondWizard = () => {
 const useBalance = (
   allBalances: Balances,
   address: Address | null | undefined,
-  tokenId: TokenId | null | undefined,
+  tokenId: TokenId | null | undefined
 ): Balance | null => {
   return useMemo(() => {
     if (!address || !tokenId) return null
@@ -97,12 +96,12 @@ const useDtaoToken = (networkId: string, netuid: number, hotkey?: string) => {
   // use the dynamic token if user already has a balance
   const tokenWithHotkey = useToken(
     useMemo(() => subDTaoTokenId(networkId, netuid, hotkey), [networkId, netuid, hotkey]),
-    "substrate-dtao",
+    "substrate-dtao"
   )
   // otherwise the template token (without hotkey)
   const tokenWithoutHotkey = useToken(
     useMemo(() => subDTaoTokenId(networkId, netuid), [networkId, netuid]),
-    "substrate-dtao",
+    "substrate-dtao"
   )
 
   return tokenWithHotkey || tokenWithoutHotkey
@@ -155,7 +154,7 @@ const useBittensorBondWizardProvider = () => {
 
   const withMevShield = useMemo(
     () => !isMevShieldDisabled && isMevProtectionEnabled,
-    [isMevShieldDisabled, isMevProtectionEnabled],
+    [isMevShieldDisabled, isMevProtectionEnabled]
   )
 
   const {
@@ -189,7 +188,7 @@ const useBittensorBondWizardProvider = () => {
 
   const isSubnetUnbond = useMemo(
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
-    [netuid, stakeDirection],
+    [netuid, stakeDirection]
   )
 
   const amountTao = useMemo(
@@ -198,10 +197,10 @@ const useBittensorBondWizardProvider = () => {
         ? new BalanceFormatter(
             isSubnetUnbond ? amountOut : amountIn,
             nativeToken?.decimals,
-            tokenRates,
+            tokenRates
           )
         : null,
-    [amountIn, isSubnetUnbond, amountOut, nativeToken?.decimals, tokenRates],
+    [amountIn, isSubnetUnbond, amountOut, nativeToken?.decimals, tokenRates]
   )
 
   const amountAlpha = useMemo(
@@ -210,30 +209,30 @@ const useBittensorBondWizardProvider = () => {
         ? new BalanceFormatter(
             isSubnetUnbond ? amountIn : amountOut,
             nativeToken?.decimals,
-            tokenRates,
+            tokenRates
           )
         : null,
-    [amountIn, amountOut, isSubnetUnbond, nativeToken?.decimals, tokenRates],
+    [amountIn, amountOut, isSubnetUnbond, nativeToken?.decimals, tokenRates]
   )
 
   const setAddress = useCallback(
     (address: Address) => setWizardState((prev) => ({ ...prev, address })),
-    [],
+    []
   )
 
   const setHotkey = useCallback(
     (hotkey: string) => setWizardState((prev) => ({ ...prev, hotkey })),
-    [],
+    []
   )
   const setNetuid = useCallback(
     (netuid: number) =>
       setWizardState((prev) => ({ ...prev, netuid, stakeType: netuid ? "subnet" : "root" })),
-    [],
+    []
   )
 
   const setPlancks = useCallback(
     (plancks: bigint | null) => setWizardState((prev) => ({ ...prev, amountIn: plancks })),
-    [],
+    []
   )
 
   const setStakeType = useCallback(
@@ -245,7 +244,7 @@ const useBittensorBondWizardProvider = () => {
       }))
       stakeTypeDrawer.close()
     },
-    [stakeTypeDrawer],
+    [stakeTypeDrawer]
   )
 
   const toggleDisplayMode = useCallback(() => {
@@ -265,16 +264,17 @@ const useBittensorBondWizardProvider = () => {
       typeof minTaoBondForInput === "bigint" &&
       amountIn &&
       amountIn > 0n,
-    [account, amountTao, minTaoBondForInput, netuid, amountIn, hotkey, stakeType, nativeToken],
+    [account, amountTao, minTaoBondForInput, netuid, amountIn, hotkey, stakeType, nativeToken]
   )
 
   const isUnstakeFormValid = useMemo(() => amountIn && amountIn > 0n, [amountIn])
 
   const isFormValid = useMemo(
     () => (stakeDirection === "bond" ? isStakeFormValid : isUnstakeFormValid),
-    [isStakeFormValid, isUnstakeFormValid, stakeDirection],
+    [isStakeFormValid, isUnstakeFormValid, stakeDirection]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
       setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))
@@ -289,7 +289,7 @@ const useBittensorBondWizardProvider = () => {
         return { ...prev, step }
       })
     },
-    [isFormValid],
+    [isFormValid]
   )
 
   const setPosition = useCallback((position: BittensorStakingPosition) => {
@@ -312,12 +312,12 @@ const useBittensorBondWizardProvider = () => {
       genericEvent("Bittensor Bond", { tokenId: nativeTokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, nativeTokenId],
+    [genericEvent, nativeTokenId]
   )
 
   const totalStakedPlancks = useMemo(
     () => dtaoBalance?.free.planck ?? 0n,
-    [dtaoBalance?.free.planck],
+    [dtaoBalance?.free.planck]
   )
 
   const maxPlancks = useMemo(() => {
@@ -378,7 +378,7 @@ const useBittensorBondWizardProvider = () => {
         nativeBalance.transferable.planck // 10x fee for future unbonding, as max button accounts for 11x with a fake fee estimate
     )
       return t(
-        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees",
+        "Insufficient balance to cover staking, the existential deposit, and the future unbonding and withdrawal fees"
       )
 
     // if not staking yet, need minTaoBondForInput or more
@@ -456,7 +456,7 @@ const useBittensorBondWizardProvider = () => {
 
   const inputErrorMessage = useMemo(
     () => (stakeDirection === "bond" ? stakeInputErrorMessage : unstakeInputErrorMessage),
-    [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage],
+    [stakeDirection, stakeInputErrorMessage, unstakeInputErrorMessage]
   )
 
   // positions are used only when unstaking
@@ -467,7 +467,7 @@ const useBittensorBondWizardProvider = () => {
         p.token.netuid === netuid &&
         p.token.hotkey === hotkey &&
         p.token.networkId === networkId &&
-        p.balance.address === address,
+        p.balance.address === address
     )
   }, [positions, netuid, hotkey, networkId, address])
 
@@ -539,5 +539,5 @@ const useBittensorBondWizardProvider = () => {
 }
 
 export const [BittensorBondWizardProvider, useBittensorBondWizard] = provideContext(
-  useBittensorBondWizardProvider,
+  useBittensorBondWizardProvider
 )

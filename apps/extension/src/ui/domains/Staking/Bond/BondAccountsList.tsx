@@ -1,13 +1,12 @@
-import { Balance } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Balance } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountType } from "extension-core"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useBalances, useSelectedCurrency, useToken } from "@ui/state"
+import type { AccountType } from "extension-core"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
@@ -43,7 +42,7 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token | null; balance
     <div
       className={classNames(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse",
+        balance.status === "cache" && "animate-pulse"
       )}
     >
       <div>
@@ -74,12 +73,12 @@ const AccountRow: FC<AccountRowProps> = ({
 }) => {
   const formattedAddress = useFormattedAddress(
     account?.address,
-    genesisHash ?? account?.genesisHash,
+    genesisHash ?? account?.genesisHash
   )
 
   const displayAddress = useMemo(
     () => (noFormat ? account?.address : formattedAddress),
-    [noFormat, account?.address, formattedAddress],
+    [noFormat, account?.address, formattedAddress]
   )
 
   return (
@@ -88,16 +87,16 @@ const AccountRow: FC<AccountRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
       disabled={disabled}
     >
       <AccountIcon
         address={account.address}
         genesisHash={account.genesisHash}
-        className="shrink-0 !text-xl"
+        className="!text-xl shrink-0"
       />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex flex-col space-y-2">
@@ -148,7 +147,7 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect],
+    [onSelect]
   )
 
   const token = useToken(tokenId)
@@ -182,7 +181,7 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
 
   return (
     <div>
-      {!!header && <div className="text-body-secondary mb-4 mt-8 px-12 font-bold">{header}</div>}
+      {!!header && <div className="mt-8 mb-4 px-12 font-bold text-body-secondary">{header}</div>}
       {accountsWithBalance?.map((account) => (
         <AccountRow
           selected={account.address === selected}
@@ -197,7 +196,7 @@ export const BondAccountsList: FC<NomPoolBondAccountsListProps> = ({
         />
       ))}
       {!accounts?.length && (
-        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}

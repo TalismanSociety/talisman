@@ -1,15 +1,14 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { isTokenEth, Token } from "@talismn/chaindata-provider"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { isTokenEth, type Token } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { Account, Address, getAccountGenesisHash, isAccountOfType } from "extension-core"
+import { useAccounts, useNetworkById } from "@ui/state"
+import { type Account, type Address, getAccountGenesisHash, isAccountOfType } from "extension-core"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
-
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useAccounts, useNetworkById } from "@ui/state"
 
 import { BondAccountsList } from "./BondAccountsList"
 
@@ -57,7 +56,7 @@ export const BondAccountPicker = ({
           const genesisHash = getAccountGenesisHash(account)
           return !genesisHash || genesisHash === chain?.genesisHash
         }),
-    [allAccounts, chain, search, token],
+    [allAccounts, chain, search, token]
   )
 
   const handleSelect = useCallback(
@@ -65,7 +64,7 @@ export const BondAccountPicker = ({
       onAddressSelected(address)
       onBackClick?.()
     },
-    [onBackClick, onAddressSelected],
+    [onBackClick, onAddressSelected]
   )
 
   return (
@@ -91,7 +90,7 @@ export const BondAccountPicker = ({
               <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
             </div>
           </div>
-          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+          <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
             <BondAccountsList
               accounts={accounts}
               genesisHash={chain?.genesisHash}

@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useOpenClose } from "talisman-ui"
 
-import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
+import type { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { SubSignDecodedCallButtonContent } from "./SubSignDecodedCallButtonContent"
 import { SubSignDecodedCallDrawer } from "./SubSignDecodedCallDrawer"
 
@@ -14,10 +14,10 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 border-grey-700 text-body-secondary",
-        "left-align group flex w-full items-center gap-4 overflow-x-hidden truncate rounded border pl-8 pr-4 text-left font-normal",
-        mode === "multiline" && "leading-paragraph py-4",
-        mode === "compact" && "h-[3.6rem]",
+        "border-grey-700 bg-grey-850 text-body-secondary hover:bg-grey-800",
+        "group left-align flex w-full items-center gap-4 overflow-x-hidden truncate rounded border pr-4 pl-8 text-left font-normal",
+        mode === "multiline" && "py-4 leading-paragraph",
+        mode === "compact" && "h-[3.6rem]"
       )}
       onClick={onClick}
     >
@@ -25,7 +25,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
         className={classNames(
           "grow align-baseline",
           mode === "compact" && "truncate",
-          mode === "multiline" && "line-clamp-5 whitespace-normal",
+          mode === "multiline" && "line-clamp-5 whitespace-normal"
         )}
       >
         <SubSignDecodedCallButtonContent
@@ -35,7 +35,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
           mode={mode}
         />
       </div>
-      <ChevronRightIcon className="text-body-secondary group-hover:text-body shrink-0 text-base" />
+      <ChevronRightIcon className="shrink-0 text-base text-body-secondary group-hover:text-body" />
     </button>
   )
 }

@@ -1,14 +1,13 @@
-import { Placement } from "@floating-ui/react"
+import type { Placement } from "@floating-ui/react"
 import { CopyIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
+import { useNetworkByGenesisHash } from "@ui/state"
+import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { useNetworkByGenesisHash } from "@ui/state"
-
 import { useCopyAddressModal } from "../CopyAddress"
-import { AccountIcon, AccountIconProps } from "./AccountIcon"
+import { AccountIcon, type AccountIconProps } from "./AccountIcon"
 
 export const AccountIconCopyAddressButton: FC<
   AccountIconProps & { tooltipPlacement?: Placement }
@@ -30,18 +29,18 @@ export const AccountIconCopyAddressButton: FC<
         type="button"
         onClick={handleAvatarClick}
         className={classNames(
-          "text-body size-[1em] shrink-0 rounded-full",
+          "size-[1em] shrink-0 rounded-full text-body",
           "[&:hover>.copy-overlay]:opacity-100", // show overlay while hovering
           "[&:hover_.orb-type]:hidden", // hide orb type svg while showing overlay
-          className,
+          className
         )}
       >
         <AccountIcon type={type} address={address} genesisHash={genesisHash} />
         <div
           className={classNames(
             "copy-overlay",
-            "absolute left-0 top-0 flex size-full items-center justify-center rounded-full opacity-0",
-            "bg-[radial-gradient(rgba(90,90,90,0.6),rgba(90,90,90,0.6),rgba(90,90,90,0.1))]",
+            "absolute top-0 left-0 flex size-full items-center justify-center rounded-full opacity-0",
+            "bg-[radial-gradient(rgba(90,90,90,0.6),rgba(90,90,90,0.6),rgba(90,90,90,0.1))]"
           )}
         >
           <CopyIcon className="text-[0.5em]" />

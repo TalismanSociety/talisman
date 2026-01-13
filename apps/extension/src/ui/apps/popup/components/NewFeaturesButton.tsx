@@ -1,12 +1,11 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { MouseEventHandler, useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { getWhatsNewVersions } from "@ui/apps/popup/pages/WhatsNew/WhatsNew"
 import { useFeatureFlag, useSetting } from "@ui/state"
+import { type MouseEventHandler, useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -39,18 +38,19 @@ export const NewFeaturesButton = ({ className }: Props) => {
       sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Interact", action: "Dismiss What's New" })
       setDismissedVersion(versions[0])
     },
-    [setDismissedVersion, versions],
+    [setDismissedVersion, versions]
   )
 
   if (!isEnabled || dismissedVersion === versions[0]) return null
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: legacy
     <div
       tabIndex={0}
       role="button"
       className={classNames(
-        "text-body-secondary bg-grey-500 relative flex w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 py-8 hover:bg-[rgb(120,120,120)] hover:text-white",
-        className,
+        "relative flex w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm bg-grey-500 px-6 py-8 text-body-secondary hover:bg-[rgb(120,120,120)] hover:text-white",
+        className
       )}
       onClick={handleClick}
       onKeyDown={(e) => ["Enter", " "].includes(e.key) && handleClick?.()}
@@ -77,12 +77,12 @@ export const NewFeaturesButton = ({ className }: Props) => {
         }}
       />
       <div className="relative flex grow flex-col items-start justify-center gap-3 overflow-hidden">
-        <div className="text-body text-sm font-bold">
+        <div className="font-bold text-body text-sm">
           <Trans t={t}>
             Your Wallet Just <span className="text-primary">Got Better</span>
           </Trans>
         </div>
-        <div className="text-tiny text-grey-200 flex gap-3">
+        <div className="flex gap-3 text-grey-200 text-tiny">
           <span>{t("See what's new in Talisman")}</span>
           <button className="underline" onClick={handleDismissClick} type="button">
             {t("Dismiss")}

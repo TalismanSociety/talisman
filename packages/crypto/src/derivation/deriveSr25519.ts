@@ -1,8 +1,7 @@
 import { randomBytes } from "@noble/hashes/utils"
 import { getPublicKey, HDKD, secretFromSeed } from "micro-sr25519"
-
-import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
+import type { Keypair } from "../types"
 import { createChainCode, parseSubstrateDerivations } from "./common"
 
 export const deriveSr25519 = (seed: Uint8Array, derivationPath: string): Keypair => {

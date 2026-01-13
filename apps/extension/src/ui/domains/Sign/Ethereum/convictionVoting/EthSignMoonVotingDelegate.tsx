@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
@@ -18,7 +18,7 @@ export const EthSignMoonVotingDelegate: FC = () => {
       getContractCallArg<number>(decodedTx, "conviction"),
       getContractCallArg<number>(decodedTx, "trackId"),
     ],
-    [decodedTx],
+    [decodedTx]
   )
 
   if (

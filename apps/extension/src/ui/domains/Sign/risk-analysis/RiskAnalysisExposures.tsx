@@ -1,19 +1,18 @@
-import {
+import type {
   Erc20Exposure,
   Erc721Exposure,
   Erc1155Exposure,
   TransactionScanResponse,
 } from "@blockaid/client/resources/index.mjs"
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { useNetworkById } from "@ui/state"
 import { toPairs, values } from "lodash-es"
-import { FC, ReactNode, useMemo } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useNetworkById } from "@ui/state"
-
 import { RiskAnalysisAssetImage } from "./RiskAnalysisAssetImage"
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 const ExposureImage: FC<{ exposure: Exposure }> = ({ exposure }) => {
   switch (exposure.asset_type) {
@@ -47,9 +46,9 @@ const FooterField: FC<{ label: ReactNode; value: ReactNode; extra?: ReactNode }>
   value,
   extra,
 }) => (
-  <span className="text-body-secondary group flex max-w-full items-center gap-[0.5em] overflow-hidden">
+  <span className="group flex max-w-full items-center gap-[0.5em] overflow-hidden text-body-secondary">
     <span className="text-body-secondary">{label}</span>
-    <span className="text-body truncate">{value}</span>
+    <span className="truncate text-body">{value}</span>
     <span className="group-hover:text-body">{extra}</span>
   </span>
 )
@@ -110,7 +109,7 @@ const ExposureEntry: FC<{
     <div className="w-20 shrink-0 pt-4">
       <ExposureImage exposure={exposure} />
     </div>
-    <div className="text-body flex grow flex-col justify-center gap-2 overflow-hidden pt-4">
+    <div className="flex grow flex-col justify-center gap-2 overflow-hidden pt-4 text-body">
       <div>{exposure.exposure.summary}</div>
       <ExposureFooter exposure={exposure} networkId={networkId} />
     </div>
@@ -123,8 +122,8 @@ const getExposures = (scan: TransactionScanResponse | null | undefined) => {
     .flat()
     .flatMap(({ spenders, ...rest }) =>
       toPairs(spenders as Record<string, Erc20Exposure | Erc721Exposure | Erc1155Exposure>).map(
-        ([spender, exposure]) => ({ ...rest, spender, exposure }),
-      ),
+        ([spender, exposure]) => ({ ...rest, spender, exposure })
+      )
     )
 }
 
@@ -147,6 +146,7 @@ export const RiskAnalysisExposures: FC<{
     <div className="flex w-full flex-col">
       <div className="text-body-secondary text-sm">{t("Exposure")}</div>
       {exposures.map((exposure, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static list
         <ExposureEntry key={i} exposure={exposure} networkId={riskAnalysis.networkId} />
       ))}
     </div>

@@ -1,5 +1,5 @@
 // adapted from https://stackoverflow.com/a/469362
-import { RefObject, useEffect } from "react"
+import { type RefObject, useEffect } from "react"
 
 const getInputFilter = (inputFilter: (text: string) => boolean) =>
   function (
@@ -7,13 +7,13 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
       oldValue: string
       oldSelectionStart: number | null
       oldSelectionEnd: number | null
-    },
+    }
   ) {
     if (inputFilter(this.value)) {
       this.oldValue = this.value
       this.oldSelectionStart = this.selectionStart
       this.oldSelectionEnd = this.selectionEnd
-    } else if (Object.prototype.hasOwnProperty.call(this, "oldValue")) {
+    } else if (Object.hasOwn(this, "oldValue")) {
       this.value = this.oldValue
 
       if (this.oldSelectionStart !== null && this.oldSelectionEnd !== null) {
@@ -30,8 +30,7 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
     if (!input) return () => {}
 
     const handler = getInputFilter((value: string) =>
-      // eslint-disable-next-line no-useless-escape
-      new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value),
+      new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value)
     )
 
     const events = [
@@ -46,12 +45,13 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
       "focusout",
     ]
 
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     events.forEach((eventName) => input.addEventListener(eventName, handler, true))
 
     return () => {
+      // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
       events.forEach((eventName) => input.removeEventListener(eventName, handler, true))
     }
     // ref?.current will toggle between defined and not, it's imperative to resubscribe each time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decimals, ref?.current])
 }

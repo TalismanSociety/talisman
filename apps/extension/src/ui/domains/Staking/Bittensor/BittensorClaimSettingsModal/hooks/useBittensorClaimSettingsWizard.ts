@@ -1,14 +1,13 @@
+import { provideContext } from "@talisman/util/provideContext"
 import { subNativeTokenId } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
+import type { RootClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
+import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
+import { useAccountByAddress, useToken } from "@ui/state"
+import type { Address } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { BehaviorSubject } from "rxjs"
 import { useOpenClose } from "talisman-ui"
-import { Hex } from "viem"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { RootClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
-import { useGetBittensorClaimType } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimType"
-import { useAccountByAddress, useToken } from "@ui/state"
+import type { Hex } from "viem"
 
 import { DEFAULT_ROOT_CLAIM_TYPE } from "../../utils/constants"
 import { BITTENSOR_NETWORK_ID } from "../constants"
@@ -103,23 +102,23 @@ const useBittensorClaimSettingsWizardProvider = () => {
 
   const setAddress = useCallback(
     (newAddress: Address) => setWizardState((prev) => ({ ...prev, address: newAddress })),
-    [],
+    []
   )
 
   const setStep = useCallback(
     (newStep: ClaimSettingsStep) => setWizardState((prev) => ({ ...prev, step: newStep })),
-    [],
+    []
   )
 
   const setSelectedClaimType = useCallback(
     (claimType: RootClaimType) =>
       setWizardState((prev) => ({ ...prev, selectedClaimType: claimType })),
-    [],
+    []
   )
 
   const setSelectedSubnets = useCallback(
     (subnets: number[]) => setWizardState((prev) => ({ ...prev, selectedSubnets: subnets })),
-    [],
+    []
   )
 
   const onSubmitted = useCallback(
@@ -131,7 +130,7 @@ const useBittensorClaimSettingsWizardProvider = () => {
         onSubmittedCallback()
       }
     },
-    [onSubmittedCallback],
+    [onSubmittedCallback]
   )
 
   return {

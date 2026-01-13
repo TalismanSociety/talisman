@@ -1,4 +1,3 @@
-/* eslint-env es2021 */
 const TALISMAN_TAILWIND_CONFIG = require("talisman-ui/tailwind.config.cjs")
 
 /** @type {import('tailwindcss').Config} */

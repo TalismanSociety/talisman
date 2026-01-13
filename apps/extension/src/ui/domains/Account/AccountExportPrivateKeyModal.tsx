@@ -1,7 +1,11 @@
 import { bind } from "@react-rxjs/core"
+import { notify } from "@talisman/components/Notifications"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { CopyIcon, LoaderIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 import {
-  Account,
+  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformSolana,
@@ -10,11 +14,6 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
-
-import { notify } from "@talisman/components/Notifications"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { api } from "@ui/api"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { AccountIcon } from "./AccountIcon"
@@ -39,13 +38,14 @@ export const useAccountExportPrivateKeyModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   const canExportAccountFunc = (account?: Account | null) =>
     isAccountOfType(account, "keypair") &&
     (isAccountPlatformEthereum(account) || isAccountPlatformSolana(account))
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(
@@ -53,7 +53,7 @@ export const useAccountExportPrivateKeyModal = () => {
       if (!account) return
       return api.accountExportPrivateKey(account.address, password)
     },
-    [account],
+    [account]
   )
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
@@ -81,7 +81,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           subtitle: t("Private key copied to clipboard"),
         },
         // set an id to prevent multiple clicks to display multiple notifications
-        { toastId },
+        { toastId }
       )
       return true
     } catch (err) {
@@ -91,7 +91,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           title: t("Copy failed"),
           subtitle: (err as Error).message,
         },
-        { toastId },
+        { toastId }
       )
       return false
     }
@@ -118,10 +118,10 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   if (!account) return null
 
   return (
-    <div className="text-body-secondary flex h-full w-full flex-col text-left">
+    <div className="flex h-full w-full flex-col text-left text-body-secondary">
       <div className="w-full text-left">
         {t(
-          "This private key can be used to access your account's funds. Don't share it with anyone.",
+          "This private key can be used to access your account's funds. Don't share it with anyone."
         )}
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6">
@@ -131,12 +131,12 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           </div>
           <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>
-        <div className="bg-field flex h-28 w-full items-center gap-6 rounded p-8 leading-none">
+        <div className="flex h-28 w-full items-center gap-6 rounded bg-field p-8 leading-none">
           {!!error && <div className="text-alert-error">{(error as Error).message}</div>}
           {isLoading && (
             <>
               <div className="text-lg">
-                <LoaderIcon className="animate-spin-slow inline-block" />
+                <LoaderIcon className="inline-block animate-spin-slow" />
               </div>
               <div>{t("Loading...")}</div>
             </>
@@ -151,7 +151,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
               <button
                 type="button"
                 onClick={copyToClipboard}
-                className="focus:text-grey-300 text-lg hover:text-white active:text-white"
+                className="text-lg hover:text-white focus:text-grey-300 active:text-white"
               >
                 <CopyIcon />
               </button>
@@ -177,7 +177,7 @@ export const AccountExportPrivateKeyModal = () => {
           <PasswordUnlock
             className="h-full"
             title={
-              <div className="text-body-secondary text-base">
+              <div className="text-base text-body-secondary">
                 {t("Please confirm your password to export your account.")}
               </div>
             }

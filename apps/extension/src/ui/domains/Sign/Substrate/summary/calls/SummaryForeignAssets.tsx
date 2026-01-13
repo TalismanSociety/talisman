@@ -1,12 +1,11 @@
-import { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
-import { SubForeignAssetsToken } from "@talismn/chaindata-provider"
+import type { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
+import type { SubForeignAssetsToken } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
+import { useNetworkById, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById, useTokens } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import {
@@ -32,7 +31,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["ForeignAssets
       (t) =>
         t.type === "substrate-foreignassets" &&
         t.networkId === sapi.chainId &&
-        t.onChainId === papiStringify(decodedCall.args.id),
+        t.onChainId === papiStringify(decodedCall.args.id)
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])
 
@@ -108,7 +107,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
       (t) =>
         t.type === "substrate-foreignassets" &&
         t.networkId === sapi.chainId &&
-        t.onChainId === papiStringify(decodedCall.args.id),
+        t.onChainId === papiStringify(decodedCall.args.id)
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])
 

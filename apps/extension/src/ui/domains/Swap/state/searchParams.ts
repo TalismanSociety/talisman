@@ -1,10 +1,9 @@
-import { map } from "rxjs"
-
 import { location$ } from "@ui/state/location"
+import { map } from "rxjs"
 
 /** NOTE: This is only compatible with HashRouter */
 export const searchParams$ = location$.pipe(
-  map((location) => new URLSearchParams(location.hash.split("?")[1])),
+  map((location) => new URLSearchParams(location.hash.split("?")[1]))
 )
 
 /**

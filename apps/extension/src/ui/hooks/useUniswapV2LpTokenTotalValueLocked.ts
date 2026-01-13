@@ -1,12 +1,12 @@
-import { Balance, Balances } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Balance, Balances } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import groupBy from "lodash-es/groupBy"
 
 export const useUniswapV2LpTokenTotalValueLocked = (
   token?: Token,
   tokenPrice?: number | null,
-  balances?: Balances,
+  balances?: Balances
 ) => {
   if (token?.type !== "evm-uniswapv2") return null
 
@@ -15,8 +15,8 @@ export const useUniswapV2LpTokenTotalValueLocked = (
     extractTvlFromBalance(
       chainBalances?.find?.((b) => b.isSource("evm-uniswapv2")),
       token,
-      tokenPrice,
-    ),
+      tokenPrice
+    )
   )
 
   // The *total* value locked across all chains
@@ -28,9 +28,9 @@ const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenPrice?: nu
   const extra = balance?.extra
   const extras = Array.isArray(extra) ? extra : extra !== undefined ? [extra] : []
   const totalSupply = BigNumber(
-    extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0",
+    extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
   )
-  const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * (token?.decimals ?? 0)))
+  const totalSupplyTokens = BigNumber(totalSupply).times(10 ** (-1 * (token?.decimals ?? 0)))
 
   return BigNumber(tokenPrice ?? 0).times(totalSupplyTokens)
 }

@@ -1,12 +1,12 @@
-import { Connection } from "@solana/web3.js"
-import {
+import type { Connection } from "@solana/web3.js"
+import type {
   IChaindataNetworkProvider,
   IChaindataTokenProvider,
   SolNetworkId,
 } from "@talismn/chaindata-provider"
 
 import { getSolConnection } from "./getSolConnection"
-import { IChainConnectorSol } from "./IChainConnectorSol"
+import type { IChainConnectorSol } from "./IChainConnectorSol"
 
 export class ChainConnectorSol implements IChainConnectorSol {
   #chaindataProvider: IChaindataNetworkProvider & IChaindataTokenProvider

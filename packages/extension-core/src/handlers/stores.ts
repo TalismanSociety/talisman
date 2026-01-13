@@ -1,14 +1,14 @@
 import { accountsCatalogStore } from "../domains/accounts"
-import { AccountsCatalogData } from "../domains/accounts/store.catalog"
-import { appStore, AppStoreData } from "../domains/app/store.app"
-import { errorsStore, ErrorsStoreData } from "../domains/app/store.errors"
-import { passwordStore, PasswordStoreData } from "../domains/app/store.password"
+import type { AccountsCatalogData } from "../domains/accounts/store.catalog"
+import { type AppStoreData, appStore } from "../domains/app/store.app"
+import { type ErrorsStoreData, errorsStore } from "../domains/app/store.errors"
+import { type PasswordStoreData, passwordStore } from "../domains/app/store.password"
 import { remoteConfigStore } from "../domains/app/store.remoteConfig"
-import { settingsStore, SettingsStoreData } from "../domains/app/store.settings"
-import { RemoteConfigStoreData } from "../domains/app/types"
+import { type SettingsStoreData, settingsStore } from "../domains/app/store.settings"
+import type { RemoteConfigStoreData } from "../domains/app/types"
 import { sitesAuthorisationStore } from "../domains/sitesAuthorised"
 import sitesAuthorisedStore from "../domains/sitesAuthorised/store"
-import { AuthorizedSites } from "../domains/sitesAuthorised/types"
+import type { AuthorizedSites } from "../domains/sitesAuthorised/types"
 import { tokenRatesStore } from "../domains/tokenRates"
 
 export type TabStore = {
@@ -76,20 +76,20 @@ export const getLocalStorage = async (): Promise<GettableStoreData> =>
   Object.fromEntries(
     await Promise.all(
       Object.entries(localStorageStores).map(([storeName, store]) =>
-        getStoreData([storeName as GettableStoreKeys, store]),
-      ),
-    ),
+        getStoreData([storeName as GettableStoreKeys, store])
+      )
+    )
   )
 
 export const setLocalStorage = async <T extends GettableStoreKeys>(
   data: Partial<{
     [K in GettableStoreKeys]: Partial<GettableStoreData[K]>
-  }>,
+  }>
 ) => {
   return Promise.all(
     (Object.entries(data) as Array<[T, Partial<GettableStoreData[T]>]>).map(
-      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never),
-    ),
+      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never)
+    )
   )
 }
 

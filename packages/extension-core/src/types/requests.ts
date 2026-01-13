@@ -1,7 +1,11 @@
-import { AnyEthSigningRequest, AnySigningRequest, SigningRequests } from "../domains/signing/types"
+import type {
+  AnyEthSigningRequest,
+  AnySigningRequest,
+  SigningRequests,
+} from "../domains/signing/types"
 
 export const isEthereumRequest = (
-  signingRequest: AnySigningRequest,
+  signingRequest: AnySigningRequest
 ): signingRequest is AnyEthSigningRequest => {
   return (
     (signingRequest as AnyEthSigningRequest).type !== undefined &&
@@ -11,7 +15,7 @@ export const isEthereumRequest = (
 
 export const isSigningType = <T extends keyof SigningRequests>(
   signingRequest: SigningRequests[T][0],
-  type: T,
+  type: T
 ) => {
   return signingRequest.type === type
 }

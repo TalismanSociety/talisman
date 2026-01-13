@@ -1,9 +1,9 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
 
-import { NomPoolMember } from "../../types"
+import type { NomPoolMember } from "../../types"
 
 type GetNomPoolUnbondPayload = {
   sapi: ScaleApi | undefined | null
@@ -31,7 +31,7 @@ export const useGetNomPoolUnbondPayload = ({ sapi, address, pool }: GetNomPoolUn
           member_account: Enum("Id", address),
           unbonding_points: pool.points,
         },
-        { address },
+        { address }
       )
     },
   })

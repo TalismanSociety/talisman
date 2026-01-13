@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
-import { FC, useMemo } from "react"
+import { getNftMetadata } from "@ui/util/getNftMetadata"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
-
-import { getNftMetadata } from "@ui/util/getNftMetadata"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -35,12 +34,12 @@ export const EthSignBodyErc721Transfer: FC = () => {
       name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [asset?.name, qMetadata?.data?.image, qMetadata?.data?.name, tokenId],
+    [asset?.name, qMetadata?.data?.image, qMetadata?.data?.name, tokenId]
   )
 
   const isOnBehalf = useMemo(
     () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
-    [account, from],
+    [account, from]
   )
 
   if (qMetadata.isLoading || !from || !to || !account || !network || !decodedTx.targetAddress)
@@ -75,9 +74,9 @@ export const EthSignBodyErc721Transfer: FC = () => {
         </div>
       )}
       {!!image && (
-        <div className="mb-[-0.8rem] mt-12 text-center">
+        <div className="mt-12 mb-[-0.8rem] text-center">
           <UnsafeImage
-            className="bg-grey-800 inline-block h-48 w-48 rounded"
+            className="inline-block h-48 w-48 rounded bg-grey-800"
             src={image}
             alt={name}
           />

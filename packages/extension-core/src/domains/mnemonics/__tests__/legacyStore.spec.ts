@@ -1,4 +1,8 @@
-import { decryptLegacyMnemonicObject, LEGACY_SEED_PREFIX, LegacySeedObj } from "../legacy/helpers"
+import {
+  decryptLegacyMnemonicObject,
+  LEGACY_SEED_PREFIX,
+  type LegacySeedObj,
+} from "../legacy/helpers"
 import { createLegacySeedPhraseStore } from "../legacy/store"
 
 describe("createLegacySeedPhraseStore", () => {

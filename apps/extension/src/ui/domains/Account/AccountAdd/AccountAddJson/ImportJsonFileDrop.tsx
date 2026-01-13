@@ -1,7 +1,7 @@
 import { FileCheckIcon, FilePlusIcon, FileXIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, useCallback, useMemo, useState } from "react"
-import { DropzoneOptions, useDropzone } from "react-dropzone"
+import { type FC, type MouseEventHandler, useCallback, useMemo, useState } from "react"
+import { type DropzoneOptions, useDropzone } from "react-dropzone"
 import { Trans, useTranslation } from "react-i18next"
 import * as yup from "yup"
 
@@ -10,18 +10,18 @@ import { useJsonAccountImport } from "./context"
 const FileIcon: FC<{ state: "ok" | "nok" | "unknown" }> = ({ state }) => {
   if (state === "nok")
     return (
-      <div className="bg-alert-warn/10 rounded-full p-5 text-lg">
+      <div className="rounded-full bg-alert-warn/10 p-5 text-lg">
         <FileXIcon className="text-alert-warn" />
       </div>
     )
   if (state === "ok")
     return (
-      <div className="bg-primary/10 rounded-full p-5 text-lg">
+      <div className="rounded-full bg-primary/10 p-5 text-lg">
         <FileCheckIcon className="text-primary" />
       </div>
     )
   return (
-    <div className="bg-body/10 rounded-full p-5 text-lg">
+    <div className="rounded-full bg-body/10 p-5 text-lg">
       <FilePlusIcon />
     </div>
   )
@@ -40,7 +40,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       setFile(file)
       onChange?.(file)
     },
-    [onChange],
+    [onChange]
   )
 
   const options = useMemo<DropzoneOptions>(() => {
@@ -57,7 +57,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       setFile(undefined)
       onChange?.(undefined)
     },
-    [onChange],
+    [onChange]
   )
 
   const { getRootProps, getInputProps, isDragAccept, isDragReject } = useDropzone(options)
@@ -66,9 +66,9 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
     <div
       {...getRootProps()}
       className={classNames(
-        "border-grey-700 hover:bg-grey-900 flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-dashed p-8",
+        "flex h-[16rem] cursor-pointer flex-col items-center gap-8 rounded border border-grey-700 border-dashed p-8 hover:bg-grey-900",
         isDragAccept && "bg-primary/10",
-        (isInvalid || isDragReject) && "bg-alert-warn/10",
+        (isInvalid || isDragReject) && "bg-alert-warn/10"
       )}
     >
       <input {...getInputProps()} />
@@ -83,10 +83,10 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
       />
       <div className="flex grow flex-col items-center justify-center gap-6">
         {file ? (
-          <div className="bg-grey-800 flex h-16 w-[24rem] max-w-full items-center rounded-sm pl-6 text-xs">
+          <div className="flex h-16 w-[24rem] max-w-full items-center rounded-sm bg-grey-800 pl-6 text-xs">
             <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">{file.name}</div>
             <button
-              className="text-body-secondary hover:text-body p-6"
+              className="p-6 text-body-secondary hover:text-body"
               type="button"
               onClick={handleForgetFileClick}
             >
@@ -96,7 +96,7 @@ const JsonFileDrop: FC<{ onChange?: (file?: File) => void; isInvalid: boolean }>
         ) : (
           <div>
             <Trans t={t}>
-              Drop your JSON file or <span className="text-primary font-bold">Browse</span>
+              Drop your JSON file or <span className="font-bold text-primary">Browse</span>
             </Trans>
           </div>
         )}
@@ -148,7 +148,7 @@ export const ImportJsonFileDrop = () => {
 
           setIsValid(true)
           setJson(content)
-        } catch (err) {
+        } catch {
           setIsValid(false)
           setJson(undefined)
         }
@@ -157,7 +157,7 @@ export const ImportJsonFileDrop = () => {
         setJson(undefined)
       }
     },
-    [setJson],
+    [setJson]
   )
 
   return <JsonFileDrop onChange={handleFileChange} isInvalid={!isValid} />

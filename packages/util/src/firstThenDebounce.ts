@@ -1,4 +1,4 @@
-import { concat, debounceTime, Observable, OperatorFunction, skip, take } from "rxjs"
+import { concat, debounceTime, type Observable, type OperatorFunction, skip, take } from "rxjs"
 
 /**
  * An rxjs operator which:

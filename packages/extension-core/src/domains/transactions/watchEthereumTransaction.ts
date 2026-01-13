@@ -1,7 +1,7 @@
 import { assert } from "@polkadot/util"
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
-import { Hex, TransactionReceipt, TransactionRequest } from "viem"
+import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
 import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
@@ -11,13 +11,13 @@ import { settingsStore } from "../app/store.settings"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { addEvmTransaction, updateTransactionStatus } from "./helpers"
-import { WatchTransactionOptions } from "./types"
+import type { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
   evmNetworkId: NetworkId,
   hash: `0x${string}`,
   unsigned: TransactionRequest<string>,
-  options: WatchTransactionOptions = {},
+  options: WatchTransactionOptions = {}
 ) => {
   try {
     const { siteUrl, notifications, txInfo } = options
@@ -47,7 +47,7 @@ export const watchEthereumTransaction = async (
       const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
         try {
           return await client.waitForTransactionReceipt({ hash, confirmations: 0 })
-        } catch (err) {
+        } catch {
           await sleep(4000)
           return getTransactionReceipt(hash)
         }
@@ -65,7 +65,7 @@ export const watchEthereumTransaction = async (
         updateTransactionStatus(
           hash,
           receipt.status === "success" ? "success" : "error",
-          receipt.blockNumber,
+          receipt.blockNumber
         )
       }
 
@@ -73,7 +73,7 @@ export const watchEthereumTransaction = async (
         await createNotification(
           receipt.status === "success" ? "success" : "error",
           networkName,
-          txUrl,
+          txUrl
         )
 
       // wait 2 confirmations before marking as confirmed
@@ -84,7 +84,7 @@ export const watchEthereumTransaction = async (
             hash,
             receipt.status === "success" ? "success" : "error",
             receipt.blockNumber,
-            true,
+            true
           )
 
         // if tx orignates from a dapp, in case it's a swap for a new token, launch an asset discovery scan
@@ -112,9 +112,9 @@ export const watchEthereumTransaction = async (
           isNotFound ? "not_found" : "error",
           networkName,
           txUrl,
-          err as Error,
+          err as Error
         )
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       else console.error("Failed to watch transaction", { err })
     }
   } catch (err) {

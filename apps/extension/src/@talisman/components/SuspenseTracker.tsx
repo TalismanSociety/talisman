@@ -1,6 +1,6 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: debug logging
 import { DEBUG } from "extension-shared"
-import { FC, useEffect } from "react"
+import { type FC, useEffect } from "react"
 
 const SuspenseTrackerInner: FC<{ name: string }> = ({ name }) => {
   useEffect(() => {

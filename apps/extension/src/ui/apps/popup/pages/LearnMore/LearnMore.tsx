@@ -1,12 +1,11 @@
 import { ChevronLeftIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { LearnMoreContent } from "@ui/domains/Portfolio/GetStarted/LearnMore/LearnMoreContent"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { IconButton } from "talisman-ui"
-
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { LearnMoreContent } from "@ui/domains/Portfolio/GetStarted/LearnMore/LearnMoreContent"
 
 import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 
@@ -25,7 +24,7 @@ const goToSettingsAccounts = newGoToFn("Manage accounts", "/settings/accounts")
 const goToSettingsCurrency = newGoToFn("Change currencies", "/settings/general/currency")
 const goToAddHardwareAccounts = newGoToFn(
   "Add hardware accounts",
-  "/accounts/add?methodType=connect",
+  "/accounts/add?methodType=connect"
 )
 const goToSettingsMnemonics = newGoToFn("Manage mnemonics", "/settings/mnemonics")
 

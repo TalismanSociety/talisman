@@ -1,7 +1,6 @@
-import { TokenRateCurrency } from "@talismn/token-rates"
-import { SetStateAction, useCallback } from "react"
-
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { useSetting } from "@ui/state"
+import { type SetStateAction, useCallback } from "react"
 
 export const useFavoriteCurrencies = () => {
   const [favorites, setFavoritesInner] = useSetting("selectableCurrencies")
@@ -14,7 +13,7 @@ export const useFavoriteCurrencies = () => {
       }
       await setFavoritesInner(value)
     },
-    [setFavoritesInner, favorites],
+    [setFavoritesInner, favorites]
   )
 
   return [favorites, setFavorites] as const

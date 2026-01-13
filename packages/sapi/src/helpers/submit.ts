@@ -1,6 +1,6 @@
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export type ScaleApiSubmitMode = "default" | "bittensor-mev-shield"
 
@@ -9,7 +9,7 @@ export const submit = async (
   payload: SignerPayloadJSON,
   signature?: `0x${string}`,
   txInfo?: unknown,
-  mode?: ScaleApiSubmitMode,
+  mode?: ScaleApiSubmitMode
 ) => {
   switch (mode) {
     case "bittensor-mev-shield":

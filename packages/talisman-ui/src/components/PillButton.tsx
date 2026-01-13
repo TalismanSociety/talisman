@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, forwardRef, SVGProps } from "react"
+import { type FC, forwardRef, type SVGProps } from "react"
 
 export type PillButtonSize = "tiny" | "xs" | "sm" | "base"
 
@@ -20,7 +20,6 @@ const getFontSize = (size: PillButtonSize) => {
       return "text-tiny"
     case "sm":
       return "text-sm"
-    case "xs":
     default:
       return "text-xs"
   }
@@ -35,11 +34,11 @@ export const PillButton = forwardRef<HTMLButtonElement, PillButtonProps>(
         className={classNames(
           getFontSize(size),
           "transition-colors duration-100 ease-out",
-          "bg-grey-800 text-body-secondary inline-flex shrink-0 items-center justify-center leading-none outline-none",
+          "inline-flex shrink-0 items-center justify-center bg-grey-800 text-body-secondary leading-none outline-none",
           "gap-3 rounded-[1em] px-[1em] py-[0.666em]",
           "hover:bg-grey-700 disabled:bg-grey-800 disabled:opacity-50",
           "allow-focus outline-offset-0 focus-visible:outline-current",
-          className,
+          className
         )}
         {...props}
       >
@@ -51,6 +50,6 @@ export const PillButton = forwardRef<HTMLButtonElement, PillButtonProps>(
         <div className="max-w-full">{children}</div>
       </button>
     )
-  },
+  }
 )
 PillButton.displayName = "PillButton"

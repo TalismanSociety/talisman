@@ -1,7 +1,6 @@
-import { PostHogCaptureProperties } from "extension-core"
-import { useCallback } from "react"
-
 import { api } from "@ui/api"
+import type { PostHogCaptureProperties } from "extension-core"
+import { useCallback } from "react"
 
 export const useAnalytics = () => {
   const genericEvent = useCallback((eventName: string, options: PostHogCaptureProperties = {}) => {

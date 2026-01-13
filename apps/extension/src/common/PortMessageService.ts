@@ -26,10 +26,10 @@ import {
 
 export interface Handler {
   message: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   resolve: (data?: any) => void
   reject: (error: Error) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   subscriber?: (data: any) => void
 }
 
@@ -82,7 +82,7 @@ export default class PortMessageService {
   }
 
   private async ensurePortAndSendMessage<TMessageType extends MessageTypes>(
-    message: TransportRequestMessage<TMessageType>,
+    message: TransportRequestMessage<TMessageType>
   ): Promise<void> {
     if (!this.port) await this.createPort()
 
@@ -96,22 +96,22 @@ export default class PortMessageService {
   // a generic message sender that creates an event, returning a promise that will
   // resolve once the event is resolved (by the response listener just below this)
   sendMessage<TMessageType extends MessageTypesWithNullRequest>(
-    message: TMessageType,
+    message: TMessageType
   ): Promise<ResponseTypes[TMessageType]>
   sendMessage<TMessageType extends MessageTypesWithNoSubscriptions>(
     message: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
   ): Promise<ResponseTypes[TMessageType]>
   sendMessage<TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
   ): Promise<ResponseTypes[TMessageType]>
 
   sendMessage<TMessageType extends MessageTypes>(
     message: TMessageType,
     request?: RequestTypes[TMessageType],
-    subscriber?: (data: unknown) => void,
+    subscriber?: (data: unknown) => void
   ): Promise<ResponseTypes[TMessageType]> {
     return new Promise((resolve, reject) => {
       const id = crypto.randomUUID()
@@ -139,7 +139,7 @@ export default class PortMessageService {
   subscribe<TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
   ): UnsubscribeFn {
     const id = crypto.randomUUID()
 
@@ -172,7 +172,7 @@ export default class PortMessageService {
       code?: number
       rpcData?: unknown
       isEthProviderRpcError?: boolean
-    },
+    }
   ): void {
     const handler = this.handlers[data.id]
     if (!handler) {
@@ -203,7 +203,7 @@ export default class PortMessageService {
     // lost 4 hours on this, a warning would have helped :)
     if (typeof data.subscription === "boolean")
       log.warn(
-        "PortMessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans",
+        "PortMessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans"
       )
 
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
@@ -213,8 +213,8 @@ export default class PortMessageService {
           new WrappedEthProviderRpcError(
             data.error,
             data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
-            data.rpcData,
-          ),
+            data.rpcData
+          )
         )
       } else handler.reject(new Error(data.error))
     } else handler.resolve(data.response)

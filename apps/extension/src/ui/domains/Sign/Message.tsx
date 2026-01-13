@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 type MessageProps = { text: string; className?: string; rows?: number }
@@ -25,14 +25,14 @@ export const Message: FC<MessageProps> = ({ text, rows, className }) => {
         readOnly
         rows={rows}
         className={classNames(
-          "text-body-secondary bg-grey-800 scrollable scrollable-600",
+          "scrollable scrollable-600 bg-grey-800 text-body-secondary",
           "rounded p-6 text-left font-mono",
-          className,
+          className
         )}
         value={value}
       />
       {canShowAll && (
-        <div className="text-grey-500 mt-4 flex w-full justify-between text-xs">
+        <div className="mt-4 flex w-full justify-between text-grey-500 text-xs">
           <div>{t("Displaying first 1000 characters only")}</div>
           <div>
             <button type="button" className="hover:text-grey-400" onClick={handleShowAll}>

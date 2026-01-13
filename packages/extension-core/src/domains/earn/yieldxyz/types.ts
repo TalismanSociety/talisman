@@ -1,7 +1,7 @@
-import { Address } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
-import { Loadable } from "@talismn/util"
-import { BalanceDto, YieldDto } from "@yieldxyz/sdk"
+import type { Address } from "@talismn/balances"
+import type { NetworkId } from "@talismn/chaindata-provider"
+import type { Loadable } from "@talismn/util"
+import type { BalanceDto, YieldDto } from "@yieldxyz/sdk"
 
 // Re-export SDK types for use in UI
 export type {

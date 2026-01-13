@@ -1,28 +1,31 @@
+import type { GenericExtrinsic } from "@polkadot/types"
+import type {
+  IRuntimeVersionBase,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+} from "@polkadot/types/types"
+import type { HexString } from "@polkadot/util/types"
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
-import { GenericExtrinsic } from "@polkadot/types"
-import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { HexString } from "@polkadot/util/types"
-import { DecodedCall, ScaleApi } from "@talismn/sapi"
+import { provideContext } from "@talisman/util/provideContext"
+import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { papiStringify } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
-import { Address, isJsonPayload, SubstrateSigningRequest } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo } from "react"
-
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useBalancesHydrate, useNetworkByGenesisHash } from "@ui/state"
 import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
+import { type Address, isJsonPayload, type SubstrateSigningRequest } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo } from "react"
 
 import { useSubstratePayloadMetadataSuspense } from "../../../hooks/useSubstratePayloadMetadata"
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  extrinsic: GenericExtrinsic | null | undefined,
+  extrinsic: GenericExtrinsic | null | undefined
 ) => {
   const chain = useNetworkByGenesisHash(
-    payload && isJsonPayload(payload) ? payload.genesisHash : undefined,
+    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
   )
 
   return useQuery({
@@ -108,7 +111,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const payload = useMemo(
     () => modifiedPayload || signingRequest.request.payload,
-    [modifiedPayload, signingRequest.request.payload],
+    [modifiedPayload, signingRequest.request.payload]
   )
 
   const decodedCall = useMemo(() => {
@@ -124,7 +127,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const isDryRunAvailable = useMemo(
     () => sapi?.isApiAvailable("DryRunApi", "dry_run_call") || false,
-    [sapi],
+    [sapi]
   )
 
   const {
@@ -174,7 +177,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload],
+    [baseRequest, modifiedPayload]
   )
 
   const approveQr = useCallback(
@@ -189,7 +192,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload],
+    [baseRequest, modifiedPayload]
   )
 
   const approveSignet = useCallback(async () => {
@@ -241,5 +244,5 @@ const usePolkadotSigningRequestProvider = ({
 }
 
 export const [PolkadotSigningRequestProvider, usePolkadotSigningRequest] = provideContext(
-  usePolkadotSigningRequestProvider,
+  usePolkadotSigningRequestProvider
 )

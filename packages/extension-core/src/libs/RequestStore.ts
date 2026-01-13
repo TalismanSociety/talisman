@@ -1,9 +1,8 @@
 import { ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
-
-import type { Port, Resolver } from "../types/base"
 import { genericSubscription } from "../handlers/subscriptions"
-import { MessageTypesWithSubscriptions } from "../types"
+import type { MessageTypesWithSubscriptions } from "../types"
+import type { Port, Resolver } from "../types/base"
 
 export type TRespondableRequest<TRequest, TResponse> = Resolver<TResponse> &
   TRequest & {
@@ -13,10 +12,10 @@ export type TRespondableRequest<TRequest, TResponse> = Resolver<TResponse> &
 type NewRequestCallbackFn<TRequest> = (request: TRequest) => void
 type CompletedRequestCallbackFn<TRequest, TResponse> = (
   request: TRequest,
-  response?: TResponse,
+  response?: TResponse
 ) => void | Promise<void>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export abstract class RequestStore<TRequest extends { id: string; [key: string]: any }, TResponse> {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<string, TRespondableRequest<TRequest, TResponse>> = {}
@@ -31,7 +30,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
    */
   constructor(
     onNewRequestCallback: NewRequestCallbackFn<TRequest>,
-    onRequestCompletedCallback?: CompletedRequestCallbackFn<TRequest, TResponse>,
+    onRequestCompletedCallback?: CompletedRequestCallbackFn<TRequest, TResponse>
   ) {
     this.#onNewRequestCallback = onNewRequestCallback
     this.onRequestCompletedCallback = onRequestCompletedCallback
@@ -42,6 +41,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   }
 
   public clearRequests() {
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     Object.keys(this.requests).forEach((key) => delete this.requests[key])
     this.observable.next(this.getAllRequests())
   }
@@ -60,7 +60,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
       } as TRespondableRequest<TRequest, TResponse>
 
       this.observable.next(this.getAllRequests())
-      this.#onNewRequestCallback && this.#onNewRequestCallback(newRequest)
+      this.#onNewRequestCallback?.(newRequest)
     })
   }
 
@@ -71,7 +71,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   private onCompleteRequest = (
     id: string,
     resolve: (result: TResponse) => void,
-    reject: (error: Error) => void,
+    reject: (error: Error) => void
   ): Resolver<TResponse> => {
     const complete = async (response?: TResponse) => {
       const request = this.requests[id]
@@ -105,7 +105,6 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   }
 
   protected mapRequestToData(request: TRespondableRequest<TRequest, TResponse>): TRequest {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { reject, resolve, ...data } = request
     return data as TRequest
   }

@@ -1,20 +1,19 @@
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  NetworkId,
+  type NetworkId,
   solNativeTokenId,
   solSplTokenId,
-  TokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
+import { type QueryFunction, type QueryKey, useQuery } from "@tanstack/react-query"
+import { useSetting, useTokensMap } from "@ui/state"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSetting, useTokensMap } from "@ui/state"
-
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import {
+import type {
   RiskAnalysisPlatform,
   RiskAnalysisResponse,
   RiskAnalysisScanError,
@@ -72,7 +71,7 @@ export const useRiskAnalysisBase = <
 
   const effectiveAutoRiskScan = useMemo(
     () => !disableAutoRiskScan && !!autoRiskScan,
-    [autoRiskScan, disableAutoRiskScan],
+    [autoRiskScan, disableAutoRiskScan]
   )
 
   const [isAvailable, unavailableReason] = useMemo(() => {
@@ -83,12 +82,12 @@ export const useRiskAnalysisBase = <
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
     () => isAvailable && !disableAutoRiskScan && autoRiskScan === undefined,
-    [autoRiskScan, disableAutoRiskScan, isAvailable],
+    [autoRiskScan, disableAutoRiskScan, isAvailable]
   )
 
   const shouldValidate = useMemo(
     () => isAvailable && (effectiveAutoRiskScan || isScanRequested),
-    [effectiveAutoRiskScan, isAvailable, isScanRequested],
+    [effectiveAutoRiskScan, isAvailable, isScanRequested]
   )
 
   const {
@@ -112,9 +111,10 @@ export const useRiskAnalysisBase = <
 
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(platform, result, t) : null),
-    [platform, result, t],
+    [platform, result, t]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const launchScan = useCallback(() => {
     if (isAvailable) {
       if (result) review.drawer.open()
@@ -125,6 +125,7 @@ export const useRiskAnalysisBase = <
   }, [error, isAvailable, refetch, result, review.drawer, setIsScanRequested])
 
   const refAutoOpen = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refAutoOpen.current || !isScanRequested) return
     if (result) {
@@ -135,7 +136,7 @@ export const useRiskAnalysisBase = <
 
   const isValidating = useMemo(
     () => isAvailable && shouldValidate && isLoading && enabled,
-    [enabled, isAvailable, isLoading, shouldValidate],
+    [enabled, isAvailable, isLoading, shouldValidate]
   )
 
   const validationResult = useMemo(() => {

@@ -1,17 +1,16 @@
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { FC, ReactNode, useMemo } from "react"
+import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
+import { useAccounts } from "@ui/state"
+import type { Account } from "extension-core"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
 
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
-import { useAccounts } from "@ui/state"
-
 import { FormattedAddress } from "../Account/FormattedAddress"
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
-import { SiteConnectionStatus } from "./types"
+import type { SiteConnectionStatus } from "./types"
 
 const ConnectionStatusContainer: FC<{
   status: SiteConnectionStatus
@@ -80,17 +79,17 @@ const ConnectAccountsExpandedContainer: FC<{
       <div className="bg-grey-900 px-6 py-3">
         <div className="flex flex-col">
           <div className="border-grey-800 border-b pb-3">
-            <div className="text-body-secondary hover:text-body flex w-full py-2">
+            <div className="flex w-full py-2 text-body-secondary hover:text-body">
               <div className="flex w-12 shrink-0">
                 <ConnectedSiteIndicator status={status} />
               </div>
-              <div className="text-body grow">{label}</div>
+              <div className="grow text-body">{label}</div>
               {status !== "disabled" && (
                 <ConnectedAccountsSummary connectedAccounts={connectedAccounts} />
               )}
             </div>
           </div>
-          <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
+          <span className="flex items-center gap-1 pt-3 text-grey-600 text-xs">
             <InfoIcon />
             <span>{infoText}</span>
           </span>
@@ -117,7 +116,7 @@ const ConnectAccountsAccordionContainer: FC<{
 
   return (
     <ConnectionStatusContainer status={status} className="bg-black">
-      <button type="button" onClick={toggle} className="bg-grey-900 w-full px-6 py-3">
+      <button type="button" onClick={toggle} className="w-full bg-grey-900 px-6 py-3">
         <div className="flex flex-col">
           <div className={"border-grey-800 border-b pb-3"}>
             <div className="flex w-full gap-6 py-2">
@@ -131,7 +130,7 @@ const ConnectAccountsAccordionContainer: FC<{
               <AccordionIcon isOpen={isOpen} />
             </div>
           </div>
-          <span className="text-grey-600 flex items-center gap-1 pt-3 text-xs">
+          <span className="flex items-center gap-1 pt-3 text-grey-600 text-xs">
             <InfoIcon />
             <span>{infoText}</span>
           </span>

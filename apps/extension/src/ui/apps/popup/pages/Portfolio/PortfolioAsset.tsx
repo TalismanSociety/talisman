@@ -1,13 +1,7 @@
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
-import { uniq } from "lodash-es"
-import { useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Navigate, useNavigate, useParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
-
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -15,6 +9,11 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useBalances, usePortfolioBalances, useSelectedCurrency } from "@ui/state"
+import { uniq } from "lodash-es"
+import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -25,19 +24,19 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   const total = useMemo(
     () => balancesToDisplay.sum.fiat(currency).total,
-    [balancesToDisplay.sum, currency],
+    [balancesToDisplay.sum, currency]
   )
 
   const tokenIds = useMemo<TokenId[]>(
     () => uniq(balancesToDisplay.each.map((b) => b.token?.id).filter(isTruthy)),
-    [balancesToDisplay],
+    [balancesToDisplay]
   )
 
   const { t } = useTranslation()
 
   return (
     <>
-      <div className="text-body flex h-[3.6rem] w-full items-center gap-4 text-base font-bold">
+      <div className="flex h-[3.6rem] w-full items-center gap-4 font-bold text-base text-body">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
@@ -65,14 +64,14 @@ export const PortfolioAsset = () => {
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
-    [account, allBalances, networkBalances],
+    [account, allBalances, networkBalances]
   )
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
     () => accountBalances.find((b) => b.token?.symbol === symbol),
-    [accountBalances, symbol],
+    [accountBalances, symbol]
   )
 
   useEffect(() => {

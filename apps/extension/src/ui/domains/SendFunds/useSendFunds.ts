@@ -1,18 +1,18 @@
-import { Address, Balance, BalanceFormatter, BalanceTransferType } from "@talismn/balances"
+import { provideContext } from "@talisman/util/provideContext"
+import {
+  type Address,
+  Balance,
+  BalanceFormatter,
+  type BalanceTransferType,
+} from "@talismn/balances"
 import {
   isTokenDot,
   isTokenNeedExistentialDeposit,
-  Token,
-  TokenId,
+  type Token,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { formatDecimals, isNotNil } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { WalletTransactionInfo } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
-import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import {
@@ -27,8 +27,12 @@ import {
   useTokensMap,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
+import type { WalletTransactionInfo } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { SendFundsTransactionProps } from "./types"
+import type { SendFundsTransactionProps } from "./types"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsTransactionDot } from "./useSendFundsTransactionDot"
 import { useSendFundsTransactionEth } from "./useSendFundsTransactionEth"
@@ -83,7 +87,7 @@ const useRecipientBalance = (token?: Token | null, address?: Address | null) => 
 const useIsSendingEnough = (
   recipientBalance?: Balance | null,
   token?: Token | null,
-  transfer?: BalanceFormatter | null,
+  transfer?: BalanceFormatter | null
 ) => {
   return useMemo(() => {
     try {
@@ -93,7 +97,7 @@ const useIsSendingEnough = (
 
       const existentialDeposit = new BalanceFormatter(
         token.existentialDeposit ?? "0",
-        token.decimals,
+        token.decimals
       )
 
       return (
@@ -151,7 +155,7 @@ const useSendFundsProvider = () => {
       token && transaction?.maxAmount
         ? new BalanceFormatter(transaction?.maxAmount, token.decimals, tokenRates)
         : null,
-    [transaction?.maxAmount, token, tokenRates],
+    [transaction?.maxAmount, token, tokenRates]
   )
 
   const tip = useMemo(
@@ -159,7 +163,7 @@ const useSendFundsProvider = () => {
       transaction?.platform === "polkadot" && tipToken && transaction.tip
         ? new BalanceFormatter(transaction.tip, tipToken.decimals, tipTokenRates)
         : null,
-    [tipToken, tipTokenRates, transaction],
+    [tipToken, tipTokenRates, transaction]
   )
 
   const estimatedFee = useMemo(
@@ -167,7 +171,7 @@ const useSendFundsProvider = () => {
       feeToken && transaction?.estimatedFee
         ? new BalanceFormatter(transaction.estimatedFee, feeToken.decimals, feeTokenRates)
         : null,
-    [feeToken, feeTokenRates, transaction?.estimatedFee],
+    [feeToken, feeTokenRates, transaction?.estimatedFee]
   )
 
   const maxCostBreakdown = useMemo(() => {
@@ -193,7 +197,7 @@ const useSendFundsProvider = () => {
         balance: new BalanceFormatter(
           balances.find({ tokenId }).sorted[0]?.transferable.planck,
           tokensMap[tokenId].decimals,
-          tokenRatesMap[tokenId],
+          tokenRatesMap[tokenId]
         ),
       }))
 
@@ -225,7 +229,7 @@ const useSendFundsProvider = () => {
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
           token.decimals,
-          tokenRatesMap[token.id],
+          tokenRatesMap[token.id]
         )
 
         return remaining < existentialDeposit.planck
@@ -389,7 +393,7 @@ const useSendFundsProvider = () => {
     (args: { networkId: string; txId: string }) => {
       gotoProgress(args)
     },
-    [gotoProgress],
+    [gotoProgress]
   )
 
   const txInfo = useMemo<WalletTransactionInfo | null>(() => {

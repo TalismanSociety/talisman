@@ -1,11 +1,15 @@
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useSelectedCurrency } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { log } from "extension-shared"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -14,11 +18,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
-
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -52,9 +51,9 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens,
-        token?.decimals,
+        token?.decimals
       ),
-    [maxAmount, sendMax, token?.decimals, transfer?.tokens],
+    [maxAmount, sendMax, token?.decimals, transfer?.tokens]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -75,14 +74,15 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
       refSkipSync.current = true
       setValue(nextValue)
       const num = Number(nextValue)
-      if (token && nextValue.length && !isNaN(num))
+      if (token && nextValue.length && !Number.isNaN(num))
         set("amount", tokensToPlanck(nextValue, token.decimals))
       else remove("amount")
     },
-    [remove, sendMax, set, token],
+    [remove, sendMax, set, token]
   )
 
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -93,10 +93,10 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     <div
       className={classNames(
         "flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4",
-        isEstimatingMaxAmount && "animate-pulse",
+        isEstimatingMaxAmount && "animate-pulse"
       )}
     >
-      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
+      {isEstimatingMaxAmount && <div className="h-16 w-48 rounded bg-grey-800"></div>}
       <input
         key="tokenInput"
         ref={refTokensInput}
@@ -105,9 +105,9 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         value={value}
         placeholder="0"
         className={classNames(
-          "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
+          "peer inline-block min-w-0 text-ellipsis bg-transparent text-body text-xl",
           sendMax && "placeholder:text-white",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
@@ -129,9 +129,9 @@ const FiatInput = () => {
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
-        2,
+        2
       ),
-    [currency, maxAmount, sendMax, transfer],
+    [currency, maxAmount, sendMax, transfer]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -154,13 +154,13 @@ const FiatInput = () => {
       const num = Number(nextValue)
       const tokenRate = tokenRates?.[currency]
 
-      if (token && tokenRate && nextValue.length && !isNaN(num)) {
+      if (token && tokenRate && nextValue.length && !Number.isNaN(num)) {
         const fiat = parseFloat(nextValue)
         const tokens = (fiat / tokenRate.price).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
     },
-    [currency, remove, sendMax, set, token, tokenRates],
+    [currency, remove, sendMax, set, token, tokenRates]
   )
 
   if (!tokenRates) return null
@@ -170,7 +170,7 @@ const FiatInput = () => {
       className={classNames(
         // display flex in reverse order to leverage peer css
         "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
-        isEstimatingMaxAmount && "animate-pulse",
+        isEstimatingMaxAmount && "animate-pulse"
       )}
     >
       <input
@@ -178,20 +178,20 @@ const FiatInput = () => {
         ref={refFiatInput}
         type="text"
         value={value}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
+        // biome-ignore lint/a11y/noAutofocus: legacy
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
         className={classNames(
-          "text-body peer inline-block min-w-0 bg-transparent text-xl",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          "peer inline-block min-w-0 bg-transparent text-body text-xl",
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
+      {isEstimatingMaxAmount && <div className="h-16 w-48 rounded bg-grey-800"></div>}
       <div
         className={classNames(
           "block shrink-0",
-          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled",
+          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
         {currencyConfig[currency]?.symbol}
@@ -201,7 +201,7 @@ const FiatInput = () => {
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -260,13 +260,13 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
     <div className="w-full grow">
       {!!token && (
         <>
-          <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
+          <div className="flex h-[12rem] flex-col justify-end font-bold text-xl">
             {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />}
           </div>
           <div
             className={classNames(
               "mt-4 flex max-w-full items-center justify-center gap-4",
-              isEstimatingMaxAmount && "invisible",
+              isEstimatingMaxAmount && "invisible"
             )}
           >
             {tokenRates && (
@@ -275,7 +275,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
                 <PillButton
                   onClick={toggleIsTokenEdit}
                   size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+                  className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -285,12 +285,12 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+              className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
             >
               {t("Max")}
             </PillButton>
           </div>
-          <div className="text-brand-orange mt-4 text-center text-xs">
+          <div className="mt-4 text-center text-brand-orange text-xs">
             <ErrorMessage />
           </div>
         </>

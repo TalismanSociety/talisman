@@ -1,5 +1,5 @@
 import { cn } from "@talismn/util"
-import { FC, PropsWithChildren } from "react"
+import type { FC, PropsWithChildren } from "react"
 
 import { TaoDashboardSwap } from "./swap/TaoDashboardSwap"
 import { TaoDashboardSubnetBreadcrumb } from "./TaoDashboardSubnetBreadcrumb"
@@ -35,8 +35,8 @@ export const TaoDashboardSubnetTradingUI: FC<{ netuid: number }> = ({ netuid }) 
 const Placeholder: FC<PropsWithChildren<{ className?: string }>> = ({ className, children }) => (
   <div
     className={cn(
-      "bg-grey-800 flex h-[50rem] flex-1 shrink-0 items-center justify-center rounded",
-      className,
+      "flex h-[50rem] flex-1 shrink-0 items-center justify-center rounded bg-grey-800",
+      className
     )}
   >
     {children}

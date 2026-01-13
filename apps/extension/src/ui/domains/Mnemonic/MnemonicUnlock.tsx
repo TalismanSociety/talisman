@@ -1,15 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
-import { FC, ReactNode, useCallback, useEffect } from "react"
+import { api } from "@ui/api"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { type FC, type ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 
 type FormData = {
   password: string
@@ -35,7 +34,7 @@ function useMnemonicUnlockContext({ mnemonicId }: { mnemonicId: string }): Mnemo
       const secret = await api.mnemonicUnlock(mnemonicId, password)
       setMnemonic(secret)
     },
-    [mnemonicId, setMnemonic],
+    [mnemonicId, setMnemonic]
   )
 
   return {
@@ -82,7 +81,7 @@ const BaseMnemonicUnlock: FC<MnemonicUnlockProps> = ({ children, buttonText, tit
         })
       }
     },
-    [unlock, setError],
+    [unlock, setError]
   )
 
   useEffect(() => {

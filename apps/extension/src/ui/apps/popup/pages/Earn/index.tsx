@@ -1,7 +1,6 @@
-import { FC } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
-
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
+import type { FC } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { PopupLayout } from "../../Layout/PopupLayout"
 import { PopupEarnDiscoverRoute, PopupEarnPage, PopupEarnPositionsRoute } from "./PopupEarnPage"

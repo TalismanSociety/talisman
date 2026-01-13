@@ -1,13 +1,9 @@
-import { Balance, Balances } from "@talismn/balances"
-import { getNetworkGenesisHash, Network, Token } from "@talismn/chaindata-provider"
-import { CheckCircleIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
-import { Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import type { Balance, Balances } from "@talismn/balances"
+import { getNetworkGenesisHash, type Network, type Token } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -15,6 +11,9 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccounts, useBalances, useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
+import { type Account, getAccountGenesisHash, isAccountCompatibleWithNetwork } from "extension-core"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 type AccountOption = Account & {
   disabled: boolean
@@ -40,7 +39,7 @@ export const SenderAccountPicker: FC<{
       .filter((account) => isAccountCompatibleWithNetwork(network, account))
       .map((account): AccountOption => {
         const balances = allBalances.find({ address: account.address, tokenId })
-        const disabled = !balances.sum.planck["transferable"]
+        const disabled = !balances.sum.planck.transferable
         return {
           ...account,
           balances,
@@ -48,13 +47,13 @@ export const SenderAccountPicker: FC<{
         }
       })
       .sort((a, b) => {
-        const fiat1 = a.balances.sum.fiat("usd")["transferable"] || 0n
-        const fiat2 = b.balances.sum.fiat("usd")["transferable"] || 0n
+        const fiat1 = a.balances.sum.fiat("usd").transferable || 0n
+        const fiat2 = b.balances.sum.fiat("usd").transferable || 0n
         if (fiat1 > fiat2) return -1
         if (fiat1 < fiat2) return 1
 
-        const planck1 = a.balances.sum.fiat("usd")["transferable"] || 0n
-        const planck2 = b.balances.sum.fiat("usd")["transferable"] || 0n
+        const planck1 = a.balances.sum.fiat("usd").transferable || 0n
+        const planck2 = b.balances.sum.fiat("usd").transferable || 0n
         if (planck1 > planck2) return -1
         if (planck1 < planck2) return 1
 
@@ -79,7 +78,7 @@ export const SenderAccountPicker: FC<{
           <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <AccountsList
           accounts={filteredAccounts}
           selected={address}
@@ -113,7 +112,7 @@ const AccountsList: FC<{
         />
       ))}
       {!accounts?.length && (
-        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}
@@ -142,16 +141,16 @@ const AccountRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={cn(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
       disabled={account.disabled}
     >
       <AccountIcon
         address={account.address}
         genesisHash={getAccountGenesisHash(account)}
-        className="shrink-0 !text-xl"
+        className="!text-xl shrink-0"
       />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex w-full flex-col space-y-2 overflow-hidden">
@@ -161,7 +160,7 @@ const AccountRow: FC<{
                 <Address address={address} startCharCount={6} endCharCount={6} noTooltip />
               )}
             </div>
-            <AccountTypeIcon type={account.type} className="text-primary shrink-0" />
+            <AccountTypeIcon type={account.type} className="shrink-0 text-primary" />
           </div>
           <Address className="text-body-secondary text-xs" address={address} />
         </div>
@@ -181,7 +180,7 @@ const AccountTokenBalance: FC<{ token: Token; balance?: Balance }> = ({ token, b
     <div
       className={cn(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse",
+        balance.status === "cache" && "animate-pulse"
       )}
     >
       <div>

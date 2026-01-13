@@ -1,7 +1,7 @@
 import { sleep } from "@talismn/util"
-import { Id, toast, ToastContent, ToastOptions } from "react-toastify"
+import { type Id, type ToastContent, type ToastOptions, toast } from "react-toastify"
 
-import { Notification, NotificationProps } from "./Notification"
+import { Notification, type NotificationProps } from "./Notification"
 
 const DEFAULT_OPTIONS: ToastOptions = {
   theme: "dark",
@@ -27,7 +27,7 @@ export const notifyCustom = (content: ToastContent<unknown>, options: ToastOptio
 export const notifyUpdate = async (
   toastId: Id,
   content: NotificationProps,
-  options: ToastOptions = {},
+  options: ToastOptions = {}
 ) => {
   // toast.isActive may return false if the toast is not yet rendered
   await sleep(50)

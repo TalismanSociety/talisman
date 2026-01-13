@@ -1,13 +1,12 @@
-import { Balance, Balances } from "@talismn/balances"
-import { NetworkId, subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
+import type { Balance, Balances } from "@talismn/balances"
+import { type NetworkId, subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { Address, RemoteConfigStoreData } from "extension-core"
-import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { MouseEventHandler, useCallback, useMemo } from "react"
-
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccounts, useBalances, useRemoteConfig } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import type { Address, RemoteConfigStoreData } from "extension-core"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
+import { type MouseEventHandler, useCallback, useMemo } from "react"
 
 import { useBittensorBondModal } from "../../Bittensor/hooks/useBittensorBondModal"
 import { useBondModal } from "./useBondModal"
@@ -87,7 +86,7 @@ export const useBondButton = ({
       ignoreExistingSettings,
       remoteConfig.seek.webAppStakingPath,
       open,
-    ],
+    ]
   )
 
   return {
@@ -128,7 +127,7 @@ const getBondableBalance = (
   balance: Balance,
   remoteConfig: RemoteConfigStoreData,
   bittensorNetworkIds: string[],
-  allBalances: Balances,
+  allBalances: Balances
 ): BondableBalance | null => {
   const token = balance.token
   if (!token) return null
@@ -150,14 +149,14 @@ const getBondableBalance = (
    * Bittensor Staking
    */
   if (token?.type === "substrate-native" && bittensorNetworkIds.includes(token.networkId)) {
-    const defaultHotkey = remoteConfig.stakingPools["bittensor"]?.[0] as string | undefined
+    const defaultHotkey = remoteConfig.stakingPools.bittensor?.[0] as string | undefined
 
     const isBonding = allBalances.each.some(
       (b) =>
         b.networkId === token.networkId &&
         b.token?.type === "substrate-dtao" &&
         b.address === balance.address &&
-        b.free.planck > 0n,
+        b.free.planck > 0n
     )
 
     return {

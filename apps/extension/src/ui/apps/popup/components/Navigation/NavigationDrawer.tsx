@@ -1,3 +1,5 @@
+import { Nav, NavItem } from "@talisman/components/Nav"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
   ExternalLinkIcon,
@@ -13,21 +15,18 @@ import {
   UsersIcon,
   XIcon,
 } from "@talismn/icons"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Drawer, IconButton } from "talisman-ui"
-
-import { Nav, NavItem } from "@talisman/components/Nav"
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
 import { useAccounts, useFeatureFlag } from "@ui/state"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Drawer, IconButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -92,7 +91,8 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
 
-    /*if (!canSwap) */ return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
+    /*if (!canSwap) */ // biome-ignore lint/complexity/noCommaOperator: legacy
+    return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
 
     // await openSwapTokensModal()
     // import { sleep } from "@talismn/util"
@@ -153,7 +153,7 @@ export const NavigationDrawer: FC = () => {
   return (
     <Drawer className="h-full" containerId="main" anchor="bottom" isOpen={isOpen} onDismiss={close}>
       <div className="flex h-full w-full flex-col bg-black">
-        <header className="border-grey-800 box-border flex h-36 w-full items-center justify-between gap-6 border-b px-12">
+        <header className="box-border flex h-36 w-full items-center justify-between gap-6 border-grey-800 border-b px-12">
           <TalismanWhiteLogo className="h-[2.5rem] w-auto" />
           <BuildVersionPill className="bg-primary/20 text-primary hover:bg-primary/30" />
           <div className="grow"></div>
@@ -188,7 +188,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<KeyIcon />} onClick={handleBackupClick}>
               <span className="flex items-center">
                 {t("Backup Wallet")}
-                {!allBackedUp && <AlertCircleIcon className="text-primary ml-2 inline text-sm" />}
+                {!allBackedUp && <AlertCircleIcon className="ml-2 inline text-primary text-sm" />}
               </span>
             </NavItem>
             <NavItem icon={<StarsIcon />} onClick={handleLatestFeaturesClick}>
@@ -200,7 +200,7 @@ export const NavigationDrawer: FC = () => {
                 icon={<SeekEyeIcon className="text-primary" />}
                 onClick={handleSeekBenefitsClick}
               >
-                <span className="text-primary font-bold">SEEK</span>
+                <span className="font-bold text-primary">SEEK</span>
               </NavItem>
             )}
             <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
@@ -211,10 +211,10 @@ export const NavigationDrawer: FC = () => {
         <footer>
           <button
             type="button"
-            className="text-body-secondary hover:bg-grey-800 hover:text-body flex w-full flex-col items-center"
+            className="flex w-full flex-col items-center text-body-secondary hover:bg-grey-800 hover:text-body"
             onClick={handleLock}
           >
-            <div className="border-1 border-grey-800 h-0 w-11/12 border-t" />
+            <div className="h-0 w-11/12 border-1 border-grey-800 border-t" />
             <div className="flex w-full items-center justify-center gap-4 p-10">
               <LockIcon className="text-md" />
               <span>{t("Lock Wallet")}</span>

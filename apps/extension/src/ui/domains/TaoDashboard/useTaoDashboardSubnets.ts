@@ -1,8 +1,7 @@
-import { SubDTaoToken } from "@talismn/chaindata-provider"
+import type { SubDTaoToken } from "@talismn/chaindata-provider"
+import { useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useTokens } from "@ui/state"
 
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
@@ -16,7 +15,7 @@ export const useTaoDashboardSubnets = () => {
         token.type === "substrate-dtao" &&
         !!token.netuid && // ignore root
         !token.hotkey && // ignore dynamic tokens
-        token.networkId === BITTENSOR_NETWORK_ID, // ignore testnet
+        token.networkId === BITTENSOR_NETWORK_ID // ignore testnet
     )
   }, [allTokens])
 

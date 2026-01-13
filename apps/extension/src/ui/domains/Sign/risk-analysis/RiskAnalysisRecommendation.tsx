@@ -6,10 +6,10 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 const getValidationDescription = (riskAnalysis: RiskAnalysis) => {
   if (riskAnalysis.platform === "ethereum")
@@ -80,7 +80,7 @@ const useRecommendation = (riskAnalysis: RiskAnalysis) => {
         iconClassName: "bg-body-secondary/10",
         title: t("Unavailable"),
         description: t(
-          "Risk Assessment is not supported for this network. Proceed at your own risk.",
+          "Risk Assessment is not supported for this network. Proceed at your own risk."
         ),
       }
     }
@@ -101,9 +101,9 @@ const RiskAnalysisRecommendationInner: FC<{
   return (
     <div
       className={classNames(
-        "leading-paragraph flex w-full gap-8 rounded p-4",
+        "flex w-full gap-8 rounded p-4 leading-paragraph",
         bgClassName,
-        textClassName,
+        textClassName
       )}
     >
       <div className="flex flex-col justify-center">

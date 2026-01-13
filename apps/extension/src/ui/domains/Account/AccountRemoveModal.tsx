@@ -1,5 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import { Account } from "extension-core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { api } from "@ui/api"
+import type { Account } from "extension-core"
 import { isEqual } from "lodash-es"
 import { useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -7,15 +9,12 @@ import { useLocation, useNavigate } from "react-router-dom"
 import { BehaviorSubject, distinctUntilChanged } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { api } from "@ui/api"
-
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
 const accountToRemove$ = new BehaviorSubject<Account | null>(null)
 const [useAccount] = bind(
   accountToRemove$.pipe(distinctUntilChanged<Account | null>(isEqual)),
-  null,
+  null
 )
 
 export const useAccountRemoveModal = () => {
@@ -29,9 +28,10 @@ export const useAccountRemoveModal = () => {
       accountToRemove$.next(account ?? null)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     close()
   }, [selectedAccount, close])

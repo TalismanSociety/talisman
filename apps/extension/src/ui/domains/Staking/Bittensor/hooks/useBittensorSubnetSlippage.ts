@@ -1,7 +1,6 @@
+import { useSetting } from "@ui/state"
 import { useCallback, useMemo } from "react"
 import z from "zod/v4"
-
-import { useSetting } from "@ui/state"
 
 import { DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
 
@@ -24,7 +23,7 @@ export const useBittensorSubnetSlippage = (netuid: number | null | undefined) =>
       // throws if fails
       setRawSlippage(SUBNET_SLIPPAGE_SCHEMA.parse(value))
     },
-    [setRawSlippage],
+    [setRawSlippage]
   )
 
   return [slippage, setSlippage] as const

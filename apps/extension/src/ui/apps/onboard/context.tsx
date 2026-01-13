@@ -1,10 +1,9 @@
-import { passwordStore, settingsStore } from "extension-core"
-import { ReactNode, useCallback, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState, useIsOnboarded } from "@ui/state"
+import { passwordStore, settingsStore } from "extension-core"
+import { type ReactNode, useCallback, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 
@@ -46,8 +45,9 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [navigate, updateOnboarded])
 
   const completeOnboarding = useCallback(
+    // biome-ignore lint/suspicious/noAssignInExpressions: legact
     () => (location.href = "dashboard.html#/portfolio?onboarded"),
-    [],
+    []
   )
 
   // update
@@ -63,6 +63,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [data.allowTracking])
 
   // handle case where user has navigated back, and a password already exists in the store
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     passwordStore.get("secret").then((pw) => {
       setPasswordExists(!!pw)

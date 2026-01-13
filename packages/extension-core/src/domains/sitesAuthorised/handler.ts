@@ -1,8 +1,11 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { base58, ed25519 } from "@talismn/crypto"
-import { Account } from "@talismn/keyring"
-
+import type { Account } from "@talismn/keyring"
+import { talismanAnalytics } from "../../libs/Analytics"
+import { ExtensionHandler } from "../../libs/Handler"
+import { requestStore } from "../../libs/requests/store"
+import type { KnownRequestIdOnly } from "../../libs/requests/types"
 import type {
   MessageTypes,
   RequestType,
@@ -11,14 +14,10 @@ import type {
   ResponseTypes,
 } from "../../types"
 import type { Port, RequestIdOnly } from "../../types/base"
-import { talismanAnalytics } from "../../libs/Analytics"
-import { ExtensionHandler } from "../../libs/Handler"
-import { requestStore } from "../../libs/requests/store"
-import { KnownRequestIdOnly } from "../../libs/requests/types"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { ignoreRequest } from "./requests"
-import {
+import type {
   AuthorizedSite,
   AuthRequestApprove,
   RequestAuthorizedSiteBatchOp,
@@ -45,7 +44,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
   private async authorizedUpdate({ id, authorisedSite }: RequestAuthorizedSiteUpdate) {
     // un-set connectAllSubstrate if the user modifies the addresses for a site
     const updateConnectAll: Pick<AuthorizedSite, "connectAllSubstrate"> = {}
-    if ("addresses" in authorisedSite) updateConnectAll["connectAllSubstrate"] = undefined
+    if ("addresses" in authorisedSite) updateConnectAll.connectAllSubstrate = undefined
     await this.stores.sites.updateSite(id, { ...authorisedSite, ...updateConnectAll })
     talismanAnalytics.capture("authorised site update addresses", {
       url: id,
@@ -110,7 +109,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -154,7 +153,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
       case "pri(sites.requests.approveSolSignIn)":
         return this.authorizeApproveSolSignIn(
-          request as RequestTypes["pri(sites.requests.approveSolSignIn)"],
+          request as RequestTypes["pri(sites.requests.approveSolSignIn)"]
         )
 
       default:
@@ -164,7 +163,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 }
 
 const getSolSignInSignature = async (
-  result: RequestTypes["pri(sites.requests.approveSolSignIn)"]["result"],
+  result: RequestTypes["pri(sites.requests.approveSolSignIn)"]["result"]
 ): Promise<{
   account: Account
   signature: string

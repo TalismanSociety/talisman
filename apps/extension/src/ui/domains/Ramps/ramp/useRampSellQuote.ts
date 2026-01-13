@@ -1,23 +1,22 @@
 import { formatPrice, tokensToPlanck } from "@talismn/util"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { type UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useToken } from "@ui/state"
 import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useToken } from "@ui/state"
-
-import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
+import type { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
-import { RampsQuoteError } from "../shared/types"
+import type { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
 import { getRampSellUrl } from "./helpers"
-import { RampSellQuoteResult } from "./types"
-import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
+import type { RampSellQuoteResult } from "./types"
+import { type RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
 import { useRampCurrencies } from "./useRampCurrencies"
 
 export const useRampSellQuote = (
-  config: RampsSellQuoteOptions | null,
+  config: RampsSellQuoteOptions | null
 ): UseQueryResult<RampsSellQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
@@ -29,7 +28,7 @@ export const useRampSellQuote = (
     if (!config || !currencies) return null
 
     const currency = currencies.find(
-      (c) => c.fiatCurrency === config.currencyCode && c.onrampAvailable,
+      (c) => c.fiatCurrency === config.currencyCode && c.onrampAvailable
     )
     if (!currency)
       return {
@@ -98,7 +97,7 @@ export const useRampSellQuote = (
                 res.data.CARD.cryptoAmount,
                 address,
                 config.currencyCode,
-                countryInfo?.countryCode ?? "",
+                countryInfo?.countryCode ?? ""
               ),
           }
         : null
@@ -112,7 +111,7 @@ type FetchRampSellQuoteResult = { type: "success"; data: RampSellQuoteResult } |
 const fetchRampSellQuote = async (
   currencyCode: string,
   cryptoAssetSymbol: string,
-  plancks: string,
+  plancks: string
 ): Promise<FetchRampSellQuoteResult> => {
   const url = `${RAMPS_RAMP_API_URL}/api/host-api/v3/offramp/quote/all`
 

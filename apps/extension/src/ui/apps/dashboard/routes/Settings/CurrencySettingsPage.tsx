@@ -1,12 +1,11 @@
-import { StarIcon } from "@talismn/icons"
-import { useTranslation } from "react-i18next"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
+import { StarIcon } from "@talismn/icons"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
+import { useTranslation } from "react-i18next"
 
 const Content = () => {
   const [favorites, setFavorites] = useFavoriteCurrencies()
@@ -18,7 +17,7 @@ const Content = () => {
       <HeaderBlock
         title={t("Currency")}
         text={t(
-          "Choose your preferred currency. You can toggle between the currencies you’ve selected directly from your portfolio.",
+          "Choose your preferred currency. You can toggle between the currencies you’ve selected directly from your portfolio."
         )}
       />
       <Spacer />
@@ -27,7 +26,7 @@ const Content = () => {
           <button
             type="button"
             key={currency}
-            className="bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body-secondary flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-28 w-full cursor-pointer items-center gap-8 rounded-sm bg-grey-850 px-8 text-body-disabled enabled:hover:bg-grey-800 enabled:hover:text-body-secondary disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() =>
               setFavorites((selectable) => {
                 const newSelectable = selectable.includes(currency)
@@ -40,7 +39,7 @@ const Content = () => {
                 setSelected((selected) =>
                   newSelectable.length === 0 || newSelectable.includes(selected)
                     ? selected
-                    : newSelectable[0],
+                    : newSelectable[0]
                 )
 
                 return newSelectable
@@ -56,7 +55,7 @@ const Content = () => {
               </div>
             </div>
             {favorites.includes(currency) ? (
-              <StarIcon className="stroke-primary fill-primary" />
+              <StarIcon className="fill-primary stroke-primary" />
             ) : (
               <StarIcon />
             )}

@@ -1,21 +1,21 @@
-import { KeyringPair } from "@polkadot/keyring/types"
+import type { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-import { KeyringJson } from "@polkadot/ui-keyring/types"
+import type { KeyringJson } from "@polkadot/ui-keyring/types"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
 import {
   decryptMnemonic,
   encryptMnemonic,
   MnemonicErrors,
+  type MnemonicsStoreData,
   mnemonicsStore,
-  MnemonicsStoreData,
 } from "../../domains/mnemonics/store"
 import {
-  ChangePasswordRequest,
+  type ChangePasswordRequest,
   ChangePasswordStatusUpdateStatus,
-  ChangePasswordStatusUpdateType,
+  type ChangePasswordStatusUpdateType,
 } from "../../types/domains"
 
 const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
@@ -24,7 +24,7 @@ const eligiblePairFilter = (pair: KeyringPair | KeyringJson) =>
   !pair.meta.isHardware && !pair.meta.isExternal
 
 const restoreBackupKeyring = async (
-  password: string,
+  password: string
 ): Promise<Result<boolean, "No keyring backup found" | "Unable to restore backup keyring">> => {
   const backupJsonObj = await chrome.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
 
@@ -34,7 +34,7 @@ const restoreBackupKeyring = async (
   const backupJson = backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY]
   try {
     keyring.restoreAccounts(JSON.parse(backupJson), password)
-  } catch (error) {
+  } catch {
     return Err("Unable to restore backup keyring")
   }
   await chrome.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
@@ -43,7 +43,7 @@ const restoreBackupKeyring = async (
 
 const migratePairs = async (
   currentPw: string,
-  newPw: string,
+  newPw: string
 ): Promise<Result<KeyringPair[], "Error re-encrypting keypairs">> => {
   const pairs = keyring.getPairs().filter(eligiblePairFilter)
   // keep track of which pairs have been successfully migrated
@@ -66,7 +66,7 @@ const migratePairs = async (
 const migrateMnemonic = async (
   encryptedCipher: string,
   currentPw: string,
-  newPw: string,
+  newPw: string
 ): Promise<
   Result<
     string | undefined,
@@ -97,13 +97,13 @@ const migrateMnemonic = async (
  */
 export const changePassword = async (
   { currentPw, newPw }: Pick<ChangePasswordRequest, "currentPw" | "newPw">,
-  progressCb?: (val: ChangePasswordStatusUpdateType) => void,
+  progressCb?: (val: ChangePasswordStatusUpdateType) => void
 ): Promise<Result<boolean, "Error changing password">> => {
   try {
-    progressCb && progressCb(ChangePasswordStatusUpdateStatus.KEYPAIRS)
+    progressCb?.(ChangePasswordStatusUpdateStatus.KEYPAIRS)
     const backupJson = await keyring.backupAccounts(
       keyring.getPairs().map(({ address }) => address),
-      currentPw,
+      currentPw
     )
     await chrome.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
 
@@ -115,7 +115,7 @@ export const changePassword = async (
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
 
-    progressCb && progressCb(ChangePasswordStatusUpdateStatus.MNEMONICS)
+    progressCb?.(ChangePasswordStatusUpdateStatus.MNEMONICS)
     // now migrate recovery phrase store passwords
     const mnemonicStoreData = await mnemonicsStore.get()
     const newMnemonicStoreData: Partial<MnemonicsStoreData> = {}

@@ -1,9 +1,14 @@
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { Codec, MetadataLookup, parseMetadataRpc, UnifiedMetadata } from "@talismn/scale"
+import {
+  type Codec,
+  type MetadataLookup,
+  parseMetadataRpc,
+  type UnifiedMetadata,
+} from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
-import { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
+import type { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
@@ -33,7 +38,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 const getTransferMethod = (
   type: BalanceTransferType,
   unifiedMetadata: UnifiedMetadata,
-  lookupFn: MetadataLookup,
+  lookupFn: MetadataLookup
 ) => {
   switch (type) {
     case "keep-alive":
@@ -46,7 +51,7 @@ const getTransferMethod = (
 
       if (callType) {
         const palletCalls = lookupFn(callType)
-        if (palletCalls.type === "enum" && palletCalls.value["transfer_allow_death"])
+        if (palletCalls.type === "enum" && palletCalls.value.transfer_allow_death)
           return "transfer_allow_death"
       }
 
@@ -60,7 +65,7 @@ const getEncodedArgs = (
   method: ReturnType<typeof getTransferMethod>,
   to: string,
   value: string,
-  argsCodec: Codec<unknown>,
+  argsCodec: Codec<unknown>
 ): Uint8Array => {
   try {
     switch (method) {

@@ -1,15 +1,14 @@
-import { Balances } from "@talismn/balances"
-import { SubDTaoToken } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ZapIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
 
@@ -28,7 +27,7 @@ export const BittensorStakeToolbarButton: FC<{ balances: Balances; className?: s
         (b) =>
           b.token?.type === "substrate-dtao" &&
           bittensorNetworkIds.includes(b.token.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)),
+          accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 

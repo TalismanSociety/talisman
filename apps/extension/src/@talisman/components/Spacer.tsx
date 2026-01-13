@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 
 export const Spacer: FC<{
   large?: boolean

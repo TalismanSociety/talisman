@@ -22,7 +22,7 @@ import { getMetadataDef } from "./getMetadataDef"
 export const getTypeRegistry = async (
   chainIdOrHash: string,
   specVersion?: number | string,
-  signedExtensions?: string[],
+  signedExtensions?: string[]
 ) => {
   const registry = new TypeRegistry()
 
@@ -49,7 +49,7 @@ export const getTypeRegistry = async (
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
       if (chain.chainName) {
         registry.register(
-          getSpecTypes(registry, chain.chainName, chain.specName, chain.specVersion),
+          getSpecTypes(registry, chain.chainName, chain.specName, chain.specVersion)
         )
         registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
       }

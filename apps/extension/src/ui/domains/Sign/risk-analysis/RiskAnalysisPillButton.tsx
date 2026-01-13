@@ -6,11 +6,10 @@ import {
   ShieldUnknownIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
+import { useFeatureFlag } from "@ui/state"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useFeatureFlag } from "@ui/state"
 
 import { useRiskAnalysis } from "./context"
 

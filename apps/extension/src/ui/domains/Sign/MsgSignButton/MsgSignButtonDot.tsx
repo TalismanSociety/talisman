@@ -1,6 +1,6 @@
-import { FC } from "react"
+import type { FC } from "react"
 
-import { MsgSignButtonProps } from "./types"
+import type { MsgSignButtonProps } from "./types"
 
 export const MsgSignButtonDot: FC<MsgSignButtonProps<"polkadot">> = () =>
   //   {

@@ -1,12 +1,11 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
+import { useNetworkById, useRemoteConfig } from "@ui/state"
 import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useNetworkById, useRemoteConfig } from "@ui/state"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
@@ -71,13 +70,13 @@ const DrawerContent: FC<{
     (legacyFormat: boolean) => () => {
       onSelect(legacyFormat)
     },
-    [onSelect],
+    [onSelect]
   )
 
   return (
-    <div className="bg-grey-800 flex w-full flex-col items-center gap-6 rounded-t-xl p-12">
-      <div className="text-md text-body font-bold">{t("Select Address Format")}</div>
-      <div className="text-body-secondary text-center text-sm">
+    <div className="flex w-full flex-col items-center gap-6 rounded-t-xl bg-grey-800 p-12">
+      <div className="font-bold text-body text-md">{t("Select Address Format")}</div>
+      <div className="text-center text-body-secondary text-sm">
         {t("Legacy format may be needed when sending from some exchanges.")} <LearnMore />
       </div>
       <div></div>
@@ -108,7 +107,7 @@ const LearnMore = () => {
       window.open(
         remoteConfig.documentation.unifiedAddressDocsUrl,
         "_blank",
-        "nooppener noreferrer",
+        "nooppener noreferrer"
       )
     } catch (err) {
       log.error("Unable to open unified address docs", { cause: err })
@@ -118,7 +117,7 @@ const LearnMore = () => {
   return (
     <button
       type="button"
-      className="text-body bg-grey-750 hover:bg-grey-700 inline-flex h-10 items-center gap-2 rounded-full px-3 text-xs"
+      className="inline-flex h-10 items-center gap-2 rounded-full bg-grey-750 px-3 text-body text-xs hover:bg-grey-700"
       onClick={handleClick}
     >
       <InfoIcon />
@@ -137,14 +136,14 @@ const FormatRow: FC<{
   const { t } = useTranslation()
 
   return (
-    <div className="border-grey-700 flex h-[6.8rem] w-full items-center gap-6 rounded-lg border px-8">
+    <div className="flex h-[6.8rem] w-full items-center gap-6 rounded-lg border border-grey-700 px-8">
       <div className="size-16 shrink-0">
         <NetworkLogo networkId={chainId} className="shrink-0 text-xl" />
       </div>
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex items-center gap-4 overflow-hidden">
-          <div className="text-body truncate text-sm">{chainName}</div>
-          <div className="text-body-inactive text-tiny rounded-xs border-body-inactive shrink-0 border px-2 py-1">
+          <div className="truncate text-body text-sm">{chainName}</div>
+          <div className="shrink-0 rounded-xs border border-body-inactive px-2 py-1 text-body-inactive text-tiny">
             {label}
           </div>
         </div>

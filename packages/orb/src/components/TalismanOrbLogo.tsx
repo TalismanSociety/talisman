@@ -1,5 +1,5 @@
-import { AccountPlatform } from "@talismn/crypto"
-import { FC } from "react"
+import type { AccountPlatform } from "@talismn/crypto"
+import type { FC } from "react"
 
 export const TalismanOrbLogo: FC<{ platform: AccountPlatform }> = ({ platform }) => {
   switch (platform) {

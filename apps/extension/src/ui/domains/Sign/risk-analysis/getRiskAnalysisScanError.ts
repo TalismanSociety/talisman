@@ -1,11 +1,11 @@
-import { TFunction } from "i18next"
+import type { TFunction } from "i18next"
 
-import { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } from "./types"
+import type { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } from "./types"
 
 export const getRiskAnalysisScanError = (
   platform: RiskAnalysisPlatform,
   response: RiskAnalysisResponse | null | undefined,
-  t: TFunction,
+  t: TFunction
 ): RiskAnalysisScanError | null => {
   if (!response) return null
 

@@ -2,16 +2,16 @@ import { decodeScale, papiParse } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 
 import log from "../../log"
-import { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
+import type { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
 import { buildNetworkStorageCoders } from "../shared"
-import { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
-import { BalanceDef } from "../shared/types"
-import { MiniMetadataExtra, MODULE_TYPE } from "./config"
+import type { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
+import type { BalanceDef } from "../shared/types"
+import type { MiniMetadataExtra, MODULE_TYPE } from "./config"
 
 export const buildQueries = (
   networkId: string,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  miniMetadata: MiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>
 ): Array<RpcQueryPack<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     storage: [miniMetadata.extra.palletId, "Accounts"],
@@ -33,7 +33,7 @@ export const buildQueries = (
 
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${networkId} storage query ${token.onChainId} / ${address}`,
+          `Invalid assetId / address in ${networkId} storage query ${token.onChainId} / ${address}`
         )
         return null
       }
@@ -49,7 +49,7 @@ export const buildQueries = (
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           changes[0],
-          `Failed to decode substrate-tokens balance on chain ${networkId}`,
+          `Failed to decode substrate-tokens balance on chain ${networkId}`
         ) ?? { free: 0n, reserved: 0n, frozen: 0n }
 
         const free = (decoded?.free ?? 0n).toString()

@@ -1,5 +1,5 @@
 import { cn } from "@talismn/util"
-import { FC, PropsWithChildren, ReactNode } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 
 export const BittensorModalLayout: FC<
   PropsWithChildren<{ header?: ReactNode; className?: string; contentClassName?: string }>

@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicProvider } from "./context"
 import { AccountAddMnemonicForm } from "./MnemonicForm"
 import { AccountAddMnemonicAccountsForm } from "./MultipleAccountsForm"

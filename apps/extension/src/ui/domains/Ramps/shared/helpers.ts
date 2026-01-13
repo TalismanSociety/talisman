@@ -3,12 +3,12 @@ import {
   evmNativeTokenId,
   subAssetTokenId,
   subNativeTokenId,
-  TokenList,
+  type TokenList,
 } from "@talismn/chaindata-provider"
-import { RemoteConfigStoreData } from "extension-core"
+import type { RemoteConfigStoreData } from "extension-core"
 
-import { CoinbaseTokenNetwork } from "../coinbase/types"
-import { RampAssetInfo } from "../ramp/types"
+import type { CoinbaseTokenNetwork } from "../coinbase/types"
+import type { RampAssetInfo } from "../ramp/types"
 
 export const getTokenFromCoinbaseAsset = (asset: CoinbaseTokenNetwork, tokens: TokenList) => {
   // if positive integer, then it is an EVM chain id
@@ -25,7 +25,7 @@ export const getTokenFromCoinbaseAsset = (asset: CoinbaseTokenNetwork, tokens: T
 export const getTokenFromRampAsset = (
   asset: RampAssetInfo,
   remoteConfig: RemoteConfigStoreData,
-  tokens: TokenList,
+  tokens: TokenList
 ) => {
   const networkId = remoteConfig.ramps.rampNetworks[asset.chain]
   if (!networkId) return null
@@ -40,6 +40,4 @@ export const getTokenFromRampAsset = (
     default:
       return null
   }
-
-  return null
 }

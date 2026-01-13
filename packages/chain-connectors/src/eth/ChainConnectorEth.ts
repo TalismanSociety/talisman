@@ -1,13 +1,13 @@
-import {
+import type {
   EthNetworkId,
   IChaindataNetworkProvider,
   IChaindataTokenProvider,
 } from "@talismn/chaindata-provider"
-import { Account, PublicClient, WalletClient } from "viem"
+import type { Account, PublicClient, WalletClient } from "viem"
 
 import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
 import { getEvmNetworkWalletClient } from "./getEvmNetworkWalletClient"
-import { IChainConnectorEth } from "./IChainConnectorEth"
+import type { IChainConnectorEth } from "./IChainConnectorEth"
 
 export class ChainConnectorEth implements IChainConnectorEth {
   #chaindataProvider: IChaindataNetworkProvider & IChaindataTokenProvider
@@ -25,7 +25,7 @@ export class ChainConnectorEth implements IChainConnectorEth {
 
   async getWalletClientForEvmNetwork(
     evmNetworkId: EthNetworkId,
-    account?: `0x${string}` | Account,
+    account?: `0x${string}` | Account
   ): Promise<WalletClient | null> {
     const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!network) return null

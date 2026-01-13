@@ -1,5 +1,5 @@
 type TJson = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   [key: string]: any
 }
 

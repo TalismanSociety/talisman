@@ -1,15 +1,15 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { ScaleApi } from "@talismn/sapi"
-import { UseQueryResult } from "@tanstack/react-query"
-import { SignerPayloadJSON } from "extension-core"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { ScaleApi } from "@talismn/sapi"
+import type { UseQueryResult } from "@tanstack/react-query"
+import type { SignerPayloadJSON } from "extension-core"
 import { useMemo } from "react"
 
 import { useGetNomPoolStakingPayload } from "../hooks/nomPools/useGetNomPoolStakingPayload"
 import { useIsSoloStaking } from "../hooks/nomPools/useIsSoloStaking"
 import { useNomPoolByMember } from "../hooks/nomPools/useNomPoolByMember"
+import { useNomPoolState } from "../hooks/nomPools/useNomPoolState"
 import { useNomPoolsClaimPermission } from "../hooks/nomPools/useNomPoolsClaimPermission"
 import { useNomPoolsMinJoinBond } from "../hooks/nomPools/useNomPoolsMinJoinBond"
-import { useNomPoolState } from "../hooks/nomPools/useNomPoolState"
 import { useGetFeeEstimate } from "./useGetFeeEstimate"
 
 type GetStakeInfo = {

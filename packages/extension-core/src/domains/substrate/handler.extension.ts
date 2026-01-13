@@ -1,14 +1,14 @@
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { u8aToHex } from "@polkadot/util"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { blake2b256, encryptKemAead } from "@talismn/crypto"
 import { Binary, FixedSizeBinary, mergeUint8, parseMetadataRpc } from "@talismn/scale"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { getMetadataDef } from "../../util/getMetadataDef"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
@@ -26,7 +26,7 @@ export class SubHandler extends ExtensionHandler {
     const { registry } = await getTypeRegistry(
       payload.genesisHash,
       payload.specVersion,
-      payload.signedExtensions,
+      payload.signedExtensions
     )
 
     if (!signature) {
@@ -45,7 +45,7 @@ export class SubHandler extends ExtensionHandler {
               signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
                 // use chaindata override value of `withType`
                 withType: chain.hasExtrinsicSignatureTypePrefix,
-              }),
+              })
             )
       })
 
@@ -57,7 +57,7 @@ export class SubHandler extends ExtensionHandler {
     const tx = registry.createType(
       "Extrinsic",
       { method: payload.method },
-      { version: payload.version },
+      { version: payload.version }
     )
 
     // apply signature to the modified payload
@@ -83,7 +83,7 @@ export class SubHandler extends ExtensionHandler {
       const { registry, metadataRpc } = await getTypeRegistry(
         payload.genesisHash,
         payload.specVersion,
-        payload.signedExtensions,
+        payload.signedExtensions
       )
       if (!metadataRpc) throw new Error("Metadata RPC not found")
 
@@ -103,7 +103,7 @@ export class SubHandler extends ExtensionHandler {
       const innerTx = registry.createType(
         "Extrinsic",
         { method: innerPayload.method },
-        { version: innerPayload.version },
+        { version: innerPayload.version }
       )
 
       // apply signature to the modified payload
@@ -119,7 +119,7 @@ export class SubHandler extends ExtensionHandler {
         chain.id,
         "state_getStorage",
         [stateKey],
-        false,
+        false
       )
       if (!hexValue) throw new Error("MevShield NextKey not found")
       const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
@@ -156,7 +156,7 @@ export class SubHandler extends ExtensionHandler {
       const outerTx = registry.createType(
         "Extrinsic",
         { method: outerPayload.method },
-        { version: outerPayload.version },
+        { version: outerPayload.version }
       )
 
       // apply signature to the modified payload
@@ -197,11 +197,10 @@ export class SubHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -215,7 +214,7 @@ export class SubHandler extends ExtensionHandler {
 
       case "pri(substrate.rpc.submit.withBittensorMevShield)":
         return this.submitWithBittensorMevShield(
-          request as RequestTypes["pri(substrate.rpc.submit.withBittensorMevShield)"],
+          request as RequestTypes["pri(substrate.rpc.submit.withBittensorMevShield)"]
         )
 
       // --------------------------------------------------------------------
@@ -232,5 +231,5 @@ const toPjsHex = (value: number | bigint, minByteLen?: number) => {
   let inner = value.toString(16)
   inner = (inner.length % 2 ? "0" : "") + inner
   const nPaddedBytes = Math.max(0, (minByteLen || 0) - inner.length / 2)
-  return ("0x" + "00".repeat(nPaddedBytes) + inner) as `0x${string}`
+  return `0x${"00".repeat(nPaddedBytes)}${inner}` as `0x${string}`
 }

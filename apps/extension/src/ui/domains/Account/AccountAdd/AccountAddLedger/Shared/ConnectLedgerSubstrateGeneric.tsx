@@ -1,9 +1,8 @@
-import { LedgerPolkadotCurve } from "extension-core"
-import { FC, useCallback } from "react"
-
 import { getPolkadotLedgerDerivationPath } from "@ui/hooks/ledger/common"
 import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import type { LedgerPolkadotCurve } from "extension-core"
+import { type FC, useCallback } from "react"
 
 import { ConnectLedgerBase } from "./ConnectLedgerBase"
 

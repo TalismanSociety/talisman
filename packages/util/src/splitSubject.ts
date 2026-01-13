@@ -1,4 +1,4 @@
-import { Observable, Subject } from "rxjs"
+import type { Observable, Subject } from "rxjs"
 
 /**
  * Takes a subject and splits it into two parts:

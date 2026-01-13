@@ -1,11 +1,10 @@
 import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import { getScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { getMetadataRpcFromDef, SignerPayloadJSON } from "extension-core"
-import { firstValueFrom } from "rxjs"
-
 import { api } from "@ui/api"
 import { getNetworkByGenesisHash$, getToken$ } from "@ui/state"
+import { getMetadataRpcFromDef, type SignerPayloadJSON } from "extension-core"
+import { firstValueFrom } from "rxjs"
 
 export type DryRunResult = (
   | typeof polkadot
@@ -55,6 +54,6 @@ const getSapiFromSignerPayloadJSON = async (jsonPayload: SignerPayloadJSON | nul
     token,
     chain.hasCheckMetadataHash,
     chain.signedExtensions,
-    chain.registryTypes,
+    chain.registryTypes
   )
 }

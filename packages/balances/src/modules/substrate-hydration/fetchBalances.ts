@@ -1,8 +1,8 @@
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
-import { IBalance } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
@@ -43,7 +43,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   }
   if (miniMetadata.chainId !== networkId) {
     log.warn(
-      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`,
+      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`
     )
     return {
       success: [],
@@ -62,8 +62,8 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       addresses.map((address) =>
         fetchRuntimeCallResult<
           [onChainId: number, balance: { free: bigint; reserved: bigint; frozen: bigint }][]
-        >(connector, networkId, miniMetadata.data!, "CurrenciesApi", "accounts", [address]),
-      ),
+        >(connector, networkId, miniMetadata.data!, "CurrenciesApi", "accounts", [address])
+      )
     )
 
     const fetchedBalances = addresses.flatMap((address, index) => {

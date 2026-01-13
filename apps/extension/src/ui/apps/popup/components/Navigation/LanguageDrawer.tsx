@@ -1,12 +1,11 @@
-import { ChevronLeftIcon } from "@talismn/icons"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
-
 import { languages } from "@common/i18nConfig"
 import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { ChevronLeftIcon } from "@talismn/icons"
+import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Drawer, IconButton } from "talisman-ui"
 
 export const useLanguageDrawerOpenClose = () => useGlobalOpenClose("language-drawer")
 
@@ -16,7 +15,7 @@ const LanguagesList = () => {
 
   const options = useMemo(
     () => Object.entries(languages).map(([value, label]) => ({ value, label })),
-    [],
+    []
   )
 
   const handleLanguageClick = useCallback(
@@ -24,7 +23,7 @@ const LanguagesList = () => {
       i18n.changeLanguage(lang ?? "en")
       close()
     },
-    [close, i18n],
+    [close, i18n]
   )
 
   return (
@@ -37,8 +36,8 @@ const LanguageDrawerContent = () => {
   const { close } = useLanguageDrawerOpenClose()
 
   return (
-    <div className="text-body-secondary flex h-[60rem] w-[40rem] flex-col gap-10 bg-black pt-10">
-      <div className="flex items-center gap-3 px-8 text-base font-bold text-white">
+    <div className="flex h-[60rem] w-[40rem] flex-col gap-10 bg-black pt-10 text-body-secondary">
+      <div className="flex items-center gap-3 px-8 font-bold text-base text-white">
         <IconButton onClick={close}>
           <ChevronLeftIcon />
         </IconButton>

@@ -1,11 +1,10 @@
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { Modal, WizardModalDialog } from "talisman-ui"
-
 import { PopupSizeModalContainer } from "@talisman/components/PopupSizeModalContainer"
 import { createGlobalOpenClose } from "@talisman/hooks/createGlobalOpenClose"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { Modal, WizardModalDialog } from "talisman-ui"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
 import { SubnetPicker } from "./TaoDashboardSubnetPicker"
@@ -30,7 +29,7 @@ export const TaoDashboardSubnetPickerModal: FC = () => {
       navigate(`/bittensor/subnets/${netuid}`)
       close()
     },
-    [navigate, close],
+    [navigate, close]
   )
 
   return (

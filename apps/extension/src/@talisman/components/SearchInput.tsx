@@ -1,10 +1,10 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
-  ChangeEventHandler,
+  type ChangeEventHandler,
   forwardRef,
-  KeyboardEventHandler,
-  ReactNode,
+  type KeyboardEventHandler,
+  type ReactNode,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -13,7 +13,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
+import { type FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,
@@ -47,22 +47,20 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       onChange,
       onSubmit,
     },
-    ref,
+    ref
   ) => {
     const internalRef = useRef<HTMLInputElement>(null)
 
     // Merge the forwarded ref with the internal ref
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
     useImperativeHandle(ref, () => internalRef.current as HTMLInputElement, [internalRef])
 
     const [syncSearch, setSearch] = useState(initialValue ?? "")
     const search = useDeferredValue(syncSearch)
 
-    const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-      (e) => {
-        setSearch(e.target.value)
-      },
-      [setSearch],
-    )
+    const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+      setSearch(e.target.value)
+    }, [])
 
     const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
       (e) => {
@@ -70,7 +68,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           onSubmit?.()
         }
       },
-      [onSubmit],
+      [onSubmit]
     )
 
     useEffect(() => {
@@ -86,7 +84,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         small: small === undefined ? INPUT_CONTAINER_PROPS.small : small,
         className: classNames(INPUT_CONTAINER_PROPS.className, containerClassName),
       }),
-      [containerClassName, small],
+      [containerClassName, small]
     )
 
     const handleClear = useCallback(() => {
@@ -94,14 +92,14 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       setSearch("")
       internalRef.current.value = ""
       internalRef.current.blur()
-    }, [setSearch])
+    }, [])
 
     return (
       <FormFieldInputText
         ref={internalRef}
         className={classNames("text-base", className)}
         containerProps={containerProps}
-        before={<SearchIcon className="text-body-disabled shrink-0" />}
+        before={<SearchIcon className="shrink-0 text-body-disabled" />}
         after={
           after ?? (
             <IconButton
@@ -119,7 +117,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         onKeyUp={handleKeyUp}
       />
     )
-  },
+  }
 )
 
 SearchInput.displayName = "SearchInput"

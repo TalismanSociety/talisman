@@ -1,4 +1,4 @@
 export {
-  TalismanConnectionMetaDatabase,
   db as connectionMetaDb,
+  TalismanConnectionMetaDatabase,
 } from "./TalismanConnectionMetaDatabase"

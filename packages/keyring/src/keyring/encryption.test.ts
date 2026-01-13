@@ -32,6 +32,7 @@ describe("encryption", () => {
 const generateRandomUnicodeString = (length: number) => {
   const result = new Array(length)
   for (let i = 0; i < length; i++) {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let randomCodePoint
 
     // Generate a valid Unicode character, avoiding surrogate pairs and control characters

@@ -1,5 +1,5 @@
-import { SignerPayloadJSON } from "@polkadot/types/types"
-import { ScaleApi } from "@talismn/sapi"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
 type GetNomPoolFeeEstimate = {

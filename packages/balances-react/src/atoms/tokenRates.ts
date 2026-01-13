@@ -1,13 +1,13 @@
 import {
   ALL_CURRENCY_IDS,
   fetchTokenRates,
-  TokenRatesStorage,
+  type TokenRatesStorage,
   tryToDeleteOldTokenRatesDb,
 } from "@talismn/token-rates"
 import { isAbortError, isTruthy } from "@talismn/util"
 import { atom } from "jotai"
-import { atomEffect } from "jotai-effect"
 import { atomWithObservable } from "jotai/utils"
+import { atomEffect } from "jotai-effect"
 import { keyBy } from "lodash-es"
 import { ReplaySubject } from "rxjs"
 

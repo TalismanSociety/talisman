@@ -1,6 +1,6 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { ZapIcon, ZapPlusIcon } from "@talismn/icons"
-import { FC } from "react"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -20,7 +20,7 @@ export const BondButton: FC<{
         <button
           type="button"
           onClick={onClick}
-          className="text-primary bg-primary/10 hover:bg-primary/20 flex size-[3.8rem] shrink-0 items-center justify-center rounded-full text-[2rem]"
+          className="flex size-[3.8rem] shrink-0 items-center justify-center rounded-full bg-primary/10 text-[2rem] text-primary hover:bg-primary/20"
         >
           {isBonding ? <ZapPlusIcon /> : <ZapIcon />}
         </button>

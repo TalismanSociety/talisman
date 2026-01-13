@@ -1,10 +1,10 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { ScaleApi } from "@talismn/sapi"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { RootClaimType, RootClaimTypeEnum } from "./types"
+import type { RootClaimType, RootClaimTypeEnum } from "./types"
 
 type SetBittensorClaimType = {
   networkId: DotNetworkId | null | undefined
@@ -24,7 +24,7 @@ type ExtrinsicPayload = Awaited<ReturnType<typeof getExtrinsicPayload>>
 
 const createRootClaimTypeEnum = (
   claimType: RootClaimType,
-  selectedSubnets?: number[],
+  selectedSubnets?: number[]
 ): RootClaimTypeEnum => {
   if (claimType === "KeepSubnets") {
     // Ensure subnets are plain numbers and sorted (chain may expect specific format)
@@ -52,7 +52,7 @@ const getExtrinsicPayload = async ({
     "SubtensorModule",
     "set_root_claim_type",
     { new_root_claim_type: createRootClaimTypeEnum(claimType, selectedSubnets) },
-    { address },
+    { address }
   )
 }
 

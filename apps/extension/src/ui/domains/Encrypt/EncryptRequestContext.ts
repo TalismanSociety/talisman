@@ -1,9 +1,8 @@
-import { AnyEncryptRequest, isDecryptRequest } from "extension-core"
-import { DEBUG } from "extension-shared"
-import { useCallback } from "react"
-
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
+import { type AnyEncryptRequest, isDecryptRequest } from "extension-core"
+import { DEBUG } from "extension-shared"
+import { useCallback } from "react"
 
 export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
   const { status, message, setStatus } = useStatus()
@@ -20,7 +19,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
         setStatus.success("Approved")
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       DEBUG && console.error(err)
       if (isDecryptRequest(currentRequest)) {
         setStatus.error("Failed to approve decrypt request")
@@ -35,7 +34,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
       if (currentRequest) {
         await api.cancelEncryptRequest(currentRequest.id)
       }
-    } catch (err) {
+    } catch {
       // ignore, request doesn't exist
       // we just want popup to close
     }

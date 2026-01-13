@@ -1,9 +1,8 @@
-import { isAddressEqual } from "@talismn/crypto"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
+import { isAddressEqual } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccounts, useConfirmedAddresses } from "@ui/state"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useSendFunds } from "./useSendFunds"
 
@@ -31,6 +30,7 @@ const useExternalAddressWarningProvider = () => {
     return isAlpha ? "alpha" : "network"
   }, [network, token, to, accounts, isAlreadyConfirmed])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsWarningAcknowledged(false)
     setDontRemindAgain(false)
@@ -65,5 +65,5 @@ const useExternalAddressWarningProvider = () => {
 
 // provider is designed to wrap the confirm form, so it resets if the user goes back
 export const [ExternalAddressWarningProvider, useExternalAddressWarning] = provideContext(
-  useExternalAddressWarningProvider,
+  useExternalAddressWarningProvider
 )

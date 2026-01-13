@@ -1,8 +1,8 @@
-import { TokenRateCurrency } from "@talismn/token-rates"
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
-import { IdenticonType } from "../accounts/types"
+import type { IdenticonType } from "../accounts/types"
 
 export type LedgerTransportType = "usb" | "hid"
 
@@ -53,7 +53,7 @@ export const DEFAULT_SETTINGS: SettingsStoreData = {
 export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)
 
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.resetSettings = () => {

@@ -1,9 +1,8 @@
-import { FC, ReactNode } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
+import type { FC, ReactNode } from "react"
 
 import { RiskAnalysisDrawers } from "./RiskAnalysisDrawers"
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 type RisksAnalysisProviderProps = {
   riskAnalysis?: RiskAnalysis

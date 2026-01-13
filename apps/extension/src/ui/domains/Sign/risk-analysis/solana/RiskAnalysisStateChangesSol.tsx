@@ -1,18 +1,17 @@
-import { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
-import { solNativeTokenId, SolNetworkId, solSplTokenId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
+import type { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
+import { type SolNetworkId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useTokensMap } from "@ui/state"
+import { log } from "extension-shared"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
-import { RiskAnalysisResult } from "../useRiskAnalysisBase"
+import type { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (
-  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary,
+  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary
 ) => {
   return (
     accountSummary.account_assets_diff?.map((diff) => {
@@ -58,8 +57,8 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
           side={change.in ? "in" : "out"}
         />
       )
-    case "NFT":
-    case "CNFT":
+    // case "NFT":
+    // case "CNFT":
     default:
       return (
         <RiskAnalysisAssetImage
@@ -120,7 +119,7 @@ const StateChange: FC<{
       <div className="w-20 shrink-0 pt-4">
         <StateChangeImage change={change} />
       </div>
-      <div className="text-body flex grow flex-col justify-center pt-4">
+      <div className="flex grow flex-col justify-center pt-4 text-body">
         <div>
           <StateChangeDescription change={change} networkId={networkId} />
         </div>
@@ -148,6 +147,7 @@ export const RiskAnalysisStateChangesSol: FC<{
     <div className="flex w-full flex-col justify-start text-left text-sm">
       {!noTitle && <div className="text-body-secondary text-sm">{t("Expected changes")}</div>}
       {changes.map((change, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <StateChange key={i} change={change} networkId={riskAnalysis.networkId!} />
       ))}
     </div>

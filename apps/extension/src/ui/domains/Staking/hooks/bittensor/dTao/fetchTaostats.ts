@@ -41,7 +41,7 @@ export const fetchTaostats = async <T>({
   if (!response.ok) {
     const body = await response.text().catch(() => "")
     throw new Error(
-      `Failed to fetch ${path}: ${response.status} ${response.statusText}${body ? ` - ${body}` : ""}`,
+      `Failed to fetch ${path}: ${response.status} ${response.statusText}${body ? ` - ${body}` : ""}`
     )
   }
 

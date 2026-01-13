@@ -1,6 +1,5 @@
-import { useTranslation } from "react-i18next"
-
 import { VerificationComplete } from "@ui/domains/Mnemonic/VerificationComplete"
+import { useTranslation } from "react-i18next"
 
 import { useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"

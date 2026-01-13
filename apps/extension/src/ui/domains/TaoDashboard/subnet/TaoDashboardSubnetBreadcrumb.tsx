@@ -1,11 +1,10 @@
+import { Breadcrumb, type BreadcrumbItem } from "@talisman/components/Breadcrumb"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
-import { Breadcrumb, BreadcrumbItem } from "@talisman/components/Breadcrumb"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useToken } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { BITTENSOR_NETWORK_ID } from "../constants"
 import { useTaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
@@ -32,7 +31,7 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
             },
             {
               label: (
-                <span className="text-body flex items-center gap-4">
+                <span className="flex items-center gap-4 text-body">
                   <span>
                     {token.subnetName
                       ? `SN${token.netuid} ${token.subnetName}`
@@ -47,7 +46,7 @@ export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid })
             },
           ]
         : [],
-    [navigate, netuid, open, t, token],
+    [navigate, netuid, open, t, token]
   )
 
   return <Breadcrumb items={items} />

@@ -1,4 +1,4 @@
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 import { fromPairs, toPairs } from "lodash-es"
@@ -7,7 +7,7 @@ import PQueue from "p-queue"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
-import { AccountNft, AccountNfts, NftCollection } from "./types"
+import type { AccountNft, AccountNfts, NftCollection } from "./types"
 
 // Talisman ChainId => Subscan chain slug
 const NETWORKS: Record<string, string> = {
@@ -33,7 +33,7 @@ const ACCOUNTS_QUEUE = new PQueue({
 
 export const fetchDotAccountNfts = async (
   account: Account,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<AccountNfts> => {
   const result = await ACCOUNTS_QUEUE.add(
     async () => {
@@ -47,7 +47,7 @@ export const fetchDotAccountNfts = async (
             isNetworkActive(network, activeChains)
             ? fetchDotAccountChainNfts(account.address, networkId, signal)
             : null
-        }),
+        })
       )
 
       return results.filter(isNotNil).reduce(
@@ -57,10 +57,10 @@ export const fetchDotAccountNfts = async (
             if (!acc.collections.some((c) => c.id === col.id)) acc.collections.push(col)
           return acc
         },
-        { nfts: [], collections: [] } as AccountNfts,
+        { nfts: [], collections: [] } as AccountNfts
       )
     },
-    { signal },
+    { signal }
   )
 
   if (!result) throw new Error(`Failed to fetch dot nfts for ${account.address}`)
@@ -72,7 +72,7 @@ const postSubscanWithRetry = async <T>(
   url: string,
   body: string,
   signal: AbortSignal,
-  maxAttempts = 3,
+  maxAttempts = 3
 ) => {
   try {
     const result = await SUBSCAN_QUEUE.add(
@@ -96,13 +96,13 @@ const postSubscanWithRetry = async <T>(
         timeout: 10_000,
         throwOnTimeout: true,
         signal,
-      },
+      }
     )
 
     if (!result) throw new Error("Failed to fetch")
 
     return result
-  } catch (err) {
+  } catch {
     signal.throwIfAborted()
     if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
     return postSubscanWithRetry(url, body, signal, maxAttempts - 1)
@@ -115,7 +115,7 @@ const CACHE = new Map<string, NftCollection>()
 const fetchDotAccountChainNfts = async (
   address: string,
   chainId: string,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<AccountNfts> => {
   try {
     const allData: GetNftsResponseNft[] = []
@@ -137,7 +137,7 @@ const fetchDotAccountChainNfts = async (
           page,
           row: ITEMS_PER_PAGE,
         }),
-        signal,
+        signal
       )
 
       allData.push(...(data.list ?? []))
@@ -150,12 +150,12 @@ const fetchDotAccountChainNfts = async (
       allData.map(async (nft) => {
         const updatedAt = await getUpdatedAt(nft, subscanChainId, signal)
         return itemToOwnedNft(chainId, nft, address, updatedAt)
-      }),
+      })
     )
 
     // this clears up duplicates along the way
     const collectionNameById = fromPairs(
-      allData.map((item) => [item.collection_id, item.collection_name] as const),
+      allData.map((item) => [item.collection_id, item.collection_name] as const)
     )
 
     const collections = await Promise.all(
@@ -168,7 +168,7 @@ const fetchDotAccountChainNfts = async (
           const { data } = await postSubscanWithRetry<GetNftInfoResponse>(
             `https://${subscanChainId}.api.subscan.io/api/scan/nfts/info`,
             JSON.stringify({ collection_id: collectionId }),
-            signal,
+            signal
           )
 
           const collection = collectionToNftCollection(chainId, collectionId, data)
@@ -176,7 +176,7 @@ const fetchDotAccountChainNfts = async (
           CACHE.set(cacheKey, collection)
 
           return collection
-        } catch (err) {
+        } catch {
           signal.throwIfAborted()
 
           // fallback
@@ -193,7 +193,7 @@ const fetchDotAccountChainNfts = async (
             metadata: {},
           })
         }
-      }),
+      })
     )
 
     return { nfts, collections: collections.filter(Boolean) as NftCollection[] }
@@ -211,7 +211,7 @@ const fetchDotAccountChainNfts = async (
 const getUpdatedAt = async (
   nft: GetNftsResponseNft,
   subscanChainId: string,
-  signal: AbortSignal,
+  signal: AbortSignal
 ) => {
   try {
     const res = await postSubscanWithRetry<{
@@ -226,7 +226,7 @@ const getUpdatedAt = async (
         row: 100,
         page: 0,
       }),
-      signal,
+      signal
     )
 
     const timestamps = res.data.list?.map((c) => c.block_timestamp * 1000) ?? []
@@ -304,7 +304,7 @@ const itemToOwnedNft = (
   chainId: string,
   nft: GetNftsResponseNft,
   address: string,
-  updatedAt: number | null,
+  updatedAt: number | null
 ): AccountNft => ({
   id: `subscan:${chainId}:${nft.collection_id}:${nft.item_id}`,
   collectionId: `subscan:${chainId}:${nft.collection_id}`,
@@ -331,10 +331,8 @@ const itemToOwnedNft = (
           .filter(
             ([key, value]) =>
               !["name", "description"].includes(key) &&
-              (typeof value === "string" ||
-                typeof value === "number" ||
-                typeof value === "boolean"),
-          ),
+              (typeof value === "string" || typeof value === "number" || typeof value === "boolean")
+          )
       )
     : null,
   price: null,
@@ -344,7 +342,7 @@ const itemToOwnedNft = (
 const collectionToNftCollection = (
   chainId: string,
   collectionId: string,
-  collection: GetNftInfoResponseData,
+  collection: GetNftInfoResponseData
 ): NftCollection => ({
   id: `subscan:${chainId}:${collectionId}`,
   name: collection.metadata.name ?? "",

@@ -1,18 +1,5 @@
 import { ChevronLeftIcon, MoreHorizontalIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { BalanceDto, isAccountOwned, YieldDto } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  IconButton,
-} from "talisman-ui"
-
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -26,9 +13,21 @@ import {
   useAccountByAddress,
   useYieldNetworkIdToTalismanNetworkIdMap,
   useYieldxyzProduct,
-  YieldxyzPositionEnhanced,
+  type YieldxyzPositionEnhanced,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import { type BalanceDto, isAccountOwned, type YieldDto } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  IconButton,
+} from "talisman-ui"
 
 import { EarnTypeBadge } from "../../components/EarnTypeBadge"
 import { YieldxyzBalanceTypeDisplay } from "../components/YieldxyzBalanceTypeDisplay"
@@ -65,6 +64,7 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
         positions={positions}
       />
       {positions?.map((position, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <Position key={index} position={position} isLoading={status === "loading"} />
       ))}
     </div>
@@ -81,7 +81,7 @@ const NavHeader: FC<{
   const navigate = useNavigateWithQuery()
   const totalUsd = useMemo(
     () => positions?.reduce((acc, position) => acc + position.totalAmountUsd, 0),
-    [positions],
+    [positions]
   )
 
   return (
@@ -94,14 +94,14 @@ const NavHeader: FC<{
 
         <div className="flex h-full grow flex-col justify-center gap-2 overflow-hidden">
           <div className="flex w-full items-center gap-8 overflow-hidden">
-            <div className="text-body flex grow items-center overflow-hidden truncate">
+            <div className="flex grow items-center overflow-hidden truncate text-body">
               <div className="truncate">{product.metadata.name}</div>
               <EarnTypeBadge className="shrink-0 text-xs">{product.mechanics?.type}</EarnTypeBadge>
             </div>
-            <div className="text-body-secondary shrink-0">{t("Total")}</div>
+            <div className="shrink-0 text-body-secondary">{t("Total")}</div>
           </div>
           <div className="flex w-full items-center gap-8 overflow-hidden text-sm">
-            <div className="text-body-secondary grow truncate">
+            <div className="grow truncate text-body-secondary">
               <PortfolioAccount address={address} />
             </div>
             <div className="shrink-0">
@@ -133,7 +133,7 @@ const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> =
         }
         return acc
       },
-      { supplied: [], rewards: [] },
+      { supplied: [], rewards: [] }
     )
   }, [position.balances])
 
@@ -155,10 +155,11 @@ const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoadi
   if (!balances.length) return null
 
   return (
-    <div className="bg-grey-850 flex flex-col gap-0 overflow-hidden rounded px-10">
+    <div className="flex flex-col gap-0 overflow-hidden rounded bg-grey-850 px-10">
       <div className="flex h-20 w-full items-center truncate font-bold">{label}</div>
       <div>
         {balances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <PositionBalancesGroupRow key={index} balance={balance} isLoading={isLoading} />
         ))}
       </div>
@@ -181,14 +182,14 @@ const PositionBalancesGroupRow: FC<{ balance: BalanceDto; isLoading: boolean }> 
         <AssetLogo className="size-16 shrink-0" url={balance.token.logoURI} />
       )}
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden text-sm">
-        <div className="text-body flex w-full justify-between overflow-hidden font-bold">
+        <div className="flex w-full justify-between overflow-hidden font-bold text-body">
           <div>{token ? <TokenDisplaySymbol tokenId={token.id} /> : balance.token.symbol}</div>
           <div className={cn(isLoading && "animate-pulse")}>
             <Tokens amount={balance.amount} decimals={balance.token.decimals} noCountUp />{" "}
             {balance.token.symbol}
           </div>
         </div>
-        <div className="text-body-secondary flex w-full justify-between overflow-hidden text-sm">
+        <div className="flex w-full justify-between overflow-hidden text-body-secondary text-sm">
           <div>
             <YieldxyzBalanceTypeDisplay balance={balance} />
           </div>
@@ -206,7 +207,7 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 
   const networkId = useMemo(
     () => toTalismanNetworkId[position.product.network],
-    [position.product.network, toTalismanNetworkId],
+    [position.product.network, toTalismanNetworkId]
   )
 
   const productTokens = useMemo(() => {
@@ -214,10 +215,10 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
   }, [position.product.token.name, position.product.token.symbol])
 
   return (
-    <div className="bg-grey-800 flex h-32 w-full items-center gap-8 rounded px-10">
+    <div className="flex h-32 w-full items-center gap-8 rounded bg-grey-800 px-10">
       <div className="flex grow flex-col gap-2 overflow-hidden">
-        <div className="text-body truncate text-base font-bold">{productTokens}</div>
-        <div className="text-body-secondary flex max-w-full items-center gap-[0.3em] overflow-hidden">
+        <div className="truncate font-bold text-base text-body">{productTokens}</div>
+        <div className="flex max-w-full items-center gap-[0.3em] overflow-hidden text-body-secondary">
           <NetworkLogo networkId={networkId} className="size-8 shrink-0" />
           <NetworkName networkId={networkId} className="truncate text-sm" />
         </div>
@@ -256,6 +257,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           {t("Exit position")}
         </ContextMenuItem>
         {claimableBalances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <ContextMenuItem key={index} disabled={!canManage} onClick={onClaimClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Claim")}</div>
@@ -264,6 +266,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           </ContextMenuItem>
         ))}
         {withdrawableBalances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <ContextMenuItem key={index} disabled={!canManage} onClick={onWithdrawClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Withdraw")}</div>
@@ -290,14 +293,14 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
 
   const isGridLayout = useMemo(
     () => IS_POPUP && (withdrawableBalances.length || claimableBalances.length),
-    [claimableBalances.length, withdrawableBalances.length],
+    [claimableBalances.length, withdrawableBalances.length]
   )
 
   return (
     <div
       className={cn(
         "flex w-full justify-end gap-8 overflow-hidden",
-        isGridLayout && "grid grid-cols-2 gap-8",
+        isGridLayout && "grid grid-cols-2 gap-8"
       )}
     >
       <Button
@@ -325,8 +328,8 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
           onClick={onClaimClick(claimableBalances[0])}
         >
           <div className="flex h-full flex-col gap-1">
-            <div className="text-md font-normal">{t("Claim")}</div>
-            <div className="text-tiny font-light">
+            <div className="font-normal text-md">{t("Claim")}</div>
+            <div className="font-light text-tiny">
               <Tokens
                 amount={claimableBalances[0].amount}
                 noCountUp
@@ -378,7 +381,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
         balance,
       })
     },
-    [openManage, position],
+    [openManage, position]
   )
 
   const onWithdrawClick = useCallback(
@@ -391,7 +394,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
         balance,
       })
     },
-    [openManage, position],
+    [openManage, position]
   )
 
   return {

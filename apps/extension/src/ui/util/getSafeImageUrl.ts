@@ -17,7 +17,7 @@ export const getSafeImageUrl = (url: string, width?: number, height?: number) =>
     }
 
     return imgUrl.toString()
-  } catch (err) {
+  } catch {
     return url
   }
 }

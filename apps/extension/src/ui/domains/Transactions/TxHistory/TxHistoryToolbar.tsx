@@ -1,13 +1,12 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ChevronDownIcon, GlobeIcon } from "@talismn/icons"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { getAccountGenesisHash } from "extension-core"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenClose } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 
 import { TxHistoryAccountPicker } from "./TxHistoryAccountPicker"
 import { useTxHistory } from "./TxHistoryContext"
@@ -32,7 +31,7 @@ const AccountFilterButton = () => {
       setAddress(address ? [address] : null)
       close()
     },
-    [close, setAddress],
+    [close, setAddress]
   )
 
   return (
@@ -40,17 +39,17 @@ const AccountFilterButton = () => {
       <button
         type="button"
         onClick={open}
-        className="bg-grey-850 hover:bg-grey-800 text-body-secondary hover:text-body overflow-hidden rounded-sm text-left text-xs"
+        className="overflow-hidden rounded-sm bg-grey-850 text-left text-body-secondary text-xs hover:bg-grey-800 hover:text-body"
       >
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {account ? (
             <AccountIcon
               address={account.address}
               genesisHash={getAccountGenesisHash(account)}
-              className="text-md shrink-0"
+              className="shrink-0 text-md"
             />
           ) : (
-            <AllAccountsIcon className="text-md shrink-0" />
+            <AllAccountsIcon className="shrink-0 text-md" />
           )}
           <div className="grow truncate">
             {account ? (account?.name ?? shortenAddress(account.address)) : t("All Accounts")}
@@ -79,7 +78,7 @@ const NetworkFilterButton = () => {
       setNetworkId(networkId)
       close()
     },
-    [close, setNetworkId],
+    [close, setNetworkId]
   )
 
   return (
@@ -87,13 +86,13 @@ const NetworkFilterButton = () => {
       <button
         type="button"
         onClick={open}
-        className="bg-grey-850 hover:bg-grey-800 text-body-secondary hover:text-body overflow-hidden rounded-sm text-left text-xs"
+        className="overflow-hidden rounded-sm bg-grey-850 text-left text-body-secondary text-xs hover:bg-grey-800 hover:text-body"
       >
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {network ? (
-            <NetworkLogo networkId={network.id} className="text-md shrink-0" />
+            <NetworkLogo networkId={network.id} className="shrink-0 text-md" />
           ) : (
-            <GlobeIcon className="text-md shrink-0" />
+            <GlobeIcon className="shrink-0 text-md" />
           )}
           <div className="grow truncate">
             {network ? (network?.name ?? t("Unknown Network")) : t("All Networks")}

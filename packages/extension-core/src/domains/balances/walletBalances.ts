@@ -1,5 +1,5 @@
-import { Address } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Address } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"
@@ -31,12 +31,12 @@ const walletAddressesByTokenId$ = combineLatest({
           .filter(isAccountNotContact)
           .filter((a) => isAccountCompatibleWithNetwork(network, a))
         return networkTokens.map(
-          (token) => [token.id, networkAccounts.map((a) => a.address)] as [TokenId, Address[]],
+          (token) => [token.id, networkAccounts.map((a) => a.address)] as [TokenId, Address[]]
         )
-      }),
+      })
     )
   }),
-  distinctUntilChanged<Record<TokenId, Address[]>>(isEqual),
+  distinctUntilChanged<Record<TokenId, Address[]>>(isEqual)
 )
 
 export const walletBalances$ = walletAddressesByTokenId$.pipe(
@@ -51,5 +51,5 @@ export const walletBalances$ = walletAddressesByTokenId$.pipe(
     },
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
-  keepAlive(3000),
+  keepAlive(3000)
 )

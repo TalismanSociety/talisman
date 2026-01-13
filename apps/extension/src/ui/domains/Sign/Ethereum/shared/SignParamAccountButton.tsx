@@ -1,12 +1,11 @@
 import { isEthereumAddress } from "@talismn/crypto"
-import { FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { SignParamButton, SignParamButtonProps } from "./SignParamButton"
+import { SignParamButton, type SignParamButtonProps } from "./SignParamButton"
 
 type SignParamAccountButtonProps = Pick<SignParamButtonProps, "explorerUrl" | "withIcon"> & {
   address: string

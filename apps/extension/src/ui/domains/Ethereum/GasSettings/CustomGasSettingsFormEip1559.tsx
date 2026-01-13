@@ -1,16 +1,28 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import type { EthNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import {
-  EthGasSettingsEip1559,
-  EthTransactionDetails,
-  GasSettingsByPriorityEip1559,
+  type EthGasSettingsEip1559,
+  type EthTransactionDetails,
+  type GasSettingsByPriorityEip1559,
   getHumanReadableErrorMessage,
   getMaxFeePerGas,
 } from "extension-core"
 import { log } from "extension-shared"
-import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  type FC,
+  type FormEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
@@ -23,13 +35,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-import { formatGwei, parseGwei, TransactionRequest } from "viem"
+import { formatGwei, parseGwei, type TransactionRequest } from "viem"
 import * as yup from "yup"
-
-import { notify } from "@talisman/components/Notifications"
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
@@ -58,7 +65,7 @@ const isValidGweiInput =
   (value?: string) => {
     try {
       return !!value && parseGwei(value) >= min
-    } catch (err) {
+    } catch {
       return false
     }
   }
@@ -82,7 +89,7 @@ const useIsValidGasSettings = (
   tx: TransactionRequest,
   maxBaseFeeGwei: string,
   maxPriorityFeeGwei: string,
-  gasLimit: number,
+  gasLimit: number
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
     maxBaseFeeGwei,
@@ -94,6 +101,7 @@ const useIsValidGasSettings = (
   // prevents UI from displaying a new total max fee before it's validated from chain
   const [isLoading, setIsLoading] = useState(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsLoading(true)
   }, [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit])
@@ -108,7 +116,7 @@ const useIsValidGasSettings = (
       setIsLoading(false)
     },
     250,
-    [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit],
+    [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit]
   )
 
   const publicClient = usePublicClient(evmNetworkId)
@@ -120,7 +128,7 @@ const useIsValidGasSettings = (
         ...tx,
         ...gasSettingsFromFormData(debouncedFormData),
       } as TransactionRequest
-    } catch (err) {
+    } catch {
       // any bad input throws here, ignore
       return undefined
     }
@@ -129,7 +137,7 @@ const useIsValidGasSettings = (
   const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
     publicClient,
     txPrepared,
-    "custom",
+    "custom"
   )
 
   return {
@@ -170,7 +178,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       customSettings: gasSettingsByPriority.custom as EthGasSettingsEip1559,
       highSettings: gasSettingsByPriority.high as EthGasSettingsEip1559,
     }),
-    [gasSettingsByPriority],
+    [gasSettingsByPriority]
   )
 
   const baseFeeDisplay = useMemo(
@@ -180,7 +188,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             notation: "standard",
           })
         : t("N/A"),
-    [t, txDetails],
+    [t, txDetails]
   )
 
   const defaultValues: FormData = useMemo(
@@ -189,7 +197,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       maxPriorityFeeGwei: formatGwei(customSettings.maxPriorityFeePerGas),
       gasLimit: Number(customSettings.gas),
     }),
-    [customSettings],
+    [customSettings]
   )
 
   const {
@@ -226,7 +234,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   const totalMaxFee = useMemo(() => {
     try {
       return (parseGwei(maxBaseFeeGwei) + parseGwei(maxPriorityFeeGwei)) * BigInt(gasLimit)
-    } catch (err) {
+    } catch {
       return null
     }
   }, [gasLimit, maxBaseFeeGwei, maxPriorityFeeGwei])
@@ -300,7 +308,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId],
+    [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
   const {
@@ -312,7 +320,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     tx,
     maxBaseFeeGwei,
     maxPriorityFeeGwei,
-    gasLimit,
+    gasLimit
   )
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
@@ -324,23 +332,23 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
   return (
     <form
       onSubmit={submitWithoutBubbleUp}
-      className="text-body-secondary bg-black-tertiary flex flex-col rounded-t-xl p-12 text-sm"
+      className="flex flex-col rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm"
     >
       <div className="flex w-full font-bold text-white">
         <div>
           <IconButton>
-            <ArrowRightIcon className="text-md rotate-180 text-white" onClick={onCancel} />
+            <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
           </IconButton>
         </div>
         <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
       </div>
-      <div className="mb-16 mt-12">
+      <div className="mt-12 mb-16">
         {"Set your own custom gas fee to control the priority and cost of your transaction."}
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
@@ -390,7 +398,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
               {t("Max Priority Fee")}{" "}
               <WithTooltip
                 tooltip={t(
-                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed",
+                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed"
                 )}
               >
                 <InfoIcon className="inline align-text-top" />
@@ -430,12 +438,12 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       </FormFieldContainer>
       <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="border-grey-700 text-body flex h-[5.2rem] w-full items-center justify-between rounded-sm border px-8 font-bold">
+      <div className="flex h-[5.2rem] w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
         <div>
           {t("Total Max Fee")}{" "}
           <WithTooltip
             tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit",
+              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit"
             )}
           >
             <InfoIcon className="inline-block align-text-top" />
@@ -445,7 +453,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           {totalMaxFee && showMaxFeeTotal ? (
             <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
           ) : isLoadingGasSettingsValid ? (
-            <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
+            <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
           ) : (
             <Tooltip>
               <TooltipTrigger className="text-alert-error">

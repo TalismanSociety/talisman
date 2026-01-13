@@ -1,7 +1,6 @@
+import { statusOptions } from "@talisman/hooks/useStatus"
 import { useTranslation } from "react-i18next"
 import { Modal, ModalDialog, ProcessAnimation } from "talisman-ui"
-
-import { statusOptions } from "@talisman/hooks/useStatus"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { MigratePasswordProvider, useMigratePassword } from "./context"

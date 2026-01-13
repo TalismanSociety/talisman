@@ -7,7 +7,7 @@ import {
   ZapOffIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 
 export type SignIconType = "vote" | "stake" | "unstake" | "ok" | "nok" | "transfer"
 
@@ -43,12 +43,12 @@ export const SignViewIconHeader: FC<{ icon: SignIconType }> = ({ icon }) => {
       Icon: getIcon(icon),
       className: getClassName(icon),
     }),
-    [icon],
+    [icon]
   )
 
   return (
     <div>
-      <div className="bg-grey-800 mb-8 inline-flex h-24 w-24 items-center justify-center rounded-full">
+      <div className="mb-8 inline-flex h-24 w-24 items-center justify-center rounded-full bg-grey-800">
         <Icon className={classNames("text-[28px]", className)} />
       </div>
     </div>

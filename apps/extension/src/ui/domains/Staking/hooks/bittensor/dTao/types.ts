@@ -1,4 +1,4 @@
-import { Enum } from "@polkadot-api/substrate-bindings"
+import type { Enum } from "@polkadot-api/substrate-bindings"
 
 type Pagination = {
   current_page: number

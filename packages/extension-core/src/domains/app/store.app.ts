@@ -1,7 +1,7 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
 
-import { GeneralReport } from "../../libs/GeneralReport"
+import type { GeneralReport } from "../../libs/GeneralReport"
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
 import { TalismanNotOnboardedError } from "./utils"
@@ -58,7 +58,6 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   popupSizeDelta: [0, IS_FIREFOX ? 30 : 0],
   showLedgerPolkadotGenericMigrationAlert: false,
@@ -112,7 +111,7 @@ export const appStore = new AppStore()
 
 // helpers for developers
 if (DEBUG) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const hostObj = globalThis as any
 
   hostObj.resetAppSettings = () => {

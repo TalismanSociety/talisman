@@ -1,5 +1,5 @@
 import { useSetBalancesAddresses } from "@talismn/balances-react"
-import { Dispatch, SetStateAction, Suspense, useMemo, useState } from "react"
+import { type Dispatch, type SetStateAction, Suspense, useMemo, useState } from "react"
 
 import { Balances, BalancesFallback } from "./components/Balances"
 import { BalancesTotal, BalancesTotalFallback } from "./components/BalancesTotal"

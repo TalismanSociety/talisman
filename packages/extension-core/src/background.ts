@@ -1,4 +1,5 @@
 import { assert } from "@polkadot/util"
+import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { DEBUG, log, PORT_CONTENT, PORT_EXTENSION } from "extension-shared"
 
 import { sentry } from "./config/sentry"
@@ -14,7 +15,22 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 
 sentry.init()
 
-chrome.action.setBadgeBackgroundColor({ color: "#d90000" })
+// Initialize @polkadot/util-crypto WASM module at startup.
+// Vite loads WASM asynchronously, so we must ensure readiness before handling
+// any requests that might touch WASM-only interfaces.
+const cryptoReady = (async (): Promise<void> => {
+  const ok = await cryptoWaitReady()
+  if (!ok) throw new Error("Unable to initialize @polkadot/util-crypto WASM")
+  log.debug("@polkadot/util-crypto WASM initialized")
+})().catch((err) => {
+  log.error("Failed to initialize crypto WASM", err)
+  sentry.captureException(err)
+  throw err
+})
+
+// Use chrome.action (MV3) or chrome.browserAction (MV2) for badge
+const actionApi = chrome.action ?? chrome.browserAction
+actionApi?.setBadgeBackgroundColor?.({ color: "#d90000" })
 
 // Onboarding and migrations
 chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
@@ -25,8 +41,8 @@ chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
       // open onboarding when reason === "install" and data?.talismanOnboarded !== true
       // open dashboard data?.talismanOnboarded === true
       const legacyOnboarded =
-        data && data.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
-      const currentOnboarded = data && data.app && data.app.onboarded === "TRUE"
+        data?.talismanOnboarded && data.talismanOnboarded?.onboarded === "TRUE"
+      const currentOnboarded = data?.app && data.app.onboarded === "TRUE"
       if (!legacyOnboarded && !currentOnboarded) {
         chrome.tabs.create({ url: chrome.runtime.getURL("onboarding.html") })
       }
@@ -48,6 +64,9 @@ chrome.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
 // Migrations occur on login to ensure that password is present for any migrations that require it
 const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   if (isLoggedIn === "TRUE") {
+    // Migrations and anything that touches keyring/crypto must wait for WASM init.
+    await cryptoReady
+
     const password = await passwordStore.getPassword()
     if (!password) {
       sentry.captureMessage("Unable to run migrations, no password present")
@@ -71,7 +90,7 @@ const migrationSub = passwordStore.isLoggedIn.subscribe(async (isLoggedIn) => {
   }
 })
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "wakeup") {
     sendResponse({ status: "awake" })
   }
@@ -82,12 +101,20 @@ chrome.runtime.onConnect.addListener((_port): void => {
   // only listen to what we know about
   assert(
     [PORT_CONTENT, PORT_EXTENSION].includes(_port.name),
-    `Unknown connection from ${_port.name}`,
+    `Unknown connection from ${_port.name}`
   )
   let port: chrome.runtime.Port | undefined = _port
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const messageHandler = (data: any) => {
+  // biome-ignore lint/suspicious/noExplicitAny: it is literally anything
+  const messageHandler = async (data: any) => {
+    try {
+      await cryptoReady
+    } catch {
+      // Crypto WASM init failed; do not attempt to process requests.
+      port?.disconnect()
+      return
+    }
+
     if (port) talismanHandler(data, port)
   }
   port.onMessage.addListener(messageHandler)
@@ -102,8 +129,7 @@ chrome.runtime.onConnect.addListener((_port): void => {
 
 !DEBUG && chrome.runtime.setUninstallURL("https://thxbye.talisman.xyz/")
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const iconManager = new IconManager()
+const _iconManager = new IconManager()
 
 sessionStore.reset().catch((err) => {
   log.error("Failed to reset session store", err)

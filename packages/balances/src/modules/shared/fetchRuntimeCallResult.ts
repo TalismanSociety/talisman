@@ -1,4 +1,4 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { parseMetadataRpc, toHex } from "@talismn/scale"
 
 export const fetchRuntimeCallResult = async <T>(
@@ -7,7 +7,7 @@ export const fetchRuntimeCallResult = async <T>(
   metadataRpc: `0x${string}`,
   apiName: string,
   method: string,
-  args: unknown[],
+  args: unknown[]
 ): Promise<T> => {
   try {
     const { builder } = parseMetadataRpc(metadataRpc)

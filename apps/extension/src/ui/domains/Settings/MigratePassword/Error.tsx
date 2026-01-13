@@ -1,8 +1,7 @@
+import { useSetting } from "@ui/state"
 import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox, ModalDialog } from "talisman-ui"
-
-import { useSetting } from "@ui/state"
 
 import { useMigratePassword } from "./context"
 
@@ -46,13 +45,13 @@ export const MigratePasswordError = () => {
             </Checkbox>
           </span>
         )}
-        <span className="text-body bg-body-secondary my-2 flex justify-center rounded-sm bg-opacity-50 p-4 font-mono">
+        <span className="my-2 flex justify-center rounded-sm bg-body-secondary bg-opacity-50 p-4 font-mono text-body">
           {statusMessage}
         </span>
       </p>
       <p className="text-body-secondary text-sm">
         {t(
-          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted.",
+          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
         )}
         {useErrorTracking && (
           <Trans t={t}>

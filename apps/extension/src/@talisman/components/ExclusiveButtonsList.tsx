@@ -1,6 +1,6 @@
 import { CheckIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 
 type ExclusiveButtonsListProps<T> = {
   options: ExclusiveButtonsListItemProps<T>[]
@@ -43,15 +43,15 @@ const Button: FC<{
     <button
       type="button"
       className={classNames(
-        "text-body-secondary flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6 sm:px-8",
-        "border-grey-800 border",
+        "flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6 text-body-secondary sm:px-8",
+        "border border-grey-800",
         selected && "bg-grey-900 text-body",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary",
+        "stroke-primary hover:border-grey-700 hover:bg-grey-800"
       )}
       onClick={onClick}
     >
       <div>{displayName}</div>
-      {!!selected && <CheckIcon className="text-primary text-base sm:text-lg" />}
+      {!!selected && <CheckIcon className="text-base text-primary sm:text-lg" />}
     </button>
   )
 }

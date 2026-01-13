@@ -1,6 +1,6 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
@@ -44,8 +44,8 @@ export const TokenTypePill: FC<{ type: Token["type"]; className?: string }> = ({
     <span
       data-testid="component-token-pill"
       className={classNames(
-        "text-body-disabled rounded-xs border px-2 py-1 text-[1rem]",
-        className,
+        "rounded-xs border px-2 py-1 text-[1rem] text-body-disabled",
+        className
       )}
     >
       {label}

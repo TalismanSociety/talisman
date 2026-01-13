@@ -1,9 +1,8 @@
+import { useSelectedCurrency, useTokenRatesMap, useTokensMap } from "@ui/state"
 import { useMemo } from "react"
 
-import { useSelectedCurrency, useTokenRatesMap, useTokensMap } from "@ui/state"
-
-import { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
-import { Decimal } from "../swaps-port/Decimal"
+import type { SwappableAssetWithDecimals } from "../swap-modules/common.swap-module"
+import type { Decimal } from "../swaps-port/Decimal"
 import { useTokenRatesFromUsd } from "../swaps-port/useTokenRatesFromUsd"
 
 type UseFiatValueForAmountProps = {

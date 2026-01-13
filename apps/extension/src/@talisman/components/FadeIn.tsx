@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { DetailedHTMLProps, FC, HTMLAttributes, useEffect, useState } from "react"
+import { type DetailedHTMLProps, type FC, type HTMLAttributes, useEffect, useState } from "react"
 
 type FadeInProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 

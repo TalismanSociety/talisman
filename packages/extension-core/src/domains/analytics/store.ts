@@ -5,7 +5,7 @@ import { v4 } from "uuid"
 import { StorageProvider } from "../../libs/Store"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
-import { PostHogCaptureProperties } from "./types"
+import type { PostHogCaptureProperties } from "./types"
 
 type PostHogSendProperties = PostHogCaptureProperties & { distinct_id: string }
 
@@ -54,7 +54,8 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
       return posthogDistinctId
     } catch (cause) {
       const error = new Error("Failed to identify posthog client", { cause })
-      console.error(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      console.error(error)
       Sentry.captureException(error)
     }
     return
@@ -63,7 +64,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
   async capture(
     eventName: string,
     rawProperties?: PostHogCaptureProperties,
-    eventTimestamp?: number,
+    eventTimestamp?: number
   ) {
     const enabled = await settingsStore.get("useAnalyticsTracking")
     if (IS_FIREFOX || enabled === false) return
@@ -118,7 +119,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
           else result.toKeep.push(item)
           return result
         },
-        { toSend: [], toKeep: [] },
+        { toSend: [], toKeep: [] }
       )
       if (toSend.length === 0) return true
 
@@ -141,7 +142,7 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
 
         if (!response.ok) throw new Error(await response.text())
       } catch (error) {
-        log.error("Failed to send analytics", { error }) // eslint-disable-line no-console
+        log.error("Failed to send analytics", { error })
         // do not mutate state if sending analytics fails
         return true
       }

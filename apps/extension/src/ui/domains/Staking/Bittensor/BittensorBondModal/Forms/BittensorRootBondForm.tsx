@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -19,7 +19,7 @@ const StakeAprBase: FC<{
   const display = useMemo(() => (apr ? `${(apr * 100).toFixed(2)}%` : "N/A"), [apr])
 
   if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+    return <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">15.00%</div>
 
   if (isError) {
     if (error?.message === STAKING_APR_UNAVAILABLE) return t("APR Unavailable")

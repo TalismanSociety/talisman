@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useEffect, useMemo } from "react"
 
 import { fetchTaostats } from "./fetchTaostats"
-import { Subnet, SubnetsData } from "./types"
+import type { Subnet, SubnetsData } from "./types"
 
 export const useGetInfiniteSubnets = () => {
   return useInfiniteQuery({
@@ -44,7 +44,7 @@ export const useGetSubnets = () => {
         acc.push(...page.data)
         return acc
       }, []),
-    [paginatedData?.pages],
+    [paginatedData?.pages]
   )
   return { ...infiniteSubnetsIfo, data }
 }

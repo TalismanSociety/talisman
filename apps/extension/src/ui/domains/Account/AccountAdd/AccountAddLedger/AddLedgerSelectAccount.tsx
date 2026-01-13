@@ -1,23 +1,22 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { sleep } from "@talismn/util"
-import { LedgerEthDerivationPathType, LedgerSolDerivationPathType } from "extension-core"
+import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
+import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
+import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
+import type { LedgerEthDerivationPathType, LedgerSolDerivationPathType } from "extension-core"
 import { toPairs } from "lodash-es"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Navigate } from "react-router-dom"
 import { Button, Dropdown } from "talisman-ui"
 import * as yup from "yup"
 
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { CHAIN_ID_TO_LEDGER_APP_NAME } from "@ui/hooks/ledger/common"
-import { useLedgerSubstrateAppByName } from "@ui/hooks/ledger/useLedgerSubstrateApp"
-
 import { LedgerPolkadotAccountPicker } from "../../LedgerPolkadotAccountPicker"
 import { LedgerPolkadotLegacyAccountPicker } from "../../LedgerPolkadotLegacyAccountPicker"
 import { LedgerSolanaAccountPicker } from "../../LedgerSolanaAccountPicker"
-import { AddSubstrateLedgerAppType, LedgerAccountDef, useAddLedgerAccount } from "./context"
+import { AddSubstrateLedgerAppType, type LedgerAccountDef, useAddLedgerAccount } from "./context"
 
 const ledgerEthDerivationPathOptions: Record<LedgerEthDerivationPathType, string> = {
   LedgerLive: "Ledger Live",
@@ -38,14 +37,14 @@ const LedgerEthDerivationPathSelector: FC<{
 
   const value = useMemo(
     () => options.find((i) => i.key === derivationPathType),
-    [options, derivationPathType],
+    [options, derivationPathType]
   )
 
   const handleChange = useCallback(
     (item: { key: LedgerEthDerivationPathType; label: string } | null) => {
       if (item) onChange(item.key)
     },
-    [onChange],
+    [onChange]
   )
 
   return (
@@ -77,14 +76,14 @@ const LedgerSolDerivationPathSelector: FC<{
 
   const value = useMemo(
     () => options.find((i) => i.key === derivationPathType),
-    [options, derivationPathType],
+    [options, derivationPathType]
   )
 
   const handleChange = useCallback(
     (item: { key: LedgerSolDerivationPathType; label: string } | null) => {
       if (item) onChange(item.key)
     },
-    [onChange],
+    [onChange]
   )
 
   return (
@@ -115,7 +114,7 @@ export const AddLedgerSelectAccount = () => {
           accounts: yup.array().of(yup.mixed<LedgerAccountDef>().defined()).min(1).defined(),
         })
         .required(),
-    [],
+    []
   )
 
   const {
@@ -136,7 +135,7 @@ export const AddLedgerSelectAccount = () => {
           title: t("Connecting account", { count: accounts.length }),
           subtitle: t("Please wait"),
         },
-        { autoClose: false },
+        { autoClose: false }
       )
 
       // pause to prevent double notification
@@ -158,14 +157,14 @@ export const AddLedgerSelectAccount = () => {
         })
       }
     },
-    [importAccounts, onSuccess, t],
+    [importAccounts, onSuccess, t]
   )
 
   const handleAccountsChange = useCallback(
     (accounts: LedgerAccountDef[]) => {
       setValue("accounts", accounts, { shouldValidate: true })
     },
-    [setValue],
+    [setValue]
   )
 
   const [ethDerivationPathType, setEthDerivationPathType] =
@@ -193,9 +192,9 @@ export const AddLedgerSelectAccount = () => {
         <h1 className="m-0">{t("Connect Ledger")}</h1>
         {(data.platform === "ethereum" || data.platform === "solana") && (
           <>
-            <p className="text-body-secondary mb-12 mt-[1em]">
+            <p className="mt-[1em] mb-12 text-body-secondary">
               {t(
-                "The derivation path will be different based on which application you used to initialise your Ledger account.",
+                "The derivation path will be different based on which application you used to initialise your Ledger account."
               )}
             </p>
             <div>
@@ -215,13 +214,13 @@ export const AddLedgerSelectAccount = () => {
             <div className="h-4" />
           </>
         )}
-        <p className="text-body-secondary mb-12 mt-[1em]">
+        <p className="mt-[1em] mb-12 text-body-secondary">
           {t("Please select which account(s) you'd like to connect.")}
           {data.platform === "ethereum" && (
             <>
               <br />
               {t(
-                "Amounts displayed for each account only include the most popular tokens on major networks.",
+                "Amounts displayed for each account only include the most popular tokens on major networks."
               )}
             </>
           )}

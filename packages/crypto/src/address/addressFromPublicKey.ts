@@ -8,7 +8,7 @@ export type EncodeAddressOptions = {
 export const addressFromPublicKey = (
   publicKey: Uint8Array,
   encoding: AddressEncoding,
-  options?: EncodeAddressOptions,
+  options?: EncodeAddressOptions
 ): string => {
   switch (encoding) {
     case "ss58":

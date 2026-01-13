@@ -1,13 +1,17 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToNumber, u8aToString } from "@polkadot/util"
-import { SubPsp22Token, subPsp22TokenId, SubPsp22TokenSchema } from "@talismn/chaindata-provider"
+import {
+  type SubPsp22Token,
+  SubPsp22TokenSchema,
+  subPsp22TokenId,
+} from "@talismn/chaindata-provider"
 import { values } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { MODULE_TYPE, TokenConfig } from "./config"
 import { makeContractCaller } from "./util"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -42,29 +46,29 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([]),
+            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
           ),
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([]),
+            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
           ),
         ])
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         const symbolData = (symbolResult.toJSON()?.result as any)?.ok?.data
         symbol =
           typeof symbolData === "string" && symbolData.startsWith("0x")
             ? u8aToString(
                 registry.createType(
                   "Option<Vec<u8>>",
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (symbolResult.toJSON()?.result as any)?.ok?.data,
-                )?.value,
+                  // biome-ignore lint/suspicious/noExplicitAny: legacy
+                  (symbolResult.toJSON()?.result as any)?.ok?.data
+                )?.value
               )?.replace(/\p{C}/gu, "")
             : symbol
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         const decimalsData = (decimalsResult.toJSON()?.result as any)?.ok?.data
         decimals =
           typeof decimalsData === "string" && decimalsData.startsWith("0x")
@@ -93,9 +97,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     } catch (error) {
       log.error(
         `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${networkId}`,
-        (error as Error)?.message ?? error,
+        (error as Error)?.message ?? error
       )
-      continue
     }
   }
 

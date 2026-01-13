@@ -1,4 +1,9 @@
-import { subDTaoTokenId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+import {
+  subDTaoTokenId,
+  type Token,
+  type TokenId,
+  type TokenList,
+} from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 
@@ -38,6 +43,6 @@ export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
 
 export const filterActiveTokens = (tokens: TokenList, activeTokens: ActiveTokens) => {
   return Object.fromEntries(
-    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens)),
+    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens))
   ) as TokenList
 }

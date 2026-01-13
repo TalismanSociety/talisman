@@ -8,7 +8,7 @@ export const getCoinbaseBuyUrl = async (
   assetSymbol: string,
   network: string,
   quoteId: string,
-  address: string,
+  address: string
 ) => {
   // NOTE: Ideally we would use assetId instead of assetSymbol,
   // but when we use the generated sessionToken it seems to raise an "<asset-id> is not available" error on the Coinbase buy widget.
@@ -40,7 +40,7 @@ export const getCoinbaseSellUrl = async (
   _assetSymbol: string,
   network: string,
   quoteId: string,
-  address: string,
+  address: string
 ) => {
   const sessionToken = await getCoinbaseSessionToken(assetId, network, address)
 

@@ -1,5 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import downloadJson from "@talisman/util/downloadJson"
+import { api } from "@ui/api"
+import { useAccounts } from "@ui/state"
+import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
@@ -11,12 +16,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import downloadJson from "@talisman/util/downloadJson"
-import { api } from "@ui/api"
-import { useAccounts } from "@ui/state"
 
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
@@ -35,7 +34,7 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
       >
         <PasswordUnlock
           title={
-            <div className="text-body-secondary mb-8">
+            <div className="mb-8 text-body-secondary">
               {t("Please confirm your password to export your accounts.")}
             </div>
           }
@@ -70,7 +69,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -93,14 +92,14 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       try {
         const { exportedJson } = await api.accountExportAll(password, newPw)
         downloadJson(exportedJson, "talisman-accounts")
-        onSuccess && onSuccess()
+        onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
           message: (err as Error)?.message ?? "",
         })
       }
     },
-    [setError, onSuccess, password],
+    [setError, onSuccess, password]
   )
 
   useEffect(() => {
@@ -114,7 +113,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
-        <p className="text-body-secondary my-8 text-sm">
+        <p className="my-8 text-body-secondary text-sm">
           <Trans t={t}>
             Set a password for your JSON export. We strongly suggest using a{" "}
             <span className="text-white">different password</span> from your Talisman wallet
@@ -123,7 +122,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         </p>
         <p className="text-body-secondary text-sm">
           {t(
-            "Please note that only polkadot.js compatible accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported.",
+            "Please note that only polkadot.js compatible accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported."
           )}
         </p>
         <div className="mt-12">
@@ -138,7 +137,6 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               placeholder={t("Enter New Password")}
               spellCheck={false}
@@ -186,9 +184,9 @@ export const useExportAllAccountsModal = () => {
           // export only keypair accounts, others have metadata that are specific to each wallet
           account.type === "keypair" &&
           // only export pjs compatible accounts to be compatible with pjs json format
-          ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve),
+          ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve)
       ),
-    [accounts],
+    [accounts]
   )
 
   return {

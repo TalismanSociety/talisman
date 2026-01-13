@@ -1,5 +1,5 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { newTokenRates, TokenRates } from "@talismn/token-rates"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { newTokenRates, type TokenRates } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
 import { fetchFromCoingecko } from "extension-core"
 
@@ -10,11 +10,11 @@ const getCoinGeckoTokenRates = async (coingeckoId?: string) => {
 
   try {
     const fetchErc20Coin = await fetchFromCoingecko(
-      `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=${CURRENCIES}`,
+      `/api/v3/simple/price?ids=${coingeckoId}&vs_currencies=${CURRENCIES}`
     )
     const rates: Record<TokenId, TokenRates> = await fetchErc20Coin.json()
     return rates[coingeckoId] ?? null
-  } catch (err) {
+  } catch {
     // most likely invalid id
     return null
   }

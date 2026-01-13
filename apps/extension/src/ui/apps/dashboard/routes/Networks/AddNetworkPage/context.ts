@@ -1,28 +1,27 @@
+import { notify } from "@talisman/components/Notifications"
+import { provideContext } from "@talisman/util/provideContext"
 import {
-  DotNetwork,
+  type DotNetwork,
   DotNetworkSchema,
   EthNetworkSchema,
   EvmNativeTokenSchema,
-  Network,
-  NetworkPlatform,
+  type Network,
+  type NetworkPlatform,
   NetworkSchema,
-  subNativeTokenId,
   SubNativeTokenSchema,
+  subNativeTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 import { useForm } from "@tanstack/react-form"
-import { activeNetworksStore, activeTokensStore, RequestNetworkUpsert } from "extension-core"
+import { api } from "@ui/api"
+import { getNetworkById$ } from "@ui/state"
+import { activeNetworksStore, activeTokensStore, type RequestNetworkUpsert } from "extension-core"
 import { log } from "extension-shared"
 import { range } from "lodash-es"
 import { useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
-
-import { notify } from "@talisman/components/Notifications"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import { getNetworkById$ } from "@ui/state"
 
 type DotNetworkSpecifics = {
   genesisHash: `0x${string}`
@@ -168,7 +167,7 @@ const validateFormData = ({ value }: { value: NetworkCreateFormData }): string |
         : "invalid"
 
     return res
-  } catch (err) {
+  } catch {
     return "invalid"
   }
 }
@@ -222,5 +221,5 @@ const useNetworkCreateFormProvider = () => {
 }
 
 export const [NetworkCreateFormProvider, useNetworkCreateForm] = provideContext(
-  useNetworkCreateFormProvider,
+  useNetworkCreateFormProvider
 )

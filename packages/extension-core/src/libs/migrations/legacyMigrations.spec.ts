@@ -1,10 +1,10 @@
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { KeypairType } from "@polkadot/util-crypto/types"
+import type { KeypairType } from "@polkadot/util-crypto/types"
 
 import {
-  LegacyAccountType as AccountType,
+  type LegacyAccountType as AccountType,
   LegacyAccountTypes as AccountTypes,
 } from "../../domains/accounts/migrations"
 import { passwordStore } from "../../domains/app/store.password"
@@ -19,7 +19,7 @@ const createPair = (
   origin: AccountType = AccountTypes.TALISMAN,
   derivationPath = "",
   parent?: string,
-  type: KeypairType = "sr25519",
+  type: KeypairType = "sr25519"
 ) => {
   const slashDerivationPath = `${type === "sr25519" ? "//" : ""}${derivationPath}`
   const options = {
@@ -35,7 +35,7 @@ const createPair = (
       origin,
       ...options,
     },
-    type,
+    type
   )
   return pair
 }
@@ -91,6 +91,3 @@ describe("App migrations", () => {
     expect(!newRootAccount.isLocked)
   })
 })
-
-// load bearing export
-export {}

@@ -1,12 +1,12 @@
 import log from "../log"
-import { MetadataBuilder } from "../papito"
+import type { MetadataBuilder } from "../papito"
 
 type ScaleStorageCoder = ReturnType<MetadataBuilder["buildStorage"]>
 
 export const decodeScale = <T>(
   scaleCoder: ScaleStorageCoder | undefined,
   change: string | null,
-  error?: string,
+  error?: string
 ): T | null => {
   if (change === null) return null
 

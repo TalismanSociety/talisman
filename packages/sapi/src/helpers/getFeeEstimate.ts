@@ -1,16 +1,20 @@
-import { IRuntimeVersionBase, SignatureOptions, SignerPayloadJSON } from "@polkadot/types/types"
+import type {
+  IRuntimeVersionBase,
+  SignatureOptions,
+  SignerPayloadJSON,
+} from "@polkadot/types/types"
 import { Binary } from "polkadot-api"
 
 import log from "../log"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { getTypeRegistry } from "./getTypeRegistry"
-import { Chain, ChainInfo } from "./types"
+import type { Chain, ChainInfo } from "./types"
 
 export const getFeeEstimate = async (
   chain: Chain,
   payload: SignerPayloadJSON,
-  chainInfo: ChainInfo,
+  chainInfo: ChainInfo
 ) => {
   // TODO do this without PJS / registry => waiting for @polkadot-api/tx-utils
   const registry = getTypeRegistry(chain, payload)
@@ -36,7 +40,7 @@ export const getFeeEstimate = async (
       chain,
       "TransactionPaymentApi",
       "query_info",
-      [binary, bytes.length],
+      [binary, bytes.length]
     )
     // Do not throw if partialFee is 0n. This is a valid response, eg: Bittensor remove_stake fee estimation is 0n.
     if (!result?.partial_fee && result.partial_fee !== 0n) {

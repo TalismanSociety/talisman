@@ -1,14 +1,22 @@
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { Tabs } from "@talisman/components/Tabs"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import { Nft, NftCollection } from "extension-core"
+import type { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import { toPairs } from "lodash"
 import {
-  CSSProperties,
-  FC,
+  type CSSProperties,
+  type FC,
   Fragment,
-  PropsWithChildren,
+  type PropsWithChildren,
   Suspense,
   useCallback,
   useEffect,
@@ -30,15 +38,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Tabs } from "@talisman/components/Tabs"
-import { api } from "@ui/api"
-import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
 import { NetworkAddress } from "../Account/AddressLinkOrCopy"
@@ -54,7 +53,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     (url: string) => () => {
       window.open(url, "_blank", "")
     },
-    [],
+    []
   )
 
   const isCollectionHidden = useIsHiddenNftCollection(nft.collectionId)
@@ -74,7 +73,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         title: t("Requesting refresh"),
         subtitle: t("Please wait"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
 
     try {
@@ -96,6 +95,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     setIsRefreshing(false)
   }, [isRefreshing, nft.id, t])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsRefreshing(false)
   }, [nft.id])
@@ -110,6 +110,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
           ?.map((url) => ({ url, label: getMarketPlaceLabel(url) }))
           .filter((m) => !!m.label)
           .map((mp, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
             <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
               {t("View on {{marketplace}}", { marketplace: mp.label })}
             </ContextMenuItem>
@@ -131,7 +132,7 @@ const getMarketPlaceLabel = (url: string) => {
   try {
     const parsed = new URL(url)
     return parsed.hostname.split(".").slice(-2).join(".")
-  } catch (err) {
+  } catch {
     return null
   }
 }
@@ -145,7 +146,7 @@ const TabContentCollection: FC<{
 
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
+      <div className="grid grid-cols-[1fr_2fr] gap-8 leading-paragraph">
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
           <NetworkLogo networkId={nft.networkId} className="text-md" />
@@ -178,7 +179,7 @@ const TabContentCollection: FC<{
       </div>
       {!!collection.description && (
         <>
-          <div className="bg-grey-800 h-0.5"></div>
+          <div className="h-0.5 bg-grey-800"></div>
           <div className="space-y-8 hyphens-auto">
             <div className="text-body-secondary">{t("Description")}</div>
             <NftDescription text={collection.description} />
@@ -201,7 +202,7 @@ const TabContentNft: FC<{
 
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
+      <div className="grid grid-cols-[1fr_2fr] gap-8 leading-paragraph">
         {!!nft.tokenId && (
           <>
             <div className="text-body-secondary">{t("Token ID")}</div>
@@ -249,7 +250,7 @@ const TabContentNft: FC<{
           </Fragment>
         ))}
       </div>
-      {(!!nft.description || !!traits.length) && <div className="bg-grey-800 h-0.5"></div>}
+      {(!!nft.description || !!traits.length) && <div className="h-0.5 bg-grey-800"></div>}
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
@@ -261,6 +262,7 @@ const TabContentNft: FC<{
           <div className="text-body-secondary">{t("Properties")}</div>
           <div className="flex flex-wrap gap-4">
             {traits.map(([name, value], i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: legacy
               <div key={i} className="rounded-xs bg-grey-800 px-5 py-2">
                 <div className="text-body-secondary text-xs">{name}</div>
                 <div className="text-sm">{value}</div>
@@ -280,6 +282,7 @@ const ScrollableArea: FC<
   const refContainer = useRef<HTMLDivElement>(null)
   const refContent = useRef<HTMLDivElement>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const scrollable = refContainer.current
     const content = refContent.current
@@ -407,7 +410,8 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
 
   if (!nft.audioUrl) return null
   return (
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+    // biome-ignore lint/a11y/useKeyWithClickEvents: legacy
+    // biome-ignore lint/a11y/noStaticElementInteractions: legacy
     <div className={classNames("relative", className)} onClick={handleBgClick}>
       <NftImage src={nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />
@@ -434,7 +438,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       { label: t("Collection"), value: "collection" },
       { label: t("NFT"), value: "nft" },
     ],
-    [t],
+    [t]
   )
 
   useEffect(() => {
@@ -443,7 +447,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
 
   const webResourceUrl = useMemo(
     () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.previewUrl,
-    [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl],
+    [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl]
   )
 
   const handleFullScreenViewClick = useCallback(() => {
@@ -456,7 +460,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         "h-full w-full",
         "@2xl:overflow-hidden",
         "bg-black shadow",
-        "@2xl:grid-cols-2 @2xl:grid",
+        "@2xl:grid @2xl:grid-cols-2"
       )}
     >
       <div className="@2xl:block hidden overflow-hidden">
@@ -472,16 +476,16 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       <div
         className={classNames(
           "flex h-full grow flex-col overflow-y-auto font-light",
-          "@2xl:overflow-hidden",
+          "@2xl:overflow-hidden"
         )}
       >
-        <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">
+        <div className="flex w-full items-center gap-4 @2xl:bg-transparent bg-black @2xl:px-12 px-8 @2xl:py-8 py-6">
           <IconButton className="@2xl:hidden" onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
           <div className="grow">
             <div className="text-body-secondary leading-paragraph">{collection.name}</div>
-            <div className="text-body @2xl:leading-paragraph @2xl:text-lg font-bold">
+            <div className="font-bold @2xl:text-lg text-body @2xl:leading-paragraph">
               {nft.name}
             </div>
           </div>
@@ -490,7 +494,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             <NftContextMenu nft={nft} />
           </div>
         </div>
-        <div className="@2xl:hidden bg-grey-800 block h-[38.5rem] shrink-0 p-8">
+        <div className="block @2xl:hidden h-[38.5rem] shrink-0 bg-grey-800 p-8">
           <Tooltip>
             <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
               <div className="relative size-full cursor-pointer">
@@ -500,11 +504,11 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
           </Tooltip>
         </div>
-        <div className="@2xl:overflow-hidden @2xl:pr-0 flex grow flex-col gap-12 px-12 py-8 font-light">
+        <div className="flex grow flex-col gap-12 @2xl:overflow-hidden px-12 py-8 @2xl:pr-0 font-light">
           <div className="@2xl:pr-12">
             <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base" />
           </div>
-          <div className="@2xl:pr-1 grow overflow-hidden">
+          <div className="grow overflow-hidden @2xl:pr-1">
             <ScrollableArea
               // scrollbar should be centered into the 24px empty space used as right-padding for the modal
               paddingRight={20}
@@ -546,7 +550,7 @@ const NftDialogInner: FC<{
       onDismiss={handleDismiss}
       className={classNames(
         "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg",
+        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

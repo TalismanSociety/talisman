@@ -1,12 +1,7 @@
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon, LockIcon, UsersIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { YieldDto } from "extension-core"
-import { FC, PropsWithChildren, ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -21,6 +16,10 @@ import {
   useYieldxyzProviders,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import type { YieldDto } from "extension-core"
+import { type FC, type PropsWithChildren, type ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
 import { useYieldxyzEnterModal } from "../yieldxyz/enter/useYieldxyzEnterModal"
@@ -65,7 +64,7 @@ export const EarnAvailableProducts: FC<{
       ))}
       {status === "loading" && <TokenProductsShimmer />}
       {status === "success" && !products?.length && (
-        <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-base">
+        <div className="rounded-sm bg-black-secondary py-10 text-center text-base text-body-secondary">
           {t("No opportunities found for your assets")}
         </div>
       )}
@@ -88,21 +87,21 @@ const TokenProducts: FC<{
   if (!token || !network) return null
 
   return (
-    <div className="bg-grey-900 w-full overflow-hidden rounded">
+    <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
         onClick={toggle}
         className={cn(
-          "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
+          "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
           isOpen && "bg-grey-800",
-          IS_POPUP && "gap-4 px-6",
+          IS_POPUP && "gap-4 px-6"
         )}
       >
         <TokenLogo tokenId={tokenId} className="size-16" />
-        <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
+        <div className="flex grow flex-col justify-center gap-2 overflow-hidden text-left font-medium text-body-secondary text-sm">
           <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
             <div className="truncate">
-              <span className="text-body font-bold">
+              <span className="font-bold text-body">
                 <TokenDisplaySymbol tokenId={tokenId} />
               </span>{" "}
               {token.name}
@@ -116,7 +115,7 @@ const TokenProducts: FC<{
               className="shrink-0"
             />
           </div>
-          <div className="text-body-secondary flex w-full items-center justify-between gap-4 overflow-hidden">
+          <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-body-secondary">
             <div className="flex w-full items-center gap-2 overflow-hidden">
               <NetworkLogo networkId={token.networkId} className="shrink=0 size-8" />
               <NetworkName networkId={token.networkId} className="truncate" />
@@ -126,7 +125,7 @@ const TokenProducts: FC<{
                 t={t}
                 defaults="APY up to <Highlight>{{bestApr}}%</Highlight>"
                 values={{ bestApr: bestApr.toFixed(2) }}
-                components={{ Highlight: <span className="text-primary font-bold" /> }}
+                components={{ Highlight: <span className="font-bold text-primary" /> }}
               />
             </div>
           </div>
@@ -151,14 +150,14 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
     <button
       type="button"
       className={cn(
-        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
-        IS_POPUP && "gap-4 px-6",
+        "flex h-28 w-full items-center gap-6 px-8 text-sm hover:bg-grey-750",
+        IS_POPUP && "gap-4 px-6"
       )}
       onClick={() => open({ productId: product.id, address: selectedAccount?.address })}
     >
       <YieldxyzProviderLogo providerId={product.providerId} className="size-16 shrink-0" />
       <div className="flex grow flex-col items-start justify-start gap-2 overflow-hidden">
-        <div className="text-body flex h-[1.8rem] w-full gap-1 overflow-hidden text-left">
+        <div className="flex h-[1.8rem] w-full gap-1 overflow-hidden text-left text-body">
           <span className="truncate">{product.metadata.name}</span>
           {!IS_POPUP && (
             <EarnTypeBadge className="shrink-0">{product.mechanics?.type}</EarnTypeBadge>
@@ -180,7 +179,7 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
       </div>
       <div className="shrink-0 text-nowrap">
         {product.rewardRate.rateType}:{" "}
-        <span className="text-primary-500 font-bold">
+        <span className="font-bold text-primary-500">
           {(product.rewardRate.total * 100).toFixed(2)}%
         </span>
       </div>
@@ -206,26 +205,26 @@ const Metric: FC<
 }
 
 const TokenProductsShimmer = () => (
-  <div className="bg-grey-900 flex h-28 items-center gap-6 rounded px-8">
-    <div className="bg-grey-700 size-16 shrink-0 animate-pulse rounded-full"></div>
-    <div className="flex grow flex-col justify-center gap-2 text-left text-sm font-medium">
+  <div className="flex h-28 items-center gap-6 rounded bg-grey-900 px-8">
+    <div className="size-16 shrink-0 animate-pulse rounded-full bg-grey-700"></div>
+    <div className="flex grow flex-col justify-center gap-2 text-left font-medium text-sm">
       <div className="flex">
-        <div className="bg-grey-700 text-grey-700 rounded-xs animate-pulse font-bold">
+        <div className="animate-pulse rounded-xs bg-grey-700 font-bold text-grey-700">
           XXXX Token Name
         </div>
       </div>
       <div>
         <div className="flex items-center gap-2 overflow-hidden">
-          <div className="bg-grey-700 size-8 animate-pulse rounded-full"></div>
-          <div className="bg-grey-700 text-grey-700 rounded-xs animate-pulse truncate">
+          <div className="size-8 animate-pulse rounded-full bg-grey-700"></div>
+          <div className="animate-pulse truncate rounded-xs bg-grey-700 text-grey-700">
             Network Name
           </div>
         </div>
       </div>
     </div>
-    <div className="flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap text-sm font-medium">
-      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">0.0000 XXX ($0.00)</div>
-      <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">APY up to 00.00%</div>
+    <div className="flex shrink-0 flex-col items-end justify-end gap-2 text-nowrap font-medium text-sm">
+      <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">0.0000 XXX ($0.00)</div>
+      <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">APY up to 00.00%</div>
     </div>
     <ChevronRightIcon className="invisible size-10 shrink-0" />
   </div>

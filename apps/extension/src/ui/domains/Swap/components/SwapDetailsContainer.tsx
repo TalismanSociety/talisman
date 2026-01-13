@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { HTMLProps, ReactNode } from "react"
+import type { HTMLProps, ReactNode } from "react"
 
 export const SwapDetailsContainer = ({
   className,
@@ -10,7 +10,7 @@ export const SwapDetailsContainer = ({
   children: ReactNode
 } & HTMLProps<HTMLDivElement>) => (
   <div
-    className={classNames("bg-grey-900 flex w-full flex-col gap-4 rounded p-8", className)}
+    className={classNames("flex w-full flex-col gap-4 rounded bg-grey-900 p-8", className)}
     {...divProps}
   >
     {children}

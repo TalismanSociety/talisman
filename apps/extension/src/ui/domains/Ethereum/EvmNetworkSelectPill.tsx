@@ -1,11 +1,10 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Suspense, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useAuthorisedSites, useNetworkById } from "@ui/state"
+import { Suspense, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { EvmNetworkSelectDrawer } from "./EvmNetworkSelectDrawer"
@@ -23,7 +22,7 @@ export const EvmNetworkSelectPill = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id],
+    [authorisedSites, currentSite?.id]
   )
 
   const { isOpen, open, close } = useOpenClose()
@@ -38,7 +37,7 @@ export const EvmNetworkSelectPill = () => {
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="text-body-secondary bg-grey-850 hover:bg-grey-800 hover:text-grey-300 border-grey-800 flex h-[3.6rem] w-[6.2rem] shrink-0 items-center gap-3 rounded-3xl border pl-2 pr-3 text-sm"
+            className="flex h-[3.6rem] w-[6.2rem] shrink-0 items-center gap-3 rounded-3xl border border-grey-800 bg-grey-850 pr-3 pl-2 text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
             onClick={open}
           >
             <Suspense>

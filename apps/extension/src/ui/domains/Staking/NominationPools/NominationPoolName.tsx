@@ -1,4 +1,4 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 
 import { useNomPoolName } from "../hooks/nomPools/useNomPoolName"
 
@@ -13,7 +13,7 @@ export const NominationPoolName = ({ chainId, poolId }: NominationPoolNameProps)
   const defaultPoolName = "Talisman Pool"
 
   if (isLoading)
-    return <div className={"text-grey-700 bg-grey-700 rounded-xs h-[1.6rem] w-40 animate-pulse"} />
+    return <div className={"h-[1.6rem] w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"} />
 
   if (isError || !poolName) return <>{defaultPoolName}</>
 

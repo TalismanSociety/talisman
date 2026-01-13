@@ -1,8 +1,8 @@
-import { BalancesResult, IBalance } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { TokenRateCurrency } from "@talismn/token-rates"
+import type { BalancesResult, IBalance } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
+import type { TokenRateCurrency } from "@talismn/token-rates"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 
 export interface RequestBalance {
   tokenId: TokenId

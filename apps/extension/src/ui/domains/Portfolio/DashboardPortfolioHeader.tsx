@@ -1,3 +1,4 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   ArrowDownIcon,
   CreditCardIcon,
@@ -9,22 +10,8 @@ import {
 } from "@talismn/icons"
 import { TalismanOrbRectangle } from "@talismn/orb"
 import { classNames, isNotNil } from "@talismn/util"
-import { Account, getAccountGenesisHash, isAccountOwned, TreeFolder } from "extension-core"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
-import { FC, MouseEventHandler, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useMatch } from "react-router-dom"
-import {
-  ContextMenuTrigger,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
-import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
@@ -37,6 +24,23 @@ import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useBalanceTotals, useFeatureFlag, useSelectedCurrency } from "@ui/state"
+import {
+  type Account,
+  getAccountGenesisHash,
+  isAccountOwned,
+  type TreeFolder,
+} from "extension-core"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useMatch } from "react-router-dom"
+import {
+  ContextMenuTrigger,
+  IconButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 import { useSeekBenefitsModal } from "./SeekBenefits/SeekBenefitsModal"
 import { usePortfolioNavigation } from "./usePortfolioNavigation"
@@ -65,7 +69,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
             analyticsFrom="dashboard portfolio"
             placement="bottom-end"
             trigger={
-              <IconButton className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+              <IconButton className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-grey-800/50 hover:bg-grey-800/80">
                 <MoreHorizontalIcon className="text-base" />
               </IconButton>
             }
@@ -78,8 +82,8 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
     return (
       <div className="flex h-14 w-full items-center gap-6 text-base">
         <div className="flex grow items-center gap-3 overflow-hidden text-base">
-          <div className="bg-grey-800 rounded-xs flex size-10 shrink-0 items-center justify-center">
-            <FolderIcon className="text-primary shrink-0 text-xs" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xs bg-grey-800">
+            <FolderIcon className="shrink-0 text-primary text-xs" />
           </div>
           <div className="truncate">{folder.name}</div>
         </div>
@@ -88,7 +92,7 @@ const SelectionScope: FC<{ account: Account | null; folder?: TreeFolder | null }
             folderId={folder.id}
             placement="bottom-end"
             trigger={
-              <ContextMenuTrigger className="bg-grey-800/50 hover:bg-grey-800/80 flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm">
+              <ContextMenuTrigger className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-sm bg-grey-800/50 hover:bg-grey-800/80">
                 <MoreHorizontalIcon className="text-base" />
               </ContextMenuTrigger>
             }
@@ -119,24 +123,25 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
   return (
     <div
       className={classNames(
-        "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg p-10",
-        className,
+        "relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg bg-grey-900 p-10",
+        className
       )}
     >
       {!!selectedAccounts.length && (
         <TalismanOrbRectangle
           seed={selectedAccounts?.[0]?.address}
-          className="absolute left-0 top-0 z-0 size-full select-none rounded-sm opacity-30"
+          className="absolute top-0 left-0 z-0 size-full select-none rounded-sm opacity-30"
         />
       )}
-      <div className="font-inter z-[1] flex w-full flex-col gap-4 overflow-hidden">
+      <div className="z-[1] flex w-full flex-col gap-4 overflow-hidden font-inter">
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
+            type="button"
             className={classNames(
-              "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full text-center text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
+              "pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-base",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -147,7 +152,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           </button>
           <Fiat
             className={classNames(
-              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]",
+              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[4.8rem] leading-[4.8rem]"
             )}
             amount={selectedTotal}
             isBalance
@@ -191,7 +196,7 @@ const Action: FC<ActionProps> = ({
       })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName],
+    [onClick, analyticsAction, analyticsName]
   )
 
   return (
@@ -200,8 +205,8 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={classNames(
-            "text-body-secondary pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base opacity-90 backdrop-blur-sm disabled:opacity-70",
-            "enabled:hover:text-body enabled:hover:bg-white/10",
+            "pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base text-body-secondary opacity-90 backdrop-blur-sm disabled:opacity-70",
+            "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}
           disabled={disabled}
@@ -315,13 +320,14 @@ const TopActions: FC = () => {
       openCopyAddressModal,
       openSwapTokensModal,
       openRampsModal,
-    ],
+    ]
   )
 
   return (
     <div className="z-[1] flex w-full items-center justify-between gap-8">
       <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
         {topActions.map((action, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <Action key={index} {...action} />
         ))}
       </div>
@@ -342,7 +348,7 @@ const SeekBenefitsLink = () => {
     <button
       type="button"
       className={classNames(
-        "text-primary-700 hover:text-primary flex shrink-0 items-center gap-3 text-base",
+        "flex shrink-0 items-center gap-3 text-base text-primary-700 hover:text-primary"
       )}
       onClick={handleSeekClick}
     >

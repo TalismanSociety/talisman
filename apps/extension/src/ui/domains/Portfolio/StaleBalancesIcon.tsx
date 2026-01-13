@@ -1,7 +1,6 @@
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertTriangleIcon } from "@talismn/icons"
 import { useTranslation } from "react-i18next"
-
-import { WithTooltip } from "@talisman/components/Tooltip"
 
 export type Props = { className?: string; staleChains?: string[] }
 export const StaleBalancesIcon = ({ className, staleChains = [] }: Props) => {
@@ -15,12 +14,12 @@ export const StaleBalancesIcon = ({ className, staleChains = [] }: Props) => {
   const nMoreChains = Math.max(0, staleChains.length - 1)
   const andNMore =
     nMoreChains > 0
-      ? " " + t("and {{nMoreChains}} more {{chainOrChains}}", { nMoreChains, chainOrChains })
+      ? ` ${t("and {{nMoreChains}} more {{chainOrChains}}", { nMoreChains, chainOrChains })}`
       : ""
 
   const tooltipText = t(
     `Latest balance is not available for {{chains}}.\nDisplayed value may be out of date.`,
-    { chains: namedChain + andNMore },
+    { chains: namedChain + andNMore }
   )
   const tooltip = <span className="whitespace-pre-wrap">{tooltipText}</span>
 

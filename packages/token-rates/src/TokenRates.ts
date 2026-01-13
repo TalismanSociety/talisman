@@ -1,11 +1,11 @@
-import { evmErc20TokenId, Token, TokenId } from "@talismn/chaindata-provider"
+import { evmErc20TokenId, type Token, type TokenId } from "@talismn/chaindata-provider"
 
 import {
   SUPPORTED_CURRENCIES,
-  TokenRateCurrency,
-  TokenRateData,
-  TokenRates,
-  TokenRatesList,
+  type TokenRateCurrency,
+  type TokenRateData,
+  type TokenRates,
+  type TokenRatesList,
 } from "./types"
 
 export class TokenRatesError extends Error {
@@ -27,7 +27,7 @@ export const DEFAULT_COINSAPI_CONFIG: CoinsApiConfig = {
 export async function fetchTokenRates(
   tokens: Record<TokenId, Token>,
   currencyIds: TokenRateCurrency[] = ALL_CURRENCY_IDS,
-  config: CoinsApiConfig = DEFAULT_COINSAPI_CONFIG,
+  config: CoinsApiConfig = DEFAULT_COINSAPI_CONFIG
 ): Promise<TokenRatesList> {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
@@ -41,7 +41,7 @@ export async function fetchTokenRates(
         const getToken = (
           evmNetworkId: string,
           tokenAddress: `0x${string}`,
-          coingeckoId: string,
+          coingeckoId: string
         ) => ({
           id: evmErc20TokenId(evmNetworkId, tokenAddress),
           coingeckoId,
@@ -71,7 +71,7 @@ export async function fetchTokenRates(
         coingeckoIdToTokenIds[coingeckoId].push(id)
         return coingeckoIdToTokenIds
       },
-      {} as Record<string, string[]>,
+      {} as Record<string, string[]>
     )
 
   // create a list of coingeckoIds we want to fetch
@@ -92,7 +92,7 @@ export async function fetchTokenRates(
         [
           ...new Set(
             // don't request `tao` from coingecko (we calculate it from `usd`)
-            currencyIds.filter((c) => c !== "tao"),
+            currencyIds.filter((c) => c !== "tao")
           )
             // always include `usd` (so we can calculate `tao`)
             .add("usd"),
@@ -108,7 +108,7 @@ export async function fetchTokenRates(
     }),
   })
 
-  const rawTokenRates: RawTokenRates = await response.json()
+  const rawTokenRates = (await response.json()) as RawTokenRates
 
   if (hasVsTao) {
     // calculate the TAO<>USD rate
@@ -152,7 +152,7 @@ export async function fetchTokenRates(
     Object.entries(tokens).map(([tokenId, token]) => [
       tokenId,
       token.coingeckoId ? (tokenRates[token.coingeckoId] ?? null) : null,
-    ]),
+    ])
   ) as TokenRatesList
 
   return ratesList
@@ -165,7 +165,7 @@ type RawTokenRates = [number | null, number | null, number | null][][]
 const parseTokenRatesFromApi = (
   rawTokenRates: RawTokenRates,
   coingeckoIds: string[],
-  currencyIds: TokenRateCurrency[],
+  currencyIds: TokenRateCurrency[]
 ): TokenRatesList => {
   return Object.fromEntries(
     coingeckoIds.map((coingeckoId, idx) => {
@@ -181,9 +181,9 @@ const parseTokenRatesFromApi = (
 
             const [price, marketCap, change24h] = rates[idx]
             return [currencyId, { price, marketCap, change24h } as TokenRateData]
-          }),
+          })
         ) as TokenRates,
       ]
-    }),
+    })
   ) as TokenRatesList
 }

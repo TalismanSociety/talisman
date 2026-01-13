@@ -1,11 +1,5 @@
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { ActionDto } from "extension-core"
-import { useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
-import { TransactionRequest } from "viem"
-
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
@@ -13,7 +7,12 @@ import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { RiskAnalysisProvider } from "@ui/domains/Sign/risk-analysis/context"
 import { RiskAnalysisPillButton } from "@ui/domains/Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "@ui/domains/Sign/TxSubmitButton/TxSignButton"
-import { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import type { TxSubmitButtonTransaction } from "@ui/domains/Sign/TxSubmitButton/types"
+import type { ActionDto } from "extension-core"
+import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
+import type { TransactionRequest } from "viem"
 
 import { AccountDisplay } from "../../../shared/AccountDisplay"
 import { FormFieldSet, FormFieldSetRow, FormFieldSetSeparator } from "../../../shared/FormFieldSet"
@@ -42,7 +41,7 @@ export const YieldxyzManageStepConfirm = () => {
     >
       <WizardModalDialog className="size-full border-none" title={actionTitle} onCloseClick={close}>
         <div className="flex size-full flex-col gap-8 overflow-hidden">
-          <div className="text-md line-clamp-2 w-full text-center font-bold">
+          <div className="line-clamp-2 w-full text-center font-bold text-md">
             {action.transactions.length > 1
               ? t("Approve {{count}} transactions", { count: action.transactions.length })
               : t("Approve transaction")}
@@ -107,12 +106,12 @@ const ActionCreatingShimmer = () => {
     const { t } = useTranslation()
 
     return (
-      <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">
-        <LoaderIcon className="animate-spin-slow h-16 w-16" />
-        <div className="mt-4 text-base font-bold text-white opacity-70">
+      <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
+        <LoaderIcon className="h-16 w-16 animate-spin-slow" />
+        <div className="mt-4 font-bold text-base text-white opacity-70">
           {t("Preparing operation")}
         </div>
-        <div className="text-sm font-normal opacity-70">{t("This shouldn't take long...")}</div>
+        <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
       </div>
     )
   }
@@ -126,9 +125,9 @@ const TransactionError = () => {
       <TooltipTrigger asChild>
         <div
           className={cn(
-            "text-brand-orange text-center text-xs",
+            "text-center text-brand-orange text-xs",
             // do not display error while isProcessing=true, as it has already has been executed
-            (isProcessing || !transaction?.error) && "invisible",
+            (isProcessing || !transaction?.error) && "invisible"
           )}
         >
           <AlertCircleIcon className="inline-block align-text-top text-sm" /> {transaction?.error}
@@ -196,7 +195,7 @@ const NetworkDisplay = () => {
   if (!position) return null
 
   return (
-    <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+    <div className="flex w-full items-center gap-2 overflow-hidden text-body">
       <NetworkLogo className="size-8" networkId={position.networkId} />
       <NetworkName className="truncate" networkId={position.networkId} />
     </div>

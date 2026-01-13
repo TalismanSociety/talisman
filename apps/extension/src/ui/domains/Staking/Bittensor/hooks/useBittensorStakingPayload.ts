@@ -1,9 +1,8 @@
 import { taoToAlpha } from "@talismn/balances"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
-
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useMemo } from "react"
 
 import { useGetBittensorMinJoinBond } from "../../hooks/bittensor/useGetBittensorMinJoinBond"
 import { useGetBittensorDefaultMinStake } from "../../hooks/bittensor/useGetBittensorMinStake"
@@ -19,7 +18,7 @@ import {
   getLimitPrice,
   getSwapSimulation,
 } from "../utils/helpers"
-import { StakeDirection } from "./types"
+import type { StakeDirection } from "./types"
 import { useBittensorAlphaPrice } from "./useBittensorAlphaPrice"
 import { useBittensorSimulateSwap } from "./useBittensorSimulateSwap"
 import { useBittensorSubnetSlippage } from "./useBittensorSubnetSlippage"
@@ -87,7 +86,7 @@ export const useBittensorStakingPayload = ({
 
   const effectiveFeeRate = useMemo(
     () => calculateEffectiveFeeRate(netuid, subnetFee, tier.discount),
-    [netuid, subnetFee, tier.discount],
+    [netuid, subnetFee, tier.discount]
   )
 
   // minimum input that accounts for swap fee and talisman fee

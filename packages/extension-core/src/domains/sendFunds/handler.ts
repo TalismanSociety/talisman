@@ -1,5 +1,5 @@
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { addConfirmedAddress, confirmedAddressesStore } from "./store.confirmedAddresses"
 
 export class SendFundsHandler extends ExtensionHandler {

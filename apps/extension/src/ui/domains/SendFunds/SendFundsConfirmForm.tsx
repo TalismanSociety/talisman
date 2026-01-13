@@ -1,14 +1,13 @@
-import { isTokenEth } from "@talismn/chaindata-provider"
-import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Checkbox } from "talisman-ui"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { isTokenEth } from "@talismn/chaindata-provider"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { useSelectedCurrency } from "@ui/state"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Checkbox } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
@@ -19,7 +18,7 @@ import { BittensorValidatorName } from "../Portfolio/AssetDetails/DashboardToken
 import { RiskAnalysisProvider } from "../Sign/risk-analysis/context"
 import { RiskAnalysisPillButton } from "../Sign/risk-analysis/RiskAnalysisPillButton"
 import { TxSubmitButton } from "../Sign/TxSubmitButton/TxSignButton"
-import { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
+import type { TxSubmitButtonTransaction } from "../Sign/TxSubmitButton/types"
 import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import {
@@ -32,7 +31,7 @@ const AmountDisplay = () => {
   const { sendMax, maxAmount, transfer, token } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
 
-  if (!amount || !token) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
+  if (!amount || !token) return <div className="h-12 w-64 animate-pulse rounded-sm bg-grey-750" />
 
   return (
     <div className="flex w-full items-center justify-end gap-4 text-right">
@@ -48,7 +47,7 @@ const NetworkDisplay = () => {
   if (!network) return null
 
   return (
-    <div className="text-body flex items-center gap-4">
+    <div className="flex items-center gap-4 text-body">
       <NetworkLogo networkId={network.id} className="text-md" />
       {network.name}
     </div>
@@ -98,7 +97,7 @@ const TotalAmountRow = () => {
         {totalValue ? (
           <Fiat amount={totalValue} />
         ) : (
-          <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />
+          <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />
         )}
       </div>
     </div>
@@ -120,20 +119,20 @@ export const ExternalRecipientWarning = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setIsWarningAcknowledged(e.target.checked)
     },
-    [setIsWarningAcknowledged],
+    [setIsWarningAcknowledged]
   )
 
   const handleDontRemindChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setDontRemindAgain(e.target.checked)
     },
-    [setDontRemindAgain],
+    [setDontRemindAgain]
   )
 
   if (warningType === "none") return null
 
   return (
-    <div className="text-alert-warn bg-alert-warn/10 flex w-full items-center gap-4 rounded-sm p-4 text-xs">
+    <div className="flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-4 text-alert-warn text-xs">
       <AlertCircleIcon className="shrink-0 text-[2rem]" />
       {warningType === "network" && network && token && (
         <div>
@@ -146,7 +145,7 @@ export const ExternalRecipientWarning = () => {
               i18nKey="Warning: If sending to a centralized exchange, make sure it expects to receive funds on <Network /> network. Sending to the wrong network will result in loss of funds."
             />
           </div>
-          <div className="text-body mt-4 space-y-2">
+          <div className="mt-4 space-y-2 text-body">
             <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
               {t("Recipient supports {{token}} on {{network}}", {
                 token: token.name,
@@ -165,10 +164,10 @@ export const ExternalRecipientWarning = () => {
         <div>
           <div>
             {t(
-              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.",
+              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds."
             )}
           </div>
-          <div className="text-body mt-2 space-y-2">
+          <div className="mt-2 space-y-2 text-body">
             <Checkbox checked={isWarningAcknowledged} onChange={handleCheckChange}>
               {t("Recipient is not a centralized exchange")}
             </Checkbox>
@@ -212,7 +211,7 @@ const SendButton = () => {
         txId,
       })
     },
-    [network, onSubmitted, saveConfirmation],
+    [network, onSubmitted, saveConfirmation]
   )
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
@@ -311,15 +310,13 @@ const EthFeeSummary = () => {
         </div>
         <div className="text-body">
           <div className="inline-flex h-[1.7rem] items-center">
-            <>
-              {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-              {txDetails?.estimatedFee && network && (
-                <TokensAndFiat
-                  planck={txDetails.estimatedFee.toString()}
-                  tokenId={network.nativeTokenId}
-                />
-              )}
-            </>
+            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+            {!!txDetails?.estimatedFee && network && (
+              <TokensAndFiat
+                planck={txDetails.estimatedFee.toString()}
+                tokenId={network.nativeTokenId}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -355,20 +352,18 @@ const DefaultFeeSummary = () => {
           <div
             className={classNames(
               "inline-flex h-[1.7rem] items-center",
-              isRefetching && "animate-pulse",
+              isRefetching && "animate-pulse"
             )}
           >
-            <>
-              {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-              {estimatedFee && feeToken && (
-                <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
-              )}
-              {error && (
-                <WithTooltip tooltip={(error as Error).message}>
-                  <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
-                </WithTooltip>
-              )}
-            </>
+            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+            {estimatedFee && feeToken && (
+              <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
+            )}
+            {error && (
+              <WithTooltip tooltip={(error as Error).message}>
+                <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
+              </WithTooltip>
+            )}
           </div>
         </div>
       </div>
@@ -405,19 +400,19 @@ export const SendFundsConfirmForm = () => {
             className="w-full grow"
             innerClassName="flex flex-col w-full items-center space-between min-h-full"
           >
-            <div className="h-32 text-lg font-bold">{t("You are sending")}</div>
+            <div className="h-32 font-bold text-lg">{t("You are sending")}</div>
             <div className="w-full grow">
-              <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
-                <div className="text-body flex h-16 items-center justify-between gap-8">
-                  <div className="text-body-secondary whitespace-nowrap">{t("Amount")}</div>
+              <div className="flex flex-col rounded bg-grey-900 px-12 py-8 text-body-secondary leading-[140%]">
+                <div className="flex h-16 items-center justify-between gap-8 text-body">
+                  <div className="whitespace-nowrap text-body-secondary">{t("Amount")}</div>
                   <AmountDisplay />
                 </div>
                 <div className="flex h-16 items-center justify-between gap-8">
-                  <div className="text-body-secondary whitespace-nowrap">{t("From")}</div>
+                  <div className="whitespace-nowrap text-body-secondary">{t("From")}</div>
                   <AddressDisplay className="h-16" address={from} networkId={network?.id} />
                 </div>
                 <div className="flex h-16 items-center justify-between gap-8">
-                  <div className="text-body-secondary whitespace-nowrap">{t("To")}</div>
+                  <div className="whitespace-nowrap text-body-secondary">{t("To")}</div>
                   <AddressDisplay className="h-16" address={to} networkId={network?.id} />
                 </div>
                 <div className="py-8">

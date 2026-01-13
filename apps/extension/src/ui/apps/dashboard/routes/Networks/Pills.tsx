@@ -1,12 +1,12 @@
 import { classNames } from "@talismn/util"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 const Pill = ({ className, children }: { className?: string; children?: ReactNode }) => (
   <div
     className={classNames(
-      "bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light",
-      className,
+      "inline-block rounded bg-primary/10 p-4 font-light text-primary text-xs",
+      className
     )}
   >
     {children}

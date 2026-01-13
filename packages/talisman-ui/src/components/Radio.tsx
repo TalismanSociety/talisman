@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { ChangeEventHandler, FC, ReactNode } from "react"
+import type { ChangeEventHandler, FC, ReactNode } from "react"
 
 export const Radio: FC<{
   name: string
@@ -14,8 +14,8 @@ export const Radio: FC<{
       className={classNames(
         "cursor-pointer p-0.5",
         "hover:text-grey-300",
-        "has-[:checked]:text-body has-[:checked]:cursor-default",
-        className,
+        "has-[:checked]:cursor-default has-[:checked]:text-body",
+        className
       )}
     >
       <input
@@ -25,9 +25,9 @@ export const Radio: FC<{
         checked={checked}
         onChange={onChange}
         className={classNames(
-          "bg-body-disabled h-[0.8em] w-[0.8em] appearance-none rounded-full",
-          "checked:bg-primary checked:border-body-disabled checked:border-[0.15em]",
-          "ring-body focus-visible:ring-1",
+          "h-[0.8em] w-[0.8em] appearance-none rounded-full bg-body-disabled",
+          "checked:border-[0.15em] checked:border-body-disabled checked:bg-primary",
+          "ring-body focus-visible:ring-1"
         )}
       />
       {!!label && <span className="ml-3">{label}</span>}

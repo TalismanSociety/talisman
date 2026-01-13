@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export const isPromise = <T = any>(value: any): value is Promise<T> =>
   !!value &&
   (typeof value === "object" || typeof value === "function") &&

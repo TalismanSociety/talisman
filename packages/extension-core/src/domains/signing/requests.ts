@@ -1,23 +1,22 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
-import { Account } from "@talismn/keyring"
-import { RpcTransactionRequest } from "viem"
-
+import type { EthNetworkId } from "@talismn/chaindata-provider"
+import type { Account } from "@talismn/keyring"
+import type { RpcTransactionRequest } from "viem"
+import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
+import type { EthRequestSignArguments } from "../ethereum/types"
 import type {
   EthSignRequest,
   SolSignRequest,
   SolSignResult,
   SubstrateSigningRequest,
 } from "./types"
-import { requestStore } from "../../libs/requests/store"
-import { EthRequestSignArguments } from "../ethereum/types"
 
 export const signAndSendEth = (
   url: string,
   request: RpcTransactionRequest,
   ethChainId: EthNetworkId,
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -28,7 +27,7 @@ export const signAndSendEth = (
       type: "eth-send",
       method: "eth_sendTransaction",
     },
-    port,
+    port
   )
 }
 
@@ -44,7 +43,7 @@ export const signEth = (
   request: EthSignRequest["request"],
   ethChainId: EthNetworkId,
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -56,7 +55,7 @@ export const signEth = (
       params,
       request,
     },
-    port,
+    port
   )
 }
 
@@ -64,7 +63,7 @@ export const signSubstrate = (
   url: string,
   request: SubstrateSigningRequest["request"],
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -73,7 +72,7 @@ export const signSubstrate = (
       request,
       account,
     },
-    port,
+    port
   )
 }
 
@@ -85,7 +84,7 @@ export const signSolana = <
   url: string,
   port: Port,
   account: Account,
-  request: Req,
+  request: Req
 ): Promise<Res> => {
   return requestStore.createRequest(
     {
@@ -94,6 +93,6 @@ export const signSolana = <
       request,
       account,
     },
-    port,
+    port
   ) as Promise<Res>
 }

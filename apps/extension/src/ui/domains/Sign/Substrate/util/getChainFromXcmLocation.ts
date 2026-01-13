@@ -1,5 +1,5 @@
-import { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): DotNetwork => {
@@ -9,7 +9,7 @@ const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): 
         (c) =>
           c.topology.type === "parachain" &&
           c.topology.paraId === paraId &&
-          c.topology.relayId === chain.id,
+          c.topology.relayId === chain.id
       )
       if (!parachain) throw new Error("Unknown parachain")
       return parachain
@@ -20,7 +20,7 @@ const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): 
         (c) =>
           c.topology.type === "parachain" &&
           c.topology.paraId === paraId &&
-          c.topology.relayId === relayId,
+          c.topology.relayId === relayId
       )
       if (!parachain) throw new Error("Unknown parachain")
 
@@ -47,7 +47,7 @@ const getRelay = (chain: DotNetwork, chains: DotNetwork[]): DotNetwork => {
 export const getChainFromXcmLocation = (
   multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation,
   chain: DotNetwork,
-  chains: DotNetwork[],
+  chains: DotNetwork[]
 ): DotNetwork => {
   try {
     if (multiLocation.value.parents === 2) throw new Error("Unknown consensus")

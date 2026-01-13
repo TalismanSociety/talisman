@@ -38,17 +38,17 @@ export interface ApiConfig<SecurityDataType = unknown> {
   baseUrl?: string
   baseApiParams?: Omit<RequestParams, "baseUrl" | "cancelToken" | "signal">
   securityWorker?: (
-    securityData: SecurityDataType | null,
+    securityData: SecurityDataType | null
   ) => Promise<RequestParams | void> | RequestParams | void
   customFetch?: typeof fetch
 }
 
-export interface HttpResponse<D extends unknown, E extends unknown = unknown> extends Response {
+export interface HttpResponse<D, E = unknown> extends Response {
   data: D
   error: E
 }
 
-type CancelToken = Symbol | string | number
+type CancelToken = symbol | string | number
 
 export enum ContentType {
   Json = "application/json",
@@ -101,7 +101,7 @@ export class HttpClient<SecurityDataType = unknown> {
       .map((key) =>
         Array.isArray(query[key])
           ? this.addArrayQueryParam(query, key)
-          : this.addQueryParam(query, key),
+          : this.addQueryParam(query, key)
       )
       .join("&")
   }
@@ -135,7 +135,7 @@ export class HttpClient<SecurityDataType = unknown> {
             ? property
             : typeof property === "object" && property !== null
               ? JSON.stringify(property)
-              : `${property}`,
+              : `${property}`
         )
         return formData
       }, new FormData())
@@ -210,7 +210,7 @@ export class HttpClient<SecurityDataType = unknown> {
         },
         signal: (cancelToken ? this.createAbortSignal(cancelToken) : requestParams.signal) || null,
         body: typeof body === "undefined" || body === null ? null : payloadFormatter(body),
-      },
+      }
     ).then(async (response) => {
       const r = response as HttpResponse<T, E>
       r.data = null as unknown as T
@@ -247,7 +247,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title OpenAPI
  * @version 1.0.0
  */
-export class Sn45Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class Sn45Api<SecurityDataType> extends HttpClient<SecurityDataType> {
   v1 = {
     /**
      * No description
@@ -289,7 +289,7 @@ export class Sn45Api<SecurityDataType extends unknown> extends HttpClient<Securi
         minTao?: string
         limit?: string
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -480,7 +480,7 @@ export class Sn45Api<SecurityDataType extends unknown> extends HttpClient<Securi
       query?: {
         limit?: string
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {
@@ -702,7 +702,7 @@ export class Sn45Api<SecurityDataType extends unknown> extends HttpClient<Securi
       query?: {
         limit?: string
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<
         {

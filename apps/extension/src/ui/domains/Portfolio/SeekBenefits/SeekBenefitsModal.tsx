@@ -1,3 +1,4 @@
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import {
   ArrowRightIcon,
@@ -9,15 +10,13 @@ import {
   ZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, SVGProps, useCallback, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, IconButton, Modal } from "talisman-ui"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import { type FC, type ReactNode, type SVGProps, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, IconButton, Modal } from "talisman-ui"
 
 import { ReactComponent as Background } from "./seek-benefits-page-bg.svg"
 import { useSeekStakingApr } from "./useSeekStakingApr"
@@ -32,8 +31,8 @@ export const SeekBenefitsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border",
+        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black shadow",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >
@@ -65,21 +64,21 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   }, [remoteConfig.seek.tradeUrl])
 
   return (
-    <div className="[&>header>h1]:text-md relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-transparent to-40%">
-      <IconButton onClick={onClose} className="absolute right-6 top-6 z-10">
+    <div className="relative size-full rounded-none border-none bg-gradient-to-b from-[#505F2E] to-40% to-transparent [&>header>h1]:text-md">
+      <IconButton onClick={onClose} className="absolute top-6 right-6 z-10">
         <XIcon />
       </IconButton>
-      <Background className="absolute right-0 top-0 z-0 h-[20.7rem] w-[17rem]" />
+      <Background className="absolute top-0 right-0 z-0 h-[20.7rem] w-[17rem]" />
       <div className="flex size-full flex-col p-8">
         <div className="grow">
           <div className="mt-7 flex h-80 flex-col justify-center gap-4">
             <p className="text-[2.1rem]">{t("It's Time to SEEK")}</p>
-            <p className="text-body-secondary max-w-[25rem] text-sm">
+            <p className="max-w-[25rem] text-body-secondary text-sm">
               {t("Hold SEEK to unlock exclusive benefits.")}
               <br />
               <button
                 type="button"
-                className="text-primary-500 inline-flex items-center gap-1 text-xs"
+                className="inline-flex items-center gap-1 text-primary-500 text-xs"
                 onClick={handleClickLearnMore}
               >
                 <span>{t("Learn more")}</span>
@@ -88,20 +87,20 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             </p>
             <UserSeekBalance />
           </div>
-          <div className="bg-grey-800 mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm px-8 text-base">
+          <div className="mt-8 flex h-[4.6rem] items-center justify-between rounded-t-sm bg-grey-800 px-8 text-base">
             <div className="flex grow items-center justify-start gap-3 overflow-hidden">
               <div className="truncate">{t("Earn SEEK rewards")}</div>
             </div>
             <button
               type="button"
-              className="bg-primary/10 text-primary flex h-16 shrink-0 items-center gap-2 rounded-full px-6 pl-4"
+              className="flex h-16 shrink-0 items-center gap-2 rounded-full bg-primary/10 px-6 pl-4 text-primary"
               onClick={handleClickStake}
             >
               <ZapIcon className="shrink-0 text-sm" />
               <div className="text-xs">{t("Stake")}</div>
             </button>
           </div>
-          <div className="bg-grey-850 border-t-none border-grey-800 flex flex-col gap-16 rounded-b-sm border p-10">
+          <div className="flex flex-col gap-16 rounded-b-sm border border-grey-800 border-t-none bg-grey-850 p-10">
             <ListItem
               color="#D5FF5C"
               backgroundColor="rgba(213, 255, 92, 0.12)"
@@ -166,7 +165,7 @@ const UserSeekBalance = () => {
 
   return (
     <div>
-      <div className="bg-primary/10 inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm px-6 text-sm">
+      <div className="inline-flex h-[2.6rem] items-center gap-1.5 rounded-sm bg-primary/10 px-6 text-sm">
         <span>{t("You have")}</span>
         <Tokens className="text-primary" amount={totalOwned.tokens} decimals={token.decimals} />
         <span>{token.symbol}</span>
@@ -192,7 +191,7 @@ const StakeTitle = () => {
       defaults="Staking rewards <Highlight>{{apr}}% APR</Highlight>"
       components={{
         Highlight: isLoading ? (
-          <div className="text-body-disabled bg-body-disabled rounded-xs inline-block animate-pulse"></div>
+          <div className="inline-block animate-pulse rounded-xs bg-body-disabled text-body-disabled"></div>
         ) : (
           <span className="text-primary" />
         ),

@@ -1,7 +1,7 @@
 import z from "zod/v4"
 
-import { SolNetworkId } from "../networks/SolNetwork"
-import { TokenId } from "./Token"
+import type { SolNetworkId } from "../networks/SolNetwork"
+import type { TokenId } from "./Token"
 import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 

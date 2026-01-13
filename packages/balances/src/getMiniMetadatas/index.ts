@@ -1,10 +1,10 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
 import PQueue from "p-queue"
 
 import log from "../log"
 import { BALANCE_MODULES } from "../modules"
-import { MiniMetadata } from "../types"
+import type { MiniMetadata } from "../types"
 import { getMetadataRpc } from "./getMetadataRpc"
 import { getSpecVersion } from "./getSpecVersion"
 
@@ -21,7 +21,7 @@ export const getMiniMetadatas = async (
   chainConnector: IChainConnectorDot,
   chaindataProvider: ChaindataProvider,
   networkId: DotNetworkId,
-  specVersion?: number,
+  specVersion?: number
 ) => {
   if (specVersion === undefined) specVersion = await getSpecVersion(chainConnector, networkId)
 
@@ -29,7 +29,7 @@ export const getMiniMetadatas = async (
   if (CACHE.has(cacheKey)) return CACHE.get(cacheKey)!
 
   const pResult = POOL.add(() =>
-    fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion),
+    fetchMiniMetadatas(chainConnector, chaindataProvider, networkId, specVersion)
   ) as Promise<MiniMetadata[]>
 
   // keep the results in cache (unless call fails) as observables call this function a lot of times
@@ -47,7 +47,7 @@ const fetchMiniMetadatas = async (
   chainConnector: IChainConnectorDot,
   chaindataProvider: ChaindataProvider,
   chainId: DotNetworkId,
-  specVersion: number,
+  specVersion: number
 ) => {
   const start = performance.now()
   log.info("[miniMetadata] fetching minimetadatas for %s", chainId)
@@ -65,14 +65,14 @@ const fetchMiniMetadatas = async (
           metadataRpc,
           specVersion,
           config: network.balancesConfig?.[mod.type],
-        }),
-      ),
+        })
+      )
     )
   } finally {
     log.debug(
       "[miniMetadata] updated miniMetadatas for %s in %sms",
       chainId,
-      (performance.now() - start).toFixed(2),
+      (performance.now() - start).toFixed(2)
     )
   }
 }

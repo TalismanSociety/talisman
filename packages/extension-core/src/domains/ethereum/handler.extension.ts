@@ -1,6 +1,6 @@
-import { personalSign, signTypedData, SignTypedDataVersion } from "@metamask/eth-sig-util"
+import { personalSign, SignTypedDataVersion, signTypedData } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { isEthereumAddress } from "@talismn/crypto"
 import { DEBUG } from "extension-shared"
 import { bytesToHex } from "viem"
@@ -11,8 +11,8 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { getHostName } from "../app/helpers"
 import { activeNetworksStore } from "../balances/store.activeNetworks"
@@ -20,8 +20,8 @@ import { activeTokensStore } from "../balances/store.activeTokens"
 import { customChaindataStore } from "../chaindata/store.customChaindata"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchEthereumTransaction } from "../transactions"
-import { getHumanReadableErrorMessage } from "./errors"
 import { ETH_ERROR_EIP1993_USER_REJECTED, EthProviderRpcError } from "./EthProviderRpcError"
+import { getHumanReadableErrorMessage } from "./errors"
 import { parseTransactionRequest } from "./helpers"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
@@ -35,7 +35,7 @@ export class EthHandler extends ExtensionHandler {
         const { method, resolve, ethChainId } = queued
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
-        assert(client, "Unable to find client for chain " + ethChainId)
+        assert(client, `Unable to find client for chain ${ethChainId}`)
 
         const hash = await client.sendRawTransaction({
           serializedTransaction: signedPayload,
@@ -62,7 +62,7 @@ export class EthHandler extends ExtensionHandler {
         })
         return true
       } catch (err) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         DEBUG && console.error("signAndSendApproveHardware", { err })
         throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
       }
@@ -83,7 +83,7 @@ export class EthHandler extends ExtensionHandler {
 
     const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
-      assert(client, "Missing client for chain " + ethChainId)
+      assert(client, `Missing client for chain ${ethChainId}`)
 
       const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
@@ -134,7 +134,7 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
 
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
-    assert(client, "Missing client for chain " + evmNetworkId)
+    assert(client, `Missing client for chain ${evmNetworkId}`)
 
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
@@ -166,7 +166,7 @@ export class EthHandler extends ExtensionHandler {
 
     const result = await withSecretKey(unsigned.from, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
-      assert(client, "Missing client for chain " + evmNetworkId)
+      assert(client, `Missing client for chain ${evmNetworkId}`)
 
       const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
@@ -401,11 +401,10 @@ export class EthHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -419,7 +418,7 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(
-          request as RequestTypes["pri(eth.signing.approveSignAndSend)"],
+          request as RequestTypes["pri(eth.signing.approveSignAndSend)"]
         )
 
       case "pri(eth.signing.approveSign)":
@@ -427,12 +426,12 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignHardware)"],
+          request as RequestTypes["pri(eth.signing.approveSignHardware)"]
         )
 
       case "pri(eth.signing.approveSignAndSendHardware)":
         return this.signAndSendApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"],
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
         )
 
       case "pri(eth.signing.cancel)":
@@ -443,12 +442,12 @@ export class EthHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
         return this.ethWatchAssetRequestCancel(
-          request as RequestTypes["pri(eth.watchasset.requests.cancel)"],
+          request as RequestTypes["pri(eth.watchasset.requests.cancel)"]
         )
 
       case "pri(eth.watchasset.requests.approve)":
         return this.ethWatchAssetRequestApprove(
-          request as RequestTypes["pri(eth.watchasset.requests.approve)"],
+          request as RequestTypes["pri(eth.watchasset.requests.approve)"]
         )
 
       // --------------------------------------------------------------------

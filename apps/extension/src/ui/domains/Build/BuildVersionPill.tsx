@@ -1,5 +1,5 @@
 import { RELEASE_NOTES_URL } from "extension-shared"
-import { FC, useCallback } from "react"
+import { type FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"
 
 export interface BuildVersioProps {

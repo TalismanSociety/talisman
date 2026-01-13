@@ -5,13 +5,12 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react"
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronDownIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { NetworkLogo } from "./NetworkLogo"
 import { NetworkName } from "./NetworkName"
@@ -55,10 +54,10 @@ export const NetworkCombo: FC<{
             className={classNames(
               "flex h-24 items-center gap-4 px-8",
               "w-full",
-              "focus-within:border-grey-600 rounded-sm border border-transparent",
+              "rounded-sm border border-transparent focus-within:border-grey-600",
               open && "rounded-b-none border-b-transparent",
               className,
-              bgClassName,
+              bgClassName
             )}
           >
             <NetworkLogo
@@ -69,25 +68,25 @@ export const NetworkCombo: FC<{
               placeholder={placeholder ?? t("Select network")}
               displayValue={(n: Network) => networkNameById[n?.id ?? ""] ?? ""}
               className={classNames(
-                "placeholder:text-body-disabled text-grey-300 focus:text-body h-full grow bg-transparent",
+                "h-full grow bg-transparent text-grey-300 placeholder:text-body-disabled focus:text-body"
               )}
               onChange={(e) => setSearch(e.target.value)}
             />
             {!open && (!!search || selected) ? (
               <button type="button" className="group" onClick={() => onChange(null)}>
-                <XIcon className="group-hover:text-body text-body-secondary size-12" />
+                <XIcon className="size-12 text-body-secondary group-hover:text-body" />
               </button>
             ) : (
               <ComboboxButton className="group">
-                <ChevronDownIcon className="group-hover:text-body text-body-secondary size-12" />
+                <ChevronDownIcon className="size-12 text-body-secondary group-hover:text-body" />
               </ComboboxButton>
             )}
           </div>
           <ComboboxOptions
             className={classNames(
               "overflow-x-none absolute top-24 z-10 max-h-[28rem] min-h-10 w-full overflow-y-scroll rounded-b pb-0 empty:invisible",
-              "border-grey-600 border",
-              bgClassName,
+              "border border-grey-600",
+              bgClassName
             )}
           >
             {({ option }) => (
@@ -95,7 +94,7 @@ export const NetworkCombo: FC<{
                 key={option.id}
                 value={option}
                 className={classNames(
-                  `text-body-secondary [&[data-selected]]:text-body [&[data-selected]]:bg-grey-700 [&[data-focus]]:bg-grey-750 hover:bg-grey-750 relative flex h-24 w-full items-center gap-4 px-8`,
+                  `relative flex h-24 w-full items-center gap-4 px-8 text-body-secondary hover:bg-grey-750 [&[data-focus]]:bg-grey-750 [&[data-selected]]:bg-grey-700 [&[data-selected]]:text-body`
                 )}
               >
                 <NetworkLogo networkId={option.id} className="size-12" />

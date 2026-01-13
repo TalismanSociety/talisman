@@ -3,17 +3,16 @@
   "version": "1.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
-  "main": "dist/talisman-ui.cjs.js",
-  "module": "dist/talisman-ui.esm.js",
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json",
     "./styles.css": "./src/styles/styles.css",
+    "./src/styles/styles.css": "./src/styles/styles.css",
     "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
   },
   "scripts": {
-    "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "clean": "rm -rf .turbo node_modules dist",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@talismn/icons": "workspace:*",
@@ -23,18 +22,14 @@
     "@floating-ui/react": "0.26.25",
     "@headlessui/react": "2.1.10",
     "@tailwindcss/forms": "^0.5.9",
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@talismn/util": "workspace:*",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@types/webfontloader": "^1.6.38",
-    "autoprefixer": "^10.4.20",
     "color": "4.2.3",
-    "eslint": "^8.57.1",
     "framer-motion": "11.11.9",
     "lottie-react": "2.4.0",
-    "postcss": "^8.4.47",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.27.0",
@@ -58,14 +53,5 @@
     "react-router-dom": ">=6.3.0",
     "react-use": ">=17.4.0",
     "tailwindcss": ">=3.1.8"
-  },
-  "preconstruct": {
-    "exports": {
-      "extra": {
-        ".": "./src/index.ts",
-        "./styles.css": "./src/styles/styles.css",
-        "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
-      }
-    }
   }
 }

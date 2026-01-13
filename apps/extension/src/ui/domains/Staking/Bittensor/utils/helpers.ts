@@ -1,9 +1,9 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { TAO_DECIMALS } from "@talismn/balances"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { Binary } from "polkadot-api"
 
-import { StakeDirection } from "../hooks/types"
+import type { StakeDirection } from "../hooks/types"
 import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./constants"
 
 export type BittensorSwapSimulation = {
@@ -17,7 +17,7 @@ export const getSwapSimulation = async (
   sapi: ScaleApi,
   netuid: number,
   direction: StakeDirection,
-  amount: bigint,
+  amount: bigint
 ) => {
   const method = direction === "taoToAlpha" ? "sim_swap_tao_for_alpha" : "sim_swap_alpha_for_tao"
 
@@ -31,7 +31,7 @@ export const getSwapSimulation = async (
 export const getLimitPrice = (
   simulation: BittensorSwapSimulation,
   direction: StakeDirection,
-  tolerance: number = 0, // 0.0005 = 0.05%
+  tolerance: number = 0 // 0.0005 = 0.05%
 ) => {
   // prevent division by zero
   if (!simulation.alpha_amount) return 0n
@@ -85,7 +85,7 @@ export const getBittensorStakingPayload = async ({
           }),
         ],
       },
-      { address },
+      { address }
     )
   }
   return sapi.getExtrinsicPayload(
@@ -109,7 +109,7 @@ export const getBittensorStakingPayload = async ({
         }),
       ],
     },
-    { address },
+    { address }
   )
 }
 
@@ -121,6 +121,16 @@ type GetBittensorUnbondPayload = {
   talismanFee: bigint
   priceLimit: bigint
   netuid: number
+}
+
+type GetBittensorMoveStakePayload = {
+  sapi: ScaleApi
+  address: string
+  originHotkey: string
+  destinationHotkey: string
+  originNetuid: number
+  destinationNetuid: number
+  alphaAmount: bigint
 }
 
 export const getBittensorUnbondPayload = ({
@@ -148,7 +158,7 @@ export const getBittensorUnbondPayload = ({
           }),
         ],
       },
-      { address },
+      { address }
     )
   }
   return sapi.getExtrinsicPayload(
@@ -172,6 +182,56 @@ export const getBittensorUnbondPayload = ({
         }),
       ],
     },
-    { address },
+    { address }
+  )
+}
+
+/**
+ * Creates a payload for moving stake between validators (hotkeys) and/or subnets.
+ * This uses the SubtensorModule.move_stake extrinsic.
+ *
+ * Use cases:
+ * - **Change validator within same subnet**: Pass the same netuid for both `originNetuid` and
+ *   `destinationNetuid`. This moves your staked alpha from one validator to another without
+ *   leaving the subnet.
+ *
+ * - **Move stake between subnets**: Pass different netuids for `originNetuid` and `destinationNetuid`
+ *   to move stake from one subnet to another (possibly to a different validator as well).
+ *
+ * @param sapi - The Scale API instance
+ * @param address - The account address performing the move
+ * @param originHotkey - The hotkey (validator) currently holding the stake
+ * @param destinationHotkey - The hotkey (validator) to move the stake to
+ * @param originNetuid - The subnet ID where the stake currently resides
+ * @param destinationNetuid - The subnet ID to move the stake to (same as origin for validator change)
+ * @param alphaAmount - The amount of alpha tokens to move (in planck)
+ */
+export const getBittensorMoveStakePayload = ({
+  sapi,
+  address,
+  originHotkey,
+  destinationHotkey,
+  originNetuid,
+  destinationNetuid,
+  alphaAmount,
+}: GetBittensorMoveStakePayload) => {
+  return sapi.getExtrinsicPayload(
+    "Utility",
+    "batch_all",
+    {
+      calls: [
+        sapi.getDecodedCall("SubtensorModule", "move_stake", {
+          origin_hotkey: originHotkey,
+          destination_hotkey: destinationHotkey,
+          origin_netuid: originNetuid,
+          destination_netuid: destinationNetuid,
+          alpha_amount: alphaAmount,
+        }),
+        sapi.getDecodedCall("System", "remark_with_event", {
+          remark: Binary.fromText("talisman-bittensor"),
+        }),
+      ],
+    },
+    { address }
   )
 }

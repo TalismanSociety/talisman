@@ -1,4 +1,4 @@
-import { Token, TokenSchema } from "@talismn/chaindata-provider"
+import { type Token, TokenSchema } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { isEqual, keyBy, values } from "lodash-es"
 import { debounceTime, map, pairwise, ReplaySubject } from "rxjs"
@@ -35,7 +35,7 @@ const getStore = () => {
       // Compare previousTokens with currentTokens
       if (!isEqual(previousTokens, currentTokens)) {
         log.debug(
-          `[dynamicTokens] updating storage previous:${previousTokens.length} new:${currentTokens.length}`,
+          `[dynamicTokens] updating storage previous:${previousTokens.length} new:${currentTokens.length}`
         )
         blobStore.set(currentTokens)
       }

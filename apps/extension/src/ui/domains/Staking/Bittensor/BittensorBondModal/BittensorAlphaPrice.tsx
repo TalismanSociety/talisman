@@ -1,9 +1,8 @@
 import { classNames } from "@talismn/util"
-import { log } from "extension-shared"
-import { FC, useMemo } from "react"
-
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useToken } from "@ui/state"
+import { log } from "extension-shared"
+import { type FC, useMemo } from "react"
 
 export const BittensorAlphaPrice: FC<{
   taoTokenId: string

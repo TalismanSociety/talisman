@@ -1,4 +1,4 @@
-import { ChainConnectors } from "@talismn/balances"
+import type { ChainConnectors } from "@talismn/balances"
 import { ChainConnectorDot, ChainConnectorEth, ChainConnectorSol } from "@talismn/chain-connectors"
 import { connectionMetaDb } from "@talismn/connection-meta"
 import { atom } from "jotai"

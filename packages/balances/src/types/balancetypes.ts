@@ -1,6 +1,6 @@
-import { NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
-import { Address } from "./addresses"
+import type { Address } from "./addresses"
 
 export type BalanceStatus =
   // balance is subscribed to the on-chain value and up to date

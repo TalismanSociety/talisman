@@ -1,7 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { bind } from "@react-rxjs/core"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import downloadJson from "@talisman/util/downloadJson"
+import { api } from "@ui/api"
 import {
-  Account,
+  type Account,
   isAccountOfType,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
@@ -12,12 +17,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import downloadJson from "@talisman/util/downloadJson"
-import { api } from "@ui/api"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
@@ -30,6 +29,10 @@ const setLocalAccount = (account: Account | null) => {
 
 const [useLocalAccount] = bind(localAccount$)
 
+const canExportAccountFunc = (account?: Account | null) =>
+  isAccountOfType(account, "keypair") &&
+  (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
+
 export const useAccountExportModal = () => {
   const { isOpen, open: innerOpen, close } = useGlobalOpenClose("accountExportModal")
 
@@ -41,12 +44,8 @@ export const useAccountExportModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
-
-  const canExportAccountFunc = (account?: Account | null) =>
-    isAccountOfType(account, "keypair") &&
-    (isAccountPlatformPolkadot(account) || isAccountPlatformEthereum(account))
 
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
@@ -56,7 +55,7 @@ export const useAccountExportModal = () => {
       const { exportedJson } = await api.accountExport(account.address, password, newPw)
       downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
     },
-    [account],
+    [account]
   )
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
@@ -86,7 +85,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -108,14 +107,14 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       if (!password) return
       try {
         await exportAccount(password, newPw)
-        onSuccess && onSuccess()
+        onSuccess?.()
       } catch (err) {
         setError("newPwConfirm", {
           message: (err as Error)?.message ?? "",
         })
       }
     },
-    [exportAccount, setError, onSuccess, password],
+    [exportAccount, setError, onSuccess, password]
   )
 
   useEffect(() => {
@@ -129,7 +128,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
-        <p className="text-body-secondary my-8 text-sm">
+        <p className="my-8 text-body-secondary text-sm">
           <Trans t={t}>
             Set a password for your JSON export. We strongly suggest using a{" "}
             <span className="text-white">different password</span> from your Talisman wallet
@@ -149,7 +148,6 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               placeholder={t("Enter New Password")}
               spellCheck={false}
@@ -194,7 +192,7 @@ export const AccountExportModal = () => {
       <ModalDialog title={t("Export account JSON")} className="w-[50.3rem]" onClose={close}>
         <PasswordUnlock
           title={
-            <div className="text-body-secondary mb-8">
+            <div className="mb-8 text-body-secondary">
               {t("Please confirm your password to export your account.")}
             </div>
           }

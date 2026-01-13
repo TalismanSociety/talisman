@@ -1,8 +1,7 @@
-import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
+import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useMemo } from "react"
-
 import { useYieldxyzProducts } from "@ui/state"
+import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 
@@ -26,8 +25,8 @@ export const useYieldxyzOpportunitiesForTokenId = (tokenId: TokenId) => {
               ? inputTokenIds[0]
               : inputTokenIds.find((tokenId) =>
                   ["evm-native", "substrate-native", "sol-native"].includes(
-                    parseTokenId(tokenId).type,
-                  ),
+                    parseTokenId(tokenId).type
+                  )
                 )
 
           return inputTokenId === tokenId

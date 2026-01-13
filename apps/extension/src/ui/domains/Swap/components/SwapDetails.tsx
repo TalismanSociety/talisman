@@ -1,12 +1,12 @@
 import { LoaderIcon } from "@talismn/icons"
 import { useAtom, useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
-import { ReactNode, Suspense, useEffect, useState } from "react"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import { type ReactNode, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  BaseQuote,
+  type BaseQuote,
   fromAmountAtom,
   fromAssetAtom,
   selectedProtocolAtom,
@@ -47,6 +47,7 @@ const Details = () => {
   const toAsset = useAtomValue(toAssetAtom)
 
   // Reset cached quotes when any of the swap parameters change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setCachedQuotes([])
   }, [fromAmount, fromAsset, toAsset])
@@ -59,10 +60,11 @@ const Details = () => {
     }
   }, [quotes])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // Reset protocol selection if no valid protocol found in cached quotes
     const isSelectedProtocolAvailable = !cachedQuotes.find(
-      ({ quote }) => quote.state === "hasData" && quote.data?.protocol === selectedProtocol,
+      ({ quote }) => quote.state === "hasData" && quote.data?.protocol === selectedProtocol
     )
     if (isSelectedProtocolAvailable) {
       setSelectedProtocol(null)
@@ -90,9 +92,8 @@ const Details = () => {
   ) {
     const cachedQuoteError = cachedQuotes
       .flatMap((cachedQuote) =>
-        cachedQuote.quote?.state === "hasError"
-          ? (cachedQuote.quote?.error as any)?.message // eslint-disable-line @typescript-eslint/no-explicit-any
-          : [],
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
+        cachedQuote.quote?.state === "hasError" ? (cachedQuote.quote?.error as any)?.message : []
       )
       .join("\n")
     return (
@@ -100,7 +101,7 @@ const Details = () => {
         <SwapDetailsError
           messageClassName="whitespace-pre-wrap text-[12px] leading-6 mt-4"
           message={
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // biome-ignore lint/suspicious/noExplicitAny: legacy
             (quotes.state === "hasError" ? (quotes.error as any) : {})?.message ??
             cachedQuoteError ??
             "No route found. Try larger amount."
@@ -134,8 +135,9 @@ const Details = () => {
             }
           />
         ) : quote.state === "loading" ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <SwapDetailsCardSkeleton key={index} />
-        ) : null,
+        ) : null
       )}
     </div>
   )
@@ -143,13 +145,13 @@ const Details = () => {
 
 const LoadingUI = ({ title, description }: { title?: string; description?: ReactNode }) => (
   <SwapDetailsContainer>
-    <div className="border-grey-800 flex flex-col items-center justify-center gap-4 rounded-sm border p-8">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-sm border border-grey-800 p-8">
       <div className="flex h-[94px] w-[94px] items-center justify-center">
         <LoaderIcon className="animate-spin-slow" />
       </div>
       <div>
-        <h4 className="text-center text-sm font-bold">{title}</h4>
-        <p className="text-body-secondary text-center text-sm">{description}</p>
+        <h4 className="text-center font-bold text-sm">{title}</h4>
+        <p className="text-center text-body-secondary text-sm">{description}</p>
       </div>
     </div>
   </SwapDetailsContainer>

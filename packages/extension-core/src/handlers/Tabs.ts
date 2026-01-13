@@ -1,3 +1,12 @@
+import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
+import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import type {
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "@polkadot/extension-base/background/types"
+import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
@@ -5,29 +14,17 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import {
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-} from "@polkadot/extension-base/background/types"
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
 import { combineLatest } from "rxjs"
-
-import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
-import type { Port } from "../types/base"
 import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
-import { RequestAccountList } from "../domains/accounts/types"
+import type { RequestAccountList } from "../domains/accounts/types"
 import { protector } from "../domains/app/protector"
-import { SettingsStoreData } from "../domains/app/store.settings"
+import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
-import {
+import type {
   DecryptPayload,
   DecryptResult,
   EncryptPayload,
@@ -40,21 +37,23 @@ import { keyringStore } from "../domains/keyring/store"
 import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
-import {
+import type {
   AuthorizedSite,
   AuthorizedSites,
   RequestAuthorizeTab,
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import { UnknownJsonRpcResponse } from "../domains/talisman/types"
+import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
-import { SubstrateSignResponse } from "../types/domains"
+import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
+import type { Port } from "../types/base"
+import type { SubstrateSignResponse } from "../types/domains"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
-import { TabStore } from "./stores"
+import type { TabStore } from "./stores"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
@@ -87,7 +86,7 @@ export default class Tabs extends TabsHandler {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
-        `No Talisman wallet accounts are authorised to connect to ${url}`,
+        `No Talisman wallet accounts are authorised to connect to ${url}`
       )
 
       return false
@@ -104,20 +103,21 @@ export default class Tabs extends TabsHandler {
   async #getFilteredAccounts(
     site: AuthorizedSite,
     { anyType }: RequestAccountList,
-    developerMode: boolean,
+    developerMode: boolean
   ) {
     return getPublicAccounts(
       await keyringStore.getAccounts(),
       filterAccountsByAddresses(site.addresses, anyType),
-      { developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) },
+      { developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) }
     )
   }
 
   private async accountsList(url: string, request: RequestAccountList): Promise<InjectedAccount[]> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
     try {
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (error) {
+    } catch {
       // means url is not a valid one
       return []
     }
@@ -142,14 +142,14 @@ export default class Tabs extends TabsHandler {
         if (!site || !site.addresses) return []
 
         return await this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
-      },
+      }
     )
   }
 
   private async bytesSign(
     url: string,
     request: SignerPayloadRaw,
-    port: Port,
+    port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
 
@@ -162,7 +162,7 @@ export default class Tabs extends TabsHandler {
   private async extrinsicSign(
     url: string,
     request: SignerPayloadJSON,
-    port: Port,
+    port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
 
@@ -175,7 +175,7 @@ export default class Tabs extends TabsHandler {
   private async messageEncrypt(
     url: string,
     request: EncryptPayload,
-    port: Port,
+    port: Port
   ): Promise<ResponseEncryptEncrypt> {
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
@@ -186,7 +186,7 @@ export default class Tabs extends TabsHandler {
   private async messageDecrypt(
     url: string,
     request: DecryptPayload,
-    port: Port,
+    port: Port
   ): Promise<ResponseEncryptDecrypt> {
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
@@ -213,7 +213,7 @@ export default class Tabs extends TabsHandler {
           acc[genesisHash] = Math.max(acc[genesisHash] ?? 0, Number(specVersion))
         return acc
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     )
 
     return Object.entries(dicSpecVersions).map(([genesisHash, specVersion]) => ({
@@ -237,7 +237,7 @@ export default class Tabs extends TabsHandler {
   private async rpcSubscribe(
     request: RequestRpcSubscribe,
     id: string,
-    port: Port,
+    port: Port
   ): Promise<boolean> {
     const innerCb = createSubscription<"pub(rpc.subscribe)">(id, port)
     const cb = (_error: Error | null, data: SubscriptionMessageTypes["pub(rpc.subscribe)"]): void =>
@@ -256,7 +256,7 @@ export default class Tabs extends TabsHandler {
     const innerCb = createSubscription<"pub(rpc.subscribeConnected)">(id, port)
     const cb = (
       _error: Error | null,
-      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"],
+      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"]
     ): void => innerCb(data)
 
     this.#rpcState.rpcSubscribeConnected(request, cb, port)
@@ -276,19 +276,20 @@ export default class Tabs extends TabsHandler {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
     const url = `${chrome.runtime.getURL(
-      "dashboard.html",
+      "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
     chrome.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         .forEach((id) =>
           chrome.tabs.update(id, { url }).catch((err: Error) => {
-            // eslint-disable-next-line no-console
+            // biome-ignore lint/suspicious/noConsole: legacy
             console.error("Failed to redirect tab to phishing page", { err })
             sentry.captureException(err, { extra: { url } })
-          }),
+          })
         )
     })
   }
@@ -315,7 +316,7 @@ export default class Tabs extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url: string,
+    url: string
   ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
       return this.redirectIfPhishing(url)
@@ -337,7 +338,7 @@ export default class Tabs extends TabsHandler {
       const routeKey = type.split("pub(")[1].split(".")[0]
       const subhandler = this.#routes[routeKey]
       if (subhandler) return subhandler.handle(id, type, request, port, url)
-    } catch (e) {
+    } catch {
       throw new Error(`Unable to handle message of type ${type}`)
     }
 
@@ -363,7 +364,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadRaw).address,
+          (request as SignerPayloadRaw).address
         )
         return this.bytesSign(url, request as SignerPayloadRaw, port)
 
@@ -371,7 +372,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadJSON).address,
+          (request as SignerPayloadJSON).address
         )
         return this.extrinsicSign(url, request as SignerPayloadJSON, port)
 

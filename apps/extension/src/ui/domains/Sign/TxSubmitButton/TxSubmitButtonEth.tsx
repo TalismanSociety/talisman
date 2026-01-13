@@ -1,18 +1,17 @@
-import { classNames } from "@talismn/util"
-import { isAccountPlatformEthereum, serializeTransactionRequest } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { BaseError } from "viem"
-
 import { notify } from "@talisman/components/Notifications"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
+import { isAccountPlatformEthereum, serializeTransactionRequest } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
+import type { BaseError } from "viem"
 
 import { SignApproveButton } from "../SignApproveButton"
 import { SignLedgerEthereum } from "../SignLedgerEthereum"
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
-import { TxSubmitButtonProps } from "./types"
+import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
   tx,
@@ -42,7 +41,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         })
       }
     },
-    [onSubmit, tx],
+    [onSubmit, tx]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)

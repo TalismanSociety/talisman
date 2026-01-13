@@ -1,7 +1,7 @@
 import DOMPurify from "dompurify"
 import htmlParser from "html-react-parser"
 import { marked } from "marked"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 
 export const NftDescription: FC<{ text: string | null }> = ({ text }) => {
   const html = useMemo(() => {

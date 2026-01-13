@@ -1,7 +1,7 @@
 import { SubDTaoTokenSchema } from "@talismn/chaindata-provider"
-import z from "zod/v4"
+import type z from "zod/v4"
 
-import { SubDTaoTokenConfigSchema } from "./types"
+import type { SubDTaoTokenConfigSchema } from "./types"
 
 export const MODULE_TYPE = SubDTaoTokenSchema.shape.type.value
 export const PLATFORM = SubDTaoTokenSchema.shape.platform.value

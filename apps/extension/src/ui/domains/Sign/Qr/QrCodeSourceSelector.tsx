@@ -1,13 +1,12 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames, isHexString } from "@talismn/util"
+import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
+import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
 import { startCase } from "lodash-es"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
-
-import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
-import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
 
 import { novaLogoSvg, parityLogoSvg, talismanRedHandSvg } from "./constants"
 
@@ -21,7 +20,7 @@ const lastSelected = new (class {
   set = (genesisHash: string, lastSelected: QrCodeSource) =>
     localStorage.setItem(
       this.#key,
-      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected))),
+      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected)))
     )
 })()
 
@@ -53,7 +52,7 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
         if (isNovasama(chainspecQrUrl) && isNovasama(latestMetadataQrUrl)) return ["novasama"]
 
         return ["other"]
-      })(),
+      })()
     )
   }, [chainspecQrUrl, latestMetadataQrUrl, verifierCertificateMnemonic])
 
@@ -84,7 +83,7 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
   const [source, _setSource] = useState<QrCodeSource | undefined>(
     lastSourceForChain && sources.includes(lastSourceForChain)
       ? lastSourceForChain
-      : defaultSourceForChain,
+      : defaultSourceForChain
   )
   const setSource = (source: QrCodeSource) => {
     _setSource(source)
@@ -117,12 +116,12 @@ export const QrCodeSourceSelector = ({
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>
         <div
-          className={classNames("text-body-secondary flex items-center gap-3 text-sm", className)}
+          className={classNames("flex items-center gap-3 text-body-secondary text-sm", className)}
         >
           {t("QR Source:")}{" "}
           <button
             type="button"
-            className="text-body hover:bg-grey-750 flex cursor-pointer items-center gap-2 rounded-sm p-3"
+            className="flex cursor-pointer items-center gap-2 rounded-sm p-3 text-body hover:bg-grey-750"
             onClick={togglePopover}
           >
             {startCase(qrCodeSource)}
@@ -132,8 +131,8 @@ export const QrCodeSourceSelector = ({
       </PopoverTrigger>
       <PopoverContent
         className={classNames(
-          "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-          showPopover ? "visible opacity-100" : "invisible opacity-0",
+          "z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left shadow-lg",
+          showPopover ? "visible opacity-100" : "invisible opacity-0"
         )}
       >
         {sources.map((source) => (
@@ -141,7 +140,7 @@ export const QrCodeSourceSelector = ({
             type="button"
             key={source}
             onClick={() => setSource(source)}
-            className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
+            className="h-20 rounded-xs p-6 text-left hover:bg-grey-800"
           >
             {startCase(source)}
           </button>

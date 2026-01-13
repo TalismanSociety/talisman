@@ -1,15 +1,15 @@
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { toHex } from "@polkadot-api/utils"
-import { SignerPayloadJSON } from "@polkadot/types/types"
 
 import log from "../log"
 import { getTypeRegistry } from "./getTypeRegistry"
-import { Chain, ChainInfo } from "./types"
+import type { Chain, ChainInfo } from "./types"
 
 export const getPayloadWithMetadataHash = (
   chain: Chain,
   chainInfo: ChainInfo,
-  payload: SignerPayloadJSON,
+  payload: SignerPayloadJSON
 ): { payload: SignerPayloadJSON; txMetadata?: Uint8Array } => {
   if (!chain.hasCheckMetadataHash || !payload.signedExtensions.includes("CheckMetadataHash"))
     return {

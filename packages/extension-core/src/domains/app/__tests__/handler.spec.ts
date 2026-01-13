@@ -1,18 +1,18 @@
-/* eslint-disable no-console */
 import { assert } from "@polkadot/util"
-import { KeyringStorage } from "@talismn/keyring"
+import type { KeyringStorage } from "@talismn/keyring"
+import { afterAll, beforeAll, beforeEach, describe, expect, vi } from "vitest"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
 import {
   extensionStores,
+  type GettableStoreData,
   getLocalStorage,
-  GettableStoreData,
   setLocalStorage,
 } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
 
-jest.setTimeout(20_000)
+vi.setConfig({ testTimeout: 20_000 })
 
 describe("App handler when password is not trimmed", () => {
   let extension: Extension
@@ -62,7 +62,7 @@ describe("App handler when password is not trimmed", () => {
 
     keyringBackupJson = await keyringStore.backup(
       await extensionStores.password.transformPassword(password),
-      password,
+      password
     )
   })
 
@@ -74,7 +74,7 @@ describe("App handler when password is not trimmed", () => {
     await keyringStore.restore(
       keyringBackupJson,
       password,
-      await extensionStores.password.transformPassword(password),
+      await extensionStores.password.transformPassword(password)
     )
 
     await messageSender("pri(app.authenticate)", {
@@ -89,7 +89,7 @@ describe("App handler when password is not trimmed", () => {
     expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
 
     expect(await extensionStores.password.getPassword()).toBe(
-      await extensionStores.password.getHashedPassword(password),
+      await extensionStores.password.getHashedPassword(password)
     )
 
     // logout then log in again
@@ -228,7 +228,7 @@ describe("App handler when password is trimmed", () => {
 
     keyringBackupJson = await keyringStore.backup(
       await extensionStores.password.transformPassword(password),
-      password,
+      password
     )
   })
 
@@ -240,7 +240,7 @@ describe("App handler when password is trimmed", () => {
     await keyringStore.restore(
       keyringBackupJson,
       password,
-      await extensionStores.password.transformPassword(password),
+      await extensionStores.password.transformPassword(password)
     )
 
     await messageSender("pri(app.authenticate)", {

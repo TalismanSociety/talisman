@@ -1,14 +1,13 @@
-import { KeypairCurve } from "@talismn/crypto"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import type { KeypairCurve } from "@talismn/crypto"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { capitalize } from "lodash-es"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AccountAddDerivedForm } from "@ui/domains/Account/AccountAdd/AccountAddDerived/AccountAddDerivedForm"
-import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 
 const Content = () => {
   const { t } = useTranslation()

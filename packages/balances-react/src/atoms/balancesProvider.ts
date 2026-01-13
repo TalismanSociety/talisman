@@ -7,7 +7,7 @@ import { chaindataProviderAtom } from "./chaindataProvider"
 export const balancesProviderAtom = atom<BalancesProvider>((get) => {
   return new BalancesProvider(
     get(chaindataProviderAtom),
-    get(chainConnectorsAtom),
+    get(chainConnectorsAtom)
     // TODO pass storage
   )
 })

@@ -1,8 +1,7 @@
-import { TokenRateCurrency } from "@talismn/token-rates"
-import { useCallback } from "react"
-
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { currencyOrder } from "@ui/domains/Asset/currencyConfig"
 import { useSetting } from "@ui/state"
+import { useCallback } from "react"
 
 import { useFavoriteCurrencies } from "./useFavoriteCurrencies"
 
@@ -20,7 +19,7 @@ export const useToggleCurrency = () => {
   return useCallback(async () => {
     const sortedCurrencies = favorites.concat().sort(sortCurrencies)
 
-    const currIndex = sortedCurrencies.findIndex((c) => c === selected)
+    const currIndex = sortedCurrencies.indexOf(selected)
     const nextIndex = (currIndex + 1) % sortedCurrencies.length
     const nextCurrency = sortedCurrencies.at(nextIndex) ?? sortedCurrencies[0]
 

@@ -1,13 +1,13 @@
 import { Listbox } from "@headlessui/react"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 
 export type DropdownOption = Record<string, unknown>
 
 export type DropdownOptionRender<T extends DropdownOption> = (
   item: T,
-  labelKey?: keyof T,
+  labelKey?: keyof T
 ) => ReactNode
 
 const DEFAULT_RENDER = <T extends DropdownOption>(item: T, labelKey?: keyof T): ReactNode => {
@@ -46,13 +46,13 @@ export const Dropdown = <T extends Record<string, unknown>>({
   <Listbox disabled={disabled} value={value} onChange={onChange}>
     {({ open }) => (
       <div className={className}>
-        {label && <Listbox.Label className="text-body-secondary mb-8 block">{label}</Listbox.Label>}
-        <div className={"text-body-secondary inline-block max-h-[20rem] w-full"}>
+        {label && <Listbox.Label className="mb-8 block text-body-secondary">{label}</Listbox.Label>}
+        <div className={"inline-block max-h-[20rem] w-full text-body-secondary"}>
           <Listbox.Button
             className={classNames(
-              "bg-grey-800 enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled flex w-full items-center gap-8 p-8 text-left",
+              "flex w-full items-center gap-8 bg-grey-800 p-8 text-left enabled:hover:text-grey-300 disabled:bg-field disabled:text-body-disabled",
               open ? "rounded-t-sm" : "rounded-sm",
-              buttonClassName,
+              buttonClassName
             )}
           >
             <div className="flex flex-grow flex-col justify-center overflow-hidden">
@@ -61,17 +61,17 @@ export const Dropdown = <T extends Record<string, unknown>>({
             {!disabled && <ChevronDownIcon className="shrink-0 text-[1.2em]" />}
           </Listbox.Button>
           <div className="relative w-full">
-            <div className="bg-grey-800 scrollable scrollable-700 absolute left-0 top-0 z-10 max-h-[30rem] w-full overflow-y-auto overflow-x-hidden rounded-b-sm">
+            <div className="scrollable scrollable-700 absolute top-0 left-0 z-10 max-h-[30rem] w-full overflow-y-auto overflow-x-hidden rounded-b-sm bg-grey-800">
               <Listbox.Options>
                 {items.map((item, i, arr) => (
                   <Listbox.Option
                     key={item[propertyKey] as string | number}
                     value={item}
                     className={classNames(
-                      "bg-grey-800 hover:bg-grey-750 hover:text-grey-300 w-full max-w-full cursor-pointer overflow-hidden p-8",
+                      "w-full max-w-full cursor-pointer overflow-hidden bg-grey-800 p-8 hover:bg-grey-750 hover:text-grey-300",
                       "flex-grow flex-col justify-center",
                       i === arr.length - 1 && "rounded-b-sm",
-                      optionClassName,
+                      optionClassName
                     )}
                   >
                     {renderItem(item, propertyLabel)}

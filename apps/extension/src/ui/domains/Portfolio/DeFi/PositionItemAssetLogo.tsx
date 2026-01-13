@@ -1,10 +1,9 @@
 import { evmErc20TokenId, useTokensById } from "@talismn/balances-react"
 import { evmNativeTokenId, solNativeTokenId, solSplTokenId } from "@talismn/chaindata-provider"
 import { isHexString } from "@talismn/util"
-import { DefiPositionItem } from "extension-core"
-import { FC, useMemo } from "react"
-
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import type { DefiPositionItem } from "extension-core"
+import { type FC, useMemo } from "react"
 
 export const PositionItemAssetLogo: FC<{
   networkId: string

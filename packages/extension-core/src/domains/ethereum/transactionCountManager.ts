@@ -1,4 +1,4 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 

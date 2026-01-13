@@ -1,7 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { Address, Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
+import { type Address, Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { api } from "@ui/api"
+import { type BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
 import { log } from "extension-shared"
 import {
   combineLatest,
@@ -14,9 +15,7 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { api } from "@ui/api"
-
-import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
+import { type AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
 import { getNetworksMapById$, getTokensMap$ } from "./chaindata"
 import { tokenRatesMap$ } from "./tokenRates"
 import { debugObservable } from "./util/debugObservable"
@@ -29,7 +28,7 @@ export const [useBalancesHydrate, balancesHydrate$] = bind(
     networks: getNetworksMapById$(BALANCES_CHAINDATA_QUERY),
     tokens: getTokensMap$(BALANCES_CHAINDATA_QUERY),
     tokenRates: tokenRatesMap$,
-  }).pipe(debugObservable("balancesHydrate$")),
+  }).pipe(debugObservable("balancesHydrate$"))
 )
 
 // cache balances once fetched so they can be displayed instantly if navigating in and out of portfolio
@@ -49,15 +48,15 @@ const rawBalances$ = new Observable<BalanceSubscriptionResponse>((subscriber) =>
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
   debugObservable("rawBalances$"),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useIsBalanceInitializing, isBalanceInitialising$] = bind(
   rawBalances$.pipe(
     map((balances) => balances.status === "initialising"),
-    distinctUntilChanged(),
+    distinctUntilChanged()
   ),
-  true,
+  true
 )
 
 const allBalances$ = combineLatest([
@@ -79,7 +78,7 @@ const allBalances$ = combineLatest([
     })
     return new Balances(validBalances, hydrate)
   }),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 type BalanceQueryParams = {
@@ -91,10 +90,10 @@ const getBalancesByQuery$ = ({ address, tokenId }: BalanceQueryParams) =>
   combineLatest([allBalances$, balancesHydrate$]).pipe(
     map(([allBalances, hydrate]) => {
       const filteredBalances = allBalances.each.filter(
-        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId),
+        (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
       )
       return new Balances(filteredBalances, hydrate)
-    }),
+    })
   )
 
 const getBalancesByCategory$ = (category: AccountCategory = "all") =>
@@ -102,23 +101,23 @@ const getBalancesByCategory$ = (category: AccountCategory = "all") =>
     map(([allBalances, accounts]) => {
       const accountIds = accounts.map((a) => a.address)
       return new Balances(allBalances.each.filter((b) => accountIds.includes(b.address)))
-    }),
+    })
   )
 
 export const [useBalance, getBalance$] = bind(
   (address: Address | null | undefined, tokenId: TokenId | null | undefined) =>
     getBalancesByQuery$({ address, tokenId }).pipe(map((balances) => balances.each[0] ?? null)),
-  null,
+  null
 )
 
 export const [useBalances, getBalances$] = bind(
   (category: AccountCategory = "all") => getBalancesByCategory$(category),
-  new Balances([]),
+  new Balances([])
 )
 
 export const [useBalancesByAddress] = bind(
   (address: Address | null | undefined) => getBalancesByQuery$({ address }),
-  new Balances([]),
+  new Balances([])
 )
 
 // used to force suspense, as useBalances() doesn't
@@ -132,5 +131,5 @@ export const [usePreloadBalances, preloadBalances$] = bind(
       .finally(() => {
         subscriber.next()
       })
-  }),
+  })
 )

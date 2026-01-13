@@ -4,7 +4,7 @@ import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
 import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"
-import { RemoteConfigStoreData } from "./types"
+import type { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},
@@ -86,8 +86,8 @@ export class RemoteConfigStore extends StorageProvider<RemoteConfigStoreData> {
 
         // as per 2.8.0 we dont want this address to be the default validator anymore.
         // versions prior to 2.8.0 expect a value there so GH config file cant be altered, we need to remove it at runtime
-        config.stakingPools["bittensor"] = config.stakingPools["bittensor"]?.filter(
-          (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh",
+        config.stakingPools.bittensor = config.stakingPools.bittensor?.filter(
+          (address) => address !== "5ELREhApbCahM7FyGLM1V9WDsnnjCRmMCJTmtQD51oAEqwVh"
         )
 
         if (DEBUG) {

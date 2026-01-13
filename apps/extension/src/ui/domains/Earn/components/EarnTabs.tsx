@@ -1,7 +1,6 @@
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { Tabs } from "@talisman/components/Tabs"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 const EARN_TAB_KEYS = ["assets", "discover", "bittensor"] as const
 
@@ -26,7 +25,7 @@ export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange, value = "a
       { label: t("Discover"), value: "discover" },
       { label: t("Bittensor"), value: "bittensor" },
     ],
-    [t],
+    [t]
   )
 
   const handleChange = useCallback(
@@ -34,7 +33,7 @@ export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange, value = "a
       if (!isEarnTabsKey(value)) return
       onTabChange?.(value)
     },
-    [onTabChange],
+    [onTabChange]
   )
 
   return <Tabs tabs={tabs} selected={value} onChange={handleChange} className={className} />

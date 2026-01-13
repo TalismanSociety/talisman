@@ -6,7 +6,8 @@ export const DEBUG = process.env.DEBUG === "true"
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
-export const IS_FIREFOX = process.env.BROWSER === "firefox"
+// Use runtime detection for Firefox since import.meta.env is not available in Firefox MV2 background scripts
+export const IS_FIREFOX = typeof navigator !== "undefined" && /Firefox/i.test(navigator.userAgent)
 
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 

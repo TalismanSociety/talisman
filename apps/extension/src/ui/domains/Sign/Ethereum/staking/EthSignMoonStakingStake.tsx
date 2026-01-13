@@ -1,7 +1,6 @@
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useToken } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -19,7 +18,7 @@ export const EthSignMoonStakingStake: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<number>(decodedTx, "autoCompound"),
     ],
-    [decodedTx],
+    [decodedTx]
   )
 
   if (!network?.nativeTokenId || !planck || !token) return null

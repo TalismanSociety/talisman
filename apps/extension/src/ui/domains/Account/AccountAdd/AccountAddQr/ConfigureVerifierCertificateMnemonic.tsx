@@ -1,8 +1,3 @@
-import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   MnemonicCreateModal,
@@ -10,12 +5,16 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { useMnemonics } from "@ui/state"
+import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { type ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
 import { MnemonicForm } from "./MnemonicForm"
 
 const VerifierCertificateOption = ({ text, children }: { text: string; children: ReactNode }) => (
-  <div className="text-body-secondary grid grid-cols-2 items-center gap-8 text-sm">
+  <div className="grid grid-cols-2 items-center gap-8 text-body-secondary text-sm">
     {children}
     <div className="p-2">{text}</div>
   </div>
@@ -62,7 +61,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
         className="mb-12"
         title={t("Configure your Polkadot Vault Verifier Certificate Mnemonic")}
         text={t(
-          "To use your Polkadot Vault with Talisman, you need to configure your Polkadot Vault Verifier Certificate Mnemonic.",
+          "To use your Polkadot Vault with Talisman, you need to configure your Polkadot Vault Verifier Certificate Mnemonic."
         )}
       />
       {(!state.verifierCertificateConfig ||
@@ -83,7 +82,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
             <a
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
-              className="hover:text-primary text-grey-200"
+              className="text-grey-200 hover:text-primary"
             >
               {t("Read more about Talisman's Polkadot Vault integration here.")}
             </a>
@@ -93,7 +92,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
           {existingMnemonicId && (
             <VerifierCertificateOption
               text={t(
-                "Use this option to use your existing Talisman recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do.",
+                "Use this option to use your existing Talisman recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do."
               )}
             >
               <Button
@@ -113,7 +112,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
           {!existingMnemonicId && (
             <VerifierCertificateOption
               text={t(
-                "Use this option to generate a new recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do.",
+                "Use this option to generate a new recovery phrase as your Polkadot Vault Verifier Certificate Mnemonic. Choose this option if you are not sure what to do."
               )}
             >
               <Button
@@ -136,7 +135,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
           )}
           <VerifierCertificateOption
             text={t(
-              "Import a new recovery phrase to use as your Polkadot Vault Verifier Certificate Mnemonic. You should use this option if you already have a Polkadot Vault account in another instance of Talisman, or you want to use a different mnemonic to your existing Talisman mnemonic.",
+              "Import a new recovery phrase to use as your Polkadot Vault Verifier Certificate Mnemonic. You should use this option if you already have a Polkadot Vault account in another instance of Talisman, or you want to use a different mnemonic to your existing Talisman mnemonic."
             )}
           >
             <Button
@@ -150,7 +149,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
           </VerifierCertificateOption>
           <VerifierCertificateOption
             text={t(
-              "If you don't want to use a Verifier Certificate Mnemonic, you can still use your Polkadot Vault account by leveraging the Parity and Nova Wallet metadata sources, but only on limited chains.",
+              "If you don't want to use a Verifier Certificate Mnemonic, you can still use your Polkadot Vault account by leveraging the Parity and Nova Wallet metadata sources, but only on limited chains."
             )}
           >
             <Button

@@ -1,10 +1,10 @@
 import { map, of } from "rxjs"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
 import { buildQueries } from "./buildQueries"
-import { MODULE_TYPE } from "./config"
+import type { MODULE_TYPE } from "./config"
 
 export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBalances"] = ({
   networkId,
@@ -22,6 +22,6 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
     map((balances) => ({
       success: balances,
       errors: [],
-    })),
+    }))
   )
 }

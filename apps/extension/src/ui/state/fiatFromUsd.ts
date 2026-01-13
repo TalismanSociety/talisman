@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { TokenRateData, TokenRates } from "@talismn/token-rates"
+import type { TokenRateData, TokenRates } from "@talismn/token-rates"
 import { isNotNil } from "@talismn/util"
 import { fromPairs, toPairs, values } from "lodash-es"
 import { combineLatest, map, shareReplay } from "rxjs"
@@ -16,7 +16,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
     let refPrice: number | null = null
 
     for (const rates of values(allTokenRates.tokenRates).filter(isNotNil)) {
-      const usd = rates["usd"]?.price
+      const usd = rates.usd?.price
       const custom = rates[selectedCurrency]?.price
       if (!usd || !custom) continue
       if (!refTokenRates || !refPrice || usd > refPrice) {
@@ -27,7 +27,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
 
     return refTokenRates
   }),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useFiatFromUsd, getFiatFromUsd$] = bind(
@@ -37,24 +37,24 @@ export const [useFiatFromUsd, getFiatFromUsd$] = bind(
         if (usd === 0) return 0
         if (selectedCurrency === "usd") return usd
         if (!refTokenRates || !usd) return null
-        const usdRate = refTokenRates["usd"]?.price
+        const usdRate = refTokenRates.usd?.price
         const targetRate = refTokenRates[selectedCurrency]?.price
         if (!usdRate || !targetRate) return null
         return (usd / usdRate) * targetRate
-      }),
+      })
     ),
-  null,
+  null
 )
 
 export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
   (usd: number | null | undefined) =>
     refTokenRates$.pipe(
       map((refTokenRates): TokenRates | null => {
-        const usdRate = refTokenRates?.["usd"]?.price
+        const usdRate = refTokenRates?.usd?.price
         if (!refTokenRates || !usd || !usdRate) return null
         if (usd === 0)
           return fromPairs(
-            toPairs(refTokenRates).map(([currency]) => [currency, null] as const),
+            toPairs(refTokenRates).map(([currency]) => [currency, null] as const)
           ) as TokenRates
 
         return fromPairs(
@@ -64,9 +64,9 @@ export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
               price: (usd / usdRate) * rate.price,
             }
             return [currency, data] as const
-          }),
+          })
         ) as TokenRates
-      }),
+      })
     ),
-  null,
+  null
 )

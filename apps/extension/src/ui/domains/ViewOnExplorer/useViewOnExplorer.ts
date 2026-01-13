@@ -1,7 +1,6 @@
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
-import { useCallback, useMemo } from "react"
-
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
+import { useCallback, useMemo } from "react"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 
@@ -19,12 +18,12 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   const blockExplorerUrl = useMemo(
     () =>
       network ? (getBlockExplorerUrls(network, { type: "address", address })[0] ?? null) : null,
-    [address, network],
+    [address, network]
   )
 
   const canOpen = useMemo(
     () => !networkIdOrHash || blockExplorerUrl,
-    [blockExplorerUrl, networkIdOrHash],
+    [blockExplorerUrl, networkIdOrHash]
   )
 
   const open = useCallback(() => {

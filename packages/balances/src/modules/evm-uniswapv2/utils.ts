@@ -1,6 +1,6 @@
 import {
-  Abi,
-  Client,
+  type Abi,
+  type Client,
   ContractFunctionExecutionError,
   erc20Abi,
   erc20Abi_bytes32,
@@ -12,12 +12,13 @@ import { uniswapV2PairAbi } from "../abis"
 
 export const getErc20ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ): Promise<{ symbol: string; decimals: number; name: string }> => {
   try {
     const contract = getTypedContract(client, erc20Abi, contractAddress)
 
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
+    // biome-ignore lint/correctness/noUnusedVariables: legacy
     var [symbol, decimals, name] = await Promise.all([
       contract.read.symbol(),
       contract.read.decimals(),
@@ -28,7 +29,8 @@ export const getErc20ContractData = async (
       // try to perform the contract read with bytes32 symbol
       const contract = getTypedContract(client, erc20Abi_bytes32, contractAddress)
 
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
+      // biome-ignore lint/suspicious/noRedeclare: legacy
       var [bytesSymbol, decimals, nameSymbol] = await Promise.all([
         contract.read.symbol(),
         contract.read.decimals(),
@@ -45,7 +47,7 @@ export const getErc20ContractData = async (
 const getTypedContract = <TAbi extends Abi>(
   client: Client,
   abi: TAbi,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ) =>
   getContract({
     address: contractAddress,
@@ -55,11 +57,10 @@ const getTypedContract = <TAbi extends Abi>(
 
 export const getUniswapV2PairContractData = async (
   client: Client,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ) => {
   const contract = getTypedContract(client, uniswapV2PairAbi, contractAddress)
 
-  // eslint-disable-next-line no-var
   var [token0, token1, decimals, name] = await Promise.all([
     contract.read.token0(),
     contract.read.token1(),

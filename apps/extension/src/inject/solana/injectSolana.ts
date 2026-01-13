@@ -1,4 +1,4 @@
-import { SendRequest } from "@polkadot/extension-base/page/types"
+import type { SendRequest } from "@polkadot/extension-base/page/types"
 
 import { getSolanaProvider } from "./provider"
 import { registerWallet } from "./register"

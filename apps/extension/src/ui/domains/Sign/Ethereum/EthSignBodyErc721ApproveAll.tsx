@@ -1,5 +1,5 @@
 import { TOKEN_APPROVALS_URL } from "extension-shared"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
@@ -25,13 +25,13 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
+      title={approve ? t("NFT Approval Request") : t("Revoke NFT Approval Request")}
       alert={
         approve && (
           <SignAlertMessage>
             <span className="text-body-secondary">
               {t(
-                "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked.",
+                "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked."
               )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">

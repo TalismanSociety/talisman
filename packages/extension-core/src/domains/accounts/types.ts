@@ -4,20 +4,19 @@ import type {
   ResponseAccountExport,
   ResponseAccountsExport,
 } from "@polkadot/extension-base/background/types"
-import { KeyringPair$Json } from "@polkadot/keyring/types"
-import { TokenId } from "@talismn/chaindata-provider"
-import { KeypairCurve } from "@talismn/crypto"
-import {
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { TokenId } from "@talismn/chaindata-provider"
+import type { KeypairCurve } from "@talismn/crypto"
+import type {
   Account,
   AddAccountDeriveOptions,
   AddAccountExternalOptions,
   AddAccountKeypairOptions,
 } from "@talismn/keyring"
-import { NsLookupType } from "@talismn/on-chain-id"
-import { HexString } from "@talismn/util"
-
+import type { NsLookupType } from "@talismn/on-chain-id"
+import type { HexString } from "@talismn/util"
+import type { Address } from "../../types/base"
 import type { RequestAccountsCatalogAction, Trees } from "./helpers.catalog"
-import { Address } from "../../types/base"
 
 export type { RequestAccountsCatalogAction } from "./helpers.catalog"
 export type { AccountJson, ResponseAccountExport }

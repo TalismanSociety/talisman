@@ -11,7 +11,7 @@ describe("calculateFee", () => {
 
   test("throws error when fee percentage is negative", () => {
     expect(() => calculateFee({ amount: 1_000_000n, feePercent: -0.3, seekDiscount: 0 })).toThrow(
-      "Fee percentage cannot be negative",
+      "Fee percentage cannot be negative"
     )
   })
 
@@ -128,10 +128,10 @@ describe("calculateMinimumStakeInput", () => {
   test("throws error when fee rate is 100% or more", () => {
     const baseMin = 2_000_000n
     expect(() => calculateMinimumStakeInput(baseMin, 0n, 1)).toThrow(
-      "Effective fee rate must be less than 100%",
+      "Effective fee rate must be less than 100%"
     )
     expect(() => calculateMinimumStakeInput(baseMin, 0n, 1.5)).toThrow(
-      "Effective fee rate must be less than 100%",
+      "Effective fee rate must be less than 100%"
     )
   })
 

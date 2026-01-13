@@ -1,4 +1,4 @@
-import { RequestIdOnly } from "../../types/base"
+import type { RequestIdOnly } from "../../types/base"
 
 export type RefreshNftMetadataRequestBody = {
   evmNetworkId: string

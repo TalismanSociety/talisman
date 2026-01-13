@@ -2,11 +2,11 @@ import type { polkadot, polkadotAssetHub } from "@polkadot-api/descriptors"
 import { Enum } from "polkadot-api"
 
 import log from "../log"
-import { DecodedCall } from "../types"
+import type { DecodedCall } from "../types"
 import { getDispatchErrorMessage } from "./errors"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { isApiAvailable } from "./isApiAvailable"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 type DryRunResult = (
   | typeof polkadot
@@ -16,7 +16,7 @@ type DryRunResult = (
 export const getDryRunCall = async <T>(
   chain: Chain,
   from: string,
-  decodedCall: DecodedCall<unknown>,
+  decodedCall: DecodedCall<unknown>
 ): Promise<
   | {
       available: boolean

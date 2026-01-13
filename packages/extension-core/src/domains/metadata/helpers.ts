@@ -1,7 +1,7 @@
 import { hexToU8a, u8aToHex } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
 
-import { TalismanMetadataDef } from "../substrate/types"
+import type { TalismanMetadataDef } from "../substrate/types"
 
 // these are stored as base64 for lower storage size
 export const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
@@ -21,8 +21,8 @@ export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
   try {
     if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
     if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
-  } catch (err) {
-    // eslint-disable-next-line no-console
+  } catch {
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.warn("Could not decode metadata from store", { metadata })
   }
   return undefined

@@ -30,8 +30,8 @@ export const createGlobalOpenClose = <T>() => {
             open: (args: T) => state$.next({ isOpen: true, args }),
             close: () => state$.next({ isOpen: false, args }), // retain args so it can still be displayed while closing
             args,
-          }) as OpenCloseResult<T>,
-      ),
-    ),
+          }) as OpenCloseResult<T>
+      )
+    )
   )
 }

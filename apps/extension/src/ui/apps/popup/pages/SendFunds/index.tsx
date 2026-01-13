@@ -1,9 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { Route, Routes } from "react-router-dom"
-import { combineLatest } from "rxjs"
-
 import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
 import { accounts$, balancesHydrate$, contacts$ } from "@ui/state"
+import { Route, Routes } from "react-router-dom"
+import { combineLatest } from "rxjs"
 
 import { SendFundsWizardProvider } from "./context"
 import { SendFundsAmount } from "./SendFundsAmount"

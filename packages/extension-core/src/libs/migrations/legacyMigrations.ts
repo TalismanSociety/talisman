@@ -5,7 +5,7 @@ import { passwordStore } from "../../domains/app/store.password"
 import { createLegacyVerifierCertificateMnemonicStore } from "../../domains/mnemonics/legacy/store"
 import { mnemonicsStore } from "../../domains/mnemonics/store"
 import sitesAuthorisedStore from "../../domains/sitesAuthorised/store"
-import { LegacyAccount, LegacyAccountOrigin } from "../../types/domains"
+import { type LegacyAccount, LegacyAccountOrigin } from "../../types/domains"
 import { changePassword } from "./legacyHelpers"
 
 export const migrateConnectAllSubstrate = async (previousVersion: string) => {
@@ -81,6 +81,6 @@ const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, LegacyAccount]) =>
-      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr,
+      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr
   )
 }

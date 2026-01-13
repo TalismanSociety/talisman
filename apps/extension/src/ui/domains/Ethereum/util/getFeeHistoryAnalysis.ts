@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser"
-import { EthBaseFeeTrend } from "extension-core"
+import type { EthBaseFeeTrend } from "extension-core"
 import { log } from "extension-shared"
-import { formatGwei, parseGwei, PublicClient } from "viem"
+import { formatGwei, type PublicClient, parseGwei } from "viem"
 
 const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]
@@ -26,7 +26,7 @@ export type FeeHistoryAnalysis = {
 }
 
 export const getFeeHistoryAnalysis = async (
-  publicClient: PublicClient,
+  publicClient: PublicClient
 ): Promise<FeeHistoryAnalysis> => {
   try {
     const feeHistory = await publicClient.getFeeHistory({
@@ -53,14 +53,14 @@ export const getFeeHistoryAnalysis = async (
       medMaxPriorityFeePerGas.push(
         DEFAULT_ETH_PRIORITY_OPTIONS.low,
         DEFAULT_ETH_PRIORITY_OPTIONS.medium,
-        DEFAULT_ETH_PRIORITY_OPTIONS.high,
+        DEFAULT_ETH_PRIORITY_OPTIONS.high
       )
 
     // last entry of the array is the base fee for next block, exclude it from further averages
     // warning: on neuroweb nextBaseFee is lower than the others even when network is idle
     const nextBaseFee = feeHistory.baseFeePerGas.pop() as bigint
 
-    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee, i, arr) => fee === arr[0])
+    const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee, _i, arr) => fee === arr[0])
 
     const avgBaseFeePerGas =
       feeHistory.baseFeePerGas.reduce((prev, curr) => prev + curr, 0n) /
@@ -91,12 +91,12 @@ export const getFeeHistoryAnalysis = async (
     if (LIVE_DEBUG) {
       log.log(
         "rewards",
-        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`)),
+        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`))
       )
       log.log("baseFee", `${formatGwei(result.nextBaseFee)} GWEI`)
       log.log(
         "medMaxPriorityFeePerGas",
-        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`),
+        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`)
       )
       log.log(
         "maxPriorityPerGasOptions",
@@ -104,7 +104,7 @@ export const getFeeHistoryAnalysis = async (
           result.maxPriorityPerGasOptions.low,
           result.maxPriorityPerGasOptions.medium,
           result.maxPriorityPerGasOptions.high,
-        ].map((fee) => `${formatGwei(fee)} GWEI`),
+        ].map((fee) => `${formatGwei(fee)} GWEI`)
       )
       log.log("=========================================")
     }

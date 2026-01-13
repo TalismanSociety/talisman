@@ -1,4 +1,4 @@
-import { FC } from "react"
+import type { FC } from "react"
 
 import { YieldxyzExitStepAmount } from "./steps/YieldxyzExitStepAmount"
 import { YieldxyzExitStepConfirm } from "./steps/YieldxyzExitStepConfirm"

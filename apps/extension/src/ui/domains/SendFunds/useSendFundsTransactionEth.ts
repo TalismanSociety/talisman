@@ -1,13 +1,12 @@
 import { isTokenEth } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
+import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
 import { getEthTransferTransactionBase, isAccountOwned } from "extension-core"
 import { useMemo, useState } from "react"
 
-import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
-
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useEvmTransactionRiskAnalysis } from "../Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
-import { SendFundsTransactionProps } from "./types"
+import type { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionEth = ({
   tokenId,

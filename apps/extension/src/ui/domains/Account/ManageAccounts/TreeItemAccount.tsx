@@ -1,12 +1,11 @@
 import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash } from "extension-core"
-import { FC, useMemo } from "react"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useFormattedAddressForAccount } from "@ui/hooks/useFormattedAddress"
+import { type Account, getAccountGenesisHash } from "extension-core"
+import { type FC, useMemo } from "react"
 
 import { AccountContextMenu } from "../AccountContextMenu"
 
@@ -19,7 +18,7 @@ export const TreeItemAccount: FC<{
 }> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip }) => {
   const account = useMemo(
     () => accounts.find((account) => account.address === address),
-    [accounts, address],
+    [accounts, address]
   )
   const balanceTotal = balanceTotalPerAccount[account?.address ?? ""] ?? 0
   const formattedAddress = useFormattedAddressForAccount(account)
@@ -31,7 +30,7 @@ export const TreeItemAccount: FC<{
       <div
         className={classNames(
           "flex h-[5.9rem] flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent px-8",
-          isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850",
+          isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850"
         )}
       >
         <AccountIcon
@@ -48,7 +47,7 @@ export const TreeItemAccount: FC<{
               signetUrl={account.type === "signet" ? account.url : undefined}
             />
           </div>
-          <div className="text-body-secondary @2xl:text-sm text-xs">
+          <div className="@2xl:text-sm text-body-secondary text-xs">
             <Address address={formattedAddress} noTooltip={noTooltip} />
           </div>
         </div>

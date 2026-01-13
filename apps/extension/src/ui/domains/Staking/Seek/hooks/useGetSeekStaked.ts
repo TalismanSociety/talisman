@@ -1,10 +1,9 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { useQuery } from "@tanstack/react-query"
-import { isAccountAddressEthereum } from "extension-core"
-import { useMemo } from "react"
-
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useAccounts, useRemoteConfig, useToken } from "@ui/state"
+import { isAccountAddressEthereum } from "extension-core"
+import { useMemo } from "react"
 
 import seekSinglePoolStakingAbi from "../seekSinglePoolStakingAbi"
 
@@ -45,7 +44,7 @@ export const useGetSeekStaked = (): {
           })
           return balance as bigint
         } catch (error) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.error(`Failed to fetch balance for ${account.address}:`, error)
           return 0n
         }
@@ -65,16 +64,16 @@ export const useGetSeekStaked = (): {
             balance: new BalanceFormatter(data[i] || 0n, tokenDecimals),
           }))
         : [],
-    [data, ethAccounts, tokenDecimals],
+    [data, ethAccounts, tokenDecimals]
   )
   const totalStakedAmount = useMemo(
     () => balances.reduce((total, account) => total + account.balance.planck, 0n),
-    [balances],
+    [balances]
   )
 
   const totalStaked = useMemo(
     () => new BalanceFormatter(totalStakedAmount, tokenDecimals),
-    [totalStakedAmount, tokenDecimals],
+    [totalStakedAmount, tokenDecimals]
   )
 
   return { data: { balances, totalStaked }, isLoading, isError, refetch }

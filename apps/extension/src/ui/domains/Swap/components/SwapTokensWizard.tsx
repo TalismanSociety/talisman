@@ -2,9 +2,9 @@ import { useAtomValue } from "jotai"
 import { useMemo } from "react"
 
 import { fromAssetAtom } from "../swap-modules/common.swap-module"
+import { swapQuotesAtom, useFromAccount } from "../swaps.api"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
 import { useFastBalance } from "../swaps-port/useFastBalance"
-import { swapQuotesAtom, useFromAccount } from "../swaps.api"
 import { SwapApproveErc20 } from "./SwapApproveErc20"
 import { SwapConfirm } from "./SwapConfirm"
 import { SwapForm } from "./SwapForm"
@@ -40,7 +40,7 @@ export const SwapTokensWizard = () => {
       }
 
       return undefined
-    }, [fromAsset, fromEvmAddress, fromSubstrateAddress]),
+    }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
   )
 
   // START: some things to keep loaded when switching between swaps views

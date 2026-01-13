@@ -1,7 +1,7 @@
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import {
   refreshYieldxyzPosition,
   walletYieldxyzPositions$,
@@ -14,7 +14,7 @@ export class EarnHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(earn.yieldxyz.positions.subscribe)":
@@ -22,7 +22,7 @@ export class EarnHandler extends ExtensionHandler {
 
       case "pri(earn.yieldxyz.positions.refresh)":
         return refreshYieldxyzPosition(
-          request as RequestType<"pri(earn.yieldxyz.positions.refresh)">,
+          request as RequestType<"pri(earn.yieldxyz.positions.refresh)">
         )
 
       case "pri(earn.yieldxyz.products.subscribe)":

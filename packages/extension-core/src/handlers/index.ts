@@ -2,8 +2,8 @@ import { assert } from "@polkadot/util"
 import { log, PORT_EXTENSION } from "extension-shared"
 
 import { cleanupEvmErrorMessage, getEvmErrorCause } from "../domains/ethereum/errors"
-import { MessageTypes, TransportRequestMessage } from "../types"
-import { AnyEthRequest } from "../types/domains"
+import type { MessageTypes, TransportRequestMessage } from "../types"
+import type { AnyEthRequest } from "../types/domains"
 import Extension from "./Extension"
 import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
@@ -48,7 +48,7 @@ const formatFrom = (source: string) => {
   try {
     const urlObj = new URL(source)
     return urlObj?.host
-  } catch (err) {
+  } catch {
     return source
   }
 }
@@ -61,7 +61,7 @@ const PORT_DISCONNECTED_MESSAGES = [
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
   port: chrome.runtime.Port,
-  extensionPortName = PORT_EXTENSION,
+  extensionPortName = PORT_EXTENSION
 ): void => {
   const start = performance.now()
   const { id, message, request } = data
@@ -133,7 +133,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
           id,
           error: cleanupEvmErrorMessage(
             (message === "pri(eth.request)" && evmError.details) ||
-              (evmError.shortMessage ?? evmError.message ?? "Unknown error"),
+              (evmError.shortMessage ?? evmError.message ?? "Unknown error")
           ),
           code: error.code,
           rpcData: evmError.data, // don't use "data" as property name or viem will interpret it differently

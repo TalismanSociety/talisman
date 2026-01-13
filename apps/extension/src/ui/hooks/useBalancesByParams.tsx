@@ -1,13 +1,12 @@
 import { Balances } from "@talismn/balances"
-import md5 from "blueimp-md5"
-import { AddressesAndTokens, BalanceSubscriptionResponse } from "extension-core"
-import { useCallback, useMemo, useState } from "react"
-import { useDebounce } from "react-use"
-import { BehaviorSubject } from "rxjs"
-
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state"
+import md5 from "blueimp-md5"
+import type { AddressesAndTokens, BalanceSubscriptionResponse } from "extension-core"
+import { useCallback, useMemo, useState } from "react"
+import { useDebounce } from "react-use"
+import type { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE: BalanceSubscriptionResponse = {
   status: "initialising",
@@ -32,20 +31,20 @@ export const useBalancesByParams = ({
     (subject: BehaviorSubject<BalanceSubscriptionResponse>) => {
       return api.balancesByParams(addressesAndTokens, (update) => subject.next(update))
     },
-    [addressesAndTokens],
+    [addressesAndTokens]
   )
 
   // subscription must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () => `useBalancesByParams-${md5(JSON.stringify(addressesAndTokens))}`,
-    [addressesAndTokens],
+    [addressesAndTokens]
   )
 
   const data = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
   const [debouncedBalances, setDebouncedBalances] = useState<BalanceSubscriptionResponse>(
-    () => data,
+    () => data
   )
   useDebounce(() => setDebouncedBalances(data), 100, [data])
 
@@ -54,6 +53,6 @@ export const useBalancesByParams = ({
       status: debouncedBalances.status,
       balances: new Balances(debouncedBalances.balances, hydrate),
     }),
-    [debouncedBalances, hydrate],
+    [debouncedBalances, hydrate]
   )
 }

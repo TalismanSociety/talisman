@@ -1,17 +1,27 @@
-/* eslint-disable react/no-children-prop */
+// biome-ignore-all lint/correctness/noChildrenProp: legacy
 import * as Sentry from "@sentry/browser"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isNetworkCustom,
   isNetworkDot,
   isNetworkEth,
   isNetworkKnown,
-  Network,
+  type Network,
   NetworkBaseSchema,
 } from "@talismn/chaindata-provider"
 import { CopyIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAnyNetwork } from "@ui/state"
 import { t } from "i18next"
-import { FC, useCallback, useState } from "react"
+import { type FC, useCallback, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -29,17 +39,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 import { z } from "zod/v4"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useActivableNetwork } from "@ui/hooks/useActivableNetwork"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAnyNetwork } from "@ui/state"
 
 import { NetworkFormProvider, useNetworkForm } from "./context"
 import { NetworkRpcsField } from "./NetworkRpcsField"
@@ -457,7 +456,7 @@ const ConfirmRemove: FC<{
       title={isNetworkKnown(saved) ? t("Reset Token") : t("Remove Token")}
       onClose={onClose}
     >
-      <div className="text-body-secondary mt-4 space-y-16">
+      <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
           {isNetworkKnown(saved) ? (
             <Trans t={t}>

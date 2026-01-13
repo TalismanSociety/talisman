@@ -1,9 +1,8 @@
+import { notify } from "@talisman/components/Notifications"
 import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-
-import { notify } from "@talisman/components/Notifications"
 
 /**
  * Props for the Mnemonic component
@@ -37,7 +36,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
         title: t("Copied to clipboard"),
         type: "success",
       })
-    } catch (err) {
+    } catch {
       notify({
         title: t("Failed to copy"),
         type: "error",
@@ -63,15 +62,16 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
 
   return (
     <div className="min-w-[58rem]">
-      <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
+      <div className="group relative overflow-hidden rounded bg-black-secondary p-2">
         <div className={`grid min-h-[12.6rem] grid-cols-4 gap-4 p-2`}>
           {!!mnemonic &&
             mnemonic.split(" ").map((word, i) => (
               <span
-                className="bg-black-tertiary text-body whitespace-nowrap rounded px-8 py-4"
+                className="whitespace-nowrap rounded bg-black-tertiary px-8 py-4 text-body"
+                // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 key={`mnemonic-${i}`}
               >
-                <span className="text-grey-500 select-none">{i + 1}. </span>
+                <span className="select-none text-grey-500">{i + 1}. </span>
                 <span className="notranslate">{word}</span>
               </span>
             ))}
@@ -83,9 +83,9 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
               setIconType(isRevealed ? "open" : null)
             }}
             className={classNames(
-              "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm transition",
+              "absolute top-0 left-0 flex h-full w-full items-center justify-center rounded-sm text-body transition",
               !isRevealed && "backdrop-blur-md",
-              blurOnHover && isRevealed && "hover:backdrop-blur-md",
+              blurOnHover && isRevealed && "hover:backdrop-blur-md"
             )}
             onMouseLeave={() => {
               if (isRevealed) {
@@ -105,11 +105,11 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
         <button
           type="button"
           onClick={handleCopy}
-          className={"text-body-secondary hover:text-body flex items-center"}
+          className={"flex items-center text-body-secondary hover:text-body"}
         >
           {isCopied ? (
             <>
-              <CheckIcon className="text-primary mr-2 inline" />
+              <CheckIcon className="mr-2 inline text-primary" />
               <span className="text-primary">{t("Copied")}</span>
             </>
           ) : (

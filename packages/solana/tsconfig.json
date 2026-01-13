@@ -1,5 +1,5 @@
 {
   "extends": "@talismn/tsconfig/es6-node.json",
-  "include": ["src"],
+  "include": ["src", "package.json"],
   "exclude": ["**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -1,15 +1,15 @@
 import { lookupAddresses, lookupAznsAddresses, lookupEnsAddresses } from "./util/addressesToNames"
 import { resolveAznsNames, resolveEnsNames, resolveNames } from "./util/namesToAddresses"
-import { Config, DropFirst, OptionalConfig } from "./util/types"
+import type { Config, DropFirst, OptionalConfig } from "./util/types"
 
+export * from "./util/isPotentialAzns"
+export * from "./util/isPotentialEns"
 export type {
   Config as OnChainIdConfig,
   NsLookupType,
   OnChainIds,
   ResolvedNames,
 } from "./util/types"
-export * from "./util/isPotentialAzns"
-export * from "./util/isPotentialEns"
 
 export class OnChainId {
   #config: Config

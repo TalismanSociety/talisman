@@ -1,17 +1,16 @@
 import { ClockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { intervalToDuration } from "date-fns"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
-
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import {
-  BaseQuote,
+  type BaseQuote,
   fromAmountAtom,
   fromAssetAtom,
   selectedProtocolAtom,
@@ -77,7 +76,7 @@ export const SwapDetailsCard = ({
         }, BigNumber(0))
         .toNumber()
         .toLocaleString(undefined, { style: "currency", currency, maximumSignificantDigits: 2 }),
-    [currency, quote.fees, tokenRates],
+    [currency, quote.fees, tokenRates]
   )
 
   if (!toAsset) return null
@@ -85,8 +84,8 @@ export const SwapDetailsCard = ({
   return (
     <SwapDetailsContainer
       className={classNames(
-        "bg-grey-900 hover:bg-grey-800 border-grey-900 cursor-pointer border",
-        selected && "border-body-secondary",
+        "cursor-pointer border border-grey-900 bg-grey-900 hover:bg-grey-800",
+        selected && "border-body-secondary"
       )}
       onClick={() => {
         setSelectedProtocol(quote.protocol)
@@ -95,7 +94,7 @@ export const SwapDetailsCard = ({
     >
       <div className="flex w-full items-start justify-between">
         <div className="flex flex-col">
-          <div className="truncate text-sm font-bold">
+          <div className="truncate font-bold text-sm">
             {amount?.toLocaleString(undefined, { maximumFractionDigits: 4 })}
           </div>
           <p className="text-body-secondary text-xs">
@@ -104,7 +103,7 @@ export const SwapDetailsCard = ({
         </div>
         <div className="flex items-center justify-end gap-3">
           <img src={quote.providerLogo} alt="" className="mb-1 h-10 rounded-full" />
-          <p className="max-w-60 truncate text-xs font-semibold">{quote.providerName}</p>
+          <p className="max-w-60 truncate font-semibold text-xs">{quote.providerName}</p>
         </div>
       </div>
 
@@ -128,7 +127,7 @@ export const SwapDetailsCard = ({
         </div>
 
         <div className="ml-auto flex items-center gap-2">
-          <ClockIcon className="text-body-secondary h-7 w-7" />
+          <ClockIcon className="h-7 w-7 text-body-secondary" />
           <div>{time}</div>
         </div>
       </div>

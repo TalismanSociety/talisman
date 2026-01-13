@@ -2,7 +2,7 @@ import { Observable, shareReplay } from "rxjs"
 
 import log from "../log"
 import { fetchChaindata } from "./net"
-import { Chaindata, ChaindataFileSchema } from "./schema"
+import { type Chaindata, ChaindataFileSchema } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 
@@ -29,7 +29,7 @@ export const githubChaindata$ = new Observable<Chaindata>((subscriber) => {
       const validation = ChaindataFileSchema.safeParse(data)
       log.debug(
         "[githubChaindata$] Chaindata schema validation: %sms",
-        (performance.now() - start).toFixed(2),
+        (performance.now() - start).toFixed(2)
       )
       if (!validation.success) throw new Error("GitHub chaindata failed schema validation")
 

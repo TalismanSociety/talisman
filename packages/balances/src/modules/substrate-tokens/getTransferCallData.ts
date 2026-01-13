@@ -1,10 +1,10 @@
 import { mergeUint8 } from "@polkadot-api/utils"
-import { isTokenOfType, SubTokensToken } from "@talismn/chaindata-provider"
-import { MetadataBuilder, papiParse, parseMetadataRpc } from "@talismn/scale"
+import { isTokenOfType, type SubTokensToken } from "@talismn/chaindata-provider"
+import { type MetadataBuilder, papiParse, parseMetadataRpc } from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
-import { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import type { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, type ModuleConfig, type TokenConfig } from "./config"
 
 export const getTransferCallData: IBalanceModule<
   typeof MODULE_TYPE,
@@ -65,7 +65,7 @@ const getCallDataOptions = (
   token: SubTokensToken,
   value: string,
   type: BalanceTransferType,
-  config: ModuleConfig | undefined,
+  config: ModuleConfig | undefined
 ): CallDataOption[] => {
   const onChainId = papiParse(token.onChainId)
   const method = getTransferMethod(type)
@@ -157,6 +157,6 @@ const getCallDataOptions = (
                   },
           },
         ]
-      : []),
+      : [])
   )
 }

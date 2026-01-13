@@ -1,7 +1,6 @@
-import { lazy } from "react"
-
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { lazy } from "react"
 
 const AccountAddLedgerWizard = lazy(() => import("@ui/domains/Account/AccountAdd/AccountAddLedger"))
 

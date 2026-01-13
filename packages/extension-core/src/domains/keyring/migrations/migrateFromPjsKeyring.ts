@@ -1,11 +1,11 @@
 import legacyKeyring from "@polkadot/ui-keyring"
 import { isValidDerivationPath } from "@talismn/crypto"
-import { AddAccountExternalOptions } from "@talismn/keyring"
-import { HexString } from "@talismn/util"
+import type { AddAccountExternalOptions } from "@talismn/keyring"
+import type { HexString } from "@talismn/util"
 import { log } from "extension-shared"
 import { capitalize } from "lodash-es"
 
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { awaitKeyringLoaded } from "../../../util/awaitKeyringLoaded"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "../../accounts/types"
 import { addressBookStore } from "../../app/store.addressBook"
@@ -213,7 +213,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 
           default: {
             log.error("Unknown account origin", { origin, pair: oldPair })
-            throw new Error("Unknown origin " + origin)
+            throw new Error(`Unknown origin ${origin}`)
           }
         }
       } catch (err) {
@@ -240,7 +240,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
         if (oldContact.genesisHash) options.genesisHash = oldContact.genesisHash
 
         await keyringStore.addAccountExternal(options)
-      } catch (err) {
+      } catch {
         // ignore
       } finally {
         await updateMigrationProgress()
@@ -296,7 +296,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 }
 
 // if (DEBUG) {
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//   // biome-ignore lint/suspicious/noExplicitAny: legacy
 //   const hostObj = globalThis as any
 
 //   // utility to run the migration manually fron dev console

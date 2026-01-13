@@ -1,8 +1,8 @@
-import { EthNetwork } from "@talismn/chaindata-provider"
-import { createPublicClient, PublicClient } from "viem"
+import type { EthNetwork } from "@talismn/chaindata-provider"
+import { createPublicClient, type PublicClient } from "viem"
 
 import { clearChainsCache, getChainFromEvmNetwork } from "./getChainFromEvmNetwork"
-import { getTransportForEvmNetwork, TransportOptions } from "./getTransportForEvmNetwork"
+import { getTransportForEvmNetwork, type TransportOptions } from "./getTransportForEvmNetwork"
 
 const MUTLICALL_BATCH_WAIT = 25
 const MUTLICALL_BATCH_SIZE = 100
@@ -48,7 +48,7 @@ export const getEvmNetworkPublicClient = (network: EthNetwork): PublicClient => 
         chain,
         transport,
         batch,
-      }),
+      })
     )
   }
 

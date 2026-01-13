@@ -1,7 +1,6 @@
-import { KeypairCurve } from "@talismn/crypto"
-import { useCallback, useState } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
+import type { KeypairCurve } from "@talismn/crypto"
+import { useCallback, useState } from "react"
 
 export type AccountAddDerivationMode = "first" | "custom" | "multi"
 
@@ -30,5 +29,5 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
 }
 
 export const [AccountAddMnemonicProvider, useAccountAddMnemonic] = provideContext(
-  useAccountAddMnemonicProvider,
+  useAccountAddMnemonicProvider
 )

@@ -1,19 +1,18 @@
-import { EthNetwork } from "@talismn/chaindata-provider"
-import { InfoIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { activeNetworksStore, isNetworkActive } from "extension-core"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
-import { Drawer, IconButton } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import type { EthNetwork } from "@talismn/chaindata-provider"
+import { InfoIcon, XIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useActiveNetworksState, useAuthorisedSites, useNetworkById, useNetworks } from "@ui/state"
+import { activeNetworksStore, isNetworkActive } from "extension-core"
+import { type FC, useCallback, useMemo, useRef, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useIntersection } from "react-use"
+import { Drawer, IconButton } from "talisman-ui"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
@@ -23,7 +22,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id],
+    [authorisedSites, currentSite?.id]
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
@@ -50,7 +49,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           arr.push(network)
           return acc
         },
-        [[] as EthNetwork[], [] as EthNetwork[]],
+        [[] as EthNetwork[], [] as EthNetwork[]]
       )
   }, [activeEvmNetworksState, currentNetwork?.id, evmNetworks])
 
@@ -67,12 +66,12 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleNetworkClick = useCallback(
     async (id: string) => {
       const ethChainId = Number(id)
-      if (!currentSite?.id || isNaN(ethChainId)) return
+      if (!currentSite?.id || Number.isNaN(ethChainId)) return
       if (!activeEvmNetworksState[id]) await activeNetworksStore.setActive(id, true)
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
-    [activeEvmNetworksState, currentSite.id, onClose],
+    [activeEvmNetworksState, currentSite.id, onClose]
   )
 
   const handleManageNetworksClick = useCallback(async () => {
@@ -108,16 +107,16 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             <div
               className={classNames(
                 "text-body-secondary text-xs",
-                !!activeEvmNetworks.length && "mt-4",
+                !!activeEvmNetworks.length && "mt-4"
               )}
             >
               {t("Inactive networks")}
             </div>
-            <div className="bg-black-tertiary text-body-secondary flex w-full items-center gap-4 rounded-sm px-6 py-4">
+            <div className="flex w-full items-center gap-4 rounded-sm bg-black-tertiary px-6 py-4 text-body-secondary">
               <div className="shrink-0">
                 <InfoIcon className="text-base" />
               </div>
-              <div className="leading-paragraph grow text-xs">
+              <div className="grow text-xs leading-paragraph">
                 <Trans
                   components={{
                     Link: (
@@ -166,19 +165,19 @@ const NetworkButton: FC<{
           key={network.id}
           type="button"
           onClick={onClick}
-          className="bg-field hover:bg-grey-750 flex h-28 w-full shrink-0 items-center gap-6 rounded-sm px-6"
+          className="flex h-28 w-full shrink-0 items-center gap-6 rounded-sm bg-field px-6 hover:bg-grey-750"
         >
           <NetworkLogo className="shrink-0 text-xl" networkId={network.id} />
           <div className="grow truncate text-left">{network?.name}</div>
           {!!network.isTestnet && (
-            <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
+            <div className="inline-block rounded bg-alert-warn/10 p-4 font-light text-alert-warn text-xs">
               {t("Testnet")}
             </div>
           )}
           <div
             className={classNames(
               "mx-4 h-4 w-4 shrink-0 rounded-full",
-              isSelected ? "bg-primary" : "bg-grey-700",
+              isSelected ? "bg-primary" : "bg-grey-700"
             )}
           ></div>
         </button>
@@ -196,7 +195,7 @@ const NetworkRows: FC<{
     (id: string) => () => {
       onSelect(id)
     },
-    [onSelect],
+    [onSelect]
   )
 
   if (!networks.length) return null
@@ -234,7 +233,7 @@ export const EvmNetworkSelectDrawer: FC<{ isOpen: boolean; onClose: () => void }
       <div className="flex h-full flex-col overflow-hidden bg-black">
         <header className="px-12 py-10 text-center">
           <AppPill url={url} />
-          <IconButton className="absolute right-10 top-10" onClick={onClose}>
+          <IconButton className="absolute top-10 right-10" onClick={onClose}>
             <XIcon />
           </IconButton>
         </header>

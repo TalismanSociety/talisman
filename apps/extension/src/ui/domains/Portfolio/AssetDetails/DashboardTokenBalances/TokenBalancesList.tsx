@@ -1,18 +1,17 @@
-import { Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-import { ReactNode, Suspense } from "react"
-import { useTranslation } from "react-i18next"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Balances } from "@talismn/balances"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { BondButton } from "@ui/domains/Staking/Bond/BondButton"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { type ReactNode, Suspense } from "react"
+import { useTranslation } from "react-i18next"
 
-import { BalanceSummary } from "../../useTokenBalancesSummary"
+import type { BalanceSummary } from "../../useTokenBalancesSummary"
 import { BittensorUnstakeButton } from "../BittensorUnstakeButton"
 import { CopyAddressButton } from "../CopyAddressIconButton"
 import { SendFundsTokenButton } from "../SendFundsTokenIconButton"
@@ -50,8 +49,8 @@ export const TokenBalancesList = ({
     <div className="mb-8">
       <div
         className={classNames(
-          "bg-grey-800 grid grid-cols-[40%_30%_30%]",
-          detailRowsLength ? "rounded-t" : "rounded",
+          "grid grid-cols-[40%_30%_30%] bg-grey-800",
+          detailRowsLength ? "rounded-t" : "rounded"
         )}
       >
         <div className="flex">
@@ -60,8 +59,8 @@ export const TokenBalancesList = ({
           </div>
           <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
             <div className="flex items-center gap-3">
-              <div className="text-body truncate font-bold">{token.name}</div>
-              <div className="text-body flex shrink-0 items-center text-base font-bold">
+              <div className="truncate font-bold text-body">{token.name}</div>
+              <div className="flex shrink-0 items-center font-bold text-base text-body">
                 <CopyAddressButton networkId={chainOrNetworkId} />
                 <BittensorUnstakeButton balances={balances} />
                 <Suspense fallback={<SuspenseTracker name="ChainTokenBalances.Buttons" />}>
@@ -70,7 +69,7 @@ export const TokenBalancesList = ({
                     <TokenContextMenu
                       tokenId={tokenId}
                       placement="bottom-start"
-                      className="text-body-secondary hover:text-body focus:text-body hover:bg-grey-700 focus-visible:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center p-0 text-xs opacity-50"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xs p-0 text-body-secondary text-xs opacity-50 hover:bg-grey-700 hover:text-body focus:text-body focus-visible:bg-grey-700"
                     />
                   )}
                 </Suspense>
@@ -101,7 +100,7 @@ export const TokenBalancesList = ({
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
         </div>
@@ -116,7 +115,7 @@ export const TokenBalancesList = ({
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
         </div>

@@ -1,17 +1,20 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon } from "@talismn/icons"
-import { TokenRateCurrency } from "@talismn/token-rates"
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { classNames, formatPrice, isNotNil, isTruthy } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import ChartJs, { ActiveElement, ChartComponentLike, ChartEvent } from "chart.js/auto"
+import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
+import ChartJs, {
+  type ActiveElement,
+  type ChartComponentLike,
+  type ChartEvent,
+} from "chart.js/auto"
 import { fetchFromCoingecko } from "extension-core"
 import { log } from "extension-shared"
 import { uniq } from "lodash-es"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
-
-import { useSelectedCurrency, useTokenRates, useTokenRatesMap, useTokensMap } from "@ui/state"
 
 import { AssetPrice } from "./AssetPrice"
 import { TokenDisplaySymbol } from "./TokenDisplaySymbol"
@@ -29,7 +32,7 @@ export const AssetPriceChart: FC<{
   const tokensMap = useTokensMap()
   const tokensWithCoingeckoId = useMemo(
     () => tokenIds.map((id) => tokensMap[id]).filter((t) => !!t?.coingeckoId),
-    [tokenIds, tokensMap],
+    [tokenIds, tokensMap]
   )
 
   const selectedCurrency = useSelectedCurrency()
@@ -53,7 +56,7 @@ export const AssetPriceChart: FC<{
   }, [selectedCurrency, tokenRates, tokensWithCoingeckoId])
 
   const [selectedTokenId, setSelectedTokenId] = useState<TokenId | null>(
-    selectableTokens[0]?.id ?? null,
+    selectableTokens[0]?.id ?? null
   )
   useEffect(() => {
     // workaround empty button when changing account to one that doesnt have balance for the selecte done
@@ -63,13 +66,14 @@ export const AssetPriceChart: FC<{
 
   const coingeckoId = useMemo(
     () => tokensWithCoingeckoId.find((t) => t.id === selectedTokenId)?.coingeckoId ?? null,
-    [selectedTokenId, tokensWithCoingeckoId],
+    [selectedTokenId, tokensWithCoingeckoId]
   )
 
   const [timespan, setTimespan] = useState<ChartSpan>("D")
 
   const { data: prices, refetch } = useMarketChart(coingeckoId, currency, timespan)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // update graph if tokenRates data changes
     log.debug("AssetPriceGraph refetch")
@@ -82,7 +86,7 @@ export const AssetPriceChart: FC<{
     window.open(
       `https://www.coingecko.com/en/coins/${coingeckoId}`,
       "_blank",
-      "noopener noreferrer",
+      "noopener noreferrer"
     )
   }, [coingeckoId])
 
@@ -99,17 +103,17 @@ export const AssetPriceChart: FC<{
   return (
     <div
       className={classNames(
-        "bg-black-secondary relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm",
+        "relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm bg-black-secondary",
         variant === "small" && "h-[16.8rem]",
         variant === "large" && "h-[19.2rem]",
-        className,
+        className
       )}
     >
       <div
         className={classNames(
           "flex shrink-0 items-center justify-between",
           variant === "small" && "h-20 px-4",
-          variant === "large" && "h-24 px-5",
+          variant === "large" && "h-24 px-5"
         )}
       >
         <TokenSelect
@@ -122,10 +126,10 @@ export const AssetPriceChart: FC<{
           {isValid && (
             <div
               className={classNames(
-                "text-body-secondary font-bold",
+                "font-bold text-body-secondary",
                 variant === "small" && "text-base",
                 variant === "large" && "text-[2rem]",
-                formattedHoveredValue && "text-body",
+                formattedHoveredValue && "text-body"
               )}
             >
               {formattedHoveredValue ?? (
@@ -152,7 +156,7 @@ export const AssetPriceChart: FC<{
             )}
             {/* use absolute position for buttons, above the graph, to not break the gradient */}
           </div>
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0">
+          <div className="pointer-events-none absolute right-0 bottom-0 left-0">
             <TimespanSelect value={timespan} variant={variant} onChange={setTimespan} />
           </div>
         </>
@@ -160,9 +164,9 @@ export const AssetPriceChart: FC<{
       {!isValid && (
         <div
           className={classNames(
-            "text-body-inactive absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center",
+            "absolute top-0 right-0 bottom-0 left-0 flex items-center justify-center text-body-inactive",
             variant === "small" && "text-base",
-            variant === "large" && "text-lg",
+            variant === "large" && "text-lg"
           )}
         >
           {t("No price history")}
@@ -216,7 +220,7 @@ const CHART_TIMESPANS: Record<string, ChartSpanConfig> = {
 const useMarketChart = (
   coingeckoId: string | null,
   currency: TokenRateCurrency,
-  timespan: ChartSpan,
+  timespan: ChartSpan
 ) => {
   return useQuery({
     queryKey: ["priceChart", coingeckoId, currency, timespan],
@@ -227,12 +231,12 @@ const useMarketChart = (
       const getMarketChart = async (
         coingeckoId: string | null,
         vs_currency: TokenRateCurrency,
-        days: string,
+        days: string
       ): Promise<{ prices: [number, number][] }> => {
         const query = new URLSearchParams({ vs_currency, days })
         const url = `/api/v3/coins/${coingeckoId}/market_chart?${query.toString()}`
         const result = await fetchFromCoingecko(url)
-        if (!result.ok) throw new Error("Failed to fetch market chart for " + coingeckoId)
+        if (!result.ok) throw new Error(`Failed to fetch market chart for ${coingeckoId}`)
         return { prices: (await result.json())?.prices }
       }
 
@@ -246,7 +250,7 @@ const useMarketChart = (
           ([timestamp, price], index): [number, number] => [
             timestamp,
             price / (taoUsdChart.prices[index]?.[1] ?? 1),
-          ],
+          ]
         )
 
         return { prices: tokenTaoChart }
@@ -298,6 +302,7 @@ const Chart: FC<{
   const refChart = useRef<HTMLCanvasElement>(null)
   const currency = useSelectedCurrency()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const canvas = refChart.current
     if (!canvas) return
@@ -331,7 +336,7 @@ const Chart: FC<{
         const element = elements[0]
         const price = allPrices[element.index]
         onHoverValueChange(price)
-      } catch (e) {
+      } catch {
         log.warn("Failed to read hovered price", { event, elements })
         onHoverValueChange(null)
       }
@@ -382,15 +387,13 @@ const Chart: FC<{
             caretPadding: 40,
             yAlign: "bottom",
             callbacks: {
-              title: function (tooltipItems) {
+              title: (tooltipItems) => {
                 const date = new Date(tooltipItems[0].label)
                 return CHART_TIMESPANS[timespan].time
                   ? `${date.toLocaleDateString(window.navigator.language, { dateStyle: "short" })} ${date.toLocaleTimeString(window.navigator.language, { timeStyle: "short" })}`
                   : date.toLocaleDateString(window.navigator.language, { dateStyle: "short" })
               },
-              label: function () {
-                return ""
-              },
+              label: () => "",
             },
           },
         },
@@ -455,10 +458,10 @@ const TimespanSelect: FC<{
   return (
     <div
       className={classNames(
-        "text-body-secondary flex w-full shrink-0 items-center justify-center gap-2 font-bold",
+        "flex w-full shrink-0 items-center justify-center gap-2 font-bold text-body-secondary",
         variant === "small" && "h-16",
         variant === "large" && "h-20",
-        className,
+        className
       )}
     >
       {Object.entries(CHART_TIMESPANS).map(([key, { label }]) => (
@@ -470,7 +473,7 @@ const TimespanSelect: FC<{
             "pointer-events-auto",
             variant === "small" && "text-[1rem]",
             variant === "large" && "text-sm",
-            value === key && "bg-white/10 text-white",
+            value === key && "bg-white/10 text-white"
           )}
           onClick={() => onChange(key as ChartSpan)}
         >
@@ -497,7 +500,7 @@ const TokenSelect: FC<{
         className={classNames(
           "flex items-center gap-2 p-2 font-bold",
           variant === "small" && "text-base",
-          variant === "large" && "text-[2rem]",
+          variant === "large" && "text-[2rem]"
         )}
       >
         <div className="flex flex-col justify-center">
@@ -515,10 +518,10 @@ const TokenSelect: FC<{
         <button
           type="button"
           className={classNames(
-            "bg-grey-850 hover:bg-grey-800 group rounded",
+            "group rounded bg-grey-850 hover:bg-grey-800",
             "flex items-center gap-2 p-2 font-bold",
             variant === "small" && "text-base",
-            variant === "large" && "text-[2rem]",
+            variant === "large" && "text-[2rem]"
           )}
         >
           <div className="flex flex-col justify-center">
@@ -531,7 +534,7 @@ const TokenSelect: FC<{
         </button>
       </PopoverTrigger>
       <PopoverContent>
-        <div className="bg-grey-900 flex w-full flex-col gap-2 rounded p-4">
+        <div className="flex w-full flex-col gap-2 rounded bg-grey-900 p-4">
           {tokens.map((t) => (
             <TokenSelectOption
               key={t.id}
@@ -564,23 +567,23 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
       type="button"
       onClick={handleClick}
       className={classNames(
-        "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 px-3 text-left",
-        "flex w-full items-center justify-between gap-16",
+        "h-20 rounded-xs p-6 px-3 text-left focus-visible:bg-grey-800 enabled:hover:bg-grey-800 disabled:text-body-disabled",
+        "flex w-full items-center justify-between gap-16"
       )}
     >
       <div className="flex items-center gap-4">
         <TokenLogo tokenId={token.id} className="inline-block text-[2.8rem]" />
         <div className="flex grow flex-col gap-1">
-          <span className="text-sm font-bold">{token.symbol}</span>
-          <span className="text-body-secondary text-[1rem]">
+          <span className="font-bold text-sm">{token.symbol}</span>
+          <span className="text-[1rem] text-body-secondary">
             {t("Mkt Cap:")} <MarketCap tokenId={token.id} />
           </span>
         </div>
       </div>
-      <div className="text-body flex gap-4 font-bold">
+      <div className="flex gap-4 font-bold text-body">
         <AssetPrice tokenId={token.id} balances={null} noTooltip noChange className="text-sm" />
         <CheckIcon
-          className={classNames("text-primary text-base", selected ? "visible" : "invisible")}
+          className={classNames("text-base text-primary", selected ? "visible" : "invisible")}
         />
       </div>
     </button>
@@ -603,7 +606,7 @@ const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
             notation: "compact",
           }).format(tokenRates[currency].marketCap)
         : t("unknown"),
-    [tokenRates, currency, t],
+    [tokenRates, currency, t]
   )
 
   return <span className="font-bold">{display}</span>

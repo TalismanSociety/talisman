@@ -1,12 +1,12 @@
-import { ProviderType } from "extension-core"
-import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
+/** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
 import { useAuthorisedSites } from "@ui/state"
+import type { ProviderType } from "extension-core"
+import { TALISMAN_WEB_APP_URL } from "extension-shared"
+import { useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { AuthorizedSite } from "./AuthorisedSite"
 import { AuthorisedSitesBatchActions } from "./AuthorisedSiteBatchActions"
@@ -39,7 +39,7 @@ export const AuthorisedSites = () => {
       Object.values(sites).some((site) => !!site.ethAddresses),
       Object.values(sites).some((site) => !!site.solAddresses),
     ],
-    [sites],
+    [sites]
   )
 
   const showBatchActions = useMemo(
@@ -48,7 +48,7 @@ export const AuthorisedSites = () => {
       (providerType === "ethereum" && hasEthereumSites) ||
       (providerType === "solana" && hasSolanaSites),
 
-    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType],
+    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType]
   )
 
   return (
@@ -79,12 +79,11 @@ export const AuthorisedSites = () => {
           <AuthorizedSite key={`${providerType}-${id}`} id={id} provider={providerType} />
         ))}
         {providerType === "polkadot" && !hasPolkadotSites && (
-          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+          <div className="w-full rounded bg-grey-850 p-8 text-body-secondary">
             <Trans
               t={t}
               components={{
                 Link: (
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
                   <a
                     href={TALISMAN_WEB_APP_URL}
                     target="_blank"
@@ -98,13 +97,13 @@ export const AuthorisedSites = () => {
         )}
         {sites && !hasEthereumSites && providerType === "ethereum" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+          <div className="w-full rounded bg-grey-850 p-8 text-body-secondary">
             {t("You haven't connected to any Ethereum sites yet.")}
           </div>
         )}
         {sites && !hasSolanaSites && providerType === "solana" && (
           // This should never be displayed unless we decide to display the provider switcher without check
-          <div className="bg-grey-850 text-body-secondary w-full rounded p-8">
+          <div className="w-full rounded bg-grey-850 p-8 text-body-secondary">
             {t("You haven't connected to any Solana sites yet.")}
           </div>
         )}

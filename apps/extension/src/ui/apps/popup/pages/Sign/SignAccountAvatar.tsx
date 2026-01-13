@@ -1,10 +1,9 @@
 import { encodeAnyAddress } from "@talismn/crypto"
 import { getAccountGenesisHash } from "@talismn/keyring"
-import { Account } from "extension-core"
-import { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import type { Account } from "extension-core"
+import type { FC } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number }> = ({
   account,
@@ -22,7 +21,7 @@ export const SignAccountAvatar: FC<{ account?: Account; ss58Format?: number }> =
         />
       </TooltipTrigger>
       <TooltipContent>
-        <div className="text-body font-semibold">{account.name}</div>
+        <div className="font-semibold text-body">{account.name}</div>
         <div className="text-body-secondary">
           {encodeAnyAddress(account.address, { ss58Format })}
         </div>

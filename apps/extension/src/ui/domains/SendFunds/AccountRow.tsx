@@ -1,12 +1,11 @@
-import { Balance } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Balance } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountType } from "extension-core"
-import { useMemo } from "react"
-
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
+import type { AccountType } from "extension-core"
+import { useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -54,7 +53,7 @@ export const AccountRow = ({
 
   const displayAddress = useMemo(
     () => (noFormat ? account?.address : formattedAddress),
-    [noFormat, account?.address, formattedAddress],
+    [noFormat, account?.address, formattedAddress]
   )
 
   return (
@@ -63,10 +62,10 @@ export const AccountRow = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        className,
+        className
       )}
       disabled={disabled}
     >
@@ -89,6 +88,7 @@ export const AccountRow = ({
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
         {onClear && (
+          // biome-ignore lint/a11y/useSemanticElements: legacy
           <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
             <XIcon className="shrink-0 text-[1.2em]" />
           </div>
@@ -132,7 +132,7 @@ const AccountTokenBalance = ({
     <div
       className={classNames(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse",
+        balance.status === "cache" && "animate-pulse"
       )}
     >
       <div>

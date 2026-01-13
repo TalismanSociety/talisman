@@ -1,7 +1,7 @@
 import { wordlist } from "@scure/bip39/wordlists/english"
 import { ChevronLeftIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
@@ -18,12 +18,12 @@ const WordSlot = ({
 }) => (
   <span
     className={classNames(
-      "bg-black-tertiary whitespace-nowrap rounded-xl px-6 py-3",
+      "whitespace-nowrap rounded-xl bg-black-tertiary px-6 py-3",
       error
-        ? "text-brand-orange border-brand-orange border border-dashed"
+        ? "border border-brand-orange border-dashed text-brand-orange"
         : active || word
-          ? "text-body border-body border border-solid"
-          : "text-body-secondary border-body-secondary border border-dashed",
+          ? "border border-body border-solid text-body"
+          : "border border-body-secondary border-dashed text-body-secondary"
     )}
   >
     <span className="select-none">{number}. </span>
@@ -41,10 +41,11 @@ const WordOption = ({
   onClick: () => void
 }) => (
   <button
+    type="button"
     onClick={onClick}
     disabled={selected}
     className={classNames(
-      "bg-black-tertiary text-body enabled:hover:bg-grey-700 rounded-xl px-8 py-3 disabled:text-opacity-20",
+      "rounded-xl bg-black-tertiary px-8 py-3 text-body enabled:hover:bg-grey-700 disabled:text-opacity-20"
     )}
   >
     <span className="notranslate">{word}</span>
@@ -85,7 +86,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
     (i: number) => {
       return matchedDisplayIdx.includes(i)
     },
-    [matchedDisplayIdx],
+    [matchedDisplayIdx]
   )
 
   const handleSelectWord = useCallback(
@@ -101,7 +102,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
         setErrorIndex(matchedLength)
       }
     },
-    [displayWords, matchedLength, mnemonicWords, isMatchedWord],
+    [displayWords, matchedLength, mnemonicWords, isMatchedWord]
   )
 
   if (!mnemonic) return <>{t("No Mnemonic Available")}</>
@@ -113,7 +114,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
           <span className="text-body-secondary text-xs">
             {t("Confirm your recovery phrase by selecting the words below.")}
           </span>
-          <div className="bg-black-secondary group relative overflow-hidden rounded p-2">
+          <div className="group relative overflow-hidden rounded bg-black-secondary p-2">
             <div
               className={`grid min-h-[12.6rem] grid-cols-4 ${
                 mnemonicWords!.length > 12 && "lg:grid-cols-6"
@@ -132,6 +133,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
                     }
                     active={matchedLength === i}
                     error={errorIndex === i}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                     key={`mnemonic-${i}`}
                   />
                 ))}
@@ -141,6 +143,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
             {!!displayWords &&
               displayWords.map((word, i) => (
                 <WordOption
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   key={`decoyWords-${i}`}
                   onClick={() => handleSelectWord(i)}
                   word={word}
@@ -161,7 +164,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
           <div className="flex w-full items-center justify-between gap-2">
             <div className="w-48">
               <button
-                className="text-body-secondary hover:text-grey-300 flex cursor-pointer items-center gap-2"
+                className="flex cursor-pointer items-center gap-2 text-body-secondary hover:text-grey-300"
                 onClick={onBack}
                 type="button"
               >
@@ -171,7 +174,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
             </div>
             <div className="flex h-11 grow justify-center">
               <button
-                className="text-grey-300 hover:text-body cursor-pointer gap-5 self-center font-bold"
+                className="cursor-pointer gap-5 self-center font-bold text-grey-300 hover:text-body"
                 onClick={onSkip}
                 type="button"
               >

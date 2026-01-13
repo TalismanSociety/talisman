@@ -1,13 +1,12 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Checkbox } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { api } from "@ui/api"
 
 import { AccountIcon } from "../../AccountIcon"
 import { Address } from "../../Address"
@@ -24,19 +23,16 @@ export const ConnectSignetSelectAccounts = () => {
         acc[vault.address] = true
         return acc
       },
-      {} as Record<string, boolean>,
-    ),
+      {} as Record<string, boolean>
+    )
   )
 
-  const handleToggle = useCallback(
-    (address: string) => {
-      setSelectedAccounts((prev) => ({
-        ...prev,
-        [address]: !prev?.[address],
-      }))
-    },
-    [setSelectedAccounts],
-  )
+  const handleToggle = useCallback((address: string) => {
+    setSelectedAccounts((prev) => ({
+      ...prev,
+      [address]: !prev?.[address],
+    }))
+  }, [])
 
   useEffect(() => {
     if (vaults.length === 0) navigate("/accounts/add/signet")
@@ -55,7 +51,7 @@ export const ConnectSignetSelectAccounts = () => {
         title: t("Importing account"),
         subtitle: t("Please wait"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
     try {
       const [address] = await api.accountAddExternal(
@@ -65,7 +61,7 @@ export const ConnectSignetSelectAccounts = () => {
           address: vault.address,
           genesisHash: vault.chain.genesisHash,
           url: signetUrlOrigin,
-        })),
+        }))
       )
 
       notifyUpdate(notificationId, {
@@ -76,7 +72,7 @@ export const ConnectSignetSelectAccounts = () => {
 
       onSuccess(address)
     } catch (e) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(e)
       notifyUpdate(notificationId, {
         type: "error",
@@ -98,7 +94,7 @@ export const ConnectSignetSelectAccounts = () => {
           <button
             type="button"
             key={vault.address}
-            className="bg-grey-850 text-grey-200 enabled:hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left disabled:opacity-50"
+            className="flex h-32 w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-left text-grey-200 enabled:hover:bg-grey-800 disabled:opacity-50"
             onClick={() => handleToggle(vault.address)}
           >
             <AccountIcon

@@ -1,9 +1,8 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-
+import type { TokenId } from "@talismn/chaindata-provider"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 export const SignViewVotingVote: FC<{
   voteAmount: bigint

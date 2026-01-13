@@ -1,10 +1,10 @@
 import { isFunction } from "@polkadot/util"
-import { UnsubscribeFn } from "extension-core"
+import type { UnsubscribeFn } from "extension-core"
 import { DEBUG } from "extension-shared"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }
 type InitSubscriptionCallback<S> = (subject: BehaviorSubject<S>) => UnsubscribeFn
 type MapSubjectToResult<S, R> = (subject: S) => R
@@ -17,7 +17,7 @@ export const useMessageSubscription = <S, R = S>(
   key: string,
   initialSubjectValue: S,
   subscribe: InitSubscriptionCallback<S>,
-  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM,
+  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM
 ): R => {
   // create the rxJS subject if it doesn't exist
   if (!subscriptions[key])
@@ -34,7 +34,7 @@ export const useMessageSubscription = <S, R = S>(
       s.unsubscribe()
       const { subject, unsubscribe } = subscriptions[key]
       if (!subject.observed && unsubscribe) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         DEBUG && console.debug(`[frontend] unsubscribing ${key}`)
 
         // unsubscribe from backend updates to prevent unnecessary network connections
@@ -51,7 +51,7 @@ export const useMessageSubscription = <S, R = S>(
     if (!unsubscribe) {
       const cb = subscribe(subject)
 
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       DEBUG && console.debug(`[frontend] subscribing ${key}`)
 
       if (isFunction(cb)) subscriptions[key].unsubscribe = cb

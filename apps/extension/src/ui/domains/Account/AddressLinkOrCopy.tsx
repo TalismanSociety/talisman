@@ -1,10 +1,9 @@
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
-
 import { useAnyNetwork } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
+import { type FC, useCallback, useMemo } from "react"
 
 import { Address } from "./Address"
 

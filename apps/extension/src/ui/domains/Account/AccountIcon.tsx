@@ -1,12 +1,11 @@
 import type { IconTheme } from "@polkadot/react-identicon/types"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { TalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
-import { Address, IdenticonType } from "extension-core"
-import { CSSProperties, FC, lazy, Suspense, useMemo } from "react"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useNetworkByGenesisHash, useSetting } from "@ui/state"
+import type { Address, IdenticonType } from "extension-core"
+import { type CSSProperties, type FC, lazy, Suspense, useMemo } from "react"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
@@ -27,7 +26,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: `0x${string}` }) => {
   return chain ? (
     <NetworkLogo
       networkId={chain.id}
-      className="bg-grey-800 !absolute right-[-0.2em] top-[-0.2em] z-10 rounded-full text-[0.5em]"
+      className="!absolute top-[-0.2em] right-[-0.2em] z-10 rounded-full bg-grey-800 text-[0.5em]"
     />
   ) : null
 }
@@ -79,7 +78,7 @@ const AccountIconFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className,
+      className
     )}
   ></div>
 )

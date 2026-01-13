@@ -1,11 +1,11 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 export const useNomPoolState = (
   chainId: DotNetworkId | null | undefined,
-  poolId: number | string | null | undefined,
+  poolId: number | string | null | undefined
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 
@@ -19,7 +19,7 @@ export const useNomPoolState = (
         sapi.getStorage<{ member_counter: number; state: { type: string } }>(
           "NominationPools",
           "BondedPools",
-          [poolId],
+          [poolId]
         ),
       ])
 

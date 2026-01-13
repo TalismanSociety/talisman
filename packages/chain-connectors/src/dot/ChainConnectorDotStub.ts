@@ -1,14 +1,15 @@
 import { WsProvider } from "@polkadot/rpc-provider"
-import { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 
-import { IChainConnectorDot } from "./IChainConnectorDot"
+import type { IChainConnectorDot } from "./IChainConnectorDot"
 
 const AUTO_CONNECT_TIMEOUT = 3_000
 const TIMEOUT = 10_000
 
 export class ChainConnectorDotStub implements IChainConnectorDot {
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
   #network: DotNetwork
   #provider: WsProvider
 
@@ -22,10 +23,10 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
   }
 
   async send<T = unknown>(
-    chainId: DotNetworkId,
+    _chainId: DotNetworkId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean,
+    isCacheable?: boolean
   ): Promise<T> {
     await this.#provider.isReady
 
@@ -33,12 +34,12 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
   }
 
   async subscribe(
-    chainId: DotNetworkId,
+    _chainId: DotNetworkId,
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout?: number | false,
+    timeout?: number | false
   ): Promise<(unsubscribeMethod: string) => void> {
     await this.#provider.isReady
 

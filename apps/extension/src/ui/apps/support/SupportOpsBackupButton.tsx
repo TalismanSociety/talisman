@@ -1,11 +1,10 @@
+import downloadJson from "@talisman/util/downloadJson"
 import { SaveIcon } from "@talismn/icons"
-import { FC, useCallback } from "react"
+import { type FC, useCallback } from "react"
 import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
-import downloadJson from "@talisman/util/downloadJson"
-
 import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
-import { TalismanJsonBackup } from "./shared/types"
+import type { TalismanJsonBackup } from "./shared/types"
 
 export const SupportOpsBackup = () => {
   const { isOpen, open, close } = useOpenClose()
@@ -40,7 +39,7 @@ const BackupModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
           <br />
           Make sure to store this file securely.
         </p>
-        <div className="bg-alert-warn/10 text-alert-warn flex items-center justify-center gap-8 rounded p-5 px-8 text-center text-sm">
+        <div className="flex items-center justify-center gap-8 rounded bg-alert-warn/10 p-5 px-8 text-center text-alert-warn text-sm">
           <p>
             <strong>DO NOT</strong> share your backup file with <strong>anyone</strong>.
             <br />

@@ -1,8 +1,7 @@
-import { EthNetwork, EvmErc20Token } from "@talismn/chaindata-provider"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import type { EthNetwork, EvmErc20Token } from "@talismn/chaindata-provider"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
-
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 import { ViewDetailsAddress } from "../Sign/ViewDetails/ViewDetailsAddress"
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
@@ -23,9 +22,9 @@ export const CustomErc20TokenViewDetails = ({
     <>
       <PillButton onClick={open}>{t("View Details")}</PillButton>
       <Drawer containerId="main" isOpen={isOpen} onDismiss={close} anchor="bottom">
-        <div className="bg-grey-800 text-body-secondary flex max-h-full flex-col rounded-t-xl p-12 text-sm">
+        <div className="flex max-h-full flex-col rounded-t-xl bg-grey-800 p-12 text-body-secondary text-sm">
           <h3 className="text-sm">{t("Token Details")}</h3>
-          <div className="scrollable scrollable-700 text-body leading-paragraph overflow-y-auto">
+          <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">
             <ViewDetailsField label={t("Network")}>{network.name}</ViewDetailsField>
             <ViewDetailsField label={t("Symbol")}>{token.symbol}</ViewDetailsField>
             <ViewDetailsField label={t("Decimals")}>{token.decimals}</ViewDetailsField>

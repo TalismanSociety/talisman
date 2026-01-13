@@ -1,5 +1,11 @@
 import { classNames } from "@talismn/util"
-import { DetailedHTMLProps, forwardRef, InputHTMLAttributes, PropsWithChildren, useId } from "react"
+import {
+  type DetailedHTMLProps,
+  forwardRef,
+  type InputHTMLAttributes,
+  type PropsWithChildren,
+  useId,
+} from "react"
 
 // can't override size, naming this variant instead but it's only for size
 type ToggleVariant = "default" | "sm" | "tiny"
@@ -29,23 +35,23 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
         className={classNames(
           "relative inline-flex items-center",
           props.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-          className,
+          className
         )}
       >
         <input id={id} ref={ref} type="checkbox" className="peer sr-only" {...props} />
         <div
           className={classNames(
-            "bg-grey-600 peer box-content shrink-0 rounded-full border-2 border-transparent",
-            "peer-focus-visible:border-body peer-focus:outline-none",
-            "peer-checked:after:bg-primary peer-checked:after:translate-x-full",
-            "after:bg-grey-800 relative after:absolute after:left-1 after:top-1 after:rounded-full after:transition-all after:content-['']",
-            VARIANTS[variant],
+            "peer box-content shrink-0 rounded-full border-2 border-transparent bg-grey-600",
+            "peer-focus:outline-none peer-focus-visible:border-body",
+            "peer-checked:after:translate-x-full peer-checked:after:bg-primary",
+            "relative after:absolute after:top-1 after:left-1 after:rounded-full after:bg-grey-800 after:transition-all after:content-['']",
+            VARIANTS[variant]
           )}
           data-testid="component-toggle-button"
         ></div>
         {children && <span className="ml-3">{children}</span>}
       </label>
     )
-  },
+  }
 )
 Toggle.displayName = "Toggle"

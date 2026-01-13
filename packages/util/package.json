@@ -12,18 +12,19 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-util.cjs.js",
-  "module": "dist/talismn-util.esm.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "files": [
-    "/dist"
+    "dist"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "test": "jest",
-    "lint": "eslint src --max-warnings 0",
-    "clean": "rm -rf dist .turbo node_modules"
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo node_modules",
+    "build": "tsup --silent",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "bignumber.js": "^9.1.2",
@@ -32,22 +33,25 @@
     "lodash-es": "4.17.21"
   },
   "devDependencies": {
-    "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
-    "@types/jest": "^29.5.14",
     "@types/lodash-es": "4.17.12",
-    "eslint": "^8.57.1",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
   "peerDependencies": {
     "rxjs": ">= 7.8.1"
   },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "@talismn/eslint-config/base"
-    ]
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "@talismn/source": "./src/index.ts",
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
   }
 }

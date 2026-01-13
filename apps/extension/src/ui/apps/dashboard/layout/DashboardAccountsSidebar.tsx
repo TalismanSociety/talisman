@@ -1,19 +1,6 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { CheckIcon, EyeIcon, PencilIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import {
-  AccountsCatalogTree,
-  AccountType,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-  isAccountPortfolio,
-  TreeItem,
-} from "extension-core"
-import { FC, Fragment, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
 import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
@@ -24,10 +11,22 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import {
+  type AccountsCatalogTree,
+  type AccountType,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+  type TreeItem,
+} from "extension-core"
+import { type FC, Fragment, type ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const DashboardAccountsSidebar: FC = () => {
   return (
-    <div className="bg-grey-900 rounded-lg">
+    <div className="rounded-lg bg-grey-900">
       <Accounts />
     </div>
   )
@@ -79,7 +78,7 @@ const Accounts = () => {
               name: item.name,
               total: item.tree.reduce(
                 (sum, account) => sum + (balanceTotals[account.address] ?? 0),
-                0,
+                0
               ),
               addresses: item.tree.map((account) => account.address),
             }
@@ -110,7 +109,7 @@ const Accounts = () => {
   return (
     <div className="flex w-full flex-col gap-8 p-8" data-testid="sidebar-account-list">
       <div className="flex h-16 shrink-0 items-center">
-        <div className="grow pl-4 text-[2rem] font-bold">{t("Accounts")}</div>
+        <div className="grow pl-4 font-bold text-[2rem]">{t("Accounts")}</div>
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton onClick={handleManageAccountsClick} className="p-3">
@@ -128,11 +127,11 @@ const Accounts = () => {
           <TooltipContent>{t("Add Account")}</TooltipContent>
         </Tooltip>
       </div>
-      <div className="bg-grey-800 h-0.5"></div>
+      <div className="h-0.5 bg-grey-800"></div>
       <TreeAccounts options={allPortfolioOptions} showAllAccounts />
       {!!allWatchedOptions.length && (
         <>
-          {!!allPortfolioOptions.length && <div className="bg-grey-800 h-0.5"></div>}
+          {!!allPortfolioOptions.length && <div className="h-0.5 bg-grey-800"></div>}
           <div className="flex items-center gap-4">
             <EyeIcon />
             <div className="text-sm">{t("Followed only")}</div>
@@ -200,12 +199,12 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
   }, [option.address, searchParams])
 
   return (
-    <div className="hover:bg-grey-750 group relative w-full rounded-[12px]">
+    <div className="group relative w-full rounded-[12px] hover:bg-grey-750">
       <SidebarButtonBase
         label={
           <div className="flex w-full items-center gap-2">
             <div className="truncate">{option.name ?? shortenAddress(option.address)}</div>
-            <AccountTypeIcon className="text-primary shrink-0" type={option.accountType} />
+            <AccountTypeIcon className="shrink-0 text-primary" type={option.accountType} />
           </div>
         }
         logo={<div className="size-20 shrink-0"></div>}
@@ -236,7 +235,7 @@ const AccountOption = ({ option }: { option: AccountAccountOption }) => {
       <AccountIconCopyAddressButton
         address={option.address}
         genesisHash={option.genesisHash}
-        className="absolute left-4 top-4 text-[4rem]"
+        className="absolute top-4 left-4 text-[4rem]"
         tooltipPlacement="bottom"
       />
     </div>
@@ -308,19 +307,19 @@ const SidebarButtonBase: FC<{
     <button
       type="button"
       className={classNames(
-        "hover:bg-grey-750 flex h-28 w-full items-center gap-4 rounded-[12px] px-4 text-left",
-        isSelected && "bg-grey-800",
+        "flex h-28 w-full items-center gap-4 rounded-[12px] px-4 text-left hover:bg-grey-750",
+        isSelected && "bg-grey-800"
       )}
       onClick={onClick}
     >
       <div className="size-20 text-[4rem]">{logo}</div>
       <div className="flex grow flex-col justify-center gap-1 overflow-hidden">
-        <div className="text-grey-300 truncate">{label}</div>
-        <div className="text-grey-500 truncate text-xs">{fiat}</div>
+        <div className="truncate text-grey-300">{label}</div>
+        <div className="truncate text-grey-500 text-xs">{fiat}</div>
       </div>
       <div>
         {isSelected ? (
-          <div className="bg-primary flex size-10 items-center justify-center rounded-full text-xs text-black">
+          <div className="flex size-10 items-center justify-center rounded-full bg-primary text-black text-xs">
             <CheckIcon />
           </div>
         ) : (

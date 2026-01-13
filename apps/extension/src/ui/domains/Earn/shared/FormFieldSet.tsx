@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, PropsWithChildren, ReactNode } from "react"
+import type { FC, PropsWithChildren, ReactNode } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({
@@ -10,8 +10,8 @@ export const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({
   return (
     <div
       className={cn(
-        "bg-grey-850 flex w-full flex-col justify-center gap-2 rounded p-8 py-4",
-        className,
+        "flex w-full flex-col justify-center gap-2 rounded bg-grey-850 p-8 py-4",
+        className
       )}
     >
       {children}
@@ -40,10 +40,10 @@ export const FormFieldSetRow: FC<
   return (
     <div
       className={cn(
-        "text-body-secondary flex h-[1.5em] w-full items-center justify-between gap-4 overflow-hidden text-base",
+        "flex h-[1.5em] w-full items-center justify-between gap-4 overflow-hidden text-base text-body-secondary",
         variant === "small" && "text-sm",
         variant === "xs" && "text-xs",
-        className,
+        className
       )}
     >
       <Tooltip>
@@ -57,11 +57,11 @@ export const FormFieldSetRow: FC<
         </TooltipTrigger>
         {!!description && <TooltipContent>{description}</TooltipContent>}
       </Tooltip>
-      <div className={cn("text-body max-w-full truncate", valueClassName)}>{children}</div>
+      <div className={cn("max-w-full truncate text-body", valueClassName)}>{children}</div>
     </div>
   )
 }
 
 export const FormFieldSetSeparator: FC<{ className?: string }> = ({ className }) => {
-  return <div className={cn("bg-grey-800 my-4 h-px w-full shrink-0", className)} />
+  return <div className={cn("my-4 h-px w-full shrink-0 bg-grey-800", className)} />
 }

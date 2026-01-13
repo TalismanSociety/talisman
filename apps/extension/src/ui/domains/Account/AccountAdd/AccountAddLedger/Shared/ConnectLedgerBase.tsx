@@ -1,13 +1,12 @@
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { Spacer } from "@talisman/components/Spacer"
 import {
   LedgerConnectionStatus,
-  LedgerConnectionStatusProps,
+  type LedgerConnectionStatusProps,
 } from "@ui/domains/Account/LedgerConnectionStatus"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 type ConnectLedgerBaseProps = {
   appName: string
@@ -63,13 +62,14 @@ export const ConnectLedgerBase: FC<ConnectLedgerBaseProps> = ({
     }
   }, [isReadyCheck, onReadyChanged, t])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     connect()
   }, [connect, isReadyCheck, onReadyChanged])
 
   return (
     <div className={className}>
-      <div className="text-body-secondary m-0">
+      <div className="m-0 text-body-secondary">
         {t("Connect and unlock your Ledger, then open the {{appName}} app on your Ledger.", {
           appName,
         })}

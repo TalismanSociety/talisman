@@ -1,8 +1,7 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
+import { useYieldxyzTalismanInputTokenIds } from "@ui/state"
 import { uniq } from "lodash-es"
 import { useCallback, useMemo } from "react"
-
-import { useYieldxyzTalismanInputTokenIds } from "@ui/state"
 
 import { useYieldxyzEnterModal } from "../Earn/yieldxyz/enter/useYieldxyzEnterModal"
 
