@@ -109,7 +109,7 @@ const isAddressInTree = (tree: Tree, address: string): boolean => {
       .map((address) => normalizeAddress(address))
 
     return addresses.includes(normalizeAddress(address))
-  } catch (err) {
+  } catch {
     return false
   }
 }

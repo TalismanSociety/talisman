@@ -27,6 +27,7 @@ export type BalanceDetailRow = {
   fiat: number | null
   locked: boolean
   address?: Address
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   meta?: any
   isLoading?: boolean
   balance: Balance | null
@@ -123,7 +124,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
     )
 
     return [...available, ...locked, ...reserved, ...staked]
-      .filter((row) => row && row.tokens.gt(0))
+      .filter((row) => row?.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, tokenId, currency])
 

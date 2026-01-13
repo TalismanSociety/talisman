@@ -28,6 +28,7 @@ const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => 
   return (
     <div className="flex flex-col gap-1 text-left">
       {networks.map(({ name }, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <div key={i}>{name}</div>
       ))}
     </div>
@@ -63,6 +64,7 @@ export const PortfolioNetworksLogoStack = ({ networkIds, className, max = 4 }: P
   return (
     <div className={classNames("h-[1em] pl-[0.25rem]", className)}>
       {visibleNetworks.map((network, idx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <PortfolioNetworksLogoStackItem key={`${network}-${idx}`} network={network} />
       ))}
       <PortfolioNetworksLogoStackMore networks={moreNetworks} />

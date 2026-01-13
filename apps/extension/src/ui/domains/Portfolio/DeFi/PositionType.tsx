@@ -19,7 +19,6 @@ export const PositionType: FC<{ type: DefiPositionType }> = ({ type }) => {
         return t("Staking")
       case "stream":
         return t("Streaming")
-      case "unknown":
       default:
         return t("Position")
     }

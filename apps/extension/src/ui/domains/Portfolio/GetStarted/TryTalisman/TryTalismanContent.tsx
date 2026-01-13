@@ -145,6 +145,7 @@ export const TryTalismanContent: FC<{
             </div>
 
             <button
+              type="button"
               className={classNames(
                 "rounded border border-body-disabled px-8 py-6 text-body-disabled",
                 address.length && "border-primary bg-primary text-black hover:bg-primary/95"
@@ -169,6 +170,7 @@ export const TryTalismanContent: FC<{
       <div className="grid grid-cols-2 gap-4">
         {POPULAR_ACCOUNTS.map((account, index) => (
           <FollowAccountButton
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
             key={index}
             name={account.name}
             address={account.address}

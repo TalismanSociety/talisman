@@ -499,11 +499,13 @@ export const useEthTransaction = (
 
   // reset priority in case chain changes
   // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setPriority(undefined)
   }, [evmNetworkId])
 
   // set default priority based on EIP1559 support
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
     setPriority(hasEip1559Support ? "low" : "recommended")

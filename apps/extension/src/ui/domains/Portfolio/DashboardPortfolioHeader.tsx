@@ -137,6 +137,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
         <SelectionScope folder={selectedFolder} account={selectedAccount} />
         <div className="flex w-full max-w-full items-center gap-6">
           <button
+            type="button"
             className={classNames(
               "pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
@@ -326,6 +327,7 @@ const TopActions: FC = () => {
     <div className="z-[1] flex w-full items-center justify-between gap-8">
       <div className="flex justify-center gap-4" data-testid="top-actions-buttons">
         {topActions.map((action, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <Action key={index} {...action} />
         ))}
       </div>

@@ -76,6 +76,7 @@ const DefiPositionSection: FC<{ position: DefiPosition; type: PositionSectionTyp
         </div>
       </div>
       {items.map((item: DefiPositionItem, idx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <DefiPositionItemRow key={idx} item={item} networkId={position.networkId} />
       ))}
     </div>

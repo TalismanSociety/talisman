@@ -91,6 +91,7 @@ export const Statistics = ({
       <div className="flex items-center gap-2">
         {showCurrencyToggle && (
           <button
+            type="button"
             className={classNames(
               "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
               currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",

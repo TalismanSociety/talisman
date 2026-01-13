@@ -14,7 +14,7 @@ export const StaleBalancesIcon = ({ className, staleChains = [] }: Props) => {
   const nMoreChains = Math.max(0, staleChains.length - 1)
   const andNMore =
     nMoreChains > 0
-      ? " " + t("and {{nMoreChains}} more {{chainOrChains}}", { nMoreChains, chainOrChains })
+      ? ` ${t("and {{nMoreChains}} more {{chainOrChains}}", { nMoreChains, chainOrChains })}`
       : ""
 
   const tooltipText = t(
