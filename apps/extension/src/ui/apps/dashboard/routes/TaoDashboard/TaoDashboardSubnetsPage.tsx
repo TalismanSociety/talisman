@@ -1,6 +1,6 @@
 import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
-import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/TaoDashboardHeader"
-import { TaoDashboardSubnetsTable } from "@ui/domains/TaoDashboard/TaoDashboardSubnetsTable"
+import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/subnets/TaoDashboardHeader"
+import { TaoDashboardSubnetsTable } from "@ui/domains/TaoDashboard/subnets/TaoDashboardSubnetsTable"
 
 export const TaoDashboardSubnetsPage = () => {
   return (

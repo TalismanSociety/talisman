@@ -4,7 +4,7 @@ import { cn } from "@talismn/util"
 import { useBalances, useIsBalanceInitializing, useToken } from "@ui/state"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
 export const TaoDashboardHeader = () => {

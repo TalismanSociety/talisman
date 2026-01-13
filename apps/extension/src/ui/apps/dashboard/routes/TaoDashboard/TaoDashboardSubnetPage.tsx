@@ -1,6 +1,6 @@
 import { isTokenSubDTao, subDTaoTokenId } from "@talismn/chaindata-provider"
-import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/constants"
 import { TaoDashboardSubnetTradingUI } from "@ui/domains/TaoDashboard/subnet/TaoDashboardSubnetTradingUI"
+import { BITTENSOR_NETWORK_ID } from "@ui/domains/TaoDashboard/subnets/constants"
 import { useTokensMap } from "@ui/state"
 import { useMemo } from "react"
 import { Navigate, useParams } from "react-router-dom"

@@ -6,7 +6,7 @@ import { useToken } from "@ui/state"
 import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BITTENSOR_NETWORK_ID } from "../constants"
+import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 import { useTaoDashboardSubnetPickerModal } from "./TaoDashboardSubnetPickerModal"
 
 export const TaoDashboardSubnetBreadcrumb: FC<{ netuid: number }> = ({ netuid }) => {

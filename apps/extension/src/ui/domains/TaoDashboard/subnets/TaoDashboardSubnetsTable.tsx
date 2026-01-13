@@ -2,7 +2,7 @@ import { cn } from "@talismn/util"
 import { type FC, type PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { TokenLogo } from "../Asset/TokenLogo"
+import { TokenLogo } from "../../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
 import { type TaoDashboardSubnet, useTaoDashboardSubnets } from "./useTaoDashboardSubnets"
 
@@ -143,10 +143,7 @@ const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
         <TokenLogo tokenId={subnet.tokenId} className="size-20" />
         <span className="font-bold">{subnet.name}</span>
       </DataCell>
-      <DataCell>
-        {subnet.price.toFixed(2)}
-        {/* <AssetPrice tokenId={subnet.tokenId} balances={null} /> */}
-      </DataCell>
+      <DataCell>{subnet.price.toFixed(2)}</DataCell>
       <DataCell>{subnet.score.toFixed(2)}</DataCell>
       <DataCell>staked</DataCell>
       <DataCell>volume</DataCell>

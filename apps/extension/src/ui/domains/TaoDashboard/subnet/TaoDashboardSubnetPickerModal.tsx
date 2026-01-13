@@ -6,7 +6,7 @@ import { type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, WizardModalDialog } from "talisman-ui"
 
-import { BITTENSOR_NETWORK_ID } from "../constants"
+import { BITTENSOR_NETWORK_ID } from "../subnets/constants"
 import { SubnetPicker } from "./TaoDashboardSubnetPicker"
 
 type TaoDashboardSubnetPickerInitProps = {
