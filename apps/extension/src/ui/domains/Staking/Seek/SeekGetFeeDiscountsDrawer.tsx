@@ -61,7 +61,7 @@ export const SeekGetFeeDiscountsDrawer = ({
       <div className="flex w-full flex-col items-center gap-12 rounded-t-xl bg-grey-850 p-12">
         <div className="flex w-full items-center justify-between">
           <div className="flex-1 text-center font-bold text-body">{t("Get Fee Discounts")}</div>
-          <button className="ml-auto" onClick={handleDismiss} aria-label="Close">
+          <button type="button" className="ml-auto" onClick={handleDismiss} aria-label="Close">
             <CloseIcon />
           </button>
         </div>

@@ -13,7 +13,6 @@ export const getAddressFromMultiAddress = (multiAddress: MultiAddress | string) 
       return encodeAddressSs58(multiAddress.value.asBytes())
     case "Address20":
       return normalizeAddress(multiAddress.value.asHex())
-    case "Index":
     default:
       throw new Error("Invalid MultiAddress type")
   }

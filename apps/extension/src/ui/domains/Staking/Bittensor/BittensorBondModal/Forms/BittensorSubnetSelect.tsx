@@ -101,6 +101,7 @@ export const BittensorSubnetSelect = () => {
   }, [sortMethod, subnetData])
 
   // Reset scroll to top when sort method or search changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
@@ -128,7 +129,6 @@ export const BittensorSubnetSelect = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // biome-ignore lint/a11y/noAutofocus: legacy
               autoFocus
             />
           </div>

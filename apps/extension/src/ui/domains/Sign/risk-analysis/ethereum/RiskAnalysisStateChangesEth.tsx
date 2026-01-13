@@ -170,6 +170,7 @@ export const RiskAnalysisStateChangesEth: FC<{
       {!noTitle && <div className="text-body-secondary text-sm">{t("Expected changes")}</div>}
       {changes.map((change, i) => (
         <StateChange
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           key={i}
           change={change}
           simulation={simulation}

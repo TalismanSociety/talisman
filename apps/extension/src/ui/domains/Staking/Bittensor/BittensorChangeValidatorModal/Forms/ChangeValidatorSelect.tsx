@@ -112,6 +112,7 @@ export const ChangeValidatorSelect = () => {
       })
   }, [combinedValidatorsData, sortMethod, currentHotkey, newHotkey])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, search])
@@ -159,7 +160,6 @@ export const ChangeValidatorSelect = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // biome-ignore lint/a11y/noAutofocus: legacy
               autoFocus
             />
           </div>
@@ -179,6 +179,7 @@ export const ChangeValidatorSelect = () => {
               Array(10)
                 .fill(null)
                 .map((_, i) => {
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   return <ValidatorRowSkeleton key={i} />
                 })
             ) : (

@@ -20,10 +20,12 @@ export type SapiConnectorProps = {
   submit?: (
     payload: SignerPayloadJSON,
     signature?: `0x${string}`,
+    // biome-ignore lint/suspicious/noExplicitAny: type unknown at this package level
     txInfo?: any
   ) => Promise<{ hash: `0x${string}` }>
   submitWithBittensorMevShield?: (
     payload: SignerPayloadJSON,
+    // biome-ignore lint/suspicious/noExplicitAny: type unknown at this package level
     txInfo?: any
   ) => Promise<{ hash: `0x${string}` }>
 }

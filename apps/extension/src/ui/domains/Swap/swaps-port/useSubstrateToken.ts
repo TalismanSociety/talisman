@@ -58,6 +58,7 @@ export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
     return () => abortController.abort()
   }, [apiLoadable, chain, props, token])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!token) return
     return () => setToken(null)

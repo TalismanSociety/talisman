@@ -30,6 +30,7 @@ const useExternalAddressWarningProvider = () => {
     return isAlpha ? "alpha" : "network"
   }, [network, token, to, accounts, isAlreadyConfirmed])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsWarningAcknowledged(false)
     setDontRemindAgain(false)

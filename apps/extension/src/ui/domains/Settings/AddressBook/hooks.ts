@@ -18,7 +18,7 @@ export const useChainsFilteredByAddressPrefix = (address?: string) => {
       // 42 is generic format
       if (ss58Format === 42) return chains
       return chains.filter((c) => c.prefix === ss58Format)
-    } catch (err) {
+    } catch {
       // invalid address
       return []
     }

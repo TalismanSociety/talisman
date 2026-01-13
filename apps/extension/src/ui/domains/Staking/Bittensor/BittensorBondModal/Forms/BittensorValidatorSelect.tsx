@@ -102,6 +102,7 @@ export const BittensorValidatorSelect = () => {
   }, [combinedValidatorsData, sortMethod])
 
   // Reset scroll to top when sort method or search changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, search])
@@ -129,7 +130,6 @@ export const BittensorValidatorSelect = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // biome-ignore lint/a11y/noAutofocus: legacy
               autoFocus
             />
           </div>
@@ -149,6 +149,7 @@ export const BittensorValidatorSelect = () => {
               Array(10)
                 .fill(null)
                 .map((_, i) => {
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   return <ValidatorRowSkeleton key={i} />
                 })
             ) : (

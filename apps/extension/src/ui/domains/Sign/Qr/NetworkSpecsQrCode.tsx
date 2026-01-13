@@ -37,7 +37,6 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
           src={chainspecQrUrl}
           ref={ref}
           onLoad={onLoad}
-          // biome-ignore lint/correctness/noUnknownProperty: legacy
           onLoadedData={onLoad}
           alt=""
           crossOrigin={IS_FIREFOX ? undefined : "anonymous"}

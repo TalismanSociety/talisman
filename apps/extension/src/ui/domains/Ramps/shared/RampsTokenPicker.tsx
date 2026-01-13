@@ -79,6 +79,7 @@ export const RampsTokenPicker: FC<{
 
   // scroll to top on search change
   const refContainer = useRef<HTMLDivElement>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!refContainer.current) return
     refContainer.current.scrollTo(0, 0)

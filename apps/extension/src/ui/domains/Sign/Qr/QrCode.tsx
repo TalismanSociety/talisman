@@ -89,6 +89,7 @@ const QrCodeInner = ({ data, image, imageOptions }: Props) => {
   }, [data, image, imageOptions, t])
 
   const [qrCode, setQrCode] = useState<string | null>(null)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const interval = 125 // 1000ms/125ms = 8 frames per second
     let index = 0

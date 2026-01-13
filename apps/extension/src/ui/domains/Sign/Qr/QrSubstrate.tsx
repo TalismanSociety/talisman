@@ -392,31 +392,28 @@ const SendPage = ({
       >
         <div className="flex flex-col items-center rounded-t bg-black-tertiary p-12">
           <div className="mb-16 font-bold">{t("Add network")}</div>
-          <>
-            <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
-              <>
-                <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 text-body-secondary">
-                  <LoaderIcon className="animate-spin-slow text-xl" />
-                </div>
-                {!!genesisHash && qrCodeSource && (
-                  <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
-                )}
-              </>
-            </div>
 
-            <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
-            <div className="mt-10 mb-16 max-w-md text-center text-body-secondary text-sm leading-10">
-              <Trans
-                t={t}
-                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
-                components={{
-                  Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
-                  ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
-                }}
-                values={{ chainName: chain?.name ?? t("Unknown") }}
-              />
+          <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
+            <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 text-body-secondary">
+              <LoaderIcon className="animate-spin-slow text-xl" />
             </div>
-          </>
+            {!!genesisHash && qrCodeSource && (
+              <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
+            )}
+          </div>
+
+          <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
+          <div className="mt-10 mb-16 max-w-md text-center text-body-secondary text-sm leading-10">
+            <Trans
+              t={t}
+              defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain><ChainLogo />{{chainName}}</Chain> network."
+              components={{
+                Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
+                ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
+              }}
+              values={{ chainName: chain?.name ?? t("Unknown") }}
+            />
+          </div>
 
           <div className="flex w-full flex-col gap-4">
             <Button

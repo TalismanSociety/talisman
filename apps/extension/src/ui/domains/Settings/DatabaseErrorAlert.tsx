@@ -92,6 +92,7 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
               </Button>
             ) : null}
             <button
+              type="button"
               className="self-center p-4 text-xs hover:text-body focus:text-body"
               onClick={dismiss}
             >

@@ -61,7 +61,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
   const reject = useCallback(async () => {
     try {
       if (currentRequest) await cancelSignFn(currentRequest.id)
-    } catch (err) {
+    } catch {
       // ignore, request doesn't exist
       // we just want popup to close
     }

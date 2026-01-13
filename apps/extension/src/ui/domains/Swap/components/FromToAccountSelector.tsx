@@ -71,13 +71,17 @@ const FromAccount = () => {
         setFromEvmAddress(address)
 
         // reset toAddress to none
-        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
+        setToEvmAddress(null)
+        setToSubstrateAddress(null)
+        setToBtcAddress(null)
       }
       const setAsPolkadot = () => {
         setFromSubstrateAddress(address)
 
         // reset toAddress to none
-        setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
+        setToEvmAddress(null)
+        setToSubstrateAddress(null)
+        setToBtcAddress(null)
       }
 
       // if address is in keyring, check platform

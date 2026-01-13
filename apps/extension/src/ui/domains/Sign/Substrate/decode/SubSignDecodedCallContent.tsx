@@ -126,7 +126,7 @@ const formatArgs = (args: unknown): unknown => {
   if (typeof args === "boolean") return args.toString()
   if (typeof args === "string") return args
   if (typeof args === "number") return args
-  if (typeof args === "bigint") return args.toString() + "n"
+  if (typeof args === "bigint") return `${args.toString()}n`
   if (Array.isArray(args)) return args.map(formatArgs)
 
   if (args instanceof Binary) {

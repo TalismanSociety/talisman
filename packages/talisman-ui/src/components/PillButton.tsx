@@ -20,7 +20,6 @@ const getFontSize = (size: PillButtonSize) => {
       return "text-tiny"
     case "sm":
       return "text-sm"
-    case "xs":
     default:
       return "text-xs"
   }

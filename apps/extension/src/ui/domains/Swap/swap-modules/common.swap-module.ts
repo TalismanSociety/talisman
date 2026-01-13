@@ -223,7 +223,7 @@ export const swappingAtom = atom(false)
 export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
   "bestRate"
 )
-export const swapQuoteRefresherAtom = atom(new Date().getTime())
+export const swapQuoteRefresherAtom = atom(Date.now())
 
 export const resetSwapFormAtom = atom(null, (_, set) => {
   set(fromEvmAddressAtom, null)

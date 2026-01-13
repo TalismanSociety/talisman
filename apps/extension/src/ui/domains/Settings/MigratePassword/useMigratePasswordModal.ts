@@ -23,6 +23,7 @@ export const useMigratePasswordModal = () => {
   const shouldMigrate = useShouldMigratePassword()
   const dismissed = useDismiss()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsOpen(!dismissed && shouldMigrate)
   }, [setIsOpen, shouldMigrate, location, dismissed]) // reset modal when location changes

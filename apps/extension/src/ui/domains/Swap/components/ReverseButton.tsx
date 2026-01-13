@@ -9,6 +9,7 @@ export const ReverseButton = () => {
   return (
     <div className="relative w-full">
       <button
+        type="button"
         className={classNames(
           "absolute top-5 left-1/2 -translate-x-1/2 -translate-y-1/2",
           "flex items-center justify-center",

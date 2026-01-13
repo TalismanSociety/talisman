@@ -32,11 +32,10 @@ const useEthSignMessage = (request: EthSignRequest) => {
       const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
       const verifyingAddress = typedMessage?.domain?.verifyingContract as string | undefined
       const chainId = typedMessage?.domain?.chainId
-        ? parseInt(typedMessage.domain?.chainId)
+        ? parseInt(typedMessage.domain?.chainId, 10)
         : undefined
       const ethChainId = request.ethChainId
-      const isInvalidVerifyingContract =
-        verifyingAddress && verifyingAddress.toLowerCase().startsWith("javascript:")
+      const isInvalidVerifyingContract = verifyingAddress?.toLowerCase().startsWith("javascript:")
       return {
         isTypedData,
         typedMessage,
@@ -78,7 +77,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
     try {
       const text = hexToString(request.request)
       return new ParsedMessage(text)
-    } catch (err) {
+    } catch {
       return null
     }
   }, [request.request])

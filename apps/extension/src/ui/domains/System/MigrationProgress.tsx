@@ -47,6 +47,7 @@ export const MigrationProgress = () => {
               </div>
               <ul className="grow overflow-scroll pl-8 text-alert-warn">
                 {migration.errors.map((err, idx) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   <li key={idx} className="list-disc">
                     {migration.name}: {String(err)}
                   </li>

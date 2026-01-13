@@ -93,7 +93,7 @@ export const SelectTokenModal: React.FC<Props> = ({
           <div className="absolute top-0 left-0 flex h-full w-full flex-col bg-black">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <button className="px-12 py-10" onClick={() => setOpen(false)}>
+                <button type="button" className="px-12 py-10" onClick={() => setOpen(false)}>
                   <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
                 </button>
               </div>
@@ -121,6 +121,7 @@ export const SelectTokenModal: React.FC<Props> = ({
               <FadeIn>
                 <div className="absolute top-0 left-0 flex h-full w-full flex-col items-center justify-center bg-black/70">
                   {/* biome-ignore lint/a11y/useKeyWithClickEvents: legacy */}
+                  {/** biome-ignore lint/a11y/noStaticElementInteractions: legacy */}
                   <div
                     className="absolute top-0 left-0 h-full w-full"
                     onClick={() => setAssetWithWarning(null)}
@@ -161,7 +162,7 @@ export const SelectTokenModal: React.FC<Props> = ({
                         href={`https://gopluslabs.io/token-security/${assetWithWarning.chainId}/${assetWithWarning.contractAddress}`}
                         target="_blank"
                       >
-                        <button className="!h-max !rounded !px-6 !py-4 !text-sm">
+                        <button type="button" className="!h-max !rounded !px-6 !py-4 !text-sm">
                           {t("View Report")}
                         </button>
                       </a>
@@ -201,6 +202,7 @@ const OpenSelectorButton = ({
 
   return (
     <button
+      type="button"
       className="flex h-20 items-center gap-4 rounded bg-grey-750 px-4 py-2 text-body-secondary text-sm transition-opacity hover:bg-grey-700"
       onClick={onClick}
     >

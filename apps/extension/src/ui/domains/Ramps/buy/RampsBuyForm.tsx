@@ -1,4 +1,4 @@
-/* eslint-disable react/no-children-prop */
+/** biome-ignore-all lint/correctness/noChildrenProp: tanstack form */
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
@@ -78,7 +78,9 @@ export const RampsBuyForm: FC<{
                             placeholder="100"
                             onChange={(e) =>
                               field.handleChange(
-                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber
+                                Number.isNaN(e.target.valueAsNumber)
+                                  ? undefined
+                                  : e.target.valueAsNumber
                               )
                             }
                           />

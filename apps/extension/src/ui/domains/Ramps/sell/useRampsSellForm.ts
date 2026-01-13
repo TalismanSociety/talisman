@@ -84,6 +84,7 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
   )
 
   // clear provider choice if the token or currency change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     form.resetField("provider")
 

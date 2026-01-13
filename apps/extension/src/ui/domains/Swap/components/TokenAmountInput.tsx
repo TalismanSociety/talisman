@@ -66,11 +66,11 @@ export const TokenAmountInput: FC<Props> = ({
 
   // reset input when fromAddress changes
   const fromAddress = useAtomValue(fromAddressAtom)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     onChangeAmount?.(Decimal.fromPlanck(0n, 1))
 
     // only re-run this effect when `fromAddress` changes
-    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [fromAddress])
 
   const currency = useSelectedCurrency()
@@ -89,7 +89,7 @@ export const TokenAmountInput: FC<Props> = ({
         return Decimal.fromUserInput(formattedInput, selectedAsset.decimals, {
           currency: selectedAsset.symbol,
         })
-      } catch (e) {
+      } catch {
         return Decimal.fromPlanck(0, 1)
       }
     },
@@ -262,6 +262,7 @@ export const TokenAmountInput: FC<Props> = ({
 
         {shouldDisplayBalance ? (
           <button
+            type="button"
             className={classNames(
               "rounded-xs border border-current px-3 py-1 text-[1rem] text-body-secondary",
               !maxAfterGas && "animate-pulse text-body-disabled",

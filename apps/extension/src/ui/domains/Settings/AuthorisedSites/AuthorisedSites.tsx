@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { Spacer } from "@talisman/components/Spacer"
@@ -83,7 +84,6 @@ export const AuthorisedSites = () => {
               t={t}
               components={{
                 Link: (
-                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <a
                     href={TALISMAN_WEB_APP_URL}
                     target="_blank"

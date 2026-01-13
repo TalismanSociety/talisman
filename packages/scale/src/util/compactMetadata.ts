@@ -119,6 +119,7 @@ export const compactMetadata = (
   // then we run those types through a function (addDependentTypes) which will also include
   // all of the types which those types depend on - recursively
   const keepTypes = new Set([...palletsKeepTypes, ...runtimeApisKeepTypes])
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   extraKeepTypes?.forEach((type) => keepTypes.add(type))
 
   // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
@@ -130,6 +131,7 @@ export const compactMetadata = (
 
   // update all type ids to be sequential (fill the gaps left by the deleted types)
   const newTypeIds = new Map<number, number>()
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   metadata.lookup.forEach((type, index) => newTypeIds.set(type.id, index))
   const getNewTypeId = (oldTypeId: number): number => {
     const newTypeId = newTypeIds.get(oldTypeId)

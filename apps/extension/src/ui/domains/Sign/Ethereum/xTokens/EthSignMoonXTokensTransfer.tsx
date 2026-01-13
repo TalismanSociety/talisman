@@ -42,7 +42,7 @@ const decodeInterior = (interior: string): Interior => {
       return { type: "account" as const, address: encodeAddressSs58(address, prefix) }
     }
     default:
-      throw new Error("Unimplemented prelude " + prelude)
+      throw new Error(`Unimplemented prelude ${prelude}`)
   }
 }
 

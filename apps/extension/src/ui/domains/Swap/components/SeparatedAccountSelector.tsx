@@ -208,6 +208,7 @@ export const SeparatedAccountSelector = ({
   return (
     <>
       <button
+        type="button"
         className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
         onClick={() => setOpen(true)}
       >
@@ -289,7 +290,7 @@ const AccountPicker = ({
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <button className="px-12 py-10" onClick={onClose}>
+          <button type="button" className="px-12 py-10" onClick={onClose}>
             <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
         </div>

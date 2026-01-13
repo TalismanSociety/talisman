@@ -113,8 +113,7 @@ const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth
       // for now only check signTypedData's verifying contract's address
       const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
       const verifyingContract = typedMessage?.domain?.verifyingContract as string | undefined
-      if (verifyingContract && verifyingContract.toLowerCase().startsWith("javascript:"))
-        return false
+      if (verifyingContract?.toLowerCase().startsWith("javascript:")) return false
     }
 
     return true

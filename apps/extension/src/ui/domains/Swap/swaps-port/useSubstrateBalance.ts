@@ -53,6 +53,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     if (props.assetHubAssetId === undefined) {
       return void api.query.system
         .account(props.address, (account) => void setBalance(computeSubstrateBalance(api, account)))
+        // biome-ignore lint/suspicious/noAssignInExpressions: legacy
         .then((unsub) => void (unsubRef.current = unsub))
     }
 
@@ -70,6 +71,7 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
     if (!props && balance !== undefined) setBalance(undefined)
   }, [balance, props])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setBalance(undefined)
   }, [props?.address, props?.assetHubAssetId, props?.chainId])

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/useAnchorContent: legacy */
 import { XCircleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { CONNECT_LEDGER_DOCS_URL } from "extension-shared"
@@ -39,7 +40,6 @@ export const ErrorMessageDrawer: FC<{
               defaults="Please ensure that Ledger is authorized in your browser, using the Check tool in <Link>Talisman settings</Link>"
               components={{
                 Link: (
-                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <button
                     type="button"
                     onClick={() =>
@@ -71,7 +71,6 @@ const LedgerGenericRequired = () => {
       defaults="This network requires a new Ledger app. <br />Use the Polkadot Migration Ledger app to migrate your existing accounts. <DocsLink>Learn more.</DocsLink>"
       components={{
         DocsLink: (
-          // biome-ignore lint/a11y/useAnchorContent: legacy
           <a
             href={CONNECT_LEDGER_DOCS_URL}
             target="_blank"
@@ -93,10 +92,12 @@ const wrapStrong = (text?: string) => {
   return text.split(splitter).map((str, i) => {
     const match = extractor.exec(str)
     return match ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: legacy
       <strong key={i} className="p-0 font-bold text-body capitalize">
         {match[1]}
       </strong>
     ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: legacy
       <span key={i}>{str}</span>
     )
   })

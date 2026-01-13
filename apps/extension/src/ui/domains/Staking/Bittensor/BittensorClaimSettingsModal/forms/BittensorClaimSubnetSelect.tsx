@@ -133,6 +133,7 @@ export const BittensorClaimSubnetSelect = () => {
     })
   }, [sortMethod, subnetData])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
@@ -171,7 +172,6 @@ export const BittensorClaimSubnetSelect = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // biome-ignore lint/a11y/noAutofocus: legacy
               autoFocus
             />
           </div>

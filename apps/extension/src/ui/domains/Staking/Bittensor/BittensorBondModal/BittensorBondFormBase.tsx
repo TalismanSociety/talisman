@@ -131,7 +131,7 @@ const TokenInput = () => {
       try {
         const plancks = tokensToPlanck(nextValue, nativeToken.decimals)
         setPlancks(BigInt(plancks))
-      } catch (err) {
+      } catch {
         // invalid input, ignore
         setPlancks(null)
       }
@@ -143,6 +143,7 @@ const TokenInput = () => {
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -221,7 +222,7 @@ const FiatInput = () => {
           }
           const plancks = tokensToPlanck(tokens, nativeToken.decimals)
           return setPlancks(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -236,6 +237,7 @@ const FiatInput = () => {
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true

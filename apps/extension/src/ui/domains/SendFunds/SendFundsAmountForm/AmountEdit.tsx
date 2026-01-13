@@ -74,7 +74,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
       refSkipSync.current = true
       setValue(nextValue)
       const num = Number(nextValue)
-      if (token && nextValue.length && !isNaN(num))
+      if (token && nextValue.length && !Number.isNaN(num))
         set("amount", tokensToPlanck(nextValue, token.decimals))
       else remove("amount")
     },
@@ -82,6 +82,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
   )
 
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -153,7 +154,7 @@ const FiatInput = () => {
       const num = Number(nextValue)
       const tokenRate = tokenRates?.[currency]
 
-      if (token && tokenRate && nextValue.length && !isNaN(num)) {
+      if (token && tokenRate && nextValue.length && !Number.isNaN(num)) {
         const fiat = parseFloat(nextValue)
         const tokens = (fiat / tokenRate.price).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))

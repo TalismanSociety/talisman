@@ -47,6 +47,7 @@ const Details = () => {
   const toAsset = useAtomValue(toAssetAtom)
 
   // Reset cached quotes when any of the swap parameters change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setCachedQuotes([])
   }, [fromAmount, fromAsset, toAsset])
@@ -59,6 +60,7 @@ const Details = () => {
     }
   }, [quotes])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // Reset protocol selection if no valid protocol found in cached quotes
     const isSelectedProtocolAvailable = !cachedQuotes.find(
@@ -90,6 +92,7 @@ const Details = () => {
   ) {
     const cachedQuoteError = cachedQuotes
       .flatMap((cachedQuote) =>
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         cachedQuote.quote?.state === "hasError" ? (cachedQuote.quote?.error as any)?.message : []
       )
       .join("\n")
@@ -132,6 +135,7 @@ const Details = () => {
             }
           />
         ) : quote.state === "loading" ? (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <SwapDetailsCardSkeleton key={index} />
         ) : null
       )}

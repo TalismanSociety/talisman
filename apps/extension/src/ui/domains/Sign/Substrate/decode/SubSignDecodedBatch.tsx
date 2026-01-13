@@ -31,6 +31,7 @@ export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
     <SubSignDecodedBatchDrawerProvider decodedCall={batchCall}>
       {childCalls.map((call, index) => (
         <BatchCallItemButton
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           key={index}
           index={index}
           decodedCall={call}

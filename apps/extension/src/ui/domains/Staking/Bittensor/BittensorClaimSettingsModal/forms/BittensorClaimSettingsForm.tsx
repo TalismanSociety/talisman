@@ -95,6 +95,7 @@ export const BittensorClaimSettingsForm = () => {
           {claimTypeOptions.map((option) => {
             const isSelected = selectedClaimType === option.value
             const button = (
+              // biome-ignore lint/a11y/useSemanticElements: legacy
               <button
                 type="button"
                 role="radio"

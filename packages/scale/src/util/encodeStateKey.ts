@@ -6,7 +6,7 @@ export type ScaleStorageCoder = ReturnType<MetadataBuilder["buildStorage"]>
 export const encodeStateKey = (
   scaleCoder: ScaleStorageCoder | undefined,
   error?: string,
-  ...args: any[]
+  ...args: unknown[]
 ): `0x${string}` | undefined => {
   try {
     return scaleCoder?.keys?.enc(...args) as `0x${string}`

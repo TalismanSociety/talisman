@@ -89,17 +89,17 @@ export const AuthorizedSite: FC<{
       <Accordion isOpen={isOpen}>
         <div className="mt-4 flex w-full flex-col gap-2 px-8">
           <div className="text-right text-grey-500 text-xs">
-            <button className="hover:text-body" onClick={() => setShowForget(true)}>
+            <button type="button" className="hover:text-body" onClick={() => setShowForget(true)}>
               {t("Forget Site")}
             </button>
             <Rule />
-            <button className="hover:text-body" onClick={() => toggleAll(false)}>
+            <button type="button" className="hover:text-body" onClick={() => toggleAll(false)}>
               {t("Disconnect All")}
             </button>
             {provider !== "ethereum" && (
               <>
                 <Rule />
-                <button className="hover:text-body" onClick={() => toggleAll(true)}>
+                <button type="button" className="hover:text-body" onClick={() => toggleAll(true)}>
                   {t("Connect All")}
                 </button>
               </>

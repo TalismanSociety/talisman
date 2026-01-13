@@ -38,6 +38,7 @@ export const BittensorSelectButton = ({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       className={classNames(
         "flex cursor-pointer items-center gap-2 rounded-xl bg-pill px-4 py-2 font-light text-xs hover:bg-grey-700",

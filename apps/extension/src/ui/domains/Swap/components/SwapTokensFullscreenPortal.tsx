@@ -1,3 +1,4 @@
+import { log } from "extension-shared"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { type ReactNode, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
@@ -20,8 +21,11 @@ export const SwapTokensFullscreenPortalContainer = () => {
 /** The children of this node will be rendered into the parent of <SwapTokensFullscreenPortalContainer /> */
 export const SwapTokensFullscreenPortal = ({ children }: { children?: ReactNode }) => {
   const container = useAtomValue(containerRefAtom)
-  // biome-ignore lint/suspicious/noConsole: legacy
-  if (!container) return console.warn(`No SwapTokensFullscreenPortalContainer`), null
+
+  if (!container) {
+    log.warn(`No SwapTokensFullscreenPortalContainer`)
+    return null
+  }
 
   return createPortal(children, container)
 }

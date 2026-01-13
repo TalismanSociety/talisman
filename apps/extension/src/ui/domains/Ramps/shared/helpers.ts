@@ -40,6 +40,4 @@ export const getTokenFromRampAsset = (
     default:
       return null
   }
-
-  return null
 }

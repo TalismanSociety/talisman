@@ -120,7 +120,6 @@ const TokenInput = () => {
     setValue(formattedValue)
   }, [formattedValue])
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (token && e.target.value) {
@@ -129,7 +128,7 @@ const TokenInput = () => {
           refSkipSync.current = true
           setValue(e.target.value)
           return setPlancks(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -145,6 +144,7 @@ const TokenInput = () => {
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -204,7 +204,7 @@ const FiatInput = () => {
           refSkipSync.current = true
           setValue(e.target.value)
           return setPlancks(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -221,6 +221,7 @@ const FiatInput = () => {
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true

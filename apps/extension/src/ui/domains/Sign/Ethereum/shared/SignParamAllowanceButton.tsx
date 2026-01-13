@@ -56,7 +56,7 @@ const isValidAmount =
     if (value === "") return true // Unlimited
     try {
       return BigInt(tokensToPlanck(value, decimals)) > 0n
-    } catch (err) {
+    } catch {
       return false
     }
   }

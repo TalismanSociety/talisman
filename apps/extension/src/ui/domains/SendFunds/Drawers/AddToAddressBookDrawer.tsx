@@ -99,10 +99,12 @@ const AddToAddressBookDrawerForm: FC<{
     [handleSubmit, submit]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setFocus("name")
     }, 250)
+    return () => clearTimeout(timeout)
   }, [setFocus, reset])
 
   useAnalyticsPageView(ANALYTICS_PAGE)

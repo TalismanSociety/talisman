@@ -171,6 +171,7 @@ export const useBondWizard = () => {
     [account, formatter, minJoinBond, plancks, poolId, token]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     /**
      * if user is already staking in pool, set poolId to that pool

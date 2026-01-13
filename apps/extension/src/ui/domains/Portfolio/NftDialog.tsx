@@ -95,6 +95,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     setIsRefreshing(false)
   }, [isRefreshing, nft.id, t])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsRefreshing(false)
   }, [nft.id])
@@ -109,6 +110,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
           ?.map((url) => ({ url, label: getMarketPlaceLabel(url) }))
           .filter((m) => !!m.label)
           .map((mp, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
             <ContextMenuItem key={i} onClick={handleOpenUrl(mp.url)}>
               {t("View on {{marketplace}}", { marketplace: mp.label })}
             </ContextMenuItem>
@@ -130,7 +132,7 @@ const getMarketPlaceLabel = (url: string) => {
   try {
     const parsed = new URL(url)
     return parsed.hostname.split(".").slice(-2).join(".")
-  } catch (err) {
+  } catch {
     return null
   }
 }
@@ -260,6 +262,7 @@ const TabContentNft: FC<{
           <div className="text-body-secondary">{t("Properties")}</div>
           <div className="flex flex-wrap gap-4">
             {traits.map(([name, value], i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: legacy
               <div key={i} className="rounded-xs bg-grey-800 px-5 py-2">
                 <div className="text-body-secondary text-xs">{name}</div>
                 <div className="text-sm">{value}</div>
@@ -279,6 +282,7 @@ const ScrollableArea: FC<
   const refContainer = useRef<HTMLDivElement>(null)
   const refContent = useRef<HTMLDivElement>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const scrollable = refContainer.current
     const content = refContent.current
@@ -407,6 +411,7 @@ const NftAudio: FC<{ nft: Nft; className?: string }> = ({ nft, className }) => {
   if (!nft.audioUrl) return null
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: legacy
+    // biome-ignore lint/a11y/noStaticElementInteractions: legacy
     <div className={classNames("relative", className)} onClick={handleBgClick}>
       <NftImage src={nft.imageUrl} className="absolute size-full" />
       <audio ref={refPlayer} className="absolute size-full p-4" src={nft.audioUrl} controls />

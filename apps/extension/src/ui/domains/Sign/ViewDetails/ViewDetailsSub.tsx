@@ -73,7 +73,7 @@ const ViewDetailsContent: FC<{
     try {
       const typeRegistry = new TypeRegistry()
       return typeRegistry.createType("ExtrinsicPayload", payload)
-    } catch (err) {
+    } catch {
       return null
     }
   }, [payload])
@@ -116,6 +116,7 @@ const ViewDetailsContent: FC<{
             </ViewDetailsField>
             <ViewDetailsField label={t("Lifetime")}>
               {lifetimeRows?.map((str, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 <div key={str + i} className={classNames(str === "LOADING" && "invisible")}>
                   {str}
                 </div>
@@ -166,7 +167,7 @@ const useLifetimeRows = () => {
       const ep = registry.createType("ExtrinsicPayload", payload)
 
       return ep.era.isMortalEra ? ep.era.asMortalEra.period.toNumber() : null
-    } catch (err) {
+    } catch {
       return null
     }
   }, [payload])

@@ -77,6 +77,7 @@ export const SwapForm = ({
   }, [approveRecipient, setSwapView, toIsExternal, toIsWatched])
 
   // reset when any of the inputs change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setCachedToAmount(undefined)
   }, [fromAmount, fromAsset, toAsset])
@@ -111,12 +112,13 @@ export const SwapForm = ({
   const { data: approvalData, loading: approvalLoading } = useSwapErc20Approval()
 
   // refresh quote every 20 seconds
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (quotes.state === "loading") return
     if (quotes.state === "hasData") {
       if (quotes.data?.some((d) => d.state === "loading")) return
     }
-    const id = setInterval(() => setQuoteRefresher(new Date().getTime()), 20_000)
+    const id = setInterval(() => setQuoteRefresher(Date.now()), 20_000)
     return () => clearInterval(id)
   }, [])
 

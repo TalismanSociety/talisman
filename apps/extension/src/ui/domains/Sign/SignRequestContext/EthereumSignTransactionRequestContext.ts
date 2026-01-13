@@ -104,7 +104,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     const serialized = serializeTransactionRequest(transaction)
 
     await enableTokens(riskAnalysis.tokenIds)
-    return baseRequest && baseRequest.approve(serialized)
+    return baseRequest?.approve(serialized)
   }, [riskAnalysis, baseRequest, transaction, enableTokens, genericEvent, network?.id, origin])
 
   const approveHardware = useCallback(

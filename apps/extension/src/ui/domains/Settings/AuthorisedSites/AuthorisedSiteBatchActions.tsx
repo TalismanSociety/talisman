@@ -50,7 +50,7 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   const handleForgetAll = useCallback(async () => {
     try {
       return await api.authorizedSitesForgetAll(providerType)
-    } catch (err) {
+    } catch {
       notify({ type: "error", title: t("Error"), subtitle: t("Failed to forget all sites") })
       return false
     }
@@ -59,7 +59,7 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   const handleDisconnectAll = useCallback(async () => {
     try {
       return await api.authorizedSitesDisconnectAll(providerType)
-    } catch (err) {
+    } catch {
       notify({ type: "error", title: t("Error"), subtitle: t("Failed to disconnect all sites") })
       return false
     }

@@ -274,6 +274,7 @@ const useBittensorBondWizardProvider = () => {
     [isStakeFormValid, isUnstakeFormValid, stakeDirection]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!!currentHotkey && !hotkey && currentHotkey !== hotkey && stakeDirection === "bond") {
       setWizardState((prev) => ({ ...prev, hotkey: currentHotkey }))

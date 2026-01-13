@@ -48,7 +48,7 @@ export const EthSignBodyErc721Approve: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
+      title={approve ? t("NFT Approval Request") : t("Revoke NFT Approval Request")}
       alert={
         approve ? (
           <SignAlertMessage>

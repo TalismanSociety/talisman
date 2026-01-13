@@ -185,6 +185,7 @@ export const PopoverContent = forwardRef<HTMLDivElement, HTMLProps<HTMLDivElemen
     return (
       <FloatingPortal>
         <FloatingFocusManager context={floatingContext} modal={context.modal}>
+          {/** biome-ignore lint/a11y/useAriaPropsSupportedByRole: legacy */}
           <div
             ref={ref}
             style={{

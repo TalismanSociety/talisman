@@ -146,6 +146,7 @@ export const RiskAnalysisExposures: FC<{
     <div className="flex w-full flex-col">
       <div className="text-body-secondary text-sm">{t("Exposure")}</div>
       {exposures.map((exposure, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static list
         <ExposureEntry key={i} exposure={exposure} networkId={riskAnalysis.networkId} />
       ))}
     </div>

@@ -147,6 +147,7 @@ export const RiskAnalysisStateChangesSol: FC<{
     <div className="flex w-full flex-col justify-start text-left text-sm">
       {!noTitle && <div className="text-body-secondary text-sm">{t("Expected changes")}</div>}
       {changes.map((change, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <StateChange key={i} change={change} networkId={riskAnalysis.networkId!} />
       ))}
     </div>

@@ -41,7 +41,7 @@ export const papiParse = <T = unknown>(text: string | T): T => {
   return JSON.parse(text, reviver)
 }
 
-export const papiStringify = (value: any, space?: string | number): string => {
+export const papiStringify = (value: unknown, space?: string | number): string => {
   // biome-ignore lint/suspicious/noExplicitAny: legacy
   const replacer = (_key: string, value: any) => {
     if (typeof value === "bigint") return `bigint:${String(value)}`

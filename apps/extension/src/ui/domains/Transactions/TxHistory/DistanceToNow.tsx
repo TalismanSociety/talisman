@@ -9,6 +9,7 @@ export const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
   const locale = useDateFnsLocale()
   const [text, setText] = useState(() => displayDistanceToNow(timestamp, locale, t))
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const interval = setInterval(() => {
       setText(displayDistanceToNow(timestamp, locale, t))

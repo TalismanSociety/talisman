@@ -89,6 +89,7 @@ export const useCelestialArtifact = (
   useEffect(() => {
     refAcolyte.current.cy = cy
   }, [cy])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     refAcolyte.current.isAcolyte = isAcolyte
   }, [cy, isAcolyte])

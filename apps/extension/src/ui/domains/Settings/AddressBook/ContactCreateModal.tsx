@@ -104,6 +104,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const { searchAddress, address, genesisHash } = watch()
   const isAddressSs58 = useMemo(() => isSs58Address(address), [address])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // reset genesisHash if address changes
     setValue("genesisHash", undefined, {
@@ -171,12 +172,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             address,
             genesisHash,
           },
-        ]),
-          sendAnalyticsEvent({
-            ...ANALYTICS_PAGE,
-            name: "Interact",
-            action: "Create address book contact",
-          })
+        ])
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Interact",
+          action: "Create address book contact",
+        })
         notify({
           type: "success",
           title: t("New contact added"),

@@ -41,7 +41,6 @@ export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props
           src={latestMetadataQrUrl}
           ref={ref}
           onLoad={onLoad}
-          // biome-ignore lint/correctness/noUnknownProperty: legacy
           onLoadedData={onLoad}
           alt=""
           crossOrigin={IS_FIREFOX ? undefined : "anonymous"}

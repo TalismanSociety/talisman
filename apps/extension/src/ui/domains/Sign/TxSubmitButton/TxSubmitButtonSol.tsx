@@ -25,7 +25,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
     const transaction = tx.payload
     if (isVersionedTransaction(transaction))
       return transaction.message.staticAccountKeys
-        .find((key, idx) => transaction.message.isAccountSigner(idx))
+        .find((_key, idx) => transaction.message.isAccountSigner(idx))
         ?.toBase58()
     else return transaction.feePayer?.toBase58()
   }, [tx.payload])

@@ -88,6 +88,7 @@ export const AccountRow = ({
         </div>
         {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
         {onClear && (
+          // biome-ignore lint/a11y/useSemanticElements: legacy
           <div onClick={onClear} role="button" tabIndex={0} onKeyDown={() => null}>
             <XIcon className="shrink-0 text-[1.2em]" />
           </div>

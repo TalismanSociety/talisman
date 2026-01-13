@@ -310,15 +310,13 @@ const EthFeeSummary = () => {
         </div>
         <div className="text-body">
           <div className="inline-flex h-[1.7rem] items-center">
-            <>
-              {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
-              {txDetails?.estimatedFee && network && (
-                <TokensAndFiat
-                  planck={txDetails.estimatedFee.toString()}
-                  tokenId={network.nativeTokenId}
-                />
-              )}
-            </>
+            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+            {!!txDetails?.estimatedFee && network && (
+              <TokensAndFiat
+                planck={txDetails.estimatedFee.toString()}
+                tokenId={network.nativeTokenId}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -357,17 +355,15 @@ const DefaultFeeSummary = () => {
               isRefetching && "animate-pulse"
             )}
           >
-            <>
-              {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
-              {estimatedFee && feeToken && (
-                <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
-              )}
-              {error && (
-                <WithTooltip tooltip={(error as Error).message}>
-                  <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
-                </WithTooltip>
-              )}
-            </>
+            {isLoading && <LoaderIcon className="mr-2 inline animate-spin-slow align-text-top" />}
+            {estimatedFee && feeToken && (
+              <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />
+            )}
+            {error && (
+              <WithTooltip tooltip={(error as Error).message}>
+                <span className="text-alert-warn">{t("Failed to estimate fee")}</span>
+              </WithTooltip>
+            )}
           </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export const SwapHeader = () => {
     <div className="flex items-center justify-between">
       <div className="flex-1">
         {!["form", "approve-recipient"].includes(swapView) && (
-          <button className="px-12 py-10" onClick={onBack}>
+          <button type="button" className="px-12 py-10" onClick={onBack}>
             <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
         )}
@@ -42,7 +42,7 @@ export const SwapHeader = () => {
 
       <div className="flex flex-1 justify-end">
         {["form", "approve-recipient"].includes(swapView) && (
-          <button className="px-12 py-10" onClick={onBack}>
+          <button type="button" className="px-12 py-10" onClick={onBack}>
             <XIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
         )}
