@@ -204,9 +204,8 @@ pnpm test:e2e
 
 ### Build failures
 
-1. Ensure all packages are built: `pnpm build:packages` from monorepo root
-2. Clear the WXT cache: `rm -rf dist .wxt`
-3. Reinstall dependencies: `pnpm install`
+1. Clean temp folders: `pnpm clean`
+2. Reinstall dependencies: `pnpm install`
 
 ## License
 
