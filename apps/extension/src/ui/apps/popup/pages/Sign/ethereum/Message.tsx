@@ -70,6 +70,7 @@ export const EthSignMessageRequest = () => {
               </SignAlertMessage>
             )}
             {account && request && (
+              // biome-ignore lint/complexity/noUselessFragments: legacy
               <>
                 {isAccountOfType(account, "ledger-ethereum") ? (
                   <SignHardwareEthereum

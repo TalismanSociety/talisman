@@ -62,6 +62,7 @@ export const ConnectLedgerBase: FC<ConnectLedgerBaseProps> = ({
     }
   }, [isReadyCheck, onReadyChanged, t])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     connect()
   }, [connect, isReadyCheck, onReadyChanged])

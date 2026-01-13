@@ -180,6 +180,7 @@ const MnemonicRow: FC<{ mnemonic: Mnemonic }> = ({ mnemonic }) => {
         <div className="relative flex items-center gap-6">
           {!mnemonic.confirmed && (
             <button
+              type="button"
               ref={refBackup}
               onClick={handleBackupClick}
               className="flex h-[3rem] items-center gap-[0.5em] rounded-[2rem] border bg-alert-warn/5 px-6 text-alert-warn text-sm hover:bg-alert-warn/10"

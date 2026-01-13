@@ -83,6 +83,7 @@ export const Scan = () => {
                 ),
               },
             ].map(({ title, body, extra, errorIcon }, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static list
               <li className="relative ml-20" key={index}>
                 {errorIcon ? (
                   <div className="absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-alert-error font-bold text-alert-error text-xs">

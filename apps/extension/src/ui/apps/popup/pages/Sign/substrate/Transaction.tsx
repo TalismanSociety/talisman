@@ -41,25 +41,24 @@ export const PolkadotSignTransactionRequest: FC = () => {
       <PopupHeader right={<SignNetworkLogo network={chain} />}>
         <AppPill url={url} />
       </PopupHeader>
-      <>
-        <PopupContent>
-          <div className="scrollable scrollable-800 h-full overflow-y-auto text-center text-body-secondary">
-            <SubSignBody />
-          </div>
-        </PopupContent>
-        <PopupFooter className="animate-fade-in">
-          <div className="flex w-full flex-col gap-4">
-            <div id="sign-alerts-inject"></div>
-            <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
-            {errorMessage && (
-              <SignAlertMessage className="mb-6" type="error">
-                {errorMessage}
-              </SignAlertMessage>
-            )}
-          </div>
-          {account && request && <FooterContent isTransaction />}
-        </PopupFooter>
-      </>
+
+      <PopupContent>
+        <div className="scrollable scrollable-800 h-full overflow-y-auto text-center text-body-secondary">
+          <SubSignBody />
+        </div>
+      </PopupContent>
+      <PopupFooter className="animate-fade-in">
+        <div className="flex w-full flex-col gap-4">
+          <div id="sign-alerts-inject"></div>
+          <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
+          {errorMessage && (
+            <SignAlertMessage className="mb-6" type="error">
+              {errorMessage}
+            </SignAlertMessage>
+          )}
+        </div>
+        {account && request && <FooterContent isTransaction />}
+      </PopupFooter>
     </PopupLayout>
   )
 }

@@ -82,6 +82,7 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
         const balances = new Balances(individualBalances)
 
         return {
+          // biome-ignore lint/performance/noAccumulatingSpread: legacy
           ...acc,
           [address]: { balances, isLoading },
         }
@@ -99,6 +100,7 @@ const useJsonAccountImportProvider = () => {
   // warning : array of mutable objects
   const [pairs, setPairs] = useState<KeyringPair[]>()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setSelectedAccounts([])
     setPairs(undefined)
@@ -245,7 +247,7 @@ const useJsonAccountImportProvider = () => {
             try {
               pair.unlock(password)
               success = true
-            } catch (err) {
+            } catch {
               // ignore
             }
 

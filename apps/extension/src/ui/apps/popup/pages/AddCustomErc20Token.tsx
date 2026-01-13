@@ -48,7 +48,7 @@ export const AddCustomErc20Token = () => {
     setError(undefined)
     try {
       await api.ethWatchAssetRequestCancel(id)
-    } catch (err) {
+    } catch {
       // ignore
     }
     window.close()
@@ -98,6 +98,7 @@ export const AddCustomErc20Token = () => {
           {!!request.warnings?.length && (
             <SignAlertMessage type="error" className="mt-8">
               {request.warnings.map((warning, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 <div key={i}>
                   {request.warnings.length > 1 ? "- " : ""}
                   {warning}

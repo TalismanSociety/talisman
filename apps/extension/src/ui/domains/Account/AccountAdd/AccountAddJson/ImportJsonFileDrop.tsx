@@ -148,7 +148,7 @@ export const ImportJsonFileDrop = () => {
 
           setIsValid(true)
           setJson(content)
-        } catch (err) {
+        } catch {
           setIsValid(false)
           setJson(undefined)
         }

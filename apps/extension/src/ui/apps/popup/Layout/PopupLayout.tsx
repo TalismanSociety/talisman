@@ -55,6 +55,7 @@ export const PopupContent: FC<ContainerProps & { withBottomNav?: boolean }> = ({
   const scrollableRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollableRef.current?.scrollTo(0, 0)
   }, [location.pathname])

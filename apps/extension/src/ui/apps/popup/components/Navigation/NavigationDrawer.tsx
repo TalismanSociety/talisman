@@ -91,7 +91,8 @@ export const NavigationDrawer: FC = () => {
       action: "Swap button",
     })
 
-    /*if (!canSwap) */ return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
+    /*if (!canSwap) */ // biome-ignore lint/complexity/noCommaOperator: legacy
+    return window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank"), window.close()
 
     // await openSwapTokensModal()
     // import { sleep } from "@talismn/util"

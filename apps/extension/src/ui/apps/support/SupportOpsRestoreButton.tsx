@@ -38,7 +38,7 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
       try {
         const backup = JSON.parse(re.target?.result as string) as TalismanJsonBackup
         if (backup.isTalismanBackup) return setState({ backup })
-      } catch (err) {
+      } catch {
         // filed to parse
       }
       setState({ isInvalid: true })

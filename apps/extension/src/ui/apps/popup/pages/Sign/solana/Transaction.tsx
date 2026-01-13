@@ -308,7 +308,7 @@ const useTransactionValidity = ({
           isValid: isValid.value,
           reason: isValid.value ? null : t("Transaction has expired"),
         }
-      } catch (error) {
+      } catch {
         return { isValid: false, reason: t("Failed to validate transaction") }
       }
     },

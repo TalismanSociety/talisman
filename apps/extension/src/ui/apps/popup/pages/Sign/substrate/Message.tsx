@@ -101,7 +101,7 @@ const useSiwsRequest = ({
     const siwsMessage = (() => {
       try {
         return siwsParseMessage((request.payload as SignerPayloadRaw)?.data)
-      } catch (error) {
+      } catch {
         return null
       }
     })()
