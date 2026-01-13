@@ -66,18 +66,16 @@ const Eip1559FeeTooltip: FC<{
   if (!estimated || !max) return null
 
   return (
-    <>
-      <div className="flex flex-col gap-2 pt-1">
-        <div className="flex w-full items-center justify-between gap-4">
-          <div>{t("Estimated Fee:")}</div>
-          <div className="font-mono">{estimated}</div>
-        </div>
-        <div className="flex w-full items-center justify-between gap-4">
-          <div>{t("Maximum Fee:")}</div>
-          <div className="font-mono">{max}</div>
-        </div>
+    <div className="flex flex-col gap-2 pt-1">
+      <div className="flex w-full items-center justify-between gap-4">
+        <div>{t("Estimated Fee:")}</div>
+        <div className="font-mono">{estimated}</div>
       </div>
-    </>
+      <div className="flex w-full items-center justify-between gap-4">
+        <div>{t("Maximum Fee:")}</div>
+        <div className="font-mono">{max}</div>
+      </div>
+    </div>
   )
 }
 

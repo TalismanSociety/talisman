@@ -65,7 +65,7 @@ const isValidGweiInput =
   (value?: string) => {
     try {
       return !!value && parseGwei(value) >= min
-    } catch (err) {
+    } catch {
       return false
     }
   }
@@ -101,6 +101,7 @@ const useIsValidGasSettings = (
   // prevents UI from displaying a new total max fee before it's validated from chain
   const [isLoading, setIsLoading] = useState(false)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setIsLoading(true)
   }, [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit])
@@ -127,7 +128,7 @@ const useIsValidGasSettings = (
         ...tx,
         ...gasSettingsFromFormData(debouncedFormData),
       } as TransactionRequest
-    } catch (err) {
+    } catch {
       // any bad input throws here, ignore
       return undefined
     }
@@ -233,7 +234,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   const totalMaxFee = useMemo(() => {
     try {
       return (parseGwei(maxBaseFeeGwei) + parseGwei(maxPriorityFeeGwei)) * BigInt(gasLimit)
-    } catch (err) {
+    } catch {
       return null
     }
   }, [gasLimit, maxBaseFeeGwei, maxPriorityFeeGwei])

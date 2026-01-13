@@ -1,5 +1,5 @@
 import { cn } from "@talismn/util"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 
 import imgAnimation from "./seek-animation.gif"
@@ -11,7 +11,7 @@ const ANIMATION_DURATION = 25000 // 25 seconds
 export const SeekAnimation = () => {
   const [state, setState] = useState<AnimState>("hidden")
 
-  const hide = () => {
+  const hide = useCallback(() => {
     // fade out
     setState("hiding")
 
@@ -19,7 +19,7 @@ export const SeekAnimation = () => {
     setTimeout(() => {
       setState("hidden")
     }, 500)
-  }
+  }, [])
 
   useEffect(() => {
     // fade in
@@ -35,7 +35,7 @@ export const SeekAnimation = () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [])
+  }, [hide])
 
   return createPortal(
     <div

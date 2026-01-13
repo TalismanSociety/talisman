@@ -36,7 +36,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
         title: t("Copied to clipboard"),
         type: "success",
       })
-    } catch (err) {
+    } catch {
       notify({
         title: t("Failed to copy"),
         type: "error",
@@ -68,6 +68,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
             mnemonic.split(" ").map((word, i) => (
               <span
                 className="whitespace-nowrap rounded bg-black-tertiary px-8 py-4 text-body"
+                // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                 key={`mnemonic-${i}`}
               >
                 <span className="select-none text-grey-500">{i + 1}. </span>

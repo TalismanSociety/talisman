@@ -34,7 +34,7 @@ export const getDotGenesisHashFromRpc = (rpcUrl: string): Promise<`0x${string}` 
       await Promise.race([ws.isReady, throwAfter(3000, "timeout")])
 
       return await ws.send<`0x${string}`>("chain_getBlockHash", [0])
-    } catch (error) {
+    } catch {
       return null
     } finally {
       ws.disconnect()
@@ -58,7 +58,7 @@ export const getSolGenesisHashFromRpc = (rpcUrl: string): Promise<string | null>
     const connection = new Connection(rpcUrl, "confirmed")
     try {
       return await Promise.race([connection.getGenesisHash(), throwAfter(3000, "timeout")])
-    } catch (error) {
+    } catch {
       return null
     } finally {
       genesisHashCache.delete(rpcUrl)
@@ -131,7 +131,7 @@ export const getDotChainInfoFromRpc = (rpcUrl: string): Promise<SubstrateRpcInfo
       }
 
       return result
-    } catch (error) {
+    } catch {
       return null
     } finally {
       ws.disconnect()
@@ -163,7 +163,7 @@ const getAccountType = (metadata: UnifiedMetadata) => {
     case "AccountId20":
       return "secp256k1"
     default:
-      throw new Error("Unsupported account type: " + accountType)
+      throw new Error(`Unsupported account type: ${accountType}`)
   }
 }
 

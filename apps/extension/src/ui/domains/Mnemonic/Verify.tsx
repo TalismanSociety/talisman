@@ -41,6 +41,7 @@ const WordOption = ({
   onClick: () => void
 }) => (
   <button
+    type="button"
     onClick={onClick}
     disabled={selected}
     className={classNames(
@@ -132,6 +133,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
                     }
                     active={matchedLength === i}
                     error={errorIndex === i}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                     key={`mnemonic-${i}`}
                   />
                 ))}
@@ -141,6 +143,7 @@ export const Verify: FC<VerifyProps> = ({ onComplete, onBack, onSkip, mnemonic }
             {!!displayWords &&
               displayWords.map((word, i) => (
                 <WordOption
+                  // biome-ignore lint/suspicious/noArrayIndexKey: legacy
                   key={`decoyWords-${i}`}
                   onClick={() => handleSelectWord(i)}
                   word={word}
