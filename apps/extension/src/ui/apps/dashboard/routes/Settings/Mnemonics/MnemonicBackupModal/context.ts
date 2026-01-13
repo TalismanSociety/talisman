@@ -25,7 +25,7 @@ const useMnemonicBackupModalProvider = () => {
       setStage(Stages.Acknowledgement)
       innerOpen()
     },
-    [innerOpen, setStage]
+    [innerOpen]
   )
 
   const isBackupConfirmed = useCallback(

@@ -1,4 +1,4 @@
-/* eslint-disable react/no-children-prop */
+/** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 import {
   closestCenter,
   DndContext,

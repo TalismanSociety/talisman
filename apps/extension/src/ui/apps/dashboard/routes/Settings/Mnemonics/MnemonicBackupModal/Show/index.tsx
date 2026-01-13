@@ -15,7 +15,6 @@ export const ShowMnemonic = () => {
     switch (stage) {
       case Stages.Verify:
         return t("Verify Recovery Phrase")
-      case Stages.Show:
       default:
         return t("Backup Recovery Phrase")
     }

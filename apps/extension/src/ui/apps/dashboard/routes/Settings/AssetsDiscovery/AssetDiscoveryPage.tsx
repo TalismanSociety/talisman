@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/useAnchorContent: legacy
 import { bind } from "@react-rxjs/core"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
@@ -662,7 +663,6 @@ const Notice: FC = () => {
           defaults="Networks to be scanned are taken from the community maintained <EthereumListsLink>Ethereum Lists</EthereumListsLink>. Talisman does not curate or control which RPCs are used for these networks. ERC20 tokens to be scanned are the ones listed on <CoingeckoLink>Coingecko</CoingeckoLink>."
           components={{
             CoingeckoLink: (
-              // biome-ignore lint/a11y/useAnchorContent: legacy
               <a
                 href="https://www.coingecko.com/"
                 target="_blank"
@@ -671,7 +671,6 @@ const Notice: FC = () => {
               ></a>
             ),
             EthereumListsLink: (
-              // biome-ignore lint/a11y/useAnchorContent: legacy
               <a
                 href="https://github.com/ethereum-lists/chains"
                 target="_blank"

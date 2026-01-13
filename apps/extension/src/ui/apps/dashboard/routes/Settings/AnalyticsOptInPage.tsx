@@ -10,23 +10,19 @@ const Content = () => {
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
 
   return (
-    <>
-      <AnalyticsOptInInfo>
-        <Setting
-          title={t("Opt in to collection of anonymised usage data")}
-          subtitle={
-            useAnalyticsTracking
-              ? t("You are currently opted in")
-              : t("You are currently opted out")
-          }
-        >
-          <Toggle
-            checked={useAnalyticsTracking}
-            onChange={(e) => setUseAnalyticsTracking(e.target.checked)}
-          />
-        </Setting>
-      </AnalyticsOptInInfo>
-    </>
+    <AnalyticsOptInInfo>
+      <Setting
+        title={t("Opt in to collection of anonymised usage data")}
+        subtitle={
+          useAnalyticsTracking ? t("You are currently opted in") : t("You are currently opted out")
+        }
+      >
+        <Toggle
+          checked={useAnalyticsTracking}
+          onChange={(e) => setUseAnalyticsTracking(e.target.checked)}
+        />
+      </Setting>
+    </AnalyticsOptInInfo>
   )
 }
 
