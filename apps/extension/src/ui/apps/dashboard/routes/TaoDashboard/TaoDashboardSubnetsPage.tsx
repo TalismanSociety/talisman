@@ -1,5 +1,13 @@
+import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
+import { TaoDashboardHeader } from "@ui/domains/TaoDashboard/TaoDashboardHeader"
 import { TaoDashboardSubnetsTable } from "@ui/domains/TaoDashboard/TaoDashboardSubnetsTable"
 
 export const TaoDashboardSubnetsPage = () => {
-  return <TaoDashboardSubnetsTable />
+  return (
+    <div className="flex w-full flex-col gap-12 overflow-hidden">
+      <TaoDashboardHeader />
+      <EarnTabsDashboard />
+      <TaoDashboardSubnetsTable />
+    </div>
+  )
 }

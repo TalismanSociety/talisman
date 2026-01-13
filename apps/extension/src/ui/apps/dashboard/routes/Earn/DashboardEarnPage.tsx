@@ -2,15 +2,13 @@ import { SearchInput } from "@talisman/components/SearchInput"
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
-import { EarnTabs, type EarnTabsKey } from "@ui/domains/Earn/components/EarnTabs"
+import { EarnTabsDashboard } from "@ui/domains/Earn/components/EarnTabsDashboard"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state"
-import { type FC, useCallback, useMemo, useState } from "react"
+import { type FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useOutletContext } from "react-router-dom"
-
+import { Outlet, useOutletContext } from "react-router-dom"
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
 
@@ -18,34 +16,11 @@ type DashboardEarnOutletContext = {
   search: string
 }
 
-const TAB_TO_PATH: Record<EarnTabsKey, string> = {
-  assets: "/earn/positions",
-  discover: "/earn/discover",
-  bittensor: "/bittensor/subnets",
-}
-
-const getTabFromPath = (pathname: string): EarnTabsKey =>
-  pathname.includes("/discover") ? "discover" : "assets"
-
 const useDashboardEarnOutletContext = () => useOutletContext<DashboardEarnOutletContext>()
 
 export const DashboardEarnPage: FC = () => {
   const { t } = useTranslation()
-  const location = useLocation()
-  const navigate = useNavigateWithQuery()
-  const selectedTab = useMemo<EarnTabsKey>(
-    () => getTabFromPath(location.pathname),
-    [location.pathname]
-  )
   const [search, setSearch] = useState("")
-
-  const handleTabChange = useCallback(
-    (tab: EarnTabsKey) => {
-      if (tab === selectedTab) return
-      navigate(TAB_TO_PATH[tab])
-    },
-    [navigate, selectedTab]
-  )
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
@@ -57,11 +32,7 @@ export const DashboardEarnPage: FC = () => {
       {/* Tabs and Search in same row */}
       <div className="mb-6 flex w-full items-center justify-between overflow-hidden">
         <div className="flex-shrink-0">
-          <EarnTabs
-            onTabChange={handleTabChange}
-            value={selectedTab}
-            className="my-0 h-14 w-auto font-bold text-md"
-          />
+          <EarnTabsDashboard />
         </div>
         <div className="w-[28rem]">
           <SearchInput
@@ -123,7 +94,7 @@ const EarnPageHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="flex justify-between rounded-[0.75rem] border border-grey-800 text-left text-base text-body-secondary">
+    <div className="flex h-64 items-center justify-between rounded-[0.75rem] border border-grey-800 text-left text-base text-body-secondary">
       <div className="flex flex-col gap-4 px-6 py-8">
         <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
         <div className="font-bold text-2xl text-body">
