@@ -1,16 +1,10 @@
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
+import { AppPill } from "@talisman/components/AppPill"
 import { solNativeTokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { deserializeTransaction, serializeTransaction } from "@talismn/solana"
 import { cn } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { Account, isAccountOfType, SolSigningRequest } from "extension-core"
-import { isVersionedTransaction } from "inject/solana/solana"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import {
   PopupContent,
@@ -26,12 +20,21 @@ import { RiskAnalysisStateChanges } from "@ui/domains/Sign/risk-analysis/RiskAna
 import { useSolTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
-import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "@ui/domains/Sign/SignLedgerSolana"
-import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import {
+  SignLedgerSolana,
+  type SolSignOutput,
+  type SolSignPayload,
+} from "@ui/domains/Sign/SignLedgerSolana"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useNetworkById } from "@ui/state"
 import { getFrontEndSolanaConnection } from "@ui/util/solana/useSolanaConnection"
 import { useSolanaNetworkIdForTransaction } from "@ui/util/solana/useSolanaNetworkIdForTransaction"
+import { type Account, isAccountOfType, type SolSigningRequest } from "extension-core"
+import { isVersionedTransaction } from "inject/solana/solana"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
@@ -130,13 +133,13 @@ export const SolSignTransactionRequest: FC<{
           <AppPill url={request.url} />
         </PopupHeader>
         <PopupContent>
-          <div className="text-body-secondary flex w-full flex-col items-center text-center">
-            <h1 className="text-body text-md my-12 font-bold leading-9">{t("Approve Request")}</h1>
+          <div className="flex w-full flex-col items-center text-center text-body-secondary">
+            <h1 className="my-12 font-bold text-body text-md leading-9">{t("Approve Request")}</h1>
             <h2 className="mb-8 text-base leading-[3.2rem]">
               {t("You are signing a transaction with account")} <AccountPill account={account} />
             </h2>
             <RiskAnalysisPillButton />
-            <div className="bg-grey-850 mt-8 w-full rounded-sm p-2 empty:hidden">
+            <div className="mt-8 w-full rounded-sm bg-grey-850 p-2 empty:hidden">
               <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} noTitle />
             </div>
           </div>
@@ -202,7 +205,7 @@ const FeeEstimateRow: FC<{
   const { status, balances } = useBalancesByParams(balanceParams)
 
   return (
-    <div className="text-body-secondary flex w-full items-center justify-between text-sm">
+    <div className="flex w-full items-center justify-between text-body-secondary text-sm">
       <div className="flex items-center gap-2">
         <Tooltip placement="top-start">
           <TooltipTrigger asChild>
@@ -231,7 +234,7 @@ const FeeEstimateRow: FC<{
       </div>
       <div>
         {isLoading || !tokenId ? (
-          <LoaderIcon className="animate-spin-slow inline-block" />
+          <LoaderIcon className="inline-block animate-spin-slow" />
         ) : error || !estimatedFee ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>

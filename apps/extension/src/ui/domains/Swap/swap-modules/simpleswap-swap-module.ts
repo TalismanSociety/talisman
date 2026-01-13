@@ -1,4 +1,3 @@
-import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -8,24 +7,26 @@ import {
   subNativeTokenId,
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
+import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { atom, ExtractAtomValue } from "jotai"
+import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import {
   catchError,
   defer,
   interval,
-  Observable,
+  type Observable,
   of,
   retry,
   startWith,
   switchMap,
   takeWhile,
 } from "rxjs"
-import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
+import { encodeFunctionData, erc20Abi, publicActions, type TransactionRequest } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 import {
   arbitrum,
   arbitrumNova,
@@ -42,30 +43,27 @@ import {
   sonic,
   zksync,
 } from "viem/chains"
-
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
-
-import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
 import { vanaMainnet } from "../swaps-port/vana"
 import {
-  BaseQuote,
+  type BaseQuote,
   fromAddressAtom,
   fromAmountAtom,
   fromAssetAtom,
-  GetEstimateGasTxFunction,
+  type GetEstimateGasTxFunction,
   getTokenIdForSwappableAsset,
-  QuoteFunction,
-  SwapModule,
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
+  type QuoteFunction,
+  type SwapModule,
+  type SwappableAssetBaseType,
+  type SwappableAssetWithDecimals,
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
   validateAddress,
 } from "./common.swap-module"
+import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 export const PROTOCOL: SupportedSwapProtocol = "simpleswap"

@@ -1,10 +1,9 @@
 import { XIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { useAppState, useFeatureFlag } from "@ui/state"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
-
-import { useAppState, useFeatureFlag } from "@ui/state"
 
 import { ReactComponent as BgIconSmall } from "./seek-presale-bg.svg"
 
@@ -34,29 +33,29 @@ export const SeekPresaleBanner: FC<{ variant: "small" | "large"; className?: str
         )}
       >
         <div className="absolute inset-0 rounded-sm bg-gradient-to-l from-[#606060]/60 to-[#5A6825]" />
-        <div className="from-black-secondary relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% to-[#3F3F0C]/50">
+        <div className="relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% from-black-secondary to-[#3F3F0C]/50">
           <div
             className={cn(
-              "absolute left-0 top-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
+              "absolute top-0 left-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
               variant === "large" && "gap-3",
               variant === "small" && "gap-2"
             )}
           >
-            <div className="text-body truncate text-sm font-bold">
+            <div className="truncate font-bold text-body text-sm">
               {t("SEEK Pre-Sale Ends Soon")}
             </div>
-            <div className="text-body-secondary truncate">
+            <div className="truncate text-body-secondary">
               {t("Closes Dec 2nd. Don’t miss out!")}
               {variant === "large" && <> {t("Click here to learn more.")}</>}
             </div>
           </div>
-          <div className={"absolute right-0 top-0 aspect-[200/59] h-full"}>
+          <div className={"absolute top-0 right-0 aspect-[200/59] h-full"}>
             <BgIconSmall className="size-full" />
           </div>
         </div>
       </button>
-      <div className="absolute right-0 top-0 z-10 select-none p-4">
-        <IconButton className="text-md select-auto text-white" onClick={() => setHideBanner(true)}>
+      <div className="absolute top-0 right-0 z-10 select-none p-4">
+        <IconButton className="select-auto text-md text-white" onClick={() => setHideBanner(true)}>
           <XIcon />
         </IconButton>
       </div>

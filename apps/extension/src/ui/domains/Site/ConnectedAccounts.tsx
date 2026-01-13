@@ -1,12 +1,11 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { Account, AuthorizedSite } from "extension-core"
-import { FC, Fragment, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { api } from "@ui/api"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useAuthorisedSites } from "@ui/state"
+import type { Account, AuthorizedSite } from "extension-core"
+import { type FC, Fragment, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ConnectAccountsContainer } from "./ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
@@ -42,7 +41,7 @@ const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
   )
 }
 
-const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+const AccountSeparator = () => <div className="mx-6 h-0.5 bg-grey-800"></div>
 
 const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const accounts = useInjectableAccounts(site?.url ?? "", "ethereum")
@@ -126,9 +125,9 @@ export const ConnectedAccounts: FC = () => {
 
   return (
     <div className="flex w-full flex-col gap-6 pb-12">
-      <div className="text-body-secondary my-2 text-xs">
+      <div className="my-2 text-body-secondary text-xs">
         {t("Select which account(s) to connect to")}{" "}
-        <span className="text-body font-bold">{site?.id}</span>
+        <span className="font-bold text-body">{site?.id}</span>
       </div>
       {site?.ethAddresses && (
         <ConnectAccountsContainer

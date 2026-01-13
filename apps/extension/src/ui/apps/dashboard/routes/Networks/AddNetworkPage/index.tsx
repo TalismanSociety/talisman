@@ -1,25 +1,29 @@
 /* eslint-disable react/no-children-prop */
+
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { getGithubTokenLogoUrlByCoingeckoId, NetworkBaseSchema } from "@talismn/chaindata-provider"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { useField } from "@tanstack/react-form"
-import { log } from "extension-shared"
-import { TFunction } from "i18next"
-import { FC, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { firstValueFrom } from "rxjs"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { z } from "zod/v4"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { fetchEthChainId, getDotChainInfoFromRpc } from "@ui/domains/Networks/helpers"
 import { PlatformSelect } from "@ui/domains/Networks/PlatformSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { getNetworkByGenesisHash$, getNetworkById$ } from "@ui/state"
+import { log } from "extension-shared"
+import type { TFunction } from "i18next"
+import { type FC, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { firstValueFrom } from "rxjs"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { z } from "zod/v4"
 
-import { NetworkCreateFormData, NetworkCreateFormProvider, useNetworkCreateForm } from "./context"
+import {
+  type NetworkCreateFormData,
+  NetworkCreateFormProvider,
+  useNetworkCreateForm,
+} from "./context"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

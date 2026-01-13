@@ -1,5 +1,5 @@
 import { TOKEN_APPROVALS_URL } from "extension-shared"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"

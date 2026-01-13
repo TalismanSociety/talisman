@@ -1,7 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { type AccountPlatform, getAccountPlatformFromAddress } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import type { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
 import { SUPPORTED_ACCOUNT_PLATFORMS } from "extension-core"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
@@ -9,14 +16,6 @@ import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText, Toggle } from "talisman-ui"
 import * as yup from "yup"
-
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AccountAddPageProps } from "@ui/domains/Account/AccountAdd/types"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts } from "@ui/state"
 
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
 
@@ -196,7 +195,7 @@ export const AccountAddWatchedForm = ({ onSuccess }: AccountAddPageProps) => {
                 }
               />
             </FormFieldContainer>
-            <div className="bg-grey-850 mt-4 flex h-[58px] w-full items-center rounded px-12">
+            <div className="mt-4 flex h-[58px] w-full items-center rounded bg-grey-850 px-12">
               <div className="grow space-y-4">
                 <div className="text-body leading-none">{t("Include in my portfolio")}</div>
                 <div className="text-body-disabled text-sm leading-none">

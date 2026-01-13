@@ -1,16 +1,27 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountPlatform, isValidDerivationPath, KeypairCurve } from "@talismn/crypto"
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { type AccountPlatform, isValidDerivationPath, type KeypairCurve } from "@talismn/crypto"
 import { ArrowRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import {
+  MnemonicCreateModal,
+  MnemonicCreateModalProvider,
+  useMnemonicCreateModal,
+} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { useAccounts, useMnemonics } from "@ui/state"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
-  RequestAddAccountDerive,
+  type RequestAddAccountDerive,
   SUPPORTED_ACCOUNT_PLATFORMS,
 } from "extension-core"
 import { log } from "extension-shared"
-import { FC, PropsWithChildren, useCallback, useEffect, useMemo } from "react"
+import { type FC, type PropsWithChildren, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
@@ -26,20 +37,8 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import {
-  MnemonicCreateModal,
-  MnemonicCreateModalProvider,
-  useMnemonicCreateModal,
-} from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts, useMnemonics } from "@ui/state"
-
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { AccountAddMnemonicDropdown } from "./AccountAddMnemonicDropdown"
 
 const useNextAvailableDerivationPath = (mnemonicId: string | null, curve: KeypairCurve) => {
@@ -83,7 +82,7 @@ const AdvancedSettings: FC<PropsWithChildren> = ({ children }) => {
       <div className="text-right">
         <button
           type="button"
-          className="text-body-disabled hover:text-body-secondary inline-flex items-center gap-0.5 whitespace-nowrap"
+          className="inline-flex items-center gap-0.5 whitespace-nowrap text-body-disabled hover:text-body-secondary"
           onClick={toggle}
         >
           <div>{t("Advanced")}</div>

@@ -1,10 +1,9 @@
 import { ChevronLeftIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type ButtonHTMLAttributes, type DetailedHTMLProps, type FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { To, useNavigate } from "react-router-dom"
-
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type To, useNavigate } from "react-router-dom"
 
 type BackButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -36,7 +35,7 @@ export const BackButton: FC<BackButtonProps> = ({ analytics, children, to, ...pr
       {...props}
       onClick={handleBackClick}
       className={classNames(
-        "allow-focus bg-grey-850 hover:bg-grey-800 text-grey-400 hover:text-grey-300 inline-flex items-center gap-2 rounded-sm py-3 pl-2 pr-4 text-sm",
+        "allow-focus inline-flex items-center gap-2 rounded-sm bg-grey-850 py-3 pr-4 pl-2 text-grey-400 text-sm hover:bg-grey-800 hover:text-grey-300",
         props.className
       )}
     >

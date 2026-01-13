@@ -1,19 +1,18 @@
-import { TypeRegistry } from "@polkadot/types"
+import type { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
+import { useNetworkByGenesisHash } from "@ui/state"
 import { SubstrateApp } from "@zondax/ledger-substrate"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
-  AccountLedgerPolkadot,
+  type AccountLedgerPolkadot,
   isJsonPayload,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
 } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useNetworkByGenesisHash } from "@ui/state"
 
 import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {

@@ -1,13 +1,12 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { ActionDto } from "extension-core"
+import type { ActionDto } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { notify } from "@talisman/components/Notifications"
-
-import { UseYieldxyzTransactionProps } from "./types"
+import type { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
 type UseYieldxyzTransactionManagerProps = {

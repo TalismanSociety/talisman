@@ -1,10 +1,10 @@
+import type { TransactionInstruction } from "@solana/web3.js"
 import type {
   IChainConnectorDot,
   IChainConnectorEth,
   IChainConnectorSol,
 } from "@talismn/chain-connectors"
-import { TransactionInstruction } from "@solana/web3.js"
-import {
+import type {
   DotNetworkId,
   EthNetworkId,
   SolNetworkId,
@@ -13,7 +13,7 @@ import {
   TokenOfType,
   TokenType,
 } from "@talismn/chaindata-provider"
-import { Observable } from "rxjs"
+import type { Observable } from "rxjs"
 
 import type { Address, IBalance, MiniMetadata } from "."
 

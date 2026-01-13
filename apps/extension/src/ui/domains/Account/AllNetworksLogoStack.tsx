@@ -1,12 +1,11 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { classNames, isTruthy } from "@talismn/util"
-import { useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { type PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
+import type { PortfolioNetwork } from "@ui/domains/Portfolio/AssetsTable/usePortfolioNetworks"
 import { useNetworksMapById } from "@ui/state"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = { ids?: NetworkId[]; className?: string; max?: number }
 
@@ -98,8 +97,8 @@ function AllNetworksLogoStackMore({ networks }: { networks: PortfolioNetwork[] }
 
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-auto overflow-hidden">
-      <div className="text-body-secondary bg-grey-750 relative flex h-[1em] w-auto flex-col justify-center rounded-full px-2 text-center">
-        <div className="text-[0.5em] font-bold leading-[1em]">{networks.length}+</div>
+      <div className="relative flex h-[1em] w-auto flex-col justify-center rounded-full bg-grey-750 px-2 text-center text-body-secondary">
+        <div className="font-bold text-[0.5em] leading-[1em]">{networks.length}+</div>
       </div>
     </div>
   )

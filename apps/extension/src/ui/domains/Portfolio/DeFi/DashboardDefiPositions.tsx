@@ -1,10 +1,6 @@
-import { classNames, Loadable, LoadableStatus } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { DefiPosition } from "extension-core"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { FadeIn } from "@talisman/components/FadeIn"
+import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
@@ -16,6 +12,9 @@ import {
   usePortfolioSelectedAccounts,
   useSelectedCurrency,
 } from "@ui/state"
+import type { DefiPosition } from "extension-core"
+import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { PortfolioAccount } from "../AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -83,7 +82,7 @@ const VirtualizedRows: FC<{ positions: Loadable<DefiPosition[]> }> = ({ position
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 h-28 w-full"
+            className="absolute top-0 left-0 h-28 w-full"
             style={{
               transform: `translateY(${item.start}px)`,
             }}
@@ -119,7 +118,7 @@ const TotalRow: FC<{ positions: DefiPosition[] }> = ({ positions }) => {
   if (!positions.length) return null
 
   return (
-    <div className="bg-grey-850 text-body-secondary flex h-40 w-full items-center justify-between rounded px-8 text-sm">
+    <div className="flex h-40 w-full items-center justify-between rounded bg-grey-850 px-8 text-body-secondary text-sm">
       <div className="flex flex-col gap-4">
         <div className="text-sm">{t("Total Value")}</div>
         <div className="flex items-center gap-2 text-base text-white">
@@ -138,7 +137,7 @@ const ToggleCurrency = () => {
   return (
     <button
       className={classNames(
-        "border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center text-sm transition-colors duration-100 ease-out",
+        "pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-grey-750 bg-grey-800 text-center text-body-secondary text-sm transition-colors duration-100 ease-out hover:bg-grey-700",
         currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
         currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
       )}
@@ -163,16 +162,16 @@ const DefiPositionRow: FC<{
   if (position.id === "SHIMMER")
     return (
       // Fade in to reduce flickering the first time tab is accessed
-      <FadeIn className="bg-grey-850 flex h-[6.6rem] w-full items-center gap-8 rounded-sm px-8">
-        <div className="bg-body-disabled size-16 shrink-0 animate-pulse rounded-full"></div>
+      <FadeIn className="flex h-[6.6rem] w-full items-center gap-8 rounded-sm bg-grey-850 px-8">
+        <div className="size-16 shrink-0 animate-pulse rounded-full bg-body-disabled"></div>
         <div className="flex grow flex-col gap-2">
           <div className="flex w-full animate-pulse items-center justify-between font-bold">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Protocol</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">TKN/TKN</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Protocol</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">TKN/TKN</div>
           </div>
           <div className="flex w-full animate-pulse items-center justify-between font-normal">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Account name</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Amount USD</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Account name</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Amount USD</div>
           </div>
         </div>
       </FadeIn>
@@ -182,7 +181,7 @@ const DefiPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded-sm px-8"
+        "flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded-sm bg-grey-850 px-8 hover:bg-grey-800"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >
@@ -198,7 +197,7 @@ const DefiPositionRow: FC<{
             <PositionSymbol position={position} />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-6 font-normal">
+        <div className="flex w-full items-center justify-between gap-6 font-normal text-body-secondary">
           <div className="truncate">
             {selectedAccounts?.length === 1 ? (
               <PositionType type={position.type} />
@@ -230,5 +229,5 @@ const NoDefiPositionFound = () => {
         : t("No DeFi position found")
   }, [selectedAccount, selectedFolder, status, t])
 
-  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+  return <div className="rounded bg-field px-8 py-36 text-center text-body-secondary">{msg}</div>
 }

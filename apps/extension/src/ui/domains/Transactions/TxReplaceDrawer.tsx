@@ -1,15 +1,21 @@
-import { HexString } from "@polkadot/util/types"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import { notify } from "@talisman/components/Notifications"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import {
-  EthTransactionDetails,
+  type EthTransactionDetails,
   isAccountOfType,
   serializeTransactionRequest,
-  WalletTransaction,
-  WalletTransactionEth,
+  type WalletTransaction,
+  type WalletTransactionEth,
 } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
@@ -21,18 +27,11 @@ import {
   useOpenCloseWithData,
 } from "talisman-ui"
 
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
-import { TxReplaceType } from "./types"
+import type { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -233,12 +232,12 @@ const EvmDrawerContent: FC<{
   return (
     <>
       <Icon className={classNames("text-[40px]", iconClassName)} />
-      <div className="mt-12 text-base font-bold">{title}</div>
-      <p className="text-body-secondary mt-10 text-center text-sm">{description}</p>
+      <div className="mt-12 font-bold text-base">{title}</div>
+      <p className="mt-10 text-center text-body-secondary text-sm">{description}</p>
       {!!fullHeight && <div className="grow"></div>}
       <div
         className={classNames(
-          "text-body-secondary mt-16 w-full space-y-2 text-xs",
+          "mt-16 w-full space-y-2 text-body-secondary text-xs",
           !canReplace && "pointer-events-none opacity-50"
         )}
       >
@@ -329,7 +328,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       <Modal isOpen={isOpenReady} anchor="center" onDismiss={onClose}>
         <div
           id="tx-main"
-          className="border-grey-850 flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border bg-black p-12"
+          className="flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
         >
           {data?.type && data?.tx?.platform === "ethereum" ? (
             <EvmDrawerContent
@@ -351,7 +350,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       anchor="bottom"
       containerId="main"
       onDismiss={onClose}
-      className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12"
+      className="flex w-full flex-col items-center rounded-t-xl bg-grey-800 p-12"
     >
       {data?.type && data?.tx?.platform === "ethereum" ? (
         <EvmDrawerContent tx={data.tx} type={data.type} onClose={onClose} />

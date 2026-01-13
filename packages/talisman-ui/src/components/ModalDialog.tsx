@@ -1,6 +1,6 @@
 import { XIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"
 
@@ -27,7 +27,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
     <div
       id={id}
       className={classNames(
-        "border-grey-850 flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border bg-black",
+        "flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
@@ -41,7 +41,7 @@ export const ModalDialog: FC<ModalDialogProps> = ({
         )}
         <h1
           className={classNames(
-            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-base font-bold",
+            "flex-grow overflow-hidden text-ellipsis whitespace-nowrap font-bold text-base",
             centerTitle && "text-center"
           )}
         >

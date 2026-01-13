@@ -1,13 +1,13 @@
-import {
+import type {
   EthNetworkId,
   IChaindataNetworkProvider,
   IChaindataTokenProvider,
 } from "@talismn/chaindata-provider"
-import { Account, PublicClient, WalletClient } from "viem"
+import type { Account, PublicClient, WalletClient } from "viem"
 
 import { clearPublicClientCache, getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
 import { getEvmNetworkWalletClient } from "./getEvmNetworkWalletClient"
-import { IChainConnectorEth } from "./IChainConnectorEth"
+import type { IChainConnectorEth } from "./IChainConnectorEth"
 
 export class ChainConnectorEth implements IChainConnectorEth {
   #chaindataProvider: IChaindataNetworkProvider & IChaindataTokenProvider

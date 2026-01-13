@@ -2,27 +2,26 @@ import { bind } from "@react-rxjs/core"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  Network,
-  NetworkId,
+  type Network,
+  type NetworkId,
   solNativeTokenId,
   solSplTokenId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
-import { isNotNil, Loadable } from "@talismn/util"
+import { isNotNil, type Loadable } from "@talismn/util"
+import { api } from "@ui/api"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
   getYieldxyzNetworkIdToTalismanNetworkIdMap,
-  Networks,
-  TokenDto,
-  YieldDto,
-  YieldxyzPosition,
-  YieldxyzProvider,
+  type Networks,
+  type TokenDto,
+  type YieldDto,
+  type YieldxyzPosition,
+  type YieldxyzProvider,
 } from "extension-core"
 import { log } from "extension-shared"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, shareReplay } from "rxjs"
-
-import { api } from "@ui/api"
 
 import { getNetworksMapById$ } from "./chaindata"
 import { remoteConfig$ } from "./remoteConfig"

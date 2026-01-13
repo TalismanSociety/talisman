@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { FC } from "react"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import type { Account } from "extension-core"
+import type { FC } from "react"
 
 export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
   accounts,
@@ -21,7 +20,7 @@ export const AccountsStack: FC<{ accounts: Account[]; className?: string }> = ({
         <AccountIcon
           key={account.address}
           address={account.address}
-          className="border-grey-800 box-content shrink-0 rounded-full border text-base"
+          className="box-content shrink-0 rounded-full border border-grey-800 text-base"
         />
       ))}
     </div>

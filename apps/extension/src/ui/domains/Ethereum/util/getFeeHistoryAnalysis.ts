@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser"
-import { EthBaseFeeTrend } from "extension-core"
+import type { EthBaseFeeTrend } from "extension-core"
 import { log } from "extension-shared"
-import { formatGwei, parseGwei, PublicClient } from "viem"
+import { formatGwei, type PublicClient, parseGwei } from "viem"
 
 const BLOCKS_HISTORY_LENGTH = 5
 const REWARD_PERCENTILES = [10, 20, 30]

@@ -1,13 +1,13 @@
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import type { HexString } from "@polkadot/util/types"
-import { IBalance } from "@talismn/balances"
-import { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
-import { KeypairCurve } from "@talismn/crypto"
-import { NsLookupType } from "@talismn/on-chain-id"
-import { TokenRatesStorage } from "@talismn/token-rates"
-import { Loadable } from "@talismn/util"
-import {
+import type { IBalance } from "@talismn/balances"
+import type { Network, NetworkId, Token, TokenId } from "@talismn/chaindata-provider"
+import type { KeypairCurve } from "@talismn/crypto"
+import type { NsLookupType } from "@talismn/on-chain-id"
+import type { TokenRatesStorage } from "@talismn/token-rates"
+import type { Loadable } from "@talismn/util"
+import type {
   Account,
   AddEthereumChainRequestId,
   AddressesAndTokens,
@@ -62,8 +62,8 @@ import {
   YieldxyzPositionRefreshRequest,
   YieldxyzProvider,
 } from "extension-core"
-import { MetadataDef } from "inject/substrate/types"
-import { TransactionRequest } from "viem"
+import type { MetadataDef } from "inject/substrate/types"
+import type { TransactionRequest } from "viem"
 
 export default interface MessageTypes {
   keepalive: () => Promise<boolean>

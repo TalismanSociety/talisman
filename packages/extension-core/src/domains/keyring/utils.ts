@@ -1,7 +1,7 @@
 import { captureException } from "@sentry/browser"
-import { KeypairCurve } from "@talismn/crypto"
+import type { KeypairCurve } from "@talismn/crypto"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { getDerivationPathForCurve } from "../accounts/helpers"
 import { passwordStore } from "../app/store.password"

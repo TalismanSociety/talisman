@@ -1,12 +1,11 @@
-import { HexString } from "@polkadot/util/types"
-import { EthNetworkId, Network } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import { provideContext } from "@talisman/util/provideContext"
+import type { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { WalletTransaction } from "extension-core"
+import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
+import type { WalletTransaction } from "extension-core"
 import uniq from "lodash-es/uniq"
 import { useCallback, useMemo, useState } from "react"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
 
 const useTxHistoryProvider = () => {
   const accounts = useAccounts("owned")

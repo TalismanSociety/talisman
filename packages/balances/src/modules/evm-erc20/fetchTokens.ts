@@ -1,11 +1,15 @@
-import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
+import {
+  type EvmErc20Token,
+  EvmErc20TokenSchema,
+  evmErc20TokenId,
+} from "@talismn/chaindata-provider"
 import { assign, omit } from "lodash-es"
-import { BaseError } from "viem"
+import type { BaseError } from "viem"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 import { getErc20ContractData } from "./utils"
 
 const TokenCacheSchema = z.discriminatedUnion("isValid", [

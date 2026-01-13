@@ -1,6 +1,6 @@
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, PropsWithChildren } from "react"
+import type { FC, PropsWithChildren } from "react"
 
 type IconSize = "xl" | "lg" | "md" | "base" | "sm"
 
@@ -36,7 +36,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   return (
     <div
       className={classNames(
-        "bg-alert-warn/10 flex w-full items-center gap-4 rounded-sm p-5",
+        "flex w-full items-center gap-4 rounded-sm bg-alert-warn/10 p-5",
         className
       )}
     >

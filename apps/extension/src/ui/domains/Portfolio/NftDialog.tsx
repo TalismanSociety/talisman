@@ -1,14 +1,22 @@
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { Tabs } from "@talisman/components/Tabs"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import { format } from "date-fns/format"
-import { Nft, NftCollection } from "extension-core"
+import type { Nft, NftCollection } from "extension-core"
 import { log } from "extension-shared"
 import { toPairs } from "lodash"
 import {
-  CSSProperties,
-  FC,
+  type CSSProperties,
+  type FC,
   Fragment,
-  PropsWithChildren,
+  type PropsWithChildren,
   Suspense,
   useCallback,
   useEffect,
@@ -29,15 +37,6 @@ import {
   TooltipTrigger,
   useOpenClose,
 } from "talisman-ui"
-
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { Tabs } from "@talisman/components/Tabs"
-import { api } from "@ui/api"
-import { useCopyToClipboard } from "@ui/hooks/useCopyToClipboard"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useIsFavoriteNft, useIsHiddenNftCollection, useNetworkById, useNft } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { Address } from "../Account/Address"
@@ -145,7 +144,7 @@ const TabContentCollection: FC<{
 
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
+      <div className="grid grid-cols-[1fr_2fr] gap-8 leading-paragraph">
         <div className="text-body-secondary">{t("Network")}</div>
         <div className="flex items-center justify-end gap-[0.5em]">
           <NetworkLogo networkId={nft.networkId} className="text-md" />
@@ -178,7 +177,7 @@ const TabContentCollection: FC<{
       </div>
       {!!collection.description && (
         <>
-          <div className="bg-grey-800 h-0.5"></div>
+          <div className="h-0.5 bg-grey-800"></div>
           <div className="space-y-8 hyphens-auto">
             <div className="text-body-secondary">{t("Description")}</div>
             <NftDescription text={collection.description} />
@@ -201,7 +200,7 @@ const TabContentNft: FC<{
 
   return (
     <>
-      <div className="leading-paragraph grid grid-cols-[1fr_2fr] gap-8">
+      <div className="grid grid-cols-[1fr_2fr] gap-8 leading-paragraph">
         {!!nft.tokenId && (
           <>
             <div className="text-body-secondary">{t("Token ID")}</div>
@@ -249,7 +248,7 @@ const TabContentNft: FC<{
           </Fragment>
         ))}
       </div>
-      {(!!nft.description || !!traits.length) && <div className="bg-grey-800 h-0.5"></div>}
+      {(!!nft.description || !!traits.length) && <div className="h-0.5 bg-grey-800"></div>}
       {!!nft.description && (
         <div className="space-y-8">
           <div className="text-body-secondary">{t("Description")}</div>
@@ -456,7 +455,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         "h-full w-full",
         "@2xl:overflow-hidden",
         "bg-black shadow",
-        "@2xl:grid-cols-2 @2xl:grid"
+        "@2xl:grid @2xl:grid-cols-2"
       )}
     >
       <div className="@2xl:block hidden overflow-hidden">
@@ -475,13 +474,13 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
           "@2xl:overflow-hidden"
         )}
       >
-        <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">
+        <div className="flex w-full items-center gap-4 @2xl:bg-transparent bg-black @2xl:px-12 px-8 @2xl:py-8 py-6">
           <IconButton className="@2xl:hidden" onClick={onDismiss}>
             <ChevronLeftIcon />
           </IconButton>
           <div className="grow">
             <div className="text-body-secondary leading-paragraph">{collection.name}</div>
-            <div className="text-body @2xl:leading-paragraph @2xl:text-lg font-bold">
+            <div className="font-bold @2xl:text-lg text-body @2xl:leading-paragraph">
               {nft.name}
             </div>
           </div>
@@ -490,7 +489,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             <NftContextMenu nft={nft} />
           </div>
         </div>
-        <div className="@2xl:hidden bg-grey-800 block h-[38.5rem] shrink-0 p-8">
+        <div className="block @2xl:hidden h-[38.5rem] shrink-0 bg-grey-800 p-8">
           <Tooltip>
             <TooltipTrigger onClick={handleFullScreenViewClick} asChild>
               <div className="relative size-full cursor-pointer">
@@ -500,11 +499,11 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
             {!!nft.imageUrl && <TooltipContent>{t("View in full screen")}</TooltipContent>}
           </Tooltip>
         </div>
-        <div className="@2xl:overflow-hidden @2xl:pr-0 flex grow flex-col gap-12 px-12 py-8 font-light">
+        <div className="flex grow flex-col gap-12 @2xl:overflow-hidden px-12 py-8 @2xl:pr-0 font-light">
           <div className="@2xl:pr-12">
             <Tabs tabs={tabs} selected={tab} onChange={setTab} className="m-0 w-full text-base" />
           </div>
-          <div className="@2xl:pr-1 grow overflow-hidden">
+          <div className="grow overflow-hidden @2xl:pr-1">
             <ScrollableArea
               // scrollbar should be centered into the 24px empty space used as right-padding for the modal
               paddingRight={20}

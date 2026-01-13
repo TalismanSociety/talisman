@@ -1,28 +1,28 @@
 /* eslint-disable react/no-children-prop */
-import { BalanceFormatter } from "@talismn/balances"
-import { ExternalLinkIcon } from "@talismn/icons"
-import { TokenRatesList } from "@talismn/token-rates"
-import { formatPrice, tokensToPlanck } from "@talismn/util"
-import { capitalize } from "lodash-es"
-import { FC, useEffect, useMemo, useRef } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { BalanceFormatter } from "@talismn/balances"
+import { ExternalLinkIcon } from "@talismn/icons"
+import type { TokenRatesList } from "@talismn/token-rates"
+import { formatPrice, tokensToPlanck } from "@talismn/util"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useToken } from "@ui/state"
+import { capitalize } from "lodash-es"
+import { type FC, useEffect, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, useOpenCloseStatus } from "talisman-ui"
 
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
 import { RampsAccountPickerButton } from "../shared/RampsAccountPickerButton"
 import { RampsCurrencyPickerButton } from "../shared/RampsCurrencyPickerButton"
 import { RampsFieldSet } from "../shared/RampsFieldSet"
 import { RampsNumberFieldContainer } from "../shared/RampsNumberFieldContainer"
-import { RampsProviderProps, RampsProviders } from "../shared/RampsProviders"
+import { type RampsProviderProps, RampsProviders } from "../shared/RampsProviders"
 import { RampsTokenPickerButton } from "../shared/RampsTokenPickerButton"
 import { RampsTokenPrice } from "../shared/RampsTokenPrice"
-import { RampsFormSharedData, RampsProvider } from "../shared/types"
-import { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
+import type { RampsFormSharedData, RampsProvider } from "../shared/types"
+import type { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
 import { useRampsSellForm } from "./useRampsSellForm"
 
 export const RampsSellForm: FC<{
@@ -48,7 +48,7 @@ export const RampsSellForm: FC<{
 
   return (
     <form
-      className="text-body-secondary flex size-full flex-col overflow-hidden"
+      className="flex size-full flex-col overflow-hidden text-body-secondary"
       onSubmit={(e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -61,7 +61,7 @@ export const RampsSellForm: FC<{
             <RampsFieldSet label={t("Assets")}>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <div className="leading-paragraph text-xs">{t("You send")}</div>
+                  <div className="text-xs leading-paragraph">{t("You send")}</div>
                   <RampsNumberFieldContainer
                     withFocusWithin
                     input={
@@ -71,7 +71,7 @@ export const RampsSellForm: FC<{
                           <input
                             ref={refInput}
                             type="number"
-                            className="text-md peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold leading-none text-white md:max-w-fit"
+                            className="peer w-[15rem] min-w-0 appearance-none border-none bg-transparent font-bold text-md text-white leading-none md:max-w-fit"
                             value={field.state.value ?? ""}
                             onBlur={field.handleBlur}
                             placeholder="100"
@@ -104,10 +104,10 @@ export const RampsSellForm: FC<{
                 </div>
                 <div className="space-y-4">
                   <div className="flex w-full justify-between">
-                    <div className="leading-paragraph text-xs">
+                    <div className="text-xs leading-paragraph">
                       {t("You're receiving (estimate)")}
                     </div>
-                    <div className="leading-paragraph text-xs">
+                    <div className="text-xs leading-paragraph">
                       <RampsTokenPrice
                         tokenId={formData?.tokenId}
                         tokenRates={tokenRates}
@@ -120,7 +120,7 @@ export const RampsSellForm: FC<{
                       <form.Field
                         name="provider"
                         children={(field) => (
-                          <div className="text-md text-body w-full overflow-hidden truncate pl-2 font-bold">
+                          <div className="w-full overflow-hidden truncate pl-2 font-bold text-body text-md">
                             <AmountOut
                               provider={field.state.value}
                               quotes={quotes}
@@ -253,7 +253,7 @@ const AccountBalance: FC<{
 
   if (!balance)
     return (
-      <span className="bg-body-disabled text-body-disabled rounded-xs animate-pulse">
+      <span className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
         Bal: 0.0000 XXX
       </span>
     )
@@ -288,7 +288,7 @@ const AmountOut: FC<{
 
   if (query.isLoading)
     return (
-      <span className="text-body-disabled bg-body-disabled rounded-xs animate-pulse">0.00001</span>
+      <span className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">0.00001</span>
     )
 
   if (query.data?.type === "error" || !query.data?.amountOut) return null

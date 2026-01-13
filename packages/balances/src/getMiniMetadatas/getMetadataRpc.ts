@@ -1,5 +1,5 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { fetchBestMetadata } from "@talismn/sapi"
 import { isAbortError } from "@talismn/util"
 

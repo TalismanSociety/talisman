@@ -1,19 +1,21 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, LedgerPolkadotCurve } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById, useNetworks } from "@ui/state"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { Account, LedgerPolkadotCurve } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
-import { LedgerPolkadotAccountPickerDef, LedgerPolkadotGenericAccountPickerProps } from "./types"
+import type { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import type {
+  LedgerPolkadotAccountPickerDef,
+  LedgerPolkadotGenericAccountPickerProps,
+} from "./types"
 import { useGetLedgerPolkadotAddress } from "./useGetLedgerPolkadotAddress"
 
 export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccountPickerProps> = ({

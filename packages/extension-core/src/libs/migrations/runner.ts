@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 import { BehaviorSubject } from "rxjs"
 
 import { StorageProvider } from "../Store"
-import { MigrationContext, Migrations } from "./types"
+import type { MigrationContext, Migrations } from "./types"
 
 type MigrationRunnerData = {
   appliedAt: number

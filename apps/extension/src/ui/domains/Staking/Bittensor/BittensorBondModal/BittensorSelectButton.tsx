@@ -31,7 +31,7 @@ export const BittensorSelectButton = ({
     return (
       <div
         className={
-          "text-grey-700 bg-grey-700 rounded-xs my-[0.45rem] h-[1.6rem] w-40 animate-pulse"
+          "my-[0.45rem] h-[1.6rem] w-40 animate-pulse rounded-xs bg-grey-700 text-grey-700"
         }
       />
     )
@@ -40,7 +40,7 @@ export const BittensorSelectButton = ({
     <button
       onClick={handleClick}
       className={classNames(
-        "bg-pill hover:bg-grey-700 flex cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
+        "flex cursor-pointer items-center gap-2 rounded-xl bg-pill px-4 py-2 font-light text-xs hover:bg-grey-700",
         isBtnDisabled && "cursor-not-allowed opacity-50"
       )}
     >

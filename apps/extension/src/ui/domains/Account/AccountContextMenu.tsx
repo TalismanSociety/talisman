@@ -1,18 +1,6 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { isEthereumAddress } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { Account, getAccountGenesisHash } from "extension-core"
-import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  PopoverOptions,
-} from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -25,6 +13,18 @@ import { useActiveAssetDiscoveryNetworkIds } from "@ui/hooks/useAllActiveNetwork
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useNetworkByGenesisHash } from "@ui/state"
 import { IS_EMBEDDED_POPUP, IS_POPUP } from "@ui/util/constants"
+import { type Account, getAccountGenesisHash } from "extension-core"
+import type React from "react"
+import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  type PopoverOptions,
+} from "talisman-ui"
 
 import { usePortfolioNavigation } from "../Portfolio/usePortfolioNavigation"
 
@@ -144,13 +144,13 @@ export const AccountContextMenu = forwardRef<HTMLElement, Props>(function Accoun
     <ContextMenu placement={placement ?? "bottom-end"}>
       <ContextMenuTrigger
         ref={ref}
-        className="enabled:hover:bg-grey-800 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]"
+        className="rounded p-6 text-body-secondary enabled:hover:bg-grey-800 enabled:hover:text-body disabled:cursor-[inherit] disabled:text-body-disabled"
         asChild={!!trigger}
         disabled={disabled}
       >
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
-      <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+      <ContextMenuContent className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg">
         <Suspense fallback={<SuspenseTracker name="AccountContextMenu" />}>
           {account && (
             <>

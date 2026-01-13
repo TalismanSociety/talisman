@@ -1,16 +1,16 @@
 import {
-  AnyMiniMetadata,
-  SubHydrationToken,
-  subHydrationTokenId,
+  type AnyMiniMetadata,
+  type SubHydrationToken,
   SubHydrationTokenSchema,
+  subHydrationTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy } from "lodash-es"
-import { Binary } from "polkadot-api"
+import type { Binary } from "polkadot-api"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { QueryStorageResult } from "../shared"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import type { QueryStorageResult } from "../shared"
+import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,

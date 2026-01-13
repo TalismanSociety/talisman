@@ -1,18 +1,7 @@
-import { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { EvmErc20Token, Token, TokenId } from "@talismn/chaindata-provider"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import React, { FC, forwardRef, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  PopoverOptions,
-} from "talisman-ui"
-import urlJoin from "url-join"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
 import { useBittensorChangeValidatorModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorChangeValidatorModal"
 import { useBondModal } from "@ui/domains/Staking/Bond/hooks/useBondModal"
@@ -21,6 +10,17 @@ import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import type React from "react"
+import { type FC, forwardRef, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  type PopoverOptions,
+} from "talisman-ui"
+import urlJoin from "url-join"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
@@ -134,14 +134,14 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
       <ContextMenuTrigger
         ref={ref}
         className={classNames(
-          "hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6",
+          "rounded p-6 text-body-secondary hover:bg-grey-800 hover:text-body",
           className
         )}
         asChild={!!trigger}
       >
         {trigger ? trigger : <MoreHorizontalIcon className="shrink-0" />}
       </ContextMenuTrigger>
-      <ContextMenuContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+      <ContextMenuContent className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg">
         {token?.type === "evm-erc20" && (
           <Suspense fallback={<SuspenseTracker name="TokenContextMenu.Explorer" />}>
             <ViewOnExplorerMenuItem token={token} />

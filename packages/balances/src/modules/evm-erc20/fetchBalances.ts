@@ -1,12 +1,16 @@
 import { parseEvmErc20TokenId, parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { ChainContract, erc20Abi, PublicClient } from "viem"
+import { type ChainContract, erc20Abi, type PublicClient } from "viem"
 
-import { IBalance } from "../../types"
-import { FetchBalanceErrors, FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type {
+  FetchBalanceErrors,
+  FetchBalanceResults,
+  IBalanceModule,
+} from "../../types/IBalanceModule"
 import { erc20BalancesAggregatorAbi } from "../abis"
 import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
+import { type BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({

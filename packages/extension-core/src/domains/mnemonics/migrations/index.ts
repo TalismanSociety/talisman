@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import md5 from "blueimp-md5"
 
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
 import { decryptMnemonic } from "../legacy/helpers"
 import {

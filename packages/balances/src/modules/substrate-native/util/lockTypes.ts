@@ -1,6 +1,6 @@
 import upperFirst from "lodash-es/upperFirst"
 
-import { Balance, BalanceFormatter, LockedAmount } from "../../../types"
+import type { Balance, BalanceFormatter, LockedAmount } from "../../../types"
 
 export type BalanceLockType =
   | "reserved"

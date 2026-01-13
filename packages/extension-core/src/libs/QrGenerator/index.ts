@@ -1,13 +1,13 @@
 import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 import { appStore } from "../../domains/app/store.app"
 import { passwordStore } from "../../domains/app/store.password"
 import { keyringStore } from "../../domains/keyring/store"
 import { getMetadataRpcFromDef } from "../../domains/metadata/helpers"
-import { SignerPayloadGenesisHash } from "../../domains/signing/types"
+import type { SignerPayloadGenesisHash } from "../../domains/signing/types"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import {

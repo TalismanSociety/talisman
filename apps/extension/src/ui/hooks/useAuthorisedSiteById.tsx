@@ -1,5 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
-import {
+import { api } from "@ui/api"
+import { useAuthorisedSites } from "@ui/state"
+import type {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
@@ -7,9 +9,6 @@ import {
 } from "extension-core"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-import { api } from "@ui/api"
-import { useAuthorisedSites } from "@ui/state"
 
 import { useInjectableAccounts } from "./useInjectableAccounts"
 

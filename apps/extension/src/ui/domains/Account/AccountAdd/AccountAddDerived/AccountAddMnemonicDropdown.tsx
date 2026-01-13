@@ -1,10 +1,9 @@
 import { PlusIcon, SecretIcon } from "@talismn/icons"
-import { Account, isAccountOfType } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
+import { useAccounts, useMnemonics } from "@ui/state"
+import { type Account, isAccountOfType } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
-
-import { useAccounts, useMnemonics } from "@ui/state"
 
 export type MnemonicOption = {
   value: string
@@ -74,15 +73,15 @@ export const AccountAddMnemonicDropdown: FC<{
       propertyKey="value"
       renderItem={(o) => (
         <div
-          className="text-body-secondary flex w-full items-center gap-6 overflow-hidden"
+          className="flex w-full items-center gap-6 overflow-hidden text-body-secondary"
           data-testid="account-add-mnemonic-dropdown"
         >
-          <div className="bg-body/10 text-md rounded-full p-4">
+          <div className="rounded-full bg-body/10 p-4 text-md">
             {o.value === "new" ? <PlusIcon /> : <SecretIcon />}
           </div>
           <div className="grow truncate text-sm">{o.label}</div>
           {o.value !== "new" && (
-            <div className="text-body-disabled flex shrink-0 items-center gap-2 truncate text-xs">
+            <div className="flex shrink-0 items-center gap-2 truncate text-body-disabled text-xs">
               {t("used by {{count}} accounts", { count: o.accounts?.length ?? 0 })}
             </div>
           )}

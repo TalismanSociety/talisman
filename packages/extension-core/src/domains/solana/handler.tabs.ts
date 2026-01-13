@@ -6,23 +6,23 @@ import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, of, switchMap } from "rxjs"
 
 import { TabsHandler } from "../../libs/Handler"
-import {
+import type {
   MessageTypes,
   RequestTypes,
   ResponseType,
   TabMessageHandler,
   TabSubscriptionHandler,
 } from "../../types"
-import { Port } from "../../types/base"
+import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { keyringStore } from "../keyring/store"
 import { signSolana } from "../signing/requests"
-import { SolSignRequest, SolSignResult } from "../signing/types"
+import type { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
-import { AuthorizedSite } from "../sitesAuthorised/types"
+import type { AuthorizedSite } from "../sitesAuthorised/types"
 import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
-import { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
+import type { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
 
 export class SolanaTabsHandler extends TabsHandler {
   public async handle<TMessageType extends MessageTypes>(

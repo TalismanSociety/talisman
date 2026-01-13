@@ -1,19 +1,21 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil, validateHexString } from "@talismn/util"
-import { Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useActiveNetworksState, useNetworkById } from "@ui/state"
+import { type Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
-import { LedgerPolkadotAccountPickerDef, LedgerPolkadotLegacyAccountPickerProps } from "./types"
+import type { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import type {
+  LedgerPolkadotAccountPickerDef,
+  LedgerPolkadotLegacyAccountPickerProps,
+} from "./types"
 
 export const LedgerPolkadotLegacyAccountPickerDefault: FC<
   LedgerPolkadotLegacyAccountPickerProps

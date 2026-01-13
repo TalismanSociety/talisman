@@ -1,16 +1,15 @@
-import { Balances } from "@talismn/balances"
-import { SubDTaoToken } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ZapOffIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string }> = ({
   balances,
@@ -60,7 +59,7 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
           type="button"
           onClick={handleClick}
           className={cn(
-            "text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs",
+            "inline-flex h-9 w-9 items-center justify-center rounded-xs text-body-secondary text-xs hover:bg-grey-700 hover:text-body focus:bg-grey-700 focus:text-body",
             className
           )}
         >

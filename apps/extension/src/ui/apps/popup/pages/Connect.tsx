@@ -1,13 +1,6 @@
-import { InfoIcon } from "@talismn/icons"
-import { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
-import capitalize from "lodash-es/capitalize"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
+import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
@@ -15,6 +8,12 @@ import { ConnectedAccountsPolkadot } from "@ui/domains/Site/ConnectedAccountsPol
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useInjectableAccounts } from "@ui/hooks/useInjectableAccounts"
 import { useRequest } from "@ui/state"
+import type { Account, KnownRequestIdOnly, ProviderType } from "extension-core"
+import capitalize from "lodash-es/capitalize"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -30,11 +29,11 @@ const NoAccountWarning = ({
   const { t } = useTranslation()
   return (
     <Drawer isOpen anchor="bottom" containerId="main">
-      <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+      <div className="flex flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
         <div className="w-full text-center">
-          <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+          <InfoIcon className="inline-block text-[4rem] text-primary-500" />
         </div>
-        <p className="text-body-secondary text-center">
+        <p className="text-center text-body-secondary">
           <Trans
             t={t}
             defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"
@@ -174,7 +173,7 @@ export const ConnectPolkadot: ConnectComponent = ({
 
   return (
     <PopupContent>
-      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+      <h3 className="mt-0 mb-6 pt-10 text-body-secondary text-sm">
         {t("Choose the account(s) you'd like to connect")}
       </h3>
       <section className="flex flex-col gap-4">
@@ -214,7 +213,7 @@ export const ConnectEth: ConnectComponent = ({
 
   return (
     <PopupContent>
-      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+      <h3 className="mt-0 mb-6 pt-10 text-body-secondary text-sm">
         {t("Choose the account you'd like to connect")}
       </h3>
       <section className="flex flex-col gap-4">
@@ -258,7 +257,7 @@ export const ConnectSolana: ConnectComponent = ({
 
   return (
     <PopupContent>
-      <h3 className="text-body-secondary mb-6 mt-0 pt-10 text-sm">
+      <h3 className="mt-0 mb-6 pt-10 text-body-secondary text-sm">
         {t("Choose the account you'd like to connect")}
       </h3>
       <section className="flex flex-col gap-4">

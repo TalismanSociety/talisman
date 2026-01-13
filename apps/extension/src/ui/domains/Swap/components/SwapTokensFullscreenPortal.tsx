@@ -1,5 +1,5 @@
 import { atom, useAtomValue, useSetAtom } from "jotai"
-import { ReactNode, useEffect, useRef } from "react"
+import { type ReactNode, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 
 const containerRefAtom = atom<HTMLElement | null>(null)

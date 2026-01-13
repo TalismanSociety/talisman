@@ -2,8 +2,17 @@ import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "extension-shared"
 import { BehaviorSubject } from "rxjs"
-
+import { genericSubscription } from "../../handlers/subscriptions"
+import { talismanAnalytics } from "../../libs/Analytics"
+import { ExtensionHandler } from "../../libs/Handler"
+import { requestStore } from "../../libs/requests/store"
+import { windowManager } from "../../libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
+import { authenticateLegacyMethod } from "../accounts/legacy"
+import { keyringStore } from "../keyring/store"
+import { protector } from "./protector"
+import type { PasswordStoreData } from "./store.password"
 import type {
   AnalyticsCaptureRequest,
   ChangePasswordStatusUpdate,
@@ -14,16 +23,6 @@ import type {
   RequestRoute,
   SendFundsOpenRequest,
 } from "./types"
-import { genericSubscription } from "../../handlers/subscriptions"
-import { talismanAnalytics } from "../../libs/Analytics"
-import { ExtensionHandler } from "../../libs/Handler"
-import { requestStore } from "../../libs/requests/store"
-import { windowManager } from "../../libs/WindowManager"
-import { Port } from "../../types/base"
-import { authenticateLegacyMethod } from "../accounts/legacy"
-import { keyringStore } from "../keyring/store"
-import { protector } from "./protector"
-import { PasswordStoreData } from "./store.password"
 import { ChangePasswordStatusUpdateStatus } from "./types"
 
 export default class AppHandler extends ExtensionHandler {

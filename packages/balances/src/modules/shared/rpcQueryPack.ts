@@ -1,10 +1,10 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { toPairs } from "lodash-es"
 import { Observable, of } from "rxjs"
 
-import { QueryStorageChange, QueryStorageResult } from "./types"
+import type { QueryStorageChange, QueryStorageResult } from "./types"
 
 export type MaybeStateKey = `0x${string}` | null
 

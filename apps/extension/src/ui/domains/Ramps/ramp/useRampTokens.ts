@@ -2,8 +2,8 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { useMemo } from "react"
 
-import { RampsMode } from "../shared/types"
-import { RampHostAssetsConfig } from "./types"
+import type { RampsMode } from "../shared/types"
+import type { RampHostAssetsConfig } from "./types"
 import { useRampCurrencies } from "./useRampCurrencies"
 
 const fetchRampAssets = async (

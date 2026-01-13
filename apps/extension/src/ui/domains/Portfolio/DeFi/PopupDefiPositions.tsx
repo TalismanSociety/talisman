@@ -1,16 +1,15 @@
-import { classNames, Loadable, LoadableStatus } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { DefiPosition } from "extension-core"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useScrollContainer } from "@talisman/components/ScrollContainer"
+import { classNames, type Loadable, type LoadableStatus } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useDefiPositionsDisplay, usePortfolioSelectedAccounts } from "@ui/state"
+import type { DefiPosition } from "extension-core"
+import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { PortfolioAccount } from "../AssetDetails/PortfolioAccount"
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
@@ -85,7 +84,7 @@ const VirtualizedRows: FC<{ positions: Loadable<DefiPosition[]> }> = ({ position
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 h-28 w-full"
+            className="absolute top-0 left-0 h-28 w-full"
             style={{
               transform: `translateY(${item.start}px)`,
             }}
@@ -119,7 +118,7 @@ const TotalRow: FC<{ positions: DefiPosition[] }> = ({ positions }) => {
   )
 
   return (
-    <div className="text-body-secondary flex w-full items-center justify-between text-sm">
+    <div className="flex w-full items-center justify-between text-body-secondary text-sm">
       <div>{t("Total")}</div>
       <div>
         <FiatFromUsd amount={totalValue} isBalance />
@@ -138,16 +137,16 @@ const DefiPositionRow: FC<{
 
   if (position.id === "SHIMMER")
     return (
-      <div className="bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm px-6">
-        <div className="bg-body-disabled size-16 shrink-0 animate-pulse rounded-full"></div>
+      <div className="flex h-28 w-full items-center gap-4 rounded-sm bg-grey-850 px-6">
+        <div className="size-16 shrink-0 animate-pulse rounded-full bg-body-disabled"></div>
         <div className="flex grow flex-col gap-2">
-          <div className="flex w-full animate-pulse items-center justify-between text-sm font-bold">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Protocol</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">TKN/TKN</div>
+          <div className="flex w-full animate-pulse items-center justify-between font-bold text-sm">
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Protocol</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">TKN/TKN</div>
           </div>
-          <div className="flex w-full animate-pulse items-center justify-between text-xs font-normal">
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Account name</div>
-            <div className="text-body-disabled bg-body-disabled rounded-xs">Amount USD</div>
+          <div className="flex w-full animate-pulse items-center justify-between font-normal text-xs">
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Account name</div>
+            <div className="rounded-xs bg-body-disabled text-body-disabled">Amount USD</div>
           </div>
         </div>
       </div>
@@ -157,13 +156,13 @@ const DefiPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6"
+        "flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm bg-grey-850 px-6 hover:bg-grey-800"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >
       <AssetLogo url={position.defiLogoUrl} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden font-bold text-sm">
           <div className="flex max-w-full items-center gap-2 overflow-hidden">
             <div className="truncate">{position.defiName}</div>
             <NetworkLogo networkId={position.networkId} className="inline-block" />
@@ -172,7 +171,7 @@ const DefiPositionRow: FC<{
             <PositionSymbol position={position} />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-6 text-xs font-normal">
+        <div className="flex w-full items-center justify-between gap-6 font-normal text-body-secondary text-xs">
           <div className="truncate">
             {selectedAccounts?.length === 1 ? (
               <PositionType type={position.type} />
@@ -204,5 +203,5 @@ const NoDefiPositionFound = () => {
         : t("No DeFi position found")
   }, [selectedAccount, selectedFolder, status, t])
 
-  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+  return <div className="rounded bg-field px-8 py-36 text-center text-body-secondary">{msg}</div>
 }

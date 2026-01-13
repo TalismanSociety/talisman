@@ -6,15 +6,15 @@ import {
   filter,
   map,
   ReplaySubject,
-  share,
   Subject,
+  share,
   tap,
   zip,
 } from "rxjs"
 
 import { createSubscription, unsubscribe } from "../handlers/subscriptions"
-import { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
-import { Port, RequestIdOnly } from "../types/base"
+import type { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
+import type { Port, RequestIdOnly } from "../types/base"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Store<T extends { [index: string]: any }> {

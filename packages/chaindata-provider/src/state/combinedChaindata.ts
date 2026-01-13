@@ -4,15 +4,20 @@ import {
   distinctUntilChanged,
   isObservable,
   map,
-  Observable,
+  type Observable,
   of,
   shareReplay,
 } from "rxjs"
 import z from "zod/v4"
 
-import { Network, NetworkSchema, Token, TokenSchema } from "../chaindata"
+import { type Network, NetworkSchema, type Token, TokenSchema } from "../chaindata"
 import log from "../log"
-import { Chaindata, ChaindataFileSchema, CustomChaindata, CustomChaindataSchema } from "./schema"
+import {
+  type Chaindata,
+  ChaindataFileSchema,
+  type CustomChaindata,
+  CustomChaindataSchema,
+} from "./schema"
 
 const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
 

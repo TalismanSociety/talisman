@@ -1,14 +1,8 @@
-import { DotNetwork } from "@talismn/chaindata-provider"
-import { LoaderIcon, SecretIcon } from "@talismn/icons"
-import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button, Dropdown } from "talisman-ui"
-
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
+import type { DotNetwork } from "@talismn/chaindata-provider"
+import { LoaderIcon, SecretIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
@@ -21,6 +15,11 @@ import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { MetadataQrCode } from "@ui/domains/Sign/Qr/MetadataQrCode"
 import { NetworkSpecsQrCode } from "@ui/domains/Sign/Qr/NetworkSpecsQrCode"
 import { useAppState, useBalancesHydrate, useMnemonic, useNetworks } from "@ui/state"
+import { log, POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button, Dropdown } from "talisman-ui"
 
 const SetVerifierCertificateContentInner = () => {
   const { t } = useTranslation()
@@ -57,8 +56,8 @@ const SetVerifierCertificateContentInner = () => {
   }, [generateMnemonic, mnemonicId, t])
 
   return (
-    <div className="text-body-secondary my-12 flex w-full flex-col gap-8">
-      <h3 className="text-body text-md mt-4 font-bold">
+    <div className="my-12 flex w-full flex-col gap-8 text-body-secondary">
+      <h3 className="mt-4 font-bold text-body text-md">
         {t("First, let's set your Verifier Certificate")}
       </h3>
       <p>
@@ -123,7 +122,7 @@ const MnemonicButton: FC<{ label: string }> = ({ label }) => {
     <button
       type="button"
       onClick={handleClick}
-      className="bg-grey-800 hover:bg-grey-700 hover:text-grey-200 inline-flex max-w-full items-center gap-2 overflow-hidden rounded px-3 py-1 pb-1"
+      className="inline-flex max-w-full items-center gap-2 overflow-hidden rounded bg-grey-800 px-3 py-1 pb-1 hover:bg-grey-700 hover:text-grey-200"
     >
       <SecretIcon className="shrink-0" />
       <span className="truncate">{label}</span>
@@ -161,7 +160,7 @@ const MetadataPortalContent = () => {
   )
 
   return (
-    <div className="text-body-secondary my-12 flex w-full flex-col gap-8">
+    <div className="my-12 flex w-full flex-col gap-8 text-body-secondary">
       <Dropdown
         propertyKey="id"
         items={chainsWithRpcs}
@@ -183,7 +182,7 @@ const MetadataPortalContent = () => {
                   <a
                     href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"
-                    className="hover:text-grey-200 text-grey-300"
+                    className="text-grey-300 hover:text-grey-200"
                   ></a>
                 ),
               }}
@@ -213,7 +212,7 @@ const MetadataPortalContent = () => {
               </Button>
             </div>
             <div className="relative flex aspect-square w-[40rem] justify-center bg-white p-12">
-              <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+              <div className="absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 text-body-secondary">
                 <LoaderIcon className="animate-spin-slow text-3xl" />
               </div>
               {tab === "specs" && (

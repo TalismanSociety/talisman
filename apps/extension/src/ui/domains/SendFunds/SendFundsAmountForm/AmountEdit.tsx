@@ -1,11 +1,15 @@
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, tokensToPlanck } from "@talismn/util"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useSelectedCurrency } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { log } from "extension-shared"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -14,11 +18,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
-
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -96,7 +95,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         isEstimatingMaxAmount && "animate-pulse"
       )}
     >
-      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
+      {isEstimatingMaxAmount && <div className="h-16 w-48 rounded bg-grey-800"></div>}
       <input
         key="tokenInput"
         ref={refTokensInput}
@@ -105,7 +104,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         value={value}
         placeholder="0"
         className={classNames(
-          "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
+          "peer inline-block min-w-0 text-ellipsis bg-transparent text-body text-xl",
           sendMax && "placeholder:text-white",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
@@ -182,12 +181,12 @@ const FiatInput = () => {
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
         className={classNames(
-          "text-body peer inline-block min-w-0 bg-transparent text-xl",
+          "peer inline-block min-w-0 bg-transparent text-body text-xl",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
+      {isEstimatingMaxAmount && <div className="h-16 w-48 rounded bg-grey-800"></div>}
       <div
         className={classNames(
           "block shrink-0",
@@ -201,7 +200,7 @@ const FiatInput = () => {
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -260,7 +259,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
     <div className="w-full grow">
       {!!token && (
         <>
-          <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
+          <div className="flex h-[12rem] flex-col justify-end font-bold text-xl">
             {isTokenEdit ? <TokenInput onTokenClick={onTokenClick} /> : <FiatInput />}
           </div>
           <div
@@ -275,7 +274,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
                 <PillButton
                   onClick={toggleIsTokenEdit}
                   size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+                  className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -285,12 +284,12 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+              className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
             >
               {t("Max")}
             </PillButton>
           </div>
-          <div className="text-brand-orange mt-4 text-center text-xs">
+          <div className="mt-4 text-center text-brand-orange text-xs">
             <ErrorMessage />
           </div>
         </>

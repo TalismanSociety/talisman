@@ -1,15 +1,26 @@
 /* eslint-disable react/no-children-prop */
+
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
 import {
   EthereumAddressSchema,
-  EthNetwork,
+  type EthNetwork,
   getGithubTokenLogoUrlByCoingeckoId,
-  Token,
+  type Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { LoaderIcon, SaveIcon } from "@talismn/icons"
 import { sleep } from "@talismn/util"
 import { useField, useForm } from "@tanstack/react-form"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
 import { activeTokensStore, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
 import { log } from "extension-shared"
 import { range } from "lodash-es"
@@ -19,17 +30,6 @@ import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import { z } from "zod/v4"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { getNetworkById$, getToken$, useNetworks } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

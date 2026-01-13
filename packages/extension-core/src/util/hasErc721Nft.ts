@@ -1,4 +1,4 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isAccountAddressEthereum, isAccountOwned } from "@talismn/keyring"
 import { parseAbi } from "viem"
 

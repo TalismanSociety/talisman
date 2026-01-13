@@ -1,7 +1,6 @@
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { log } from "extension-shared"
 import { useCallback } from "react"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 import type { BittensorClaimSettingsOpenOptions } from "./useBittensorClaimSettingsWizard"
 import { useResetBittensorClaimSettingsWizard } from "./useBittensorClaimSettingsWizard"

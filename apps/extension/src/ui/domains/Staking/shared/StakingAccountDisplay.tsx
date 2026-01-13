@@ -1,15 +1,14 @@
-import { Address as TAddress } from "@talismn/balances"
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { Address as TAddress } from "@talismn/balances"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
@@ -84,7 +83,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
       </TooltipContent>
       <TooltipTrigger
         className={classNames(
-          "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
+          "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
           className
         )}
       >
@@ -93,7 +92,7 @@ export const StakingAccountDisplay: FC<AddressDisplayProps> = ({ address, chainI
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />
-        <div className="leading-base grow truncate">{text}</div>
+        <div className="grow truncate leading-base">{text}</div>
         <AccountTypeIcon
           type={account?.type}
           className="text-primary"

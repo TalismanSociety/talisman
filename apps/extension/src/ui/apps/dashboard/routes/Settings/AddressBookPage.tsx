@@ -1,9 +1,27 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { detectAddressEncoding } from "@talismn/crypto"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, SendIcon, UserPlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { Address } from "@ui/domains/Account/Address"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
+import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
+import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
+import type { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
 import {
-  ButtonHTMLAttributes,
-  DetailedHTMLProps,
+  type ButtonHTMLAttributes,
+  type DetailedHTMLProps,
   forwardRef,
   Suspense,
   useCallback,
@@ -23,25 +41,6 @@ import {
   TooltipTrigger,
 } from "talisman-ui"
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { Address } from "@ui/domains/Account/Address"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress"
-import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
-import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
-import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
-import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { useViewOnExplorer } from "@ui/domains/ViewOnExplorer"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useBalances, useContacts, useNetworkByGenesisHash } from "@ui/state"
-
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Settings",
@@ -58,7 +57,7 @@ const SquareButton = forwardRef<
     type="button"
     ref={ref}
     className={classNames(
-      "enabled:hover:bg-grey-700 enabled:hover:text-body-secondary flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer disabled:cursor-not-allowed",
+      "flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer enabled:hover:bg-grey-700 enabled:hover:text-body-secondary disabled:cursor-not-allowed",
       props.className
     )}
   ></button>
@@ -111,7 +110,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   }, [contact])
 
   return (
-    <div className="bg-black-secondary group flex h-32 w-full items-center justify-between gap-4 rounded px-8">
+    <div className="group flex h-32 w-full items-center justify-between gap-4 rounded bg-black-secondary px-8">
       <AccountIcon
         className="text-xl"
         address={contact.address}
@@ -131,7 +130,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
           )}
         </div>
       </div>
-      <div className={`text-body-disabled flex shrink-0 gap-2`}>
+      <div className={`flex shrink-0 gap-2 text-body-disabled`}>
         <SquareButton onClick={handleCopyClick}>
           <CopyIcon />
         </SquareButton>
@@ -231,7 +230,7 @@ const Content = () => {
           />
         ))}
         {contactsToDisplay.length === 0 && (
-          <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
+          <div className="flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded bg-black-secondary px-16 py-8 text-body-secondary">
             <span>{t("You have no saved contacts yet.")}</span>
             <Button primary onClick={open} iconLeft={PlusIcon}>
               {t("Add a contact")}

@@ -13,8 +13,8 @@ import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc
 import { assert } from "@polkadot/util"
 
 import { sentry } from "../config/sentry"
-import { UnknownJsonRpcResponse } from "../domains/talisman/types"
-import { Port } from "../types/base"
+import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
+import type { Port } from "../types/base"
 
 // List of providers passed into constructor. This is the list of providers
 // exposed by the extension.

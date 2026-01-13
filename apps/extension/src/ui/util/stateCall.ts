@@ -1,6 +1,6 @@
-import { Codec } from "@polkadot/types-codec/types"
+import type { Codec } from "@polkadot/types-codec/types"
 import { u8aConcatStrict } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 
 import { api } from "@ui/api"
 

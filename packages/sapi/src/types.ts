@@ -1,4 +1,4 @@
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DecodedCall<Args = any> = { pallet: string; method: string; args: Args }

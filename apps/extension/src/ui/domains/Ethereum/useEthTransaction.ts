@@ -1,16 +1,19 @@
 import { bigIntMax } from "@ethereumjs/util"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isBigInt, isNotNil } from "@talismn/util"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { api } from "@ui/api"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useNetworkById } from "@ui/state"
 import {
-  EthGasSettings,
-  EthGasSettingsEip1559,
-  EthGasSettingsLegacy,
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriority,
+  type EthGasSettings,
+  type EthGasSettingsEip1559,
+  type EthGasSettingsLegacy,
+  type EthPriorityOptionName,
+  type EthPriorityOptionNameEip1559,
+  type EthPriorityOptionNameLegacy,
+  type EthTransactionDetails,
+  type GasSettingsByPriority,
   getGasLimit,
   getGasSettingsEip1559,
   getHumanReadableErrorMessage,
@@ -20,17 +23,13 @@ import {
 } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { encodeFunctionData, PublicClient, TransactionRequest } from "viem"
-
-import { api } from "@ui/api"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useNetworkById } from "@ui/state"
+import { encodeFunctionData, type PublicClient, type TransactionRequest } from "viem"
 
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "../../../inject/ethereum/EthProviderRpcError"
 import { useEthEstimateL1DataFee } from "./useEthEstimateL1DataFee"
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 import { decodeEvmTransaction } from "./util/decodeEvmTransaction"
-import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
+import { type FeeHistoryAnalysis, getFeeHistoryAnalysis } from "./util/getFeeHistoryAnalysis"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]

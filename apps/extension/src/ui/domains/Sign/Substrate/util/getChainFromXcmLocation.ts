@@ -1,5 +1,5 @@
-import { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { HydrationXcmVersionedLocation, XcmVersionedLocation } from "@polkadot-api/descriptors"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 const getParachain = (chain: DotNetwork, paraId: number, chains: DotNetwork[]): DotNetwork => {

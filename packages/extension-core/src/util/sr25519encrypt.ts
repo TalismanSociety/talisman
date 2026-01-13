@@ -1,9 +1,8 @@
 // Code in this file is heavily derived from the approach outlined in this PR:
 // https://github.com/polkadot-js/common/pull/1331
 
-import type { Keypair } from "@polkadot/util-crypto/types"
-import type { HexString } from "@polkadot/util/types"
 import { assert, u8aConcat, u8aToU8a } from "@polkadot/util"
+import type { HexString } from "@polkadot/util/types"
 import {
   hmacSha256AsU8a,
   mnemonicGenerate,
@@ -14,6 +13,7 @@ import {
   sr25519Agreement,
   sr25519PairFromSeed,
 } from "@polkadot/util-crypto"
+import type { Keypair } from "@polkadot/util-crypto/types"
 
 const encryptionKeySize = 32
 const macKeySize = 32

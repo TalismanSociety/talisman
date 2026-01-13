@@ -1,6 +1,5 @@
+import type { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 import { getAbiItem } from "viem"
-
-import { DecodedEvmTransaction } from "@ui/domains/Ethereum/util/decodeEvmTransaction"
 
 export const getContractCallArg = <TResult>(
   decodedTx: DecodedEvmTransaction,

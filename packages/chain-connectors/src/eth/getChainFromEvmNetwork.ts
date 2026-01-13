@@ -1,6 +1,6 @@
-import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { camelCase, fromPairs, toPairs } from "lodash-es"
-import { Chain, ChainContract } from "viem"
+import type { Chain, ChainContract } from "viem"
 import * as viemChains from "viem/chains"
 
 // exclude zoraTestnet which uses Hyperliquid's chain id

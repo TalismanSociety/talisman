@@ -1,10 +1,9 @@
-import { classNames } from "@talismn/util"
-import { FC, ReactNode, Suspense } from "react"
-
 import { BackButton } from "@talisman/components/BackButton"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { AnalyticsPage } from "@ui/api/analytics"
+import { classNames } from "@talismn/util"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { type FC, type ReactNode, Suspense } from "react"
 
 type LayoutProps = {
   withBack?: boolean
@@ -21,13 +20,13 @@ export const OnboardLayout: FC<LayoutProps> = ({
 }) => (
   <div
     className={classNames(
-      "sm:pt-auto flex h-full w-full items-center justify-center pt-12",
+      "flex h-full w-full items-center justify-center pt-12 sm:pt-auto",
       className
     )}
   >
     {!!withBack && (
       <BackButton
-        className="absolute left-4 top-4 z-20 bg-opacity-50 transition-colors ease-in hover:bg-opacity-70 sm:left-32 sm:top-32"
+        className="absolute top-4 left-4 z-20 bg-opacity-50 transition-colors ease-in hover:bg-opacity-70 sm:top-32 sm:left-32"
         analytics={analytics}
       />
     )}

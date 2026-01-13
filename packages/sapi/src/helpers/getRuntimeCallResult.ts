@@ -1,7 +1,7 @@
 import { toHex } from "@polkadot-api/utils"
 
 import { getSendRequestResult } from "./getSendRequestResult"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const getRuntimeCallResult = async <T>(
   chain: Chain,

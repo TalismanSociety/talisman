@@ -1,23 +1,22 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { PlusIcon } from "@talismn/icons"
-import { activeTokensStore } from "extension-core"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import { Button, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import type { NetworkId } from "@talismn/chaindata-provider"
+import { PlusIcon } from "@talismn/icons"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NetworkCombo } from "@ui/domains/Networks/NetworkCombo"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useAnyNetwork, useBalancesHydrate, useNetworks } from "@ui/state"
+import { activeTokensStore } from "extension-core"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Button, Modal, ModalDialog, PillButton, useOpenClose } from "talisman-ui"
 
-import { PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
+import { type PlatformOption, usePlatformOptions } from "../Networks/usePlatformOptions"
 import { TokensList } from "./TokensList"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -189,7 +188,7 @@ const ResetStatesModalContent: FC<{
 
   return (
     <ModalDialog title={t("Reset tokens")} onClose={onClose}>
-      <div className="text-body-secondary mb-8 text-sm">
+      <div className="mb-8 text-body-secondary text-sm">
         {t("This will reset active state of all tokens to their Talisman defaults.")}
       </div>
 

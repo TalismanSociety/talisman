@@ -1,4 +1,4 @@
-import { GenericExtrinsic } from "@polkadot/types"
+import type { GenericExtrinsic } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 
 import { stateCall } from "./stateCall"

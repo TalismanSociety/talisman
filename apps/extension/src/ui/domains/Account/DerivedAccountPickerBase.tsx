@@ -1,11 +1,10 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CheckCircleIcon } from "@talismn/icons"
-import { classNames, HexString } from "@talismn/util"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
-
+import { classNames, type HexString } from "@talismn/util"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { Checkbox, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { Fiat } from "../Asset/Fiat"
 import { AccountIcon } from "./AccountIcon"
@@ -21,26 +20,26 @@ const PagerButton: FC<{ disabled?: boolean; children: ReactNode; onClick?: () =>
     type="button"
     disabled={disabled}
     onClick={onClick}
-    className="bg-grey-850 hover:bg-grey-800 text-body-secondary w-20 rounded-sm p-4 font-bold"
+    className="w-20 rounded-sm bg-grey-850 p-4 font-bold text-body-secondary hover:bg-grey-800"
   >
     {children}
   </button>
 )
 
 const AccountButtonShimmer: FC<{ withBalances: boolean }> = ({ withBalances }) => (
-  <div className={"bg-grey-850 flex h-32 w-full items-center gap-8 rounded px-8"}>
-    <div className="bg-grey-750 inline-block h-16 w-16 animate-pulse rounded-full"></div>
+  <div className={"flex h-32 w-full items-center gap-8 rounded bg-grey-850 px-8"}>
+    <div className="inline-block h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="flex grow flex-col gap-2">
-      <div className="rounded-xs bg-grey-750 h-[1.6rem] w-[13rem] animate-pulse"></div>
-      <div className="rounded-xs bg-grey-750 h-[1.4rem] w-[6.8rem] animate-pulse"></div>
+      <div className="h-[1.6rem] w-[13rem] animate-pulse rounded-xs bg-grey-750"></div>
+      <div className="h-[1.4rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
     </div>
     <div
       className={classNames(
-        "rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse",
+        "h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750",
         !withBalances && "invisible"
       )}
     ></div>
-    <div className="rounded-xs bg-grey-750 h-[2rem] w-[2rem] animate-pulse"></div>
+    <div className="h-[2rem] w-[2rem] animate-pulse rounded-xs bg-grey-750"></div>
   </div>
 )
 
@@ -76,7 +75,7 @@ const AccountButton: FC<AccountButtonProps> = ({
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 text-grey-200 enabled:hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left disabled:opacity-50"
+        "flex h-32 w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-left text-grey-200 enabled:hover:bg-grey-800 disabled:opacity-50"
       )}
       disabled={connected}
       onClick={onClick}
@@ -91,7 +90,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       <div className="flex items-center justify-end gap-2">
         {withBalances &&
           (isInitializing ? (
-            <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+            <div className="h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
           ) : (
             <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>
@@ -105,7 +104,7 @@ const AccountButton: FC<AccountButtonProps> = ({
       </div>
       <div className="flex w-12 shrink-0 flex-col items-center justify-center">
         {connected ? (
-          <CheckCircleIcon className="text-primary text-lg" />
+          <CheckCircleIcon className="text-lg text-primary" />
         ) : (
           <Checkbox checked={selected} readOnly className="[&>input]:!border-body-disabled" />
         )}

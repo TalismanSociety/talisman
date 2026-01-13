@@ -1,10 +1,10 @@
 import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
-import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
+import type { DotNetworkId, IChaindataNetworkProvider } from "@talismn/chaindata-provider"
+import type { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, isTruthy, sleep, throwAfter } from "@talismn/util"
 
 import log from "../log"
-import { IChainConnectorDot } from "./IChainConnectorDot"
+import type { IChainConnectorDot } from "./IChainConnectorDot"
 import { Websocket } from "./Websocket"
 
 // errors that require an rpc fallback
@@ -307,7 +307,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     //
     // while we're waiting, we'll send an error back to the caller so that they can show some useful
     // info to the user
-    let noMoreSocketsTimeout: NodeJS.Timeout | undefined = undefined
+    let noMoreSocketsTimeout: NodeJS.Timeout | undefined
 
     // create subscription asynchronously so that the caller can unsubscribe without waiting for
     // the subscription to be created (which can take some time if e.g. the connection can't be established)
@@ -362,7 +362,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       // - the subscriptionId is not set yet, but will be
       let subscriptionId: string | number | null = null
       let disconnected = false
-      let unsubscribeMethod: string | undefined = undefined
+      let unsubscribeMethod: string | undefined
       try {
         await Promise.race([
           ws.subscribe(responseMethod, subscribeMethod, params, callback).then((id) => {
@@ -388,7 +388,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       // unsubscribe from ws subscription when the caller has unsubscribed
       callerUnsubscribed
         .catch(async (error) => {
-          let unsubscribeMethod = undefined
+          let unsubscribeMethod
           if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
 
           unsubRpcStatus && unsubRpcStatus()
@@ -449,7 +449,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     const socketUserId = this.addSocketUser(chainId)
 
     // retrieve next rpc backoff interval from connection meta db (if one exists)
-    let nextBackoffInterval: number | undefined = undefined
+    let nextBackoffInterval: number | undefined
     if (this.#connectionMetaDb)
       nextBackoffInterval = (await this.#connectionMetaDb.chainBackoffInterval.get(chainId))
         ?.interval
@@ -562,7 +562,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
   }
   /** generates a random number */
   private getRandomId(): number {
-    return Math.trunc(Math.random() * Math.pow(10, 8))
+    return Math.trunc(Math.random() * 10 ** 8)
   }
 
   private getTalismanSub() {

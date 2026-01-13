@@ -1,17 +1,16 @@
 import { getBlockExplorerLabel, getBlockExplorerUrls } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { isTxInfoSwap, WalletTransaction } from "extension-core"
+import { useNetworkById } from "@ui/state"
+import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
+import { isTxInfoSwap, type WalletTransaction } from "extension-core"
 import { log } from "extension-shared"
 import { t } from "i18next"
-import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
 
-import { useNetworkById } from "@ui/state"
-import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
-
-import { ReplacementCallbackArgs, TxProgress } from "../TxProgress"
+import { type ReplacementCallbackArgs, TxProgress } from "../TxProgress"
 import { TxHistoryDetailsAddress } from "./TxHistoryDetails/TxHistoryDetailsAddress"
 import { TxHistoryDetailsIdentifier } from "./TxHistoryDetails/TxHistoryDetailsIdentifier"
 import { TxHistoryDetailsNetwork } from "./TxHistoryDetails/TxHistoryDetailsNetwork"
@@ -243,7 +242,7 @@ const TxHistoryDetailsRow: FC<{ title: ReactNode; extra?: ReactNode; children: R
 }) => {
   return (
     <div className="flex shrink-0 flex-col gap-2">
-      <div className="text-body-secondary flex w-full justify-between">
+      <div className="flex w-full justify-between text-body-secondary">
         <div>{title}</div>
         <div>{extra}</div>
       </div>

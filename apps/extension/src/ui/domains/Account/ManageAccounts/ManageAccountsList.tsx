@@ -1,22 +1,20 @@
 import {
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   DragOverlay,
-  DragStartEvent,
+  type DragStartEvent,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { Account, AccountsCatalogTree } from "extension-core"
-import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from "react"
-import { createPortal } from "react-dom"
-import { useTranslation } from "react-i18next"
-
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-
-import type { UiTree, UiTreePosition } from "./types"
+import type { Account, AccountsCatalogTree } from "extension-core"
+import { type CSSProperties, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
+import { useTranslation } from "react-i18next"
 import { KeyboardSensor, MouseSensor } from "./DragAndDrop"
 import { TreeItem, TreeItems } from "./TreeItems"
+import type { UiTree, UiTreePosition } from "./types"
 import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
 const DRAGGED_OVERLAY_STYLE: CSSProperties = {
@@ -119,7 +117,7 @@ export const ManageAccountsList: FC<{
           : null}
       </DndContext>
       {!items.filter((i) => i.isVisible).length && (
-        <div className="bg-grey-850 text-body-disabled flex h-40 items-center justify-center rounded text-sm">
+        <div className="flex h-40 items-center justify-center rounded bg-grey-850 text-body-disabled text-sm">
           {t("No accounts found")}
         </div>
       )}

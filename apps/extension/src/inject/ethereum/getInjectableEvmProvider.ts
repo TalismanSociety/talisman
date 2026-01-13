@@ -8,7 +8,7 @@ import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
-  WrappedEthProviderRpcError,
+  type WrappedEthProviderRpcError,
 } from "./EthProviderRpcError"
 
 interface RequestArguments {

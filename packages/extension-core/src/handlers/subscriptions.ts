@@ -4,7 +4,7 @@
 // Adapted from polkadot.js
 
 import { DEBUG } from "extension-shared"
-import { Observable } from "rxjs"
+import type { Observable } from "rxjs"
 
 import type {
   KnownSubscriptionDataTypes,

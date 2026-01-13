@@ -1,8 +1,9 @@
 import { TEST } from "extension-shared"
 import { map, ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
-
+import { genericSubscription } from "../../handlers/subscriptions"
 import type { Port } from "../../types/base"
+import { windowManager } from "../WindowManager"
 import type {
   AnyRespondableRequest,
   KnownRequest,
@@ -13,8 +14,6 @@ import type {
   Resolver,
   ValidRequests,
 } from "./types"
-import { genericSubscription } from "../../handlers/subscriptions"
-import { windowManager } from "../WindowManager"
 import { isRequestOfType } from "./utils"
 
 class RequestCounts {

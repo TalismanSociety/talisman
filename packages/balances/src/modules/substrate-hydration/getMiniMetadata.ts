@@ -1,8 +1,8 @@
-import { AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
+import { type AnyMiniMetadata, MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
 
 import { deriveMiniMetadataId } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue, hasRuntimeApi, hasStorageItem } from "../shared"
 import { MODULE_TYPE } from "./config"
 

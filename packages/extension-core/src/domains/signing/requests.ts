@@ -1,16 +1,15 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
-import { Account } from "@talismn/keyring"
-import { RpcTransactionRequest } from "viem"
-
+import type { EthNetworkId } from "@talismn/chaindata-provider"
+import type { Account } from "@talismn/keyring"
+import type { RpcTransactionRequest } from "viem"
+import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
+import type { EthRequestSignArguments } from "../ethereum/types"
 import type {
   EthSignRequest,
   SolSignRequest,
   SolSignResult,
   SubstrateSigningRequest,
 } from "./types"
-import { requestStore } from "../../libs/requests/store"
-import { EthRequestSignArguments } from "../ethereum/types"
 
 export const signAndSendEth = (
   url: string,

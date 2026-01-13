@@ -7,7 +7,7 @@ const getBase64ImageFromUrlRaw = async (url: string) => {
 
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = function () {
+      reader.onloadend = () => {
         try {
           if (!reader.result) throw new Error("No result")
           const base64data = reader.result.toString()
@@ -41,7 +41,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
 
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = function () {
+      reader.onloadend = () => {
         try {
           if (!reader.result) throw new Error("No result")
           const strSvg = reader.result as string

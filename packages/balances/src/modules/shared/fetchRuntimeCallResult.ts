@@ -1,4 +1,4 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import { parseMetadataRpc, toHex } from "@talismn/scale"
 
 export const fetchRuntimeCallResult = async <T>(

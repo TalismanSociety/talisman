@@ -1,16 +1,11 @@
-import { Balances } from "@talismn/balances"
-import { subNativeTokenId, Token, TokenId } from "@talismn/chaindata-provider"
-import { CheckCircleIcon } from "@talismn/icons"
-import { classNames, planckToTokens } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { Address, isAccountCompatibleWithNetwork } from "extension-core"
-import sortBy from "lodash-es/sortBy"
-import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { Balances } from "@talismn/balances"
+import { subNativeTokenId, type Token, type TokenId } from "@talismn/chaindata-provider"
+import { CheckCircleIcon } from "@talismn/icons"
+import { classNames, planckToTokens } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import {
   useAccountByAddress,
   useBalances,
@@ -21,6 +16,10 @@ import {
   useTokens,
 } from "@ui/state"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
+import { type Address, isAccountCompatibleWithNetwork } from "extension-core"
+import sortBy from "lodash-es/sortBy"
+import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkName } from "../Networks/NetworkName"
@@ -40,22 +39,22 @@ type TokenRowProps = {
 
 const TokenRowSkeleton = () => (
   <div className="flex h-[5.8rem] w-full items-center gap-4 px-12 text-left">
-    <div className="bg-grey-750 h-16 w-16 animate-pulse rounded-full"></div>
+    <div className="h-16 w-16 animate-pulse rounded-full bg-grey-750"></div>
     <div className="grow space-y-[5px]">
-      <div className={"text-body flex w-full justify-between text-sm font-bold"}>
+      <div className={"flex w-full justify-between font-bold text-body text-sm"}>
         <div>
-          <div className="bg-grey-750 rounded-xs inline-block h-7 w-20 animate-pulse"></div>
+          <div className="inline-block h-7 w-20 animate-pulse rounded-xs bg-grey-750"></div>
         </div>
         <div>
-          <div className="bg-grey-750 rounded-xs inline-block h-7 w-48 animate-pulse"></div>
+          <div className="inline-block h-7 w-48 animate-pulse rounded-xs bg-grey-750"></div>
         </div>
       </div>
-      <div className="text-body-secondary flex w-full items-center justify-between gap-2 text-right text-xs font-light">
+      <div className="flex w-full items-center justify-between gap-2 text-right font-light text-body-secondary text-xs">
         <div>
-          <div className="bg-grey-800 rounded-xs inline-block h-6 w-40 animate-pulse"></div>
+          <div className="inline-block h-6 w-40 animate-pulse rounded-xs bg-grey-800"></div>
         </div>
         <div className="grow text-right">
-          <div className="bg-grey-800 rounded-xs inline-block h-6 w-28 animate-pulse"></div>
+          <div className="inline-block h-6 w-28 animate-pulse rounded-xs bg-grey-800"></div>
         </div>
       </div>
     </div>
@@ -102,7 +101,7 @@ const TokenRows: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -160,7 +159,7 @@ const TokenRow: FC<TokenRowProps> = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary"
       )}
@@ -171,15 +170,15 @@ const TokenRow: FC<TokenRowProps> = ({
       <div className="flex grow flex-col gap-2.5 overflow-hidden">
         <div
           className={classNames(
-            "flex w-full justify-between gap-6 overflow-hidden text-sm font-bold",
+            "flex w-full justify-between gap-6 overflow-hidden font-bold text-sm",
             selected ? "text-body-secondary" : "text-body"
           )}
         >
           <div className="flex grow items-center gap-2 overflow-hidden">
             <div data-testid="picker-token-name">{token.symbol}</div>
-            <TokenTypePill type={token.type} className="rounded-xs shrink-0 px-1 py-0.5" />
+            <TokenTypePill type={token.type} className="shrink-0 rounded-xs px-1 py-0.5" />
             {!!token.name && token.name !== token.symbol && (
-              <div className="text-body-inactive truncate font-normal">{token.name}</div>
+              <div className="truncate font-normal text-body-inactive">{token.name}</div>
             )}
             {selected && <CheckCircleIcon className="inline shrink-0 align-text-top" />}
           </div>
@@ -194,7 +193,7 @@ const TokenRow: FC<TokenRowProps> = ({
             />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-right text-xs font-light">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden text-right font-light text-body-secondary text-xs">
           <div className="flex grow items-center overflow-hidden">
             <div className="truncate" data-testid="picker-token-network">
               <NetworkLogo networkId={token.networkId} className="mr-2 inline-block text-sm" />
@@ -399,7 +398,7 @@ const TokensList: FC<TokensListProps> = ({
           />
 
           {!tokens?.length && (
-            <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+            <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
               {t("No token matches your search")}
             </div>
           )}
@@ -417,7 +416,7 @@ const TokensList: FC<TokensListProps> = ({
           <TokenRowSkeleton />
         </>
       ) : (
-        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No tokens found")}
         </div>
       )}
@@ -487,7 +486,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           </div>
         )}
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <TokensList
           address={address}
           selected={selected}

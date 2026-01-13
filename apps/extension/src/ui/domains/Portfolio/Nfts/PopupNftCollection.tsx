@@ -1,14 +1,13 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { StarIcon } from "@talismn/icons"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 import { format } from "date-fns"
-import { Nft, NftCollection } from "extension-core"
-import { FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
+import type { Nft, NftCollection } from "extension-core"
+import { type FC, Suspense, useCallback, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import { useIntersection } from "react-use"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
-import { useIsFavoriteNft, useNftCollection, useSetting } from "@ui/state"
 
 import { NftDialog } from "../NftDialog"
 import { NftImage } from "../NftImage"
@@ -53,7 +52,7 @@ const NoNftFound = () => {
     [selectedAccount, selectedFolder, t]
   )
 
-  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+  return <div className="rounded bg-field px-8 py-36 text-center text-body-secondary">{msg}</div>
 }
 
 const NftRowInner: FC<{
@@ -70,12 +69,12 @@ const NftRowInner: FC<{
     <button
       type="button"
       onClick={onClick}
-      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
+      className="flex h-32 w-full items-center gap-8 rounded-sm bg-grey-900 px-8 text-left hover:bg-grey-800"
     >
       <div className="flex grow items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={nft.previewUrl} alt={collection.name ?? ""} />
         <div className="flex grow gap-2 overflow-hidden">
-          <div className="truncate text-base font-bold">{nft.name}</div>
+          <div className="truncate font-bold text-base">{nft.name}</div>
           {isFavorite ? <StarIcon className="shrink-0 fill-[#D5FF5C] stroke-[#D5FF5C]" /> : null}
         </div>
       </div>

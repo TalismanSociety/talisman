@@ -1,7 +1,7 @@
-import { Metadata } from "@polkadot-api/substrate-bindings"
+import type { Metadata } from "@polkadot-api/substrate-bindings"
 
 import log from "../log"
-import { Prettify } from "./Prettify"
+import type { Prettify } from "./Prettify"
 
 export type MetadataType = SupportedMetadata["lookup"][number]
 export type MetadataPallet = SupportedMetadata["pallets"][number]

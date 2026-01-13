@@ -1,18 +1,17 @@
-import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
-import { isTokenActive } from "extension-core"
-import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { SelectedIndicator } from "@talisman/components/SelectedIndicator"
+import { ArrowRightIcon, LoaderIcon, PolkadotVaultIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useBalancesFiatTotal } from "@ui/hooks/useBalancesFiatTotal"
 import { useActiveTokensState, useNetworkByGenesisHash, useNetworks, useTokens } from "@ui/state"
+import { isTokenActive } from "extension-core"
+import { type ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, FormFieldInputText, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { useAccountAddQr } from "./context"
@@ -34,12 +33,12 @@ const AccountDerivedPicker = ({
         e.preventDefault()
         dispatch({ method: "setLockToNetwork", lockToNetwork })
       }}
-      className="text-body-secondary flex h-10 items-center gap-2 py-1 align-middle"
+      className="flex h-10 items-center gap-2 py-1 align-middle text-body-secondary"
     >
       {state.accountConfig.lockToNetwork === lockToNetwork ? (
         <SelectedIndicator />
       ) : (
-        <span className="bg-grey-800 h-8 w-8 rounded-full" />
+        <span className="h-8 w-8 rounded-full bg-grey-800" />
       )}
       <span>{label}</span>
     </button>
@@ -111,14 +110,14 @@ export const ConfigureAccount = () => {
           onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
         />
 
-        <div className="ring-grey-700 flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1">
+        <div className="flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1 ring-grey-700">
           <AccountIcon
             address={accountConfig.address}
             genesisHash={accountConfig.lockToNetwork ? accountConfig.genesisHash : undefined}
             className="text-xl"
           />
-          <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
-            <div className="text-body flex w-full items-center gap-3 text-base leading-none">
+          <div className="!items-start flex flex-col gap-2 overflow-hidden leading-8">
+            <div className="flex w-full items-center gap-3 text-base text-body leading-none">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
                 {accountConfig.name || t("My Polkadot Vault Account")}
               </div>
@@ -126,14 +125,14 @@ export const ConfigureAccount = () => {
                 <PolkadotVaultIcon className="text-primary" />
               </div>
             </div>
-            <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap text-sm leading-7">
+            <div className="overflow-hidden text-ellipsis whitespace-nowrap text-body-secondary text-sm leading-7">
               <Address address={accountConfig.address} />
             </div>
           </div>
           <div className="grow" />
           <div className="flex items-center justify-end gap-2">
             <div className="flex flex-col justify-center pb-1 leading-none">
-              {isBalanceLoading && <LoaderIcon className="animate-spin-slow inline text-white" />}
+              {isBalanceLoading && <LoaderIcon className="inline animate-spin-slow text-white" />}
             </div>
             <Tooltip placement="bottom-end">
               <TooltipTrigger asChild>
@@ -166,7 +165,7 @@ export const ConfigureAccount = () => {
                 />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="leading-paragraph rounded-xs text-body-secondary border-grey-700 z-20 w-[50rem] border-[0.5px] bg-black p-3 text-xs shadow">
+            <TooltipContent className="z-20 w-[50rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs leading-paragraph shadow">
               By default, derived accounts in Polkadot Vault are restricted to one network, based on
               derivation path. Root accounts can be used on any network. Select 'Derived Account' if
               you are not sure.

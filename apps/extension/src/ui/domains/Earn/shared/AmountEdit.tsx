@@ -1,12 +1,16 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
-import { TokenRates } from "@talismn/token-rates"
+import type { TokenRates } from "@talismn/token-rates"
 import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -15,11 +19,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
-
-import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -91,14 +90,14 @@ const TokenInput: FC<{
         placeholder="0"
         step="any"
         value={inputValue}
-        className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
+        className={"peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-body text-xl"}
         onChange={handleChange}
       />
       <button
         type="button"
         onClick={onTokenClick}
         className={cn(
-          "text-body flex shrink-0 items-center gap-2 text-base font-normal",
+          "flex shrink-0 items-center gap-2 font-normal text-base text-body",
           onTokenClick ? "cursor-pointer" : "cursor-default"
         )}
       >
@@ -190,7 +189,7 @@ const FiatInput: FC<{
         inputMode="decimal"
         value={inputValue}
         placeholder={"0.00"}
-        className="text-body peer inline-block min-w-0 bg-transparent text-xl"
+        className="peer inline-block min-w-0 bg-transparent text-body text-xl"
         onChange={handleChange}
       />
       <div className="block shrink-0">{currencyConfig[currency]?.symbol}</div>
@@ -199,7 +198,7 @@ const FiatInput: FC<{
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay: FC<{ token: Token; value: bigint | null; tokenRates: TokenRates | null }> = ({
@@ -263,7 +262,7 @@ export const AmountEdit: FC<{
 
   return (
     <div className="size-full">
-      <div className="flex h-[50%] flex-col justify-end text-xl font-bold">
+      <div className="flex h-[50%] flex-col justify-end font-bold text-xl">
         {isTokenEdit || !tokenRates ? (
           <TokenInput
             token={token}
@@ -291,7 +290,7 @@ export const AmountEdit: FC<{
             <PillButton
               onClick={toggleIsTokenEdit}
               size="xs"
-              className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+              className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
             >
               <SwapIcon />
             </PillButton>
@@ -300,12 +299,12 @@ export const AmountEdit: FC<{
         <PillButton
           onClick={onMaxClick}
           size="xs"
-          className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+          className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
         >
           {t("Max")}
         </PillButton>
       </div>
-      <div className={cn("text-brand-orange mt-4 text-center text-xs", !error && "invisible")}>
+      <div className={cn("mt-4 text-center text-brand-orange text-xs", !error && "invisible")}>
         <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
       </div>
     </div>

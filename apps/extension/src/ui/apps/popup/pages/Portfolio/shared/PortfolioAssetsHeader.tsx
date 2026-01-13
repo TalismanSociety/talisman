@@ -1,19 +1,7 @@
-import { Balance, Balances } from "@talismn/balances"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { type Balance, Balances } from "@talismn/balances"
 import { ChevronLeftIcon, CopyIcon, MoreHorizontalIcon, SendIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { FC, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import {
-  ContextMenuTrigger,
-  IconButton,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AccountContextMenu } from "@ui/domains/Account/AccountContextMenu"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -30,6 +18,17 @@ import {
   usePortfolioBalances,
   useSelectedCurrency,
 } from "@ui/state"
+import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { type FC, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import {
+  ContextMenuTrigger,
+  IconButton,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
 
 const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
   const { t } = useTranslation()
@@ -47,7 +46,7 @@ const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
       <TooltipTrigger
         onClick={canSendFunds ? sendFunds : undefined}
         className={classNames(
-          "text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
+          "flex h-16 w-16 flex-col items-center justify-center rounded-full text-body-secondary text-md",
           canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
         )}
       >
@@ -79,7 +78,7 @@ const CopyAddressButton: FC<{ account?: Account | null }> = ({ account }) => {
     <Tooltip placement="bottom">
       <TooltipTrigger
         onClick={copyAddress}
-        className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+        className="flex h-16 w-16 flex-col items-center justify-center rounded-full text-body-secondary text-md hover:bg-grey-800 hover:text-body"
       >
         <CopyIcon />
       </TooltipTrigger>
@@ -179,7 +178,7 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
                     address={account?.address}
                     hideManageAccounts
                     trigger={
-                      <ContextMenuTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                      <ContextMenuTrigger className="flex h-16 w-16 flex-col items-center justify-center rounded-full text-body-secondary text-md hover:bg-grey-800 hover:text-body">
                         <MoreHorizontalIcon />
                       </ContextMenuTrigger>
                     }

@@ -1,7 +1,8 @@
 import { bind } from "@react-rxjs/core"
-import { Address, Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
+import { type Address, Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { api } from "@ui/api"
+import { type BalanceSubscriptionResponse, isAccountCompatibleWithNetwork } from "extension-core"
 import { log } from "extension-shared"
 import {
   combineLatest,
@@ -14,9 +15,7 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { api } from "@ui/api"
-
-import { AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
+import { type AccountCategory, accountsMap$, getAccountsByCategory$ } from "./accounts"
 import { getNetworksMapById$, getTokensMap$ } from "./chaindata"
 import { tokenRatesMap$ } from "./tokenRates"
 import { debugObservable } from "./util/debugObservable"

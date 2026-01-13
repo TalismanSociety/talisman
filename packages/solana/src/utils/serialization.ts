@@ -1,7 +1,7 @@
 import {
   PublicKey,
   Transaction,
-  TransactionInstruction,
+  type TransactionInstruction,
   VersionedTransaction,
 } from "@solana/web3.js"
 import { base58 } from "@talismn/crypto"

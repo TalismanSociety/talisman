@@ -1,9 +1,8 @@
-import { DecodedCall } from "@talismn/sapi"
+import { provideContext } from "@talisman/util/provideContext"
+import type { DecodedCall } from "@talismn/sapi"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { provideContext } from "@talisman/util/provideContext"
-
-import { DecodedBatchCall } from "../types"
+import type { DecodedBatchCall } from "../types"
 
 const useBatchItemDrawerProvider = ({ decodedCall }: { decodedCall: DecodedBatchCall }) => {
   const [batchItemModalIndex, setBatchItemModalIndex] = useState(-1)

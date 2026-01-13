@@ -1,9 +1,16 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, ReactNode, useCallback, useMemo, useState } from "react"
+import {
+  type FC,
+  type MouseEventHandler,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+} from "react"
 import { createPortal } from "react-dom"
 
-import { OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
+import { type OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
 
 type DrawerAnchor = "top" | "right" | "bottom" | "left"
 
@@ -103,7 +110,7 @@ export const Drawer: FC<DrawerProps> = ({
       <TransitionChild
         as="div"
         className={classNames(
-          "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-80",
+          "top-0 left-0 z-10 h-full w-full bg-grey-900 bg-opacity-80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
           position
         )}

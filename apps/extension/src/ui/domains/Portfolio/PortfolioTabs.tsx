@@ -1,9 +1,8 @@
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation } from "react-router-dom"
-
 import { Tabs } from "@talisman/components/Tabs"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
 
 const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"

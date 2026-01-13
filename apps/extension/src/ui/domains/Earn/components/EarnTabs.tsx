@@ -1,7 +1,6 @@
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { Tabs } from "@talisman/components/Tabs"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 interface EarnTabsProps {
   className?: string

@@ -1,5 +1,5 @@
-import { XcmVersionedAssets } from "@polkadot-api/descriptors"
-import { DotNetwork, subAssetTokenId, TokenId } from "@talismn/chaindata-provider"
+import type { XcmVersionedAssets } from "@polkadot-api/descriptors"
+import { type DotNetwork, subAssetTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export const getMultiAssetTokenId = (

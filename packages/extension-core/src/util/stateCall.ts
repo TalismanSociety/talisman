@@ -1,9 +1,9 @@
-import type { DetectCodec } from "@polkadot/types/types"
 import { TypeRegistry } from "@polkadot/types"
-import { Codec } from "@polkadot/types-codec/types"
+import type { DetectCodec } from "@polkadot/types/types"
+import type { Codec } from "@polkadot/types-codec/types"
 import { u8aConcatStrict } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
-import { Err, Ok, Result } from "ts-results"
+import type { HexString } from "@polkadot/util/types"
+import { Err, Ok, type Result } from "ts-results"
 
 import { chainConnector } from "../rpcs/chain-connector"
 

@@ -1,14 +1,14 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import {
   decAnyMetadata,
   getDynamicBuilder,
   getLookupFn,
-  ScaleStorageCoder,
+  type ScaleStorageCoder,
   unifyMetadata,
 } from "@talismn/scale"
 
 import log from "../../log"
-import { MiniMetadata } from "../../types"
+import type { MiniMetadata } from "../../types"
 
 type NetworkCoders = { [key: string]: [string, string] }
 

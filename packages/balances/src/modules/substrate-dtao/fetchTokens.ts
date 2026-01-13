@@ -1,19 +1,19 @@
 import type { bittensor } from "@polkadot-api/descriptors"
-import { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
-  AnyMiniMetadata,
-  DotNetworkId,
-  SubDTaoToken,
-  subDTaoTokenId,
+  type AnyMiniMetadata,
+  type DotNetworkId,
+  type SubDTaoToken,
   SubDTaoTokenSchema,
+  subDTaoTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 import { fromPairs } from "lodash-es"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { fetchRuntimeCallResult, QueryStorageResult } from "../shared"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { fetchRuntimeCallResult, type QueryStorageResult } from "../shared"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 type GetDynamicInfosResult =
   (typeof bittensor)["descriptors"]["apis"]["SubnetInfoRuntimeApi"]["get_all_dynamic_info"][1]

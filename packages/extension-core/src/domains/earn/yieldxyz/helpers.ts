@@ -1,8 +1,8 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { Networks } from "@yieldxyz/sdk"
 import { fromPairs, toPairs } from "lodash-es"
 
-import { RemoteConfigStoreData } from "../../app/types"
+import type { RemoteConfigStoreData } from "../../app/types"
 
 export const getYieldxyzNetworkIdToTalismanNetworkIdMap = (
   remoteConfig: RemoteConfigStoreData

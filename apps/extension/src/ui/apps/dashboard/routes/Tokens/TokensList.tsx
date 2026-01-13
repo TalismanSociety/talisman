@@ -2,15 +2,21 @@ import {
   isTokenCustom,
   isTokenEvmUniswapV2,
   isTokenInTypes,
-  NetworkId,
-  Token,
+  type NetworkId,
+  type Token,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { NetworkType } from "@ui/domains/Networks/NetworkType"
+import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import { sortBy } from "lodash-es"
-import { FC, useEffect, useMemo, useState } from "react"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -22,14 +28,7 @@ import {
 } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { NetworkType } from "@ui/domains/Networks/NetworkType"
-import { useActiveTokensState, useAnyNetwork, useNetworksMapById, useTokens } from "@ui/state"
-
-import { PlatformOption } from "../Networks/usePlatformOptions"
+import type { PlatformOption } from "../Networks/usePlatformOptions"
 
 export const TokensList: FC<{
   platform: PlatformOption
@@ -98,15 +97,15 @@ export const TokensList: FC<{
 
   if (!displayedTokens.length)
     return (
-      <div className="bg-grey-850 text-body-secondary my-12 rounded py-24 text-center">
+      <div className="my-12 rounded bg-grey-850 py-24 text-center text-body-secondary">
         <div>{t("No token found")}</div>
         <div>{t("Consider adding it manually as a custom token")}</div>
       </div>
     )
 
   return (
-    <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[40%_40%_20%] px-8 text-sm font-normal">
+    <div className="flex w-full min-w-[45rem] flex-col gap-4 text-left text-base text-body">
+      <div className="grid grid-cols-[40%_40%_20%] px-8 font-normal text-body-disabled text-sm">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="pr-20 text-right">{t("Active")}</div>
@@ -136,7 +135,7 @@ const VirtualizedRows: FC<{ tokens: Token[] }> = ({ tokens }) => {
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 w-full"
+            className="absolute top-0 left-0 w-full"
             style={{
               height: `${item.size}px`,
               transform: `translateY(${item.start}px)`,
@@ -163,8 +162,8 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
 
   return (
     <div className="relative h-28 w-full">
-      <div className="bg-grey-850 text-body-secondary grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm px-8 pr-6 font-normal">
-        <div className="text-body flex items-center gap-4 overflow-hidden">
+      <div className="grid h-28 w-full grid-cols-[40%_40%_20%] items-center truncate rounded-sm bg-grey-850 px-8 pr-6 font-normal text-body-secondary">
+        <div className="flex items-center gap-4 overflow-hidden text-body">
           <TokenLogo tokenId={token.id} className="shrink-0 text-xl" />
           <div className="flex flex-col justify-center gap-2 overflow-hidden">
             <div className="flex items-center gap-3 overflow-hidden">
@@ -174,16 +173,16 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
               <TokenTypePill type={token.type} />
               {isTokenCustom(token) && <CustomPill />}
             </div>
-            <div className="text-body-inactive truncate text-xs">{token.name}</div>
+            <div className="truncate text-body-inactive text-xs">{token.name}</div>
           </div>
         </div>
 
         <div className="flex flex-col justify-center gap-2 overflow-hidden">
-          <div className="text-body flex items-center gap-3 overflow-hidden">
-            <NetworkLogo networkId={network.id} className="text-body shrink-0 truncate text-base" />
+          <div className="flex items-center gap-3 overflow-hidden text-body">
+            <NetworkLogo networkId={network.id} className="shrink-0 truncate text-base text-body" />
             <div>{network.name}</div>
           </div>
-          <div className="text-body-inactive truncate text-xs">
+          <div className="truncate text-body-inactive text-xs">
             <NetworkType networkId={network.id} />
           </div>
         </div>
@@ -198,7 +197,7 @@ const TokenRow: FC<{ token: Token }> = ({ token }) => {
             }}
           />
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="hover:text-body bg-grey-800 hover:bg-grey-700 rounded-sm p-3">
+            <ContextMenuTrigger className="rounded-sm bg-grey-800 p-3 hover:bg-grey-700 hover:text-body">
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -227,7 +226,7 @@ const CustomPill = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="bg-primary/10 text-primary inline-block rounded p-4 py-2 text-xs font-light">
+    <div className="inline-block rounded bg-primary/10 p-4 py-2 font-light text-primary text-xs">
       {t("Custom")}
     </div>
   )

@@ -1,8 +1,7 @@
 import { encodeAnyAddress } from "@talismn/crypto"
-import { Account, getAccountGenesisHash } from "extension-core"
-import { useMemo } from "react"
-
 import { useNetworkByGenesisHash } from "@ui/state"
+import { type Account, getAccountGenesisHash } from "extension-core"
+import { useMemo } from "react"
 
 export const useFormattedAddress = (
   address: string | undefined,

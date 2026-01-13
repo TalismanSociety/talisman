@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
-
 import { api } from "@ui/api"
+import { useEffect } from "react"
 
 export const useOnChainId = (address?: string) => {
   const { data: onChainId, ...rest } = useQuery({

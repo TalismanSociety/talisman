@@ -1,9 +1,9 @@
 import { WsProvider } from "@polkadot/rpc-provider"
-import { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type { DotNetwork, DotNetworkId } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 
-import { IChainConnectorDot } from "./IChainConnectorDot"
+import type { IChainConnectorDot } from "./IChainConnectorDot"
 
 const AUTO_CONNECT_TIMEOUT = 3_000
 const TIMEOUT = 10_000

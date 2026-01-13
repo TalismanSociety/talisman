@@ -1,9 +1,8 @@
-import { Balance } from "@talismn/balances"
-import { LegacyAccountOrigin } from "extension-core"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
+import type { Balance } from "@talismn/balances"
 import { useBalances, useToken } from "@ui/state"
+import type { LegacyAccountOrigin } from "extension-core"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { AccountRow } from "./AccountRow"
 
@@ -79,7 +78,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
 
   return (
     <div>
-      {!!header && <div className="text-body-secondary mb-4 mt-8 px-12 font-bold">{header}</div>}
+      {!!header && <div className="mt-8 mb-4 px-12 font-bold text-body-secondary">{header}</div>}
       {accountsWithBalance?.map((account) => (
         <AccountRow
           selected={account.address === selected}
@@ -94,7 +93,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         />
       ))}
       {!accounts?.length && (
-        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No account matches your search")}
         </div>
       )}

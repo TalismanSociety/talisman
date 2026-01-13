@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { FC } from "react"
+import { type Account, getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
@@ -17,7 +17,7 @@ export const ConnectAccountToggleButtonRow: FC<{
     type="button"
     onClick={onClick}
     className={classNames(
-      "hover:bg-field flex h-24 w-full shrink-0 items-center gap-6 px-6",
+      "flex h-24 w-full shrink-0 items-center gap-6 px-6 hover:bg-field",
       !isConnected && "text-body-secondary"
     )}
   >

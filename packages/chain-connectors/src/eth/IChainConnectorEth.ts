@@ -1,5 +1,5 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
-import { Account, PublicClient, WalletClient } from "viem"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
+import type { Account, PublicClient, WalletClient } from "viem"
 
 export interface IChainConnectorEth {
   getPublicClientForEvmNetwork: (evmNetworkId: EthNetworkId) => Promise<PublicClient | null>

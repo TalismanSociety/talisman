@@ -1,16 +1,15 @@
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { ChevronLeftIcon, ProtocolIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
-
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
-import { ProtocolOption, useDefiPositions } from "@ui/state"
+import { type ProtocolOption, useDefiPositions } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Modal } from "talisman-ui"
 
 const isAllProtocolsOption = (option: ProtocolOption) =>
   "id" in option && option.id === "ALL_PROTOCOLS"
@@ -25,7 +24,7 @@ const ProtocolOptionRow: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
+        "flex h-24 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
         isSelected && "!bg-grey-700"
       )}
@@ -36,7 +35,7 @@ const ProtocolOptionRow: FC<{
         <AssetLogo url={option.logo} className="shrink-0 text-xl" />
       )}
 
-      <div className="text-body grow flex-col gap-2 truncate text-left">{option.name}</div>
+      <div className="grow flex-col gap-2 truncate text-left text-body">{option.name}</div>
       <FiatFromUsd amount={option.valueUsd} isBalance noCountUp className="text-sm" />
     </button>
   )
@@ -60,7 +59,7 @@ const ProtocolOptionsList: FC<{
 
   if (!options.length)
     return (
-      <div className="text-body-inactive flex h-24 w-full items-center px-12">
+      <div className="flex h-24 w-full items-center px-12 text-body-inactive">
         {t("No protocols found")}
       </div>
     )
@@ -80,7 +79,7 @@ const ProtocolOptionsList: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -155,7 +154,7 @@ const ProtocolOptionsModalContent: FC<{
         >
           <ChevronLeftIcon />
         </IconButton>
-        <div className="text-secondary grow text-center">{t("Protocol Filter")}</div>
+        <div className="grow text-center text-secondary">{t("Protocol Filter")}</div>
         <IconButton
           className={classNames("size-12 shrink-0", IS_POPUP && "invisible")}
           onClick={onClose}
@@ -167,7 +166,7 @@ const ProtocolOptionsModalContent: FC<{
         {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
         <SearchInput onChange={setSearch} placeholder={t("Search by name")} autoFocus />
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <ProtocolOptionsList
           options={filteredProtocols}
           selected={selected}
@@ -191,7 +190,7 @@ export const ProtocolOptionsModal: FC<{
       isOpen={isOpen}
       onDismiss={onClose}
       className={classNames(
-        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
+        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}

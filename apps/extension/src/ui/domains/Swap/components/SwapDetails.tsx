@@ -1,12 +1,12 @@
 import { LoaderIcon } from "@talismn/icons"
 import { useAtom, useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
-import { ReactNode, Suspense, useEffect, useState } from "react"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import { type ReactNode, Suspense, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  BaseQuote,
+  type BaseQuote,
   fromAmountAtom,
   fromAssetAtom,
   selectedProtocolAtom,
@@ -143,13 +143,13 @@ const Details = () => {
 
 const LoadingUI = ({ title, description }: { title?: string; description?: ReactNode }) => (
   <SwapDetailsContainer>
-    <div className="border-grey-800 flex flex-col items-center justify-center gap-4 rounded-sm border p-8">
+    <div className="flex flex-col items-center justify-center gap-4 rounded-sm border border-grey-800 p-8">
       <div className="flex h-[94px] w-[94px] items-center justify-center">
         <LoaderIcon className="animate-spin-slow" />
       </div>
       <div>
-        <h4 className="text-center text-sm font-bold">{title}</h4>
-        <p className="text-body-secondary text-center text-sm">{description}</p>
+        <h4 className="text-center font-bold text-sm">{title}</h4>
+        <p className="text-center text-body-secondary text-sm">{description}</p>
       </div>
     </div>
   </SwapDetailsContainer>

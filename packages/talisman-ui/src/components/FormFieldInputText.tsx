@@ -1,11 +1,11 @@
 import { classNames } from "@talismn/util"
 import {
-  DetailedHTMLProps,
-  FC,
+  type DetailedHTMLProps,
+  type FC,
   forwardRef,
-  HTMLAttributes,
-  InputHTMLAttributes,
-  ReactNode,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
 } from "react"
 
 export type FormFieldInputContainerProps = DetailedHTMLProps<
@@ -24,7 +24,7 @@ export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
     <div
       {...props}
       className={classNames(
-        "text-grey-300 bg-field text-md focus-within:border-grey-600 flex w-full items-center gap-4 rounded border border-transparent px-12 font-light leading-none",
+        "flex w-full items-center gap-4 rounded border border-transparent bg-field px-12 font-light text-grey-300 text-md leading-none focus-within:border-grey-600",
         small ? "h-24" : "h-28",
         className
       )}
@@ -55,7 +55,7 @@ export const FormFieldInputText = forwardRef<HTMLInputElement, FormFieldInputTex
           ref={ref}
           {...props}
           className={classNames(
-            "focus:text-body placeholder:text-body-disabled disabled:text-body-disabled h-full min-w-0 grow bg-transparent focus-visible:outline-none",
+            "h-full min-w-0 grow bg-transparent placeholder:text-body-disabled focus:text-body focus-visible:outline-none disabled:text-body-disabled",
             props.className
           )}
         />

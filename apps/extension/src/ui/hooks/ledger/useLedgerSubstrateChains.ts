@@ -1,9 +1,8 @@
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useMemo } from "react"
-
 import { AddSubstrateLedgerAppType } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { useNetworks } from "@ui/state"
+import { useMemo } from "react"
 
 import { CHAIN_ID_TO_LEDGER_APP_NAME } from "./common"
 

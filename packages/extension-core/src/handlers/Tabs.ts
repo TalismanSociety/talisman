@@ -1,3 +1,12 @@
+import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
+import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import type {
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "@polkadot/extension-base/background/types"
+import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
@@ -5,29 +14,17 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import {
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-} from "@polkadot/extension-base/background/types"
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { assert, isNumber } from "@polkadot/util"
 import { isTalismanUrl, log } from "extension-shared"
 import { combineLatest } from "rxjs"
-
-import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
-import type { Port } from "../types/base"
 import { sentry } from "../config/sentry"
 import { db } from "../db"
 import { filterAccountsByAddresses, getPublicAccounts } from "../domains/accounts/helpers"
-import { RequestAccountList } from "../domains/accounts/types"
+import type { RequestAccountList } from "../domains/accounts/types"
 import { protector } from "../domains/app/protector"
-import { SettingsStoreData } from "../domains/app/store.settings"
+import type { SettingsStoreData } from "../domains/app/store.settings"
 import { requestDecrypt, requestEncrypt } from "../domains/encrypt/requests"
-import {
+import type {
   DecryptPayload,
   DecryptResult,
   EncryptPayload,
@@ -40,21 +37,23 @@ import { keyringStore } from "../domains/keyring/store"
 import { requestInjectMetadata } from "../domains/metadata/requests"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestAuthoriseSite } from "../domains/sitesAuthorised/requests"
-import {
+import type {
   AuthorizedSite,
   AuthorizedSites,
   RequestAuthorizeTab,
 } from "../domains/sitesAuthorised/types"
 import { SolanaTabsHandler } from "../domains/solana/handler.tabs"
 import TalismanHandler from "../domains/talisman/handler"
-import { UnknownJsonRpcResponse } from "../domains/talisman/types"
+import type { UnknownJsonRpcResponse } from "../domains/talisman/types"
 import { talismanAnalytics } from "../libs/Analytics"
 import { TabsHandler } from "../libs/Handler"
 import { chaindataProvider } from "../rpcs/chaindata"
-import { SubstrateSignResponse } from "../types/domains"
+import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "../types"
+import type { Port } from "../types/base"
+import type { SubstrateSignResponse } from "../types/domains"
 import { urlToDomain } from "../util/urlToDomain"
 import RpcState from "./RpcState"
-import { TabStore } from "./stores"
+import type { TabStore } from "./stores"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {

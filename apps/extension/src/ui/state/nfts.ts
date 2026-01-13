@@ -1,7 +1,9 @@
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
-import { NftData } from "extension-core"
+import { api } from "@ui/api"
+import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
+import type { NftData } from "extension-core"
 import {
   BehaviorSubject,
   combineLatest,
@@ -12,13 +14,10 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { api } from "@ui/api"
-import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
-
 import { getAccountsByCategory$ } from "./accounts"
 import { getNetworks$ } from "./chaindata"
 import {
-  NetworkOption,
+  type NetworkOption,
   portfolioNetworkFilter$,
   portfolioSearch$,
   portfolioSelectedAccounts$,

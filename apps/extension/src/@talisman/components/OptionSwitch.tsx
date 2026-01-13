@@ -1,15 +1,14 @@
+import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
 import {
-  CSSProperties,
-  ReactNode,
-  RefObject,
+  type CSSProperties,
+  type ReactNode,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react"
-
-import { FadeIn } from "@talisman/components/FadeIn"
 
 const OptionButton = <O extends string>({
   className,
@@ -83,7 +82,7 @@ export const OptionSwitch = <O extends string>({
   return (
     <div
       className={classNames(
-        "text-body-secondary inline-block h-14 rounded-full p-[0.25em]",
+        "inline-block h-14 rounded-full p-[0.25em] text-body-secondary",
         className
       )}
     >
@@ -102,7 +101,7 @@ export const OptionSwitch = <O extends string>({
         {selectionOverlay && (
           <FadeIn>
             <div
-              className="bg-primary absolute top-0 h-full rounded-full transition-all duration-150 ease-in-out"
+              className="absolute top-0 h-full rounded-full bg-primary transition-all duration-150 ease-in-out"
               style={selectionOverlay}
             />
           </FadeIn>

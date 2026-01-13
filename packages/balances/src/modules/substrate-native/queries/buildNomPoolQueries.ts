@@ -1,12 +1,12 @@
-import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
-import { Binary } from "polkadot-api"
+import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
+import type { Binary } from "polkadot-api"
 
-import { IBalance, MiniMetadata } from "../../../types"
+import type { IBalance, MiniMetadata } from "../../../types"
 import { buildNetworkStorageCoders } from "../../shared"
-import { RpcQueryPack } from "../../shared/rpcQueryPack"
-import { MiniMetadataExtra } from "../config"
+import type { RpcQueryPack } from "../../shared/rpcQueryPack"
+import type { MiniMetadataExtra } from "../config"
 import { nompoolStashAccountId } from "../util/nompoolAccountId"
-import { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
+import type { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
 
 export const buildNomPoolQueries = (
   networkId: string,

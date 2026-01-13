@@ -1,10 +1,9 @@
-import { isTokenSubDTao, NetworkId } from "@talismn/chaindata-provider"
+import { isTokenSubDTao, type NetworkId } from "@talismn/chaindata-provider"
+import { useTokens } from "@ui/state"
 import { assign, keyBy } from "lodash-es"
 import { useEffect, useMemo } from "react"
 
-import { useTokens } from "@ui/state"
-
-import { SubnetData } from "./types"
+import type { SubnetData } from "./types"
 import { useGetInfiniteSubnetIdentities } from "./useGetInfiniteSubnetIdentities"
 import { useGetInfiniteSubnetPools } from "./useGetInfiniteSubnetPools"
 import { useGetSubnets } from "./useGetInfiniteSubnets"

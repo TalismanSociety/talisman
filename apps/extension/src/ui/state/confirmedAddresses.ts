@@ -1,8 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import { ConfirmedExternalAddresses } from "extension-core"
-import { Observable, shareReplay } from "rxjs"
-
 import { api } from "@ui/api"
+import type { ConfirmedExternalAddresses } from "extension-core"
+import { Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 

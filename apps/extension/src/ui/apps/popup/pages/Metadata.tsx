@@ -1,13 +1,12 @@
-import { KnownRequestIdOnly } from "extension-core"
-import { FC, useCallback, useEffect, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/state"
+import type { KnownRequestIdOnly } from "extension-core"
+import { type FC, useCallback, useEffect, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -59,7 +58,7 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
         <div>
           <div className="px-4 text-center">
             <h1 className="my-8 text-lg">{t("Your metadata is out of date")}</h1>
-            <p className="text-body-secondary mt-16">
+            <p className="mt-16 text-body-secondary">
               <Trans t={t}>
                 Approving this update will sync your metadata for the{" "}
                 <span className="text-body">{request.chain}</span> chain
@@ -74,7 +73,7 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
               )}
             </p>
           </div>
-          <hr className="text-grey-700 my-20" />
+          <hr className="my-20 text-grey-700" />
           <div className="text-left">
             <div className="ml-16 inline-grid grid-cols-2 gap-x-8 gap-y-2">
               <div className="text-body-secondary">{t("Symbol:")}</div>

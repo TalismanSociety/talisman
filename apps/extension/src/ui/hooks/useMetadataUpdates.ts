@@ -1,10 +1,9 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
+import { api } from "@ui/api"
+import { useNetworkByGenesisHash } from "@ui/state"
 import { useLiveQuery } from "dexie-react-hooks"
 import { db } from "extension-core"
 import { useEffect, useMemo, useState } from "react"
-
-import { api } from "@ui/api"
-import { useNetworkByGenesisHash } from "@ui/state"
 
 const useMetadata = (genesisHash?: HexString) => {
   const metadata = useLiveQuery(

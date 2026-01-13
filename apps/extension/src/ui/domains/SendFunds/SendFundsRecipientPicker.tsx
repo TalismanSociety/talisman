@@ -1,9 +1,11 @@
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import {
-  DotNetwork,
+  type DotNetwork,
   getNetworkGenesisHash,
   isNetworkDot,
   isNetworkEth,
-  Network,
+  type Network,
 } from "@talismn/chaindata-provider"
 import {
   decodeSs58Address,
@@ -13,6 +15,9 @@ import {
   isSs58Address,
 } from "@talismn/crypto"
 import { EyeIcon, LoaderIcon, TalismanHandIcon, UserIcon, XOctagonIcon } from "@talismn/icons"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 import {
   isAccountCompatibleWithNetwork,
   isAccountOwned,
@@ -22,12 +27,6 @@ import { useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { useSendFunds } from "./useSendFunds"
@@ -35,15 +34,15 @@ import { useSendFunds } from "./useSendFunds"
 const AddressFormatError = ({ chain }: { chain?: DotNetwork }) => {
   const { t } = useTranslation()
   return (
-    <div className="h-min-h-full align-center flex w-full flex-col items-center gap-4 px-12 py-7">
+    <div className="flex h-min-h-full w-full flex-col items-center gap-4 px-12 py-7 align-center">
       <XOctagonIcon className="text-brand-orange text-lg" />
       <span className="text-body">{t("Address Format Mismatch")}</span>
-      <p className="text-body-secondary mt-4 text-center">
+      <p className="mt-4 text-center text-body-secondary">
         <Trans
           t={t}
           defaults="The address you've entered is not compatible with the <Chain><ChainLogo />{{chainName}}</Chain> chain. Please enter a compatible address or select a different chain to send on."
           components={{
-            Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+            Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
             ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
           }}
           values={{ chainName: chain?.name ?? t("Unknown") }}
@@ -75,7 +74,7 @@ const UnknownAddressDrawer = ({
 
   return (
     <Drawer containerId="main" isOpen={isOpen} anchor="bottom" onDismiss={close}>
-      <div className="bg-black-tertiary flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl p-12">
+      <div className="flex max-w-[42rem] flex-col items-center gap-12 rounded-t-xl bg-black-tertiary p-12">
         <div className="flex flex-col gap-4 text-center">
           <p className="px-10 font-bold text-white">
             {t("Sending to the wrong network will result in a loss of funds")}
@@ -87,7 +86,7 @@ const UnknownAddressDrawer = ({
           </p>
           <div className="mt-4 flex items-center justify-between gap-8 text-xs">
             <div className="text-body-secondary">{t("Selected Network")}</div>
-            <div className="text-body flex items-center gap-4">
+            <div className="flex items-center gap-4 text-body">
               <NetworkLogo networkId={chain?.id} className="text-md" />
               {chain?.name}
             </div>
@@ -228,13 +227,13 @@ export const SendFundsRecipientPicker = () => {
             placeholder={t("Enter address")}
             after={
               isNsLookup && isNsFetching ? (
-                <LoaderIcon className="text-body-disabled animate-spin-slow shrink-0" />
+                <LoaderIcon className="shrink-0 animate-spin-slow text-body-disabled" />
               ) : null
             }
           />
         </div>
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         {isNetworkDot(network) && newAddress?.ss58FormatError ? (
           <AddressFormatError chain={network ?? undefined} />
         ) : (

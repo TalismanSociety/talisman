@@ -60,8 +60,8 @@ export const BittensorSlippageDrawer = () => {
       onDismiss={close}
       containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}
     >
-      <div className="bg-black-secondary flex w-full flex-col items-center gap-4 rounded-t-xl p-12">
-        <div className="text-body pb-8 font-bold">{t("Slippage Tolerance")}</div>
+      <div className="flex w-full flex-col items-center gap-4 rounded-t-xl bg-black-secondary p-12">
+        <div className="pb-8 font-bold text-body">{t("Slippage Tolerance")}</div>
         <p className="text-body-secondary text-sm">
           {t(
             "You can customize the slippage percentage to balance transaction success and price accuracy."
@@ -70,7 +70,7 @@ export const BittensorSlippageDrawer = () => {
         <p className="text-body-secondary text-sm">
           {t("This setting will apply to all your subnet staking transactions.")}
         </p>
-        <div className="text-body-secondary mt-4 flex items-center gap-2 self-start text-sm">
+        <div className="mt-4 flex items-center gap-2 self-start text-body-secondary text-sm">
           <div className="">{t("Max Slippage")}</div>
           <Tooltip>
             <TooltipTrigger>
@@ -102,7 +102,7 @@ export const BittensorSlippageDrawer = () => {
         />
         <div
           className={classNames(
-            "mb-4 flex w-full items-center justify-end gap-2 text-xs text-orange-500",
+            "mb-4 flex w-full items-center justify-end gap-2 text-orange-500 text-xs",
             Number(slippageEdit) < HIGH_PRICE_IMPACT && "invisible",
             Number(slippageEdit) >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
           )}

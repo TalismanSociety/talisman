@@ -1,10 +1,9 @@
-import { Token } from "@talismn/chaindata-provider"
-import { RemoteConfigStoreData } from "extension-core"
+import type { Token } from "@talismn/chaindata-provider"
+import { useRemoteConfig, useToken } from "@ui/state"
+import type { RemoteConfigStoreData } from "extension-core"
 import { useMemo } from "react"
 
-import { useRemoteConfig, useToken } from "@ui/state"
-
-import { RampsMode } from "../shared/types"
+import type { RampsMode } from "../shared/types"
 import { useRampTokens } from "./useRampTokens"
 
 export type RampCryptoAsset = {

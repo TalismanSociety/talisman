@@ -1,11 +1,15 @@
-import { IRuntimeVersionBase, SignatureOptions, SignerPayloadJSON } from "@polkadot/types/types"
+import type {
+  IRuntimeVersionBase,
+  SignatureOptions,
+  SignerPayloadJSON,
+} from "@polkadot/types/types"
 import { Binary } from "polkadot-api"
 
 import log from "../log"
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeCallResult } from "./getRuntimeCallResult"
 import { getTypeRegistry } from "./getTypeRegistry"
-import { Chain, ChainInfo } from "./types"
+import type { Chain, ChainInfo } from "./types"
 
 export const getFeeEstimate = async (
   chain: Chain,

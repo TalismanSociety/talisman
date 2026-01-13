@@ -1,20 +1,19 @@
+import { notify } from "@talisman/components/Notifications"
 import { LoaderIcon, UsbIcon } from "@talismn/icons"
 import { formatDecimals, planckToTokens } from "@talismn/util"
-import { serializeTransactionRequest, WalletTransactionInfo } from "extension-core"
-import { useAtom, useAtomValue, useSetAtom } from "jotai"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { fromAddressAtom, fromAssetAtom } from "@ui/domains/Swap/swap-modules/common.swap-module"
-import { swapViewAtom } from "@ui/domains/Swap/swaps-port/swapViewAtom"
 import { approvalCounterAtom, useSwapErc20Approval } from "@ui/domains/Swap/swaps.api"
+import { swapViewAtom } from "@ui/domains/Swap/swaps-port/swapViewAtom"
 import { useAccountByAddress } from "@ui/state"
+import { serializeTransactionRequest, type WalletTransactionInfo } from "extension-core"
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 export const SwapApproveErc20 = () => {
   const { t } = useTranslation()
@@ -142,8 +141,8 @@ export const SwapApproveErc20 = () => {
   return (
     <>
       {(typeof account?.type === "string" && account.type !== "ledger-ethereum") || isApproving ? (
-        <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">
-          <LoaderIcon className="animate-spin-slow h-16 w-16" />
+        <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
+          <LoaderIcon className="h-16 w-16 animate-spin-slow" />
           {t(`Approving {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
             amount: formatDecimals(
@@ -151,12 +150,12 @@ export const SwapApproveErc20 = () => {
             ),
             symbol: fromAsset?.symbol,
           })}
-          <div className="text-sm font-normal opacity-70">{t("This shouldn't take long...")}</div>
+          <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
         </div>
       ) : null}
 
       {account?.type === "ledger-ethereum" && !isApproving && !isPayloadLocked ? (
-        <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">
+        <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
           <UsbIcon className="h-16 w-16" />
           {t(`Approve {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
@@ -165,7 +164,7 @@ export const SwapApproveErc20 = () => {
             ),
             symbol: fromAsset?.symbol,
           })}
-          <div className="text-sm font-normal opacity-70">
+          <div className="font-normal text-sm opacity-70">
             {t("Connect your Ledger to approve")}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useStateObservable } from "@react-rxjs/core"
-import { SetStateAction } from "react"
+import type { SetStateAction } from "react"
 
 import { setSwapTokensModalIsOpen, swapTokensModalIsOpen$ } from "../state/swapTokensModalIsOpen"
 

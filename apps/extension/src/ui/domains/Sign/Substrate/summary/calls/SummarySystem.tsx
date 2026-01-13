@@ -1,9 +1,9 @@
-import { PolkadotCalls } from "@polkadot-api/descriptors"
+import type { PolkadotCalls } from "@polkadot-api/descriptors"
 import { isAscii } from "@talismn/util"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
 
 const Remark: DecodedCallSummaryComponent<PolkadotCalls["System"]["remark"]> = ({

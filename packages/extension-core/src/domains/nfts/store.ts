@@ -4,7 +4,7 @@ import { BehaviorSubject, debounceTime, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { AccountNft, NftCollection } from "./types"
+import type { AccountNft, NftCollection } from "./types"
 
 export type NftStoreData = {
   id: "nfts"

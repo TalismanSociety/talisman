@@ -1,15 +1,19 @@
 import {
-  AnyMiniMetadata,
-  ChaindataProvider,
-  DotNetworkId,
+  type AnyMiniMetadata,
+  type ChaindataProvider,
+  type DotNetworkId,
   isNetworkDot,
-  Network,
-  NetworkId,
+  type Network,
+  type NetworkId,
   parseTokenId,
-  Token,
-  TokenId,
+  type Token,
+  type TokenId,
 } from "@talismn/chaindata-provider"
-import { AccountPlatform, getAccountPlatformFromAddress, normalizeAddress } from "@talismn/crypto"
+import {
+  type AccountPlatform,
+  getAccountPlatformFromAddress,
+  normalizeAddress,
+} from "@talismn/crypto"
 import { getSharedObservable, isNotNil, isTruthy, keepAlive } from "@talismn/util"
 import { assign, fromPairs, isEqual, keyBy, keys, toPairs, uniq, values } from "lodash-es"
 import {
@@ -23,7 +27,7 @@ import {
   firstValueFrom,
   from,
   map,
-  Observable,
+  type Observable,
   of,
   shareReplay,
   startWith,
@@ -33,12 +37,18 @@ import {
 } from "rxjs"
 import { withRetry } from "viem"
 
-import { Balance, BALANCE_MODULES, ChainConnectors } from "."
+import { BALANCE_MODULES, Balance, type ChainConnectors } from "."
 import { getMiniMetadatas, getSpecVersion } from "./getMiniMetadatas"
 import log from "./log"
 import { getDetectedTokensIds$ } from "./modules/shared/detectedTokens"
-import { Address, deriveMiniMetadataId, getBalanceId, IBalance, MiniMetadata } from "./types"
-import { TokensWithAddresses } from "./types/IBalanceModule"
+import {
+  type Address,
+  deriveMiniMetadataId,
+  getBalanceId,
+  type IBalance,
+  type MiniMetadata,
+} from "./types"
+import type { TokensWithAddresses } from "./types/IBalanceModule"
 
 type BalancesStatus = "initialising" | "live"
 

@@ -1,10 +1,9 @@
-import { Token } from "@talismn/chaindata-provider"
-import { fetchTokenRates, TokenRateCurrency } from "@talismn/token-rates"
+import type { Token } from "@talismn/chaindata-provider"
+import { fetchTokenRates, type TokenRateCurrency } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
+import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
-
-import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
 
 /**
  * Fetches token rates for a specific set of tokens, even if they are not enabled.

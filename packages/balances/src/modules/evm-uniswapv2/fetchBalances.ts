@@ -2,13 +2,13 @@ import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import BigNumber from "bignumber.js"
 import { keyBy, uniq } from "lodash-es"
-import { getContract, PublicClient } from "viem"
+import { getContract, type PublicClient } from "viem"
 
-import { ExtraAmount } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { ExtraAmount } from "../../types"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { uniswapV2PairAbi } from "../abis"
 import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
+import { type BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({

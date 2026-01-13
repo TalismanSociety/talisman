@@ -1,9 +1,9 @@
-import { SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
 import {
   newTokenRates,
-  TokenRateCurrency,
-  TokenRateData,
-  TokenRatesList,
+  type TokenRateCurrency,
+  type TokenRateData,
+  type TokenRatesList,
 } from "@talismn/token-rates"
 
 import log from "../../log"

@@ -1,10 +1,9 @@
-import { passwordStore, settingsStore } from "extension-core"
-import { ReactNode, useCallback, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useAppState, useIsOnboarded } from "@ui/state"
+import { passwordStore, settingsStore } from "extension-core"
+import { type ReactNode, useCallback, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 

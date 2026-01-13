@@ -1,25 +1,31 @@
-import { AccountPlatform } from "@talismn/crypto"
-import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
-import { IS_FIREFOX } from "extension-shared"
-import { cloneElement, ReactElement, ReactNode, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import {
   EthereumCircleBorderedLogo,
   PolkadotCircleBorderedLogo,
   SolanaCircleLogo,
 } from "@talisman/theme/logos"
+import type { AccountPlatform } from "@talismn/crypto"
+import { ChainIcon, EyePlusIcon, FilePlusIcon, InfoIcon, PlusIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { AccountTypeNetworkSearch } from "@ui/domains/Account/AccountTypeNetworkSearch"
 import { AllNetworksLogoStack } from "@ui/domains/Account/AllNetworksLogoStack"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworks } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+import { isAccountPlatformCompatibleWithNetwork } from "extension-core"
+import { IS_FIREFOX } from "extension-shared"
+import {
+  cloneElement,
+  type ReactElement,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { MethodType, useAccountCreateContext } from "./context"
+import { type MethodType, useAccountCreateContext } from "./context"
 
 const methodButtonsFromMethodType = {
   new: NewAccountMethodButtons,
@@ -61,7 +67,7 @@ export const AccountCreateContainer = ({ className }: { className?: string }) =>
           methodType="watched"
         />
       </div>
-      <div className="border-grey-750 -mt-8 grid grid-cols-2 items-start gap-8 rounded rounded-tl-none border p-10">
+      <div className="-mt-8 grid grid-cols-2 items-start gap-8 rounded rounded-tl-none border border-grey-750 p-10">
         <MethodButtonsComponent />
       </div>
     </div>
@@ -88,22 +94,22 @@ function MethodTypeTab({
     <button
       type="button"
       className={classNames(
-        "flex items-center justify-start gap-4 rounded-t border border-b-0 border-transparent p-6 opacity-70 lg:flex-grow lg:[&:last-of-type]:rounded-br",
-        "focus:bg-grey-750 hover:bg-grey-750 focus:border-grey-750 hover:border-grey-750 hover:opacity-100 focus:opacity-100",
+        "flex items-center justify-start gap-4 rounded-t border border-transparent border-b-0 p-6 opacity-70 lg:flex-grow lg:[&:last-of-type]:rounded-br",
+        "hover:border-grey-750 hover:bg-grey-750 hover:opacity-100 focus:border-grey-750 focus:bg-grey-750 focus:opacity-100",
         isSelected && "border-grey-750 bg-grey-850 opacity-100",
         className
       )}
       onClick={(e) => (setMethodType(methodType), e.currentTarget.blur())}
     >
-      <div className="text-primary text-lg">{cloneElement(icon, { className: "stroke-1" })}</div>
+      <div className="text-lg text-primary">{cloneElement(icon, { className: "stroke-1" })}</div>
       <div
         className={classNames(
           "hidden flex-col items-start justify-start gap-2 lg:flex",
           isSelected && "flex"
         )}
       >
-        <div className="text-base font-bold">{title}</div>
-        <div className="text-body-secondary whitespace-pre text-xs">{subtitle}</div>
+        <div className="font-bold text-base">{title}</div>
+        <div className="whitespace-pre text-body-secondary text-xs">{subtitle}</div>
       </div>
     </button>
   )
@@ -274,7 +280,7 @@ function SelectAccountTypeSectionHeader() {
   const { t } = useTranslation()
   return (
     <>
-      <div className="text-md text-bold col-span-2 text-white">{t("Select account type")}</div>
+      <div className="col-span-2 text-bold text-md text-white">{t("Select account type")}</div>
       <div className="col-span-2 -mt-2 text-sm text-white/40">
         {t(
           "If you don't know which to pick, search for the network you want to use and Talisman will recommend the account type."
@@ -372,11 +378,11 @@ function AccountCreateMethodButton({
       className={classNames(
         "relative flex flex-col gap-12 rounded bg-white/5 p-10",
         disabled && "text-body-secondary opacity-40",
-        !disabled && "text-body cursor-pointer hover:bg-white/10 focus:bg-white/10"
+        !disabled && "cursor-pointer text-body hover:bg-white/10 focus:bg-white/10"
       )}
     >
-      <span className="border-grey-800 w-full border-b pb-3 text-start">{title}</span>
-      <span className="text-body-secondary flex items-center gap-2 pr-8 text-sm">
+      <span className="w-full border-grey-800 border-b pb-3 text-start">{title}</span>
+      <span className="flex items-center gap-2 pr-8 text-body-secondary text-sm">
         {networks?.map((network, i) => (
           <span key={network} className={classNames(i + 1 < networks.length && "-mr-[0.8rem]")}>
             {networkChoices[network]}

@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
-import { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from "react"
-import { NavLink, To } from "react-router-dom"
+import type { DetailedHTMLProps, FC, HTMLAttributes, ReactNode } from "react"
+import { NavLink, type To } from "react-router-dom"
 
 export const Nav: FC<DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>> = ({
   className,
@@ -44,7 +44,7 @@ export const NavItem: FC<NavItemProps> = ({
 
   const isNavLink = to !== undefined
   const navClassName = classNames(
-    "hover:bg-grey-800 text-body-secondary hover:text-body flex w-full items-center justify-start gap-4 rounded-sm p-4 h-28 text-left shrink-1",
+    "flex h-28 w-full shrink-1 items-center justify-start gap-4 rounded-sm p-4 text-left text-body-secondary hover:bg-grey-800 hover:text-body",
     isNavLink && "[&.active]:text-body",
     className
   )

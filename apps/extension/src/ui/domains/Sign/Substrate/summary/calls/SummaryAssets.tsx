@@ -1,11 +1,10 @@
-import { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
-import { SubAssetsToken } from "@talismn/chaindata-provider"
+import type { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
+import type { SubAssetsToken } from "@talismn/chaindata-provider"
+import { useNetworkById, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById, useTokens } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import {

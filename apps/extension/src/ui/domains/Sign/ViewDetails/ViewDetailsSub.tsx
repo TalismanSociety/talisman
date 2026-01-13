@@ -1,20 +1,19 @@
 import { TypeRegistry } from "@polkadot/types"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import {
-  isJsonPayload,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  TransactionMethod,
-} from "extension-core"
-import { FC, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
-
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"
+import {
+  isJsonPayload,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
+  type TransactionMethod,
+} from "extension-core"
+import { type FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAddress } from "./ViewDetailsAddress"
@@ -97,7 +96,7 @@ const ViewDetailsContent: FC<{
   }, [genericEvent])
 
   return (
-    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto overflow-x-hidden pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
         <ViewDetailsAddress label={t("From")} address={payload.address} network={chain} />
@@ -136,7 +135,7 @@ const ViewDetailsContent: FC<{
             <ViewDetailsField label={t("Data")}>
               {data && (
                 <div className="mt-2 pr-2">
-                  <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
+                  <pre className="scrollable scrollable-700 w-full overflow-x-auto rounded-xs bg-black-secondary p-4 text-body-secondary">
                     {data}
                   </pre>
                 </div>

@@ -1,10 +1,9 @@
 import { classNames, formatDecimals, MAX_DECIMALS_FORMAT } from "@talismn/util"
+import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
-import React, { FC, useMemo } from "react"
+import React, { type FC, useMemo } from "react"
 import CountUp from "react-countup"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 
 type TokensProps = {
   amount?: string | number | null | BigNumber

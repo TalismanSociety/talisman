@@ -1,15 +1,14 @@
-import { Balances } from "@talismn/balances"
-import { SubDTaoToken } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { SubDTaoToken } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { ZapOffIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { useBittensorBondModal } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondModal"
-import { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
+import type { BittensorStakingWizardOpenOptions } from "@ui/domains/Staking/Bittensor/hooks/useBittensorBondWizard"
 import { useAccounts } from "@ui/state"
 import { useBittensorNetworkIds } from "@ui/state/bittensor"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PortfolioToolbarButton } from "../PortfolioToolbarButton"
 

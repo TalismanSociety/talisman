@@ -1,9 +1,9 @@
 import log from "../../log"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
 import { buildQueries } from "./buildQueries"
-import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import { type MiniMetadataExtra, MODULE_TYPE, type ModuleConfig, type TokenConfig } from "./config"
 
 export const fetchBalances: IBalanceModule<
   typeof MODULE_TYPE,

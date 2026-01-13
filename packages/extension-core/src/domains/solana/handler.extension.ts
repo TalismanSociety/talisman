@@ -9,11 +9,11 @@ import {
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
-import { RequestSolanaSignApprove } from "./types.extension"
+import type { RequestSolanaSignApprove } from "./types.extension"
 
 export class SolanaExtensionHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(

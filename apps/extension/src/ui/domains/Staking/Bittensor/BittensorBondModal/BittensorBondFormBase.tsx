@@ -1,11 +1,13 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
 import { SwapIcon } from "@talismn/icons"
 import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
-import { Account } from "extension-core"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useBalance, useSelectedCurrency } from "@ui/state"
+import type { Account } from "extension-core"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -15,9 +17,6 @@ import {
 import { useTranslation } from "react-i18next"
 import { Button, PillButton } from "talisman-ui"
 
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useBalance, useSelectedCurrency } from "@ui/state"
-
 import { currencyConfig } from "../../../Asset/currencyConfig"
 import { Fiat } from "../../../Asset/Fiat"
 import { TokenLogo } from "../../../Asset/TokenLogo"
@@ -25,13 +24,13 @@ import { Tokens } from "../../../Asset/Tokens"
 import { TokensAndFiat } from "../../../Asset/TokensAndFiat"
 import { BondAccountPicker } from "../../Bond/BondAccountPicker"
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
+import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { BittensorAssetAccountSummary } from "../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../components/BittensorModalLayout"
 import { useBittensorBondModal } from "../hooks/useBittensorBondModal"
-import { ROOT_NETUID } from "../utils/constants"
-import { StakingFeeEstimate } from "./../../shared/StakingFeeEstimate"
 import { useBittensorBondWizard } from "./../hooks/useBittensorBondWizard"
+import { ROOT_NETUID } from "../utils/constants"
 import { BittensorAvailableToUnstake } from "./BittensorAvailableToUnstake"
 import { BittensorDelegatorNameButton } from "./BittensorDelegatorNameButton"
 import { BittensorSelectStakeDrawer } from "./Drawers/BittensorSelectStakeDrawer"
@@ -54,7 +53,7 @@ const AvailableBalance: FC<{ token: Token; account: Account }> = ({ token, accou
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay = () => {
@@ -163,10 +162,10 @@ const TokenInput = () => {
         placeholder="0"
         step="any"
         value={value}
-        className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
+        className={"peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-body text-xl"}
         onChange={handleChange}
       />
-      <div className="text-body flex shrink-0 items-center gap-2 text-base font-normal">
+      <div className="flex shrink-0 items-center gap-2 font-normal text-base text-body">
         <TokenLogo className="text-lg" tokenId={isSubnetUnbond ? dtaoToken?.id : nativeToken?.id} />
         <div>{symbol}</div>
       </div>
@@ -260,7 +259,7 @@ const FiatInput = () => {
         inputMode="decimal"
         value={value}
         placeholder={"0.00"}
-        className="text-body peer inline-block min-w-0 bg-transparent text-xl"
+        className="peer inline-block min-w-0 bg-transparent text-body text-xl"
         onChange={handleChange}
       />
       {/* {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>} */}
@@ -291,7 +290,7 @@ export const AmountEdit = () => {
       {!!nativeToken && (
         <>
           <div className="h-16">{/* mirrors the height of error message reserved space */}</div>
-          <div className="flex flex-col text-xl font-bold">
+          <div className="flex flex-col font-bold text-xl">
             {displayMode === "token" ? <TokenInput /> : <FiatInput />}
           </div>
           <div className={classNames("flex max-w-full items-center justify-center gap-4")}>
@@ -301,7 +300,7 @@ export const AmountEdit = () => {
                 <PillButton
                   onClick={toggleDisplayMode}
                   size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+                  className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -311,13 +310,13 @@ export const AmountEdit = () => {
               onClick={onSetMaxClick}
               disabled={!maxPlancks}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+              className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
             >
               {t("Max")}
             </PillButton>
           </div>
           <div className="h-16">
-            <div className="text-brand-orange line-clamp-2 text-center text-xs">
+            <div className="line-clamp-2 text-center text-brand-orange text-xs">
               {inputErrorMessage}
             </div>
           </div>
@@ -396,7 +395,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         accountLabel={t("Account")}
       />
       <AmountEdit />
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <div className="flex items-center justify-between">
           <div className="whitespace-nowrap">
             {stakeDirection === "bond" ? t("Available Balance") : t("Available to unstake")}
@@ -413,7 +412,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         </div>
       </div>
 
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-2 rounded p-4 text-xs">
+      <div className="flex flex-col gap-2 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <BondTypeDetails />
         <div
           className={classNames(
@@ -423,7 +422,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         >
           <div className="flex items-center justify-between gap-6">
             <div className="whitespace-nowrap">{t("Select Validator")}</div>
-            <div className="text-body truncate">
+            <div className="truncate text-body">
               <BittensorDelegatorNameButton
                 hotkey={hotkey}
                 isDisabled={stakeType === "subnet" && !netuid}
@@ -433,7 +432,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Estimated Amount")} </div>
-          <div className="text-body-secondary flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 truncate text-body-secondary">
             {!!amountOut && (
               <TokensAndFiat
                 planck={amountOut}

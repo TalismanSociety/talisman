@@ -1,15 +1,19 @@
-import { TypeRegistry } from "@polkadot/types"
-import { IU8a } from "@polkadot/types/types"
+import type { TypeRegistry } from "@polkadot/types"
+import type { IU8a } from "@polkadot/types/types"
 import { assert } from "@polkadot/util"
+import type { HexString } from "@polkadot/util/types"
 import { xxhashAsHex } from "@polkadot/util-crypto"
-import { HexString } from "@polkadot/util/types"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
-import { DotNetwork, DotNetworkId, getBlockExplorerUrls } from "@talismn/chaindata-provider"
+import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import {
+  type DotNetwork,
+  type DotNetworkId,
+  getBlockExplorerUrls,
+} from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
-import { createNotification, NotificationType } from "../../notifications"
+import { createNotification, type NotificationType } from "../../notifications"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { settingsStore } from "../app/store.settings"
 import {
@@ -18,7 +22,7 @@ import {
   getTransactionStatus,
   updateTransactionStatus,
 } from "./helpers"
-import { WatchTransactionOptions } from "./types"
+import type { WatchTransactionOptions } from "./types"
 
 const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
 

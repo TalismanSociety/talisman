@@ -1,12 +1,12 @@
 import { InfoIcon } from "@talismn/icons"
-import { Account, isAccountAddressEthereum } from "extension-core"
-import { FC, Fragment, useCallback, useMemo, useState } from "react"
+import { type Account, isAccountAddressEthereum } from "extension-core"
+import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
-const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+const AccountSeparator = () => <div className="mx-6 h-0.5 bg-grey-800"></div>
 
 export const ConnectedAccountsPolkadot: FC<{
   activeAccounts: Array<[Account, boolean]>
@@ -60,7 +60,7 @@ export const ConnectedAccountsPolkadot: FC<{
 
   return (
     <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-between gap-3 overflow-hidden px-8 text-xs">
+      <div className="mt-6 mb-2 flex w-full items-center justify-between gap-3 overflow-hidden px-8 text-xs">
         <Checkbox
           checked={enableEvmAccounts}
           onClick={handleToggleEvmAccounts}
@@ -81,15 +81,15 @@ export const ConnectedAccountsPolkadot: FC<{
         <div className="flex items-center gap-2 truncate">
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300 truncate"
+            className="truncate text-body-secondary hover:text-grey-300"
             onClick={handleDisconnectAllClick}
           >
             {t("Disconnect All")}
           </button>
-          <div className="bg-body-disabled h-[1rem] w-0.5"></div>
+          <div className="h-[1rem] w-0.5 bg-body-disabled"></div>
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300 truncate"
+            className="truncate text-body-secondary hover:text-grey-300"
             onClick={handleConnectAllClick}
           >
             {t("Connect All")}

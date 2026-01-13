@@ -1,7 +1,7 @@
-import type { Chain as ViemChain } from "viem/chains"
 import * as lifiSdk from "@lifi/sdk"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
+import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
 import { atom } from "jotai"
@@ -10,28 +10,27 @@ import {
   catchError,
   defer,
   interval,
-  Observable,
+  type Observable,
   of,
   retry,
   startWith,
   switchMap,
   takeWhile,
 } from "rxjs"
-import { publicActions, TransactionRequest, zeroAddress } from "viem"
+import { publicActions, type TransactionRequest, zeroAddress } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 import * as allEvmChains from "viem/chains"
-
-import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
 
 import {
   fromAddressAtom,
   fromAmountAtom,
   fromAssetAtom,
   getTokenIdForSwappableAsset,
-  QuoteFunction,
+  type QuoteFunction,
+  type SupportedSwapProtocol,
+  type SwapModule,
+  type SwappableAssetBaseType,
   selectedSubProtocolAtom,
-  SupportedSwapProtocol,
-  SwapModule,
-  SwappableAssetBaseType,
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
@@ -98,7 +97,7 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
 
   return Object.entries(allSdkTokens)
     .filter(([chainId]) => knownEvmNetworks[chainId])
-    .map(([chainId, tokens]): SwappableAssetBaseType[] =>
+    .flatMap(([chainId, tokens]): SwappableAssetBaseType[] =>
       tokens.map((token) => {
         const contractAddress = token.address === zeroAddress ? undefined : token.address
         const id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
@@ -119,7 +118,6 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
         }
       })
     )
-    .flat()
 })
 
 export const fromAssetsSelector = atom(async (get) => await get(assetsSelector))

@@ -1,4 +1,4 @@
-import { parseTokenId, TokenId, TokenType } from "@talismn/chaindata-provider"
+import { parseTokenId, type TokenId, type TokenType } from "@talismn/chaindata-provider"
 import { isEqual } from "lodash-es"
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs"
 

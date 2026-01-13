@@ -4,15 +4,14 @@ import { u8aConcat, u8aToU8a } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { fromHex } from "@talismn/scale"
 import { useQuery } from "@tanstack/react-query"
-import {
-  AccountPolkadotVault,
-  isRawPayload,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-} from "extension-core"
-import { FC, useMemo } from "react"
-
 import { useSetting } from "@ui/state"
+import {
+  type AccountPolkadotVault,
+  isRawPayload,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
+} from "extension-core"
+import { type FC, useMemo } from "react"
 
 import {
   POLKADOT_GENESIS_HASH,

@@ -1,11 +1,10 @@
 import { XIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton } from "talisman-ui"
-
 import { useSeekBenefitsModal } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsModal"
 import { useAppState, useFeatureFlag } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton } from "talisman-ui"
 
 import { ReactComponent as BgIconLarge } from "./seek-benefits-bg-large.svg"
 import { ReactComponent as BgIconSmall } from "./seek-benefits-bg-small.svg"
@@ -35,22 +34,22 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: st
         )}
       >
         <div className="absolute inset-0 rounded-sm bg-gradient-to-l from-[#606060]/60 to-[#5A6825]" />
-        <div className="from-black-secondary relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% to-[#3F3F0C]/50 to-[200%]">
+        <div className="relative size-full overflow-hidden rounded-sm bg-gradient-to-b from-30% from-black-secondary to-[#3F3F0C]/50 to-[200%]">
           <div
             className={cn(
-              "absolute left-0 top-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
+              "absolute top-0 left-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
               variant === "large" && "gap-3",
               variant === "small" && "gap-2"
             )}
           >
-            <div className="text-body truncate text-sm font-bold">{t("Talisman SEEK is live")}</div>
-            <div className="text-body-secondary truncate">
+            <div className="truncate font-bold text-body text-sm">{t("Talisman SEEK is live")}</div>
+            <div className="truncate text-body-secondary">
               {t("Stake SEEK now to get discounts")}
             </div>
           </div>
           <div
             className={cn(
-              "absolute right-0 top-0 aspect-[272/64] h-full",
+              "absolute top-0 right-0 aspect-[272/64] h-full",
               variant === "large" && "aspect-[272/64]",
               variant === "small" && "aspect-[142/59]"
             )}
@@ -60,8 +59,8 @@ export const SeekBenefitsBanner: FC<{ variant: "small" | "large"; className?: st
           </div>
         </div>
       </button>
-      <div className="absolute right-0 top-0 z-10 select-none p-4">
-        <IconButton className="text-md select-auto text-white" onClick={() => setHideBanner(true)}>
+      <div className="absolute top-0 right-0 z-10 select-none p-4">
+        <IconButton className="select-auto text-md text-white" onClick={() => setHideBanner(true)}>
           <XIcon />
         </IconButton>
       </div>

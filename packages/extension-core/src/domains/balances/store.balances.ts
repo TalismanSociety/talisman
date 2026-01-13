@@ -1,4 +1,4 @@
-import { BalanceJson, BalancesStorage, getBalanceId } from "@talismn/balances"
+import { type BalanceJson, type BalancesStorage, getBalanceId } from "@talismn/balances"
 import { isAccountNotContact } from "@talismn/keyring"
 import { splitSubject } from "@talismn/util"
 import { log } from "extension-shared"

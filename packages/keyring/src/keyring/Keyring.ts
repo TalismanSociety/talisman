@@ -9,13 +9,14 @@ import {
   getPublicKeyFromSecret,
   isAddressEqual,
   isValidMnemonic,
-  KeypairCurve,
+  type KeypairCurve,
   mnemonicToEntropy,
   normalizeAddress,
   utf8,
 } from "@talismn/crypto"
 
 import type { Account, Mnemonic } from "../types"
+import { isAccountExternal } from "../types"
 import type {
   AddAccountDeriveOptions,
   AddAccountExternalOptions,
@@ -24,9 +25,8 @@ import type {
   UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "../types/keyring"
-import type { AccountStorage, MnemonicStorage } from "./types"
-import { isAccountExternal } from "../types"
 import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
+import type { AccountStorage, MnemonicStorage } from "./types"
 import { isHexString } from "./utils"
 
 export type KeyringStorage = {

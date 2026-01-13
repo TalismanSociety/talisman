@@ -1,14 +1,13 @@
-import { HexString } from "@polkadot/util/types"
-import { KnownSigningRequestIdOnly } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo, useRef } from "react"
-
+import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmMessageRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmMessageRiskAnalysis"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useNetworkById, useRequest } from "@ui/state"
+import type { KnownSigningRequestIdOnly } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useRef } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 

@@ -1,9 +1,8 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { formatDistance } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { useStakingBondingDuration } from "../hooks/nomPools/useStakingBondingDuration"
 
@@ -22,7 +21,7 @@ export const NomPoolUnbondingPeriod = ({ chainId }: NomPoolUnbondingPeriodProps)
   )
 
   if (isLoading)
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">28 Days</div>
+    return <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">28 Days</div>
 
   if (isError) return <div className="text-alert-warn">{t("Unable to fetch unbonding period")}</div>
 

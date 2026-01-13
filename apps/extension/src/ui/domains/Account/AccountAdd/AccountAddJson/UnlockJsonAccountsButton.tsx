@@ -1,7 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 import { KeyIcon } from "@talismn/icons"
 import { log } from "extension-shared"
-import { CSSProperties, FC, useCallback, useEffect, useMemo } from "react"
+import { type CSSProperties, type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
@@ -13,8 +14,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
 
 import { useJsonAccountImport } from "./context"
 
@@ -123,7 +122,7 @@ export const UnlockJsonAccountsButton: FC = () => {
       </Button>
       <Modal isOpen={isOpen} onDismiss={close}>
         <ModalDialog title={t("Unlock accounts")} onClose={close}>
-          <div className="text-body-secondary w-full text-right">
+          <div className="w-full text-right text-body-secondary">
             <Trans
               t={t}
               defaults="<Unlocked>{{unlockedCount}}</Unlocked>/<Selected>{{selectedCount}}</Selected> unlocked"
@@ -134,17 +133,17 @@ export const UnlockJsonAccountsButton: FC = () => {
               }}
             />
           </div>
-          <div className="bg-grey-800 relative my-4 flex h-5 overflow-hidden rounded-lg">
+          <div className="relative my-4 flex h-5 overflow-hidden rounded-lg bg-grey-800">
             <div
-              className="bg-grey-700 absolute left-0 top-0 h-5 w-full rounded-lg transition-transform ease-out"
+              className="absolute top-0 left-0 h-5 w-full rounded-lg bg-grey-700 transition-transform ease-out"
               style={unlockAttemptProgressStyle}
             ></div>
             <div
-              className="bg-primary-500 absolute left-0 top-0 h-5 w-full rounded-lg transition-transform duration-300 ease-out"
+              className="absolute top-0 left-0 h-5 w-full rounded-lg bg-primary-500 transition-transform duration-300 ease-out"
               style={progressStyle}
             ></div>
           </div>
-          <div className="text-body-secondary my-16">
+          <div className="my-16 text-body-secondary">
             {t(
               "Enter the passwords for each of the selected accounts, until all accounts unlocked."
             )}

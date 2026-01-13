@@ -1,4 +1,4 @@
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 import { fromPairs, toPairs } from "lodash-es"
@@ -7,7 +7,7 @@ import PQueue from "p-queue"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { isAccountCompatibleWithNetwork } from "../accounts/helpers"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
-import { AccountNft, AccountNfts, NftCollection } from "./types"
+import type { AccountNft, AccountNfts, NftCollection } from "./types"
 
 // Talisman ChainId => Subscan chain slug
 const NETWORKS: Record<string, string> = {

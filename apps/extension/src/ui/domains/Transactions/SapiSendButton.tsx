@@ -1,16 +1,15 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
 import { classNames } from "@talismn/util"
-import { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
-import { log } from "extension-shared"
-import { FC, Suspense, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-import { Hex } from "viem"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state"
+import type { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, Suspense, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
+import type { Hex } from "viem"
 
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
@@ -215,7 +214,7 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
 
 const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error }) =>
   error ? (
-    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 pr-0 text-xs">
+    <div className="flex w-full items-center gap-5 rounded-sm bg-grey-900 px-5 py-6 pr-0 text-alert-warn text-xs">
       <AlertCircleIcon className="shrink-0 text-lg" />
       <div className="scrollable scrollable-800 max-h-40 overflow-y-auto pr-5">{error}</div>
     </div>

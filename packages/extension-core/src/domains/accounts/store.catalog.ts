@@ -1,14 +1,14 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
+import { type Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
+  type RequestAccountsCatalogAction,
   recGetAllAddresses,
   removeAccount,
-  RequestAccountsCatalogAction,
   runActionsOnTrees,
-  Trees,
+  type Trees,
 } from "./helpers.catalog"
 
 // AccountsCatalogData is here in case we want to use this to store anything

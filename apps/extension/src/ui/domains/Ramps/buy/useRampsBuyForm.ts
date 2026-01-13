@@ -1,6 +1,9 @@
+import { notify } from "@talisman/components/Notifications"
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
+import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
+import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
 import {
   activeNetworksStore,
   activeTokensStore,
@@ -13,12 +16,8 @@ import { useDebounce } from "react-use"
 import { firstValueFrom } from "rxjs"
 import { z } from "zod"
 
-import { notify } from "@talisman/components/Notifications"
-import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
-
-import { RampsFormSharedData } from "../shared/types"
-import { RampsBuyQuote, RampsBuyQuoteSuccess } from "./types"
+import type { RampsFormSharedData } from "../shared/types"
+import type { RampsBuyQuote, RampsBuyQuoteSuccess } from "./types"
 import { useRampsBuyCurrencies } from "./useRampsBuyCurrencies"
 import { useRampsBuyQuotes } from "./useRampsBuyQuotes"
 import { useRampsBuyTokens } from "./useRampsBuyTokens"

@@ -1,5 +1,5 @@
-import { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
-import {
+import type { PolkadotAssetHubCalls, XcmV3Junctions } from "@polkadot-api/descriptors"
+import type {
   DotNetwork,
   SubAssetsToken,
   SubForeignAssetsToken,
@@ -7,16 +7,15 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 import { papiStringify } from "@talismn/scale"
+import { useNetworkById, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById, useTokens } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent } from "../shared/SummaryContainer"
 import { SummaryLineBreak } from "../shared/SummaryLineBreak"
-import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
 const SwapExactTokensForTokens: DecodedCallSummaryComponent<
   PolkadotAssetHubCalls["AssetConversion"]["swap_exact_tokens_for_tokens"]

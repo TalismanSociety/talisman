@@ -1,6 +1,6 @@
-import { NetworkPlatform } from "@talismn/chaindata-provider"
+import type { NetworkPlatform } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useState } from "react"
+import { type FC, useCallback, useState } from "react"
 import { Dropdown } from "talisman-ui"
 
 type NetworkPlatformOption = {

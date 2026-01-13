@@ -4,34 +4,34 @@ import {
   distinctUntilKeyChanged,
   firstValueFrom,
   map,
-  Observable,
-  ReplaySubject,
+  type Observable,
+  type ReplaySubject,
   shareReplay,
 } from "rxjs"
 
 import {
-  AnyMiniMetadata,
-  DotNetwork,
+  type AnyMiniMetadata,
+  type DotNetwork,
   isNetworkOfPlatform,
   isTokenOfType,
-  Network,
-  NetworkId,
-  NetworkOfPlatform,
-  NetworkPlatform,
-  SubDTaoToken,
+  type Network,
+  type NetworkId,
+  type NetworkOfPlatform,
+  type NetworkPlatform,
+  type SubDTaoToken,
   subDTaoTokenId,
-  Token,
-  TokenId,
-  TokenOfType,
+  type Token,
+  type TokenId,
+  type TokenOfType,
   TokenSchema,
-  TokenType,
+  type TokenType,
 } from "../chaindata"
 import log from "../log"
 import { getCombinedChaindata$ } from "../state/combinedChaindata"
 import { getDefaultChaindata$ } from "../state/defaultChaindata"
 import { tryToDeleteOldChaindataDb } from "../state/oldDb"
-import { Chaindata, CustomChaindata } from "../state/schema"
-import { IChaindataProvider } from "./ChaindataProviderInterface"
+import type { Chaindata, CustomChaindata } from "../state/schema"
+import type { IChaindataProvider } from "./ChaindataProviderInterface"
 
 /**
  * This type will be used for in-memory storage of chaindata.

@@ -1,5 +1,5 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { getLoadableQuery$, isNotNil, keepAlive, Loadable } from "@talismn/util"
+import type { NetworkId } from "@talismn/chaindata-provider"
+import { getLoadableQuery$, isNotNil, keepAlive, type Loadable } from "@talismn/util"
 import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { chunk, isEqual, uniq } from "lodash-es"
 import {
@@ -17,7 +17,7 @@ import {
 } from "rxjs"
 
 import { remoteConfigStore } from "../../app/store.remoteConfig"
-import { RemoteConfigStoreData } from "../../app/types"
+import type { RemoteConfigStoreData } from "../../app/types"
 import { walletBalances$ } from "../../balances/walletBalances"
 import {
   getTalismanNetworkIdToYieldxyzNetworkIdMap,
@@ -29,7 +29,7 @@ import {
   upsertYieldxyzPositionsByYieldIdAndAddress,
   yieldxyzPositionsStore$,
 } from "./store.positions"
-import { BalancesResponseDto, YieldBalancesDto, YieldxyzPosition } from "./types"
+import type { BalancesResponseDto, YieldBalancesDto, YieldxyzPosition } from "./types"
 
 const REFRESH_INTERVAL = 60_000
 const BATCH_SIZE = 20

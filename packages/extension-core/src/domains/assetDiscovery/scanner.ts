@@ -1,12 +1,12 @@
 import PromisePool from "@supercharge/promise-pool"
 import { abiMulticall, erc20BalancesAggregatorAbi } from "@talismn/balances"
 import {
-  EthNetworkId,
-  EvmErc20Token,
+  type EthNetworkId,
+  type EvmErc20Token,
   isTokenEth,
-  Token,
-  TokenId,
-  TokenList,
+  type Token,
+  type TokenId,
+  type TokenList,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformEthereum } from "@talismn/keyring"
@@ -23,7 +23,7 @@ import {
   map,
   skip,
 } from "rxjs"
-import { erc20Abi, PublicClient } from "viem"
+import { erc20Abi, type PublicClient } from "viem"
 
 import { db } from "../../db"
 import { isWalletReady$ } from "../../libs/isWalletReady"
@@ -32,11 +32,11 @@ import { chaindataProvider } from "../../rpcs/chaindata"
 import { appStore } from "../app/store.app"
 import { activeNetworksStore, isNetworkActive } from "../balances/store.activeNetworks"
 import { activeTokensStore } from "../balances/store.activeTokens"
-import { EvmAddress } from "../ethereum/types"
+import type { EvmAddress } from "../ethereum/types"
 import { keyringStore } from "../keyring/store"
 import { fetchMissingTokens } from "./fetchMissingTokens"
-import { AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
-import { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
+import { type AssetDiscoveryScanState, assetDiscoveryStore } from "./store"
+import type { AssetDiscoveryScanScope, DiscoveredBalance } from "./types"
 
 // TODO - flag these tokens as ignored from chaindata
 const IGNORED_COINGECKO_IDS = [
@@ -254,8 +254,8 @@ class AssetDiscoveryScanner {
           // merge queue
           const queue = prev.queue ?? []
           const mergedScope: AssetDiscoveryScanScope = {
-            addresses: uniq(queue.map((s) => s.addresses).flat()),
-            networkIds: uniq(queue.map((s) => s.networkIds).flat()),
+            addresses: uniq(queue.flatMap((s) => s.addresses)),
+            networkIds: uniq(queue.flatMap((s) => s.networkIds)),
             withApi: queue.some((s) => s.withApi),
           }
           const currentScanScope =
@@ -426,11 +426,9 @@ class AssetDiscoveryScanner {
 
             // build the list of token+address to check balances for
             const allChecks = sortBy(
-              tokensByNetwork[networkId]
-                .map((t) =>
-                  scope.addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a }))
-                )
-                .flat(),
+              tokensByNetwork[networkId].flatMap((t) =>
+                scope.addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a }))
+              ),
               (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
             )
 

@@ -1,5 +1,5 @@
-import { Balance, Balances } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Balance, Balances } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import BigNumber from "bignumber.js"
 import groupBy from "lodash-es/groupBy"
 
@@ -30,7 +30,7 @@ const extractTvlFromBalance = (balance?: Balance, token?: Token, tokenPrice?: nu
   const totalSupply = BigNumber(
     extras.find((extra) => extra.label === "totalSupply")?.amount ?? "0"
   )
-  const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * (token?.decimals ?? 0)))
+  const totalSupplyTokens = BigNumber(totalSupply).times(10 ** (-1 * (token?.decimals ?? 0)))
 
   return BigNumber(tokenPrice ?? 0).times(totalSupplyTokens)
 }

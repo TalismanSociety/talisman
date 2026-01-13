@@ -1,5 +1,5 @@
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
 import { useAtomValue } from "jotai"
 import { atomWithObservable } from "jotai/utils"
 import { Observable } from "rxjs"

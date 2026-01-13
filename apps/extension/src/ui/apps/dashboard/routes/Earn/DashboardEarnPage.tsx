@@ -1,16 +1,15 @@
+import { SearchInput } from "@talisman/components/SearchInput"
 import { Balances } from "@talismn/balances"
 import { cn } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useOutletContext } from "react-router-dom"
-
-import { SearchInput } from "@talisman/components/SearchInput"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { DashboardEarnDiscoverTab } from "./DashboardEarnDiscoverTab"
 import { DashboardEarnPositionsTab } from "./DashboardEarnPositionsTab"
@@ -53,7 +52,7 @@ export const DashboardEarnPage: FC = () => {
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
 
   return (
-    <div className="text-body-secondary flex w-full min-w-[45rem] flex-col gap-6 overflow-hidden text-left text-base">
+    <div className="flex w-full min-w-[45rem] flex-col gap-6 overflow-hidden text-left text-base text-body-secondary">
       {/* Header with total balance - always show */}
       <EarnPageHeader />
 
@@ -63,7 +62,7 @@ export const DashboardEarnPage: FC = () => {
           <EarnTabs
             onTabChange={handleTabChange}
             value={selectedTab}
-            className="text-md my-0 h-14 w-auto font-bold"
+            className="my-0 h-14 w-auto font-bold text-md"
           />
         </div>
         <div className="w-[28rem]">
@@ -126,12 +125,12 @@ const EarnPageHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="text-body-secondary border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">
+    <div className="flex justify-between rounded-[0.75rem] border border-grey-800 text-left text-base text-body-secondary">
       <div className="flex flex-col gap-4 px-6 py-8">
         <div className="text-body-secondary text-sm">{t("Yield-Eligible Capital")}</div>
-        <div className="text-body text-2xl font-bold">
+        <div className="font-bold text-2xl text-body">
           {!eligibleTotal && status === "loading" ? (
-            <div className="bg-grey-700 text-grey-700 animate-pulse rounded">$0.00</div>
+            <div className="animate-pulse rounded bg-grey-700 text-grey-700">$0.00</div>
           ) : (
             <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
           )}

@@ -5,11 +5,11 @@ import {
   decAnyMetadata,
   getDynamicBuilder,
   getLookupFn,
-  UnifiedMetadata,
+  type UnifiedMetadata,
   unifyMetadata,
 } from "@talismn/scale"
 import { throwAfter } from "@talismn/util"
-import { SignerPayloadGenesisHash } from "extension-core"
+import type { SignerPayloadGenesisHash } from "extension-core"
 import { log } from "extension-shared"
 import { hexToNumber, http } from "viem"
 import { z } from "zod/v4"

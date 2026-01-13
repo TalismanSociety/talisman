@@ -1,4 +1,8 @@
-import { AnyEthSigningRequest, AnySigningRequest, SigningRequests } from "../domains/signing/types"
+import type {
+  AnyEthSigningRequest,
+  AnySigningRequest,
+  SigningRequests,
+} from "../domains/signing/types"
 
 export const isEthereumRequest = (
   signingRequest: AnySigningRequest

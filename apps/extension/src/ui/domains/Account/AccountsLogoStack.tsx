@@ -1,10 +1,9 @@
-import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { useMemo } from "react"
-
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { useAccounts } from "@ui/state"
+import type { Account } from "extension-core"
+import { useMemo } from "react"
 
 type Props = { addresses?: string[]; className?: string; max?: number }
 
@@ -49,8 +48,8 @@ export const AccountsLogoStackMore = ({ accounts }: { accounts: Account[] }) => 
   return (
     <div className="-ml-[0.25em] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreAccountsTooltip accounts={accounts} />}>
-        <div className="bg-body-secondary relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
-          <div className="text-[0.5em] font-bold leading-[1em]">+{accounts.length}</div>
+        <div className="relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full bg-body-secondary text-center text-black">
+          <div className="font-bold text-[0.5em] leading-[1em]">+{accounts.length}</div>
         </div>
       </WithTooltip>
     </div>

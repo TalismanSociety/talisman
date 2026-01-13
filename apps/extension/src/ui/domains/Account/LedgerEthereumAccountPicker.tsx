@@ -1,18 +1,21 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { Account, getEthLedgerDerivationPath, LedgerEthDerivationPathType } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
-import { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import type { LedgerAccountDefEthereum } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
+import {
+  type Account,
+  getEthLedgerDerivationPath,
+  type LedgerEthDerivationPathType,
+} from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerEthereumAccounts = (
   name: string,

@@ -1,7 +1,7 @@
-import { ChaindataStorage } from "@talismn/chaindata-provider"
+import type { ChaindataStorage } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { debounceTime, distinctUntilChanged, Observable } from "rxjs"
+import { debounceTime, distinctUntilChanged, type Observable } from "rxjs"
 
 import { getBlobStore } from "../../db"
 

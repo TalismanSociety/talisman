@@ -1,7 +1,7 @@
 import Color from "color"
-import { CSSProperties, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { type CSSProperties, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react"
 
-import { MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import type { MysticalPhysicsV3 } from "./MysticalPhysicsV3"
 
 export type CelestialArtifactProps = {
   /** Configures the MysticalBackground parameters */

@@ -1,26 +1,25 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { ArrowRightIcon, ShieldNotOkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect } from "react"
+import { useSetting } from "@ui/state"
+import { type FC, useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, useOpenClose } from "talisman-ui"
-
-import { useSetting } from "@ui/state"
 
 import { RiskAnalysisExposures } from "./RiskAnalysisExposures"
 import { RiskAnalysisRecommendation } from "./RiskAnalysisRecommendation"
 import { RiskAnalysisStateChanges } from "./RiskAnalysisStateChanges"
 import { RisksAnalysisAcknowledgement } from "./RisksAnalysisAcknowledgement"
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 const RiskAnalysisDrawerContent: FC<{ riskAnalysis: RiskAnalysis }> = ({ riskAnalysis }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl p-12">
+    <div className="flex max-h-[60rem] w-full flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-xs leading-[2rem]">
-        <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-12">
-          <div className="text-body text-md text-center font-bold">{t("Risk Assessment")}</div>
+        <div className="flex w-full flex-col gap-12 text-body-secondary leading-paragraph">
+          <div className="text-center font-bold text-body text-md">{t("Risk Assessment")}</div>
           <RiskAnalysisRecommendation riskAnalysis={riskAnalysis} />
           <RiskAnalysisStateChanges riskAnalysis={riskAnalysis} />
           <RiskAnalysisExposures riskAnalysis={riskAnalysis} />
@@ -48,13 +47,13 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
   )
 
   return (
-    <div className="animate-fade-in bg-grey-850 flex w-full flex-col gap-12 rounded-t-xl p-12">
+    <div className="flex w-full animate-fade-in flex-col gap-12 rounded-t-xl bg-grey-850 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-xs leading-[2rem]">
-        <div className="text-body-secondary leading-paragraph flex w-full flex-col gap-8">
-          <div className="text-body text-md text-center font-bold">
+        <div className="flex w-full flex-col gap-8 text-body-secondary leading-paragraph">
+          <div className="text-center font-bold text-body text-md">
             {t("Automatic risk assessments")}
           </div>
-          <div className="text-body-secondary text-center text-sm">
+          <div className="text-center text-body-secondary text-sm">
             <p>
               {t(
                 "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?"
@@ -95,9 +94,9 @@ const RiskAnalysisCriticalPane: FC<{
       <TransitionChild
         as="div"
         className={classNames(
-          "fixed left-0 top-0 z-10 h-[60rem] w-[40rem]",
+          "fixed top-0 left-0 z-10 h-[60rem] w-[40rem]",
           "flex flex-col items-center gap-8 p-12",
-          "to-black-primary bg-gradient-to-b from-[#411D1D]"
+          "bg-gradient-to-b from-[#411D1D] to-black-primary"
         )}
         enter="opacity-100" // no fade in (other drawer is opening to under it)
         leave="transition-opacity ease-linear duration-200"
@@ -105,10 +104,10 @@ const RiskAnalysisCriticalPane: FC<{
         leaveTo="opacity-0"
       >
         <div className="flex grow flex-col items-center justify-center gap-8 text-center">
-          <div className="text-brand-orange rounded-full bg-[#411D1D] p-6 shadow-md shadow-black/30">
+          <div className="rounded-full bg-[#411D1D] p-6 text-brand-orange shadow-black/30 shadow-md">
             <ShieldNotOkIcon className="size-36" />
           </div>
-          <div className="text-brand-orange text-lg font-bold">{t("Critical Risk")}</div>
+          <div className="font-bold text-brand-orange text-lg">{t("Critical Risk")}</div>
           <p className="text-body text-md">
             {t("We suspect this request is harmful.")}
             <br />
@@ -118,10 +117,10 @@ const RiskAnalysisCriticalPane: FC<{
         <button
           type="button"
           onClick={close}
-          className="text-brand-orange/80 hover:text-brand-orange flex items-center text-base"
+          className="flex items-center text-base text-brand-orange/80 hover:text-brand-orange"
         >
           <span>{t("Proceed anyway")}</span>
-          <ArrowRightIcon className="text-md inline-block" />
+          <ArrowRightIcon className="inline-block text-md" />
         </button>
         <Button fullWidth onClick={onReject}>
           {t("Cancel")}

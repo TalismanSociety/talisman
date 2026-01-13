@@ -1,5 +1,5 @@
-import { Account } from "@talismn/keyring"
-
+import type { Account } from "@talismn/keyring"
+import { requestStore } from "../../libs/requests/store"
 import type { Port } from "../../types/base"
 import type {
   DecryptPayload,
@@ -7,7 +7,6 @@ import type {
   ResponseEncryptDecrypt,
   ResponseEncryptEncrypt,
 } from "./types"
-import { requestStore } from "../../libs/requests/store"
 import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "./types"
 
 export const requestEncrypt = (

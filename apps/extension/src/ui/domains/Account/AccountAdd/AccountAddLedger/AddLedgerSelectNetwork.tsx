@@ -1,26 +1,25 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { DotNetwork } from "@talismn/chaindata-provider"
-import { AccountPlatform } from "@talismn/crypto"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import type { DotNetwork } from "@talismn/chaindata-provider"
+import type { AccountPlatform } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import {
+  type ChainWithLedgerApp,
+  useLedgerSubstrateChain,
+  useLedgerSubstrateChains,
+} from "@ui/hooks/ledger/useLedgerSubstrateChains"
+import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 import { t } from "i18next"
-import { FC, ReactNode, useCallback, useMemo, useState } from "react"
+import { type FC, type ReactNode, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Dropdown, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import * as yup from "yup"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import {
-  ChainWithLedgerApp,
-  useLedgerSubstrateChain,
-  useLedgerSubstrateChains,
-} from "@ui/hooks/ledger/useLedgerSubstrateChains"
-import { isAddSubstrateLedgerAppType } from "@ui/util/typeCheckers"
 
 import { AddSubstrateLedgerAppType, useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
@@ -41,7 +40,7 @@ const AppVersionButton: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "bg-field text-body-secondary group flex min-h-60 flex-col gap-5 rounded border p-8 text-left",
+        "group flex min-h-60 flex-col gap-5 rounded border bg-field p-8 text-left text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-body bg-grey-800"
@@ -51,7 +50,7 @@ const AppVersionButton: FC<{
     >
       <div
         className={classNames(
-          "group-enabled:group-hover:text-body text-base",
+          "text-base group-enabled:group-hover:text-body",
           selected && "text-body"
         )}
       >
@@ -205,8 +204,8 @@ export const AddLedgerSelectNetwork = () => {
         <AccountPlatformSelector defaultValue={platform} onChange={handlePlatformChange} />
         {platform === "polkadot" && (
           <>
-            <div className="bg-black-secondary mt-12 rounded p-12">
-              <h2 className="text-body-secondary leading-paragraph text-base">
+            <div className="mt-12 rounded bg-black-secondary p-12">
+              <h2 className="text-base text-body-secondary leading-paragraph">
                 {t("1. Choose Network")}
               </h2>
               <div className="mt-6">
@@ -214,23 +213,23 @@ export const AddLedgerSelectNetwork = () => {
               </div>
             </div>
             {!!chain && (
-              <div className="bg-black-secondary mt-12 rounded p-12">
+              <div className="mt-12 rounded bg-black-secondary p-12">
                 <div className="flex justify-between">
-                  <h2 className="text-body-secondary leading-paragraph text-base">
+                  <h2 className="text-base text-body-secondary leading-paragraph">
                     {t("2. Choose Ledger App")}
                   </h2>
 
                   {chain.supportedLedgerApps.length > 1 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="text-body-secondary flex items-center gap-2 align-middle text-xs">
+                        <div className="flex items-center gap-2 align-middle text-body-secondary text-xs">
                           <InfoIcon />
                           <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                             Which one should I choose?
                           </span>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 max-w-[32rem] border-[0.5px] bg-black p-3 text-xs shadow">
+                      <TooltipContent className="z-20 max-w-[32rem] rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-body-secondary text-xs shadow">
                         <Trans
                           t={t}
                           defaults={
@@ -254,7 +253,7 @@ export const AddLedgerSelectNetwork = () => {
                       extra={
                         <span
                           className={classNames(
-                            "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
+                            "rounded-[1.2rem] bg-green/10 px-4 py-1 text-green",
                             chain?.hasCheckMetadataHash ? "visible" : "invisible"
                           )}
                         >

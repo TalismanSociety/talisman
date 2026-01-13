@@ -1,25 +1,6 @@
-import type { PrimitiveAtom } from "jotai"
-import type { Chain as ViemChain } from "viem/chains"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import BigNumber from "bignumber.js"
-import {
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-  isAccountPlatformEthereum,
-  isAccountPlatformPolkadot,
-  isAddressCompatibleWithNetwork,
-  remoteConfigStore,
-} from "extension-core"
-import { TFunction } from "i18next"
-import { Atom, atom, Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
-import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
-import { useCallback, useEffect, useMemo } from "react"
-import { encodeFunctionData, erc20Abi, isAddress, publicActions } from "viem"
-
 import { lifiSwapModule } from "@ui/domains/Swap/swap-modules/lifi-swap-module"
 import {
   getNetworks$,
@@ -30,6 +11,24 @@ import {
   useTokensMap,
 } from "@ui/state"
 import { t$ } from "@ui/state/i18n"
+import BigNumber from "bignumber.js"
+import {
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+  isAccountPlatformEthereum,
+  isAccountPlatformPolkadot,
+  isAddressCompatibleWithNetwork,
+  remoteConfigStore,
+} from "extension-core"
+import type { TFunction } from "i18next"
+import type { PrimitiveAtom } from "jotai"
+import { type Atom, atom, type Getter, useAtom, useAtomValue, useSetAtom } from "jotai"
+import { atomFamily, atomWithObservable, loadable } from "jotai/utils"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import { useCallback, useEffect, useMemo } from "react"
+import { encodeFunctionData, erc20Abi, isAddress, publicActions } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 
 import type {
   BaseQuote,
@@ -43,9 +42,9 @@ import {
   fromEvmAddressAtom,
   fromSubstrateAddressAtom,
   quoteSortingAtom,
+  type SwappableAssetWithDecimals,
   selectedProtocolAtom,
   selectedSubProtocolAtom,
-  SwappableAssetWithDecimals,
   swapQuoteRefresherAtom,
   toAssetAtom,
   toBtcAddressAtom,
@@ -153,7 +152,7 @@ const getCoingeckoCategoryTokens = async (
     image?: string
   }[]
   return coins
-    .map((c) => {
+    .flatMap((c) => {
       const coinPlatforms = Object.entries(
         coinsList.find((coin) => coin.id === c.id)?.platforms ?? {}
       )
@@ -174,7 +173,6 @@ const getCoingeckoCategoryTokens = async (
         return token
       })
     })
-    .flat()
     .filter((c) => !!c)
 }
 
@@ -492,13 +490,11 @@ export const fromAssetsAtom = atom(async (get, { signal }) => {
   const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
   const search = get(swapFromSearchAtom)
 
-  const tokens = Object.values(assetsByChains)
-    .map((tokens) =>
-      Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
-      )
+  const tokens = Object.values(assetsByChains).flatMap((tokens) =>
+    Object.values(tokens).sort((a, b) =>
+      a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
     )
-    .flat()
+  )
 
   const filteredTokens = await filterAndSortTokens(get, tokens, search)
   // from assets should not include btc
@@ -515,13 +511,11 @@ export const toAssetsAtom = atom(async (get, { signal }) => {
     .map((module) => module.toAssetsSelector)
 
   const assetsByChains = await getAssetsByChainId(get, allAssetsSelector, signal)
-  const tokens = Object.values(assetsByChains)
-    .map((tokens) =>
-      Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
-      )
+  const tokens = Object.values(assetsByChains).flatMap((tokens) =>
+    Object.values(tokens).sort((a, b) =>
+      a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
     )
-    .flat()
+  )
 
   return await filterAndSortTokens(get, tokens, search)
 })
@@ -546,8 +540,7 @@ export const swapQuotesAtom = loadable(
 
     const allQuotes = allQuoters
       .map(get)
-      .map((q) => (q.state === "hasData" ? (Array.isArray(q.data) ? q.data.flat() : q) : q))
-      .flat()
+      .flatMap((q) => (q.state === "hasData" ? (Array.isArray(q.data) ? q.data.flat() : q) : q))
 
     // map each, if loaded, return only if output > 0
     return allQuotes.filter((q) => {

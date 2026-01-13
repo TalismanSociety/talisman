@@ -1,7 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import { sessionStore, SessionStoreData } from "extension-core"
-import { SetStateAction, useCallback } from "react"
-import { firstValueFrom, map, Observable, shareReplay } from "rxjs"
+import { type SessionStoreData, sessionStore } from "extension-core"
+import { type SetStateAction, useCallback } from "react"
+import { firstValueFrom, map, type Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 

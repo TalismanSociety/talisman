@@ -1,11 +1,10 @@
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useAccountByAddress } from "@ui/state"
+import { getAccountGenesisHash } from "extension-core"
+import type { FC } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"

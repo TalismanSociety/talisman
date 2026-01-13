@@ -1,10 +1,5 @@
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { appStore } from "extension-core"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, IconButton } from "talisman-ui"
-
 import { api } from "@ui/api"
 import {
   useAccounts,
@@ -13,6 +8,10 @@ import {
   useMnemonics,
   useSessionState,
 } from "@ui/state"
+import { appStore } from "extension-core"
+import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, IconButton } from "talisman-ui"
 
 export const BackupReminderBanner = () => {
   const { t } = useTranslation()
@@ -26,19 +25,19 @@ export const BackupReminderBanner = () => {
       className={classNames(
         "relative z-0 overflow-hidden",
         "select-none rounded-sm p-6 py-4 text-xs",
-        "border-body-secondary border"
+        "border border-body-secondary"
       )}
     >
       <div className="relative z-10">
         <div className="flex items-center gap-4 text-base">
-          <div className="grow text-sm font-bold">{t("Protect your funds")}</div>
+          <div className="grow font-bold text-sm">{t("Protect your funds")}</div>
           <div>
-            <IconButton className="text-md text-body select-auto" onClick={onDismissClick}>
+            <IconButton className="select-auto text-body text-md" onClick={onDismissClick}>
               <XIcon />
             </IconButton>
           </div>
         </div>
-        <p className="text-body-secondary mt-2">
+        <p className="mt-2 text-body-secondary">
           {hasFundsInNotBackedUpMnemonics
             ? t(
                 "You have funds! Talisman is a non custodial wallet so only you have access to your keys, make sure you have backed them up or you may lose access to your funds."
@@ -51,7 +50,7 @@ export const BackupReminderBanner = () => {
           <Button
             small
             onClick={onSnoozeClick}
-            className="border-body-secondary text-body-secondary h-16 rounded-full text-xs"
+            className="h-16 rounded-full border-body-secondary text-body-secondary text-xs"
           >
             {t("Remind me later")}
           </Button>

@@ -1,19 +1,18 @@
 import { ArrowRightCircleIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { IconButton } from "talisman-ui"
-
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
 import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 import { closeIfEmbeddedPopup } from "@ui/util/closeIfEmbeddedPopup"
 import { IS_POPUP } from "@ui/util/constants"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
 import { useSeekBenefitsModal } from "../SeekBenefits/SeekBenefitsModal"
 import {
@@ -49,21 +48,21 @@ export const GetStarted = () => {
   if (hasAccounts && isHidden) return null
 
   return (
-    <div className="@container bg-black-secondary relative flex w-full flex-col gap-8 rounded-sm p-8">
+    <div className="@container relative flex w-full flex-col gap-8 rounded-sm bg-black-secondary p-8">
       {hasAccounts && (
         <IconButton
-          className="text-body-disabled enabled:hover:text-body-secondary enabled:focus-visible:text-body-secondary absolute right-6 top-6"
+          className="absolute top-6 right-6 text-body-disabled enabled:focus-visible:text-body-secondary enabled:hover:text-body-secondary"
           onClick={onDismissClick}
         >
           <XIcon />
         </IconButton>
       )}
 
-      <div className="text-body flex flex-col gap-2">
-        <div className="text-md @2xl:text-lg leading-base font-bold">
+      <div className="flex flex-col gap-2 text-body">
+        <div className="font-bold @2xl:text-lg text-md leading-base">
           {hasAccounts ? t("Fund your account") : t("Get Started")}
         </div>
-        <div className="leading-paragraph @2xl:text-base text-xs">
+        <div className="@2xl:text-base text-xs leading-paragraph">
           {hasAccounts
             ? t("To begin your journey across Polkadot and Ethereum")
             : t("Add an account and add funds to get started")}
@@ -140,7 +139,7 @@ export const GetStarted = () => {
             description={t("Discover how Talisman can elevate your web3 journey")}
             className={cn("group", showSeekBenefits && "col-span-2")}
             iconRight={
-              <ChevronRightIcon className="text-body-inactive group-hover:text-body-secondary -mr-4 size-12" />
+              <ChevronRightIcon className="-mr-4 size-12 text-body-inactive group-hover:text-body-secondary" />
             }
             onClick={onLearnMoreClick}
           />
@@ -244,7 +243,7 @@ const GetStartedActionButton: FC<{
   <button
     type="button"
     className={classNames(
-      "border-disabled bg-grey-800 border-grey-700/40 hover:bg-grey-750 leading-paragraph enabled:focus-visible:bg-grey-750 @2xl:text-md @2xl:px-8 rounded-sm border px-6 py-4 text-left text-base",
+      "rounded-sm border border-disabled border-grey-700/40 bg-grey-800 @2xl:px-8 px-6 py-4 text-left @2xl:text-md text-base leading-paragraph hover:bg-grey-750 enabled:focus-visible:bg-grey-750",
       "flex w-full items-center gap-8 overflow-hidden",
       className
     )}
@@ -253,9 +252,9 @@ const GetStartedActionButton: FC<{
     <div className="flex grow flex-col gap-4">
       {iconTop}
       <div className="flex w-full flex-col gap-1">
-        <div className="text-body @2xl:text-base truncate text-sm font-bold">{label}</div>
+        <div className="truncate font-bold @2xl:text-base text-body text-sm">{label}</div>
         {description && (
-          <div className="text-body-secondary @2xl:text-sm text-[1rem]">{description}</div>
+          <div className="@2xl:text-sm text-[1rem] text-body-secondary">{description}</div>
         )}
       </div>
     </div>

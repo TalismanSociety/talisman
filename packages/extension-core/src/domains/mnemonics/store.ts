@@ -3,7 +3,7 @@ import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
 import md5 from "blueimp-md5"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"
 

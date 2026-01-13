@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@talismn/crypto"
 
 import log from "../log"
-import { Config, OnChainIds } from "./types"
+import type { Config, OnChainIds } from "./types"
 
 /**
  * Looks up the on-chain identifiers for some addresses.

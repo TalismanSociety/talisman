@@ -1,6 +1,6 @@
 import { startCase, uniq } from "lodash-es"
 
-import { Network } from "./chaindata"
+import type { Network } from "./chaindata"
 
 export type BlockExplorerQuery =
   | {

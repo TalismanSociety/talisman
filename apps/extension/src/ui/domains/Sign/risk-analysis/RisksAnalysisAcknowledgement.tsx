@@ -1,8 +1,8 @@
 import { t } from "i18next"
-import { ChangeEventHandler, FC, useCallback } from "react"
+import { type ChangeEventHandler, type FC, useCallback } from "react"
 import { Checkbox } from "talisman-ui"
 
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 export const RisksAnalysisAcknowledgement: FC<{ riskAnalysis: RiskAnalysis }> = ({
   riskAnalysis,

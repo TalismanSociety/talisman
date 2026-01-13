@@ -1,8 +1,7 @@
-import { QrIcon } from "@talismn/icons"
-import { IconButton } from "talisman-ui"
-
 import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { QrIcon } from "@talismn/icons"
+import { IconButton } from "talisman-ui"
 
 import i18next from "../../common/i18nConfig"
 

@@ -1,16 +1,22 @@
-import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
-import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
-import { FC, PropsWithChildren, ReactNode, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { isNetworkDot, isNetworkEth } from "@talismn/chaindata-provider"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { PortfolioTabs } from "@ui/domains/Portfolio/PortfolioTabs"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { usePortfolioGlobalData } from "@ui/state"
+import { isAccountAddressEthereum, isAccountAddressSs58 } from "extension-core"
+import {
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useMemo,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   const { t } = useTranslation()
@@ -22,7 +28,7 @@ const EnableNetworkMessage: FC<{ type?: "substrate" | "evm" }> = ({ type }) => {
   }, [navigate, type])
 
   return (
-    <div className="text-body-secondary mt-72 flex flex-col items-center justify-center gap-8 text-center">
+    <div className="mt-72 flex flex-col items-center justify-center gap-8 text-center text-body-secondary">
       <div>{t("Enable some networks to display your assets")}</div>
       <div>
         <Button onClick={handleClick} primary small type="button">
@@ -78,7 +84,7 @@ export const PortfolioLayout: FC<
           {header ?? <DashboardPortfolioHeader />}
           <PortfolioAccountCheck>
             <div className="flex h-16 w-full items-center justify-between gap-8 overflow-hidden">
-              <PortfolioTabs className="text-md my-0 h-14 w-auto font-bold" />
+              <PortfolioTabs className="my-0 h-14 w-auto font-bold text-md" />
               <div className="shrink-0">
                 <Suspense fallback={<SuspenseTracker name="DashboardPortfolioLayout.Toolbar" />}>
                   {toolbar}

@@ -1,14 +1,14 @@
-import { IBalance } from "@talismn/balances"
+import type { IBalance } from "@talismn/balances"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { filter, firstValueFrom, map, Observable, of } from "rxjs"
+import { filter, firstValueFrom, map, type Observable, of } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { balancesProvider } from "./balancesProvider"
-import {
+import type {
   BalanceSubscriptionResponse,
   RequestBalance,
   RequestBalancesByParamsSubscribe,

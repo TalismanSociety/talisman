@@ -1,13 +1,12 @@
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { UserIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
-
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
@@ -44,14 +43,14 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
 
   return (
     <PillButton className={classNames("h-16 max-w-full rounded px-4", className)} onClick={onClick}>
-      <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
+      <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         {address ? (
           <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
         ) : (
           <UserIcon />
         )}
         {account ? (
-          <div className="leading-base grow truncate">
+          <div className="grow truncate leading-base">
             {name ? (
               <WithTooltip tooltip={displayAddress}>{name}</WithTooltip>
             ) : (

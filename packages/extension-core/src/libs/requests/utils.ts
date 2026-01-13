@@ -1,4 +1,4 @@
-import { AnyRespondableRequest, KnownRequestTypes, KnownRespondableRequest } from "./types"
+import type { AnyRespondableRequest, KnownRequestTypes, KnownRespondableRequest } from "./types"
 
 export const isRequestOfType = <Type extends KnownRequestTypes>(
   request: Partial<AnyRespondableRequest> & Pick<AnyRespondableRequest, "type">,

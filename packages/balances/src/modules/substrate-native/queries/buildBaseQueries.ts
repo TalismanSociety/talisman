@@ -1,11 +1,11 @@
-import { decodeScale, ScaleStorageCoder } from "@talismn/scale"
+import { decodeScale, type ScaleStorageCoder } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
-import { Binary, Enum } from "polkadot-api"
+import type { Binary, Enum } from "polkadot-api"
 
-import { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
-import { BalanceDef, buildNetworkStorageCoders } from "../../shared"
-import { MaybeStateKey, RpcQueryPack } from "../../shared/rpcQueryPack"
-import { MiniMetadataExtra } from "../config"
+import type { AmountWithLabel, IBalance, MiniMetadata } from "../../../types"
+import { type BalanceDef, buildNetworkStorageCoders } from "../../shared"
+import type { MaybeStateKey, RpcQueryPack } from "../../shared/rpcQueryPack"
+import type { MiniMetadataExtra } from "../config"
 import { getLockedType } from "../util/lockTypes"
 
 export type NomPoolMemberInfo = {

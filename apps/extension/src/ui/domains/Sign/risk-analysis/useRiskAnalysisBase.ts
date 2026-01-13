@@ -1,20 +1,19 @@
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  NetworkId,
+  type NetworkId,
   solNativeTokenId,
   solSplTokenId,
-  TokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { QueryFunction, QueryKey, useQuery } from "@tanstack/react-query"
+import { type QueryFunction, type QueryKey, useQuery } from "@tanstack/react-query"
+import { useSetting, useTokensMap } from "@ui/state"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSetting, useTokensMap } from "@ui/state"
-
 import { getRiskAnalysisScanError } from "./getRiskAnalysisScanError"
-import {
+import type {
   RiskAnalysisPlatform,
   RiskAnalysisResponse,
   RiskAnalysisScanError,

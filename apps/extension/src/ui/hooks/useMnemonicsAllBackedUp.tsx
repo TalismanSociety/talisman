@@ -1,6 +1,5 @@
-import { useMemo } from "react"
-
 import { useMnemonics } from "@ui/state"
+import { useMemo } from "react"
 
 export const useMnemonicsAllBackedUp = () => {
   const mnemonics = useMnemonics()

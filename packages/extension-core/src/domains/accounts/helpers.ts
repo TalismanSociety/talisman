@@ -1,13 +1,13 @@
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import { DotNetwork, Network } from "@talismn/chaindata-provider"
+import type { DotNetwork, Network } from "@talismn/chaindata-provider"
 import {
-  AccountPlatform,
+  type AccountPlatform,
   getAccountPlatformFromAddress,
   isAddressEqual,
-  KeypairCurve,
+  type KeypairCurve,
 } from "@talismn/crypto"
 import {
-  Account,
+  type Account,
   getAccountGenesisHash,
   isAccountAddressEthereum,
   isAccountAddressSs58,
@@ -20,7 +20,7 @@ import { log } from "extension-shared"
 
 import { getEthDerivationPath } from "../ethereum/helpers"
 import { getAccountKeypairType } from "../keyring/getKeypairTypeFromAccount"
-import { AccountsCatalogStore } from "./store.catalog"
+import type { AccountsCatalogStore } from "./store.catalog"
 
 export const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "polkadot", "solana"]
 

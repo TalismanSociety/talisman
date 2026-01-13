@@ -1,6 +1,6 @@
-import { TokenOfType, TokenType } from "@talismn/chaindata-provider"
+import type { TokenOfType, TokenType } from "@talismn/chaindata-provider"
 
-import { TokenPlatform, TokensWithAddresses } from "../../types/IBalanceModule"
+import type { TokenPlatform, TokensWithAddresses } from "../../types/IBalanceModule"
 
 export type BalanceDef<T extends TokenType = TokenType> = {
   token: TokenOfType<T>

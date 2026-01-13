@@ -1,11 +1,10 @@
-import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js"
+import { PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js"
 import { isVersionedTransaction } from "@talismn/solana"
-import { AccountOfType } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback } from "react"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
+import type { AccountOfType } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback } from "react"
 
 import { SignLedgerBase } from "./SignLedgerBase"
 import { useSignLedgerBase } from "./useSignLedgerBase"

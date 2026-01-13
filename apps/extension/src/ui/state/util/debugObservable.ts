@@ -1,5 +1,5 @@
 import { log } from "extension-shared"
-import { MonoTypeOperatorFunction, tap } from "rxjs"
+import { type MonoTypeOperatorFunction, tap } from "rxjs"
 
 // @dev turn this on temporarily when needed
 // note that log.debug() outputs nothing on prod builds

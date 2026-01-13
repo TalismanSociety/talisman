@@ -1,8 +1,8 @@
 import { ApiPromise } from "@polkadot/api"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { atom } from "jotai"
-import { atomEffect } from "jotai-effect"
 import { atomFamily } from "jotai/utils"
+import { atomEffect } from "jotai-effect"
 
 /**
  * This atom can be used to get access to an `ApiPromise` for talking to a Polkadot blockchain.

@@ -1,9 +1,8 @@
-import { BalanceDto, isAccountOwned, PendingActionDto } from "extension-core"
-import { useCallback, useEffect, useMemo, useRef } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useAccountByAddress, useNetworkById, YieldxyzPositionEnhanced } from "@ui/state"
+import { useAccountByAddress, useNetworkById, type YieldxyzPositionEnhanced } from "@ui/state"
+import { type BalanceDto, isAccountOwned, type PendingActionDto } from "extension-core"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { useYieldxyzTransactionManager } from "../hooks/useYieldxyzActionManager"
 import { useYieldxyzPendingAction } from "../hooks/useYieldxyzPendingAction"

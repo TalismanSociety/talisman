@@ -1,10 +1,9 @@
 import { XIcon } from "@talismn/icons"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
-
 import { useAccountsCatalog, useAppState } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Checkbox, Drawer, IconButton, Modal, useOpenClose } from "talisman-ui"
 
 import imgWelcome from "./welcome.png"
 
@@ -55,9 +54,9 @@ const Content: FC<{
   }, [dontShowThisAgain, onClose])
 
   return (
-    <div className="border-grey-850 flex w-full max-w-[74rem] flex-col gap-8 rounded-t-xl border-t bg-black p-12">
+    <div className="flex w-full max-w-[74rem] flex-col gap-8 rounded-t-xl border-grey-850 border-t bg-black p-12">
       <div className="flex w-full justify-between py-4">
-        <div className="text-md text-body font-bold">{t("Stay organised with folders")}</div>
+        <div className="font-bold text-body text-md">{t("Stay organised with folders")}</div>
         <IconButton onClick={onDismiss}>
           <XIcon />
         </IconButton>

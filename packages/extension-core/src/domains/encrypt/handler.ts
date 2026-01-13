@@ -1,18 +1,17 @@
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
-import { Keypair } from "@polkadot/util-crypto/types"
+import type { Keypair } from "@polkadot/util-crypto/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"
 import { log } from "extension-shared"
-
-import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { sentry } from "../../config/sentry"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { sr25519Decrypt } from "../../util/sr25519decrypt"
 import { sr25519Encrypt } from "../../util/sr25519encrypt"
 import { withSecretKey } from "../keyring/withSecretKey"
-import { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
+import type { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: EncryptRequestIdOnly) {

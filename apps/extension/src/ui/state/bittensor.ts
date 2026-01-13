@@ -1,10 +1,9 @@
 import { bind } from "@react-rxjs/core"
-import { Loadable } from "@talismn/util"
-import { BittensorValidator } from "extension-core"
+import type { Loadable } from "@talismn/util"
+import { api } from "@ui/api"
+import type { BittensorValidator } from "extension-core"
 import { keyBy, uniq } from "lodash-es"
 import { map, Observable, shareReplay } from "rxjs"
-
-import { api } from "@ui/api"
 
 import { getTokens$ } from "./chaindata"
 import { debugObservable } from "./util/debugObservable"

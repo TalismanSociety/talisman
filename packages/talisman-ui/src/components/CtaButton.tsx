@@ -1,10 +1,10 @@
 import { classNames } from "@talismn/util"
 import {
-  DetailedHTMLProps,
-  FC,
-  MouseEventHandler,
-  ReactNode,
-  SVGProps,
+  type DetailedHTMLProps,
+  type FC,
+  type MouseEventHandler,
+  type ReactNode,
+  type SVGProps,
   useCallback,
   useMemo,
 } from "react"
@@ -79,16 +79,16 @@ export const CtaButton: FC<CtaButton> = ({
       type="button"
       {...props}
       className={classNames(
-        "bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex w-full cursor-pointer items-center gap-8 rounded-sm bg-grey-850 px-8 text-body-disabled enabled:hover:bg-grey-800 enabled:hover:text-body disabled:cursor-not-allowed disabled:opacity-50",
         containerClassName,
         className
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className={classNames("text-body shrink-0", iconLeftClassName)} />}
+      {IconLeft && <IconLeft className={classNames("shrink-0 text-body", iconLeftClassName)} />}
       <div className={classNames("flex grow flex-col items-start", contentClassName)}>
         <div className={classNames("text-body", titleClassName)}>{title}</div>
-        <div className={classNames("text-body-secondary text-left", subtitleClassName)}>
+        <div className={classNames("text-left text-body-secondary", subtitleClassName)}>
           {subtitle}
         </div>
       </div>

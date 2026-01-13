@@ -1,13 +1,12 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, Checkbox } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { api } from "@ui/api"
 
 import { AccountIcon } from "../../AccountIcon"
 import { Address } from "../../Address"
@@ -98,7 +97,7 @@ export const ConnectSignetSelectAccounts = () => {
           <button
             type="button"
             key={vault.address}
-            className="bg-grey-850 text-grey-200 enabled:hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left disabled:opacity-50"
+            className="flex h-32 w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-left text-grey-200 enabled:hover:bg-grey-800 disabled:opacity-50"
             onClick={() => handleToggle(vault.address)}
           >
             <AccountIcon

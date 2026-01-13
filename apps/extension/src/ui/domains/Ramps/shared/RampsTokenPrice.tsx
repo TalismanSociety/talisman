@@ -1,8 +1,7 @@
-import { TokenRatesList } from "@talismn/token-rates"
-import { FC, useMemo } from "react"
-
+import type { TokenRatesList } from "@talismn/token-rates"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency, useToken } from "@ui/state"
+import { type FC, useMemo } from "react"
 
 export const RampsTokenPrice: FC<{
   tokenId: string | null | undefined
@@ -21,7 +20,7 @@ export const RampsTokenPrice: FC<{
 
   if (tokenId && isLoading)
     return (
-      <span className="rounded-xs text-body-disabled bg-body-disabled animate-pulse">
+      <span className="animate-pulse rounded-xs bg-body-disabled text-body-disabled">
         1 XXX = XXXX.XX XXX
       </span>
     )

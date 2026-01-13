@@ -1,14 +1,13 @@
-import { ArrowRightIcon } from "@talismn/icons"
-import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "extension-shared"
-import { FC, ReactNode, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Link, useNavigate } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
 import { Spacer } from "@talisman/components/Spacer"
+import { ArrowRightIcon } from "@talismn/icons"
 import { signet } from "@ui/util/signet"
+import { SIGNET_APP_URL, SIGNET_LANDING_URL } from "extension-shared"
+import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Link, useNavigate } from "react-router-dom"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { useSignetConnect } from "./context"
 
@@ -20,7 +19,7 @@ const Step: FC<{ step: ReactNode; title: ReactNode; children: ReactNode }> = ({
   <div className="text-body-secondary leading-paragraph">
     <div className="flex w-full">
       <div className="w-20 shrink-0 text-center">{step}</div>
-      <div className="text-body grow">{title}</div>
+      <div className="grow text-body">{title}</div>
     </div>
     <div className="mt-2 pl-20 text-sm">{children}</div>
   </div>

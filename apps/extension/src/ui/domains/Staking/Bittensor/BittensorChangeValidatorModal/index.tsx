@@ -1,9 +1,8 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { cn } from "@talismn/util"
+import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
 import { Modal } from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "../../shared/ModalContent"
 import { useBittensorChangeValidatorModal } from "../hooks/useBittensorChangeValidatorModal"
@@ -19,7 +18,7 @@ export const BittensorChangeValidatorModal = () => {
         id={STAKING_MODAL_CONTENT_CONTAINER_ID}
         className={cn(
           "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
-          !IS_POPUP && "border-grey-850 rounded border"
+          !IS_POPUP && "rounded border border-grey-850"
         )}
       >
         <BittensorChangeValidatorWizardProvider>

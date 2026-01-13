@@ -1,13 +1,17 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
 import { hexToNumber, u8aToString } from "@polkadot/util"
-import { SubPsp22Token, subPsp22TokenId, SubPsp22TokenSchema } from "@talismn/chaindata-provider"
+import {
+  type SubPsp22Token,
+  SubPsp22TokenSchema,
+  subPsp22TokenId,
+} from "@talismn/chaindata-provider"
 import { values } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { MODULE_TYPE, TokenConfig } from "./config"
 import { makeContractCaller } from "./util"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
@@ -95,7 +99,6 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${networkId}`,
         (error as Error)?.message ?? error
       )
-      continue
     }
   }
 

@@ -1,7 +1,6 @@
+import { useSetting } from "@ui/state"
 import { useCallback, useMemo } from "react"
 import z from "zod/v4"
-
-import { useSetting } from "@ui/state"
 
 import { DEFAULT_USER_MAX_SLIPPAGE } from "../utils/constants"
 

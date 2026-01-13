@@ -8,13 +8,8 @@ import {
   SendIcon,
 } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
-import { FC, MouseEventHandler, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { api } from "@ui/api"
-import { AnalyticsEventName, AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsEventName, type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
@@ -26,6 +21,10 @@ import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useAccounts, useFeatureFlag, useSelectedCurrency, useSetting } from "@ui/state"
 import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
+import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
+import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type Props = {
   className?: string
@@ -53,12 +52,12 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
 
   return (
     <div className={classNames("flex flex-col items-start justify-between", className)}>
-      <div className="font-inter flex flex-col gap-2">
-        <div className="text-body flex gap-4 text-xs">
+      <div className="flex flex-col gap-2 font-inter">
+        <div className="flex gap-4 text-body text-xs">
           <div className="leading-10 tracking-[0.06px]">{t("Total Portfolio")}</div>
           <button
             className={classNames(
-              "focus:text-body text-grey-200 hover:text-body pointer-events-auto opacity-0 transition-opacity",
+              "pointer-events-auto text-grey-200 opacity-0 transition-opacity hover:text-body focus:text-body",
               (hideBalances || mouseOver) && "opacity-100"
             )}
             onClick={toggleHideBalance}
@@ -69,7 +68,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
         <div className="flex w-full max-w-full items-center gap-2">
           <button
             className={classNames(
-              "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full text-center shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
+              "pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
               currencyConfig[currency]?.symbol?.length > 2 && "text-[1rem]"
             )}
@@ -82,7 +81,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
           </button>
           <Fiat
             className={classNames(
-              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[3.2rem] font-bold leading-[3.6rem] tracking-[0.016px]",
+              "overflow-hidden text-ellipsis whitespace-pre pr-10 font-bold font-inter text-[3.2rem] leading-[3.6rem] tracking-[0.016px]",
               disabled && "text-body-secondary"
             )}
             amount={portfolioTotal}
@@ -136,8 +135,8 @@ const Action: FC<ActionProps> = ({
         <button
           type="button"
           className={classNames(
-            "text-body-secondary pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] opacity-90 backdrop-blur-sm",
-            "enabled:hover:text-body enabled:hover:bg-white/10"
+            "pointer-events-auto flex h-10 items-center gap-2 rounded-full bg-white/5 px-3 text-[1rem] text-body-secondary opacity-90 backdrop-blur-sm",
+            "enabled:hover:bg-white/10 enabled:hover:text-body"
           )}
           onClick={handleClick}
           disabled={disabled}
@@ -262,7 +261,7 @@ const SeekBenefitsLink = () => {
     <button
       type="button"
       className={classNames(
-        "text-primary-700 hover:text-primary pointer-events-auto flex items-center gap-2.5 text-[1rem]"
+        "pointer-events-auto flex items-center gap-2.5 text-[1rem] text-primary-700 hover:text-primary"
       )}
       onClick={handleSeekClick}
     >

@@ -28,9 +28,9 @@ import { updateTransactionsRestart } from "../domains/transactions/helpers"
 import { talismanAnalytics } from "../libs/Analytics"
 import { spawnTaskToCreateNewReport } from "../libs/GeneralReport"
 import { ExtensionHandler } from "../libs/Handler"
-import { MessageTypes, RequestType, ResponseType } from "../types"
-import { Port, RequestIdOnly } from "../types/base"
-import { ExtensionStore } from "./stores"
+import type { MessageTypes, RequestType, ResponseType } from "../types"
+import type { Port, RequestIdOnly } from "../types/base"
+import type { ExtensionStore } from "./stores"
 import { unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {

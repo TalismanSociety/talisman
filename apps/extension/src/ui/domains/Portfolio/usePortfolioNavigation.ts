@@ -1,10 +1,9 @@
+import { provideContext } from "@talisman/util/provideContext"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
+import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import type { Account, Tree, TreeAccount, TreeFolder, TreeItem } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router-dom"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 
 const usePortfolioNavigationProvider = () => {
   const { accounts: allAccounts, portfolioAccounts, catalog } = usePortfolioAccounts()

@@ -1,4 +1,4 @@
-import { parseMetadataRpc, UnifiedMetadata } from "@talismn/scale"
+import { parseMetadataRpc, type UnifiedMetadata } from "@talismn/scale"
 
 export const hasStorageItem = (
   metadata: UnifiedMetadata,

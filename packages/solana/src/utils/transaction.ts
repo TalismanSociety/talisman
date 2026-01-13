@@ -1,4 +1,4 @@
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { base58, ed25519 } from "@talismn/crypto"
 
 export const isVersionedTransaction = (

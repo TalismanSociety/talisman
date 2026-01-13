@@ -1,12 +1,12 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
 
-import { IBalance } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { BalanceFetchError } from "../shared"
+import type { BalanceFetchError } from "../shared"
 import { getBalanceDefs } from "../shared/types"
-import { MODULE_TYPE } from "./config"
+import type { MODULE_TYPE } from "./config"
 import { makeContractCaller } from "./util"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({

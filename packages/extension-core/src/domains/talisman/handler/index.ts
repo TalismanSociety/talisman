@@ -1,14 +1,13 @@
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isTalismanUrl } from "extension-shared"
 import { map } from "rxjs"
-
-import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
-import type { Port } from "../../../types/base"
-import { TabStore } from "../../../handlers/stores"
+import type { TabStore } from "../../../handlers/stores"
 import { genericSubscription, unsubscribe } from "../../../handlers/subscriptions"
 import { TabsHandler } from "../../../libs/Handler"
 import { windowManager } from "../../../libs/WindowManager"
 import { chaindataProvider } from "../../../rpcs/chaindata"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../../types"
+import type { Port } from "../../../types/base"
 import TalismanRpcHandler from "./rpc"
 
 /**
@@ -94,9 +93,7 @@ export default class TalismanHandler extends TabsHandler {
         for (const handler of this.#subHandlers) {
           try {
             return handler.handle(id, type, request, port, url)
-          } catch {
-            continue
-          }
+          } catch {}
         }
         throw new Error(`Unable to handle message of type ${type}`)
     }

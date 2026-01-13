@@ -1,11 +1,10 @@
 import { TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useAppState } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import { appStore } from "extension-core"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { useAppState } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
 
 export const MigrationProgress = () => {
   const { t } = useTranslation()
@@ -20,18 +19,18 @@ export const MigrationProgress = () => {
         !IS_POPUP && "flex h-screen w-screen flex-col items-center justify-center"
       )}
     >
-      <div className="animate-fade-in-slow flex h-[60rem] w-[40rem] flex-col items-center justify-between overflow-hidden p-8">
+      <div className="flex h-[60rem] w-[40rem] animate-fade-in-slow flex-col items-center justify-between overflow-hidden p-8">
         <div className="flex h-[26.8rem] flex-col items-center justify-center gap-24 pt-4">
           <TalismanHandIcon
             className={classNames("h-48 w-48", !migration.errors?.length && "animate-pulse")}
           />
-          <div className={classNames("text-lg font-bold")}>
+          <div className={classNames("font-bold text-lg")}>
             {migration.errors?.length ? t("Talisman update failed") : t("Talisman update")}
           </div>
         </div>
         <div className="flex h-[26.8rem] max-h-[26.8rem] w-full flex-col items-center justify-center gap-12">
           {migration.errors?.length ? (
-            <div className="leading-paragraph flex h-full w-full flex-col gap-8">
+            <div className="flex h-full w-full flex-col gap-8 leading-paragraph">
               <div className="text-body-secondary">
                 <Trans
                   t={t}
@@ -46,7 +45,7 @@ export const MigrationProgress = () => {
                   }}
                 ></Trans>
               </div>
-              <ul className="text-alert-warn grow overflow-scroll pl-8">
+              <ul className="grow overflow-scroll pl-8 text-alert-warn">
                 {migration.errors.map((err, idx) => (
                   <li key={idx} className="list-disc">
                     {migration.name}: {String(err)}
@@ -64,7 +63,7 @@ export const MigrationProgress = () => {
             </div>
           ) : migration.acknowledgeRequest ? (
             <div className="flex grow flex-col">
-              <p className="text-body-secondary mt-4 grow text-center text-base">
+              <p className="mt-4 grow text-center text-base text-body-secondary">
                 {migration.acknowledgeRequest}
               </p>
               <Button
@@ -77,7 +76,7 @@ export const MigrationProgress = () => {
               </Button>
             </div>
           ) : (
-            <p className="text-body-secondary mt-4 text-center text-base">
+            <p className="mt-4 text-center text-base text-body-secondary">
               <span>{t("Progress:")}</span>{" "}
               <span className="tabular-nums">{(100 * (migration.progress ?? 0)).toFixed(0)}%</span>
             </p>

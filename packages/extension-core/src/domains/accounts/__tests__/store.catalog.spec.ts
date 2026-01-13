@@ -1,13 +1,13 @@
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 
 import {
   addAccount,
   folderFilter,
-  RequestAccountsCatalogAction,
+  type RequestAccountsCatalogAction,
   runActionsOnTrees,
-  Tree,
-  TreeAccount,
-  TreeFolder,
+  type Tree,
+  type TreeAccount,
+  type TreeFolder,
 } from "../helpers.catalog"
 import { accountsCatalogStore } from "../store.catalog"
 

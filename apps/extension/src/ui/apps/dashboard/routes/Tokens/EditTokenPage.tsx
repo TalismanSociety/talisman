@@ -1,5 +1,9 @@
 /* eslint-disable react/no-children-prop */
 import * as Sentry from "@sentry/browser"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   getGithubTokenLogoUrlByCoingeckoId,
   isTokenCustom,
@@ -7,14 +11,23 @@ import {
   isTokenKnown,
   isTokenNeedExistentialDeposit,
   isTokenSubForeignAssets,
-  Token,
+  type Token,
   TokenBaseSchema,
 } from "@talismn/chaindata-provider"
 import { CopyIcon, ExternalLinkIcon, RotateCcwIcon, SaveIcon } from "@talismn/icons"
 import { useForm } from "@tanstack/react-form"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useActivableToken } from "@ui/hooks/useActivableToken"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAnyNetwork, useToken } from "@ui/state"
 import { log } from "extension-shared"
 import { dump as convertToYaml } from "js-yaml"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import {
@@ -30,20 +43,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { TokenTypePill } from "@ui/domains/Asset/TokenTypePill"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useActivableToken } from "@ui/hooks/useActivableToken"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAnyNetwork, useToken } from "@ui/state"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -546,7 +545,7 @@ const ConfirmRemove: FC<{
       title={isTokenKnown(saved) ? t("Reset Token") : t("Remove Token")}
       onClose={onClose}
     >
-      <div className="text-body-secondary mt-4 space-y-16">
+      <div className="mt-4 space-y-16 text-body-secondary">
         <div className="text-base">
           {isTokenKnown(saved) ? (
             <Trans t={t}>

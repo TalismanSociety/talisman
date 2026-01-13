@@ -1,13 +1,12 @@
 import { Balances } from "@talismn/balances"
-import md5 from "blueimp-md5"
-import { AddressesAndTokens, BalanceSubscriptionResponse } from "extension-core"
-import { useCallback, useMemo, useState } from "react"
-import { useDebounce } from "react-use"
-import { BehaviorSubject } from "rxjs"
-
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useBalancesHydrate } from "@ui/state"
+import md5 from "blueimp-md5"
+import type { AddressesAndTokens, BalanceSubscriptionResponse } from "extension-core"
+import { useCallback, useMemo, useState } from "react"
+import { useDebounce } from "react-use"
+import type { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE: BalanceSubscriptionResponse = {
   status: "initialising",

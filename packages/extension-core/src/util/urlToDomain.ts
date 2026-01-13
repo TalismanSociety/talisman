@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 export enum Errors {
   InvalidURL = "Invalid URL",

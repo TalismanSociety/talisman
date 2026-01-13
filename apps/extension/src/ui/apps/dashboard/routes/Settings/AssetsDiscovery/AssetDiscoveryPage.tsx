@@ -1,12 +1,15 @@
 import { bind } from "@react-rxjs/core"
-import { Address, BalanceFormatter } from "@talismn/balances"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { type Address, BalanceFormatter } from "@talismn/balances"
 import {
-  EthNetworkId,
+  type EthNetworkId,
   getBlockExplorerUrls,
   isTokenInTypes,
-  Network,
-  Token,
-  TokenId,
+  type Network,
+  type Token,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import {
   ChevronDownIcon,
@@ -18,38 +21,8 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames, isNotNil, isTruthy } from "@talismn/util"
-import {
-  Account,
-  activeNetworksStore,
-  activeTokensStore,
-  DiscoveredBalance,
-  getAccountGenesisHash,
-  isNetworkActive,
-  isTokenActive,
-} from "extension-core"
-import { ChangeEventHandler, FC, ReactNode, useCallback, useMemo, useRef } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { useIntersection } from "react-use"
-import { BehaviorSubject } from "rxjs"
-import {
-  Button,
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  Toggle,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "talisman-ui"
-import urlJoin from "url-join"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountsStack } from "@ui/domains/Account/AccountIconsStack"
@@ -74,6 +47,39 @@ import {
   useTokens,
   useTokensMap,
 } from "@ui/state"
+import {
+  type Account,
+  activeNetworksStore,
+  activeTokensStore,
+  type DiscoveredBalance,
+  getAccountGenesisHash,
+  isNetworkActive,
+  isTokenActive,
+} from "extension-core"
+import {
+  type ChangeEventHandler,
+  type FC,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { useIntersection } from "react-use"
+import { BehaviorSubject } from "rxjs"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "talisman-ui"
+import urlJoin from "url-join"
 
 import {
   useAssetDiscoveryFetchTokenRates,
@@ -102,9 +108,9 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
   )
   const { t } = useTranslation()
   return (
-    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+    <div className="flex flex-col gap-2 p-2 text-left text-body-disabled text-xs">
       <div>{t("Accounts")}</div>
-      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      <div className="mb-2 h-0.5 w-full bg-body-disabled/50" />
       {accounts.map((account) => (
         <div
           key={account.address}
@@ -115,7 +121,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
             address={account.address}
             genesisHash={getAccountGenesisHash(account)}
           />
-          <div className="text-body grow truncate">{account.name}</div>
+          <div className="grow truncate text-body">{account.name}</div>
           <div>{shortenAddress(account.address)}</div>
         </div>
       ))}
@@ -139,16 +145,16 @@ const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
   )
 
   return (
-    <div className="text-body-disabled flex flex-col gap-2 p-2 text-left text-xs">
+    <div className="flex flex-col gap-2 p-2 text-left text-body-disabled text-xs">
       <div>{t("Networks")}</div>
-      <div className="bg-body-disabled/50 mb-2 h-0.5 w-full" />
+      <div className="mb-2 h-0.5 w-full bg-body-disabled/50" />
       {networksWIthTokens.slice(0, 5).map(([network, tokens]) => (
         <div
           key={network.id}
           className="flex w-[30rem] items-center gap-2 overflow-hidden whitespace-nowrap text-sm"
         >
           <NetworkLogo networkId={network.id} />
-          <div className="text-body grow truncate">{network.name}</div>
+          <div className="grow truncate text-body">{network.name}</div>
           <div>{t("{{count}} tokens", { count: tokens })}</div>
         </div>
       ))}
@@ -257,7 +263,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
   if (!token || !evmNetwork) return null
 
   return (
-    <div className="bg-grey-900 grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm px-8">
+    <div className="grid h-32 grid-cols-[1fr_1fr_1fr_10rem] items-center gap-x-8 rounded-sm bg-grey-900 px-8">
       <div className="flex items-center gap-6">
         <TokenLogo tokenId={tokenId} className="shrink-0 text-xl" />
         <div className="flex flex-col gap-1">
@@ -308,7 +314,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
         <Toggle checked={isActive} onChange={handleToggleChange} />
         {isTokenInTypes(token, ["evm-erc20", "evm-uniswapv2"]) || coingeckoUrl ? (
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="hover:text-body bg-grey-800 text-body-secondary hover:bg-grey-700 shrink-0 rounded-sm p-4">
+            <ContextMenuTrigger className="shrink-0 rounded-sm bg-grey-800 p-4 text-body-secondary hover:bg-grey-700 hover:text-body">
               <MoreHorizontalIcon />
             </ContextMenuTrigger>
             <ContextMenuContent>
@@ -364,8 +370,8 @@ const AssetTable: FC = () => {
   if (!balances.length || isInitializing) return null
 
   return (
-    <div className="text-body flex w-full min-w-[45rem] flex-col gap-4 text-left text-base">
-      <div className="text-body-disabled grid grid-cols-[1fr_1fr_1fr_10rem] gap-x-8 px-8 text-sm font-normal">
+    <div className="flex w-full min-w-[45rem] flex-col gap-4 text-left text-base text-body">
+      <div className="grid grid-cols-[1fr_1fr_1fr_10rem] gap-x-8 px-8 font-normal text-body-disabled text-sm">
         <div>{t("Asset")}</div>
         <div>{t("Network")}</div>
         <div className="text-right">{t("Balance")}</div>
@@ -421,7 +427,7 @@ const Header: FC = () => {
   }, [])
 
   return (
-    <div className="bg-grey-850 flex h-[8.6rem] items-center gap-8 rounded-sm px-8">
+    <div className="flex h-[8.6rem] items-center gap-8 rounded-sm bg-grey-850 px-8">
       <DiamondIcon
         className={classNames(
           "text-lg",
@@ -455,10 +461,10 @@ const Header: FC = () => {
               </div>
               <div className="text-primary">{effectivePercent}%</div>
             </div>
-            <div className="bg-grey-800 relative flex h-4 overflow-hidden rounded-lg">
+            <div className="relative flex h-4 overflow-hidden rounded-lg bg-grey-800">
               <div
                 className={classNames(
-                  "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
+                  "absolute top-0 left-0 h-4 w-full rounded-lg bg-primary-500",
                   effectivePercent && "transition-transform duration-300 ease-out" // no animation on restart
                 )}
                 style={{
@@ -489,7 +495,7 @@ const Header: FC = () => {
         <ContextMenu placement="bottom-end">
           <ContextMenuTrigger
             className={classNames(
-              "bg-primary flex h-16 items-center gap-2 rounded-full border border-transparent px-4 text-xs text-black",
+              "flex h-16 items-center gap-2 rounded-full border border-transparent bg-primary px-4 text-black text-xs",
               "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent"
             )}
           >
@@ -599,7 +605,7 @@ const ScanInfo: FC = () => {
 
   return (
     <div className="flex h-16 w-full items-center px-8">
-      <div className="text-body-disabled grow">
+      <div className="grow text-body-disabled">
         {!isInProgress && !!lastScanTimestamp && !!lastScanAccounts.length && (
           <Trans
             t={t}
@@ -646,7 +652,7 @@ const ScanInfo: FC = () => {
 const Notice: FC = () => {
   const { t } = useTranslation()
   return (
-    <div className="bg-grey-800 text-body-secondary flex items-center gap-8 rounded p-8 py-6">
+    <div className="flex items-center gap-8 rounded bg-grey-800 p-8 py-6 text-body-secondary">
       <div>
         <InfoIcon className="text-lg" />
       </div>
@@ -661,6 +667,7 @@ const Notice: FC = () => {
                 href="https://www.coingecko.com/"
                 target="_blank"
                 className="text-grey-200 hover:text-body"
+                rel="noopener"
               ></a>
             ),
             EthereumListsLink: (
@@ -669,6 +676,7 @@ const Notice: FC = () => {
                 href="https://github.com/ethereum-lists/chains"
                 target="_blank"
                 className="text-grey-200 hover:text-body"
+                rel="noopener"
               ></a>
             ),
           }}

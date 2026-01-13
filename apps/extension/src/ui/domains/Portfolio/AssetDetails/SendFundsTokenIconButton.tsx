@@ -1,11 +1,10 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { SendIcon } from "@talismn/icons"
+import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
+import { useToken } from "@ui/state"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
-import { useToken } from "@ui/state"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
@@ -36,7 +35,7 @@ export const SendFundsTokenButton = ({
   if (!canSendFunds)
     return (
       <Tooltip>
-        <TooltipTrigger className="text-body-secondary focus:text-body hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 cursor-default items-center justify-center text-xs opacity-50">
+        <TooltipTrigger className="inline-flex h-9 w-9 cursor-default items-center justify-center rounded-xs text-body-secondary text-xs opacity-50 hover:bg-grey-700 focus:text-body">
           <SendIcon />
         </TooltipTrigger>
         <TooltipContent>{cannotSendFundsReason}</TooltipContent>
@@ -49,7 +48,7 @@ export const SendFundsTokenButton = ({
         <button
           type="button"
           onClick={handleClick}
-          className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xs text-body-secondary text-xs hover:bg-grey-700 hover:text-body focus:bg-grey-700 focus:text-body"
         >
           <SendIcon />
         </button>

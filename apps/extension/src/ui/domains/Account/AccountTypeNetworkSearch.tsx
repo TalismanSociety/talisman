@@ -6,17 +6,16 @@ import {
   ComboboxOptions,
 } from "@headlessui/react"
 import { isNetworkDot } from "@talismn/chaindata-provider"
-import { AccountPlatform } from "@talismn/crypto"
+import type { AccountPlatform } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronUpIcon, CloseIcon, SearchIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
+import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
 import { isNetworkActive } from "extension-core"
 import { startCase } from "lodash-es"
 import { useCallback, useId, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-import { useActiveNetworksState, useNetworks, useNetworksMapById, useTokensMap } from "@ui/state"
-import { useNetworkDisplayNamesMapById, useNetworkDisplayTypesMapById } from "@ui/state/networks"
 
 const DEFAULT_COMBO_BOX_HEADER_ID = "combobox-header"
 
@@ -117,7 +116,7 @@ export function AccountTypeNetworkSearch({
       {({ open }) => (
         <div
           className={classNames(
-            "bg-grey-850 text-body-secondary/50 flex h-24 w-full items-center gap-4 rounded-sm px-8 text-sm",
+            "flex h-24 w-full items-center gap-4 rounded-sm bg-grey-850 px-8 text-body-secondary/50 text-sm",
             open && "rounded-b-none"
           )}
         >
@@ -144,7 +143,7 @@ export function AccountTypeNetworkSearch({
           {selected && (
             <CloseIcon className="cursor-pointer text-base" onClick={() => setSelected(null)} />
           )}
-          <ComboboxOptions className="bg-grey-850 absolute left-0 top-24 z-10 h-[30rem] w-full overflow-scroll rounded-b">
+          <ComboboxOptions className="absolute top-24 left-0 z-10 h-[30rem] w-full overflow-scroll rounded-b bg-grey-850">
             {({ option: network }) =>
               network.id === "combobox-header" ? (
                 <ComboboxOption
@@ -159,12 +158,12 @@ export function AccountTypeNetworkSearch({
               ) : (
                 <ComboboxOption
                   key={network.id}
-                  className="hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800 flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base"
+                  className="flex h-24 w-full cursor-pointer items-center gap-4 px-8 text-base hover:bg-grey-800 focus:bg-grey-800 data-[focus]:bg-grey-800"
                   value={network}
                 >
                   <NetworkLogo networkId={network.id} className="text-md" />
                   <span className="text-white">{network.name}</span>
-                  <span className="text-body-secondary/50 text-base">{network.type}</span>
+                  <span className="text-base text-body-secondary/50">{network.type}</span>
                   <div className="flex-grow" />
                   <span className="text-white">{startCase(getAccountPlatform(network))}</span>
                 </ComboboxOption>

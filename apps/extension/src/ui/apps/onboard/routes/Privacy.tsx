@@ -1,12 +1,11 @@
+import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
+import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { PRIVACY_POLICY_URL } from "extension-shared"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import imgAnalyticsFlower from "@talisman/theme/images/onboard_analytics_flower.png"
-import imgAnalyticsSwitch from "@talisman/theme/images/onboard_analytics_switch.png"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { OnboardDialog } from "../components/OnboardDialog"
 import { useOnboard } from "../context"
@@ -49,8 +48,8 @@ export const PrivacyPage = () => {
 
   return (
     <OnboardLayout withBack analytics={ANALYTICS_PAGE} className="min-h-[55rem] min-w-[60rem]">
-      <img src={imgAnalyticsSwitch} className="fixed left-80 top-80" alt="" />
-      <img src={imgAnalyticsFlower} className="fixed bottom-32 right-10" alt="" />
+      <img src={imgAnalyticsSwitch} className="fixed top-80 left-80" alt="" />
+      <img src={imgAnalyticsFlower} className="fixed right-10 bottom-32" alt="" />
       <OnboardDialog title={t("Manage your privacy")}>
         <Trans t={t}>
           <div className="flex flex-col gap-8">

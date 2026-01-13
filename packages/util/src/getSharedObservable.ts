@@ -1,4 +1,4 @@
-import { Observable, shareReplay } from "rxjs"
+import { type Observable, shareReplay } from "rxjs"
 
 const CACHE = new Map<string, unknown>()
 

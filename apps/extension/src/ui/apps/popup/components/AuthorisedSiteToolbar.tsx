@@ -1,9 +1,8 @@
-import { useMemo } from "react"
-
 import { EvmNetworkSelectPill } from "@ui/domains/Ethereum/EvmNetworkSelectPill"
 import { ConnectedAccountsPill } from "@ui/domains/Site/ConnectedAccountsPill"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useAuthorisedSites } from "@ui/state"
+import { useMemo } from "react"
 
 export const AuthorisedSiteToolbar = () => {
   const currentSite = useCurrentSite()
@@ -17,7 +16,7 @@ export const AuthorisedSiteToolbar = () => {
 
   return (
     <>
-      <div className="absolute left-0 top-0 z-20 flex w-full shrink-0 items-center justify-between gap-4 px-8 pt-8">
+      <div className="absolute top-0 left-0 z-20 flex w-full shrink-0 items-center justify-between gap-4 px-8 pt-8">
         <ConnectedAccountsPill />
         <EvmNetworkSelectPill />
       </div>

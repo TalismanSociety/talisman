@@ -1,17 +1,12 @@
-import { BalanceFormatter, Balances, BalancesResult } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
-import { isAddressEqual } from "@talismn/crypto"
-import { CheckCircleIcon } from "@talismn/icons"
-import { TokenRatesList } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
-import { useVirtualizer } from "@tanstack/react-virtual"
-import { Account, getAccountGenesisHash } from "extension-core"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useOpenCloseStatus } from "talisman-ui"
-
 import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { BalanceFormatter, type Balances, type BalancesResult } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
+import { isAddressEqual } from "@talismn/crypto"
+import { CheckCircleIcon } from "@talismn/icons"
+import type { TokenRatesList } from "@talismn/token-rates"
+import { classNames } from "@talismn/util"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
@@ -19,6 +14,10 @@ import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
+import { type Account, getAccountGenesisHash } from "extension-core"
+import { type FC, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useOpenCloseStatus } from "talisman-ui"
 
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
@@ -84,7 +83,7 @@ export const RampsAccountPicker: FC<{
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
-        <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+        <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
           {
             <AccountsList
               accounts={filteredAccounts}
@@ -138,7 +137,7 @@ const AccountsList: FC<{
 
   if (!accounts?.length)
     return (
-      <div className="text-body-secondary p-12 text-center text-base">
+      <div className="p-12 text-center text-base text-body-secondary">
         {t("No accounts match your search")}
       </div>
     )
@@ -158,7 +157,7 @@ const AccountsList: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -214,7 +213,7 @@ const AccountButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         isSelected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
@@ -228,7 +227,7 @@ const AccountButtonRow: FC<{
         <div className="flex grow flex-col space-y-2 overflow-hidden">
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="truncate">{account.name}</div>
-            <AccountTypeIcon type={account.type} className="text-primary shrink-0" />
+            <AccountTypeIcon type={account.type} className="shrink-0 text-primary" />
           </div>
           <Address
             className="text-body-secondary text-xs"

@@ -1,6 +1,6 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Fragment, ReactNode } from "react"
+import { type FC, Fragment, type ReactNode } from "react"
 
 type BreadcrumbItem = {
   label: ReactNode
@@ -13,7 +13,7 @@ export const Breadcrumb: FC<{
   className?: string
 }> = ({ items, className }) => {
   return (
-    <div className={classNames("text-body-secondary flex items-center gap-1 text-base", className)}>
+    <div className={classNames("flex items-center gap-1 text-base text-body-secondary", className)}>
       {items.map(({ label, onClick, className }, index) => {
         return (
           <Fragment key={index}>
@@ -21,7 +21,7 @@ export const Breadcrumb: FC<{
               <button
                 onClick={onClick}
                 className={classNames(
-                  "bg-grey-900 hover:bg-grey-800 hover:text-grey-300 h-[3.2rem] truncate rounded-sm px-4",
+                  "h-[3.2rem] truncate rounded-sm bg-grey-900 px-4 hover:bg-grey-800 hover:text-grey-300",
                   className
                 )}
               >

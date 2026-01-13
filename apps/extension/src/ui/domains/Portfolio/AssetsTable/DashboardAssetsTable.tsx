@@ -1,11 +1,10 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, useEffect, useMemo, useState } from "react"
+import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useLocation } from "react-router-dom"
-
-import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 import { SeekBenefitsBanner } from "../SeekBenefits/SeekBenefitsBanner"
 import { SeekPresaleBanner } from "../SeekPresale/SeekPresaleBanner"
@@ -19,25 +18,25 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 mt-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        "mt-4 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded bg-grey-850 text-left text-base text-body-secondary",
         className
       )}
     >
       <div>
         <div className="flex h-[6.6rem]">
           <div className="p-8 text-xl">
-            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
+            <div className="h-16 w-16 animate-pulse rounded-full bg-grey-700"></div>
           </div>
           <div className="flex grow flex-col justify-center gap-2">
-            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
+            <div className="h-8 w-20 animate-pulse rounded-xs bg-grey-700"></div>
           </div>
         </div>
       </div>
       <div></div>
       <div>
         <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+          <div className="h-8 w-[10rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-[6rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -59,7 +58,7 @@ const HeaderRow = () => {
   if (!balances.count) return null
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-4 grid h-40 grid-cols-[40%_30%_30%] items-center rounded px-8 text-left text-base">
+    <div className="mb-4 grid h-40 grid-cols-[40%_30%_30%] items-center rounded bg-grey-850 px-8 text-left text-base text-body-secondary">
       <Statistics
         className="h-auto w-auto p-0"
         title={t("Total Value")}
@@ -89,7 +88,7 @@ const NoAssetsFound = () => {
   const { selectedAccount, selectedFolder } = usePortfolioNavigation()
 
   return (
-    <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
+    <div className="mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
       {selectedAccount
         ? t("No assets were found on this account.")
         : selectedFolder
@@ -105,7 +104,7 @@ export const DashboardAssetsTable = () => {
   const location = useLocation()
 
   return (
-    <div key={location.key} className="text-body-secondary min-w-[45rem] text-left text-base">
+    <div key={location.key} className="min-w-[45rem] text-left text-base text-body-secondary">
       <SeekBenefitsBanner className="mb-2" variant="large" />
       <SeekPresaleBanner className="mb-2" variant="large" />
       {!symbolBalances.length && !isInitialising && <NoAssetsFound />}
@@ -148,7 +147,7 @@ const VirtualizedRows: FC<{ symbolBalances: [string, Balances][] }> = ({ symbolB
         {virtualizer.getVirtualItems().map((item) => (
           <div
             key={item.key}
-            className="absolute left-0 top-0 w-full"
+            className="absolute top-0 left-0 w-full"
             style={{
               height: `${item.size}px`,
               transform: `translateY(${item.start}px)`,

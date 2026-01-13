@@ -1,8 +1,8 @@
 import Color from "color"
-import { animate, AnimationPlaybackControls } from "framer-motion"
+import { type AnimationPlaybackControls, animate } from "framer-motion"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-import { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
+import type { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
 
 export type ParentSize = {
   width: number

@@ -1,4 +1,4 @@
-import { DotNetwork, Network, NetworkPlatform } from "./networks"
+import type { DotNetwork, Network, NetworkPlatform } from "./networks"
 import {
   EvmNativeTokenSchema,
   parseEvmErc20TokenId,
@@ -13,10 +13,10 @@ import {
   parseSubPsp22TokenId,
   parseSubTokensTokenId,
   SubNativeTokenSchema,
-  Token,
-  TokenId,
-  TokenIdSpecs,
-  TokenType,
+  type Token,
+  type TokenId,
+  type TokenIdSpecs,
+  type TokenType,
 } from "./tokens"
 import { parseSolNativeTokenId, SolNativeTokenSchema } from "./tokens/SolNativeToken"
 

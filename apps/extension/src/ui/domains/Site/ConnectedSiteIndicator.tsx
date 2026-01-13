@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 
-import { SiteConnectionStatus } from "./types"
+import type { SiteConnectionStatus } from "./types"
 
 export const ConnectedSiteIndicator: FC<{
   status: SiteConnectionStatus

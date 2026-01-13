@@ -1,15 +1,21 @@
 /* eslint-disable react/no-children-prop */
 
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
 import {
-  AccountPlatform,
+  type AccountPlatform,
   addressEncodingFromCurve,
   addressFromPublicKey,
   base64,
   getPublicKeyFromSecret,
-  KeypairCurve,
+  type KeypairCurve,
   parseSecretKey,
 } from "@talismn/crypto"
 import { useField, useForm } from "@tanstack/react-form"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { useAccounts } from "@ui/state"
 import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -22,16 +28,9 @@ import {
 } from "talisman-ui"
 import { z } from "zod/v4"
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { useAccounts } from "@ui/state"
-
 import { AccountPlatformDropdown } from "../AccountPlatformDropdown"
 import { BackToAddAccountButton } from "./BackToAddAccountButton"
-import { AccountAddPageProps } from "./types"
+import type { AccountAddPageProps } from "./types"
 
 const SUPPORTED_ACCOUNT_PLATFORMS: AccountPlatform[] = ["ethereum", "solana"]
 

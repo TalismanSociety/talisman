@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { ButtonHTMLAttributes, forwardRef } from "react"
+import { type ButtonHTMLAttributes, forwardRef } from "react"
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ref">
 
@@ -8,7 +8,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     <button
       ref={ref}
       className={classNames(
-        "text-body-secondary enabled:hover:text-body inline-block shrink-0 p-0 text-lg disabled:opacity-50",
+        "inline-block shrink-0 p-0 text-body-secondary text-lg enabled:hover:text-body disabled:opacity-50",
         className
       )}
       type={type}

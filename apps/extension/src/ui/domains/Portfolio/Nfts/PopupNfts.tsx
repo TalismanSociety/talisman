@@ -1,10 +1,5 @@
 import { StarIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
-import { NftCollection, NftData } from "extension-core"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import {
@@ -14,6 +9,10 @@ import {
   useNfts,
   useSetting,
 } from "@ui/state"
+import type { NftCollection, NftData } from "extension-core"
+import { type FC, useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useIntersection } from "react-use"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -38,7 +37,7 @@ const NoNftFound = () => {
         : t("No NFTs found")
   }, [selectedAccount, selectedFolder, status, t])
 
-  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+  return <div className="rounded bg-field px-8 py-36 text-center text-body-secondary">{msg}</div>
 }
 
 export const PopupNfts = () => {
@@ -112,7 +111,7 @@ const NftCollectionRowInner: FC<{
     <button
       type="button"
       onClick={handleClick}
-      className="bg-grey-900 hover:bg-grey-800 flex h-32 w-full items-center gap-8 rounded-sm px-8 text-left"
+      className="flex h-32 w-full items-center gap-8 rounded-sm bg-grey-900 px-8 text-left hover:bg-grey-800"
     >
       <div className="flex grow items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
@@ -145,17 +144,17 @@ const NftCollectionRowInner: FC<{
 }
 
 const NftCollectionRowSkeleton = () => (
-  <div className="bg-grey-900 flex h-32 items-center justify-between gap-8 rounded-sm px-8">
+  <div className="flex h-32 items-center justify-between gap-8 rounded-sm bg-grey-900 px-8">
     <div className="flex items-center gap-6">
-      <div className="bg-grey-800 animated-pulse size-16 rounded-sm"></div>
+      <div className="animated-pulse size-16 rounded-sm bg-grey-800"></div>
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full gap-2 overflow-hidden text-base">
-          <span className="text-grey-800 bg-grey-800 animate-pulse truncate rounded-sm font-bold">
+          <span className="animate-pulse truncate rounded-sm bg-grey-800 font-bold text-grey-800">
             AAAAAAAAAAA AAAA
           </span>
         </div>
         <div className="flex w-full gap-2 overflow-hidden text-base">
-          <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm text-sm">
+          <span className="animate-pulse rounded-sm bg-grey-800 text-grey-800 text-sm">
             NNNNNNNNNNN
           </span>
         </div>
@@ -163,7 +162,7 @@ const NftCollectionRowSkeleton = () => (
     </div>
 
     <div className="text-right">
-      <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm">1 NFT</span>
+      <span className="animate-pulse rounded-sm bg-grey-800 text-grey-800">1 NFT</span>
     </div>
   </div>
 )
@@ -262,7 +261,7 @@ const NftCollectionTile: FC<{
 
 const NftCollectionTileSkeleton = () => (
   <div className="w-[16.7rem]">
-    <div className="bg-grey-800 size-[16.7rem] animate-pulse rounded-sm"></div>
+    <div className="size-[16.7rem] animate-pulse rounded-sm bg-grey-800"></div>
   </div>
 )
 

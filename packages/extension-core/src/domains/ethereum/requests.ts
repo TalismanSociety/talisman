@@ -1,13 +1,12 @@
-import { EvmErc20Token, EvmNativeToken, Network } from "@talismn/chaindata-provider"
-
-import type { Port } from "../../types/base"
+import type { EvmErc20Token, EvmNativeToken, Network } from "@talismn/chaindata-provider"
 import { requestStore } from "../../libs/requests/store"
+import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import {
   ETH_NETWORK_ADD_PREFIX,
   WATCH_ASSET_PREFIX,
-  WatchAssetBase,
-  WatchAssetRequestIdOnly,
+  type WatchAssetBase,
+  type WatchAssetRequestIdOnly,
 } from "./types"
 
 class AddNetworkError extends Error {}

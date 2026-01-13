@@ -1,4 +1,4 @@
-import { Balances, IBalance } from "@talismn/balances"
+import { Balances, type IBalance } from "@talismn/balances"
 import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"
 import { log } from "extension-shared"

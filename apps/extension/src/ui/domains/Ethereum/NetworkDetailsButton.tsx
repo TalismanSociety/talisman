@@ -1,10 +1,9 @@
-import { Network } from "@talismn/chaindata-provider"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import type { Network } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useMemo } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, PillButton } from "talisman-ui"
-
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 import { ViewDetailsField } from "../Sign/ViewDetails/ViewDetailsField"
 
@@ -28,9 +27,9 @@ const NetworkDetailsDrawer: FC<{
 
   return (
     <Drawer containerId="main" isOpen={isOpen} onDismiss={onClose} anchor="bottom">
-      <div className="bg-grey-800 text-body-secondary flex max-h-full flex-col rounded-t-xl p-12 text-sm">
+      <div className="flex max-h-full flex-col rounded-t-xl bg-grey-800 p-12 text-body-secondary text-sm">
         <h3 className="text-sm">{title ?? t("Network Details")}</h3>
-        <div className="scrollable scrollable-700 text-body leading-paragraph overflow-y-auto">
+        <div className="scrollable scrollable-700 overflow-y-auto text-body leading-paragraph">
           <ViewDetailsField label={t("Network Name")}>{name}</ViewDetailsField>
           <ViewDetailsField label={t("RPC URL")}>{rpcs}</ViewDetailsField>
           <ViewDetailsField label={t("Chain ID")}>{chainId}</ViewDetailsField>
@@ -78,7 +77,7 @@ export const NetworkDetailsLink: FC<{
         type="button"
         onClick={open}
         className={classNames(
-          "text-body-secondary hover:text-grey-300 active:text-body ring-body underline focus-visible:ring-1",
+          "text-body-secondary underline ring-body hover:text-grey-300 focus-visible:ring-1 active:text-body",
           className
         )}
       >

@@ -1,15 +1,14 @@
-import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
 import { assert, hexToNumber, u8aToHex } from "@polkadot/util"
-import { DotNetwork, isNetworkDot, Token } from "@talismn/chaindata-provider"
+import { merkleizeMetadata } from "@polkadot-api/merkleize-metadata"
+import { type DotNetwork, isNetworkDot, type Token } from "@talismn/chaindata-provider"
 import { getScaleApi } from "@talismn/sapi"
 import { decAnyMetadata, unifyMetadata } from "@talismn/scale"
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
-import { SignerPayloadJSON } from "extension-core"
-import { log } from "extension-shared"
-
 import { api } from "@ui/api"
 import { useNetworkByGenesisHash, useToken } from "@ui/state"
 import { getFrontendTypeRegistry } from "@ui/util/getFrontendTypeRegistry"
+import type { SignerPayloadJSON } from "extension-core"
+import { log } from "extension-shared"
 
 export const useSubstratePayloadMetadata = (payload: SignerPayloadJSON | null) => {
   const network = useNetworkByGenesisHash(payload?.genesisHash)

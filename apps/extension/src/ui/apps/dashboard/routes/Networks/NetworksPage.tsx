@@ -1,24 +1,23 @@
 import { bind } from "@react-rxjs/core"
-import { InfoIcon, PlusIcon } from "@talismn/icons"
-import { FC, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation, useNavigate } from "react-router-dom"
-import { combineLatest } from "rxjs"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { Spacer } from "@talisman/components/Spacer"
 import { TogglePill } from "@talisman/components/TogglePill"
+import { InfoIcon, PlusIcon } from "@talismn/icons"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { activeNetworksState$, balancesHydrate$ } from "@ui/state"
+import { type FC, useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate } from "react-router-dom"
+import { combineLatest } from "rxjs"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ANALYTICS_PAGE } from "./analytics"
 import { NetworksList } from "./NetworksList"
-import { PlatformOption, usePlatformOptions } from "./usePlatformOptions"
+import { type PlatformOption, usePlatformOptions } from "./usePlatformOptions"
 
 export const NetworksPage = () => {
   const { t } = useTranslation()

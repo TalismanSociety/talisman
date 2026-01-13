@@ -1,8 +1,7 @@
+import { useNetworksMapById } from "@ui/state"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-
-import { useNetworksMapById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 import { computeSubstrateBalance } from "./computeSubstrateBalance"

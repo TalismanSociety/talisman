@@ -1,9 +1,8 @@
 import { ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
-
-import type { Port, Resolver } from "../types/base"
 import { genericSubscription } from "../handlers/subscriptions"
-import { MessageTypesWithSubscriptions } from "../types"
+import type { MessageTypesWithSubscriptions } from "../types"
+import type { Port, Resolver } from "../types/base"
 
 export type TRespondableRequest<TRequest, TResponse> = Resolver<TResponse> &
   TRequest & {

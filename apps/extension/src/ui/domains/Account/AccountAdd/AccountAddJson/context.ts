@@ -1,19 +1,18 @@
 import { createPair } from "@polkadot/keyring"
-import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
+import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
-import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
-import { Address, Balances } from "@talismn/balances"
-import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { Account, LegacyAccountOrigin } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
+import type { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
+import { type Address, Balances } from "@talismn/balances"
+import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
+import type { Account, LegacyAccountOrigin } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {
   id: string

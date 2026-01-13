@@ -1,4 +1,4 @@
-import { getLoadableQuery$, keepAlive, Loadable } from "@talismn/util"
+import { getLoadableQuery$, keepAlive, type Loadable } from "@talismn/util"
 import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { isEqual } from "lodash-es"
 import {
@@ -13,7 +13,7 @@ import {
 } from "rxjs"
 
 import { updateYieldxyzProvidersStore, yieldxyzProvidersStore$ } from "./store.providers"
-import { YieldxyzProvider } from "./types"
+import type { YieldxyzProvider } from "./types"
 
 const KEEP_ALIVE = 3_000
 const REFRESH_INTERVAL = 60_000

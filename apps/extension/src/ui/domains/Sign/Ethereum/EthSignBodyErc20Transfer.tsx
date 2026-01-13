@@ -1,11 +1,10 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { EvmAddress } from "extension-core"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
+import type { EvmAddress } from "extension-core"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"

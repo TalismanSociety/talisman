@@ -1,19 +1,18 @@
+import { CodeBlock } from "@talisman/components/CodeBlock"
+import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { LoaderIcon } from "@talismn/icons"
-import { DecodedCall, ScaleApi } from "@talismn/sapi"
+import type { DecodedCall, ScaleApi } from "@talismn/sapi"
 import { classNames, isAscii } from "@talismn/util"
 import DOMPurify from "dompurify"
-import { SignerPayloadJSON } from "extension-core"
+import type { SignerPayloadJSON } from "extension-core"
 import { log } from "extension-shared"
 import htmlParser from "html-react-parser"
 import { dump as convertToYaml } from "js-yaml"
 import { marked } from "marked"
 import { Binary } from "polkadot-api"
-import { FC, Suspense, useMemo } from "react"
+import { type FC, Suspense, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { CodeBlock } from "@talisman/components/CodeBlock"
-import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 
 import { SubSignDecodedCallSummaryBlock } from "./SubSignDecodedCallSummaryBlock"
 
@@ -24,7 +23,7 @@ export const SubSignDecodedCallContent: FC<{
 }> = ({ decodedCall, sapi, payload }) => (
   <FallbackErrorBoundary fallback={<ErrorFallback decodedCall={decodedCall} sapi={sapi} />}>
     <Suspense fallback={<LoadingShimmer />}>
-      <div className="text-body-secondary flex flex-col gap-4 text-sm">
+      <div className="flex flex-col gap-4 text-body-secondary text-sm">
         {/* Summary can suspense to fetch additional data, and break if a chain uses incompatible types */}
         <SubSignDecodedCallSummaryBlock decodedCall={decodedCall} sapi={sapi} payload={payload} />
         <DefaultView decodedCall={decodedCall} sapi={sapi} />
@@ -37,7 +36,7 @@ const ErrorFallback: FC<{
   decodedCall: DecodedCall
   sapi: ScaleApi
 }> = ({ decodedCall, sapi }) => (
-  <div className="text-body-secondary flex flex-col gap-4 text-sm">
+  <div className="flex flex-col gap-4 text-body-secondary text-sm">
     <DefaultView decodedCall={decodedCall} sapi={sapi} />
   </div>
 )
@@ -78,17 +77,17 @@ const DefaultView: FC<{
     <>
       <div className="flex w-full justify-between gap-8">
         <div>{t("Pallet")}</div>
-        <div className="text-body truncate">{decodedCall.pallet}</div>
+        <div className="truncate text-body">{decodedCall.pallet}</div>
       </div>
       <div className="flex w-full justify-between gap-8">
         <div>{t("Method")}</div>
-        <div className="text-body truncate">{decodedCall.method}</div>
+        <div className="truncate text-body">{decodedCall.method}</div>
       </div>
       {!!yamlArgs && (
         <>
           <div>{t("Arguments")}</div>
           <div>
-            <CodeBlock code={yamlArgs} className="bg-grey-850 rounded text-sm" />
+            <CodeBlock code={yamlArgs} className="rounded bg-grey-850 text-sm" />
           </div>
         </>
       )}
@@ -97,7 +96,7 @@ const DefaultView: FC<{
           <div className="mt-4">{t("Documentation")}</div>
           <div
             className={classNames(
-              "flex w-full flex-col gap-2 overflow-hidden !text-xs",
+              "!text-xs flex w-full flex-col gap-2 overflow-hidden",
               "[&_code]:text-body [&_em]:text-body [&_h1]:text-xs [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_h5]:text-xs [&_ul]:list-disc [&_ul]:pl-10",
               "[overflow-wrap:anywhere]"
             )}
@@ -114,9 +113,9 @@ const LoadingShimmer = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-body-secondary animate-fade-in flex flex-col items-center gap-2 pt-40 leading-[140%]">
-      <LoaderIcon className="animate-spin-slow h-14 w-14" />
-      <div className="mt-4 text-sm font-bold text-white opacity-70">{t("Analysing request")}</div>
+    <div className="flex animate-fade-in flex-col items-center gap-2 pt-40 text-body-secondary leading-[140%]">
+      <LoaderIcon className="h-14 w-14 animate-spin-slow" />
+      <div className="mt-4 font-bold text-sm text-white opacity-70">{t("Analysing request")}</div>
     </div>
   )
 }

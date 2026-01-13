@@ -1,7 +1,7 @@
-import { map, Observable, startWith } from "rxjs"
+import { map, type Observable, startWith } from "rxjs"
 
-import { Loadable } from "./getLoadable"
-import { getQuery$, QueryResult } from "./getQuery"
+import type { Loadable } from "./getLoadable"
+import { getQuery$, type QueryResult } from "./getQuery"
 
 export type GetLoadableQueryParams<TArgs extends unknown[], TResult> = {
   namespace: string

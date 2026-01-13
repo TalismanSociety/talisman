@@ -1,6 +1,6 @@
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { nfts$, refreshNftMetadata } from "./service"
 import { setFavoriteNft, setHiddenNftCollection } from "./store"
 

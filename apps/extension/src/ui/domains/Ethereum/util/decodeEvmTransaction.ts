@@ -11,9 +11,9 @@ import {
   decodeFunctionData,
   getAbiItem,
   getContract,
+  type PublicClient,
   parseAbi,
-  PublicClient,
-  TransactionRequestBase,
+  type TransactionRequestBase,
 } from "viem"
 
 const MOON_CHAIN_PRECOMPILES = [

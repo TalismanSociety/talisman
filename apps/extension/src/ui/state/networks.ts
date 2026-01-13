@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
-import { DotNetwork, Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
-import { TFunction } from "i18next"
+import type { DotNetwork, Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
+import type { TFunction } from "i18next"
 import { fromPairs, groupBy, toPairs } from "lodash-es"
 import { combineLatest, map, of } from "rxjs"
 

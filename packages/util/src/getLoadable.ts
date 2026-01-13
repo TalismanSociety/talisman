@@ -1,4 +1,4 @@
-import { catchError, from, map, Observable, of, startWith, switchMap, timer } from "rxjs"
+import { catchError, from, map, type Observable, of, startWith, switchMap, timer } from "rxjs"
 
 // Designed to be serializable as it can be sent to the frontend
 type LoadableError = {

@@ -1,5 +1,5 @@
 import type { OperatorFunction } from "rxjs"
-import { Observable, shareReplay, tap } from "rxjs"
+import { type Observable, shareReplay, tap } from "rxjs"
 
 /**
  * An RxJS operator that keeps the source observable alive for a specified duration

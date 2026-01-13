@@ -1,7 +1,7 @@
 import type { IChainConnectorDot } from "@talismn/chain-connectors"
 import {
   getCleanToken,
-  SubDTaoToken,
+  type SubDTaoToken,
   subDTaoTokenId,
   TokenSchema,
 } from "@talismn/chaindata-provider"
@@ -10,15 +10,15 @@ import { isNotNil } from "@talismn/util"
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
-import { AmountWithLabel, IBalance } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { AmountWithLabel, IBalance } from "../../types"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
-import { fetchRpcQueryPack, MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
+import { fetchRpcQueryPack, type MaybeStateKey, type RpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
 import { getScaledAlphaPrice } from "./alphaPrice"
 import { calculatePendingRootClaimable } from "./calculatePendingRootClaimable"
 import { MODULE_TYPE } from "./config"
-import {
+import type {
   GetDynamicInfosResult,
   GetStakeInfosResult,
   SubDTaoBalance,

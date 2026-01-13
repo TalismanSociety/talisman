@@ -1,8 +1,7 @@
-import { EthNetworkId, isTokenEvmErc20 } from "@talismn/chaindata-provider"
-import { EvmAddress } from "extension-core"
-import { useMemo } from "react"
-
+import { type EthNetworkId, isTokenEvmErc20 } from "@talismn/chaindata-provider"
 import { useTokens } from "@ui/state"
+import type { EvmAddress } from "extension-core"
+import { useMemo } from "react"
 
 export const useErc20Token = (
   evmNetworkId: EthNetworkId | null | undefined,

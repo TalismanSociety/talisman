@@ -1,12 +1,11 @@
-import { Balance } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { Balance } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { CheckCircleIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountType } from "extension-core"
-import { useMemo } from "react"
-
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useSelectedCurrency } from "@ui/state"
+import type { AccountType } from "extension-core"
+import { useMemo } from "react"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -63,7 +62,7 @@ export const AccountRow = ({
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className

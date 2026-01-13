@@ -1,9 +1,14 @@
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
-import { Codec, MetadataLookup, parseMetadataRpc, UnifiedMetadata } from "@talismn/scale"
+import {
+  type Codec,
+  type MetadataLookup,
+  parseMetadataRpc,
+  type UnifiedMetadata,
+} from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
-import { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
+import type { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({

@@ -1,4 +1,3 @@
-import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -7,24 +6,26 @@ import {
   subNativeTokenId,
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
+import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { atom, ExtractAtomValue } from "jotai"
+import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import createClient from "openapi-fetch"
 import {
   catchError,
   defer,
   interval,
-  Observable,
+  type Observable,
   of,
   retry,
   startWith,
   switchMap,
   takeWhile,
 } from "rxjs"
-import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
+import { encodeFunctionData, erc20Abi, publicActions, type TransactionRequest } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 import {
   arbitrum,
   arbitrumNova,
@@ -39,36 +40,33 @@ import {
   theta,
   zksync,
 } from "viem/chains"
-
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
-
+import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
+import { Decimal } from "../swaps-port/Decimal"
+import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
+import { vanaMainnet } from "../swaps-port/vana"
+import {
+  type BaseQuote,
+  fromAddressAtom,
+  fromAmountAtom,
+  fromAssetAtom,
+  type GetEstimateGasTxFunction,
+  getTokenIdForSwappableAsset,
+  type QuoteFunction,
+  type SupportedSwapProtocol,
+  type SwapModule,
+  type SwappableAssetBaseType,
+  type SwappableAssetWithDecimals,
+  swapQuoteRefresherAtom,
+  toAddressAtom,
+  toAssetAtom,
+  validateAddress,
+} from "./common.swap-module"
 import type { QuoteFee, QuoteResponse } from "./common.swap-module.ts"
 import type {
   paths as StealthexApi,
   SchemaCurrency as StealthexCurrency,
   SchemaExchange as StealthexExchange,
 } from "./stealthex.api.d.ts"
-import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
-import { Decimal } from "../swaps-port/Decimal"
-import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
-import { vanaMainnet } from "../swaps-port/vana"
-import {
-  BaseQuote,
-  fromAddressAtom,
-  fromAmountAtom,
-  fromAssetAtom,
-  GetEstimateGasTxFunction,
-  getTokenIdForSwappableAsset,
-  QuoteFunction,
-  SupportedSwapProtocol,
-  SwapModule,
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
-  swapQuoteRefresherAtom,
-  toAddressAtom,
-  toAssetAtom,
-  validateAddress,
-} from "./common.swap-module"
 import stealthexLogo from "./stealthex-logo.svg?url"
 
 const apiUrl = "https://stealthex.talisman.xyz"

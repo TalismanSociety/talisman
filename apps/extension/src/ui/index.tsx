@@ -1,18 +1,17 @@
 import "@talisman/theme/styles.css"
 
 import { Subscribe } from "@react-rxjs/core"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ReactNode, StrictMode, Suspense } from "react"
-import { createRoot } from "react-dom/client"
-import { HashRouter } from "react-router-dom"
-import { FontFamily, preloadFonts } from "talisman-ui"
-
 import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBoundaryDatabaseMigration"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanErrorBoundary } from "@talisman/components/TalismanErrorBoundary"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useKeepBackgroundOpen } from "@ui/hooks/useKeepBackgroundOpen"
-import { KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
+import { type KeepWalletUnlockedMode, useKeepWalletUnlocked } from "@ui/hooks/useKeepWalletUnlocked"
+import { type ReactNode, StrictMode, Suspense } from "react"
+import { createRoot } from "react-dom/client"
+import { HashRouter } from "react-router-dom"
+import { type FontFamily, preloadFonts } from "talisman-ui"
 
 import { initSentryFrontend } from "../sentry"
 

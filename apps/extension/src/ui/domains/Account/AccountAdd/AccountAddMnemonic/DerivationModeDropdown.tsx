@@ -1,9 +1,9 @@
 import { classNames } from "@talismn/util"
-import { FC, useEffect, useMemo, useState } from "react"
+import { type FC, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
 
-import { AccountAddDerivationMode } from "./context"
+import type { AccountAddDerivationMode } from "./context"
 
 type DropdownOption = {
   mode: AccountAddDerivationMode

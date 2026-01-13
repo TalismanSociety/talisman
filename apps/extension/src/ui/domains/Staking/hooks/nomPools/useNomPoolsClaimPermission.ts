@@ -1,9 +1,9 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { NomPoolsClaimPermission } from "../../types"
+import type { NomPoolsClaimPermission } from "../../types"
 
 export const useNomPoolsClaimPermission = (
   chainId: DotNetworkId | null | undefined,

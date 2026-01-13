@@ -1,11 +1,10 @@
-import { encodeAnyAddress } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
-
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { encodeAnyAddress } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useNetworkByGenesisHash } from "@ui/state"
+import { type FC, useMemo } from "react"
 
 type AddressProps = {
   address?: string

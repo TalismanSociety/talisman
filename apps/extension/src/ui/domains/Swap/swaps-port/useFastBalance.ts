@@ -1,10 +1,9 @@
-import type { Chain as ViemChain } from "viem/chains"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
-
-import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
+import type { Chain as ViemChain } from "viem/chains"
 import { allEvmChains } from "./allEvmChains"
 import { Decimal } from "./Decimal"
+import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
 import { useSubstrateBalance } from "./useSubstrateBalance"
 
 type EvmProps = {

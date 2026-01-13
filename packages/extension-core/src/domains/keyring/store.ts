@@ -1,16 +1,16 @@
 import { assert } from "@polkadot/util"
-import { KeypairCurve } from "@talismn/crypto"
+import type { KeypairCurve } from "@talismn/crypto"
 import {
-  Account,
-  AddAccountDeriveOptions,
-  AddAccountExternalOptions,
-  AddAccountKeypairOptions,
-  AddMnemonicOptions,
+  type Account,
+  type AddAccountDeriveOptions,
+  type AddAccountExternalOptions,
+  type AddAccountKeypairOptions,
+  type AddMnemonicOptions,
   Keyring,
-  KeyringStorage,
-  Mnemonic,
-  UpdateAccountOptions,
-  UpdateMnemonicOptions,
+  type KeyringStorage,
+  type Mnemonic,
+  type UpdateAccountOptions,
+  type UpdateMnemonicOptions,
 } from "@talismn/keyring"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
@@ -18,7 +18,7 @@ import {
   distinctUntilChanged,
   firstValueFrom,
   map,
-  Observable,
+  type Observable,
   ReplaySubject,
   shareReplay,
 } from "rxjs"

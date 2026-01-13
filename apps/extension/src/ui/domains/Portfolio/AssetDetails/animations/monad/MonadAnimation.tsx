@@ -1,8 +1,7 @@
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import { createPortal } from "react-dom"
-
-import { useScrollContainer } from "@talisman/components/ScrollContainer"
 
 import imgAnimation1 from "./monad-animated-1.gif"
 import imgAnimation2 from "./monad-animated-2.gif"

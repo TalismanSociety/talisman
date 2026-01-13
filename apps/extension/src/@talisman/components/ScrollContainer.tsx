@@ -1,7 +1,6 @@
-import { classNames } from "@talismn/util"
-import { forwardRef, RefObject, useEffect, useMemo, useRef, useState } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
+import { classNames } from "@talismn/util"
+import { forwardRef, type RefObject, useEffect, useMemo, useRef, useState } from "react"
 
 type ScrollContainerProps = {
   className?: string
@@ -73,7 +72,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
         </div>
         <div
           className={classNames(
-            "pointer-events-none absolute left-0 top-0 h-12 w-full bg-gradient-to-b from-black to-transparent",
+            "pointer-events-none absolute top-0 left-0 h-12 w-full bg-gradient-to-b from-black to-transparent",
             more.top ? "opacity-100" : "opacity-0"
           )}
         ></div>

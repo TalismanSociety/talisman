@@ -1,8 +1,7 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
-import { useCallback } from "react"
-
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import type { TokenId } from "@talismn/chaindata-provider"
+import type { Address } from "extension-core"
+import { useCallback } from "react"
 
 import { useResetNomPoolUnbondWizard } from "./useUnbondWizard"
 

@@ -1,19 +1,25 @@
+import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BalanceFormatter } from "@talismn/balances"
 import { CopyIcon, FileSearchIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
-import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
-import { formatEther, formatGwei } from "viem"
-
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { useFeePriorityOptionsUI } from "@ui/domains/Ethereum/GasSettings/common"
 import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useToken, useTokenRates } from "@ui/state"
+import {
+  type FC,
+  type PropsWithChildren,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
+import { formatEther, formatGwei } from "viem"
 
 import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
@@ -21,7 +27,7 @@ import { ViewDetailsAddress } from "./ViewDetailsAddress"
 import { ViewDetailsField } from "./ViewDetailsField"
 
 const ViewDetailsGrid: FC<PropsWithChildren> = ({ children }) => (
-  <div className="grid-cols-keyvalue grid gap-x-8 whitespace-nowrap">{children}</div>
+  <div className="grid grid-cols-keyvalue gap-x-8 whitespace-nowrap">{children}</div>
 )
 
 const ViewDetailsGridRow: FC<{ left: ReactNode; right: ReactNode }> = ({ left, right }) => (
@@ -123,7 +129,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   if (!request) return null
 
   return (
-    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
       <div className="scrollable scrollable-700 flex-grow overflow-y-auto pr-4 text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Details")}</div>
         {!!decodedTx?.isContractCall && (
@@ -314,7 +320,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
               <button
                 type="button"
                 onClick={handleCopyByteCode}
-                className="text-body-secondary text-left hover:text-white"
+                className="text-left text-body-secondary hover:text-white"
               >
                 <CopyIcon className="inline transition-none" /> {t("Copy byte code")}
               </button>
@@ -322,7 +328,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           >
             <Message
               rows={6}
-              className="bg-grey-800 w-full rounded-sm"
+              className="w-full rounded-sm bg-grey-800"
               text={request.data?.toString()}
             />
           </ViewDetailsField>
@@ -345,7 +351,7 @@ export const ViewDetailsEth = () => {
       <button
         type="button"
         onClick={open}
-        className="text-body-disabled hover:text-body-secondary flex items-center gap-2"
+        className="flex items-center gap-2 text-body-disabled hover:text-body-secondary"
       >
         <FileSearchIcon className="text-base" />
         <span className="text-xs">{t("View Details")}</span>

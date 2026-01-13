@@ -1,12 +1,7 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { ChevronDownIcon, ChevronRightIcon } from "@talismn/icons"
-import { classNames, cn, isNotNil, LoadableStatus } from "@talismn/util"
-import { isNil, toPairs, uniq } from "lodash-es"
-import { FC, Fragment, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
-
+import { classNames, cn, isNotNil, type LoadableStatus } from "@talismn/util"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
@@ -18,9 +13,13 @@ import {
   usePortfolioGlobalData,
   useTokensMap,
   useYieldxyzPositionsEnhanced,
-  YieldxyzPositionEnhanced,
+  type YieldxyzPositionEnhanced,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import { isNil, toPairs, uniq } from "lodash-es"
+import { type FC, Fragment, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useOpenClose } from "talisman-ui"
 
 import { AccountDisplay } from "../shared/AccountDisplay"
 import { YieldxyzProviderLogo } from "../yieldxyz/components/YieldxyzProviderLogo"
@@ -37,7 +36,7 @@ const YieldPositionRow: FC<{
     <button
       type="button"
       className={cn(
-        "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
+        "flex h-28 w-full items-center gap-6 px-8 text-sm hover:bg-grey-750",
         IS_POPUP && "gap-4 px-6 text-xs"
       )}
       onClick={() =>
@@ -49,7 +48,7 @@ const YieldPositionRow: FC<{
       <YieldxyzProviderLogo providerId={position.product.providerId} className="size-16" />
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden text-left">
         <div className="flex w-full items-center justify-between gap-4 overflow-hidden">
-          <div className="text-body h-[1.8rem] w-full truncate">
+          <div className="h-[1.8rem] w-full truncate text-body">
             {position.product.metadata.name}{" "}
             <EarnTypeBadge className={cn("shrink-0", IS_POPUP && "hidden")}>
               {position.product.mechanics?.type}
@@ -59,7 +58,7 @@ const YieldPositionRow: FC<{
             <TokensList position={position} />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-4 overflow-hidden">
+        <div className="flex w-full items-center justify-between gap-4 overflow-hidden text-body-secondary">
           <div className="flex items-center gap-3 truncate">
             <AccountDisplay
               address={position.address}
@@ -95,7 +94,7 @@ const TokensList: FC<{ position: YieldxyzPositionEnhanced; className?: string }>
 
   return (
     <div
-      className={cn("text-body flex w-full shrink-0 items-center truncate font-bold", className)}
+      className={cn("flex w-full shrink-0 items-center truncate font-bold text-body", className)}
     >
       {tokenIds.map((tokenId, i, arr) => (
         <Fragment key={tokenId}>
@@ -119,20 +118,20 @@ const TokenRow: FC<{
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <div className="bg-grey-900 w-full overflow-hidden rounded">
+    <div className="w-full overflow-hidden rounded bg-grey-900">
       <button
         type="button"
         onClick={() => setIsCollapsed((prev) => !prev)}
         className={cn(
-          "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
+          "flex h-28 w-full items-center gap-6 overflow-hidden px-8 hover:bg-grey-750",
           !isCollapsed && "bg-grey-800",
           IS_POPUP && "gap-4 px-6"
         )}
       >
         <TokenLogo tokenId={token.id} className="size-16" />
-        <div className="text-body-secondary flex grow flex-col justify-center gap-2 overflow-hidden text-left text-sm font-medium">
+        <div className="flex grow flex-col justify-center gap-2 overflow-hidden text-left font-medium text-body-secondary text-sm">
           <div className="truncate">
-            <span className="text-body font-bold">
+            <span className="font-bold text-body">
               <TokenDisplaySymbol tokenId={token.id} />
             </span>{" "}
             {token.name}
@@ -152,9 +151,9 @@ const TokenRow: FC<{
           <FiatFromUsd amount={totalUsd} noCountUp />
         </div>
         {!isCollapsed ? (
-          <ChevronDownIcon className="text-body-secondary size-8 shrink-0" />
+          <ChevronDownIcon className="size-8 shrink-0 text-body-secondary" />
         ) : (
-          <ChevronRightIcon className="text-body-secondary size-8 shrink-0" />
+          <ChevronRightIcon className="size-8 shrink-0 text-body-secondary" />
         )}
       </button>
       <div className={cn("flex w-full flex-col", !isCollapsed ? "block" : "hidden")}>
@@ -174,25 +173,25 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
+        "mb-4 grid w-full grid-cols-[40%_30%_30%] rounded bg-grey-850 text-left text-base text-body-secondary",
         className
       )}
     >
       <div>
         <div className="flex h-[6.6rem]">
           <div className="p-8 text-xl">
-            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
+            <div className="h-16 w-16 animate-pulse rounded-full bg-grey-700"></div>
           </div>
           <div className="flex grow flex-col justify-center gap-2">
-            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
+            <div className="h-8 w-20 animate-pulse rounded-xs bg-grey-700"></div>
           </div>
         </div>
       </div>
       <div></div>
       <div>
         <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+          <div className="h-8 w-[10rem] animate-pulse rounded-xs bg-grey-700"></div>
+          <div className="h-8 w-[6rem] animate-pulse rounded-xs bg-grey-700"></div>
         </div>
       </div>
     </div>
@@ -282,7 +281,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
 
   if (!displayPositions.length && !isInitialising && !isLoading) {
     return (
-      <div className="text-body-secondary bg-grey-850 mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm p-8">
+      <div className="mb-4 flex h-[6.6rem] flex-col justify-center rounded-sm bg-grey-850 p-8 text-body-secondary">
         {selectedAccount
           ? t("No earning positions found for this account.")
           : selectedFolder
@@ -297,17 +296,17 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
       <button
         type="button"
         onClick={handleDefiToggle}
-        className="text-body-secondary hover:text-body mb-4 flex w-full items-center justify-between pr-2 text-sm font-medium"
+        className="mb-4 flex w-full items-center justify-between pr-2 font-medium text-body-secondary text-sm hover:text-body"
       >
-        <h2 className="text-body-secondary text-sm font-medium">{t("DeFi Positions")}</h2>
+        <h2 className="font-medium text-body-secondary text-sm">{t("DeFi Positions")}</h2>
         <div className="flex items-center gap-2">
-          <div className="text-body-secondary text-base font-normal">
+          <div className="font-normal text-base text-body-secondary">
             <FiatFromUsd amount={totalDefiAmountUsd} />
           </div>
           {isDefiExpanded ? (
-            <ChevronDownIcon className="text-body-secondary h-8 w-8" />
+            <ChevronDownIcon className="h-8 w-8 text-body-secondary" />
           ) : (
-            <ChevronRightIcon className="text-body-secondary h-8 w-8" />
+            <ChevronRightIcon className="h-8 w-8 text-body-secondary" />
           )}
         </div>
       </button>

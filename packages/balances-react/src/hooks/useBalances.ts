@@ -1,4 +1,4 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { useAtomValue, useSetAtom } from "jotai"
 import { useEffect, useMemo } from "react"
 

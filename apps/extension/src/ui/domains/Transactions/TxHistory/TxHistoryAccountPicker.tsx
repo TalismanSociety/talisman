@@ -1,17 +1,16 @@
-import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { Account, getAccountGenesisHash } from "extension-core"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Modal } from "talisman-ui"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, XIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { AllAccountsIcon } from "@ui/domains/Account/AllAccountsIcon"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
+import { type Account, getAccountGenesisHash } from "extension-core"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Modal } from "talisman-ui"
 
 export const TxHistoryAccountPicker: FC<{
   isOpen?: boolean
@@ -50,7 +49,7 @@ export const TxHistoryAccountPicker: FC<{
           <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
             <SearchInput onChange={setSearch} placeholder={t("Search by name")} />
           </div>
-          <ScrollContainer className="bg-black-secondary border-grey-700 scrollable grow border-t">
+          <ScrollContainer className="scrollable grow border-grey-700 border-t bg-black-secondary">
             <AccountsList
               accounts={accounts}
               selectedAddress={selectedAddress}
@@ -86,7 +85,7 @@ const AccountsList: FC<{
         />
       ))}
       {accounts.length === 0 && (
-        <div className="text-body-secondary p-16 text-center">{t("No accounts found")}</div>
+        <div className="p-16 text-center text-body-secondary">{t("No accounts found")}</div>
       )}
     </div>
   )
@@ -109,7 +108,7 @@ const AccountRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 text-body-secondary hover:text-body flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-body-secondary hover:bg-grey-750 hover:text-body focus:bg-grey-700",
         selected && "bg-grey-800",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
@@ -126,7 +125,7 @@ const AccountRow: FC<{
       <div className="flex grow items-center overflow-hidden">
         <div className="flex flex-col space-y-2">
           <div className="flex items-center gap-2">
-            <div className="text-body truncate">
+            <div className="truncate text-body">
               {account
                 ? (account.name ?? (
                     <Address

@@ -1,9 +1,9 @@
 import { UploadIcon } from "@talismn/icons"
-import { ChangeEventHandler, FC, useCallback, useState } from "react"
+import { type ChangeEventHandler, type FC, useCallback, useState } from "react"
 import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 import { SupportOpsCtaButton } from "./shared/SupportOpsCtaButton"
-import { TalismanJsonBackup } from "./shared/types"
+import type { TalismanJsonBackup } from "./shared/types"
 
 export const SupportOpsRestoreButton = () => {
   const { isOpen, open, close } = useOpenClose()
@@ -57,11 +57,11 @@ const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
         <p className="text-body-secondary leading-paragraph">
           This will replace all existing Talisman data with the data from your backup file.
         </p>
-        <div className="bg-alert-warn/10 text-alert-warn flex items-center justify-center gap-8 rounded p-5 px-8 text-center text-sm">
+        <div className="flex items-center justify-center gap-8 rounded bg-alert-warn/10 p-5 px-8 text-center text-alert-warn text-sm">
           <p>Warning: All existing data will be erased and replaced.</p>
         </div>
 
-        <div className="border-grey-700 flex h-[7.4rem] flex-col justify-between rounded border p-5">
+        <div className="flex h-[7.4rem] flex-col justify-between rounded border border-grey-700 p-5">
           <div>
             <input type="file" accept=".json,application/json" onChange={handleChange}></input>
           </div>

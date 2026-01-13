@@ -1,10 +1,18 @@
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
+import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { useToken } from "@ui/state"
 import {
-  FC,
+  type FC,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -21,15 +29,6 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "talisman-ui"
-
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useGetBittensorClaimTypePayload } from "@ui/domains/Staking/hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useToken } from "@ui/state"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
@@ -165,8 +164,8 @@ export const BittensorClaimSubnetSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
+                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search subnets")}
               value={search}
@@ -239,7 +238,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-[8px] py-[6px] text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -293,7 +292,7 @@ const SubnetRows: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -347,7 +346,7 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus-visible:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus-visible:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >

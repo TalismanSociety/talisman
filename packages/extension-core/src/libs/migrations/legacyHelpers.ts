@@ -1,21 +1,21 @@
-import { KeyringPair } from "@polkadot/keyring/types"
+import type { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-import { KeyringJson } from "@polkadot/ui-keyring/types"
+import type { KeyringJson } from "@polkadot/ui-keyring/types"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { sentry } from "../../config/sentry"
 import {
   decryptMnemonic,
   encryptMnemonic,
   MnemonicErrors,
+  type MnemonicsStoreData,
   mnemonicsStore,
-  MnemonicsStoreData,
 } from "../../domains/mnemonics/store"
 import {
-  ChangePasswordRequest,
+  type ChangePasswordRequest,
   ChangePasswordStatusUpdateStatus,
-  ChangePasswordStatusUpdateType,
+  type ChangePasswordStatusUpdateType,
 } from "../../types/domains"
 
 const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"

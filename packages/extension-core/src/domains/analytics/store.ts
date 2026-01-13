@@ -5,7 +5,7 @@ import { v4 } from "uuid"
 import { StorageProvider } from "../../libs/Store"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
-import { PostHogCaptureProperties } from "./types"
+import type { PostHogCaptureProperties } from "./types"
 
 type PostHogSendProperties = PostHogCaptureProperties & { distinct_id: string }
 

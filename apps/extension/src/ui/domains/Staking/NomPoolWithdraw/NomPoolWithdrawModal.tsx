@@ -1,11 +1,10 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { IS_POPUP } from "@ui/util/constants"
 import { Suspense } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { NomPoolWithdrawFollowUp } from "./NomPoolWithdrawFollowUp"
 import { NomPoolWithdrawReview } from "./NomPoolWithdrawReview"
@@ -20,7 +19,7 @@ const ModalHeader = () => {
   return (
     <div
       className={classNames(
-        "text-body-secondary flex h-32 w-full shrink-0 items-center justify-between px-10",
+        "flex h-32 w-full shrink-0 items-center justify-between px-10 text-body-secondary",
         step === "follow-up" ? "invisible" : "visible"
       )}
     >
@@ -48,7 +47,7 @@ const Content = () => (
     id="StakingModalDialog" // acts as containerId for sub modals
     className={classNames(
       "relative flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col overflow-hidden bg-black",
-      !IS_POPUP && "border-grey-850 rounded border"
+      !IS_POPUP && "rounded border border-grey-850"
     )}
   >
     <ModalHeader />

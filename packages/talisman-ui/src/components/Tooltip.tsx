@@ -1,8 +1,8 @@
 import type { Placement } from "@floating-ui/react"
 import {
   autoUpdate,
-  flip,
   FloatingPortal,
+  flip,
   offset,
   shift,
   useDismiss,
@@ -17,9 +17,9 @@ import {
   cloneElement,
   createContext,
   forwardRef,
-  HTMLProps,
+  type HTMLProps,
   isValidElement,
-  ReactNode,
+  type ReactNode,
   useContext,
   useMemo,
   useState,

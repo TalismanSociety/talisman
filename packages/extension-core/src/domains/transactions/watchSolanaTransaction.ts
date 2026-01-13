@@ -1,5 +1,5 @@
-import { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
-import { getBlockExplorerUrls, SolNetworkId } from "@talismn/chaindata-provider"
+import type { Connection, Transaction, VersionedTransaction } from "@solana/web3.js"
+import { getBlockExplorerUrls, type SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo } from "@talismn/solana"
 import { log } from "extension-shared"
 
@@ -8,7 +8,7 @@ import { createNotification } from "../../notifications"
 import { chainConnectorSol } from "../../rpcs/chain-connector-sol"
 import { chaindataProvider } from "../../rpcs/chaindata"
 import { addSolTransaction, updateTransactionStatus } from "./helpers"
-import { TransactionStatus, WatchTransactionOptions } from "./types"
+import type { TransactionStatus, WatchTransactionOptions } from "./types"
 
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,

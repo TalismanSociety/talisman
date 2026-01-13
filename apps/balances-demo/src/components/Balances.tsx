@@ -11,13 +11,13 @@ export const Balances = () => {
   return (
     <div className="grid grid-cols-[repeat(7,_auto)] items-center gap-4">
       <>
-        <div className="text-tiny justify-self-center font-bold">Logo</div>
-        <div className="text-tiny font-bold">Colour</div>
-        <div className="text-tiny justify-self-center font-bold">Status</div>
-        <div className="text-tiny font-bold">Chain</div>
-        <div className="text-tiny font-bold">Total</div>
-        <div className="text-tiny font-bold">Available</div>
-        <div className="text-tiny font-bold">Account</div>
+        <div className="justify-self-center font-bold text-tiny">Logo</div>
+        <div className="font-bold text-tiny">Colour</div>
+        <div className="justify-self-center font-bold text-tiny">Status</div>
+        <div className="font-bold text-tiny">Chain</div>
+        <div className="font-bold text-tiny">Total</div>
+        <div className="font-bold text-tiny">Available</div>
+        <div className="font-bold text-tiny">Account</div>
       </>
       {balances?.each.map((balance) => (
         <Fragment key={balance.id}>
@@ -70,7 +70,7 @@ export const Balances = () => {
               <span>{balance.network?.name}</span>
             </span>
             {balance.network?.isTestnet ? (
-              <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded-sm px-3 py-1 font-light">
+              <span className="rounded-sm bg-alert-warn/10 px-3 py-1 font-light text-alert-warn text-tiny">
                 Testnet
               </span>
             ) : null}
@@ -112,7 +112,7 @@ export const Balances = () => {
               // button
               "max-w-md overflow-hidden overflow-ellipsis whitespace-pre",
               // overlay style
-              "after:bg-body-black after:text-tiny relative after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded after:px-2 after:py-1 after:content-['copied_address']",
+              "relative after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:rounded after:bg-body-black after:px-2 after:py-1 after:text-tiny after:content-['copied_address']",
               // overlay transition
               "after:opacity-0 after:transition-opacity after:duration-1000",
               // activate overlay transition
@@ -135,24 +135,24 @@ export const BalancesFallback = () => (
   <div className="grid animate-pulse grid-cols-[repeat(6,_auto)] items-center gap-4">
     {[0, 1, 2, 3, 4].map((i) => (
       <Fragment key={i}>
-        <div className="bg-black-tertiary h-20 w-20 max-w-none justify-self-center rounded-full" />
-        <div className="bg-black-tertiary rounded px-4 py-2">
+        <div className="h-20 w-20 max-w-none justify-self-center rounded-full bg-black-tertiary" />
+        <div className="rounded bg-black-tertiary px-4 py-2">
           <div className="invisible">SkeletonSkeleton</div>
         </div>
         <div className="flex min-w-48 flex-shrink-0 items-center justify-center">
-          <div className="bg-black-tertiary rounded px-4 py-2">
+          <div className="rounded bg-black-tertiary px-4 py-2">
             <div className="invisible">Skeleton</div>
           </div>
         </div>
-        <div className="bg-black-tertiary rounded px-4 py-2">
+        <div className="rounded bg-black-tertiary px-4 py-2">
           <div className="invisible">SkeletonSkeletonSkeleton</div>
         </div>
 
-        <div className="bg-black-tertiary rounded px-4 py-2">
+        <div className="rounded bg-black-tertiary px-4 py-2">
           <div className="invisible">SkeletonSkeleton</div>
         </div>
 
-        <div className="bg-black-tertiary rounded px-4 py-2">
+        <div className="rounded bg-black-tertiary px-4 py-2">
           <div className="invisible">SkeletonSkeleton</div>
         </div>
       </Fragment>

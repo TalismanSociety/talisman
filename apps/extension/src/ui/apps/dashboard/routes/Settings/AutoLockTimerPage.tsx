@@ -1,11 +1,10 @@
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { ExclusiveButtonsList } from "@talisman/components/ExclusiveButtonsList"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { Spacer } from "@talisman/components/Spacer"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useSetting } from "@ui/state"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 type Option = { value: number; label: string }
 

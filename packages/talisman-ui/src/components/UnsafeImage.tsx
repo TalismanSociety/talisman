@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useEffect, useRef, useState } from "react"
+import { type FC, useCallback, useEffect, useRef, useState } from "react"
 
 export type UnsafeImageProps = React.DetailedHTMLProps<
   React.ImgHTMLAttributes<HTMLImageElement>,

@@ -1,9 +1,9 @@
 import { bind } from "@react-rxjs/core"
-import { Balances, HydrateDb } from "@talismn/balances"
-import { isNetworkEth, Network, Token } from "@talismn/chaindata-provider"
+import { Balances, type HydrateDb } from "@talismn/balances"
+import { isNetworkEth, type Network, type Token } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
-import { Account } from "extension-core"
+import type { Account } from "extension-core"
 import { BehaviorSubject, combineLatest, map, shareReplay } from "rxjs"
 
 import { balancesHydrate$, getBalances$, isBalanceInitialising$ } from "./balances"

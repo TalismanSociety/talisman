@@ -1,5 +1,5 @@
 import {
-  Account,
+  type Account,
   isAccountNotContact,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
@@ -24,7 +24,7 @@ import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
 import { fetchEvmNftRefresh } from "./fetchEvmNftRefresh"
 import { nftsStore$, updateNftsStore } from "./store"
 import { fetchDotAccountNfts } from "./subscan"
-import { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
+import type { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
 

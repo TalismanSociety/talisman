@@ -1,18 +1,17 @@
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { HandMonoLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
 import {
-  DetailedHTMLProps,
-  FC,
-  HTMLAttributes,
-  ReactNode,
+  type DetailedHTMLProps,
+  type FC,
+  type HTMLAttributes,
+  type ReactNode,
   useCallback,
   useEffect,
   useRef,
 } from "react"
 import { useLocation } from "react-router-dom"
-
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { HandMonoLogo } from "@talisman/theme/logos"
-import { api } from "@ui/api"
 
 import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"

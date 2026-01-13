@@ -1,7 +1,7 @@
-import { KeypairCurve } from "@talismn/crypto"
-import { Err, Ok, Result } from "ts-results"
+import type { KeypairCurve } from "@talismn/crypto"
+import { Err, Ok, type Result } from "ts-results"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 import { passwordStore } from "../app/store.password"
 import { keyringStore } from "./store"
 

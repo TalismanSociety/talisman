@@ -1,11 +1,10 @@
-import { log } from "extension-shared"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { log } from "extension-shared"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
-import { SignHardwareEthereumProps } from "./SignHardwareEthereum"
+import type { SignHardwareEthereumProps } from "./SignHardwareEthereum"
 import { SignLedgerBase } from "./SignLedgerBase"
 import { useSignLedgerBase } from "./useSignLedgerBase"
 

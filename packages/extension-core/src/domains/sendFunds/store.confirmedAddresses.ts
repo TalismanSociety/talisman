@@ -1,7 +1,7 @@
 import { isAddressEqual, normalizeAddress } from "@talismn/crypto"
 
 import { SubscribableStorageProvider } from "../../libs/Store"
-import { ConfirmedExternalAddresses } from "./types"
+import type { ConfirmedExternalAddresses } from "./types"
 
 class ConfirmedAddressesStore extends SubscribableStorageProvider<
   ConfirmedExternalAddresses,

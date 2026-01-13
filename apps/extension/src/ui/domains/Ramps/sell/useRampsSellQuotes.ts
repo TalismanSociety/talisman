@@ -2,7 +2,7 @@ import { useMemo } from "react"
 
 import { useCoinbaseSellQuote } from "../coinbase/useCoinbaseSellQuote"
 import { useRampSellQuote } from "../ramp/useRampSellQuote"
-import { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
+import type { RampsSellQuoteOptions, RampsSellQuoteQuery } from "./types"
 
 export const useRampsSellQuotes = (config: RampsSellQuoteOptions | null) => {
   const queryRamp = useRampSellQuote(config)

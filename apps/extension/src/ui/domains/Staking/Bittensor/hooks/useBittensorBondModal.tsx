@@ -1,7 +1,6 @@
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { log } from "extension-shared"
 import { useCallback } from "react"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 
 import type { BittensorStakingWizardOpenOptions } from "./useBittensorBondWizard"
 import { useResetBittensorBondWizard } from "./useBittensorBondWizard"

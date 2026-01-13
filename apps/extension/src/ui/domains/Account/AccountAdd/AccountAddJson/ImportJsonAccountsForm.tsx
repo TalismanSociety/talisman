@@ -1,3 +1,6 @@
+import { FadeIn } from "@talisman/components/FadeIn"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -6,21 +9,17 @@ import {
   UnlockIcon,
 } from "@talismn/icons"
 import { classNames, sleep } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { FadeIn } from "@talisman/components/FadeIn"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AccountTypeIcon } from "@ui/domains/Account/AccountTypeIcon"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { BalancesSummaryTooltipContent } from "../../BalancesSummaryTooltipContent"
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
-import { JsonImportAccount, useJsonAccountImport } from "./context"
+import { type JsonImportAccount, useJsonAccountImport } from "./context"
 import { UnlockJsonAccountsButton } from "./UnlockJsonAccountsButton"
 
 const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) => void }> = ({
@@ -41,7 +40,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
           <button
             tabIndex={-1}
             type="button"
-            className="bg-grey-900 text-body enabled:hover:bg-grey-800 flex h-32 w-full shrink-0 cursor-pointer items-center gap-10 rounded-sm px-8 text-left disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-32 w-full shrink-0 cursor-pointer items-center gap-10 rounded-sm bg-grey-900 px-8 text-left text-body enabled:hover:bg-grey-800 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={handleClick}
             disabled={!account.isPrivateKeyAvailable || account.isExisting}
           >
@@ -54,7 +53,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
               <div className="flex w-full items-center gap-1 overflow-hidden text-base">
                 <div className="truncate">{account.name}</div>
                 <div className="shrink-0">
-                  <AccountTypeIcon className="text-primary inline-block" />
+                  <AccountTypeIcon className="inline-block text-primary" />
                 </div>
               </div>
               <div className="text-body-secondary text-sm">{shortenAddress(account.address)}</div>
@@ -74,7 +73,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             ) : account.isLocked ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="text-alert-warn shrink-0">
+                  <div className="shrink-0 text-alert-warn">
                     <LockIcon />
                   </div>
                 </TooltipTrigger>
@@ -85,7 +84,7 @@ const JsonAccount: FC<{ account: JsonImportAccount; onSelect: (select: boolean) 
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="text-primary shrink-0">
+                  <div className="shrink-0 text-primary">
                     <UnlockIcon />
                   </div>
                 </TooltipTrigger>
@@ -196,7 +195,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
   return (
     <FadeIn>
       {alreadyImported && (
-        <div className="bg-grey-850 text-body-secondary mb-8 flex w-full items-center gap-6 rounded p-8">
+        <div className="mb-8 flex w-full items-center gap-6 rounded bg-grey-850 p-8 text-body-secondary">
           <AlertCircleIcon className="shrink-0 text-lg" />
           <div className="grow">
             {t("All accounts included in this file already exist in Talisman.")}
@@ -210,17 +209,17 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
             values={{ selectedCount, totalCount }}
             defaults="Selected accounts <Selected>{{selectedCount}}</Selected><Total>/{{totalCount}}</Total>"
             components={{
-              Selected: <span className="text-primary ml-2" />,
+              Selected: <span className="ml-2 text-primary" />,
               Total: <span className="text-grey-500 text-sm" />,
             }}
           ></Trans>
         </div>
         {accounts.length > 1 && (
-          <div className="text-grey-500 flex items-center gap-4">
+          <div className="flex items-center gap-4 text-grey-500">
             <button type="button" className="hover:text-grey-400" onClick={selectNone}>
               {t("Clear")}
             </button>
-            <div className="bg-grey-500 h-6 w-0.5"></div>
+            <div className="h-6 w-0.5 bg-grey-500"></div>
             <button type="button" className="hover:text-grey-400" onClick={selectAll}>
               {t("Select all")}
             </button>

@@ -1,7 +1,7 @@
 import { base58, hex } from "@scure/base"
 
 import { entropyToSeed, getDevSeed, mnemonicToEntropy } from "../mnemonic"
-import { AccountPlatform, KeypairCurve } from "../types"
+import type { AccountPlatform, KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
 import { deriveEthereum, getPublicKeyEthereum } from "./deriveEthereum"

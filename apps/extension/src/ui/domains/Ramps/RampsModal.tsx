@@ -13,7 +13,7 @@ export const RampsModal = () => {
       isOpen={isOpen}
       onDismiss={close}
       className={classNames(
-        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
+        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black shadow",
         window.location.pathname === "/popup.html" ? "max-h-full max-w-full" : "rounded-lg border"
       )}
       containerId={window.location.pathname === "/popup.html" ? "main" : undefined}

@@ -1,8 +1,7 @@
-import { Token } from "@talismn/chaindata-provider"
+import type { Token } from "@talismn/chaindata-provider"
+import { useActiveTokensState } from "@ui/state"
 import { activeTokensStore, isTokenActive } from "extension-core"
 import { useCallback, useMemo } from "react"
-
-import { useActiveTokensState } from "@ui/state"
 
 export const useActivableToken = (token: Token | undefined) => {
   const activeTokens = useActiveTokensState()

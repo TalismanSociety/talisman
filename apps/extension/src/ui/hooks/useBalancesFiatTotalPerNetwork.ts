@@ -1,8 +1,7 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
+import { useSelectedCurrency } from "@ui/state"
 import { fromPairs, uniq } from "lodash-es"
 import { useMemo } from "react"
-
-import { useSelectedCurrency } from "@ui/state"
 
 export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
   const currency = useSelectedCurrency()

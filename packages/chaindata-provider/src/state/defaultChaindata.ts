@@ -1,11 +1,11 @@
 import { isEqual } from "lodash-es"
-import { firstValueFrom, map, Observable, shareReplay, Subject } from "rxjs"
+import { firstValueFrom, map, Observable, type Subject, shareReplay } from "rxjs"
 
 import log from "../log"
-import { ChaindataStorage } from "../provider/ChaindataProvider"
+import type { ChaindataStorage } from "../provider/ChaindataProvider"
 import { githubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
-import { Chaindata, ChaindataFileSchema } from "./schema"
+import { type Chaindata, ChaindataFileSchema } from "./schema"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 

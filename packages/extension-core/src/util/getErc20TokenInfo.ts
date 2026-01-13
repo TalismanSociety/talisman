@@ -1,7 +1,7 @@
-import { EthNetworkId, EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
-import { Client } from "viem"
+import { type EthNetworkId, type EvmErc20Token, evmErc20TokenId } from "@talismn/chaindata-provider"
+import type { Client } from "viem"
 
-import { EvmAddress } from "../domains/ethereum/types"
+import type { EvmAddress } from "../domains/ethereum/types"
 import { getCoinGeckoErc20Coin } from "./coingecko/getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"
 

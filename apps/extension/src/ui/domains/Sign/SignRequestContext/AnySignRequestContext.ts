@@ -1,13 +1,12 @@
+import useStatus, { type SetStatusFn, type StatusOptions } from "@talisman/hooks/useStatus"
 import {
-  AnySigningRequest,
+  type AnySigningRequest,
   isEthereumRequest,
-  KnownRespondableRequest,
-  SigningRequests,
+  type KnownRespondableRequest,
+  type SigningRequests,
 } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback } from "react"
-
-import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

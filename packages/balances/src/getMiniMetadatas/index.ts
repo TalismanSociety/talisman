@@ -1,10 +1,10 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { ChaindataProvider, DotNetworkId } from "@talismn/chaindata-provider"
 import PQueue from "p-queue"
 
 import log from "../log"
 import { BALANCE_MODULES } from "../modules"
-import { MiniMetadata } from "../types"
+import type { MiniMetadata } from "../types"
 import { getMetadataRpc } from "./getMetadataRpc"
 import { getSpecVersion } from "./getSpecVersion"
 

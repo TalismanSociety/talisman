@@ -1,10 +1,10 @@
 import { SearchIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
-  ChangeEventHandler,
+  type ChangeEventHandler,
   forwardRef,
-  KeyboardEventHandler,
-  ReactNode,
+  type KeyboardEventHandler,
+  type ReactNode,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -13,7 +13,7 @@ import {
   useRef,
   useState,
 } from "react"
-import { FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
+import { type FormFieldInputContainerProps, FormFieldInputText, IconButton } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,
@@ -101,7 +101,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         ref={internalRef}
         className={classNames("text-base", className)}
         containerProps={containerProps}
-        before={<SearchIcon className="text-body-disabled shrink-0" />}
+        before={<SearchIcon className="shrink-0 text-body-disabled" />}
         after={
           after ?? (
             <IconButton

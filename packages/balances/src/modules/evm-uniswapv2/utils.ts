@@ -1,6 +1,6 @@
 import {
-  Abi,
-  Client,
+  type Abi,
+  type Client,
   ContractFunctionExecutionError,
   erc20Abi,
   erc20Abi_bytes32,

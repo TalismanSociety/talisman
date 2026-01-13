@@ -1,10 +1,10 @@
-import { Balance } from "@talismn/balances"
+import type { Balance } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useSelectedCurrency } from "@ui/state"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
@@ -35,7 +35,7 @@ export const TokenBalancesUniswapV2Row = ({
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
+        "flex w-full flex-col justify-center gap-8 bg-black-secondary px-7 py-6",
         isLastBalance && "rounded-b-sm"
       )}
     >

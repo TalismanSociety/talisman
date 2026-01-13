@@ -1,11 +1,10 @@
-import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useMemo } from "react"
-import { PillButton } from "talisman-ui"
-
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { classNames } from "@talismn/util"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useMemo } from "react"
+import { PillButton } from "talisman-ui"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 import { AccountTypeIcon } from "../../Account/AccountTypeIcon"
@@ -43,10 +42,10 @@ export const AddressPillButton: FC<AddressPillButtonProps> = ({
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
-      <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
+    <PillButton className={classNames("!px-4 h-16 max-w-full", className)} onClick={onClick}>
+      <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
-        <div className="leading-base grow truncate">
+        <div className="grow truncate leading-base">
           {name ? (
             <WithTooltip tooltip={displayAddress}>{name}</WithTooltip>
           ) : (

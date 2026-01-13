@@ -1,8 +1,13 @@
-import { isTokenDot, isTokenEth, isTokenSol, Token, TokenId } from "@talismn/chaindata-provider"
+import {
+  isTokenDot,
+  isTokenEth,
+  isTokenSol,
+  type Token,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { detectAddressEncoding } from "@talismn/crypto"
-import { useCallback, useMemo } from "react"
-
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import { useCallback, useMemo } from "react"
 
 import { TokenPicker } from "../Asset/TokenPicker"
 

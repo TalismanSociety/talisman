@@ -1,5 +1,5 @@
 import { isNotNil } from "@talismn/util"
-import { Nft, NftCollection } from "extension-core"
+import type { Nft, NftCollection } from "extension-core"
 
 export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, nfts: Nft[]) => {
   const collectionNfts = nfts.filter((nft) => nft.collectionId === collection.id)

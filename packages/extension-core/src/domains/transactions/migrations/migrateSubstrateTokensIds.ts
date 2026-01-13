@@ -1,5 +1,5 @@
 import { db } from "../../../db"
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 
 export const migrateSubstrateTokensIds: Migration = {
   forward: new MigrationFunction(async () => {

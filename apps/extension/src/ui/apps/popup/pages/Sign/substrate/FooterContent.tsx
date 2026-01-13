@@ -1,11 +1,6 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { InfoIcon, LoaderIcon } from "@talismn/icons"
 import { isTruthy } from "@talismn/util"
-import { uniq } from "lodash-es"
-import { FC, Suspense, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
@@ -16,6 +11,10 @@ import { SignSignetSubstrate } from "@ui/domains/Sign/SignSignetSubstrate"
 import { getMultiLocationTokenId } from "@ui/domains/Sign/Substrate/util/getMultiLocationTokenId"
 import { useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useTokensMap } from "@ui/state"
+import { uniq } from "lodash-es"
+import { type FC, Suspense, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const FooterContent = ({ isTransaction = false }: { isTransaction?: boolean }) => {
   const { t } = useTranslation()
@@ -237,7 +236,7 @@ const EstimatedFeesRow: FC = () => {
   )
 
   return (
-    <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
+    <div className="mb-8 flex w-full items-center justify-between text-body-secondary text-sm">
       <div className="flex items-center gap-2">
         <Tooltip placement="top-start">
           <TooltipTrigger asChild>
@@ -254,7 +253,7 @@ const EstimatedFeesRow: FC = () => {
       </div>
       <div>
         {isLoadingFee || dryRunIsLoading ? (
-          <LoaderIcon className="animate-spin-slow inline-block" />
+          <LoaderIcon className="inline-block animate-spin-slow" />
         ) : errorFee || errorDecodingExtrinsic ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger type="button">{t("Unknown")}</TooltipTrigger>

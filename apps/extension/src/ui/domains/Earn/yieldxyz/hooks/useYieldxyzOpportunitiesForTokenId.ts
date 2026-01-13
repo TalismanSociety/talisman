@@ -1,8 +1,7 @@
-import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
+import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
-import { useMemo } from "react"
-
 import { useYieldxyzProducts } from "@ui/state"
+import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 

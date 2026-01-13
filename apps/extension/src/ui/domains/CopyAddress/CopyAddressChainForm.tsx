@@ -1,14 +1,8 @@
-import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
-import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
-import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { encodeAnyAddress, isEthereumAddress, normalizeAddress } from "@talismn/crypto"
+import { ArrowUpRightIcon, CopyIcon, PolkadotIcon, QrIcon } from "@talismn/icons"
 import { useBalancesFiatTotalPerNetwork } from "@ui/hooks/useBalancesFiatTotalPerNetwork"
 import {
   useAccountByAddress,
@@ -17,15 +11,20 @@ import {
   useNetworks,
   useRemoteConfig,
 } from "@ui/state"
+import { getAccountGenesisHash, isAccountLedgerPolkadotGeneric } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { CopyAddressExchangeWarning } from "./CopyAddressExchangeWarning"
 import {
-  ChainFormat,
+  type ChainFormat,
   CopyAddressFormatPickerDrawer,
   isMigratedFormat,
-  MigratedChainFormat,
+  type MigratedChainFormat,
 } from "./CopyAddressFormatPickerDrawer"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
@@ -81,7 +80,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
   )
 
   return (
-    <div className="text-body-secondary hover:text-body hover:bg-grey-800 flex h-32 w-full items-center gap-6 px-12">
+    <div className="flex h-32 w-full items-center gap-6 px-12 text-body-secondary hover:bg-grey-800 hover:text-body">
       {format.chainId ? (
         <NetworkLogo className="shrink-0 text-xl" networkId={format.chainId} />
       ) : (
@@ -92,8 +91,8 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         />
       )}
       <div className="flex grow flex-col gap-2 overflow-hidden text-left">
-        <div className="text-body truncate">{format.name}</div>
-        <div className="text-body-secondary truncate text-xs">
+        <div className="truncate text-body">{format.name}</div>
+        <div className="truncate text-body-secondary text-xs">
           <Tooltip>
             <TooltipTrigger asChild>
               <div>{shortenAddress(format.address, 10, 10)}</div>
@@ -214,7 +213,7 @@ export const CopyAddressChainForm = () => {
           {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
           <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
-        <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+        <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
           <UnifiedAddressMigrationBanner formats={filteredFormats} />
           <ChainFormatsList formats={filteredFormats} />
         </ScrollContainer>
@@ -251,13 +250,13 @@ export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ 
     <button
       type="button"
       onClick={handleClick}
-      className="text-body flex w-full items-center gap-4 bg-gradient-to-r from-[#9F7998] to-[#EB5D93] px-12 py-4 text-left text-sm"
+      className="flex w-full items-center gap-4 bg-gradient-to-r from-[#9F7998] to-[#EB5D93] px-12 py-4 text-left text-body text-sm"
     >
       <div className="grow">
         <PolkadotIcon className="mr-2 inline-block shrink-0 align-text-top" />
         {t("Polkadot introduces new address formatting")}
       </div>
-      <ArrowUpRightIcon className="text-body shrink-0 text-[2rem]" />
+      <ArrowUpRightIcon className="shrink-0 text-[2rem] text-body" />
     </button>
   )
 }

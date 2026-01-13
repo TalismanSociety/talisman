@@ -1,18 +1,17 @@
+import { notify } from "@talisman/components/Notifications"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
-import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
+import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignApproveButton } from "../SignApproveButton"
-import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "../SignLedgerSolana"
+import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
-import { TxSubmitButtonProps } from "./types"
+import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   tx,

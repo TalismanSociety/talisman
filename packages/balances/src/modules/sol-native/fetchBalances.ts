@@ -1,8 +1,8 @@
 import { PublicKey } from "@solana/web3.js"
 import { isSolanaAddress } from "@talismn/crypto"
 
-import { IBalance } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { BalanceFetchError } from "../shared/errors"
 import { getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"

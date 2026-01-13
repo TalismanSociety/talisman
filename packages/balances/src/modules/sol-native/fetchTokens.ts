@@ -1,9 +1,13 @@
-import { SolNativeToken, solNativeTokenId, SolNativeTokenSchema } from "@talismn/chaindata-provider"
+import {
+  type SolNativeToken,
+  SolNativeTokenSchema,
+  solNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,

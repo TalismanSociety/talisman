@@ -1,14 +1,13 @@
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { setSelectedVideoInput, useSelectedVideoInput, useVideoInputDevices } from "@ui/state"
 import { BrowserQRCodeReader } from "@zxing/browser"
 import { ChecksumException, FormatException, NotFoundException } from "@zxing/library"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useClickAway } from "react-use"
 import { Toggle } from "talisman-ui"
-
-import { setSelectedVideoInput, useSelectedVideoInput, useVideoInputDevices } from "@ui/state"
 
 type Types = "address" | "signature"
 type CommonProps<T extends Types> = {
@@ -68,12 +67,12 @@ export const ScanQr = <T extends Types>({
   return (
     <div className="flex flex-col items-center gap-2">
       <div
-        className="bg-grey-900 relative overflow-hidden rounded-xl"
+        className="relative overflow-hidden rounded-xl bg-grey-900"
         style={{ width: `${size}px`, height: `${size}px` }}
       >
         {enable ? <Scanner onScan={handleScan} onError={onError} blur={blur} /> : null}
         <CameraMarker
-          className="pointer-events-none absolute left-0 top-0 h-full w-full"
+          className="pointer-events-none absolute top-0 left-0 h-full w-full"
           active={enable}
           error={error}
         />
@@ -154,7 +153,7 @@ const Scanner = ({
         )}
       />
       {inputDevices.length > 1 ? (
-        <div className="absolute left-1/2 top-10 -translate-x-1/2">
+        <div className="absolute top-10 left-1/2 -translate-x-1/2">
           <ChevronDownIcon
             className="cursor-pointer text-lg"
             onClick={() => setShowInputMenu((shown) => !shown)}
@@ -164,7 +163,7 @@ const Scanner = ({
       {showInputMenu ? (
         <div
           ref={inputMenu}
-          className="bg-black-tertiary absolute left-1/2 top-24 max-h-80 w-96 -translate-x-1/2 space-y-4 overflow-y-scroll rounded p-4"
+          className="absolute top-24 left-1/2 max-h-80 w-96 -translate-x-1/2 space-y-4 overflow-y-scroll rounded bg-black-tertiary p-4"
         >
           {inputDevices.map((device) => (
             <button
@@ -245,17 +244,17 @@ const CameraMarker = ({
 
   return (
     <div className={className}>
-      <div className={`absolute left-10 top-10 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute left-10 top-10 rounded ${vertical} ${bg}`} />
+      <div className={`absolute top-10 left-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute top-10 left-10 rounded ${vertical} ${bg}`} />
 
       <div className={`absolute bottom-10 left-10 rounded ${horizontal} ${bg}`} />
       <div className={`absolute bottom-10 left-10 rounded ${vertical} ${bg}`} />
 
-      <div className={`absolute right-10 top-10 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute right-10 top-10 rounded ${vertical} ${bg}`} />
+      <div className={`absolute top-10 right-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute top-10 right-10 rounded ${vertical} ${bg}`} />
 
-      <div className={`absolute bottom-10 right-10 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute bottom-10 right-10 rounded ${vertical} ${bg}`} />
+      <div className={`absolute right-10 bottom-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute right-10 bottom-10 rounded ${vertical} ${bg}`} />
     </div>
   )
 }

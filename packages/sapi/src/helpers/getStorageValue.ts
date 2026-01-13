@@ -1,5 +1,5 @@
 import { getSendRequestResult } from "./getSendRequestResult"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const getStorageValue = async <T>(
   chain: Chain,

@@ -1,23 +1,13 @@
 import { bind } from "@react-rxjs/core"
-import { Balance, Balances } from "@talismn/balances"
+import { type Balance, Balances } from "@talismn/balances"
 import {
   evmNativeTokenId,
   getNetworkGenesisHash,
-  Network,
-  NetworkId,
+  type Network,
+  type NetworkId,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import {
-  Account,
-  getAccountGenesisHash,
-  isAccountAddressEthereum,
-  isAccountAddressSs58,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
-import { useMemo } from "react"
-import { combineLatest, map } from "rxjs"
-
 import {
   getNetworksMapById$,
   portfolioBalances$,
@@ -25,6 +15,15 @@ import {
   useNetworksMapById,
   usePortfolioSelectedAccounts,
 } from "@ui/state"
+import {
+  type Account,
+  getAccountGenesisHash,
+  isAccountAddressEthereum,
+  isAccountAddressSs58,
+  isAccountCompatibleWithNetwork,
+} from "extension-core"
+import { useMemo } from "react"
+import { combineLatest, map } from "rxjs"
 
 const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
   subNativeTokenId("polkadot"),

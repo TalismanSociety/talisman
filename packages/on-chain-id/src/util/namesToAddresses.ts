@@ -2,7 +2,7 @@ import { throwAfter } from "@talismn/util"
 
 import log from "../log"
 import { isPotentialEns } from "./isPotentialEns"
-import { Config, ResolvedNames } from "./types"
+import type { Config, ResolvedNames } from "./types"
 
 export const resolveNames = async (config: Config, names: string[]): Promise<ResolvedNames> => {
   const resolvedNames: ResolvedNames = new Map(names.map((name) => [name, null]))

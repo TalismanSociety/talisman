@@ -1,16 +1,15 @@
+import { useAccounts, useSettingValue } from "@ui/state"
 import {
-  Account,
+  type Account,
   isAccountInTypes,
   isAccountNotContact,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
   isAccountPlatformSolana,
-  ProviderType,
+  type ProviderType,
 } from "extension-core"
 import { isTalismanUrl } from "extension-shared"
 import { useMemo } from "react"
-
-import { useAccounts, useSettingValue } from "@ui/state"
 
 export const useInjectableAccounts = (siteUrl: string, provider: ProviderType) => {
   const isTalismanSite = isTalismanUrl(siteUrl)

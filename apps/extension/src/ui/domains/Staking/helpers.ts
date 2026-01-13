@@ -1,5 +1,5 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { isNotNil } from "@talismn/util"
 import { range } from "lodash-es"
 import { Binary } from "polkadot-api"

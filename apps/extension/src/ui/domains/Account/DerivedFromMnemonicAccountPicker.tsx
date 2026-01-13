@@ -1,13 +1,16 @@
-import { isAddressEqual, KeypairCurve } from "@talismn/crypto"
+import { isAddressEqual, type KeypairCurve } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { Account, AddAccountDeriveOptions, getDerivationPathForCurve } from "extension-core"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts } from "@ui/state"
+import {
+  type Account,
+  type AddAccountDeriveOptions,
+  getDerivationPathForCurve,
+} from "extension-core"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
 
-import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
 const getDerivationPath = (curve: KeypairCurve, index: number) => {
   switch (curve) {

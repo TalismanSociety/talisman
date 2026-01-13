@@ -1,6 +1,6 @@
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export type ScaleApiSubmitMode = "default" | "bittensor-mev-shield"
 

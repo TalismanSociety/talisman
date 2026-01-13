@@ -2,7 +2,7 @@ import { Observable, shareReplay } from "rxjs"
 
 import log from "../log"
 import { fetchChaindata } from "./net"
-import { Chaindata, ChaindataFileSchema } from "./schema"
+import { type Chaindata, ChaindataFileSchema } from "./schema"
 
 const REFRESH_INTERVAL = 300_000 // 5 mins
 

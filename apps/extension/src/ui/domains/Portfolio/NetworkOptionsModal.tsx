@@ -1,14 +1,13 @@
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
+import type { NetworkOption } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
+import { type FC, useCallback, useDeferredValue, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
-
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { NetworkOption } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { NetworkLogo } from "../Networks/NetworkLogo"
 
@@ -22,13 +21,13 @@ const NetworkOptionRow: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
+        "flex h-24 w-full items-center gap-6 overflow-hidden px-12 text-body-secondary hover:bg-grey-800 hover:text-body",
         "focus-visible:bg-grey-800",
         isSelected && "!bg-grey-700"
       )}
     >
       <NetworkLogo networkId={option.networkIds[0]} className="shrink-0 text-xl" />
-      <div className="text-body flex grow flex-col gap-2 truncate text-left">{option.name}</div>
+      <div className="flex grow flex-col gap-2 truncate text-left text-body">{option.name}</div>
     </button>
   )
 }
@@ -51,7 +50,7 @@ const NetworkOptionsList: FC<{
 
   if (!options.length)
     return (
-      <div className="text-body-inactive flex h-24 w-full items-center px-12">
+      <div className="flex h-24 w-full items-center px-12 text-body-inactive">
         {t("No networks found")}
       </div>
     )
@@ -71,7 +70,7 @@ const NetworkOptionsList: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -133,7 +132,7 @@ const NetworkOptionsModalContent: FC<{
         >
           <ChevronLeftIcon />
         </IconButton>
-        <div className="text-secondary grow text-center">{t("Network Filter")}</div>
+        <div className="grow text-center text-secondary">{t("Network Filter")}</div>
         <IconButton
           className={classNames("size-12 shrink-0", IS_POPUP && "invisible")}
           onClick={onClose}
@@ -145,7 +144,7 @@ const NetworkOptionsModalContent: FC<{
         {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
         <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <NetworkOptionsList
           options={filteredNetworks}
           selected={selected}
@@ -169,7 +168,7 @@ export const NetworkOptionsModal: FC<{
       isOpen={isOpen}
       onDismiss={onClose}
       className={classNames(
-        "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
+        "h-[60rem] w-[40rem] overflow-hidden border-grey-800 bg-black",
         IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}

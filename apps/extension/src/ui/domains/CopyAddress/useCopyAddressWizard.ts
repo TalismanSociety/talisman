@@ -1,24 +1,15 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { provideContext } from "@talisman/util/provideContext"
 import {
-  DotNetwork,
-  DotNetworkId,
+  type DotNetwork,
+  type DotNetworkId,
   evmNativeTokenId,
-  Network,
-  NetworkId,
-  NetworkList,
-  Token,
+  type Network,
+  type NetworkId,
+  type NetworkList,
+  type Token,
 } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, isAddressEqual, isSs58Address, normalizeAddress } from "@talismn/crypto"
-import {
-  Account,
-  Address,
-  getAccountGenesisHash,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
-import { provideContext } from "@talisman/util/provideContext"
 import {
   useAccountByAddress,
   useAccounts,
@@ -30,8 +21,16 @@ import {
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
+import {
+  type Account,
+  type Address,
+  getAccountGenesisHash,
+  isAccountCompatibleWithNetwork,
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { CopyAddressWizardInputs } from "./types"
+import type { CopyAddressWizardInputs } from "./types"
 import { useCopyAddressModal } from "./useCopyAddressModal"
 
 export type CopyAddressWizardPage = "chain" | "account" | "copy"

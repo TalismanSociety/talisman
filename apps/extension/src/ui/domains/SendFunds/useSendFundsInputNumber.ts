@@ -1,5 +1,5 @@
 // adapted from https://stackoverflow.com/a/469362
-import { RefObject, useEffect } from "react"
+import { type RefObject, useEffect } from "react"
 
 const getInputFilter = (inputFilter: (text: string) => boolean) =>
   function (
@@ -13,7 +13,7 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
       this.oldValue = this.value
       this.oldSelectionStart = this.selectionStart
       this.oldSelectionEnd = this.selectionEnd
-    } else if (Object.prototype.hasOwnProperty.call(this, "oldValue")) {
+    } else if (Object.hasOwn(this, "oldValue")) {
       this.value = this.oldValue
 
       if (this.oldSelectionStart !== null && this.oldSelectionEnd !== null) {

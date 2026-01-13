@@ -1,6 +1,6 @@
 import {
-  Abi,
-  Client,
+  type Abi,
+  type Client,
   ContractFunctionExecutionError,
   getContract,
   hexToString,

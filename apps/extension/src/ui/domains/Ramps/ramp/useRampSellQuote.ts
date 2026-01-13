@@ -1,19 +1,18 @@
 import { formatPrice, tokensToPlanck } from "@talismn/util"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { type UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useToken } from "@ui/state"
 import { log, RAMPS_RAMP_API_URL } from "extension-shared"
 import { t } from "i18next"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useToken } from "@ui/state"
-
-import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
+import type { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
-import { RampsQuoteError } from "../shared/types"
+import type { RampsQuoteError } from "../shared/types"
 import { useCountryCode } from "../shared/useCountryCode"
 import { getRampSellUrl } from "./helpers"
-import { RampSellQuoteResult } from "./types"
-import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
+import type { RampSellQuoteResult } from "./types"
+import { type RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
 import { useRampCurrencies } from "./useRampCurrencies"
 
 export const useRampSellQuote = (

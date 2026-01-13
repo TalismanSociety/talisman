@@ -1,7 +1,6 @@
 import { getBlockExplorerUrls } from "@talismn/chaindata-provider"
-import { useCallback, useMemo } from "react"
-
 import { useNetworkByGenesisHash, useNetworkById } from "@ui/state"
+import { useCallback, useMemo } from "react"
 
 import { useExplorerNetworkPickerModal } from "./useExplorerNetworkPickerModal"
 

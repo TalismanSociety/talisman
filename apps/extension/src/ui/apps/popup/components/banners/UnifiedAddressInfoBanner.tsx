@@ -1,11 +1,10 @@
 import { ArrowRightIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 import { isAccountAddressSs58 } from "extension-core"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
-
-import { useAccounts, useAppState, useFeatureFlag } from "@ui/state"
 
 export const UnifiedAddressInfoBanner = () => {
   const { t } = useTranslation()
@@ -24,7 +23,7 @@ export const UnifiedAddressInfoBanner = () => {
     <div
       className={classNames(
         "relative z-0 overflow-hidden",
-        "text-tiny select-none rounded-sm px-6 py-4",
+        "select-none rounded-sm px-6 py-4 text-tiny",
         "bg-gradient-to-r from-[#9F7998] to-[#EB5D93]"
       )}
     >
@@ -33,7 +32,7 @@ export const UnifiedAddressInfoBanner = () => {
           <div className="grow font-bold">{t("Unified address format")}</div>
           <div>
             <IconButton
-              className="text-md text-body select-auto"
+              className="select-auto text-body text-md"
               onClick={() => setHideBanner(true)}
             >
               <XIcon />
@@ -46,7 +45,7 @@ export const UnifiedAddressInfoBanner = () => {
             defaults="Polkadot is unifying account formats across parachains.<br />Verify addresses during the transition to ensure smooth transfers."
           ></Trans>
         </p>
-        <div className="text-tiny mt-5 flex items-center justify-between">
+        <div className="mt-5 flex items-center justify-between text-tiny">
           <div className="flex h-12 flex-col justify-center rounded-lg bg-white/10 px-6">
             5EoJmkBANK...os4rNjjoTt
           </div>
@@ -56,7 +55,7 @@ export const UnifiedAddressInfoBanner = () => {
           </div>
         </div>
       </div>
-      <BgIcon className="absolute -right-1 top-[2.2rem] h-[10.1rem] w-[16.5rem] fill-[#FF0067] opacity-20" />
+      <BgIcon className="absolute top-[2.2rem] -right-1 h-[10.1rem] w-[16.5rem] fill-[#FF0067] opacity-20" />
     </div>
   )
 }

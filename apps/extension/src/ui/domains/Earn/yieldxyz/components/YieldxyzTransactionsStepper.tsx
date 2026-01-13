@@ -1,7 +1,7 @@
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { TransactionDto } from "extension-core"
-import { FC } from "react"
+import type { TransactionDto } from "extension-core"
+import type { FC } from "react"
 
 export const YieldxyzTransactionsStepper: FC<{
   transactions: TransactionDto[]
@@ -23,12 +23,12 @@ export const YieldxyzTransactionsStepper: FC<{
         {transactions.length > 1 && (
           <>
             <div
-              className="bg-grey-600 pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2"
+              className="pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2 bg-grey-600"
               style={{ left: `${lineLeftPct}%`, width: `${lineWidthPct}%` }}
               aria-hidden
             />
             <div
-              className="bg-primary-500 pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2"
+              className="pointer-events-none absolute top-1/2 z-0 h-px -translate-y-1/2 bg-primary-500"
               style={{ left: `${lineLeftPct}%`, width: `${activeLineWidthPct}%` }}
               aria-hidden
             />
@@ -55,14 +55,14 @@ export const YieldxyzTransactionsStepper: FC<{
                   {isProcessing ? (
                     <LoaderIcon
                       className={classNames(
-                        "animate-spin-slow h-8 w-8",
+                        "h-8 w-8 animate-spin-slow",
                         isActive ? "text-black" : "text-grey-700"
                       )}
                     />
                   ) : (
                     <span
                       className={classNames(
-                        "text-sm font-bold leading-none",
+                        "font-bold text-sm leading-none",
                         isActive ? "text-black" : "text-body-secondary"
                       )}
                     >
@@ -88,7 +88,7 @@ export const YieldxyzTransactionsStepper: FC<{
             <div
               key={transaction.id ?? `label-${index}`}
               className={classNames(
-                "text-center text-base font-bold capitalize leading-tight",
+                "text-center font-bold text-base capitalize leading-tight",
                 isActive ? "text-primary-500" : "text-grey-600"
               )}
             >

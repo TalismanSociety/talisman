@@ -1,7 +1,6 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
-
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkDisplayNamesMapById } from "@ui/state/networks"
+import { useMemo } from "react"
 
 export type PortfolioNetwork = {
   id: NetworkId

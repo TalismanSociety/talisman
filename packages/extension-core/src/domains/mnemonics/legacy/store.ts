@@ -1,10 +1,10 @@
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../../libs/Store"
-import { decryptLegacyMnemonicObject, LegacySeedObj } from "./helpers"
+import { decryptLegacyMnemonicObject, type LegacySeedObj } from "./helpers"
 
 const storageKey = "nursery"
 

@@ -1,16 +1,16 @@
-import { TypeRegistry } from "@polkadot/types"
-import { HexString } from "@polkadot/util/types"
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
-import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { TypeRegistry } from "@polkadot/types"
+import type { HexString } from "@polkadot/util/types"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
 import { parseTransactionInfo, serializeTransaction } from "@talismn/solana"
 import { log } from "extension-shared"
 import merge from "lodash-es/merge"
-import { Hex, TransactionRequest } from "viem"
+import type { Hex, TransactionRequest } from "viem"
 
 import { db } from "../../db"
 import { filterIsSameNetworkAndAddressTx } from "./exports"
-import { TransactionStatus, WalletTransactionInfo } from "./types"
+import type { TransactionStatus, WalletTransactionInfo } from "./types"
 
 type AddTransactionOptions = {
   label?: string

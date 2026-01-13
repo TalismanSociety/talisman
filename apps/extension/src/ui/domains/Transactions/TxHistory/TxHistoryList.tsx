@@ -1,24 +1,9 @@
+import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { BalanceFormatter } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, LoaderIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import {
-  isTxInfoApproval,
-  isTxInfoSwap,
-  isTxInfoTransfer,
-  TransactionStatus,
-  WalletTransaction,
-  WalletTransactionDot,
-  WalletTransactionEth,
-  WalletTransactionSol,
-} from "extension-core"
-import { IS_FIREFOX } from "extension-shared"
-import { FC, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { useScrollContainer } from "@talisman/components/ScrollContainer"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { Tokens } from "@ui/domains/Asset/Tokens"
@@ -33,8 +18,31 @@ import {
   useTokenRates,
 } from "@ui/state"
 import { IS_POPUP } from "@ui/util/constants"
+import {
+  isTxInfoApproval,
+  isTxInfoSwap,
+  isTxInfoTransfer,
+  type TransactionStatus,
+  type WalletTransaction,
+  type WalletTransactionDot,
+  type WalletTransactionEth,
+  type WalletTransactionSol,
+} from "extension-core"
+import { IS_FIREFOX } from "extension-shared"
+import {
+  type FC,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { ReplacementCallbackArgs } from "../TxProgress"
+import type { ReplacementCallbackArgs } from "../TxProgress"
 import { DistanceToNow } from "./DistanceToNow"
 import { useTxHistory } from "./TxHistoryContext"
 import { TxHistoryModal } from "./TxHistoryModal"
@@ -93,7 +101,7 @@ export const TxHistoryList = () => {
       />
 
       {!isLoading && !transactions.length && (
-        <div className="text-body-disabled bg-grey-900 flex h-40 w-full flex-col items-center justify-center rounded-sm text-sm">
+        <div className="flex h-40 w-full flex-col items-center justify-center rounded-sm bg-grey-900 text-body-disabled text-sm">
           {t("No transactions found")}
         </div>
       )}
@@ -143,7 +151,7 @@ const TransactionRows: FC<TransactionRowsProps> = ({ transactions, onSelectTx })
             <div
               data-testid="tx-history-row-transaction"
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -208,13 +216,13 @@ const TxIconContainer = ({
         {!!networkId && (
           <NetworkLogo
             networkId={networkId}
-            className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
+            className="!absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border border-grey-800"
           />
         )}
       </div>
     </TooltipTrigger>
     {!!tooltip && (
-      <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+      <TooltipContent className="z-20 rounded-xs bg-grey-700 p-3 text-xs shadow">
         {tooltip}
       </TooltipContent>
     )}
@@ -291,7 +299,7 @@ const SwapTransactionStatusLabelFallback = () => {
   const { t } = useTranslation()
   return (
     <>
-      <span className="bg-body-disabled select-none rounded text-transparent">
+      <span className="select-none rounded bg-body-disabled text-transparent">
         {t("Submitting")}{" "}
       </span>
       <LoaderIcon className="animate-spin-slow text-body-disabled" />
@@ -313,16 +321,16 @@ const TransactionRowBase: FC<{
       onClick={onClick}
       disabled={!onClick}
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 relative z-0 flex w-full grow items-center rounded-sm text-left",
+        "relative z-0 flex w-full grow items-center rounded-sm bg-grey-850 text-left hover:bg-grey-800",
         IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8"
       )}
     >
       {logo}
-      <div className="leading-paragraph flex w-full grow justify-between">
+      <div className="flex w-full grow justify-between leading-paragraph">
         <div className="flex flex-col items-start justify-center">
           <div
             className={classNames(
-              "text-body flex h-10 items-center gap-2 font-bold",
+              "flex h-10 items-center gap-2 font-bold text-body",
               IS_POPUP ? "text-sm" : "text-base"
             )}
           >
@@ -416,7 +424,7 @@ const TransactionRowEvm: FC<TransactionRowEthProps> = ({ tx, onSelectTx }) => {
             <TransactionStatusLabel status={tx.status} />
           )}
           {tx.isReplacement && (
-            <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
+            <span className="rounded bg-alert-warn/25 px-3 py-1 font-light text-[10px] text-alert-warn">
               {t("Replacement")}
             </span>
           )}
@@ -734,14 +742,14 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 const TransactionRowShimmer = () => {
   return (
     <TransactionRowBase
-      logo={<div className="bg-grey-800 h-16 w-16 shrink-0 animate-pulse rounded-full" />}
+      logo={<div className="h-16 w-16 shrink-0 animate-pulse rounded-full bg-grey-800" />}
       status={
-        <div className="bg-grey-800 text-grey-800 rounded-xs mb-1 animate-pulse text-sm">
+        <div className="mb-1 animate-pulse rounded-xs bg-grey-800 text-grey-800 text-sm">
           Dunno yet
         </div>
       }
       wen={
-        <div className="bg-grey-800 text-grey-800 rounded-xs mt-1 animate-pulse text-xs">
+        <div className="mt-1 animate-pulse rounded-xs bg-grey-800 text-grey-800 text-xs">
           Very long time ago
         </div>
       }

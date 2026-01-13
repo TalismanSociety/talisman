@@ -1,17 +1,16 @@
-import { DefiPosition, DefiPositionItem } from "extension-core"
-import { FC, useMemo } from "react"
-
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDefiPosition } from "@ui/state"
+import type { DefiPosition, DefiPositionItem } from "extension-core"
+import { type FC, useMemo } from "react"
 
 import { PositionContextMenu } from "./PositionContextMenu"
 import { PositionItemAssetLogo } from "./PositionItemAssetLogo"
 import { PositionItemTokens } from "./PositionItemTokens"
 import { PositionItemType } from "./PositionItemType"
-import { PositionSectionLabel, PositionSectionType } from "./PositionSectionLabel"
+import { PositionSectionLabel, type PositionSectionType } from "./PositionSectionLabel"
 
 export const PopupDefiPosition: FC<{ positionId: string | undefined }> = ({ positionId }) => {
   const position = useDefiPosition(positionId)
@@ -37,15 +36,15 @@ const DefiPositionActionRow: FC<{ position: DefiPosition }> = ({ position }) => 
   )
 
   return (
-    <div className="bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm border-transparent px-6">
+    <div className="flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm border-transparent bg-grey-800 px-6">
       <AssetLogo url={position.defiLogoUrl} className="size-16" />
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden pr-8">
         <div className="flex grow items-center gap-3">
-          <div className="text-body truncate text-sm font-bold">{name}</div>
+          <div className="truncate font-bold text-body text-sm">{name}</div>
         </div>
         <div className="flex w-full items-center gap-2 overflow-hidden text-xs">
           <NetworkLogo networkId={position.networkId} />
-          <span className="text-body-secondary truncate">
+          <span className="truncate text-body-secondary">
             <NetworkName networkId={position.networkId} />
           </span>
         </div>
@@ -71,9 +70,9 @@ const DefiPositionSection: FC<{ position: DefiPosition; type: PositionSectionTyp
   if (!items.length) return null
 
   return (
-    <div className="bg-black-secondary rounded-sm">
+    <div className="rounded-sm bg-black-secondary">
       <div className="flex h-[3.8rem] w-full items-center">
-        <div className="px-6 text-sm font-bold text-white">
+        <div className="px-6 font-bold text-sm text-white">
           <PositionSectionLabel type={type} />
         </div>
       </div>
@@ -92,13 +91,13 @@ const DefiPositionItemRow: FC<{
     <div className="flex h-28 w-full items-center gap-4 overflow-hidden px-6">
       <PositionItemAssetLogo networkId={networkId} item={item} className="size-16" />
       <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-        <div className="text-body flex w-full items-center justify-between gap-6 overflow-hidden text-sm font-bold">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden font-bold text-body text-sm">
           <div className="grow truncate">{item.name}</div>
           <div className="max-w-[50%] truncate">
             <PositionItemTokens item={item} />
           </div>
         </div>
-        <div className="text-body-secondary flex w-full items-center justify-between gap-6 overflow-hidden text-xs font-normal">
+        <div className="flex w-full items-center justify-between gap-6 overflow-hidden font-normal text-body-secondary text-xs">
           <div className="grow truncate">
             <PositionItemType type={item.type} />
           </div>

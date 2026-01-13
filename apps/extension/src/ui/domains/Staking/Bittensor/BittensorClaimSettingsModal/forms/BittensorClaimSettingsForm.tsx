@@ -2,10 +2,9 @@ import { classNames } from "@talismn/util"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
 import { SapiSendButton } from "../../../../Transactions/SapiSendButton"
 import { BondAccountPicker } from "../../../Bond/BondAccountPicker"
+import type { RootClaimType } from "../../../hooks/bittensor/dTao/types"
 import { useGetBittensorClaimTypePayload } from "../../../hooks/bittensor/dTao/useGetBittensorClaimTypePayload"
 import { BittensorAssetAccountSummary } from "../../components/BittensorAssetAccountSummary"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
@@ -86,7 +85,7 @@ export const BittensorClaimSettingsForm = () => {
 
       <div className="mt-4 flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <span className="text-body text-sm font-semibold leading-[1.1]">{t("Reward Type")}</span>
+          <span className="font-semibold text-body text-sm leading-[1.1]">{t("Reward Type")}</span>
           <span className="text-body-secondary text-xs leading-[1.4]">
             {t("Select how this account receives root emission rewards.")}
           </span>
@@ -103,25 +102,25 @@ export const BittensorClaimSettingsForm = () => {
                 onClick={() => !option.disabled && setSelectedClaimType(option.value)}
                 disabled={isClaimTypeLoading}
                 className={classNames(
-                  "border-light-gray relative w-full rounded-sm border px-6 py-5 text-left transition-colors",
+                  "relative w-full rounded-sm border border-light-gray px-6 py-5 text-left transition-colors",
                   "bg-black-tertiary text-sm",
                   isSelected
                     ? "text-body"
-                    : "text-body-secondary hover:border-grey-700 hover:text-body border-transparent",
+                    : "border-transparent text-body-secondary hover:border-grey-700 hover:text-body",
                   option.disabled && "cursor-not-allowed opacity-50"
                 )}
               >
                 <div className="flex flex-col gap-1 pr-10">
-                  <span className="text-body text-[14px] font-semibold leading-[1.2]">
+                  <span className="font-semibold text-[14px] text-body leading-[1.2]">
                     {option.title}
                   </span>
-                  <span className="text-body-secondary text-[12px] leading-[1.4]">
+                  <span className="text-[12px] text-body-secondary leading-[1.4]">
                     {option.description}
                   </span>
                 </div>
                 <span
                   className={
-                    "bg-grey-700 absolute right-6 top-5 flex h-7 w-7 items-center justify-center rounded-full transition-colors"
+                    "absolute top-5 right-6 flex h-7 w-7 items-center justify-center rounded-full bg-grey-700 transition-colors"
                   }
                 >
                   <span

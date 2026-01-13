@@ -1,5 +1,5 @@
 import { bind } from "@react-rxjs/core"
-import { SetStateAction, useCallback } from "react"
+import { type SetStateAction, useCallback } from "react"
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs"
 
 const allOpenCloseState$ = new BehaviorSubject<{ [key: string]: boolean }>({})

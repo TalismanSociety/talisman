@@ -3,8 +3,8 @@ import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { isAddressEqual } from "@talismn/crypto"
 import {
-  AccountLedgerEthereum,
-  EthSignMessageMethod,
+  type AccountLedgerEthereum,
+  type EthSignMessageMethod,
   getTransactionSerializable,
 } from "extension-core"
 import { t } from "i18next"
@@ -13,10 +13,10 @@ import { useTranslation } from "react-i18next"
 import {
   hexToBigInt,
   isHex,
+  type Signature,
   serializeTransaction,
-  Signature,
   signatureToHex,
-  TransactionRequest,
+  type TransactionRequest,
 } from "viem"
 
 import { getTalismanLedgerError, TalismanLedgerError } from "./errors"

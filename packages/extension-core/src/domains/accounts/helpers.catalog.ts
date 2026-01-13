@@ -199,7 +199,7 @@ const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
 
 /** Recursive, removes an account from anywhere in the tree, including inside folders */
 const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undefined => {
-  let account = undefined
+  let account
   const removeFromSet = (set: TreeItem[], address: string) => {
     const indexes = set.reduceRight((indexes, item, index) => {
       if (item.type === "account" && isAddressEqual(item.address, address)) {

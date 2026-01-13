@@ -1,6 +1,10 @@
-import { TokenList } from "@talismn/chaindata-provider"
-import { fetchTokenRates, TokenRateCurrency, TokenRatesStorage } from "@talismn/token-rates"
-import { Subscription } from "dexie"
+import type { TokenList } from "@talismn/chaindata-provider"
+import {
+  fetchTokenRates,
+  type TokenRateCurrency,
+  type TokenRatesStorage,
+} from "@talismn/token-rates"
+import type { Subscription } from "dexie"
 import { log } from "extension-shared"
 import { isEqual, uniq } from "lodash-es"
 import debounce from "lodash-es/debounce"
@@ -17,7 +21,7 @@ import {
 import { getBlobStore } from "../../db"
 import { createSubscription, unsubscribe } from "../../handlers/subscriptions"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Port } from "../../types/base"
+import type { Port } from "../../types/base"
 import { remoteConfigStore } from "../app/store.remoteConfig"
 import { settingsStore } from "../app/store.settings"
 import { activeTokensStore, filterActiveTokens } from "../balances/store.activeTokens"

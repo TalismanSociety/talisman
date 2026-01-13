@@ -23,7 +23,7 @@ export const formatDecimals = (
 
   const value = new BigNumber(num)
   // very small numbers should display "< 0.0001"
-  const minDisplayVal = 1 / Math.pow(10, digits)
+  const minDisplayVal = 1 / 10 ** digits
 
   if (value.gt(0) && value.lt(minDisplayVal)) return `< ${formatDecimals(minDisplayVal)}`
 

@@ -1,27 +1,26 @@
-import { Balance, BalanceFormatter, Balances, getBalanceId } from "@talismn/balances"
+import { provideContext } from "@talisman/util/provideContext"
+import { type Balance, BalanceFormatter, type Balances, getBalanceId } from "@talismn/balances"
 import {
-  DotNetworkId,
+  type DotNetworkId,
   subDTaoTokenId,
   subNativeTokenId,
-  TokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
-import { Address, isAccountOfType } from "extension-core"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import { type Address, isAccountOfType } from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { useOpenClose } from "talisman-ui"
-import { Hex } from "viem"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAccountByAddress, usePortfolioBalances, useToken, useTokenRates } from "@ui/state"
+import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../../hooks/useExistentialDeposit"
 import { useFeeToken } from "../../../SendFunds/useFeeToken"
 import { ROOT_NETUID } from "../utils/constants"
 import {
-  BittensorStakingPosition,
+  type BittensorStakingPosition,
   useBittensorStakingPositions,
 } from "./useBittensorStakingPositions"
 import { useGetBittensorStakeInfo } from "./useGetBittensorStakeInfo"

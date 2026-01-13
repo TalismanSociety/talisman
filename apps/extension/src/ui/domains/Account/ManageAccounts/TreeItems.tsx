@@ -1,7 +1,13 @@
+import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { MoreHorizontalIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account, AccountsCatalogTree } from "extension-core"
-import { FC, Fragment, useMemo } from "react"
+import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
+import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
+import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
+import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import type { Account, AccountsCatalogTree } from "extension-core"
+import { type FC, Fragment, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   ContextMenu,
@@ -12,16 +18,9 @@ import {
   useOpenClose,
 } from "talisman-ui"
 
-import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
-import { AccountsLogoStack } from "@ui/domains/Account/AccountsLogoStack"
-import { useDeleteFolderModal } from "@ui/domains/Account/DeleteFolderModal"
-import { useRenameFolderModal } from "@ui/domains/Account/RenameFolderModal"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-
 import { TreeDraggable, TreeDroppable } from "./DragAndDrop"
 import { TreeItemAccount } from "./TreeItemAccount"
-import { UiTreeFolder, UiTreeItem } from "./types"
+import type { UiTreeFolder, UiTreeItem } from "./types"
 
 export const TreeItems: FC<{
   treeName: AccountsCatalogTree
@@ -120,7 +119,7 @@ const SeparatorDropZone: FC<{
       index={index}
       disabled={disabled}
     >
-      <div className="rounded-xs h-full" />
+      <div className="h-full rounded-xs" />
     </TreeDroppable>
   )
 }
@@ -145,7 +144,7 @@ export const TreeItemFolder: FC<{
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <div className={classNames("@container bg-grey-850 relative flex flex-col rounded-sm pt-2")}>
+    <div className={classNames("@container relative flex flex-col rounded-sm bg-grey-850 pt-2")}>
       <div
         className={classNames(
           "flex h-[5.3rem] items-center gap-8 overflow-hidden border-[1px] border-transparent px-8 pb-0"
@@ -167,12 +166,12 @@ export const TreeItemFolder: FC<{
 
         <div data-no-dnd="true">
           <ContextMenu placement="bottom-end">
-            <ContextMenuTrigger className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]">
+            <ContextMenuTrigger className="rounded p-6 text-body-secondary enabled:hover:bg-grey-750 enabled:hover:text-body disabled:cursor-[inherit] disabled:text-body-disabled">
               <MoreHorizontalIcon className="shrink-0" />
             </ContextMenuTrigger>
             <ContextMenuContent
               data-no-dnd="true"
-              className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg"
+              className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg"
             >
               <ContextMenuItem onClick={() => renameFolder(folder.id, folder.name, treeName)}>
                 {t("Rename")}
@@ -214,7 +213,7 @@ const EmptyFolderDropZone: FC<{
 
   return (
     <TreeDroppable
-      className="bg-grey-800 text-body-disabled h-32 w-full shrink-0 rounded-b-sm border border-dashed border-transparent"
+      className="h-32 w-full shrink-0 rounded-b-sm border border-transparent border-dashed bg-grey-800 text-body-disabled"
       hasOverClassName=""
       isOverClassName="bg-body/20 border-body text-body"
       parentId={folderId}

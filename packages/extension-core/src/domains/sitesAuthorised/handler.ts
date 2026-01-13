@@ -1,8 +1,11 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { base58, ed25519 } from "@talismn/crypto"
-import { Account } from "@talismn/keyring"
-
+import type { Account } from "@talismn/keyring"
+import { talismanAnalytics } from "../../libs/Analytics"
+import { ExtensionHandler } from "../../libs/Handler"
+import { requestStore } from "../../libs/requests/store"
+import type { KnownRequestIdOnly } from "../../libs/requests/types"
 import type {
   MessageTypes,
   RequestType,
@@ -11,14 +14,10 @@ import type {
   ResponseTypes,
 } from "../../types"
 import type { Port, RequestIdOnly } from "../../types/base"
-import { talismanAnalytics } from "../../libs/Analytics"
-import { ExtensionHandler } from "../../libs/Handler"
-import { requestStore } from "../../libs/requests/store"
-import { KnownRequestIdOnly } from "../../libs/requests/types"
 import { keyringStore } from "../keyring/store"
 import { withSecretKey } from "../keyring/withSecretKey"
 import { ignoreRequest } from "./requests"
-import {
+import type {
   AuthorizedSite,
   AuthRequestApprove,
   RequestAuthorizedSiteBatchOp,

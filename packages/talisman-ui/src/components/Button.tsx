@@ -1,6 +1,6 @@
 import { LoaderIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, SVGProps, useMemo } from "react"
+import { type FC, type SVGProps, useMemo } from "react"
 
 type ButtonColor = "default" | "primary" | "red" | "orange"
 
@@ -35,8 +35,8 @@ export const Button: FC<ButtonProps> = ({
 
     if (disabled)
       return classNames(
-        "bg-black-tertiary text-body-disabled ",
-        effectiveColor === "default" ? " border" : ""
+        "bg-black-tertiary text-body-disabled",
+        effectiveColor === "default" ? "border" : ""
       )
 
     switch (effectiveColor) {
@@ -60,7 +60,7 @@ export const Button: FC<ButtonProps> = ({
       disabled={disabled || processing}
       className={classNames(
         "bg relative inline-flex items-center justify-center rounded",
-        small ? "h-20 px-8 text-sm" : "text-md h-28 px-12",
+        small ? "h-20 px-8 text-sm" : "h-28 px-12 text-md",
         fullWidth ? "w-full" : "",
         colors,
         className
@@ -87,7 +87,7 @@ export const Button: FC<ButtonProps> = ({
       {!disabled && processing && (
         <div
           className={classNames(
-            "absolute left-0 top-0 flex h-full w-full flex-col items-center justify-center"
+            "absolute top-0 left-0 flex h-full w-full flex-col items-center justify-center"
           )}
         >
           <LoaderIcon className="animate-spin-slow text-lg" />

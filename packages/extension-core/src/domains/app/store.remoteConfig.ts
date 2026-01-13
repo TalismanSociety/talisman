@@ -4,7 +4,7 @@ import merge from "lodash-es/merge"
 
 import { StorageProvider } from "../../libs/Store"
 import { fetchRemoteConfig } from "../../util/fetchRemoteConfig"
-import { RemoteConfigStoreData } from "./types"
+import type { RemoteConfigStoreData } from "./types"
 
 export const DEFAULT_REMOTE_CONFIG: RemoteConfigStoreData = {
   featureFlags: {},

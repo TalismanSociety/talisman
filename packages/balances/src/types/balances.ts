@@ -1,12 +1,23 @@
-import { evmErc20TokenId, NetworkList, TokenList } from "@talismn/chaindata-provider"
-import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
+import { evmErc20TokenId, type NetworkList, type TokenList } from "@talismn/chaindata-provider"
+import {
+  newTokenRates,
+  type TokenRateCurrency,
+  type TokenRates,
+  type TokenRatesList,
+} from "@talismn/token-rates"
+import {
+  BigMath,
+  isArrayOf,
+  isBigInt,
+  type NonFunctionProperties,
+  planckToTokens,
+} from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
-import { SubDTaoBalanceMeta } from "../modules"
+import type { SubDTaoBalanceMeta } from "../modules"
 import { getDTaoTokenRates } from "../modules/substrate-dtao"
-import {
+import type {
   Amount,
   AmountWithLabel,
   BalanceJson,
@@ -411,9 +422,9 @@ export class Balance {
       const reserve0 = extras.find((extra) => extra.label === "reserve0")?.amount ?? "0"
       const reserve1 = extras.find((extra) => extra.label === "reserve1")?.amount ?? "0"
 
-      const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * decimals))
-      const reserve0Tokens = BigNumber(reserve0).times(Math.pow(10, -1 * decimals0))
-      const reserve1Tokens = BigNumber(reserve1).times(Math.pow(10, -1 * decimals1))
+      const totalSupplyTokens = BigNumber(totalSupply).times(10 ** (-1 * decimals))
+      const reserve0Tokens = BigNumber(reserve0).times(10 ** (-1 * decimals0))
+      const reserve1Tokens = BigNumber(reserve1).times(10 ** (-1 * decimals1))
 
       const rates0Currencies = new Set(Object.keys(rates0) as TokenRateCurrency[])
       const rates1Currencies = new Set(Object.keys(rates1) as TokenRateCurrency[])

@@ -1,10 +1,10 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { ScaleApi } from "@talismn/sapi"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { RootClaimType, RootClaimTypeEnum } from "./types"
+import type { RootClaimType, RootClaimTypeEnum } from "./types"
 
 type SetBittensorClaimType = {
   networkId: DotNetworkId | null | undefined

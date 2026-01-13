@@ -1,6 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountsCatalogTree } from "extension-core"
-import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { api } from "@ui/api"
+import { useAccountsCatalog } from "@ui/state"
+import type { AccountsCatalogTree } from "extension-core"
+import { type RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
@@ -12,10 +15,6 @@ import {
   ModalDialog,
 } from "talisman-ui"
 import * as yup from "yup"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { api } from "@ui/api"
-import { useAccountsCatalog } from "@ui/state"
 
 export const useNewFolderModal = () => useGlobalOpenClose("newFolderModal")
 

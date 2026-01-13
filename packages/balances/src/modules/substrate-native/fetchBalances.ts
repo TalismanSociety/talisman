@@ -1,8 +1,8 @@
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRpcQueryPack } from "../shared/rpcQueryPack"
 import { getBalanceDefs } from "../shared/types"
-import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import { type MiniMetadataExtra, MODULE_TYPE, type ModuleConfig, type TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
 import { buildNomPoolQueries } from "./queries/buildNomPoolQueries"
 

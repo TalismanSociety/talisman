@@ -1,14 +1,13 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
-import { Account } from "extension-core"
-import { uniq } from "lodash-es"
-import { FC, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import ConnectedAccountsDrawer from "@ui/domains/Site/ConnectedAccountsDrawer"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
 import { useAccounts, useAuthorisedSites } from "@ui/state"
+import type { Account } from "extension-core"
+import { uniq } from "lodash-es"
+import { type FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ConnectedSiteIndicator } from "./ConnectedSiteIndicator"
 
@@ -72,12 +71,12 @@ export const ConnectedAccountsPill: FC = () => {
         )}
         onClick={() => setShowConnectedAccounts(true)}
       >
-        <div className="bg-grey-850 group-hover:bg-grey-800 flex h-full items-center gap-3 overflow-hidden rounded-full px-4">
+        <div className="flex h-full items-center gap-3 overflow-hidden rounded-full bg-grey-850 px-4 group-hover:bg-grey-800">
           <ConnectedSiteIndicator status={count ? "connected" : "disconnected"} />
           <div className="flex grow items-center gap-3 truncate">
-            <div className="text-body max-w-[50%] shrink-0 truncate text-sm">{label}</div>
-            <div className="bg-grey-700 h-6 w-0.5 shrink-0"></div>
-            <div className="text-body-secondary grow text-left text-xs">{host}</div>
+            <div className="max-w-[50%] shrink-0 truncate text-body text-sm">{label}</div>
+            <div className="h-6 w-0.5 shrink-0 bg-grey-700"></div>
+            <div className="grow text-left text-body-secondary text-xs">{host}</div>
           </div>
           <ChevronDownIcon className="shrink-0" />
         </div>

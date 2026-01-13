@@ -1,6 +1,6 @@
-import { Abi, Client, getContract, parseAbi } from "viem"
+import { type Abi, type Client, getContract, parseAbi } from "viem"
 
-import { Erc20ContractData, getErc20ContractData } from "./getErc20ContractData"
+import { type Erc20ContractData, getErc20ContractData } from "./getErc20ContractData"
 
 const ABI_UNISWAPV2PAIR = parseAbi([
   "function decimals() pure returns (uint8)",

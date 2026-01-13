@@ -1,8 +1,3 @@
-import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
-import { ReactNode, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   MnemonicCreateModal,
@@ -10,12 +5,16 @@ import {
   useMnemonicCreateModal,
 } from "@ui/apps/dashboard/routes/Settings/Mnemonics/MnemonicCreateModal"
 import { useMnemonics } from "@ui/state"
+import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
+import { type ReactNode, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 import { useAccountAddQr } from "./context"
 import { MnemonicForm } from "./MnemonicForm"
 
 const VerifierCertificateOption = ({ text, children }: { text: string; children: ReactNode }) => (
-  <div className="text-body-secondary grid grid-cols-2 items-center gap-8 text-sm">
+  <div className="grid grid-cols-2 items-center gap-8 text-body-secondary text-sm">
     {children}
     <div className="p-2">{text}</div>
   </div>
@@ -83,7 +82,7 @@ const ConfigureVerifierCertificateMnemonicForm = () => {
             <a
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
-              className="hover:text-primary text-grey-200"
+              className="text-grey-200 hover:text-primary"
             >
               {t("Read more about Talisman's Polkadot Vault integration here.")}
             </a>

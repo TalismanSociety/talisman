@@ -1,5 +1,5 @@
-import { Connection, PublicKey } from "@solana/web3.js"
-import { networkIdFromTokenId, solSplTokenId, TokenId } from "@talismn/chaindata-provider"
+import { type Connection, PublicKey } from "@solana/web3.js"
+import { networkIdFromTokenId, solSplTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
 import { log } from "extension-shared"

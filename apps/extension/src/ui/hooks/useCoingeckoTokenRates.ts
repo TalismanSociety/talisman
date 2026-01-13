@@ -1,5 +1,5 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { newTokenRates, TokenRates } from "@talismn/token-rates"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { newTokenRates, type TokenRates } from "@talismn/token-rates"
 import { useQuery } from "@tanstack/react-query"
 import { fetchFromCoingecko } from "extension-core"
 

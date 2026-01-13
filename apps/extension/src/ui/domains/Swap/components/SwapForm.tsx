@@ -1,5 +1,6 @@
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
 import { AlertCircleIcon, ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
+import { useAccountsMap, useNetworkById } from "@ui/state"
 import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
@@ -7,19 +8,15 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
-import { useAccountsMap, useNetworkById } from "@ui/state"
-
 import {
   fromAddressAtom,
   fromAmountAtom,
   fromAssetAtom,
-  SwappableAssetWithDecimals,
+  type SwappableAssetWithDecimals,
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import { type useFastBalance } from "../swaps-port/useFastBalance"
 import {
   fromAssetsAtom,
   selectedQuoteAtom,
@@ -31,6 +28,8 @@ import {
   useSetToAddress,
   useSwapErc20Approval,
 } from "../swaps.api"
+import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FromToAccountSelector } from "./FromToAccountSelector"
 import { ReverseButton } from "./ReverseButton"
 import { SwapDetails } from "./SwapDetails"
@@ -126,11 +125,11 @@ export const SwapForm = ({
     //     mb-44 (the height of the `Review` button and its container)
     //   + pb-8  (an extra gap at the bottom of the `overflow-y-auto` scrollable view)
     <div className="mb-52 flex h-full w-full flex-col gap-8 overflow-y-auto px-12">
-      <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded p-8">
+      <div className="relative flex w-full flex-col gap-4 rounded bg-grey-900 p-8">
         <div className="flex items-start justify-between">
           <h4 className="text-sm">{t("Select asset")}</h4>
           <a
-            className="text-grey-500 hover:text-grey-400 inline-flex items-center gap-2 text-xs"
+            className="inline-flex items-center gap-2 text-grey-500 text-xs hover:text-grey-400"
             href={TALISMAN_WEB_APP_SWAP_URL}
             target="_blank"
             rel="noreferrer noopener"
@@ -231,8 +230,8 @@ export const SwapForm = ({
         )}
 
         {approveRecipient && (
-          <div className="bg-black-tertiary animate-slide-in-up absolute bottom-0 left-0 m-8 flex flex-col gap-8 rounded p-8">
-            <div className="flex items-center gap-3 text-sm text-orange-400">
+          <div className="absolute bottom-0 left-0 m-8 flex animate-slide-in-up flex-col gap-8 rounded bg-black-tertiary p-8">
+            <div className="flex items-center gap-3 text-orange-400 text-sm">
               {toIsWatched && (
                 <Trans t={t}>
                   <AlertCircleIcon /> Sending {toAsset?.symbol} to a watch-only account on{" "}

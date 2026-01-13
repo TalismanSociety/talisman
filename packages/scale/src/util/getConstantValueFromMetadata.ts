@@ -1,5 +1,5 @@
 import log from "../log"
-import { MetadataBuilder, UnifiedMetadata } from "../papito"
+import type { MetadataBuilder, UnifiedMetadata } from "../papito"
 import { parseMetadataRpc } from "./parseMetadataRpc"
 
 export const getConstantValueFromMetadata = <T>(

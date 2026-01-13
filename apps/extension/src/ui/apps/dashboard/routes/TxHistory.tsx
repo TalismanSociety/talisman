@@ -1,8 +1,4 @@
 import { ChevronDownIcon, GlobeIcon } from "@talismn/icons"
-import { useCallback, useEffect } from "react"
-import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
-
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
@@ -10,6 +6,9 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { TxHistoryList, TxHistoryProvider } from "@ui/domains/Transactions/TxHistory"
 import { useTxHistory } from "@ui/domains/Transactions/TxHistory/TxHistoryContext"
 import { TxHistoryNetworkPicker } from "@ui/domains/Transactions/TxHistory/TxHistoryNetworkPicker"
+import { useCallback, useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { useOpenClose } from "talisman-ui"
 
 const NetworkFilterButton = () => {
   const { t } = useTranslation()
@@ -29,13 +28,13 @@ const NetworkFilterButton = () => {
       <button
         type="button"
         onClick={open}
-        className="bg-grey-850 hover:bg-grey-800 text-body-secondary hover:text-body h-16 overflow-hidden rounded-sm text-left text-xs"
+        className="h-16 overflow-hidden rounded-sm bg-grey-850 text-left text-body-secondary text-xs hover:bg-grey-800 hover:text-body"
       >
         <div className="flex size-full items-center gap-4 overflow-hidden px-4">
           {network ? (
-            <NetworkLogo networkId={network.id} className="text-md shrink-0" />
+            <NetworkLogo networkId={network.id} className="shrink-0 text-md" />
           ) : (
-            <GlobeIcon className="text-md shrink-0" />
+            <GlobeIcon className="shrink-0 text-md" />
           )}
           <div className="grow truncate">
             {network ? (network?.name ?? t("Unknown Network")) : t("All Networks")}

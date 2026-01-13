@@ -1,10 +1,9 @@
 import { bind } from "@react-rxjs/core"
-import { Balance, Balances, FiatSumBalancesFormatter } from "@talismn/balances"
-import { TokenRateCurrency } from "@talismn/token-rates"
+import { Balance, Balances, type FiatSumBalancesFormatter } from "@talismn/balances"
+import type { TokenRateCurrency } from "@talismn/token-rates"
+import { getSettingValue$, selectedCurrency$, useSelectedCurrency, useSetting } from "@ui/state"
 import { useMemo } from "react"
 import { combineLatest, map } from "rxjs"
-
-import { getSettingValue$, selectedCurrency$, useSelectedCurrency, useSetting } from "@ui/state"
 
 import { portfolioDisplayBalances$ } from "../useDisplayBalances"
 

@@ -1,15 +1,15 @@
-import { mergeUint8, toHex } from "@polkadot-api/utils"
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { u8aToHex } from "@polkadot/util"
+import { mergeUint8, toHex } from "@polkadot-api/utils"
 import { Binary } from "polkadot-api"
 
 import log from "../log"
-import { PayloadSignerConfig } from "../types"
+import type { PayloadSignerConfig } from "../types"
 import { getPayloadWithMetadataHash } from "./getPayloadWithMetadataHash"
 import { getSendRequestResult } from "./getSendRequestResult"
 import { getStorageValue } from "./getStorageValue"
 import { mortal, toPjsHex } from "./papi"
-import { Chain, ChainInfo } from "./types"
+import type { Chain, ChainInfo } from "./types"
 
 const ERA_PERIOD = 64 // validity period in blocks, used for mortal era
 

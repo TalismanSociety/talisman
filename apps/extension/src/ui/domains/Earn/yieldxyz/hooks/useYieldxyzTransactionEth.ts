@@ -1,16 +1,15 @@
 import { isEthereumAddress } from "@talismn/crypto"
 import { useQuery } from "@tanstack/react-query"
-import { TransactionDto } from "extension-core"
-import { log } from "extension-shared"
-import { useMemo } from "react"
-import { TransactionRequest } from "viem"
-
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { useEvmTransactionRiskAnalysis } from "@ui/domains/Sign/risk-analysis/ethereum/useEvmTransactionRiskAnalysis"
 import { useNetworkById } from "@ui/state"
+import type { TransactionDto } from "extension-core"
+import { log } from "extension-shared"
+import { useMemo } from "react"
+import type { TransactionRequest } from "viem"
 
-import { UseYieldxyzTransactionProps } from "./types"
+import type { UseYieldxyzTransactionProps } from "./types"
 
 type YieldxyzEthTransaction = {
   type: number

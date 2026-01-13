@@ -1,19 +1,26 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Address, BalanceFormatter } from "@talismn/balances"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { type Address, BalanceFormatter } from "@talismn/balances"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { abiErc20, EvmAddress } from "extension-core"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
+import { useSelectedCurrency, useTokenRates } from "@ui/state"
+import { abiErc20, type EvmAddress } from "extension-core"
 import { log } from "extension-shared"
-import { FC, FormEventHandler, useCallback, useMemo } from "react"
+import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
   Drawer,
   FormFieldContainer,
-  FormFieldInputContainerProps,
+  type FormFieldInputContainerProps,
   FormFieldInputText,
   PillButton,
   Tooltip,
@@ -23,14 +30,6 @@ import {
 } from "talisman-ui"
 import { formatUnits, getContract, hexToBigInt, parseAbi, parseUnits } from "viem"
 import * as yup from "yup"
-
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useSelectedCurrency, useTokenRates } from "@ui/state"
 
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
   "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -156,9 +155,9 @@ const EditAllowanceForm: FC<{
   }, [max, setValue])
 
   return (
-    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12">
+    <form onSubmit={submitWithoutBubbleUp} className="rounded-t-xl bg-grey-800 p-12">
       <div className="text-center font-bold">{t("Edit spending limit")}</div>
-      <p className="text-body-secondary my-12 text-sm">
+      <p className="my-12 text-body-secondary text-sm">
         <Trans
           components={{
             Highlight: <span className="text-body"></span>,

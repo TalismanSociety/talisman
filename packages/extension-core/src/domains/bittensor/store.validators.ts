@@ -1,9 +1,9 @@
-import { keepAlive, Loadable } from "@talismn/util"
+import { keepAlive, type Loadable } from "@talismn/util"
 import { log, TAOSTATS_BASE_PATH } from "extension-shared"
 import { Observable, shareReplay, startWith } from "rxjs"
 
 import { getBlobStore } from "../../db"
-import { BittensorValidator } from "./types"
+import type { BittensorValidator } from "./types"
 
 const blobStore = getBlobStore<BittensorValidator[]>("bittensor-validators")
 

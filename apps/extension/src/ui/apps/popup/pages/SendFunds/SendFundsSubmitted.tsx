@@ -1,9 +1,8 @@
-import { useCallback, useMemo } from "react"
-import { useSearchParams } from "react-router-dom"
-
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useCallback, useMemo } from "react"
+import { useSearchParams } from "react-router-dom"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

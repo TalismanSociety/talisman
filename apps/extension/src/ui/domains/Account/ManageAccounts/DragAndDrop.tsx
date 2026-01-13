@@ -1,4 +1,3 @@
-import type { KeyboardEvent, MouseEvent } from "react"
 import {
   KeyboardSensor as LibKeyboardSensor,
   MouseSensor as LibMouseSensor,
@@ -7,9 +6,10 @@ import {
 } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { classNames } from "@talismn/util"
-import { CSSProperties, FC, ReactNode, useMemo } from "react"
+import type { KeyboardEvent, MouseEvent } from "react"
+import { type CSSProperties, type FC, type ReactNode, useMemo } from "react"
 
-import { UiTreePosition } from "./types"
+import type { UiTreePosition } from "./types"
 
 export const TreeDraggable: FC<{
   id: string
@@ -38,8 +38,8 @@ export const TreeDraggable: FC<{
     <div className={"relative"}>
       <div
         className={classNames(
-          "absolute left-0 top-0 size-full",
-          "bg-grey-850/50 border-grey-800 rounded-sm border border-dashed",
+          "absolute top-0 left-0 size-full",
+          "rounded-sm border border-grey-800 border-dashed bg-grey-850/50",
           isDragging ? "visible" : "invisible"
         )}
       ></div>

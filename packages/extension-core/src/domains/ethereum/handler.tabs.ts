@@ -1,10 +1,10 @@
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import {
-  EthNetwork,
-  EvmErc20Token,
+  type EthNetwork,
+  type EvmErc20Token,
+  type EvmNativeToken,
   evmErc20TokenId,
-  EvmNativeToken,
   evmNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
@@ -14,20 +14,19 @@ import i18next from "i18next"
 import {
   createClient,
   getAddress,
-  Hex,
+  type Hex,
   http,
-  PublicClient,
+  type PublicClient,
+  type RpcError,
   recoverMessageAddress,
-  RpcError,
   toHex,
 } from "viem"
 import { hexToNumber, isHex } from "viem/utils"
-
-import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { TabsHandler } from "../../libs/Handler"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { getErc20TokenInfo } from "../../util/getErc20TokenInfo"
 import { urlToDomain } from "../../util/urlToDomain"
 import { filterAccountsByAddresses, getPublicAccounts } from "../accounts/helpers"
@@ -40,13 +39,12 @@ import {
   ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
   requestAuthoriseSite,
 } from "../sitesAuthorised/requests"
-import {
+import type {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   EthWalletPermissions,
   RequestAuthorizeTab,
 } from "../sitesAuthorised/types"
-import { getEvmErrorCause } from "./errors"
 import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1474_INVALID_INPUT,
@@ -59,6 +57,7 @@ import {
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "./EthProviderRpcError"
+import { getEvmErrorCause } from "./errors"
 import {
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
@@ -66,7 +65,7 @@ import {
   sanitizeWatchAssetRequestParam,
 } from "./helpers"
 import { requestAddNetwork, requestWatchAsset } from "./requests"
-import {
+import type {
   AnyEthRequest,
   AnyEvmError,
   EthProviderMessage,

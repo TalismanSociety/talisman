@@ -1,15 +1,14 @@
-import { ChevronLeftIcon, StarIcon } from "@talismn/icons"
-import { TokenRateCurrency } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer, IconButton } from "talisman-ui"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { ChevronLeftIcon, StarIcon } from "@talismn/icons"
+import type { TokenRateCurrency } from "@talismn/token-rates"
+import { classNames } from "@talismn/util"
 import { currencyConfig, currencyOrder, sortCurrencies } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { Drawer, IconButton } from "talisman-ui"
 
 export const useCurrenciesDrawerOpenClose = () => useGlobalOpenClose("currencies-drawer")
 
@@ -22,22 +21,22 @@ const CurrencyButton: FC<{
     <button
       type="button"
       className={classNames(
-        "text-body-secondary flex h-28 w-full items-center gap-4 rounded-sm px-6",
-        "border-grey-800 border",
+        "flex h-28 w-full items-center gap-4 rounded-sm px-6 text-body-secondary",
+        "border border-grey-800",
         selected && "bg-grey-900",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary"
+        "stroke-primary hover:border-grey-700 hover:bg-grey-800"
       )}
       onClick={onClick}
     >
       <img className="w-16 max-w-full" alt={currency} src={currencyConfig[currency]?.icon} />
       <div className="flex grow flex-col items-start gap-1">
-        <div className="text-body text-base uppercase">{currency}</div>
+        <div className="text-base text-body uppercase">{currency}</div>
         <div className="text-xs">
           {currencyConfig[currency]?.symbol ?? ""} {currencyConfig[currency]?.name ?? currency}
         </div>
       </div>
       {selected ? (
-        <StarIcon className="stroke-primary fill-primary size-8" />
+        <StarIcon className="size-8 fill-primary stroke-primary" />
       ) : (
         <StarIcon className="size-8" />
       )}
@@ -91,8 +90,8 @@ const CurrenciesDrawerContent = () => {
   const { close } = useCurrenciesDrawerOpenClose()
 
   return (
-    <div className="text-body-secondary flex h-[60rem] w-[40rem] flex-col gap-10 bg-black pt-10">
-      <div className="flex items-center gap-3 px-8 text-base font-bold text-white">
+    <div className="flex h-[60rem] w-[40rem] flex-col gap-10 bg-black pt-10 text-body-secondary">
+      <div className="flex items-center gap-3 px-8 font-bold text-base text-white">
         <IconButton onClick={close}>
           <ChevronLeftIcon />
         </IconButton>

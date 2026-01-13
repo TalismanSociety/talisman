@@ -1,8 +1,16 @@
 import { ChevronDownIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { motion, TargetAndTransition, Transition } from "framer-motion"
+import { motion, type TargetAndTransition, type Transition } from "framer-motion"
 import throttle from "lodash-es/throttle"
-import { CSSProperties, FC, ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import {
+  type CSSProperties,
+  type FC,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 const TRANSITION_ACCORDION: Transition = { ease: "easeInOut", duration: 0.3 }
 

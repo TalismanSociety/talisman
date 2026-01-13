@@ -1,13 +1,12 @@
-import { Balances } from "@talismn/balances"
-import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { isNotNil, Loadable } from "@talismn/util"
-import { YieldDto } from "extension-core"
-import { uniq } from "lodash-es"
-import { useMemo } from "react"
-
+import { isNotNil, type Loadable } from "@talismn/util"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useSelectedCurrency, useYieldxyzProducts } from "@ui/state"
+import type { YieldDto } from "extension-core"
+import { uniq } from "lodash-es"
+import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 

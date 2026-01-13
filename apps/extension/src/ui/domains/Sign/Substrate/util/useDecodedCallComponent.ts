@@ -1,7 +1,7 @@
-import { DecodedCall } from "@talismn/sapi"
+import type { DecodedCall } from "@talismn/sapi"
 import { useMemo } from "react"
 
-import { DecodedCallComponentDefs } from "../types"
+import type { DecodedCallComponentDefs } from "../types"
 
 export const useDecodedCallComponent = <T, P>(
   decodedCall: DecodedCall | null | undefined,

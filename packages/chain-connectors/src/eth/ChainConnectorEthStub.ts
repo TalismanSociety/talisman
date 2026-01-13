@@ -1,9 +1,9 @@
-import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
-import { Account, PublicClient, WalletClient } from "viem"
+import type { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
+import type { Account, PublicClient, WalletClient } from "viem"
 
 import { getEvmNetworkPublicClient } from "./getEvmNetworkPublicClient"
 import { getEvmNetworkWalletClient } from "./getEvmNetworkWalletClient"
-import { IChainConnectorEth } from "./IChainConnectorEth"
+import type { IChainConnectorEth } from "./IChainConnectorEth"
 
 export class ChainConnectorEthStub implements IChainConnectorEth {
   #network: EthNetwork

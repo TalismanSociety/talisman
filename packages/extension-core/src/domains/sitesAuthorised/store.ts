@@ -4,7 +4,7 @@ import { isTalismanHostname } from "extension-shared"
 
 import { SubscribableByIdStorageProvider } from "../../libs/Store"
 import { urlToDomain } from "../../util/urlToDomain"
-import { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
+import type { AuthorizedSite, AuthorizedSites, ProviderType } from "./types"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
 

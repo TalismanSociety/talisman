@@ -1,4 +1,4 @@
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const isApiAvailable = (chain: Chain, name: string, method: string) => {
   return chain.metadata.apis.some(

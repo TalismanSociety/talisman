@@ -1,14 +1,13 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { formatDuration, intervalToDuration } from "date-fns"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 

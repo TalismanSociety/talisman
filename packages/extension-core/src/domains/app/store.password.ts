@@ -2,7 +2,7 @@ import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
 import { compare, genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"
 import { createNotification } from "../../notifications"

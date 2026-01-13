@@ -1,17 +1,16 @@
 import { Icon, loadIcons } from "@iconify/react"
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { CheckCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { range } from "lodash-es"
-import { FC, useEffect, useMemo, useRef, useState } from "react"
+import { type FC, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useOpenCloseStatus } from "talisman-ui"
 
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
-
-import { RAMPS_CURRENCIES, RampsCurrency } from "./currencies"
+import { RAMPS_CURRENCIES, type RampsCurrency } from "./currencies"
 import { RampsPickerLayout } from "./RampsPickerLayout"
 
 export const RampsCurrencyPicker: FC<{
@@ -79,7 +78,7 @@ export const RampsCurrencyPicker: FC<{
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput ref={refSearchInput} onChange={setSearch} placeholder={t("Search")} />
         </div>
-        <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+        <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
           {!isIconsReady ? (
             range(0, 10).map((i) => <CurrencyButtonRowSkeleton key={i} />)
           ) : (
@@ -112,7 +111,7 @@ const CurrenciesList: FC<{
 
   if (!currencies.length)
     return (
-      <div className="text-body-secondary p-12 text-center text-base">
+      <div className="p-12 text-center text-base text-body-secondary">
         {t("No currencies match your search")}
       </div>
     )
@@ -132,7 +131,7 @@ const CurrenciesList: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -163,7 +162,7 @@ const CurrencyButtonRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
@@ -176,7 +175,7 @@ const CurrencyButtonRow: FC<{
             <div className="text-white">{currency.code}</div>
             {selected && <CheckCircleIcon className="ml-3 inline shrink-0" />}
           </div>
-          <div className="text-tiny truncate">{currency.name}</div>
+          <div className="truncate text-tiny">{currency.name}</div>
         </div>
       </div>
     </button>
@@ -188,13 +187,13 @@ const CurrencyButtonRowSkeleton: FC = () => {
     <div className="flex h-[5.8rem] w-full select-none items-center gap-4 px-12 text-left">
       <div className="flex items-center gap-8">
         <div className="flex-shrink-0">
-          <div className="bg-grey-750 size-16 animate-pulse rounded-full"></div>
+          <div className="size-16 animate-pulse rounded-full bg-grey-750"></div>
         </div>
         <div className="min-w-0 space-y-2 text-[16px]">
           <div className="flex items-center">
-            <div className="bg-grey-750 text-grey-750 rounded-xs animate-pulse">XXX</div>
+            <div className="animate-pulse rounded-xs bg-grey-750 text-grey-750">XXX</div>
           </div>
-          <div className="text-tiny bg-grey-750 text-grey-750 rounded-xs animate-pulse">
+          <div className="animate-pulse rounded-xs bg-grey-750 text-grey-750 text-tiny">
             XXXXXXXX XXXXXX
           </div>
         </div>

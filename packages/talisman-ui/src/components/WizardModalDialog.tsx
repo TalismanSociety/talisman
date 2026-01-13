@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 
 import { IconButton } from "./IconButton"
 
@@ -17,7 +17,7 @@ export const WizardModalDialog: FC<{
     <div
       id={id}
       className={classNames(
-        "border-grey-850 flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border bg-black",
+        "flex max-h-[100dvh] w-[42rem] max-w-[100dvw] flex-col overflow-hidden rounded border border-grey-850 bg-black",
         className
       )}
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
@@ -26,7 +26,7 @@ export const WizardModalDialog: FC<{
         <IconButton onClick={onBackClick} className={cn(onBackClick ? "visible" : "invisible")}>
           <ChevronLeftIcon />
         </IconButton>
-        <h1 className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-center text-base font-bold">
+        <h1 className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap text-center font-bold text-base">
           {title}
         </h1>
         <IconButton onClick={onCloseClick} className={cn(onCloseClick ? "visible" : "invisible")}>

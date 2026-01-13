@@ -1,10 +1,9 @@
 import { InfoIcon } from "@talismn/icons"
+import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
+import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
 import { useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
-import { MnemonicWordCountSwitch } from "@ui/domains/Mnemonic/MnemonicWordCountSwitch"
 
 import { Stages, useMnemonicCreateModal } from "./context"
 import { MnemonicCreateModalDialog } from "./Dialog"
@@ -31,7 +30,7 @@ const MnemonicFormInner = () => {
           <MnemonicWordCountSwitch value={wordsCount} onChange={setWordsCount} />{" "}
           <Tooltip placement="bottom-end">
             <TooltipTrigger className="hover:text-body">
-              <InfoIcon className="text-body-secondary inline" />
+              <InfoIcon className="inline text-body-secondary" />
             </TooltipTrigger>
             <TooltipContent>
               {t(
@@ -47,7 +46,7 @@ const MnemonicFormInner = () => {
         <Checkbox
           disabled={!canConfirm}
           onChange={(e) => setConfirmed(e.target.checked)}
-          className="text-body-secondary hover:text-body [&>span]:leading-paragraph !gap-8 text-sm"
+          className="!gap-8 text-body-secondary text-sm hover:text-body [&>span]:leading-paragraph"
         >
           {t("I have backed up my recovery phrase, don’t remind me anymore")}
         </Checkbox>
@@ -56,7 +55,7 @@ const MnemonicFormInner = () => {
             {t("Verify recovery phrase")}
           </Button>
           <button
-            className="text-grey-300 hover:text-body flex h-11 cursor-pointer gap-5 self-center text-sm font-bold"
+            className="flex h-11 cursor-pointer gap-5 self-center font-bold text-grey-300 text-sm hover:text-body"
             onClick={complete}
             type="button"
             data-testid="mnemonic-skip-verification-button"

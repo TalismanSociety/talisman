@@ -1,10 +1,9 @@
 import { isEthereumAddress } from "@talismn/crypto"
-import { isPotentialEns, NsLookupType } from "@talismn/on-chain-id"
+import { isPotentialEns, type NsLookupType } from "@talismn/on-chain-id"
 import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 import { useEffect, useState } from "react"
 import { useDebounce } from "react-use"
-
-import { api } from "@ui/api"
 
 export type Options = {
   /** Enabled by default, set to false to disable */

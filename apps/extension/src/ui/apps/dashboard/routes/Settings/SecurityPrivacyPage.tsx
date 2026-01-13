@@ -1,3 +1,6 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Setting } from "@talisman/components/Setting"
+import { Spacer } from "@talisman/components/Spacer"
 import {
   ActivityIcon,
   AlertCircleIcon,
@@ -7,17 +10,13 @@ import {
   LockIcon,
   ShieldZapIcon,
 } from "@talismn/icons"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import { useFeatureFlag, useSetting } from "@ui/state"
 import { IS_FIREFOX } from "extension-shared"
 import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { CtaButton, Toggle, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
-import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
-import { useFeatureFlag, useSetting } from "@ui/state"
 
 const Content = () => {
   const { t } = useTranslation()

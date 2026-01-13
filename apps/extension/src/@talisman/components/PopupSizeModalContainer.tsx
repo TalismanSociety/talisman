@@ -1,7 +1,6 @@
 import { cn } from "@talismn/util"
-import { FC, PropsWithChildren } from "react"
-
 import { IS_POPUP } from "@ui/util/constants"
+import type { FC, PropsWithChildren } from "react"
 
 export const PopupSizeModalContainer: FC<PropsWithChildren<{ id: string; className?: string }>> = ({
   id,
@@ -12,8 +11,8 @@ export const PopupSizeModalContainer: FC<PropsWithChildren<{ id: string; classNa
     <div
       id={id} // containerId for sub modals
       className={cn(
-        "bg-black-primary relative h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] overflow-hidden",
-        !IS_POPUP && "border-grey-800 rounded-lg border shadow",
+        "relative h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] overflow-hidden bg-black-primary",
+        !IS_POPUP && "rounded-lg border border-grey-800 shadow",
         className
       )}
     >

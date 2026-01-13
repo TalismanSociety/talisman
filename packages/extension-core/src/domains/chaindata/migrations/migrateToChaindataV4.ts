@@ -1,14 +1,14 @@
 import {
-  DotNetwork,
-  EthNetwork,
-  EvmNativeToken,
+  type DotNetwork,
+  type EthNetwork,
+  type EvmNativeToken,
   getChaindataDbV3,
-  LegacyChain,
-  LegacyCustomChain,
-  LegacyCustomEvmNetwork,
-  LegacyEvmNetwork,
+  type LegacyChain,
+  type LegacyCustomChain,
+  type LegacyCustomEvmNetwork,
+  type LegacyEvmNetwork,
+  type SubNativeToken,
   subForeignAssetTokenId,
-  SubNativeToken,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
@@ -16,7 +16,7 @@ import { assign, fromPairs, keyBy, toPairs } from "lodash-es"
 import { filter, firstValueFrom } from "rxjs"
 
 import { db as walletDb } from "../../../db"
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
 import { assetDiscoveryStore } from "../../assetDiscovery/store"
 import { activeNetworksStore } from "../../balances/store.activeNetworks"
@@ -275,7 +275,6 @@ const migrateCustomChains = async (
       await customChaindataStore.upsertNetwork(customNetwork, nativeToken)
     } catch (err) {
       log.error(`Error migrating custom chain ${customChain.id}`, err)
-      continue
     }
   }
 }
@@ -331,7 +330,6 @@ const migrateCustomEvmNetworks = async (
       await customChaindataStore.upsertNetwork(customNetwork, nativeToken)
     } catch (err) {
       log.error(`Error migrating custom chain ${customEvmNetwork.id}`, err)
-      continue
     }
   }
 }

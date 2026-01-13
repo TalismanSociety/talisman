@@ -1,10 +1,9 @@
 import { ExternalLinkIcon } from "@talismn/icons"
+import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 import { format } from "date-fns"
-import { FC } from "react"
+import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Modal, ModalDialog } from "talisman-ui"
-
-import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
 
 import { ReactComponent as Background } from "./modal-bg.svg"
 
@@ -16,7 +15,7 @@ export const AssetHubMigrationModal: FC<{ isOpen: boolean; onClose: () => void }
     <Modal
       isOpen={isOpen}
       onDismiss={onClose}
-      className="border-grey-800 h-[60rem] max-h-full w-[40rem] max-w-full overflow-hidden bg-black shadow"
+      className="h-[60rem] max-h-full w-[40rem] max-w-full overflow-hidden border-grey-800 bg-black shadow"
       containerId="main"
     >
       <ModalContent onClose={onClose} />
@@ -32,12 +31,12 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
     <ModalDialog
       title={t("Asset Hub Migration")}
       onClose={onClose}
-      className="[&>header>h1]:text-md bg-black-tertiary relative size-full rounded-none border-none bg-gradient-to-b from-[#E6007A]/50 to-transparent to-40%"
+      className="relative size-full rounded-none border-none bg-black-tertiary bg-gradient-to-b from-[#E6007A]/50 to-40% to-transparent [&>header>h1]:text-md"
     >
       <Background className="absolute -top-20 right-0 z-0 h-[20.7rem] w-[17rem]" />
       <div className="flex size-full flex-col gap-8">
         <div className="grow overflow-auto pt-32">
-          <p className="text-body text-base font-bold">
+          <p className="font-bold text-base text-body">
             <Trans
               t={t}
               components={{ Highlight: <span className="text-[#E6007A]"></span> }}
@@ -47,8 +46,8 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
               }}
             />
           </p>
-          <div className="text-body-secondary mt-16">{t("Why is this great?")}</div>
-          <ul className="text-body-secondary mt-4 list-outside list-disc space-y-2 pl-[1.5rem] text-sm">
+          <div className="mt-16 text-body-secondary">{t("Why is this great?")}</div>
+          <ul className="mt-4 list-outside list-disc space-y-2 pl-[1.5rem] text-body-secondary text-sm">
             <li>
               <Trans
                 t={t}
@@ -96,7 +95,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
               ></Trans>
             </li>
           </ul>
-          <p className="text-body-secondary mt-8 text-sm">
+          <p className="mt-8 text-body-secondary text-sm">
             {t(
               "No action is required: all balances will be transfered automatically as part of the migration."
             )}

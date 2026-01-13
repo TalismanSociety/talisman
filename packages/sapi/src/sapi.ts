@@ -1,5 +1,5 @@
-import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { parseMetadataRpc } from "@talismn/scale"
 
 import { getCallDocs } from "./helpers/getCallDocs"
@@ -14,9 +14,9 @@ import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { isApiAvailable } from "./helpers/isApiAvailable"
-import { ScaleApiSubmitMode, submit } from "./helpers/submit"
-import { Chain } from "./helpers/types"
-import { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
+import { type ScaleApiSubmitMode, submit } from "./helpers/submit"
+import type { Chain } from "./helpers/types"
+import type { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
 
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 

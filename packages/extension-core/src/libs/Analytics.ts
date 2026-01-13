@@ -1,7 +1,7 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { analyticsStore } from "../domains/analytics/store"
-import { PostHogCaptureProperties } from "../domains/analytics/types"
+import type { PostHogCaptureProperties } from "../domains/analytics/types"
 import { settingsStore } from "../domains/app/store.settings"
 import { withGeneralReport } from "./GeneralReport"
 

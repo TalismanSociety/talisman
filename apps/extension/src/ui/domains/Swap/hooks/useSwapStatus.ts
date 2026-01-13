@@ -2,7 +2,7 @@ import { state, useStateObservable } from "@react-rxjs/core"
 import {
   concatMap,
   firstValueFrom,
-  Observable,
+  type Observable,
   of,
   ReplaySubject,
   Subject,
@@ -10,13 +10,13 @@ import {
   tap,
 } from "rxjs"
 
-import { LifiStatus, swapStatus$ as lifiStatus$ } from "../swap-modules/lifi-swap-module"
+import { type LifiStatus, swapStatus$ as lifiStatus$ } from "../swap-modules/lifi-swap-module"
 import {
-  SimpleswapExchange,
+  type SimpleswapExchange,
   swapStatus$ as simpleswapStatus$,
 } from "../swap-modules/simpleswap-swap-module"
 import {
-  StealthexExchange,
+  type StealthexExchange,
   swapStatus$ as stealthexStatus$,
 } from "../swap-modules/stealthex-swap-module"
 

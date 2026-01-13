@@ -1,9 +1,8 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { ExternalLinkIcon } from "@talismn/icons"
-import { ReactNode } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
 import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
+import type { ReactNode } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "./SignAlertMessage"
 

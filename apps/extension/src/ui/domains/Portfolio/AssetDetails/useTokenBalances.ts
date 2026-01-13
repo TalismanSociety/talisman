@@ -1,21 +1,20 @@
+import { sortBigBy } from "@talisman/util/bigHelper"
 import {
-  Balance,
-  BalanceLockType,
-  Balances,
+  type Balance,
+  type BalanceLockType,
+  type Balances,
   filterBaseLocks,
   getBalanceId,
   getLockTitle,
 } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import BigNumber from "bignumber.js"
-import { Address } from "extension-core"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
-import { sortBigBy } from "@talisman/util/bigHelper"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
+import BigNumber from "bignumber.js"
+import type { Address } from "extension-core"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"

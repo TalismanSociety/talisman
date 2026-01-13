@@ -1,7 +1,7 @@
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
 import { assetDiscoveryScanner } from "./scanner"
-import { AssetDiscoveryScanScope } from "./types"
+import type { AssetDiscoveryScanScope } from "./types"
 
 export class AssetDiscoveryHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(

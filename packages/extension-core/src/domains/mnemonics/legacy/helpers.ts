@@ -1,7 +1,7 @@
 import { decrypt } from "@metamask/browser-passworder"
 import { isObject } from "@polkadot/util"
 import { log } from "extension-shared"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 type LEGACY_SEED_PREFIX = "----"
 export const LEGACY_SEED_PREFIX = "----"

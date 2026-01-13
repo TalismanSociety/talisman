@@ -1,8 +1,8 @@
 import { keyBy, uniq } from "lodash-es"
 
 import log from "../../log"
-import { IBalance } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { fetchRuntimeCallResult } from "../shared"
 import { getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"

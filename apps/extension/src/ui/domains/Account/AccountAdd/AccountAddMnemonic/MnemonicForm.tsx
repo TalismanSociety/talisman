@@ -1,6 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountPlatform, isAddressEqual } from "@talismn/crypto"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { type AccountPlatform, isAddressEqual } from "@talismn/crypto"
 import { classNames, isTruthy } from "@talismn/util"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { useAccounts } from "@ui/state"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
@@ -8,8 +15,8 @@ import {
   SUPPORTED_ACCOUNT_PLATFORMS,
 } from "extension-core"
 import { DEBUG } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useForm, UseFormSetValue } from "react-hook-form"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type UseFormSetValue, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -23,16 +30,8 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts } from "@ui/state"
-
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
-import { AccountAddDerivationMode, useAccountAddMnemonic } from "./context"
+import { type AccountAddDerivationMode, useAccountAddMnemonic } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
 const cleanupMnemonic = (input = "") =>
@@ -285,9 +284,9 @@ export const AccountAddMnemonicForm = () => {
             spellCheck={false}
           />
           <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
-            <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+            <div className="shrink-0 text-grey-600">{t("Word count: {{words}}", { words })}</div>
             <DevMnemonicButton setValue={setValue} />
-            <div className="text-alert-warn grow truncate text-right">
+            <div className="grow truncate text-right text-alert-warn">
               {errors.mnemonic?.message}
             </div>
           </div>

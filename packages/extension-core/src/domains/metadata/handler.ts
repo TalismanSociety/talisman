@@ -1,13 +1,12 @@
 import { assert } from "@polkadot/util"
 import { log } from "extension-shared"
-
-import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { db } from "../../db"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { metadataUpdatesStore } from "./metadataUpdates"
-import { RequestMetadataApprove, RequestMetadataReject } from "./types"
+import type { RequestMetadataApprove, RequestMetadataReject } from "./types"
 
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {

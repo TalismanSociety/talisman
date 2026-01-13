@@ -1,4 +1,9 @@
-import { subDTaoTokenId, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+import {
+  subDTaoTokenId,
+  type Token,
+  type TokenId,
+  type TokenList,
+} from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 

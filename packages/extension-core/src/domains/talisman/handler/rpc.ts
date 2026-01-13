@@ -1,11 +1,10 @@
 import assert from "assert"
-
-import type { MessageTypes, RequestType, ResponseType } from "../../../types"
-import type { Port } from "../../../types/base"
 import { TabsHandler } from "../../../libs/Handler"
 import { chainConnector } from "../../../rpcs/chain-connector"
 import { chaindataProvider } from "../../../rpcs/chaindata"
-import {
+import type { MessageTypes, RequestType, ResponseType } from "../../../types"
+import type { Port } from "../../../types/base"
+import type {
   RequestRpcByGenesisHashSend,
   RequestRpcByGenesisHashSubscribe,
   RequestRpcByGenesisHashUnsubscribe,

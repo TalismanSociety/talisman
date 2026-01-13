@@ -1,9 +1,9 @@
 import { map, of, switchMap } from "rxjs"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getBalanceDefs } from "../shared"
 import { getRpcQueryPack$ } from "../shared/rpcQueryPack"
-import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import type { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
 import { buildBaseQueries } from "./queries/buildBaseQueries"
 import { buildNomPoolQueries } from "./queries/buildNomPoolQueries"
 

@@ -1,3 +1,4 @@
+import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import type {
   JsonRpcResponse,
   ProviderInterfaceEmitted as PjsProviderInterfaceEmitted,
@@ -5,7 +6,6 @@ import type {
   ProviderInterfaceCallback,
   ProviderInterfaceEmitCb,
 } from "@polkadot/rpc-provider/types"
-import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import { getWSErrorString } from "@polkadot/rpc-provider/ws/errors"
 import { isChildClass, isNull, isUndefined, objectSpread } from "@polkadot/util"
 import { xglobal } from "@polkadot/x-global"
@@ -205,7 +205,7 @@ export class Websocket implements ProviderInterface {
         isChildClass(xglobal.WebSocket as typeof WebSocket, WebSocket)
           ? new WebSocket(this.endpoint)
           : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - WS may be an instance of ws, which supports options
+            // @ts-expect-error - WS may be an instance of ws, which supports options
             new WebSocket(this.endpoint, undefined, {
               headers: this.#headers,
             })

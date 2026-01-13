@@ -1,6 +1,8 @@
-import Transport from "@ledgerhq/hw-transport"
+import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Setting } from "@talisman/components/Setting"
 import {
   BellIcon,
   CheckIcon,
@@ -16,20 +18,17 @@ import {
   XIcon,
 } from "@talismn/icons"
 import { classNames, isNotNil } from "@talismn/util"
-import { LedgerTransportType } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, CtaButton, Dropdown, Modal, ModalDialog, Toggle } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Setting } from "@talisman/components/Setting"
-import { AnalyticsPage } from "@ui/api/analytics"
+import type { AnalyticsPage } from "@ui/api/analytics"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
 import { useSetting } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+import type { LedgerTransportType } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, CtaButton, Dropdown, Modal, ModalDialog, Toggle } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -184,7 +183,7 @@ export const LedgerTransportTypeSelect = () => {
   }, [])
 
   if (ledgerTransportTypeItems.length === 0)
-    return <div className="text-body-disabled text-right">{t("Unavailable")}</div>
+    return <div className="text-right text-body-disabled">{t("Unavailable")}</div>
 
   return (
     <div className="flex items-center gap-4">
@@ -235,7 +234,7 @@ const LedgerTransportCheckModalDialog: FC<{
         <div
           className={classNames(
             "flex size-24 shrink-0 items-center justify-center rounded-full",
-            s.ok ? "text-alert-success bg-alert-success/10" : "text-alert-warn bg-alert-warn/10"
+            s.ok ? "bg-alert-success/10 text-alert-success" : "bg-alert-warn/10 text-alert-warn"
           )}
         >
           {s.ok ? <CheckIcon className="size-12" /> : <XIcon className="size-12" />}
@@ -254,7 +253,7 @@ const LedgerTransportCheckModalDialog: FC<{
         </div>
       </div>
       {!s.ok && (
-        <p className="text-body-secondary mt-8">
+        <p className="mt-8 text-body-secondary">
           {t(
             "You may need to reload this page before being able to try again, some browsers prevent multiple {{transport}} connection attempts.",
             { transport: transport.toUpperCase() }

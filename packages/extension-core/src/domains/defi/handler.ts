@@ -1,7 +1,7 @@
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { defiPositions$ } from "./getDefiPositions"
 
 export class DefiHandler extends ExtensionHandler {

@@ -1,26 +1,26 @@
 import { assert } from "@polkadot/util"
-import { EthNetworkId, Token } from "@talismn/chaindata-provider"
+import type { EthNetworkId, Token } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { isBigInt } from "@talismn/util"
 import {
   encodeFunctionData,
   erc20Abi,
   getAddress,
-  Hex,
+  type Hex,
   hexToBigInt,
   hexToNumber,
   isAddress,
   isHex,
-  TransactionRequest,
-  TransactionRequestBase,
-  TransactionSerializable,
-  TransactionSerializableEIP1559,
-  TransactionSerializableEIP2930,
-  TransactionSerializableLegacy,
+  type TransactionRequest,
+  type TransactionRequestBase,
+  type TransactionSerializable,
+  type TransactionSerializableEIP1559,
+  type TransactionSerializableEIP2930,
+  type TransactionSerializableLegacy,
 } from "viem"
 import * as yup from "yup"
 
-import {
+import type {
   EthGasSettings,
   EthGasSettingsEip1559,
   EvmAddress,

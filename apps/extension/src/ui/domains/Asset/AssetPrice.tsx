@@ -1,12 +1,11 @@
 import { bind } from "@react-rxjs/core"
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { classNames, formatPrice } from "@talismn/util"
-import { FC } from "react"
+import { getTokenRates$, selectedCurrency$ } from "@ui/state"
+import type { FC } from "react"
 import { combineLatest, map } from "rxjs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { getTokenRates$, selectedCurrency$ } from "@ui/state"
 
 const [useDisplayAssetPrice] = bind(
   (tokenId: TokenId | null | undefined, balances: Balances | null | undefined) =>

@@ -1,10 +1,9 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import { Suspense, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton, Modal } from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 
 import { ModalContent } from "../shared/ModalContent"
 import { BondFollowUp } from "./BondFollowUp"
@@ -23,7 +22,7 @@ const ModalHeader = () => {
   return (
     <div
       className={classNames(
-        "text-body-secondary flex min-h-32 w-full shrink-0 items-center justify-between px-10",
+        "flex min-h-32 w-full shrink-0 items-center justify-between px-10 text-body-secondary",
         step === "follow-up" ? "invisible" : "visible"
       )}
     >
@@ -34,7 +33,7 @@ const ModalHeader = () => {
         <ChevronLeftIcon />
       </IconButton>
       <div>
-        {step === "form" && <span className="text-body font-bold">{t("Staking")}</span>}
+        {step === "form" && <span className="font-bold text-body">{t("Staking")}</span>}
         {step === "review" && t("Confirm")}
       </div>
       <IconButton onClick={close}>

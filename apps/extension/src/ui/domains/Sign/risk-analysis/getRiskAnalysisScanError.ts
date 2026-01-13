@@ -1,6 +1,6 @@
-import { TFunction } from "i18next"
+import type { TFunction } from "i18next"
 
-import { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } from "./types"
+import type { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } from "./types"
 
 export const getRiskAnalysisScanError = (
   platform: RiskAnalysisPlatform,

@@ -1,12 +1,4 @@
-import { HexString } from "@polkadot/util/types"
-import {
-  KnownSigningRequestIdOnly,
-  parseRpcTransactionRequestBase,
-  serializeTransactionRequest,
-} from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo, useRef, useState } from "react"
-
+import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -15,6 +7,13 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import {
+  type KnownSigningRequestIdOnly,
+  parseRpcTransactionRequestBase,
+  serializeTransactionRequest,
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 

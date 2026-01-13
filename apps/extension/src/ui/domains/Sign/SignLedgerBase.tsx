@@ -1,9 +1,8 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignApproveButton } from "./SignApproveButton"

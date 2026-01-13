@@ -1,15 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { provideContext } from "@talisman/util/provideContext"
 import { KeyIcon } from "@talismn/icons"
-import { ReactNode, useCallback, useEffect } from "react"
+import { api } from "@ui/api"
+import { useSensitiveState } from "@ui/hooks/useSensitiveState"
+import { type ReactNode, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, useOpenCloseStatus } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import { useSensitiveState } from "@ui/hooks/useSensitiveState"
 
 type FormData = {
   password: string
@@ -99,7 +98,7 @@ const BasePasswordUnlock = ({ className, children, buttonText, title }: Password
     <div className={className}>
       <form onSubmit={handleSubmit(submit)} className="flex h-full flex-col">
         <div className="flex grow flex-col justify-center">
-          <div className="text-md mb-6">{title || t("Enter your password")}</div>
+          <div className="mb-6 text-md">{title || t("Enter your password")}</div>
           <FormFieldContainer error={errors.password?.message}>
             <FormFieldInputText
               before={<KeyIcon className="opacity-50" />}

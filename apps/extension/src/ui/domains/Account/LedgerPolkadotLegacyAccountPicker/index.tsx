@@ -1,10 +1,10 @@
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback, useState } from "react"
+import { type FC, type ReactNode, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { LedgerPolkadotLegacyAccountPickerCustom } from "./LedgerPolkadotLegacyAccountPickerCustom"
 import { LedgerPolkadotLegacyAccountPickerDefault } from "./LedgerPolkadotLegacyAccountPickerDefault"
-import { LedgerPolkadotLegacyAccountPickerProps } from "./types"
+import type { LedgerPolkadotLegacyAccountPickerProps } from "./types"
 
 type DerivationMode = "default" | "custom"
 
@@ -26,7 +26,7 @@ export const LedgerPolkadotLegacyAccountPicker: FC<LedgerPolkadotLegacyAccountPi
 
   return (
     <div>
-      <div className="text-body-secondary mb-8 flex w-full items-center gap-2">
+      <div className="mb-8 flex w-full items-center gap-2 text-body-secondary">
         <div className="grow">{t("Derivation mode:")}</div>
         <div>
           <DerivationModeButton selected={mode === "default"} onClick={handleModeClick("default")}>

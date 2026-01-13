@@ -1,13 +1,12 @@
-import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
-import { classNames, isTruthy } from "@talismn/util"
-import { FC, ReactNode, Suspense, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
+import { classNames, isTruthy } from "@talismn/util"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
+import { type FC, type ReactNode, Suspense, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { matchPath, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { DashboardAccountsSidebar } from "./DashboardAccountsSidebar"
 import { DashboardSettingsSidebar } from "./DashboardSettingsSidebar"
@@ -27,7 +26,7 @@ export const DashboardLayout: FC<{
           <div className="w-[29.6rem] shrink-0 pb-20">
             <div className="hidden h-48 w-[29.6rem] shrink-0 items-center gap-4 sm:flex">
               <TalismanWhiteLogo className="h-[3rem] w-[14.7172rem]" />
-              <BuildVersionPill className="bg-primary/5 text-primary hover:bg-primary/20 rounded-3xl" />
+              <BuildVersionPill className="rounded-3xl bg-primary/5 text-primary hover:bg-primary/20" />
             </div>
             <Suspense fallback={<SuspenseTracker name="DashboardMainLayout.Sidebar" />}>
               {sidebar === "accounts" && <DashboardAccountsSidebar />}
@@ -44,7 +43,7 @@ export const DashboardLayout: FC<{
                 <div
                   className={classNames(
                     // minimum width is automatically set by the horizontal nav bar which never shrinks
-                    "animate-fade-in w-full grow"
+                    "w-full grow animate-fade-in"
                   )}
                 >
                   <LayoutBreadcrumb />
@@ -84,7 +83,7 @@ const NavButton: FC<{
     <button
       type="button"
       className={classNames(
-        "text-body-inactive hover:text-body-secondary flex items-center gap-4",
+        "flex items-center gap-4 text-body-inactive hover:text-body-secondary",
         routeMatch && "!text-body",
         className
       )}
@@ -145,7 +144,7 @@ const HorizontalNav = () => {
   }, [navigate])
 
   return (
-    <div className="border-grey-700 flex h-24 gap-16 rounded-lg border px-8">
+    <div className="flex h-24 gap-16 rounded-lg border border-grey-700 px-8">
       <NavButton
         label={t("Portfolio")}
         onClick={handlePortfolioClick}

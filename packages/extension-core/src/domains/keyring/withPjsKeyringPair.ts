@@ -1,9 +1,9 @@
 import Keyring from "@polkadot/keyring"
-import { KeyringPair } from "@polkadot/keyring/types"
+import type { KeyringPair } from "@polkadot/keyring/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 import { passwordStore } from "../app/store.password"
 import { curveToPjsKeypairType } from "./migration-utils"
 import { keyringStore } from "./store"

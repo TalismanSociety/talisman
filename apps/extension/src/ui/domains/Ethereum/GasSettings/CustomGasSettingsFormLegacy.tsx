@@ -1,15 +1,27 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talismn/icons"
 import { formatDecimals } from "@talismn/util"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import {
-  EthGasSettingsLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriorityLegacy,
+  type EthGasSettingsLegacy,
+  type EthTransactionDetails,
+  type GasSettingsByPriorityLegacy,
   getHumanReadableErrorMessage,
 } from "extension-core"
 import { log } from "extension-shared"
-import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  type FC,
+  type FormEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
@@ -22,13 +34,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-import { formatGwei, parseGwei, TransactionRequest } from "viem"
+import { formatGwei, parseGwei, type TransactionRequest } from "viem"
 import * as yup from "yup"
-
-import { notify } from "@talisman/components/Notifications"
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
 import { usePublicClient } from "../usePublicClient"
@@ -280,17 +287,17 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   return (
     <form
       onSubmit={submitWithoutBubbleUp}
-      className="text-body-secondary bg-black-tertiary flex flex-col rounded-t-xl p-12 text-sm"
+      className="flex flex-col rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm"
     >
       <div className="flex w-full font-bold text-white">
         <div>
           <IconButton>
-            <ArrowRightIcon className="text-md rotate-180 text-white" onClick={onCancel} />
+            <ArrowRightIcon className="rotate-180 text-md text-white" onClick={onCancel} />
           </IconButton>
         </div>
         <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
       </div>
-      <div className="mb-16 mt-12">
+      <div className="mt-12 mb-16">
         {t("Set your own custom gas fee to control the priority and cost of your transaction.")}
       </div>
       <div className="mb-14 grid w-full grid-cols-2 gap-8">
@@ -352,7 +359,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       </FormFieldContainer>
       <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="border-grey-700 text-body flex h-[5.2rem] w-full items-center justify-between rounded-sm border px-8 font-bold">
+      <div className="flex h-[5.2rem] w-full items-center justify-between rounded-sm border border-grey-700 px-8 font-bold text-body">
         <div>
           {t("Total Max Fee")}{" "}
           <WithTooltip
@@ -367,7 +374,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           {totalMaxFee && showMaxFeeTotal ? (
             <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
           ) : isLoadingGasSettingsValid ? (
-            <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
+            <LoaderIcon className="inline-block animate-spin-slow text-body-secondary" />
           ) : (
             <Tooltip>
               <TooltipTrigger className="text-alert-error">

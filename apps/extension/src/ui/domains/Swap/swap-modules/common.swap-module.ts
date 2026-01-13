@@ -1,33 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
-import type { Atom, Getter, SetStateAction, Setter } from "jotai"
-import type { TransactionRequest } from "viem"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  Network,
+  type Network,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
-import { ScaleApi } from "@talismn/sapi"
-import BigNumber from "bignumber.js"
+import type { ScaleApi } from "@talismn/sapi"
+import type BigNumber from "bignumber.js"
 import {
-  Account,
+  type Account,
   isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAddressCompatibleWithNetwork,
   remoteConfigStore,
-  SignerPayloadJSON,
+  type SignerPayloadJSON,
 } from "extension-core"
+import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import type { TransactionRequest } from "viem"
 
 import { Decimal } from "../swaps-port/Decimal"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import { SimpleswapExchange } from "./simpleswap-swap-module"
-import { StealthexExchange } from "./stealthex-swap-module"
+import type { SimpleswapExchange } from "./simpleswap-swap-module"
+import type { StealthexExchange } from "./stealthex-swap-module"
 
 export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
 

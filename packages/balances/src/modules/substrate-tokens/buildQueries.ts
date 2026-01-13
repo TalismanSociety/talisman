@@ -2,11 +2,11 @@ import { decodeScale, papiParse } from "@talismn/scale"
 import { isNotNil } from "@talismn/util"
 
 import log from "../../log"
-import { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
+import type { AmountWithLabel, IBalance, MiniMetadata } from "../../types"
 import { buildNetworkStorageCoders } from "../shared"
-import { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
-import { BalanceDef } from "../shared/types"
-import { MiniMetadataExtra, MODULE_TYPE } from "./config"
+import type { MaybeStateKey, RpcQueryPack } from "../shared/rpcQueryPack"
+import type { BalanceDef } from "../shared/types"
+import type { MiniMetadataExtra, MODULE_TYPE } from "./config"
 
 export const buildQueries = (
   networkId: string,

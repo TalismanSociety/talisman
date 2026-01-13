@@ -1,6 +1,6 @@
 import LedgerSolanaApp from "@ledgerhq/hw-app-solana"
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
-import { AccountLedgerSolana } from "extension-core"
+import type { AccountLedgerSolana } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"

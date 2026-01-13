@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { existsSync, readFileSync, writeFileSync } from "fs"
-
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEthStub } from "@talismn/chain-connectors"
-import { EthNetwork, TokenType } from "@talismn/chaindata-provider"
+import type { EthNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
+import { existsSync, readFileSync, writeFileSync } from "fs"
 
 export type EthNetworkConfig = Pick<EthNetwork, "id" | "rpcs" | "contracts"> & {
   nativeCurrency?: Partial<EthNetwork["nativeCurrency"]>
@@ -68,7 +67,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
         networkId,
         tokens: tokenConfigs,
         connector,
-        // @ts-ignore
+        // @ts-expect-error
         cache: cache[mod.type] ?? {},
       })
 

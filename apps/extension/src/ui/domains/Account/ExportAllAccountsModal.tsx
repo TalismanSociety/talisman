@@ -1,5 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import downloadJson from "@talisman/util/downloadJson"
+import { api } from "@ui/api"
+import { useAccounts } from "@ui/state"
+import { type FC, useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
@@ -11,12 +16,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import downloadJson from "@talisman/util/downloadJson"
-import { api } from "@ui/api"
-import { useAccounts } from "@ui/state"
 
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
@@ -35,7 +34,7 @@ export const ExportAllAccountsModal: FC<{ isOpen: boolean; onClose: () => void }
       >
         <PasswordUnlock
           title={
-            <div className="text-body-secondary mb-8">
+            <div className="mb-8 text-body-secondary">
               {t("Please confirm your password to export your accounts.")}
             </div>
           }
@@ -114,7 +113,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
-        <p className="text-body-secondary my-8 text-sm">
+        <p className="my-8 text-body-secondary text-sm">
           <Trans t={t}>
             Set a password for your JSON export. We strongly suggest using a{" "}
             <span className="text-white">different password</span> from your Talisman wallet

@@ -1,9 +1,9 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
 import { TAO_DECIMALS } from "@talismn/balances"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { Binary } from "polkadot-api"
 
-import { StakeDirection } from "../hooks/types"
+import type { StakeDirection } from "../hooks/types"
 import { ROOT_NETUID, TALISMAN_FEE_RECEIVER_ADDRESS_BITTENSOR } from "./constants"
 
 export type BittensorSwapSimulation = {

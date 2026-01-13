@@ -1,9 +1,13 @@
-import { EvmNativeToken, evmNativeTokenId, EvmNativeTokenSchema } from "@talismn/chaindata-provider"
+import {
+  type EvmNativeToken,
+  EvmNativeTokenSchema,
+  evmNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,

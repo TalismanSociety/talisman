@@ -1,4 +1,4 @@
-import { Network } from "./chaindata"
+import type { Network } from "./chaindata"
 import { getBlockExplorerUrls } from "./getBlockExplorerUrls"
 
 const ETHEREUM = {

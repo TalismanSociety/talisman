@@ -1,5 +1,5 @@
-import { Address } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Address } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { isAccountNotContact } from "@talismn/keyring"
 import { firstThenDebounce, keepAlive } from "@talismn/util"
 import { log } from "extension-shared"

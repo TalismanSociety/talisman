@@ -1,13 +1,12 @@
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useOpenClose } from "talisman-ui"
-
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkOptionsModal } from "@ui/domains/Portfolio/NetworkOptionsModal"
-import { NetworkOption } from "@ui/state"
+import type { NetworkOption } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useOpenClose } from "talisman-ui"
 
 export const ContactNetworkPickerButton: FC<{
   networks: Network[]
@@ -49,7 +48,7 @@ export const ContactNetworkPickerButton: FC<{
         type="button"
         className={classNames(
           "flex h-[5.6rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8",
-          "bg-grey-850 enabled:hover:bg-grey-800 text-body-secondary enabled:hover:text-body",
+          "bg-grey-850 text-body-secondary enabled:hover:bg-grey-800 enabled:hover:text-body",
           className
         )}
         onClick={open}
@@ -57,7 +56,7 @@ export const ContactNetworkPickerButton: FC<{
         <div>
           <NetworkLogo networkId={option?.id} className="text-[2.4rem]" />
         </div>
-        <div className="text-body grow truncate text-left">{option?.name ?? t("All Networks")}</div>
+        <div className="grow truncate text-left text-body">{option?.name ?? t("All Networks")}</div>
         <ChevronRightIcon className="size-12" />
       </button>
       <NetworkOptionsModal

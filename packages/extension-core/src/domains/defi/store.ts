@@ -4,7 +4,7 @@ import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { DefiPosition } from "./types"
+import type { DefiPosition } from "./types"
 
 type DefiPositionsStoreData = {
   positions: DefiPosition[]

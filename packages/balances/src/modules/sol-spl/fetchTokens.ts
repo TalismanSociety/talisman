@@ -2,19 +2,19 @@ import { deserializeMetadata } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, sol } from "@metaplex-foundation/umi"
 import { MintLayout } from "@solana/spl-token"
 import { PublicKey } from "@solana/web3.js"
-import { IChainConnectorSol } from "@talismn/chain-connectors"
+import type { IChainConnectorSol } from "@talismn/chain-connectors"
 import {
   parseSolSplTokenId,
-  SolSplToken,
-  solSplTokenId,
+  type SolSplToken,
   SolSplTokenSchema,
+  solSplTokenId,
 } from "@talismn/chaindata-provider"
 import { assign, omit } from "lodash-es"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 const TokenCacheSchema = z.discriminatedUnion("isValid", [
   z.strictObject({

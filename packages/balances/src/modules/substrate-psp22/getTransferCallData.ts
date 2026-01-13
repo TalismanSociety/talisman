@@ -1,11 +1,11 @@
-import { mergeUint8 } from "@polkadot-api/utils"
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
+import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType, parseTokenId } from "@talismn/chaindata-provider"
 import { parseMetadataRpc } from "@talismn/scale"
 import { Binary, Enum } from "polkadot-api"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
 import { MODULE_TYPE } from "./config"
 import { makeContractCaller } from "./util"

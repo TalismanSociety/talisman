@@ -1,6 +1,6 @@
-import { GenericExtrinsic } from "@polkadot/types"
+import type { GenericExtrinsic } from "@polkadot/types"
 import { assert } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 
 import { stateCall } from "./stateCall"
 

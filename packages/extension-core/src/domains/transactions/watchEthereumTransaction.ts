@@ -1,7 +1,7 @@
 import { assert } from "@polkadot/util"
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { sleep, throwAfter } from "@talismn/util"
-import { Hex, TransactionReceipt, TransactionRequest } from "viem"
+import type { Hex, TransactionReceipt, TransactionRequest } from "viem"
 
 import { sentry } from "../../config/sentry"
 import { createNotification } from "../../notifications"
@@ -11,7 +11,7 @@ import { settingsStore } from "../app/store.settings"
 import { assetDiscoveryScanner } from "../assetDiscovery/scanner"
 import { resetTransactionCount } from "../ethereum/transactionCountManager"
 import { addEvmTransaction, updateTransactionStatus } from "./helpers"
-import { WatchTransactionOptions } from "./types"
+import type { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
   evmNetworkId: NetworkId,

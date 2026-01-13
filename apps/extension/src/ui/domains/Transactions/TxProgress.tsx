@@ -1,20 +1,19 @@
-import { HexString } from "@polkadot/util/types"
-import { getBlockExplorerUrls, Network } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import { getBlockExplorerUrls, type Network } from "@talismn/chaindata-provider"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talismn/icons"
-import {
+import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
+import type {
   WalletTransaction,
   WalletTransactionDot,
   WalletTransactionEth,
   WalletTransactionSol,
 } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
-
-import { useAnyNetwork, useNetworkById, useTransaction } from "@ui/state"
+import { Button, PillButton, ProcessAnimation, type ProcessAnimationStatus } from "talisman-ui"
 
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
-import { TxReplaceType } from "./types"
+import type { TxReplaceType } from "./types"
 
 const getBlockExplorerUrl = (network: Network | undefined | null, hash: string) => {
   if (!network) return null
@@ -163,16 +162,16 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
 
   return (
     <div className="flex h-full w-full flex-col items-center">
-      <div className="text-body mt-8 text-lg font-bold">{title}</div>
-      <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
-      <ProcessAnimation status={animStatus} className="mb-8 mt-[7.5rem] h-[14.5rem]" />
-      <div className="text-body-secondary flex w-full grow flex-col justify-center gap-10 px-10 text-center">
+      <div className="mt-8 font-bold text-body text-lg">{title}</div>
+      <div className="mt-12 text-center font-light text-base text-body-secondary">{subtitle}</div>
+      <ProcessAnimation status={animStatus} className="mt-[7.5rem] mb-8 h-[14.5rem]" />
+      <div className="flex w-full grow flex-col justify-center gap-10 px-10 text-center text-body-secondary">
         <div>
           {blockNumber ? (
             <>
               {tx?.confirmed ? t("Confirmed in") : t("Included in")}{" "}
               {href ? (
-                <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+                <a target="_blank" className="text-grey-200 hover:text-body" href={href}>
                   {t("block #{{blockNumber}}", { blockNumber })}{" "}
                   <ExternalLinkIcon className="inline align-text-top" />
                 </a>
@@ -183,7 +182,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
           ) : href ? (
             <Trans t={t}>
               View transaction on{" "}
-              <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+              <a target="_blank" className="text-grey-200 hover:text-body" href={href}>
                 block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
             </Trans>
@@ -194,7 +193,7 @@ const TxProgressBase: FC<TxProgressBaseProps> = ({
             <TxReplaceActions tx={tx} onReplacementComplete={onReplacementComplete} />
           )}
           {tx?.status === "success" && !tx?.confirmed && (
-            <div className="text-secondary h-[3.6rem] animate-pulse">
+            <div className="h-[3.6rem] animate-pulse text-secondary">
               {t("You may close this window or wait for the transaction to be confirmed")}
             </div>
           )}

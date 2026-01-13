@@ -1,7 +1,6 @@
-import { PostHogCaptureProperties } from "extension-core"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import type { PostHogCaptureProperties } from "extension-core"
 import { useEffect, useRef } from "react"
-
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 
 const DEFAULT_PROPERTIES: PostHogCaptureProperties = {}
 

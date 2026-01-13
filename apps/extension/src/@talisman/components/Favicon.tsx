@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
-import { IS_FIREFOX } from "extension-shared"
-import { FC } from "react"
-
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
+import { IS_FIREFOX } from "extension-shared"
+import type { FC } from "react"
 
 export const Favicon: FC<{ url: string; className?: string }> = ({ url, className }) => {
   const iconUrl = useFaviconUrl(url)

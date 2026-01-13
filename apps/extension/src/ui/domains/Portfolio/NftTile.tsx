@@ -1,6 +1,6 @@
 import { StarIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 
 import { PortfolioNetworksLogoStack } from "./AssetsTable/PortfolioNetworksLogoStack"
 import { NftImage } from "./NftImage"
@@ -19,7 +19,7 @@ export const NftTile: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "text-body-secondary group relative flex size-full flex-col gap-4 overflow-hidden text-left",
+        "group relative flex size-full flex-col gap-4 overflow-hidden text-left text-body-secondary",
         className
       )}
     >
@@ -30,10 +30,10 @@ export const NftTile: FC<{
           alt={label ?? ""}
         />
         {isFavorite && (
-          <StarIcon className="absolute right-[4%] top-[4%] fill-[#D5FF5C] stroke-[#D5FF5C] opacity-80" />
+          <StarIcon className="absolute top-[4%] right-[4%] fill-[#D5FF5C] stroke-[#D5FF5C] opacity-80" />
         )}
         {!!count && count > 1 && (
-          <div className="bg-grey-700 text-body-secondary absolute bottom-[4%] right-[4%] flex size-10 min-w-[1em] items-center justify-center rounded-full p-1 text-xs opacity-80">
+          <div className="absolute right-[4%] bottom-[4%] flex size-10 min-w-[1em] items-center justify-center rounded-full bg-grey-700 p-1 text-body-secondary text-xs opacity-80">
             <div>{count > 9 ? "9+" : count}</div>
           </div>
         )}

@@ -1,6 +1,6 @@
 import { getConstantValueFromMetadata } from "@talismn/scale"
 
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 export const getConstantValue = <T>(chain: Chain, pallet: string, constant: string) => {
   return getConstantValueFromMetadata<T>(

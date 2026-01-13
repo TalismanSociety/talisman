@@ -1,9 +1,13 @@
 import { classNames } from "@talismn/util"
-import { CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
+import { type CSSProperties, memo, useLayoutEffect, useMemo, useRef } from "react"
 import { useMeasure } from "react-use"
 
-import { MYSTICAL_PHYSICS_V3, MysticalPhysicsV3 } from "./MysticalPhysicsV3"
-import { CelestialArtifactProps, ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
+import { MYSTICAL_PHYSICS_V3, type MysticalPhysicsV3 } from "./MysticalPhysicsV3"
+import {
+  type CelestialArtifactProps,
+  type ParentSize,
+  useCelestialArtifact,
+} from "./useCelestialArtifact"
 
 export const MysticalBackgroundV3 = ({
   className,

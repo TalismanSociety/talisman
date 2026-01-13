@@ -1,19 +1,22 @@
 import { isTokenDot, isTokenEth } from "@talismn/chaindata-provider"
 import { formatPrice } from "@talismn/util"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { type UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useToken } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { log, RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
 
-import { useToken } from "@ui/state"
-
-import { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
+import type { RampsSellQuote, RampsSellQuoteOptions } from "../sell/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
-import { RampsQuoteError } from "../shared/types"
+import type { RampsQuoteError } from "../shared/types"
 import { getCoinbaseSellUrl } from "./helpers"
-import { CoinbaseSellOptions, CoinbaseSellQuoteRequest, CoinbaseSellQuoteResponse } from "./types"
+import type {
+  CoinbaseSellOptions,
+  CoinbaseSellQuoteRequest,
+  CoinbaseSellQuoteResponse,
+} from "./types"
 import { useCoinbaseSellOptions } from "./useCoinbaseSellOptions"
 
 export const useCoinbaseSellQuote = (

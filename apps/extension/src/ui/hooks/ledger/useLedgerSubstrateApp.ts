@@ -1,4 +1,4 @@
-import { DotNetwork } from "@talismn/chaindata-provider"
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { supportedApps } from "@zondax/ledger-substrate"
 import { useMemo } from "react"
 

@@ -1,5 +1,5 @@
-import { bind, StateObservable } from "@react-rxjs/core"
-import {
+import { bind, type StateObservable } from "@react-rxjs/core"
+import type {
   DotNetwork,
   DotNetworkId,
   Network,
@@ -13,6 +13,7 @@ import {
   TokenType,
 } from "@talismn/chaindata-provider"
 import { getSharedObservable } from "@talismn/util"
+import { api } from "@ui/api"
 import {
   activeNetworksStore,
   activeTokensStore,
@@ -21,8 +22,6 @@ import {
 } from "extension-core"
 import { keyBy } from "lodash-es"
 import { combineLatest, map, Observable, of, shareReplay, switchMap } from "rxjs"
-
-import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 

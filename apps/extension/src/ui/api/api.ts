@@ -1,5 +1,6 @@
-import { HexString } from "@polkadot/util/types"
-import {
+import PortMessageService from "@common/PortMessageService"
+import type { HexString } from "@polkadot/util/types"
+import type {
   ResponseSolanaSubmit,
   SignerPayloadJSON,
   SolRpcRequest,
@@ -7,9 +8,7 @@ import {
   WalletTransactionInfo,
 } from "extension-core"
 
-import PortMessageService from "@common/PortMessageService"
-
-import MessageTypes from "./types"
+import type MessageTypes from "./types"
 
 const messageService = new PortMessageService()
 

@@ -1,14 +1,13 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { ArrowRightIcon, CloseIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
+import { Tokens } from "@ui/domains/Asset/Tokens"
+import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
+import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
-
-import { Tokens } from "@ui/domains/Asset/Tokens"
-import { useSwapTokensModal } from "@ui/domains/Swap/hooks/useSwapTokensModal"
-import { useAccounts, useBalances, useRemoteConfig, useToken } from "@ui/state"
 
 import { useGetSeekDiscount } from "./hooks/useGetSeekDiscount"
 import { useGetSeekStaked } from "./hooks/useGetSeekStaked"
@@ -59,14 +58,14 @@ export const SeekGetFeeDiscountsDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={containerId} onDismiss={onDismiss}>
-      <div className="bg-grey-850 flex w-full flex-col items-center gap-12 rounded-t-xl p-12">
+      <div className="flex w-full flex-col items-center gap-12 rounded-t-xl bg-grey-850 p-12">
         <div className="flex w-full items-center justify-between">
-          <div className="text-body flex-1 text-center font-bold">{t("Get Fee Discounts")}</div>
+          <div className="flex-1 text-center font-bold text-body">{t("Get Fee Discounts")}</div>
           <button className="ml-auto" onClick={handleDismiss} aria-label="Close">
             <CloseIcon />
           </button>
         </div>
-        <div className="text-body-secondary flex flex-col gap-6 text-sm">
+        <div className="flex flex-col gap-6 text-body-secondary text-sm">
           <div>
             {t(`Stake ${tokenSymbol} to enjoy fee discounts on your subnet staking transactions. `)}
             <a
@@ -79,7 +78,7 @@ export const SeekGetFeeDiscountsDrawer = ({
               <ArrowRightIcon size={14} />
             </a>
           </div>
-          <div className="flex justify-between rounded-[10px] border-[1px] border-solid border-[text-body-disabled] p-6">
+          <div className="flex justify-between rounded-[10px] border-[1px] border-[text-body-disabled] border-solid p-6">
             <div className="flex items-center gap-4">
               <img
                 src={token?.logo ?? seekLogo}
@@ -113,7 +112,7 @@ export const SeekGetFeeDiscountsDrawer = ({
                 !hasSeekStaked && "bg-[#D5FF5C] bg-opacity-[0.1]"
               )}
             >
-              <div className="text-[14px] text-[#D5FF5C]">
+              <div className="text-[#D5FF5C] text-[14px]">
                 {hasSeekStaked ? discountPercent : t("Up to 25%")} {t("off fees")}
               </div>
             </div>

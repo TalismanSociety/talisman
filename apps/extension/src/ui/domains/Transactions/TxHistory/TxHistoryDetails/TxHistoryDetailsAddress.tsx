@@ -1,15 +1,14 @@
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const TxHistoryDetailsAddress: FC<{
   address: string
@@ -50,7 +49,7 @@ export const TxHistoryDetailsAddress: FC<{
           type="button"
           onClick={handleClick}
           className={cn(
-            "text-body inline-flex max-w-full items-center gap-2 overflow-hidden align-sub",
+            "inline-flex max-w-full items-center gap-2 overflow-hidden align-sub text-body",
             className
           )}
         >

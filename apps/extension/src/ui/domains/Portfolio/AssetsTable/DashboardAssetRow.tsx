@@ -1,10 +1,6 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { TrendingUpIcon, ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
-
 import { AssetPrice } from "@ui/domains/Asset/AssetPrice"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
@@ -15,6 +11,9 @@ import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useUniswapV2LpTokenTotalValueLocked } from "@ui/hooks/useUniswapV2LpTokenTotalValueLocked"
 import { useNetworkById } from "@ui/state"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
@@ -55,7 +54,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base"
+          "grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded bg-grey-850 text-left text-base text-body-secondary hover:bg-grey-800"
         )}
         onClick={handleClick}
       >
@@ -65,10 +64,10 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
           </div>
           <div className="flex grow flex-col justify-center gap-2">
             <div className="flex items-center gap-3">
-              <div className="text-body flex items-center gap-4 text-base font-bold">
+              <div className="flex items-center gap-4 font-bold text-base text-body">
                 <TokenDisplaySymbol tokenId={token.id} />
                 {!!network.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                  <span className="rounded bg-alert-warn/10 px-3 py-1 font-light text-alert-warn text-tiny">
                     {t("Testnet")}
                   </span>
                 )}
@@ -80,7 +79,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
               )}
             </div>
             {isUniswapV2LpToken && typeof tvl === "number" && (
-              <div className="text-body-secondary whitespace-nowrap">
+              <div className="whitespace-nowrap text-body-secondary">
                 <Fiat amount={tvl} noCountUp={noCountUp} /> <span className="text-tiny">TVL</span>
               </div>
             )}
@@ -121,25 +120,25 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       </button>
       {canBond ? (
         <>
-          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+          <div className="absolute top-0 right-8 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
             <BondPillButton
               balances={balances}
               isPortfolio
-              className="[>svg]:text-[2rem] text-base"
+              className="text-base [>svg]:text-[2rem]"
             />
           </div>
-          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+          <div className="absolute -top-2 -right-5 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="flex size-full items-center justify-center rounded-full bg-primary/25 text-primary text-xs">
               <ZapFastIcon className="size-6" />
             </div>
           </div>
         </>
       ) : canEarn ? (
         <>
-          <div className="absolute right-8 top-0 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
+          <div className="absolute top-0 right-8 hidden h-[6.6rem] flex-col justify-center group-hover:flex">
             <PillButton
               onClick={openEarnModal}
-              className="bg-primary/10 hover:bg-primary/20 text-primary [>svg]:text-[2rem] h-16 rounded-[28px] px-4 text-base font-light"
+              className="h-16 rounded-[28px] bg-primary/10 px-4 font-light text-base text-primary hover:bg-primary/20 [>svg]:text-[2rem]"
             >
               <div className="flex items-center gap-4">
                 <TrendingUpIcon className="shrink-0 text-base" />
@@ -147,8 +146,8 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
               </div>
             </PillButton>
           </div>
-          <div className="absolute -right-5 -top-2 size-10 overflow-hidden rounded-full bg-black p-1">
-            <div className="text-primary bg-primary/25 flex size-full items-center justify-center rounded-full text-xs">
+          <div className="absolute -top-2 -right-5 size-10 overflow-hidden rounded-full bg-black p-1">
+            <div className="flex size-full items-center justify-center rounded-full bg-primary/25 text-primary text-xs">
               <TrendingUpIcon className="size-6" />
             </div>
           </div>

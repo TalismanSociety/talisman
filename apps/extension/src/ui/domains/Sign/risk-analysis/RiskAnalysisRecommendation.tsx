@@ -6,10 +6,10 @@ import {
   ShieldZapIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { RiskAnalysis } from "./types"
+import type { RiskAnalysis } from "./types"
 
 const getValidationDescription = (riskAnalysis: RiskAnalysis) => {
   if (riskAnalysis.platform === "ethereum")
@@ -101,7 +101,7 @@ const RiskAnalysisRecommendationInner: FC<{
   return (
     <div
       className={classNames(
-        "leading-paragraph flex w-full gap-8 rounded p-4",
+        "flex w-full gap-8 rounded p-4 leading-paragraph",
         bgClassName,
         textClassName
       )}

@@ -1,15 +1,8 @@
-import { Balances } from "@talismn/balances"
-import { Token, TokenId } from "@talismn/chaindata-provider"
-import { SendIcon } from "@talismn/icons"
-import { t } from "i18next"
-import { uniq } from "lodash-es"
-import { FC, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { Breadcrumb } from "@talisman/components/Breadcrumb"
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
+import type { Balances } from "@talismn/balances"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
+import { SendIcon } from "@talismn/icons"
 import { AssetPriceChart } from "@ui/domains/Asset/AssetPriceChart"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { BittensorClaimSettingsToolbarButton } from "@ui/domains/Portfolio/AssetDetails/BittensorClaimSettingsToolbarButton"
@@ -21,13 +14,19 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import {
-  BalanceSummary,
+  type BalanceSummary,
   useTokenBalancesSummary,
 } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSendFundsPopup } from "@ui/hooks/useSendFundsPopup"
 import { usePortfolioBalances } from "@ui/state"
+import { t } from "i18next"
+import { uniq } from "lodash-es"
+import { type FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const HeaderRow: FC<{
   token: Token | undefined
@@ -39,7 +38,7 @@ const HeaderRow: FC<{
   if (summary.totalTokens.isZero()) return null
 
   return (
-    <div className="text-body-secondary bg-grey-850 rounded p-8 text-left text-base">
+    <div className="rounded bg-grey-850 p-8 text-left text-base text-body-secondary">
       <div className="grid grid-cols-[40%_30%_30%]">
         <Statistics
           className="h-auto w-auto p-0"
@@ -122,7 +121,7 @@ const TokenBreadcrumb: FC<{
         onClick: () => navigate("/portfolio/tokens"),
       },
       {
-        label: <div className="text-body font-bold">{symbol}</div>,
+        label: <div className="font-bold text-body">{symbol}</div>,
         onClick: undefined,
       },
     ]

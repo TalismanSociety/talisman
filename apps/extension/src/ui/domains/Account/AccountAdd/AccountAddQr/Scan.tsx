@@ -1,9 +1,8 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talismn/icons"
+import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { useTranslation } from "react-i18next"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 
 import { useAccountAddQr } from "./context"
 
@@ -48,7 +47,7 @@ export const Scan = () => {
                     extra: (
                       <button
                         type="button"
-                        className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
+                        className="mt-6 inline-block rounded-full bg-primary/10 px-6 font-light text-primary text-sm leading-[32px] hover:bg-primary/20"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >
                         {t("Retry")}
@@ -69,7 +68,7 @@ export const Scan = () => {
                       extra: (
                         <button
                           type="button"
-                          className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
+                          className="mt-6 inline-block rounded-full bg-primary/10 px-6 font-light text-primary text-sm leading-[32px] hover:bg-primary/20"
                           onClick={() => dispatch({ method: "enableScan" })}
                         >
                           {t("Turn on Camera")}
@@ -86,11 +85,11 @@ export const Scan = () => {
             ].map(({ title, body, extra, errorIcon }, index) => (
               <li className="relative ml-20" key={index}>
                 {errorIcon ? (
-                  <div className="border-alert-error text-alert-error absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold">
+                  <div className="absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-alert-error font-bold text-alert-error text-xs">
                     !
                   </div>
                 ) : (
-                  <div className="bg-black-tertiary text-body-secondary absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full text-xs lining-nums">
+                  <div className="absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full bg-black-tertiary text-body-secondary text-xs lining-nums">
                     {index + 1}
                   </div>
                 )}
@@ -132,7 +131,7 @@ export const Scan = () => {
             }}
           />
           {state.scanError && (
-            <div className="text-alert-error bg-alert-error/10 mt-6 inline-block w-[260px] rounded p-4 text-center text-xs font-light">
+            <div className="mt-6 inline-block w-[260px] rounded bg-alert-error/10 p-4 text-center font-light text-alert-error text-xs">
               {state.scanError}
             </div>
           )}
