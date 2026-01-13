@@ -55,7 +55,6 @@ export class Keyring {
 
     // automatic upgrade : set default values for newly introduced properties
     for (const account of data.accounts) {
-      // biome-ignore lint/suspicious/noExplicitAny: legacy ts-comment usage
       // @ts-expect-error
       if (account.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
     }
@@ -163,7 +162,7 @@ export class Keyring {
   }
 
   public removeMnemonic(id: string) {
-    const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id == id)
+    const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id === id)
     if (index === -1) throw new Error("Mnemonic not found")
     this.#data.mnemonics.splice(index, 1)
   }

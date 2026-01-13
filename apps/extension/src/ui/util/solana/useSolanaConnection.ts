@@ -11,7 +11,7 @@ import { useMemo } from "react"
  * @param networkId
  */
 const getSolanaConnection = (networkId: string) => {
-  const fetchViaBackground = async (url: string, options: RequestInit) => {
+  const fetchViaBackground = async (_url: string, options: RequestInit) => {
     if (typeof options.body !== "string")
       throw new Error("Request body is required for Solana RPC calls")
 

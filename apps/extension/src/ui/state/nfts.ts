@@ -196,10 +196,10 @@ export const [useNfts, nfts$] = bind(
               // if same collection, sort by tokenId
               const tokenId1 = Number(n1.tokenId)
               const tokenId2 = Number(n2.tokenId)
-              if (!isNaN(tokenId1) && !isNaN(tokenId2)) {
+              if (!Number.isNaN(tokenId1) && !Number.isNaN(tokenId2)) {
                 return tokenId1 - tokenId2
               }
-            } catch (err) {
+            } catch {
               //ignore
             }
 

@@ -190,7 +190,6 @@ export class Websocket implements ProviderInterface {
    * @description The [[Websocket]] connects automatically by default, however if you decided otherwise, you may
    * connect manually using this method.
    */
-  // biome-ignore lint/suspicious/useAwait: legacy
   public async connect(): Promise<void> {
     if (this.#websocket) {
       throw new Error("WebSocket is already connected")
@@ -204,8 +203,7 @@ export class Websocket implements ProviderInterface {
         typeof xglobal.WebSocket !== "undefined" &&
         isChildClass(xglobal.WebSocket as typeof WebSocket, WebSocket)
           ? new WebSocket(this.endpoint)
-          : // biome-ignore lint/suspicious/noExplicitAny: legacy ts-comment usage
-            // @ts-expect-error - WS may be an instance of ws, which supports options
+          : // @ts-expect-error - WS may be an instance of ws, which supports options
             new WebSocket(this.endpoint, undefined, {
               headers: this.#headers,
             })
@@ -236,7 +234,7 @@ export class Websocket implements ProviderInterface {
 
     try {
       await this.connect()
-    } catch (error) {
+    } catch {
       this.scheduleNextRetry()
     }
   }
@@ -269,7 +267,6 @@ export class Websocket implements ProviderInterface {
   /**
    * @description Manually disconnect from the connection, clearing auto-connect logic
    */
-  // biome-ignore lint/suspicious/useAwait: legacy
   public async disconnect(): Promise<void> {
     // switch off autoConnect, we are in manual mode now
     this.#autoConnectBackoff.disable()
@@ -313,7 +310,7 @@ export class Websocket implements ProviderInterface {
     method: string,
     params: unknown[],
     /** @deprecated \@talismn/chain-connector doesn't implement a cache */
-    isCacheable?: boolean,
+    _isCacheable?: boolean,
     subscription?: SubscriptionHandler
   ): Promise<T> {
     const [id, body] = this.#coder.encodeJson(method, params)
@@ -402,7 +399,7 @@ export class Websocket implements ProviderInterface {
 
     try {
       return this.isConnected && !isNull(this.#websocket) ? this.send<boolean>(method, [id]) : true
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -464,6 +461,7 @@ export class Websocket implements ProviderInterface {
     try {
       const response = JSON.parse(message.data) as UnknownJsonRpcResponse
 
+      // biome-ignore lint/correctness/noVoidTypeReturn: legacy
       return isUndefined(response.method)
         ? this.#onSocketMessageResult(response)
         : this.#onSocketMessageSubscribe(response)

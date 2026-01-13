@@ -28,7 +28,7 @@ export const lookupAddresses = async (config: Config, addresses: string[]): Prom
  * @deprecated
  */
 export const lookupAznsAddresses = async (
-  config: Config,
+  _config: Config,
   addresses: string[]
 ): Promise<OnChainIds> => {
   return new Promise<OnChainIds>((resolve) =>
@@ -67,6 +67,7 @@ export const lookupEnsAddresses = async (
       }
     })
   )
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason.message))
 
   return onChainIds

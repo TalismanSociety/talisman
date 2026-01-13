@@ -276,44 +276,43 @@ const EvmDrawerContent: FC<{
           </div>
         </div>
       </div>
-      <>
-        {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
-          <div className="w-full">
-            <SignHardwareEthereum
-              className="mt-6"
-              account={account}
-              method="eth_sendTransaction"
-              payload={transaction}
-              onSigned={handleSendSigned}
-              onCancel={() => onClose?.()}
-              onSentToDevice={handleSentToDevice}
-              containerId="main"
-            />
-          </div>
-        ) : (
-          <div
-            className={classNames(
-              "mt-8 grid w-full gap-4",
-              canReplace ? "grid-cols-2" : "grid-cols-1"
-            )}
-          >
-            <Button className="h-24" onClick={() => onClose?.()}>
-              {t("Close")}
+
+      {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
+        <div className="w-full">
+          <SignHardwareEthereum
+            className="mt-6"
+            account={account}
+            method="eth_sendTransaction"
+            payload={transaction}
+            onSigned={handleSendSigned}
+            onCancel={() => onClose?.()}
+            onSentToDevice={handleSentToDevice}
+            containerId="main"
+          />
+        </div>
+      ) : (
+        <div
+          className={classNames(
+            "mt-8 grid w-full gap-4",
+            canReplace ? "grid-cols-2" : "grid-cols-1"
+          )}
+        >
+          <Button className="h-24" onClick={() => onClose?.()}>
+            {t("Close")}
+          </Button>
+          {canReplace && (
+            <Button
+              className="h-24"
+              primary
+              onClick={handleSend}
+              disabled={!isProcessing && (!transaction || !account || (!isLoading && !isValid))}
+              processing={isProcessing}
+            >
+              {approveText}
             </Button>
-            {canReplace && (
-              <Button
-                className="h-24"
-                primary
-                onClick={handleSend}
-                disabled={!isProcessing && (!transaction || !account || (!isLoading && !isValid))}
-                processing={isProcessing}
-              >
-                {approveText}
-              </Button>
-            )}
-          </div>
-        )}
-      </>
+          )}
+        </div>
+      )}
     </>
   )
 }

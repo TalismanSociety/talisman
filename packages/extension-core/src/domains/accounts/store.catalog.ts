@@ -31,6 +31,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
     await this.withTrees((trees) => {
       orderedAddresses = [...trees.portfolio, ...trees.watched].reduce<string[]>((prev, curr) => {
         if (curr.type === "account") prev.push(curr.address)
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         if (curr.type === "folder") curr.tree.forEach((item) => prev.push(item.address))
         return prev
       }, [])
@@ -84,6 +85,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
           )
           if (!removeAddresses.length) return false
 
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
           removeAddresses.forEach((a) => removeAccount(tree, a))
           return true
         })
@@ -103,6 +105,8 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    * By using this helper, the data will always be a valid `Trees` type,
    * even when the underlying localStorage has never been initialized.
    */
+
+  // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   private withTrees = async (callback: (trees: Trees) => boolean | void) => {
     // get the data from localStorage
     const store = await this.get()

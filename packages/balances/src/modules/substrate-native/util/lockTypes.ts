@@ -77,7 +77,7 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  // biome-ignore lint/correctness/noUnusedVariables: legacy
+  // biome-ignore lint/correctness/noUnusedFunctionParameters: legacy
   { balance }: { balance?: Balance } = {}
 ) => {
   if (!lock.label) return lock.label

@@ -51,7 +51,7 @@ const getTransferMethod = (
 
       if (callType) {
         const palletCalls = lookupFn(callType)
-        if (palletCalls.type === "enum" && palletCalls.value["transfer_allow_death"])
+        if (palletCalls.type === "enum" && palletCalls.value.transfer_allow_death)
           return "transfer_allow_death"
       }
 

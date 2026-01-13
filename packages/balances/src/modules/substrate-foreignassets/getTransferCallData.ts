@@ -66,7 +66,7 @@ const getEncodedValue = (codec: Codec<unknown>, possibleValue: Array<() => unkno
   for (const getArgs of possibleValue) {
     try {
       return codec.enc(getArgs())
-    } catch (error) {
+    } catch {
       // wrong inputs, ignore and try the next one
     }
   }

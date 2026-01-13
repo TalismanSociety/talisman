@@ -190,7 +190,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
 
     try {
-      // biome-ignore lint/style/noVar: legacy
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
@@ -207,7 +207,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
     try {
       const timeout = 30_000 // throw after 30 seconds if no response
-      // biome-ignore lint/style/noVar: legacy
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
       var response = await Promise.race([
         ws.send(method, params, isCacheable),
         throwAfter(timeout, "TIMEOUT"),
@@ -286,7 +286,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     }
 
     try {
-      // biome-ignore lint/style/noVar: legacy
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
     } catch (error) {
       throw new StaleRpcError(chainId, { cause: error })
@@ -348,10 +348,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
         else await Promise.race([ws.isReady, callerUnsubscribed])
 
         clearTimeout(noMoreSocketsTimeout)
-      } catch (error) {
+      } catch {
         clearTimeout(noMoreSocketsTimeout)
 
-        unsubRpcStatus && unsubRpcStatus()
+        unsubRpcStatus?.()
         await this.disconnectChainSocket(chainId, socketUserId)
         return
       }
@@ -375,7 +375,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       } catch (error) {
         if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
 
-        unsubRpcStatus && unsubRpcStatus()
+        unsubRpcStatus?.()
         disconnected = true
 
         if (subscriptionId !== null && unsubscribeMethod)
@@ -388,10 +388,11 @@ export class ChainConnectorDot implements IChainConnectorDot {
       // unsubscribe from ws subscription when the caller has unsubscribed
       callerUnsubscribed
         .catch(async (error) => {
+          // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
           let unsubscribeMethod
           if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
 
-          unsubRpcStatus && unsubRpcStatus()
+          unsubRpcStatus?.()
 
           if (subscriptionId !== null && unsubscribeMethod)
             await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
@@ -569,9 +570,11 @@ export class ChainConnectorDot implements IChainConnectorDot {
     // biome-ignore lint/suspicious/noExplicitAny: legacy
     const talismanSub = typeof window !== "undefined" && (window as any).talismanSub
 
-    /* eslint-disable @typescript-eslint/no-unsafe-function-type */
+    // biome-ignore lint/complexity/noBannedTypes: legacy
     const rpcByGenesisHashSend: Function | undefined = talismanSub?.rpcByGenesisHashSend
+    // biome-ignore lint/complexity/noBannedTypes: legacy
     const rpcByGenesisHashSubscribe: Function | undefined = talismanSub?.rpcByGenesisHashSubscribe
+    // biome-ignore lint/complexity/noBannedTypes: legacy
     const rpcByGenesisHashUnsubscribe: Function | undefined =
       talismanSub?.rpcByGenesisHashUnsubscribe
 

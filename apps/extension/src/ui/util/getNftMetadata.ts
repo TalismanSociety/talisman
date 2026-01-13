@@ -16,7 +16,7 @@ export const getNftMetadata = async (
       description,
       image: getSafeImageUrl(image, thumbWidth, thumbHeight),
     }
-  } catch (err) {
+  } catch {
     // failed, ignore
     return null
   }

@@ -176,6 +176,7 @@ const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
   if (folder.type !== "folder") return
 
   // insert folder accounts back into tree
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   folder.tree.forEach((account) => addAccount(tree, account.address))
 
   // inform the store that a change was made
@@ -200,6 +201,7 @@ const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
 
 /** Recursive, removes an account from anywhere in the tree, including inside folders */
 const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undefined => {
+  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
   let account
   const removeFromSet = (set: TreeItem[], address: string) => {
     const indexes = set.reduceRight((indexes, item, index) => {
@@ -210,6 +212,7 @@ const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undef
       if (item.type === "folder") removeFromSet(item.tree, address)
       return indexes
     }, [] as number[])
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     indexes.forEach((index) => set.splice(index, 1))
   }
 

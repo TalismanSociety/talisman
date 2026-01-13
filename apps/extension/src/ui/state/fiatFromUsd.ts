@@ -16,7 +16,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
     let refPrice: number | null = null
 
     for (const rates of values(allTokenRates.tokenRates).filter(isNotNil)) {
-      const usd = rates["usd"]?.price
+      const usd = rates.usd?.price
       const custom = rates[selectedCurrency]?.price
       if (!usd || !custom) continue
       if (!refTokenRates || !refPrice || usd > refPrice) {
@@ -37,7 +37,7 @@ export const [useFiatFromUsd, getFiatFromUsd$] = bind(
         if (usd === 0) return 0
         if (selectedCurrency === "usd") return usd
         if (!refTokenRates || !usd) return null
-        const usdRate = refTokenRates["usd"]?.price
+        const usdRate = refTokenRates.usd?.price
         const targetRate = refTokenRates[selectedCurrency]?.price
         if (!usdRate || !targetRate) return null
         return (usd / usdRate) * targetRate
@@ -50,7 +50,7 @@ export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
   (usd: number | null | undefined) =>
     refTokenRates$.pipe(
       map((refTokenRates): TokenRates | null => {
-        const usdRate = refTokenRates?.["usd"]?.price
+        const usdRate = refTokenRates?.usd?.price
         if (!refTokenRates || !usd || !usdRate) return null
         if (usd === 0)
           return fromPairs(

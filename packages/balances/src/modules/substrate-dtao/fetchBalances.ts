@@ -311,7 +311,7 @@ const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: st
 }
 
 const buildRootClaimableStorageCoder = async (
-  connector: IChainConnectorDot,
+  _connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}` | null
 ): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {

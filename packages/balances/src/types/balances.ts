@@ -107,19 +107,24 @@ export class Balances {
     hydrate?: HydrateDb
   ) {
     // handle Balances (convert to Balance[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balances) return new Balances(balances.each, hydrate)
 
     // handle Balance (convert to Balance[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balance) return new Balances([balances], hydrate)
 
     // handle BalanceJsonList (the only remaining non-array type of balances) (convert to BalanceJson[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (!Array.isArray(balances)) return new Balances(Object.values(balances), hydrate)
 
     // handle no balances
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances.length === 0) return this
 
     // handle BalanceJson[]
     if (!isArrayOf(balances, Balance))
+      // biome-ignore lint/correctness/noConstructorReturn: legacy
       return new Balances(
         balances.map((storage) => new Balance(storage)),
         hydrate
@@ -246,6 +251,8 @@ export class Balances {
     const mergedBalances = Object.fromEntries(
       this.#balances.map((balance) => [balance.id, balance])
     )
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     balances.each.forEach((balance) => (mergedBalances[balance.id] = balance))
 
     // return new balances
@@ -411,8 +418,8 @@ export class Balance {
       const decimals0 = this.token.decimals0
       const decimals1 = this.token.decimals1
 
-      const rates0 = this.#db?.tokenRates && this.#db.tokenRates[tokenId0]
-      const rates1 = this.#db?.tokenRates && this.#db.tokenRates[tokenId1]
+      const rates0 = this.#db?.tokenRates?.[tokenId0]
+      const rates1 = this.#db?.tokenRates?.[tokenId1]
 
       if (rates0 === undefined || rates1 === undefined) return null
 
@@ -467,7 +474,7 @@ export class Balance {
     }
 
     // other tokens can just pick from the tokenRates db using the tokenId
-    return (this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]) || null
+    return this.#db?.tokenRates?.[this.tokenId] || null
   }
 
   /**
@@ -498,6 +505,8 @@ export class Balance {
    * @param valueType - The type of value to add.
    * @returns A function which can be used to add a value to the array of values for this balance.
    */
+
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
   private addValue(valueType: BalanceStatusTypes) {
     return (value: Omit<AmountWithLabel<string>, "type">) => this.#valueGetter.add(valueType, value)
   }
@@ -919,7 +928,7 @@ export class Change24hCurrencyFormatter {
   }
 }
 
-export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
+export const filterMirrorTokens = (balance: Balance, _i: number, balances: Balance[]) => {
   const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }

@@ -41,17 +41,18 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain("https://etherscan.io/block/22957353")
-  }),
-    it("polkadot block number", () => {
-      const urls = getBlockExplorerUrls(POLKADOT, {
-        type: "block",
-        id: 26955482,
-      })
+  })
 
-      expect(urls).toContain("https://polkadot.subscan.io/block/26955482")
-      expect(urls).toContain("https://polkadot.statescan.io/#/blocks/26955482")
-      expect(urls.length).toBe(2)
+  it("polkadot block number", () => {
+    const urls = getBlockExplorerUrls(POLKADOT, {
+      type: "block",
+      id: 26955482,
     })
+
+    expect(urls).toContain("https://polkadot.subscan.io/block/26955482")
+    expect(urls).toContain("https://polkadot.statescan.io/#/blocks/26955482")
+    expect(urls.length).toBe(2)
+  })
 
   it("polkadot block hash", () => {
     const urls = getBlockExplorerUrls(POLKADOT, {

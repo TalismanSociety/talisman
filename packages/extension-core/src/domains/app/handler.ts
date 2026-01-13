@@ -89,7 +89,7 @@ export default class AppHandler extends ExtensionHandler {
         .then(({ autoLockMinutes }) => this.stores.password.resetAutolockTimer(autoLockMinutes))
 
       return true
-    } catch (e) {
+    } catch {
       this.stores.password.clearPassword()
       return false
     }
@@ -135,6 +135,7 @@ export default class AppHandler extends ExtensionHandler {
       updateProgress(ChangePasswordStatusUpdateStatus.PREPARING)
       const isHashedAlready = await this.stores.password.get("isHashed")
 
+      // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
       let hashedNewPw, newSalt
       if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
       else {

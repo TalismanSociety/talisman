@@ -211,6 +211,7 @@ export class ChaindataProvider implements IChaindataProvider {
     if (!tokens.length) return
 
     // check schema
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     tokens.forEach((t) => TokenSchema.parse(t))
 
     const currentStorage = await firstValueFrom(this.#dynamicTokens$)

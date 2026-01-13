@@ -9,6 +9,7 @@ const AUTO_CONNECT_TIMEOUT = 3_000
 const TIMEOUT = 10_000
 
 export class ChainConnectorDotStub implements IChainConnectorDot {
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
   #network: DotNetwork
   #provider: WsProvider
 
@@ -22,7 +23,7 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
   }
 
   async send<T = unknown>(
-    chainId: DotNetworkId,
+    _chainId: DotNetworkId,
     method: string,
     params: unknown[],
     isCacheable?: boolean
@@ -33,7 +34,7 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
   }
 
   async subscribe(
-    chainId: DotNetworkId,
+    _chainId: DotNetworkId,
     subscribeMethod: string,
     responseMethod: string,
     params: unknown[],

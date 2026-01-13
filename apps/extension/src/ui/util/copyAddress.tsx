@@ -27,7 +27,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
       { toastId }
     )
     return true
-  } catch (err) {
+  } catch {
     notify(
       {
         type: "error",

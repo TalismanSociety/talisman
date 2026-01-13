@@ -24,6 +24,7 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
   combineLatest([getNetworks$(), getNetworksMapById$(), t$]).pipe(
     map(([networks, networksById, t]): Record<NetworkId, string | null> => {
       return fromPairs(
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         networks.map((network) => {
           // use name that describes the network type
           switch (network.platform) {

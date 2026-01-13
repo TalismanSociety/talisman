@@ -40,7 +40,7 @@ export const useSolanaNetworkIdForTransaction = (
                   commitment: "processed", // Fastest, but may include blocks that could be rolled back.
                 })
                 return result.value ? network.id : null
-              } catch (err) {
+              } catch {
                 return null
               }
             })

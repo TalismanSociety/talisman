@@ -846,12 +846,12 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   const transferTx =
     fromAsset.assetHubAssetId !== undefined
-      ? (polkadotApi.tx.assets["transferAllowDeath"] ?? polkadotApi.tx.assets["transfer"])(
+      ? (polkadotApi.tx.assets.transferAllowDeath ?? polkadotApi.tx.assets.transfer)(
           fromAsset.assetHubAssetId,
           fromAddress,
           fromAmount.planck
         )
-      : (polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"])(
+      : (polkadotApi.tx.balances.transferAllowDeath ?? polkadotApi.tx.balances.transfer)(
           fromAddress,
           fromAmount.planck
         )

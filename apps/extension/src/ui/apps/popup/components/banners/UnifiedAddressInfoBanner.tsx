@@ -61,7 +61,6 @@ export const UnifiedAddressInfoBanner = () => {
 }
 
 const BgIcon: FC<{ className?: string }> = ({ className }) => (
-  // biome-ignore lint/a11y/noSvgWithoutTitle: legacy
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 165 101" fill="none" className={className}>
     <path
       fillRule="evenodd"

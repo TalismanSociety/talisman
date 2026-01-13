@@ -19,7 +19,7 @@ export const useToggleCurrency = () => {
   return useCallback(async () => {
     const sortedCurrencies = favorites.concat().sort(sortCurrencies)
 
-    const currIndex = sortedCurrencies.findIndex((c) => c === selected)
+    const currIndex = sortedCurrencies.indexOf(selected)
     const nextIndex = (currIndex + 1) % sortedCurrencies.length
     const nextCurrency = sortedCurrencies.at(nextIndex) ?? sortedCurrencies[0]
 

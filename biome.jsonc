@@ -75,7 +75,8 @@
         }
       },
       "a11y": {
-        "useMediaCaption": "off"
+        "useMediaCaption": "off",
+        "noSvgWithoutTitle": "off"
       },
       "complexity": {
         "noForEach": "off"

@@ -336,7 +336,7 @@ const erc20Atom = atomFamily((addressChainId: string) =>
     if (!address || !chainIdString) return null
     const chainId = +chainIdString
     const isValidAddress = isAddress(address)
-    if (!isValidAddress || isNaN(chainId)) return null
+    if (!isValidAddress || Number.isNaN(chainId)) return null
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find((c) => c?.id === chainId)
     if (!chain) return null
@@ -790,9 +790,11 @@ export const useSetToAddress = () => {
 
         // fromAddress isn't evm, set toAddress to null
         if (!isAccountPlatformEthereum(fromAccount))
+          // biome-ignore lint/complexity/noCommaOperator: legacy
           return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
 
         // fromAddress is evm, set toAddress to fromAddress
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(fromAddress), setToSubstrateAddress(null), setToBtcAddress(null)
       case "substrate":
         // toAddress is already substrate, don't change anything (if it's still compatible with this network)
@@ -808,21 +810,25 @@ export const useSetToAddress = () => {
           !isAccountPlatformPolkadot(fromAccount) ||
           (toNetwork && !isAccountCompatibleWithNetwork(toNetwork, fromAccount))
         )
+          // biome-ignore lint/complexity/noCommaOperator: legacy
           return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
 
         // fromAddress is substrate, set toAddress to fromAddress
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(fromAddress), setToBtcAddress(null)
       case "btc":
         // toAddress is already btc, don't change anything
         if (toBtcAddress) return
 
         // fromAddress is never btc, always set toAddress to null
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       default:
         // biome-ignore lint/suspicious/noConsole: legacy
         console.error(
           `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`
         )
+        // biome-ignore lint/complexity/noCommaOperator: legacy
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     }
   }, [

@@ -28,7 +28,7 @@ export const resolveNames = async (config: Config, names: string[]): Promise<Res
  * Looks up the addresses for some azns (azero.id) domains.
  * @deprecated
  */
-export const resolveAznsNames = (config: Config, names: string[]): Promise<ResolvedNames> => {
+export const resolveAznsNames = (_config: Config, names: string[]): Promise<ResolvedNames> => {
   return new Promise<ResolvedNames>((resolve) =>
     resolve(new Map(names.map((name) => [name, null])))
   )
@@ -67,6 +67,7 @@ export const resolveEnsNames = async (config: Config, names: string[]): Promise<
     })
   )
 
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason))
 
   return resolvedNames

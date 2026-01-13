@@ -43,7 +43,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
               status: "live",
               value,
             }
-          } catch (err) {
+          } catch {
             log.warn("Failed to parse token amount", {
               address,
               d,
