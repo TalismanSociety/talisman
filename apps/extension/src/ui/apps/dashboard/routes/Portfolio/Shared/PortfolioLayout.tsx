@@ -48,7 +48,7 @@ const PortfolioAccountCheck: FC<PropsWithChildren> = ({ children }) => {
       !!selectedAccounts.length && selectedAccounts.every((a) => isAccountAddressEthereum(a)),
       !!selectedAccounts.length && selectedAccounts.every((a) => isAccountAddressSs58(a)),
     ],
-    [selectedAccounts],
+    [selectedAccounts]
   )
 
   if (!selectedAccounts.length) return <GetStarted />

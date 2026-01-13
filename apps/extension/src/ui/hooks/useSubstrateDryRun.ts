@@ -55,6 +55,6 @@ const getSapiFromSignerPayloadJSON = async (jsonPayload: SignerPayloadJSON | nul
     token,
     chain.hasCheckMetadataHash,
     chain.signedExtensions,
-    chain.registryTypes,
+    chain.registryTypes
   )
 }

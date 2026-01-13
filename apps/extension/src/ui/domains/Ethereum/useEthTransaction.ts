@@ -38,7 +38,7 @@ const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 const useNonce = (
   address: `0x${string}` | undefined,
   evmNetworkId: EthNetworkId | undefined,
-  forcedValue?: number,
+  forcedValue?: number
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: ["useNonce", address, evmNetworkId, forcedValue],
@@ -110,7 +110,7 @@ const estimateGas = async (publicClient: PublicClient, tx: TransactionRequest) =
 const useBlockFeeData = (
   publicClient: PublicClient | undefined,
   tx: TransactionRequest | undefined,
-  withFeeOptions: boolean | undefined,
+  withFeeOptions: boolean | undefined
 ) => {
   const { data, ...rest } = useQuery({
     queryKey: [
@@ -200,7 +200,7 @@ const useBlockFeeData = (
 
 const useDecodeEvmTransaction = (
   publicClient: PublicClient | undefined,
-  request: TransactionRequest | undefined,
+  request: TransactionRequest | undefined
 ) => {
   const queryClient = useQueryClient()
   const [tx, setTx] = useState(() => request)
@@ -264,7 +264,7 @@ const useDecodeEvmTransaction = (
 
       setTx(newTx)
     },
-    [decodedTx, publicClient, queryClient, tx],
+    [decodedTx, publicClient, queryClient, tx]
   )
 
   return { tx, decodedTx, updateCallArg, ...rest }
@@ -275,7 +275,7 @@ const getEthGasSettingsFromTransaction = (
   hasEip1559Support: boolean | undefined,
   estimatedGas: bigint | undefined,
   blockGasLimit: bigint | undefined,
-  isContractCall: boolean | undefined = true, // default to worse scenario
+  isContractCall: boolean | undefined = true // default to worse scenario
 ) => {
   if (!tx || hasEip1559Support === undefined || !isBigInt(blockGasLimit) || !isBigInt(estimatedGas))
     return undefined
@@ -350,7 +350,7 @@ const useGasSettings = ({
       hasEip1559Support,
       estimatedGas,
       blockGasLimit,
-      isContractCall,
+      isContractCall
     )
 
     if (hasEip1559Support) {
@@ -380,19 +380,19 @@ const useGasSettings = ({
         baseFeePerGas,
         mapMaxPriority.low,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
       const medium = getGasSettingsEip1559(
         baseFeePerGas,
         mapMaxPriority.medium,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
       const high = getGasSettingsEip1559(
         baseFeePerGas,
         mapMaxPriority.high,
         gas,
-        feeHistoryAnalysis.isBaseFeeIdle,
+        feeHistoryAnalysis.isBaseFeeIdle
       )
 
       const custom: EthGasSettingsEip1559 =
@@ -471,7 +471,7 @@ export const useEthTransaction = (
   request: TransactionRequest | undefined,
   evmNetworkId: EthNetworkId | undefined,
   lockTransaction = false,
-  isReplacement = false,
+  isReplacement = false
 ) => {
   const publicClient = usePublicClient(evmNetworkId)
   const {
@@ -484,7 +484,7 @@ export const useEthTransaction = (
   const { nonce, error: nonceError } = useNonce(
     tx?.from as `0x${string}` | undefined,
     evmNetworkId,
-    isReplacement && tx?.nonce ? tx.nonce : undefined,
+    isReplacement && tx?.nonce ? tx.nonce : undefined
   )
   const {
     gasPrice,
@@ -538,7 +538,7 @@ export const useEthTransaction = (
 
   const { data: estimatedL1DataFee, error: l1FeeError } = useEthEstimateL1DataFee(
     publicClient,
-    transaction,
+    transaction
   )
 
   // TODO replace this wierd object name with something else... gasInfo ?
@@ -560,7 +560,7 @@ export const useEthTransaction = (
       gasSettings,
       estimatedGas,
       baseFeePerGas,
-      estimatedL1DataFee,
+      estimatedL1DataFee
     )
 
     return {
@@ -589,7 +589,7 @@ export const useEthTransaction = (
     publicClient,
     transaction,
     priority,
-    isReplacement,
+    isReplacement
   )
 
   const { t } = useTranslation()
@@ -613,7 +613,7 @@ export const useEthTransaction = (
 
   const isLoading = useMemo(
     () => tx && isDecoding && !txDetails && !error,
-    [tx, isDecoding, txDetails, error],
+    [tx, isDecoding, txDetails, error]
   )
 
   // @dev temporarily uncomment when troubleshooting

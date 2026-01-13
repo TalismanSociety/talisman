@@ -22,6 +22,6 @@ export const subscribeBalances: IBalanceModule<typeof MODULE_TYPE>["subscribeBal
     map((balances) => ({
       success: balances,
       errors: [],
-    })),
+    }))
   )
 }

@@ -61,7 +61,7 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo]
   )
 
   return (
@@ -107,7 +107,7 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo]
   )
 
   if (!account) return null
@@ -222,7 +222,7 @@ const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error })
   ) : null
 
 const getHexShortMetadata = (
-  txMetadata?: Uint8Array | `0x${string}`,
+  txMetadata?: Uint8Array | `0x${string}`
 ): `0x${string}` | undefined => {
   if (typeof txMetadata === "string") return txMetadata as `0x${string}`
   return txMetadata ? (toHex(txMetadata) as `0x${string}`) : undefined

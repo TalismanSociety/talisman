@@ -22,7 +22,7 @@ const ONE_ALPHA = 10n ** TAO_DECIMALS
 export const getDTaoTokenRates = (
   token: SubDTaoToken,
   tokenRates: TokenRatesList,
-  scaledAlphaPrice: string | bigint,
+  scaledAlphaPrice: string | bigint
 ) => {
   try {
     const taoTokenId = subNativeTokenId(token.networkId)

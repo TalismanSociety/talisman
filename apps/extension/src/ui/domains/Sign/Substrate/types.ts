@@ -23,7 +23,7 @@ export type DecodedBatchCall =
 export type DecodedBatchArgs = DecodedBatchCall["args"]
 
 export const isBatchCall = (
-  decodedCall: DecodedCall | null | undefined,
+  decodedCall: DecodedCall | null | undefined
 ): decodedCall is DecodedBatchCall => {
   return (
     decodedCall?.pallet === "Utility" &&

@@ -5,7 +5,7 @@ import { parseMetadataRpc } from "./parseMetadataRpc"
 export const getConstantValueFromMetadata = <T>(
   metadata: `0x${string}` | { builder: MetadataBuilder; unifiedMetadata: UnifiedMetadata },
   pallet: string,
-  constant: string,
+  constant: string
 ) => {
   const { builder, unifiedMetadata } =
     typeof metadata === "string" ? parseMetadataRpc(metadata) : metadata
@@ -17,7 +17,7 @@ const getConstantValueInner = <T>(
   builder: MetadataBuilder,
   unifiedMetadata: UnifiedMetadata,
   pallet: string,
-  constant: string,
+  constant: string
 ) => {
   try {
     const storageCodec = builder.buildConstant(pallet, constant)

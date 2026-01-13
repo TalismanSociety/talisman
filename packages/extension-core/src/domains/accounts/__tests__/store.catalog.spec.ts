@@ -224,7 +224,7 @@ describe("runActionOnTrees", () => {
     expect(status).toStrictEqual(true)
 
     expect(tree.filter(folderFilter).find((folder) => folder.id === "folder-1")?.name).toBe(
-      "Renamed folder 1",
+      "Renamed folder 1"
     )
   })
 

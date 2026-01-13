@@ -51,11 +51,11 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         setStatus.error(
           isEthereumRequest(currentRequest)
             ? (err as Error).message
-            : "Failed to approve sign request",
+            : "Failed to approve sign request"
         )
       }
     },
-    [approveSignFn, currentRequest, setStatus],
+    [approveSignFn, currentRequest, setStatus]
   )
 
   // handle request rejection

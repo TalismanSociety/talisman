@@ -8,7 +8,7 @@ export const PositionSymbol: FC<{ position: DefiPosition }> = ({ position }) => 
     const lockedOnly = uniq(
       position.breakdown
         .filter((item) => ["staked", "deposit", "loan"].includes(item.type))
-        .map((item) => item.symbol.trim()),
+        .map((item) => item.symbol.trim())
     ).join("/")
 
     if (lockedOnly) return lockedOnly

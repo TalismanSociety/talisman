@@ -8,7 +8,7 @@ import { useLedgerPolkadot } from "@ui/hooks/ledger/useLedgerPolkadot"
 
 export const useGetLedgerPolkadotAddress = (
   curve: LedgerPolkadotCurve,
-  legacyApp?: SubstrateAppParams | null,
+  legacyApp?: SubstrateAppParams | null
 ) => {
   const { getAddressEcdsa, getAddressEd25519 } = useLedgerPolkadot({ legacyApp })
 
@@ -45,7 +45,7 @@ export const useGetLedgerPolkadotAddress = (
           return result.address
       }
     },
-    [curve, getAddressEcdsa, getAddressEd25519, legacyApp],
+    [curve, getAddressEcdsa, getAddressEd25519, legacyApp]
   )
 
   return { getAddress }

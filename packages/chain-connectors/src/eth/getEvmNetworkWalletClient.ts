@@ -10,7 +10,7 @@ type WalletClientOptions = {
 
 export const getEvmNetworkWalletClient = (
   network: EthNetwork,
-  options: WalletClientOptions = {},
+  options: WalletClientOptions = {}
 ): WalletClient => {
   const chain = getChainFromEvmNetwork(network)
 

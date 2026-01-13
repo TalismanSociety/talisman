@@ -29,7 +29,7 @@ const useDerivedAccounts = (
   curve: KeypairCurve,
   selectedAccounts: AddAccountDeriveOptions[],
   pageIndex: number,
-  itemsPerPage: number,
+  itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
   const [derivedAccounts, setDerivedAccounts] = useState<DerivedFromMnemonicAccount[]>([
@@ -69,7 +69,7 @@ const useDerivedAccounts = (
               curve,
             },
           } as DerivedFromMnemonicAccount
-        }),
+        })
       )
 
       setDerivedAccounts(newAccounts)
@@ -93,10 +93,10 @@ const useDerivedAccounts = (
                 curve: acc.options.curve,
                 name: "",
                 createdAt: Date.now(),
-              }),
+              })
             )
         : [],
-    [itemsPerPage, derivedAccounts],
+    [itemsPerPage, derivedAccounts]
   )
   const balances = useAccountImportBalances(accountImportDefs)
 
@@ -106,11 +106,11 @@ const useDerivedAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find((wa) =>
-          isAddressEqual(wa.address, acc.address),
+          isAddressEqual(wa.address, acc.address)
         )
 
         const accountBalances = balances.balances.find((b) =>
-          isAddressEqual(b.address, acc.address),
+          isAddressEqual(b.address, acc.address)
         )
 
         const isBalanceLoading =
@@ -126,7 +126,7 @@ const useDerivedAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts],
+    [balances, derivedAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {
@@ -172,7 +172,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     curve,
     selectedOptions,
     pageIndex,
-    itemsPerPage,
+    itemsPerPage
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -180,7 +180,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     setSelectedOptions((prev) =>
       prev.some((po) => po.derivationPath === derivedAccount.options.derivationPath)
         ? prev.filter((pa) => pa.derivationPath !== derivedAccount.options.derivationPath)
-        : prev.concat(derivedAccount.options),
+        : prev.concat(derivedAccount.options)
     )
   }, [])
 

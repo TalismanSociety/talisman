@@ -19,7 +19,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, classNa
       !!account && ss58Format !== undefined
         ? encodeAnyAddress(account.address, { ss58Format })
         : account?.address,
-    [account, ss58Format],
+    [account, ss58Format]
   )
 
   const handleClick = useCallback(() => {
@@ -34,7 +34,7 @@ export const AccountPill: FC<AccountPillProps> = ({ account, ss58Format, classNa
       onClick={handleClick}
       className={classNames(
         "bg-grey-850 hover:bg-grey-800 text-body inline-block max-w-full rounded-3xl px-4",
-        className,
+        className
       )}
     >
       <FormattedAddress address={encodedAddress} />

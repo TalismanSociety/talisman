@@ -33,8 +33,8 @@ export const hasErc721Nft = async ({
         abi: parseAbi(abiErc721),
         functionName: "balanceOf",
         args: [address],
-      }),
-    ),
+      })
+    )
   )
 
   return Object.fromEntries(evmAddresses.map((address, i) => [address, data[i] > 0n]))

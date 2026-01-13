@@ -26,7 +26,7 @@ export const TxHistoryDetailsAddress: FC<{
             ss58Format: network?.platform === "polkadot" ? network.prefix : undefined,
           })
         : "",
-    [address, network],
+    [address, network]
   )
 
   const blockExplorerUrl = useMemo(() => {
@@ -51,7 +51,7 @@ export const TxHistoryDetailsAddress: FC<{
           onClick={handleClick}
           className={cn(
             "text-body inline-flex max-w-full items-center gap-2 overflow-hidden align-sub",
-            className,
+            className
           )}
         >
           <AccountIcon

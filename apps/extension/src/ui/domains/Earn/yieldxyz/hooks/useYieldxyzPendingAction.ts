@@ -35,7 +35,7 @@ export const useYieldxyzPendingAction = (props: UseYieldxyzPendingActionProps) =
       const fetchedAction = await fetchYieldxyzCreatePendingAction(
         props.yieldId,
         props.address,
-        props.pendingAction,
+        props.pendingAction
       )
       // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
       fetchedAction.transactions.sort(sortTransactionsByStepIndex)
@@ -94,7 +94,7 @@ export const useYieldxyzPendingAction = (props: UseYieldxyzPendingActionProps) =
         throw err
       }
     },
-    [state.action],
+    [state.action]
   )
 
   return { ...state, canCreateAction, createAction, refreshAction, submitActionTransaction }
@@ -104,7 +104,7 @@ const fetchYieldxyzCreatePendingAction = async (
   yieldId: string,
   address: string,
   pendingAction: PendingActionDto,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/actions/manage`, {
     method: "POST",
@@ -139,7 +139,7 @@ const fetchYieldxyzAction = async (actionId: string, signal?: AbortSignal): Prom
 const submitYieldxyzTransactionHash = async (
   transactionId: string,
   hash: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto["transactions"][number]> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/transactions/${transactionId}/submit-hash`, {
     method: "PUT",

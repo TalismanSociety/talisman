@@ -57,7 +57,7 @@ const executeMigration = async () => {
 
     const oldTokensMap = keyBy(oldTokens, (t) => t.id)
     const oldToNewTokenId = fromPairs(
-      oldTokens.map((token) => [token.id, getChaindataV4TokenId(token.id, oldTokensMap)]),
+      oldTokens.map((token) => [token.id, getChaindataV4TokenId(token.id, oldTokensMap)])
     )
 
     // migrate active networks and tokens
@@ -71,8 +71,8 @@ const executeMigration = async () => {
           .map(([oldTokenId, isActive]) => {
             return [oldToNewTokenId[oldTokenId], isActive]
           })
-          .filter(([tokenId]) => !!tokenId),
-      ),
+          .filter(([tokenId]) => !!tokenId)
+      )
     )
 
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.6 } })
@@ -114,7 +114,7 @@ const executeMigration = async () => {
 
     // wait for user to aknowledge that balances will be reloaded
     await firstValueFrom(
-      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.acknowledged)),
+      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.acknowledged))
     )
   } catch (error) {
     // actually none of the migrations should throw, unless there are storage (quota?) issues
@@ -177,7 +177,7 @@ const getChaindataV3Entities = async () => {
 const getChaindataV4TokenId = (
   oldTokenId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokens: Record<string, any>,
+  oldTokens: Record<string, any>
 ): string | null => {
   if (oldTokenId.includes("-evm-native")) return oldTokenId.replace("-evm-native", ":evm-native")
 
@@ -220,11 +220,11 @@ const getChaindataV4TokenId = (
 const migrateCustomChains = async (
   oldChains: (LegacyChain | LegacyCustomChain)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokensMap: Record<string, any>,
+  oldTokensMap: Record<string, any>
 ) => {
   // custom networks and tokens
   for (const customChain of oldChains.filter(
-    (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom
   )) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oldNativeToken: any = oldTokensMap[customChain.nativeToken?.id ?? ""]
@@ -283,16 +283,16 @@ const migrateCustomChains = async (
 const migrateCustomEvmNetworks = async (
   oldEvmNetworks: (LegacyEvmNetwork | LegacyCustomEvmNetwork)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokensMap: Record<string, any>,
+  oldTokensMap: Record<string, any>
 ) => {
   for (const customEvmNetwork of oldEvmNetworks.filter(
-    (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom
   )) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oldNativeToken: any = oldTokensMap[customEvmNetwork.nativeToken?.id ?? ""]
     if (!oldNativeToken) {
       log.warn(
-        `No native token found for custom evmNetwork ${customEvmNetwork.id}, skipping migration`,
+        `No native token found for custom evmNetwork ${customEvmNetwork.id}, skipping migration`
       )
       continue
     }

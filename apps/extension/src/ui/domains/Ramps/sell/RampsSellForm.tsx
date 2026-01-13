@@ -77,7 +77,7 @@ export const RampsSellForm: FC<{
                             placeholder="100"
                             onChange={(e) =>
                               field.handleChange(
-                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
+                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber
                               )
                             }
                           />
@@ -281,7 +281,7 @@ const AmountOut: FC<{
 }> = ({ quotes, provider, currencyCode }) => {
   const query = useMemo(
     () => quotes.find((q) => q.provider === provider)?.query,
-    [quotes, provider],
+    [quotes, provider]
   )
 
   if (!query || !currencyCode) return null

@@ -8,7 +8,7 @@ export const deriveMiniMetadataId = ({
   specVersion,
 }: Pick<AnyMiniMetadata, "source" | "chainId" | "specVersion">): string =>
   toHex(
-    Twox128(new TextEncoder().encode(`${source}${chainId}${specVersion}${MINIMETADATA_VERSION}`)),
+    Twox128(new TextEncoder().encode(`${source}${chainId}${specVersion}${MINIMETADATA_VERSION}`))
   ).slice(-32)
 
 export type MiniMetadata<Extra = unknown> = Omit<AnyMiniMetadata, "extra"> & { extra: Extra }

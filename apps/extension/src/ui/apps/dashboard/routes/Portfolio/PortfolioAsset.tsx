@@ -90,7 +90,7 @@ const SendFundsButton: FC<{ symbol: string }> = ({ symbol }) => {
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     account,
     undefined,
-    symbol,
+    symbol
   )
 
   return (
@@ -151,7 +151,7 @@ const usePortfolioAsset = () => {
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
     () => allBalances.find((b) => b.token?.symbol === symbol),
-    [allBalances, symbol],
+    [allBalances, symbol]
   )
 
   const { token, rate, summary } = useTokenBalancesSummary(balances)
@@ -185,7 +185,7 @@ export const PortfolioAssetHeader = () => {
   // all tokenIds that match the symbol and have a coingeckoId
   const tokenIds = useMemo(() => {
     return uniq(balances.each.filter((b) => !!b.token?.coingeckoId).map((b) => b.token?.id)).filter(
-      Boolean,
+      Boolean
     ) as TokenId[]
   }, [balances])
 

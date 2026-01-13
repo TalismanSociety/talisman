@@ -11,7 +11,7 @@ import { useSelectedCurrency, useTokenRatesMap } from "@ui/state"
  */
 export const useSpecificTokenRates = (
   tokens: Token[] | undefined,
-  currencyIds?: TokenRateCurrency[],
+  currencyIds?: TokenRateCurrency[]
 ) => {
   const enabledTokenRates = useTokenRatesMap()
   const selectedCurrency = useSelectedCurrency()
@@ -23,7 +23,7 @@ export const useSpecificTokenRates = (
         .sort()
         .map((t) => t.id)
         .join("::"),
-    [tokens],
+    [tokens]
   )
 
   return useQuery({

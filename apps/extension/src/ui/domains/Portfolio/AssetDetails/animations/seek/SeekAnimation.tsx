@@ -43,13 +43,13 @@ export const SeekAnimation = () => {
         "bg-black-primary/70 absolute left-0 top-0 size-full opacity-0 transition-opacity duration-500 ease-out",
         state === "visible" && "opacity-100",
         state === "hiding" && "opacity-0",
-        state === "hidden" && "hidden",
+        state === "hidden" && "hidden"
       )}
     >
       <button type="button" onClick={hide}>
         <img src={imgAnimation} alt="" className="aspect-[4/6] size-full" />
       </button>
     </div>,
-    document.getElementById("main") as HTMLElement,
+    document.getElementById("main") as HTMLElement
   )
 }

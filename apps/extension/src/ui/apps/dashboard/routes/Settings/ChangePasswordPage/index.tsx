@@ -51,7 +51,7 @@ const Content = () => {
           return true
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -107,7 +107,7 @@ const Content = () => {
               unsub()
               resolve()
             }
-          },
+          }
         )
       }).catch((err) => {
         switch (err.message) {
@@ -126,7 +126,7 @@ const Content = () => {
         }
       })
     },
-    [setError, t],
+    [setError, t]
   )
 
   const handleBackupClick = useCallback(() => {
@@ -146,7 +146,7 @@ const Content = () => {
       <HeaderBlock title={t("Change your password")} />
       <p className="text-body-secondary my-10">
         {t(
-          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.",
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
         )}
       </p>
       {!allBackedUp && (
@@ -154,7 +154,7 @@ const Content = () => {
           <div className="flex items-center justify-between">
             <InfoIcon className="text-primary mr-10 text-3xl" />
             {t(
-              "You'll need to confirm your recovery phrase is backed up before you change your password.",
+              "You'll need to confirm your recovery phrase is backed up before you change your password."
             )}
           </div>
           <div className="flex justify-end">

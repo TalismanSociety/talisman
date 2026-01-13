@@ -61,7 +61,7 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
               const genesisHash = "genesisHash" in acc ? acc.genesisHash || undefined : undefined
               return !!genesisHash && genesisHash === chain?.genesisHash
             }),
-            "Chain mismatch",
+            "Chain mismatch"
           )
       }
 
@@ -69,12 +69,12 @@ const useAddLedgerAccountProvider = ({ onSuccess }: { onSuccess: (address: strin
 
       return api.accountAddExternal(accounts)
     },
-    [chain?.genesisHash, data.substrateAppType, data.platform],
+    [chain?.genesisHash, data.substrateAppType, data.platform]
   )
 
   return { data, updateData, connectAccounts, onSuccess }
 }
 
 export const [AddLedgerAccountProvider, useAddLedgerAccount] = provideContext(
-  useAddLedgerAccountProvider,
+  useAddLedgerAccountProvider
 )

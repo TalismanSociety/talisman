@@ -77,7 +77,7 @@ export const SwapDetailsCard = ({
         }, BigNumber(0))
         .toNumber()
         .toLocaleString(undefined, { style: "currency", currency, maximumSignificantDigits: 2 }),
-    [currency, quote.fees, tokenRates],
+    [currency, quote.fees, tokenRates]
   )
 
   if (!toAsset) return null
@@ -86,7 +86,7 @@ export const SwapDetailsCard = ({
     <SwapDetailsContainer
       className={classNames(
         "bg-grey-900 hover:bg-grey-800 border-grey-900 cursor-pointer border",
-        selected && "border-body-secondary",
+        selected && "border-body-secondary"
       )}
       onClick={() => {
         setSelectedProtocol(quote.protocol)

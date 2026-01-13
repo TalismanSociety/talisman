@@ -64,7 +64,7 @@ export const BittensorSlippageDrawer = () => {
         <div className="text-body pb-8 font-bold">{t("Slippage Tolerance")}</div>
         <p className="text-body-secondary text-sm">
           {t(
-            "You can customize the slippage percentage to balance transaction success and price accuracy.",
+            "You can customize the slippage percentage to balance transaction success and price accuracy."
           )}
         </p>
         <p className="text-body-secondary text-sm">
@@ -79,7 +79,7 @@ export const BittensorSlippageDrawer = () => {
             <TooltipContent>
               <span className="overflow-hidden text-ellipsis whitespace-nowrap">
                 {t(
-                  "Stake transaction will revert if the price changes more than the allowed slippage percentage.",
+                  "Stake transaction will revert if the price changes more than the allowed slippage percentage."
                 )}
               </span>
             </TooltipContent>
@@ -104,7 +104,7 @@ export const BittensorSlippageDrawer = () => {
           className={classNames(
             "mb-4 flex w-full items-center justify-end gap-2 text-xs text-orange-500",
             Number(slippageEdit) < HIGH_PRICE_IMPACT && "invisible",
-            Number(slippageEdit) >= VERY_HIGH_PRICE_IMPACT && "text-red-500",
+            Number(slippageEdit) >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
           )}
         >
           <AlertTriangleIcon />

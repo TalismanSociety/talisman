@@ -26,7 +26,7 @@ export const TxHistoryAccountPicker: FC<{
 
   const accounts = useMemo(
     () => allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search)),
-    [allAccounts, search],
+    [allAccounts, search]
   )
 
   return (
@@ -100,7 +100,7 @@ const AccountRow: FC<{
   const { t } = useTranslation()
   const formattedAddress = useFormattedAddress(
     account?.address,
-    account ? getAccountGenesisHash(account) : null,
+    account ? getAccountGenesisHash(account) : null
   )
 
   return (
@@ -111,7 +111,7 @@ const AccountRow: FC<{
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 text-body-secondary hover:text-body flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         selected && "bg-grey-800",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       {account ? (

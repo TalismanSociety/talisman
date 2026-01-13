@@ -33,7 +33,7 @@ export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransfe
 const getTransferMethod = (
   type: BalanceTransferType,
   unifiedMetadata: UnifiedMetadata,
-  lookupFn: MetadataLookup,
+  lookupFn: MetadataLookup
 ) => {
   switch (type) {
     case "keep-alive":
@@ -60,7 +60,7 @@ const getEncodedArgs = (
   method: ReturnType<typeof getTransferMethod>,
   to: string,
   value: string,
-  argsCodec: Codec<unknown>,
+  argsCodec: Codec<unknown>
 ): Uint8Array => {
   try {
     switch (method) {

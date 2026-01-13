@@ -57,7 +57,7 @@ export const BondAccountPicker = ({
           const genesisHash = getAccountGenesisHash(account)
           return !genesisHash || genesisHash === chain?.genesisHash
         }),
-    [allAccounts, chain, search, token],
+    [allAccounts, chain, search, token]
   )
 
   const handleSelect = useCallback(
@@ -65,7 +65,7 @@ export const BondAccountPicker = ({
       onAddressSelected(address)
       onBackClick?.()
     },
-    [onBackClick, onAddressSelected],
+    [onBackClick, onAddressSelected]
   )
 
   return (

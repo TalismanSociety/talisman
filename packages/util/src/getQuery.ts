@@ -101,6 +101,6 @@ export const getQuery$ = <Output, Args>({
           controller.abort(new Error("getQuery$ unsubscribed"))
         }
       }).pipe(shareReplay({ refCount: true, bufferSize: 1 })),
-    serializer,
+    serializer
   )
 }

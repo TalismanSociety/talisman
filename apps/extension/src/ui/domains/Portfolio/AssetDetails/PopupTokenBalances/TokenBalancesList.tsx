@@ -40,7 +40,7 @@ export const TokenBalancesList = ({
       <div
         className={classNames(
           "bg-grey-800 flex w-full items-center gap-4 overflow-hidden border-transparent px-7 py-6",
-          detailRowsLength ? "rounded-t-sm" : "rounded",
+          detailRowsLength ? "rounded-t-sm" : "rounded"
         )}
       >
         <div className="text-xl">

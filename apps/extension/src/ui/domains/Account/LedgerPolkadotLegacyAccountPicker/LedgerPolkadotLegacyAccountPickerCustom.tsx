@@ -31,7 +31,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
 
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
-    [chain],
+    [chain]
   )
 
   const app = useLedgerSubstrateAppByChain(chain)
@@ -39,7 +39,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
 
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, chain, app),
+    getNextAccountDetails(walletAccounts, chain, app)
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -72,7 +72,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
             },
           ]
         : [],
-    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve],
+    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve]
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -115,7 +115,7 @@ export const LedgerPolkadotLegacyAccountPickerCustom: FC<
           </div>
           <div className="leading-paragraph">
             {t(
-              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live.",
+              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live."
             )}
           </div>
         </div>
@@ -233,7 +233,7 @@ type CustomAccountDetails = {
 const getNextAccountDetails = (
   accounts: Account[],
   chain: DotNetwork,
-  app: SubstrateAppParams,
+  app: SubstrateAppParams
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -243,7 +243,7 @@ const getNextAccountDetails = (
         a.app === app?.name &&
         a.addressOffset === 0 &&
         typeof a.accountIndex === "number" &&
-        a.genesisHash === chain.genesisHash,
+        a.genesisHash === chain.genesisHash
     )
     .map((a) => a.accountIndex as number)
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++)

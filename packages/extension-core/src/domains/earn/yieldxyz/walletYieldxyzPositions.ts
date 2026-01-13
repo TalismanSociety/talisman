@@ -44,7 +44,7 @@ type PositionsQuery = {
 const fetchPositionsBatch = async (
   rawQueries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<YieldxyzPosition[]> => {
   try {
     const toYieldyxzNetworksIdMap = getTalismanNetworkIdToYieldxyzNetworkIdMap(remoteConfig)
@@ -107,13 +107,13 @@ const fetchPositionsBatch = async (
 const fetchPositions = async (
   queries: PositionsQuery[],
   remoteConfig: RemoteConfigStoreData,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<YieldxyzPosition[]> => {
   try {
     const batches = chunk(queries, BATCH_SIZE)
 
     const results = await Promise.all(
-      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, signal)),
+      batches.map((batch) => fetchPositionsBatch(batch, remoteConfig, signal))
     )
 
     return results.flat()
@@ -126,7 +126,7 @@ const fetchPositions = async (
 const fetchPosition = async (
   yieldId: string,
   address: string,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<YieldxyzPosition | null> => {
   try {
     const req = await fetch(
@@ -139,7 +139,7 @@ const fetchPosition = async (
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ address }),
-      },
+      }
     )
 
     if (!req.ok)
@@ -171,7 +171,7 @@ const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore
     return uniq(
       balances.balances
         .filter((b) => !!toYieldyxzNetworksIdMap[b.networkId])
-        .map((b) => `${b.address}::${b.networkId}`),
+        .map((b) => `${b.address}::${b.networkId}`)
     )
       .sort()
       .map((serialized): PositionsQuery => {
@@ -180,7 +180,7 @@ const walletYieldxyzQueries$ = combineLatest([walletBalances$, remoteConfigStore
       })
   }),
   distinctUntilChanged<PositionsQuery[]>(isEqual),
-  shareReplay({ refCount: true, bufferSize: 1 }),
+  shareReplay({ refCount: true, bufferSize: 1 })
 )
 
 const mainPositionsQuery$ = defer(() =>
@@ -195,7 +195,7 @@ const mainPositionsQuery$ = defer(() =>
             queryFn: ([qs, rc], signal) => fetchPositions(qs, rc, signal),
             refreshInterval: REFRESH_INTERVAL,
             defaultValue,
-          }),
+          })
         ),
         tap((positions) => {
           if (positions.status === "success") updateYieldxyzPositionsStore(positions.data)
@@ -203,10 +203,10 @@ const mainPositionsQuery$ = defer(() =>
         startWith({
           status: "loading",
           data: defaultValue,
-        } as Loadable<YieldxyzPosition[]>),
-      ),
-    ),
-  ),
+        } as Loadable<YieldxyzPosition[]>)
+      )
+    )
+  )
 )
 
 export const walletYieldxyzPositions$ = combineLatest([
@@ -219,11 +219,11 @@ export const walletYieldxyzPositions$ = combineLatest([
       // Always show the persisted store as the source of truth.
       // This makes refresh durable even if no one is currently subscribed.
       data: storePositions,
-    }),
+    })
   ),
   distinctUntilChanged<Loadable<YieldxyzPosition[]>>(isEqual),
   shareReplay({ refCount: true, bufferSize: 1 }),
-  keepAlive(KEEP_ALIVE),
+  keepAlive(KEEP_ALIVE)
 )
 
 export const refreshYieldxyzPosition = async ({

@@ -55,7 +55,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
       <button
         type="button"
         className={classNames(
-          "text-body-secondary bg-grey-850 hover:bg-grey-800 grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base",
+          "text-body-secondary bg-grey-850 hover:bg-grey-800 grid h-[6.6rem] w-full grid-cols-[40%_30%_30%] overflow-hidden rounded text-left text-base"
         )}
         onClick={handleClick}
       >
@@ -99,7 +99,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             balancesStatus={status}
             className={classNames(
               "noPadRight",
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
             noCountUp={noCountUp}
           />
@@ -113,7 +113,7 @@ export const AssetRow: FC<{ balances: Balances; noCountUp?: boolean }> = ({
             balancesStatus={status}
             className={classNames(
               (canEarn || canBond) && "group-hover:hidden",
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
             noCountUp={noCountUp}
           />

@@ -27,7 +27,7 @@ export const AccountAddMnemonicDropdown: FC<{
       label: t("Generate new recovery phrase"),
       accounts: [],
     }),
-    [t],
+    [t]
   )
 
   const mnemonics = useMnemonics()
@@ -39,7 +39,7 @@ export const AccountAddMnemonicDropdown: FC<{
         result[acc.mnemonicId].push(acc)
         return result
       },
-      {} as Record<string, Account[]>,
+      {} as Record<string, Account[]>
     )
     return [
       ...mnemonics
@@ -55,7 +55,7 @@ export const AccountAddMnemonicDropdown: FC<{
 
   const selected = useMemo(
     () => mnemonicOptions.find((o) => o.value === value) ?? newMmnemonicOption,
-    [mnemonicOptions, newMmnemonicOption, value],
+    [mnemonicOptions, newMmnemonicOption, value]
   )
 
   const handleChange = useCallback(
@@ -63,7 +63,7 @@ export const AccountAddMnemonicDropdown: FC<{
       if (!o) return // shouldn't happen
       onChange(o.value === "new" ? null : o.value)
     },
-    [onChange],
+    [onChange]
   )
 
   return (

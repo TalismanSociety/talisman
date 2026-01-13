@@ -14,7 +14,7 @@ export const getCallDocs = (chain: Chain, pallet: string, method: string): strin
     if (!palletCalls) return null
 
     const call = palletCalls.def.value.find(
-      (c: { name: string; docs?: string[] | null }) => c.name === method,
+      (c: { name: string; docs?: string[] | null }) => c.name === method
     )
 
     return call?.docs?.join("\n") ?? null

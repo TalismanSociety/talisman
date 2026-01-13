@@ -68,7 +68,7 @@ export const SignLedgerSolana: FC<{
             const signature = await sign(
               "transaction",
               Buffer.from(transaction.message.serialize()),
-              account,
+              account
             )
 
             // attach the signature, must be done at the correct index (same as in tx.message.staticAccountKeys)

@@ -78,7 +78,7 @@ export const RampsBuyForm: FC<{
                             placeholder="100"
                             onChange={(e) =>
                               field.handleChange(
-                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber,
+                                isNaN(e.target.valueAsNumber) ? undefined : e.target.valueAsNumber
                               )
                             }
                           />
@@ -217,7 +217,7 @@ const AmountOut: FC<{
   const token = useToken(tokenId)
   const query = useMemo(
     () => quotes.find((q) => q.provider === provider)?.query,
-    [quotes, provider],
+    [quotes, provider]
   )
 
   const value = useMemo(() => {
@@ -259,13 +259,13 @@ const Providers: FC<{
       const amountOut = new BalanceFormatter(
         query.data.amountOut,
         token.decimals,
-        tokenRates?.[token.id],
+        tokenRates?.[token.id]
       )
 
       const tokenPrice = getTokenPrice(
         amount - query.data.fee,
         BigInt(query.data.amountOut),
-        token.decimals,
+        token.decimals
       )
 
       return {

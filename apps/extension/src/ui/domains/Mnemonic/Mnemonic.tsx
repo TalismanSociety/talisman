@@ -85,7 +85,7 @@ export const Mnemonic: FC<MnemonicProps> = ({ onReveal, mnemonic }) => {
             className={classNames(
               "text-body absolute left-0 top-0 flex h-full w-full items-center justify-center rounded-sm transition",
               !isRevealed && "backdrop-blur-md",
-              blurOnHover && isRevealed && "hover:backdrop-blur-md",
+              blurOnHover && isRevealed && "hover:backdrop-blur-md"
             )}
             onMouseLeave={() => {
               if (isRevealed) {

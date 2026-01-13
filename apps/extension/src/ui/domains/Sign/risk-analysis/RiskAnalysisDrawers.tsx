@@ -44,7 +44,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
     (enable: boolean) => () => {
       setAutoRiskScan(enable)
     },
-    [setAutoRiskScan],
+    [setAutoRiskScan]
   )
 
   return (
@@ -57,7 +57,7 @@ export const RiskAnalysisPromptAutoRiskScan: FC = () => {
           <div className="text-body-secondary text-center text-sm">
             <p>
               {t(
-                "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?",
+                "Ethereum transactions and messages can be simulated on a secure server to assess their risk. Would you like to enable this feature?"
               )}
             </p>
             <p className="mt-4 text-center">
@@ -97,7 +97,7 @@ const RiskAnalysisCriticalPane: FC<{
         className={classNames(
           "fixed left-0 top-0 z-10 h-[60rem] w-[40rem]",
           "flex flex-col items-center gap-8 p-12",
-          "to-black-primary bg-gradient-to-b from-[#411D1D]",
+          "to-black-primary bg-gradient-to-b from-[#411D1D]"
         )}
         enter="opacity-100" // no fade in (other drawer is opening to under it)
         leave="transition-opacity ease-linear duration-200"

@@ -42,7 +42,7 @@ export const TxSubmitButtonEth: FC<TxSubmitButtonProps<"ethereum">> = ({
         })
       }
     },
-    [onSubmit, tx],
+    [onSubmit, tx]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)

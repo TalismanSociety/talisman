@@ -17,7 +17,7 @@ export const signAndSendEth = (
   request: RpcTransactionRequest,
   ethChainId: EthNetworkId,
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -28,7 +28,7 @@ export const signAndSendEth = (
       type: "eth-send",
       method: "eth_sendTransaction",
     },
-    port,
+    port
   )
 }
 
@@ -44,7 +44,7 @@ export const signEth = (
   request: EthSignRequest["request"],
   ethChainId: EthNetworkId,
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -56,7 +56,7 @@ export const signEth = (
       params,
       request,
     },
-    port,
+    port
   )
 }
 
@@ -64,7 +64,7 @@ export const signSubstrate = (
   url: string,
   request: SubstrateSigningRequest["request"],
   account: Account,
-  port: Port,
+  port: Port
 ) => {
   return requestStore.createRequest(
     {
@@ -73,7 +73,7 @@ export const signSubstrate = (
       request,
       account,
     },
-    port,
+    port
   )
 }
 
@@ -85,7 +85,7 @@ export const signSolana = <
   url: string,
   port: Port,
   account: Account,
-  request: Req,
+  request: Req
 ): Promise<Res> => {
   return requestStore.createRequest(
     {
@@ -94,6 +94,6 @@ export const signSolana = <
       request,
       account,
     },
-    port,
+    port
   ) as Promise<Res>
 }

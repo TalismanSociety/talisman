@@ -27,7 +27,7 @@ export const RampsCurrencyPickerButton: FC<{
       onSelect(currency)
       close()
     },
-    [close, onSelect],
+    [close, onSelect]
   )
 
   return (
@@ -37,7 +37,7 @@ export const RampsCurrencyPickerButton: FC<{
         onClick={handleOpen}
         className={classNames(
           "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
-          "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale",
+          "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale"
         )}
       >
         {currency ? <CurrencyContent currency={currency} /> : <EmptyContent />}

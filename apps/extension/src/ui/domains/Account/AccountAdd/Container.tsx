@@ -91,7 +91,7 @@ function MethodTypeTab({
         "flex items-center justify-start gap-4 rounded-t border border-b-0 border-transparent p-6 opacity-70 lg:flex-grow lg:[&:last-of-type]:rounded-br",
         "focus:bg-grey-750 hover:bg-grey-750 focus:border-grey-750 hover:border-grey-750 hover:opacity-100 focus:opacity-100",
         isSelected && "border-grey-750 bg-grey-850 opacity-100",
-        className,
+        className
       )}
       onClick={(e) => (setMethodType(methodType), e.currentTarget.blur())}
     >
@@ -99,7 +99,7 @@ function MethodTypeTab({
       <div
         className={classNames(
           "hidden flex-col items-start justify-start gap-2 lg:flex",
-          isSelected && "flex",
+          isSelected && "flex"
         )}
       >
         <div className="text-base font-bold">{title}</div>
@@ -123,7 +123,7 @@ function NewAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("New Ethereum Account")}
             tooltip={t(
-              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains.",
+              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains."
             )}
           />
         }
@@ -136,7 +136,7 @@ function NewAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("New Polkadot Account")}
             tooltip={t(
-              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains.",
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
             )}
           />
         }
@@ -234,7 +234,7 @@ function WatchedAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("Watch Ethereum Account")}
             tooltip={t(
-              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains.",
+              "Pick this option for Ethereum, Base, zkSync, Arbitrum, BSC, and all EVM chains."
             )}
           />
         }
@@ -247,7 +247,7 @@ function WatchedAccountMethodButtons() {
           <SelectAccountTypeButtonHeader
             title={t("Watch Polkadot Account")}
             tooltip={t(
-              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains.",
+              "Pick this option for Polkadot Relay Chain, Asset Hub, Bittensor, and most Polkadot chains."
             )}
           />
         }
@@ -277,7 +277,7 @@ function SelectAccountTypeSectionHeader() {
       <div className="text-md text-bold col-span-2 text-white">{t("Select account type")}</div>
       <div className="col-span-2 -mt-2 text-sm text-white/40">
         {t(
-          "If you don't know which to pick, search for the network you want to use and Talisman will recommend the account type.",
+          "If you don't know which to pick, search for the network you want to use and Talisman will recommend the account type."
         )}
       </div>
     </>
@@ -323,7 +323,7 @@ function AccountTypeMethodButton({
   const supportedChainIds = useMemo(
     () =>
       networks.filter((n) => isAccountPlatformCompatibleWithNetwork(n, platform)).map((n) => n.id),
-    [networks, platform],
+    [networks, platform]
   )
 
   return (
@@ -372,7 +372,7 @@ function AccountCreateMethodButton({
       className={classNames(
         "relative flex flex-col gap-12 rounded bg-white/5 p-10",
         disabled && "text-body-secondary opacity-40",
-        !disabled && "text-body cursor-pointer hover:bg-white/10 focus:bg-white/10",
+        !disabled && "text-body cursor-pointer hover:bg-white/10 focus:bg-white/10"
       )}
     >
       <span className="border-grey-800 w-full border-b pb-3 text-start">{title}</span>

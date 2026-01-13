@@ -20,19 +20,19 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
       { label: t("NFTs"), value: URL_TAB_NFTS },
       { label: t("DeFi"), value: URL_TAB_DEFI },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
-    [location.pathname, tabs],
+    [location.pathname, tabs]
   )
 
   const handleChange = useCallback(
     (value: string) => {
       navigate(`${value}`)
     },
-    [navigate],
+    [navigate]
   )
 
   return (

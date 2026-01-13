@@ -35,12 +35,12 @@ export const EthSignBodyErc721Transfer: FC = () => {
       name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [asset?.name, qMetadata?.data?.image, qMetadata?.data?.name, tokenId],
+    [asset?.name, qMetadata?.data?.image, qMetadata?.data?.name, tokenId]
   )
 
   const isOnBehalf = useMemo(
     () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
-    [account, from],
+    [account, from]
   )
 
   if (qMetadata.isLoading || !from || !to || !account || !network || !decodedTx.targetAddress)

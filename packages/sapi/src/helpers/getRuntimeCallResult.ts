@@ -7,7 +7,7 @@ export const getRuntimeCallResult = async <T>(
   chain: Chain,
   apiName: string,
   method: string,
-  args: unknown[],
+  args: unknown[]
 ) => {
   const call = chain.builder.buildRuntimeCall(apiName, method)
 

@@ -146,7 +146,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
     (id: string) => (select: boolean) => {
       selectAccount(id, select)
     },
-    [selectAccount],
+    [selectAccount]
   )
 
   const [isImporting, setIsImporting] = useState(false)
@@ -162,7 +162,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
         title: t("Importing {{count}} accounts", { count }),
         subtitle: t("Please wait"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
 
     // ensure notification has time to display
@@ -230,7 +230,7 @@ export const ImportJsonAccountsForm: FC<{ onSuccess: (address: string) => void }
       <div
         className={classNames(
           "scrollable scrollable-800 mt-6 flex max-h-[28rem] flex-col gap-4 overflow-y-auto",
-          accounts.length > 4 && "pr-4",
+          accounts.length > 4 && "pr-4"
         )}
       >
         {accounts.map((acc, i) => (

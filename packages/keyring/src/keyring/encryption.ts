@@ -10,11 +10,11 @@ const deriveKey = async (password: string, salt: Uint8Array): Promise<CryptoKey>
       new TextEncoder().encode(password),
       salt,
       100_000, // 100,000 iterations
-      32, // 32 bytes (32 * 8 == 256 bits)
+      32 // 32 bytes (32 * 8 == 256 bits)
     ),
     { name: "AES-GCM", length: 256 },
     false,
-    ["encrypt", "decrypt"],
+    ["encrypt", "decrypt"]
   )
 
 export const encryptData = async (data: Uint8Array, password: string): Promise<string> => {
@@ -63,7 +63,7 @@ export const decryptData = async (encryptedData: string, password: string): Prom
 export const changeEncryptedDataPassword = async (
   encryptedData: string,
   oldPassword: string,
-  newPassword: string,
+  newPassword: string
 ) => {
   try {
     const decrypted = await decryptData(encryptedData, oldPassword)

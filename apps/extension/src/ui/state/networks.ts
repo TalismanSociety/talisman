@@ -36,17 +36,17 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
             case "solana":
               return [network.id, t("Solana Blockchain")]
           }
-        }),
+        })
       )
-    }),
-  ),
+    })
+  )
 )
 
 export const [useNetworkDisplayType, networkDisplayType$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayTypesMapById$.pipe(map((map) => map[networkId] ?? null))
-  },
+  }
 )
 
 const getNetworksWithDuplicateNames = (networks: Network[]) => {
@@ -67,15 +67,15 @@ export const [useNetworkDisplayNamesMapById, networkDisplayNamesMapById$] = bind
             ? `${network.name} (${networksTypesById[network.id]})`
             : network.name
           return [network.id, name]
-        }),
+        })
       )
-    }),
-  ),
+    })
+  )
 )
 
 export const [useNetworkDisplayName, networkDisplayName$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayNamesMapById$.pipe(map((map) => map[networkId] ?? null))
-  },
+  }
 )

@@ -42,7 +42,7 @@ const cache: Record<string, string | null> = {}
 
 export const getAccountAvatarDataUri = (
   address: string,
-  iconType: IdenticonType = "talisman-orb",
+  iconType: IdenticonType = "talisman-orb"
 ) => {
   const cacheKey = `${address}-${iconType}`
   if (cache[cacheKey] === undefined)

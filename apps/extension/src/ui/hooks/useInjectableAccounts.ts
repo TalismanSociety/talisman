@@ -32,7 +32,7 @@ export const useInjectableAccounts = (siteUrl: string, provider: ProviderType) =
     if (isDevMode) return providerCompatibleAccounts
     if (isTalismanSite) return providerCompatibleAccounts.filter(isAccountNotContact)
     return providerCompatibleAccounts.filter(
-      (account) => !isAccountInTypes(account, ["contact", "watch-only"]),
+      (account) => !isAccountInTypes(account, ["contact", "watch-only"])
     )
   }, [isDevMode, isTalismanSite, providerCompatibleAccounts])
 }

@@ -11,7 +11,7 @@ export const Favicon: FC<{ url: string; className?: string }> = ({ url, classNam
     <span
       className={classNames(
         "flex h-[1.2em] w-[1.2em] shrink-0 items-center justify-center overflow-hidden rounded-full bg-black",
-        className,
+        className
       )}
     >
       {!!iconUrl && (

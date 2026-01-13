@@ -54,7 +54,7 @@ export const AccountRow = ({
 
   const displayAddress = useMemo(
     () => (noFormat ? account?.address : formattedAddress),
-    [noFormat, account?.address, formattedAddress],
+    [noFormat, account?.address, formattedAddress]
   )
 
   return (
@@ -66,7 +66,7 @@ export const AccountRow = ({
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         selected && "bg-grey-800 text-body-secondary",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        className,
+        className
       )}
       disabled={disabled}
     >
@@ -132,7 +132,7 @@ const AccountTokenBalance = ({
     <div
       className={classNames(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse",
+        balance.status === "cache" && "animate-pulse"
       )}
     >
       <div>

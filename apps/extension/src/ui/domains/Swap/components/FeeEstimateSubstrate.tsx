@@ -27,17 +27,17 @@ export const FeeEstimateSubstrate = ({
   const swapModule = useAtomValue(selectedSwapModuleAtom)
 
   const { data: sapi } = useScaleApi(
-    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null,
+    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
   )
   const allowReap = useMemo(
     () =>
       fastBalance?.balance?.stayAlive.planck !== undefined &&
       fromAmount.planck > fastBalance.balance.stayAlive.planck,
-    [fastBalance, fromAmount.planck],
+    [fastBalance, fromAmount.planck]
   )
   const substratePayloadAtom = useMemo(
     () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
-    [swapModule, sapi, allowReap],
+    [swapModule, sapi, allowReap]
   )
   const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 

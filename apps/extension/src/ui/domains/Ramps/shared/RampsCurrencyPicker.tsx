@@ -44,14 +44,14 @@ export const RampsCurrencyPicker: FC<{
 
         return c1.code.localeCompare(c2.code)
       }),
-    [favoriteCurrenciesUpper, selected],
+    [favoriteCurrenciesUpper, selected]
   )
 
   const filteredCurrencies = useMemo(() => {
     const ls = search.toLowerCase()
     return sortedCurrencies.filter(
       (currency) =>
-        currency.code.toLowerCase().includes(ls) || currency.name.toLowerCase().includes(ls),
+        currency.code.toLowerCase().includes(ls) || currency.name.toLowerCase().includes(ls)
     )
   }, [sortedCurrencies, search])
 
@@ -62,7 +62,7 @@ export const RampsCurrencyPicker: FC<{
       RAMPS_CURRENCIES.map((c) => c.icon),
       () => {
         setIsIconsReady(true)
-      },
+      }
     )
   }, [])
 
@@ -164,7 +164,7 @@ const CurrencyButtonRow: FC<{
       tabIndex={0}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary",
+        selected && "bg-grey-800 text-body-secondary"
       )}
     >
       <div className="flex items-center gap-8">

@@ -41,6 +41,8 @@ export const defiPositionsStore$ = subjectDefiPositionsStore$.asObservable()
 export const updateDefiPositionsStore = (positions: DefiPosition[]) => {
   subjectDefiPositionsStore$.next(
     // consistent ordering ensures we can compare changes easily
-    positions.concat().sort((a, b) => getPositionId(a).localeCompare(getPositionId(b))),
+    positions
+      .concat()
+      .sort((a, b) => getPositionId(a).localeCompare(getPositionId(b)))
   )
 }

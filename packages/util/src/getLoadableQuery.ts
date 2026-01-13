@@ -18,7 +18,7 @@ export type GetLoadableQueryParams<TArgs extends unknown[], TResult> = {
  * TODO: consolidate with getQuery$
  */
 export const getLoadableQuery$ = <TArgs extends unknown[], TResult>(
-  params: GetLoadableQueryParams<TArgs, TResult>,
+  params: GetLoadableQueryParams<TArgs, TResult>
 ): Observable<Loadable<TResult>> => {
   const initial =
     params.defaultValue === undefined
@@ -44,6 +44,6 @@ export const getLoadableQuery$ = <TArgs extends unknown[], TResult>(
         }
       }
     }),
-    startWith(...initial),
+    startWith(...initial)
   )
 }

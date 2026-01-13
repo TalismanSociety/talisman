@@ -26,7 +26,7 @@ export type FeeHistoryAnalysis = {
 }
 
 export const getFeeHistoryAnalysis = async (
-  publicClient: PublicClient,
+  publicClient: PublicClient
 ): Promise<FeeHistoryAnalysis> => {
   try {
     const feeHistory = await publicClient.getFeeHistory({
@@ -53,7 +53,7 @@ export const getFeeHistoryAnalysis = async (
       medMaxPriorityFeePerGas.push(
         DEFAULT_ETH_PRIORITY_OPTIONS.low,
         DEFAULT_ETH_PRIORITY_OPTIONS.medium,
-        DEFAULT_ETH_PRIORITY_OPTIONS.high,
+        DEFAULT_ETH_PRIORITY_OPTIONS.high
       )
 
     // last entry of the array is the base fee for next block, exclude it from further averages
@@ -91,12 +91,12 @@ export const getFeeHistoryAnalysis = async (
     if (LIVE_DEBUG) {
       log.log(
         "rewards",
-        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`)),
+        feeHistory.reward?.map((arr) => arr.map((reward) => `${formatGwei(reward)} GWEI`))
       )
       log.log("baseFee", `${formatGwei(result.nextBaseFee)} GWEI`)
       log.log(
         "medMaxPriorityFeePerGas",
-        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`),
+        medMaxPriorityFeePerGas.map((fee) => `${formatGwei(fee)} GWEI`)
       )
       log.log(
         "maxPriorityPerGasOptions",
@@ -104,7 +104,7 @@ export const getFeeHistoryAnalysis = async (
           result.maxPriorityPerGasOptions.low,
           result.maxPriorityPerGasOptions.medium,
           result.maxPriorityPerGasOptions.high,
-        ].map((fee) => `${formatGwei(fee)} GWEI`),
+        ].map((fee) => `${formatGwei(fee)} GWEI`)
       )
       log.log("=========================================")
     }

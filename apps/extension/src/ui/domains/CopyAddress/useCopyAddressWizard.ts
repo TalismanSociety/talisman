@@ -41,7 +41,7 @@ const isAccountCompatibleWithChain = (
   accounts: Account[],
   chainsMap: NetworkList,
   address: Address | undefined | null,
-  networkId: NetworkId | undefined | null,
+  networkId: NetworkId | undefined | null
 ) => {
   if (!address || !networkId) return true
 
@@ -69,7 +69,7 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
 const getFormattedAddress = (
   address?: Address,
   network?: Network | null,
-  legacyFormat?: boolean,
+  legacyFormat?: boolean
 ) => {
   if (!address) return null
 
@@ -93,7 +93,7 @@ const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
   ethereum?: Token | null,
-  network?: Network | null,
+  network?: Network | null
 ) => {
   if (!address) {
     return undefined
@@ -134,7 +134,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, network, state.legacyFormat),
-    [network, state],
+    [network, state]
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
@@ -165,7 +165,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
       setStateAndUpdateRoute({ networkId: chainId, address, legacyFormat })
     },
-    [accounts, networksMap, setStateAndUpdateRoute, state.address],
+    [accounts, networksMap, setStateAndUpdateRoute, state.address]
   )
 
   const setAddress = useCallback(
@@ -175,14 +175,14 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
           accounts,
           networksMap,
           address,
-          state.networkId,
+          state.networkId
         )
           ? state.networkId
           : undefined
         setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
-    [accounts, networksMap, setStateAndUpdateRoute, state.networkId],
+    [accounts, networksMap, setStateAndUpdateRoute, state.networkId]
   )
 
   const goToAddressPage = useCallback(() => {
@@ -230,7 +230,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [close, networksMap, open],
+    [close, networksMap, open]
   )
 
   const ctx = {
@@ -252,5 +252,5 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 }
 
 export const [CopyAddressWizardProvider, useCopyAddressWizard] = provideContext(
-  useCopyAddressWizardProvider,
+  useCopyAddressWizardProvider
 )

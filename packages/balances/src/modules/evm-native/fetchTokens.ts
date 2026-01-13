@@ -12,7 +12,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   // assume there is one and only one token in the array
   if (tokens.length !== 1)
     throw new Error(
-      "EVM Native module expects the nativeCurrency to be passed as a single token in the array",
+      "EVM Native module expects the nativeCurrency to be passed as a single token in the array"
     )
 
   const token = assign(
@@ -23,7 +23,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       networkId,
       isDefault: true,
     },
-    tokens[0] as TokenConfig,
+    tokens[0] as TokenConfig
   ) as EvmNativeToken
 
   const parsed = EvmNativeTokenSchema.safeParse(token)

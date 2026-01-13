@@ -91,7 +91,7 @@ export const TokenAmountInput: FC<Props> = ({
         return Decimal.fromPlanck(0, 1)
       }
     },
-    [selectedAsset],
+    [selectedAsset]
   )
 
   const handleChangeAsset = useCallback(
@@ -100,7 +100,7 @@ export const TokenAmountInput: FC<Props> = ({
       onChangeAsset?.(asset)
       onChangeAmount?.(Decimal.fromPlanck(0, asset?.decimals ?? 1))
     },
-    [onChangeAmount, onChangeAsset],
+    [onChangeAmount, onChangeAsset]
   )
 
   const handleChangeInput = useCallback(
@@ -109,7 +109,7 @@ export const TokenAmountInput: FC<Props> = ({
       const parsedDecimal = parseInput(value)
       onChangeAmount?.(parsedDecimal)
     },
-    [onChangeAmount, parseInput],
+    [onChangeAmount, parseInput]
   )
 
   const fiatValue = useFiatValueForAmount({ amount, asset: selectedAsset, usdOverride })
@@ -136,8 +136,8 @@ export const TokenAmountInput: FC<Props> = ({
       const hardcodedGasBufferWei = BigInt(
         tokensToPlanck(
           String(hardcodedGasBufferByTokenSymbol[selectedAsset.symbol.toLowerCase()] ?? 0),
-          decimals,
-        ),
+          decimals
+        )
       )
 
       const totalBufferWei = availableBalance.planck - hardcodedGasBufferWei - swapGasBufferWei
@@ -199,7 +199,7 @@ export const TokenAmountInput: FC<Props> = ({
         className={classNames(
           "bg-black-tertiary flex items-center gap-5 rounded border border-red-400/0 py-4 pl-6 pr-4",
           (insufficientBalance || (disableBtc && selectedAsset?.id === "btc-native")) &&
-            "border-red-400",
+            "border-red-400"
         )}
       >
         <div className="flex w-full flex-1 flex-col overflow-hidden">
@@ -264,7 +264,7 @@ export const TokenAmountInput: FC<Props> = ({
               "text-body-secondary rounded-xs border border-current px-3 py-1 text-[1rem]",
               !maxAfterGas && "text-body-disabled animate-pulse",
               maxAfterGas && maxAfterGas.planck <= 0 && "text-body-disabled",
-              maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white",
+              maxAfterGas && maxAfterGas.planck > 0 && "hover:text-white"
             )}
             onClick={onSetMaxAmount}
             disabled={!maxAfterGas || maxAfterGas.planck <= 0}

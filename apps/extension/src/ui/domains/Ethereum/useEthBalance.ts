@@ -5,7 +5,7 @@ import { PublicClient } from "viem"
 
 export const useEthBalance = (
   publicClient: PublicClient | undefined,
-  address: EvmAddress | undefined,
+  address: EvmAddress | undefined
 ) => {
   const { data: balance, ...rest } = useQuery({
     queryKey: ["useEthBalance", publicClient?.chain?.id, address],

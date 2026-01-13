@@ -8,7 +8,7 @@ export const coinsApiConfigAtom = atom<CoinsApiConfig, [Partial<CoinsApiConfig>]
   (_get, set, options) =>
     set(innerCoinsApiConfigAtom, {
       apiUrl: options.apiUrl ?? DEFAULT_COINSAPI_CONFIG.apiUrl,
-    }),
+    })
 )
 
 export const enableTestnetsAtom = atom<boolean>(false)

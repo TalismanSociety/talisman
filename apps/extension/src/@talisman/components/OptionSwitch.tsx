@@ -41,7 +41,7 @@ const OptionButton = <O extends string>({
       className={classNames(
         "z-10 h-full whitespace-pre px-7 py-2 transition-colors duration-150",
         selected && "text-body-black",
-        className,
+        className
       )}
       onClick={() => onClick(option, buttonRef)}
     >
@@ -77,14 +77,14 @@ export const OptionSwitch = <O extends string>({
       })
       if (onChange) onChange(option)
     },
-    [onChange],
+    [onChange]
   )
 
   return (
     <div
       className={classNames(
         "text-body-secondary inline-block h-14 rounded-full p-[0.25em]",
-        className,
+        className
       )}
     >
       <div className="relative z-0 flex h-full items-center gap-2">

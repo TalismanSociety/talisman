@@ -44,7 +44,7 @@ export class WebsocketAllocationExhaustedError extends Error {
   constructor(chainId: string, options?: ErrorOptions) {
     super(
       `No websockets are available from the browser pool to connect to chain ${chainId}`,
-      options,
+      options
     )
 
     this.type = "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
@@ -88,7 +88,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
   constructor(
     chaindataChainProvider: IChaindataNetworkProvider,
-    connectionMetaDb?: TalismanConnectionMetaDatabase,
+    connectionMetaDb?: TalismanConnectionMetaDatabase
   ) {
     this.#chaindataChainProvider = chaindataChainProvider
     this.#connectionMetaDb = connectionMetaDb
@@ -128,12 +128,12 @@ export class ChainConnectorDot implements IChainConnectorDot {
         type: string,
         method: string,
         params: unknown[],
-        cb: ProviderInterfaceCallback,
+        cb: ProviderInterfaceCallback
       ): Promise<string> => {
         const unsubscribe = await this.subscribe(chainId, method, type, params, cb)
 
         const subscriptionId = this.getExclusiveRandomId(
-          [...unsubHandler.keys()].map(Number),
+          [...unsubHandler.keys()].map(Number)
         ).toString()
         unsubHandler.set(subscriptionId, unsubscribe)
 
@@ -168,7 +168,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
        * to another query or perhaps an empty result.
        */
       expectErrors?: boolean
-    },
+    }
   ): Promise<T> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
@@ -184,7 +184,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       } catch (error) {
         log.warn(
           `Failed to make wallet-proxied send request for chain ${chainId}. Falling back to plain websocket`,
-          error,
+          error
         )
       }
     }
@@ -236,7 +236,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
           {
             error,
             endpoint: ws.endpoint,
-          },
+          }
         )
 
       await this.disconnectChainSocket(chainId, socketUserId)
@@ -254,7 +254,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout: number | false = 30_000, // 30 seconds in milliseconds
+    timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<(unsubscribeMethod: string) => void> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
@@ -272,7 +272,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
           responseMethod,
           params,
           callback,
-          timeout,
+          timeout
         )
 
         return (unsubscribeMethod: string) =>
@@ -280,7 +280,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       } catch (error) {
         log.warn(
           `Failed to create wallet-proxied subscription for chain ${chainId}. Falling back to plain websocket`,
-          error,
+          error
         )
       }
     }
@@ -326,10 +326,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
               const id = chainId
               this.#connectionMetaDb.chainBackoffInterval.put(
                 { id, interval: nextBackoffInterval },
-                id,
+                id
               )
             }
-          },
+          }
         )
         const unsubConnected = ws.on("connected", () => {
           if (this.#connectionMetaDb) this.#connectionMetaDb.chainBackoffInterval.delete(chainId)
@@ -341,7 +341,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
         noMoreSocketsTimeout = setTimeout(
           () => callback(new WebsocketAllocationExhaustedError(chainId), null),
-          30_000, // 30 seconds in ms
+          30_000 // 30 seconds in ms
         )
 
         if (timeout) await Promise.race([this.waitForWs(ws, timeout), callerUnsubscribed])
@@ -428,7 +428,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
    */
   private async waitForWs(
     ws: Websocket,
-    timeout: number | false = 30_000, // 30 seconds in milliseconds
+    timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<void> {
     const timer = timeout
       ? sleep(timeout).then(() => {
@@ -468,7 +468,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
         rpcs,
         undefined,
         undefined,
-        nextBackoffInterval,
+        nextBackoffInterval
       )
     else {
       throw new Error(`No healthy RPCs available for chain ${chainId}`)
@@ -484,11 +484,10 @@ export class ChainConnectorDot implements IChainConnectorDot {
         if (!url) return
 
         this.updateRpcPriority(id, url, "first").catch((err) =>
-          log.warn(`updateRpcPriority failed`, err),
+          log.warn(`updateRpcPriority failed`, err)
         )
       })
     }
-
     // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
     ;(async () => {
       if (!this.#socketConnections[chainId])
@@ -517,7 +516,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
 
   private async disconnectChainSocket(
     chainId: DotNetworkId,
-    socketUserId: SocketUserId,
+    socketUserId: SocketUserId
   ): Promise<void> {
     this.removeSocketUser(chainId, socketUserId)
 
@@ -548,7 +547,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
       throw new Error(
         `Can't remove user ${socketUserId} from socket ${chainId}: user not in list ${this.#socketUsers[
           chainId
-        ].join(", ")}`,
+        ].join(", ")}`
       )
     this.#socketUsers[chainId].splice(userIndex, 1)
   }
@@ -591,7 +590,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
         responseMethod: string,
         params: unknown[],
         callback: ProviderInterfaceCallback,
-        timeout: number | false,
+        timeout: number | false
       ): Promise<string> =>
         rpcByGenesisHashSubscribe(
           genesisHash,
@@ -599,7 +598,7 @@ export class ChainConnectorDot implements IChainConnectorDot {
           responseMethod,
           params,
           callback,
-          timeout,
+          timeout
         ),
 
       unsubscribe: (subscriptionId: string, unsubscribeMethod: string): Promise<void> =>

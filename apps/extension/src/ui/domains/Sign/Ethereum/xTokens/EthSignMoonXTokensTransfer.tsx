@@ -76,7 +76,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
     ],
-    [decodedTx],
+    [decodedTx]
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
@@ -94,7 +94,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       (t) =>
         t.type === "evm-erc20" &&
         t.networkId === network?.id &&
-        t.contractAddress === currencyAddress,
+        t.contractAddress === currencyAddress
     )
 
     if (token) {
@@ -131,7 +131,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       targetChain && target?.address
         ? encodeAnyAddress(target.address, { ss58Format: targetChain?.prefix })
         : undefined,
-    [target, targetChain],
+    [target, targetChain]
   )
 
   const { data: tokenRates } = useCoinGeckoTokenRates(coingeckoId)

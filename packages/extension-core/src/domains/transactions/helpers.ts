@@ -25,7 +25,7 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 export const addSolTransaction = async (
   networkId: SolNetworkId,
   transaction: Transaction | VersionedTransaction,
-  options: AddTransactionOptions = {},
+  options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
@@ -56,7 +56,7 @@ export const addEvmTransaction = async (
   networkId: EthNetworkId,
   hash: Hex,
   payload: TransactionRequest<string>,
-  options: AddTransactionOptions = {},
+  options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
@@ -70,7 +70,7 @@ export const addEvmTransaction = async (
           (row) =>
             row.platform === "ethereum" &&
             row.networkId === networkId &&
-            row.nonce === payload.nonce,
+            row.nonce === payload.nonce
         )
         .count()) > 0
 
@@ -99,7 +99,7 @@ export const addSubstrateTransaction = async (
   networkId: string,
   hash: `0x${string}`,
   payload: SignerPayloadJSON,
-  options: AddTransactionOptions = {},
+  options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, txInfo } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
@@ -133,7 +133,7 @@ export const updateTransactionStatus = async (
   id: string,
   status: TransactionStatus,
   blockNumber?: bigint | number,
-  confirmed?: boolean,
+  confirmed?: boolean
 ) => {
   try {
     // this can be called after the tx has been overriden/replaced, check status first
@@ -165,7 +165,7 @@ export const updateTransactionStatus = async (
               row.platform !== "solana" &&
               tx.platform !== "solana" &&
               row.nonce === tx.nonce &&
-              ["pending", "unknown"].includes(row.status),
+              ["pending", "unknown"].includes(row.status)
           )
           .modify({ status: "replaced" })
 
@@ -179,7 +179,7 @@ export const updateTransactionStatus = async (
               typeof row.nonce === "number" &&
               typeof tx.nonce === "number" &&
               row.nonce < tx.nonce &&
-              row.status === "pending",
+              row.status === "pending"
           )
           .modify({ status: "unknown" })
       }
@@ -212,7 +212,7 @@ export const updateTransactionsRestart = async () => {
             row.platform !== "solana" &&
             successfulTx.platform !== "solana" &&
             row.nonce === successfulTx.nonce &&
-            ["pending", "unknown"].includes(row.status),
+            ["pending", "unknown"].includes(row.status)
         )
         .modify({ status: "error" })
     }
@@ -235,12 +235,12 @@ export const updateTransactionsRestart = async () => {
 export const getExtrinsicHash = (
   registry: TypeRegistry,
   payload: SignerPayloadJSON,
-  signature: HexString,
+  signature: HexString
 ) => {
   const tx = registry.createType(
     "Extrinsic",
     { method: payload.method },
-    { version: payload.version },
+    { version: payload.version }
   )
   tx.addSignature(payload.address, signature, payload)
   return tx.hash.toHex()
@@ -250,14 +250,14 @@ export const dismissTransaction = (hash: string) => db.transactionsV2.delete(has
 
 export const isTxInfoOfType = <T extends WalletTransactionInfo["type"]>(
   txInfo: WalletTransactionInfo | undefined | null,
-  type: T,
+  type: T
 ): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
   return !!txInfo && txInfo.type === type
 }
 
 export const isTxInfoInTypes = <T extends WalletTransactionInfo["type"]>(
   txInfo: WalletTransactionInfo | undefined | null,
-  types: T[],
+  types: T[]
 ): txInfo is Extract<WalletTransactionInfo, { type: T }> => {
   return types.some((type) => isTxInfoOfType(txInfo, type))
 }

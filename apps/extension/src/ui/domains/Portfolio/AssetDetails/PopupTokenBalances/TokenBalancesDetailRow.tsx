@@ -31,7 +31,7 @@ export const TokenBalancesDetailRow = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-        isLastRow && "rounded-b-sm",
+        isLastRow && "rounded-b-sm"
       )}
     >
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
@@ -68,13 +68,13 @@ export const TokenBalancesDetailRow = ({
       <div
         className={classNames(
           "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
-          status.status === "fetching" && "animate-pulse transition-opacity",
+          status.status === "fetching" && "animate-pulse transition-opacity"
         )}
       >
         <div
           className={classNames(
             "flex h-10 items-center gap-2 font-bold",
-            row.locked ? "text-body-secondary" : "text-white",
+            row.locked ? "text-body-secondary" : "text-white"
           )}
         >
           <Tokens amount={row.tokens} symbol={symbol} isBalance />

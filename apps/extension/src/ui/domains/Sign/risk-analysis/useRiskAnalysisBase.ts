@@ -72,7 +72,7 @@ export const useRiskAnalysisBase = <
 
   const effectiveAutoRiskScan = useMemo(
     () => !disableAutoRiskScan && !!autoRiskScan,
-    [autoRiskScan, disableAutoRiskScan],
+    [autoRiskScan, disableAutoRiskScan]
   )
 
   const [isAvailable, unavailableReason] = useMemo(() => {
@@ -83,12 +83,12 @@ export const useRiskAnalysisBase = <
   // if undefined, user has never used the feature
   const shouldPromptAutoRiskScan = useMemo(
     () => isAvailable && !disableAutoRiskScan && autoRiskScan === undefined,
-    [autoRiskScan, disableAutoRiskScan, isAvailable],
+    [autoRiskScan, disableAutoRiskScan, isAvailable]
   )
 
   const shouldValidate = useMemo(
     () => isAvailable && (effectiveAutoRiskScan || isScanRequested),
-    [effectiveAutoRiskScan, isAvailable, isScanRequested],
+    [effectiveAutoRiskScan, isAvailable, isScanRequested]
   )
 
   const {
@@ -112,7 +112,7 @@ export const useRiskAnalysisBase = <
 
   const scanError = useMemo(
     () => (result ? getRiskAnalysisScanError(platform, result, t) : null),
-    [platform, result, t],
+    [platform, result, t]
   )
 
   const launchScan = useCallback(() => {
@@ -135,7 +135,7 @@ export const useRiskAnalysisBase = <
 
   const isValidating = useMemo(
     () => isAvailable && shouldValidate && isLoading && enabled,
-    [enabled, isAvailable, isLoading, shouldValidate],
+    [enabled, isAvailable, isLoading, shouldValidate]
   )
 
   const validationResult = useMemo(() => {

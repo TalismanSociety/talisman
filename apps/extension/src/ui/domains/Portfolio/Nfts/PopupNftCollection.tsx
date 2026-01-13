@@ -50,7 +50,7 @@ const NoNftFound = () => {
         : selectedFolder
           ? t("No NFTs found for this folder")
           : t("No NFTs found"),
-    [selectedAccount, selectedFolder, t],
+    [selectedAccount, selectedFolder, t]
   )
 
   return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>

@@ -70,7 +70,7 @@ const useBestTokenForSymbol = (balances: Balances) => {
         (t) =>
           isTestnet(t) &&
           ["substrate-native", "evm-native"].includes(t.type) &&
-          isRelayDotNetwork(networksById[t.networkId]),
+          isRelayDotNetwork(networksById[t.networkId])
       ) ??
       // testnet solo/para native
       matches?.find((t) => isTestnet(t) && ["substrate-native", "evm-native"].includes(t.type)) ??
@@ -93,14 +93,14 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         if (balance.rates) tokenBalanceRates[balance.tokenId] = balance.rates
         return tokenBalanceRates
       }, {}),
-    [tokenBalances],
+    [tokenBalances]
   )
 
   const summary = useMemo(() => {
     if (tokenBalances.count < 1) return DEFAULT_SUMMARY
 
     const fiatDefaultValue = tokenBalances.each.some(
-      (b) => b.token && tokenBalanceRates[b.token.id],
+      (b) => b.token && tokenBalanceRates[b.token.id]
     )
       ? 0
       : null
@@ -109,7 +109,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
     const summary = tokenBalances.each.reduce<BalanceSummary>(
       (
         { totalTokens, totalFiat, lockedTokens, lockedFiat, availableTokens, availableFiat },
-        b,
+        b
       ) => ({
         totalTokens: totalTokens.plus(b.total.tokens),
         totalFiat:
@@ -134,7 +134,7 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         lockedFiat: fiatDefaultValue,
         availableTokens: BigNumber(0),
         availableFiat: fiatDefaultValue,
-      },
+      }
     )
 
     return summary

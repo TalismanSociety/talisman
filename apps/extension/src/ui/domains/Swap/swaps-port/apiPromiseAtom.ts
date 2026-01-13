@@ -25,7 +25,7 @@ export const apiPromiseAtom = atomFamily((chainId?: string) =>
 
     await apiPromise.isReady
     return apiPromise
-  }),
+  })
 )
 
 const cleanupApiPromiseEffect = (chainId: string | undefined, apiPromise: ApiPromise) =>

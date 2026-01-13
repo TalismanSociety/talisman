@@ -25,7 +25,7 @@ const MnemonicRenameForm: FC<{
   const allMnemonics = useMnemonics()
   const otherAccountNames = useMemo(
     () => allMnemonics.filter((m) => m.id !== mnemonic.id).map((a) => a.name),
-    [allMnemonics, mnemonic.id],
+    [allMnemonics, mnemonic.id]
   )
 
   const schema = useMemo(
@@ -35,14 +35,14 @@ const MnemonicRenameForm: FC<{
           name: yup.string().required(" ").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
-    [otherAccountNames, t],
+    [otherAccountNames, t]
   )
 
   const defaultValues = useMemo(
     () => ({
       name: mnemonic?.name,
     }),
-    [mnemonic?.name],
+    [mnemonic?.name]
   )
 
   const {
@@ -68,7 +68,7 @@ const MnemonicRenameForm: FC<{
         })
       }
     },
-    [mnemonic.id, onConfirm, setError],
+    [mnemonic.id, onConfirm, setError]
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -90,7 +90,7 @@ const MnemonicRenameForm: FC<{
       refName(e)
       refNameRef.current = e
     },
-    [refName],
+    [refName]
   )
 
   return (
@@ -129,7 +129,7 @@ const useMnemonicRenameModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   return {
@@ -141,7 +141,7 @@ const useMnemonicRenameModalProvider = () => {
 }
 
 export const [MnemonicRenameModalProvider, useMnemonicRenameModal] = provideContext(
-  useMnemonicRenameModalProvider,
+  useMnemonicRenameModalProvider
 )
 
 export const MnemonicRenameModal = () => {

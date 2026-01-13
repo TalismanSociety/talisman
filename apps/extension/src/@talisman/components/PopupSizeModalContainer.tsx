@@ -14,7 +14,7 @@ export const PopupSizeModalContainer: FC<PropsWithChildren<{ id: string; classNa
       className={cn(
         "bg-black-primary relative h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] overflow-hidden",
         !IS_POPUP && "border-grey-800 rounded-lg border shadow",
-        className,
+        className
       )}
     >
       {children}

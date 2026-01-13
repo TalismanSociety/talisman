@@ -86,8 +86,8 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       bufferWhen(
         () =>
           // emit the buffer once we've fetched the current value from the store
-          currentValueReady,
-      ),
+          currentValueReady
+      )
     )
 
     // an observable which, if:
@@ -110,7 +110,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       tap(() => hasPendingMutations.next(false)),
 
       // multicast the currentValue to all subscribers
-      share(),
+      share()
     )
 
     // for each batch of mutations, get the current value we retrieved from the store and the mutations to run
@@ -144,7 +144,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
         }),
 
         // set isMutating to false
-        tap(() => isMutating.next(false)),
+        tap(() => isMutating.next(false))
       )
       .subscribe()
   }
@@ -211,7 +211,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   async clear(): Promise<boolean> {
     const mutation = () => ({}) as T
     return await new Promise((resolve, reject) =>
-      this.#mutationQueue.next({ mutation, callback: () => resolve(true), onError: reject }),
+      this.#mutationQueue.next({ mutation, callback: () => resolve(true), onError: reject })
     )
   }
 
@@ -222,7 +222,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    */
   async mutate(mutation: (currentValue: T) => T): Promise<T> {
     return await new Promise((resolve, reject) =>
-      this.#mutationQueue.next({ mutation, callback: resolve, onError: reject }),
+      this.#mutationQueue.next({ mutation, callback: resolve, onError: reject })
     )
   }
 
@@ -272,7 +272,7 @@ class SubscribableByIdStorageProvider<
     id: string,
     port: Port,
     request: RequestIdOnly,
-    unsubscribeCallback?: () => void,
+    unsubscribeCallback?: () => void
   ): boolean {
     const cb = createSubscription<SubscribeByIdMessage>(id, port)
 

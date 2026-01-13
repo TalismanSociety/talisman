@@ -25,12 +25,12 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   const total = useMemo(
     () => balancesToDisplay.sum.fiat(currency).total,
-    [balancesToDisplay.sum, currency],
+    [balancesToDisplay.sum, currency]
   )
 
   const tokenIds = useMemo<TokenId[]>(
     () => uniq(balancesToDisplay.each.map((b) => b.token?.id).filter(isTruthy)),
-    [balancesToDisplay],
+    [balancesToDisplay]
   )
 
   const { t } = useTranslation()
@@ -65,14 +65,14 @@ export const PortfolioAsset = () => {
 
   const accountBalances = useMemo(
     () => (account ? allBalances.find((b) => b.address === account.address) : networkBalances),
-    [account, allBalances, networkBalances],
+    [account, allBalances, networkBalances]
   )
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
     () => accountBalances.find((b) => b.token?.symbol === symbol),
-    [accountBalances, symbol],
+    [accountBalances, symbol]
   )
 
   useEffect(() => {

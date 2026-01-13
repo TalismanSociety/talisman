@@ -84,7 +84,7 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
       // without this check we run into infinite loop
       if (value !== mode) onChange(value)
     },
-    [mode, onChange],
+    [mode, onChange]
   )
 
   return (

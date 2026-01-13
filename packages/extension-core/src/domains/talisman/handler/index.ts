@@ -28,7 +28,7 @@ export default class TalismanHandler extends TabsHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     port: Port,
-    url: string,
+    url: string
   ): Promise<ResponseType<TMessageType>> {
     // these methods are pub() because they're exposed to dapps,
     // BUT they're actually only exposed to dapps where isTalismanHostname is true
@@ -43,7 +43,7 @@ export default class TalismanHandler extends TabsHandler {
           port,
           chaindataProvider
             .getNetworks$("polkadot")
-            .pipe(map((networks) => networks.filter(isNetworkCustom))),
+            .pipe(map((networks) => networks.filter(isNetworkCustom)))
         )
       }
 
@@ -60,7 +60,7 @@ export default class TalismanHandler extends TabsHandler {
           port,
           chaindataProvider
             .getNetworks$("ethereum")
-            .pipe(map((networks) => networks.filter(isNetworkCustom))),
+            .pipe(map((networks) => networks.filter(isNetworkCustom)))
         )
       }
 
@@ -75,7 +75,7 @@ export default class TalismanHandler extends TabsHandler {
         return genericSubscription(
           id,
           port,
-          chaindataProvider.tokens$.pipe(map((tokens) => tokens.filter(isTokenCustom))),
+          chaindataProvider.tokens$.pipe(map((tokens) => tokens.filter(isTokenCustom)))
         )
       }
 

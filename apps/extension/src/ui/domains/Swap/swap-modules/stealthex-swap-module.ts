@@ -105,7 +105,7 @@ const getAdditionalFee = (feeProps: FeeProps) =>
     // then subtract the built-in fee of 0.4%, which is applied to all exchanges made via stealthex
     getTalismanTotalFee(feeProps) - BUILT_IN_FEE,
     // if the talisman total fee is less than the built-in fee, default to an additional_fee of 0.0
-    0,
+    0
   )
 // Our UI represents a 1% fee as `0.01`, but the StealthEX api represents a 1% fee as `1.0`.
 // 1.0 = 0.01 * 100
@@ -445,7 +445,7 @@ const assetsAtom = atom(async (get) => {
           ? getTokenIdForSwappableAsset(
               "evm",
               evmChain.id,
-              currency.contract_address ? currency.contract_address : undefined,
+              currency.contract_address ? currency.contract_address : undefined
             )
           : specialAsset?.id
         const chainId = evmChain ? evmChain.id : specialAsset?.chainId
@@ -477,8 +477,8 @@ const assetsAtom = atom(async (get) => {
         }
         return { ...acc, [id]: asset }
       },
-      {} as Record<string, SwappableAssetBaseType<{ stealthex: AssetContext }>>,
-    ),
+      {} as Record<string, SwappableAssetBaseType<{ stealthex: AssetContext }>>
+    )
   )
 })
 
@@ -524,7 +524,7 @@ const toAssetsSelector = atom(async (get) => {
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
   const validDestAssets = allAssets.filter((asset) =>
-    validDestinations.has(pairKeyFromAsset(asset)),
+    validDestinations.has(pairKeyFromAsset(asset))
   )
 
   return [fromAsset, ...validDestAssets]
@@ -590,24 +590,24 @@ const quote: QuoteFunction = loadable(
       console.error(`Failed to get StealthEX quote`, cause)
       return null
     }
-  }),
+  })
 )
 
 export type { StealthexExchange }
 const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> => {
   try {
     const substrateChains = await get(
-      atomWithObservable(() => getNetworks$({ platform: "polkadot" })),
+      atomWithObservable(() => getNetworks$({ platform: "polkadot" }))
     )
     const formatAddress = (
       address: string | null,
-      asset: SwappableAssetWithDecimals<unknown> | null,
+      asset: SwappableAssetWithDecimals<unknown> | null
     ) => {
       if (!address) return address
       if (asset?.networkType !== "substrate") return address
 
       const substrateChain = substrateChains.find(
-        (c) => c.id.toString() === asset.chainId.toString(),
+        (c) => c.id.toString() === asset.chainId.toString()
       )
       if (!substrateChain) return address
       return encodeAnyAddress(address, { ss58Format: substrateChain.prefix })
@@ -706,7 +706,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     if (fromAsset.networkType !== "evm") return
 
     const chain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString(),
+      (c) => c?.id.toString() === fromAsset.chainId.toString()
     )
     if (!chain) throw new Error("Network not supported")
 
@@ -717,7 +717,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
 
     const depositAmount = Decimal.fromUserInput(
       String(exchange.deposit.expected_amount),
-      fromAsset.decimals,
+      fromAsset.decimals
     )
 
     if (!fromAsset.contractAddress)
@@ -763,7 +763,7 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
 
       const depositAmount = Decimal.fromUserInput(
         String(exchange.deposit.expected_amount),
-        fromAsset.decimals,
+        fromAsset.decimals
       )
 
       const payload =
@@ -776,13 +776,13 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
                 target: MultiAddress.Id(exchange.deposit.address),
                 amount: depositAmount.planck,
               },
-              { address: fromAddress },
+              { address: fromAddress }
             )
           : await sapi.getExtrinsicPayload(
               "Balances",
               allowReap ? "transfer_allow_death" : "transfer_keep_alive",
               { dest: MultiAddress.Id(exchange.deposit.address), value: depositAmount.planck },
-              { address: fromAddress },
+              { address: fromAddress }
             )
 
       return payload
@@ -802,12 +802,12 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
     const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
     )
     const network = knownEvmNetworks[fromAsset.chainId]
     const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
     const evmChain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString(),
+      (c) => c?.id.toString() === fromAsset.chainId.toString()
     )
 
     const data = fromAsset.contractAddress
@@ -850,11 +850,11 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
       ? (polkadotApi.tx.assets["transferAllowDeath"] ?? polkadotApi.tx.assets["transfer"])(
           fromAsset.assetHubAssetId,
           fromAddress,
-          fromAmount.planck,
+          fromAmount.planck
         )
       : (polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"])(
           fromAddress,
-          fromAmount.planck,
+          fromAmount.planck
         )
   const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
@@ -889,11 +889,11 @@ export const swapStatus$ = (id: string): Observable<StealthexExchange["status"] 
         return interval(20_000).pipe(
           startWith(-1),
           switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
-          takeWhile((status) => shouldRefresh(status), true),
+          takeWhile((status) => shouldRefresh(status), true)
         )
       }
       return of(status)
-    }),
+    })
   )
 
 const retryStatus$ = (id: string): Observable<StealthexExchange["status"] | undefined> =>
@@ -906,5 +906,5 @@ const retryStatus$ = (id: string): Observable<StealthexExchange["status"] | unde
       // eslint-disable-next-line no-console
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
-    }),
+    })
   )

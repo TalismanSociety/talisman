@@ -125,7 +125,7 @@ type Props = {
 
 export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountContextMenu(
   { tokenId, placement, trigger, className },
-  ref,
+  ref
 ) {
   const token = useToken(tokenId)
 
@@ -135,7 +135,7 @@ export const TokenContextMenu = forwardRef<HTMLElement, Props>(function AccountC
         ref={ref}
         className={classNames(
           "hover:bg-grey-800 text-body-secondary hover:text-body rounded p-6",
-          className,
+          className
         )}
         asChild={!!trigger}
       >

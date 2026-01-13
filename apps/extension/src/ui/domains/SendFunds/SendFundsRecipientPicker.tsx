@@ -82,7 +82,7 @@ const UnknownAddressDrawer = ({
           </p>
           <p className="text-body-secondary text-sm">
             {t(
-              "If you are sending to a centralized exchange, ensure this address is on the correct network.",
+              "If you are sending to a centralized exchange, ensure this address is on the correct network."
             )}
           </p>
           <div className="mt-4 flex items-center justify-between gap-8 text-xs">
@@ -122,7 +122,7 @@ export const SendFundsRecipientPicker = () => {
     return allAccounts.filter(
       (account) =>
         isAccountCompatibleWithNetwork(network, account) &&
-        !isAddressEqual(account.address, from ?? ""),
+        !isAddressEqual(account.address, from ?? "")
     )
   }, [allAccounts, from, network])
 
@@ -134,7 +134,7 @@ export const SendFundsRecipientPicker = () => {
     return compatibleRecipients.filter(
       (account) =>
         account.name?.toLowerCase().includes(lowerSearch) ||
-        account.address.toLowerCase().includes(lowerSearch),
+        account.address.toLowerCase().includes(lowerSearch)
     )
   }, [compatibleRecipients, search])
 
@@ -190,7 +190,7 @@ export const SendFundsRecipientPicker = () => {
       set("to", address, true)
       setRecipientWarning(undefined)
     },
-    [set, setRecipientWarning],
+    [set, setRecipientWarning]
   )
 
   const [unknownAddress, setUnknownAddress] = useState<string>()
@@ -208,7 +208,7 @@ export const SendFundsRecipientPicker = () => {
         }
       }
     },
-    [handleSelect, open],
+    [handleSelect, open]
   )
 
   const handleSubmitSearch = useCallback(() => {

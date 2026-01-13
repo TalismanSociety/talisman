@@ -17,7 +17,7 @@ import { CoinbaseSellOptions, CoinbaseSellQuoteRequest, CoinbaseSellQuoteRespons
 import { useCoinbaseSellOptions } from "./useCoinbaseSellOptions"
 
 export const useCoinbaseSellQuote = (
-  config: RampsSellQuoteOptions | null,
+  config: RampsSellQuoteOptions | null
 ): UseQueryResult<RampsSellQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
@@ -56,7 +56,7 @@ export const useCoinbaseSellQuote = (
 
     const getInputErrorDescription = (
       config: RampsSellQuoteOptions,
-      coinbaseOpts: CoinbaseSellOptions,
+      coinbaseOpts: CoinbaseSellOptions
     ) => {
       const limit = coinbaseOpts.cashout_currencies
         .find((c) => c.id === config.currencyCode)
@@ -87,7 +87,7 @@ export const useCoinbaseSellQuote = (
         config.amount,
         coinbaseToken,
         token.decimals,
-        minMaxAmount,
+        minMaxAmount
       )
     },
     select: (res: FetchCoinbaseSellQuoteResult | null): RampsSellQuote | null => {
@@ -108,7 +108,7 @@ export const useCoinbaseSellQuote = (
                 coinbaseToken.sellSymbol,
                 coinbaseToken.sellNetwork,
                 res.data.quote_id,
-                address,
+                address
               ),
           }
         : null
@@ -157,7 +157,7 @@ const fetchCoinbaseSellQuote = async (
   amountIn: number,
   coinbaseToken: CoinbaseTokenSpecs,
   decimals: number,
-  minMaxAmount: string | null,
+  minMaxAmount: string | null
 ): Promise<FetchCoinbaseSellQuoteResult> => {
   const body: CoinbaseSellQuoteRequest = {
     cashoutCurrency: currencyCode,

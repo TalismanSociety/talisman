@@ -24,7 +24,7 @@ export const calculateFee = ({
 export const calculateEffectiveFeeRate = (
   netuid: number | null,
   subnetFeePercent: number,
-  seekDiscount: number,
+  seekDiscount: number
 ): number => {
   if (netuid === 0 || netuid === null) return 0
   const discountedFee = subnetFeePercent * (1 - (seekDiscount || 0))
@@ -35,7 +35,7 @@ export const calculateEffectiveFeeRate = (
 export const calculateMinimumStakeInput = (
   baseMinimum: bigint,
   swapFee: bigint,
-  effectiveFeeRate: number,
+  effectiveFeeRate: number
 ): bigint => {
   const baseMin = baseMinimum + swapFee
 

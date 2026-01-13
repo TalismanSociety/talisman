@@ -19,7 +19,7 @@ const useLedgerSolanaAccounts = (
   derivationPathType: LedgerSolDerivationPathType,
   selectedAccounts: LedgerAccountDefSolana[],
   pageIndex: number,
-  itemsPerPage: number,
+  itemsPerPage: number
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
@@ -113,7 +113,7 @@ const useLedgerSolanaAccounts = (
         refIsBusy.current = false
       }
     },
-    [derivationPathType, getAddress, itemsPerPage, name, t],
+    [derivationPathType, getAddress, itemsPerPage, name, t]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -127,10 +127,10 @@ const useLedgerSolanaAccounts = (
               name: "",
               createdAt: Date.now(),
               derivationPath: "",
-            }),
+            })
           )
         : [],
-    [derivedAccounts, itemsPerPage, withBalances],
+    [derivedAccounts, itemsPerPage, withBalances]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -140,11 +140,11 @@ const useLedgerSolanaAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find((wa) =>
-          isAddressEqual(wa.address, acc.address),
+          isAddressEqual(wa.address, acc.address)
         )
 
         const accountBalances = balances.balances.find((b) =>
-          isAddressEqual(b.address, acc.address),
+          isAddressEqual(b.address, acc.address)
         )
         const isBalanceLoading =
           withBalances &&
@@ -160,7 +160,7 @@ const useLedgerSolanaAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances],
+    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances]
   )
 
   useEffect(() => {
@@ -196,7 +196,7 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
     derivationPathType,
     selectedAccounts,
     pageIndex,
-    itemsPerPage,
+    itemsPerPage
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -209,7 +209,7 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
             name,
             address,
             derivationPath,
-          }),
+          })
     )
   }, [])
 

@@ -120,14 +120,14 @@ export const ExternalRecipientWarning = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setIsWarningAcknowledged(e.target.checked)
     },
-    [setIsWarningAcknowledged],
+    [setIsWarningAcknowledged]
   )
 
   const handleDontRemindChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setDontRemindAgain(e.target.checked)
     },
-    [setDontRemindAgain],
+    [setDontRemindAgain]
   )
 
   if (warningType === "none") return null
@@ -165,7 +165,7 @@ export const ExternalRecipientWarning = () => {
         <div>
           <div>
             {t(
-              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds.",
+              "Warning: Alpha tokens (including root staked tokens) are not supported by most centralized exchanges. Sending to a centralized exchange will result in loss of funds."
             )}
           </div>
           <div className="text-body mt-2 space-y-2">
@@ -212,7 +212,7 @@ const SendButton = () => {
         txId,
       })
     },
-    [network, onSubmitted, saveConfirmation],
+    [network, onSubmitted, saveConfirmation]
   )
 
   const tx = useMemo<TxSubmitButtonTransaction | null>(() => {
@@ -355,7 +355,7 @@ const DefaultFeeSummary = () => {
           <div
             className={classNames(
               "inline-flex h-[1.7rem] items-center",
-              isRefetching && "animate-pulse",
+              isRefetching && "animate-pulse"
             )}
           >
             <>

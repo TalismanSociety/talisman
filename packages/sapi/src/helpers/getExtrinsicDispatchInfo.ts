@@ -14,7 +14,7 @@ type ExtrinsicDispatchInfo = {
 // used for chains that dont have metadata v15 yet
 export const getExtrinsicDispatchInfo = async (
   chain: Chain,
-  signedExtrinsic: GenericExtrinsic,
+  signedExtrinsic: GenericExtrinsic
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
@@ -26,7 +26,7 @@ export const getExtrinsicDispatchInfo = async (
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
     undefined,
-    true,
+    true
   )) as RuntimeDispatchInfo
 
   return {
@@ -40,7 +40,7 @@ const stateCall = async <K extends string = string>(
   resultType: K,
   args: Codec[],
   blockHash?: HexString,
-  isCacheable?: boolean,
+  isCacheable?: boolean
 ) => {
   // on a state call there are always arguments
   const registry = args[0].registry

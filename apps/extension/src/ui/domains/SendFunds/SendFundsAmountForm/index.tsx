@@ -100,7 +100,7 @@ export const SendFundsAmountForm = () => {
     (page: SendFundsWizardPage) => () => {
       goto(page)
     },
-    [goto],
+    [goto]
   )
 
   // we use a form for enter keypress to trigger submit button, but we don't want form to be actually submitted

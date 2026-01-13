@@ -24,7 +24,7 @@ export const useBittensorSubnetSlippage = (netuid: number | null | undefined) =>
       // throws if fails
       setRawSlippage(SUBNET_SLIPPAGE_SCHEMA.parse(value))
     },
-    [setRawSlippage],
+    [setRawSlippage]
   )
 
   return [slippage, setSlippage] as const

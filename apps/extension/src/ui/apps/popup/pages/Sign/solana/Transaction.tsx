@@ -108,7 +108,7 @@ export const SolSignTransactionRequest: FC<{
         })
       }
     },
-    [id, network?.id, transaction, riskAnalysis.tokenIds, enableTokens],
+    [id, network?.id, transaction, riskAnalysis.tokenIds, enableTokens]
   )
 
   const displayError = useMemo(() => {
@@ -120,7 +120,7 @@ export const SolSignTransactionRequest: FC<{
       type: "transaction",
       transaction,
     }),
-    [transaction],
+    [transaction]
   )
 
   return (
@@ -197,7 +197,7 @@ const FeeEstimateRow: FC<{
   const balanceParams = useMemo<BalanceByParamsProps>(
     () =>
       tokenId ? { addressesAndTokens: { addresses: [account.address], tokenIds: [tokenId] } } : {},
-    [account.address, tokenId],
+    [account.address, tokenId]
   )
   const { status, balances } = useBalancesByParams(balanceParams)
 
@@ -263,7 +263,7 @@ const useEstimatedFee = ({
       if (!connection) return null
 
       const result = await connection.getFeeForMessage(
-        isVersionedTransaction(transaction) ? transaction.message : transaction.compileMessage(),
+        isVersionedTransaction(transaction) ? transaction.message : transaction.compileMessage()
       )
 
       return result.value ? String(result.value) : null

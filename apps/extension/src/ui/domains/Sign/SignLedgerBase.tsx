@@ -34,7 +34,7 @@ export const SignLedgerBase: FC<{
       className={classNames(
         "grid w-full gap-8",
         onCancel ? "grid-cols-2" : "grid-cols-1",
-        className,
+        className
       )}
     >
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}

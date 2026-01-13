@@ -46,7 +46,7 @@ const Button: FC<{
         "text-body-secondary flex h-28 w-full items-center justify-between gap-4 rounded-sm px-6 sm:px-8",
         "border-grey-800 border",
         selected && "bg-grey-900 text-body",
-        "hover:border-grey-700 hover:bg-grey-800 stroke-primary",
+        "hover:border-grey-700 hover:bg-grey-800 stroke-primary"
       )}
       onClick={onClick}
     >

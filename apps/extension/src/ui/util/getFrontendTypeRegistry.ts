@@ -14,7 +14,7 @@ import { api } from "@ui/api"
 export const getFrontendTypeRegistry = async (
   network?: DotNetwork,
   specVersion?: number | string,
-  signedExtensions?: string[],
+  signedExtensions?: string[]
 ) => {
   const registry = new TypeRegistry()
 
@@ -37,7 +37,7 @@ export const getFrontendTypeRegistry = async (
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
       if (network.chainName) {
         registry.register(
-          getSpecTypes(registry, network.chainName, network.specName, network.specVersion),
+          getSpecTypes(registry, network.chainName, network.specName, network.specVersion)
         )
         registry.knownTypes.typesAlias = getSpecAlias(registry, network.chainName, network.specName)
       }

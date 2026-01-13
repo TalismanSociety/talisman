@@ -27,7 +27,7 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
         (b) =>
           b.token?.type === "substrate-dtao" &&
           bittensorNetworkIds.includes(b.token.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)),
+          accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 
@@ -61,7 +61,7 @@ export const BittensorUnstakeButton: FC<{ balances: Balances; className?: string
           onClick={handleClick}
           className={cn(
             "text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs",
-            className,
+            className
           )}
         >
           <ZapOffIcon />

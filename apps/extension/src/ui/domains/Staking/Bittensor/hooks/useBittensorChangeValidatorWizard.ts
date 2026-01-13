@@ -49,7 +49,7 @@ const useBittensorChangeValidatorWizardProvider = () => {
   const { genericEvent } = useAnalytics()
   const { close, args } = useBittensorChangeValidatorModal()
   const [{ step, newHotkey, hash, tokenId, address }, setWizardState] = useState<WizardState>(
-    () => Object.assign({}, DEFAULT_STATE, args), // init with params passed to modal
+    () => Object.assign({}, DEFAULT_STATE, args) // init with params passed to modal
   )
 
   const token = useToken(tokenId) as SubDTaoToken | null
@@ -131,7 +131,7 @@ const useBittensorChangeValidatorWizardProvider = () => {
       // Go back to form step after selection (not review)
       setStep("form")
     },
-    [setNewHotkey, setStep],
+    [setNewHotkey, setStep]
   )
 
   const onSubmitted = useCallback(
@@ -139,7 +139,7 @@ const useBittensorChangeValidatorWizardProvider = () => {
       genericEvent("Bittensor Change Validator", { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId],
+    [genericEvent, tokenId]
   )
 
   // Current hotkey from the token (for display in form)

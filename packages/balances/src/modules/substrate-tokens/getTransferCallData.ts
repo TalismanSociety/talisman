@@ -65,7 +65,7 @@ const getCallDataOptions = (
   token: SubTokensToken,
   value: string,
   type: BalanceTransferType,
-  config: ModuleConfig | undefined,
+  config: ModuleConfig | undefined
 ): CallDataOption[] => {
   const onChainId = papiParse(token.onChainId)
   const method = getTransferMethod(type)
@@ -157,6 +157,6 @@ const getCallDataOptions = (
                   },
           },
         ]
-      : []),
+      : [])
   )
 }

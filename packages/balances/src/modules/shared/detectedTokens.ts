@@ -18,5 +18,5 @@ export const setDetectedTokenIds = (address: string, type: TokenType, tokenIds: 
 export const getDetectedTokensIds$ = (address: string) =>
   tokenIdsByAddress.pipe(
     map((ownedTokens) => ownedTokens[address] ?? []),
-    distinctUntilChanged<TokenId[]>(isEqual),
+    distinctUntilChanged<TokenId[]>(isEqual)
   )

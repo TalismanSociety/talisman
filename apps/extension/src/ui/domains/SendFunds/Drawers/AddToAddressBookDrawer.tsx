@@ -43,7 +43,7 @@ const AddToAddressBookDrawerForm: FC<{
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === normalizeAddress(address),
-    [address, addressType],
+    [address, addressType]
   )
   const {
     register,
@@ -87,7 +87,7 @@ const AddToAddressBookDrawerForm: FC<{
         setError("name", err as Error)
       }
     },
-    [address, addressType, tokenGenesisHash, onClose, setError],
+    [address, addressType, tokenGenesisHash, onClose, setError]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -97,7 +97,7 @@ const AddToAddressBookDrawerForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
   useEffect(() => {

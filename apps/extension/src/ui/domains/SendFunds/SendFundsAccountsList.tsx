@@ -45,7 +45,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect],
+    [onSelect]
   )
 
   const token = useToken(tokenId)

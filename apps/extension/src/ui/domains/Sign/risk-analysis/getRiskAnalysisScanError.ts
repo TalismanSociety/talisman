@@ -5,7 +5,7 @@ import { RiskAnalysisPlatform, RiskAnalysisResponse, RiskAnalysisScanError } fro
 export const getRiskAnalysisScanError = (
   platform: RiskAnalysisPlatform,
   response: RiskAnalysisResponse | null | undefined,
-  t: TFunction,
+  t: TFunction
 ): RiskAnalysisScanError | null => {
   if (!response) return null
 

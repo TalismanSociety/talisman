@@ -11,7 +11,7 @@ export type PayloadSignerConfig = {
 export type JsonRpcRequestSend = (
   method: string,
   params: unknown[],
-  isCacheable?: boolean,
+  isCacheable?: boolean
 ) => Promise<unknown>
 
 export type SapiConnectorProps = {
@@ -20,10 +20,10 @@ export type SapiConnectorProps = {
   submit?: (
     payload: SignerPayloadJSON,
     signature?: `0x${string}`,
-    txInfo?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    txInfo?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   ) => Promise<{ hash: `0x${string}` }>
   submitWithBittensorMevShield?: (
     payload: SignerPayloadJSON,
-    txInfo?: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    txInfo?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   ) => Promise<{ hash: `0x${string}` }>
 }

@@ -16,7 +16,7 @@ import { getFrontEndSolanaConnection } from "./useSolanaConnection"
  * @returns
  */
 export const useSolanaNetworkIdForTransaction = (
-  transaction: VersionedTransaction | Transaction,
+  transaction: VersionedTransaction | Transaction
 ) => {
   const { t } = useTranslation()
   // find on which network the tx is for, based on the transaction data
@@ -44,7 +44,7 @@ export const useSolanaNetworkIdForTransaction = (
               } catch (err) {
                 return null
               }
-            }),
+            })
           ),
           throwAfter(5_000, "Timeout"),
         ])

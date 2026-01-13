@@ -42,12 +42,12 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([]),
+            Psp22Abi.findMessage("PSP22Metadata::token_symbol").toU8a([])
           ),
           contractCall(
             contractAddress,
             contractAddress,
-            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([]),
+            Psp22Abi.findMessage("PSP22Metadata::token_decimals").toU8a([])
           ),
         ])
 
@@ -59,8 +59,8 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
                 registry.createType(
                   "Option<Vec<u8>>",
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  (symbolResult.toJSON()?.result as any)?.ok?.data,
-                )?.value,
+                  (symbolResult.toJSON()?.result as any)?.ok?.data
+                )?.value
               )?.replace(/\p{C}/gu, "")
             : symbol
 
@@ -93,7 +93,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     } catch (error) {
       log.error(
         `Failed to build substrate-psp22 token ${tokenConfig.contractAddress} (${tokenConfig.symbol}) on ${networkId}`,
-        (error as Error)?.message ?? error,
+        (error as Error)?.message ?? error
       )
       continue
     }

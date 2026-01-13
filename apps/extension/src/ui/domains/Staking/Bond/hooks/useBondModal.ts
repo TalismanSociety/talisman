@@ -31,7 +31,7 @@ export const useBondModal = () => {
       // then open the modal
       innerOpen()
     },
-    [innerOpen, reset],
+    [innerOpen, reset]
   )
 
   return { isOpen, open, close }

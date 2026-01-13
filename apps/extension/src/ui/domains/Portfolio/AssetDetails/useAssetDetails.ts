@@ -11,7 +11,7 @@ export const useAssetDetails = (balances: Balances) => {
 
   const tokenIds = useMemo<TokenId[]>(
     () => uniq(balances.each.map((b) => b.tokenId)),
-    [balances.each],
+    [balances.each]
   )
 
   const balancesByToken = useMemo(
@@ -44,7 +44,7 @@ export const useAssetDetails = (balances: Balances) => {
           // keep alphabetical sort
           return 0
         }),
-    [balances, currency, hydrate, tokenIds],
+    [balances, currency, hydrate, tokenIds]
   )
 
   return { balancesByToken }

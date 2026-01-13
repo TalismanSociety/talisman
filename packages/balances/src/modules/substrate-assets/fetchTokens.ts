@@ -53,7 +53,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       }
       return { assetId, existentialDeposit: asset.min_balance, isSufficient: asset.is_sufficient }
     }),
-    (a) => a.assetId,
+    (a) => a.assetId
   )
 
   const metadataByAssetId = keyBy(
@@ -74,11 +74,11 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         symbol: metadata.symbol?.asText(),
       }
     }),
-    (a) => a.assetId,
+    (a) => a.assetId
   )
 
   const allTokens = keys(assetByAssetId).map((assetId) =>
-    assign({}, assetByAssetId[assetId], metadataByAssetId[assetId] ?? undefined),
+    assign({}, assetByAssetId[assetId], metadataByAssetId[assetId] ?? undefined)
   )
 
   const configTokenByAssetId = keyBy(tokens, (t) => t.assetId)
@@ -99,7 +99,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals: asset.decimals ?? 0,
           existentialDeposit: String(asset.existentialDeposit),
           isDefault: true,
-        }),
+        })
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {

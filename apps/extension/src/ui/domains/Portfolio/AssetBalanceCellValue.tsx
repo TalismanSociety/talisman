@@ -39,13 +39,13 @@ export const AssetBalanceCellValue = ({
       <div
         className={classNames(
           "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
-          className,
+          className
         )}
       >
         <div
           className={classNames(
             "flex items-center justify-end gap-2",
-            locked ? "text-body-secondary" : "text-body",
+            locked ? "text-body-secondary" : "text-body"
           )}
         >
           <div>

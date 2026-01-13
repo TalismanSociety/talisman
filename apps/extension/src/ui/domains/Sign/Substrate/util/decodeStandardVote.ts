@@ -2,7 +2,7 @@ const AYE_BITS = 0b10000000
 const CON_MASK = 0b01111111
 
 export const decodeStandardVote = (
-  vote: number,
+  vote: number
 ): {
   isAye: boolean
   conviction: number

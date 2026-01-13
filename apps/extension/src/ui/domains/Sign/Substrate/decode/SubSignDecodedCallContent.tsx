@@ -99,7 +99,7 @@ const DefaultView: FC<{
             className={classNames(
               "flex w-full flex-col gap-2 overflow-hidden !text-xs",
               "[&_code]:text-body [&_em]:text-body [&_h1]:text-xs [&_h2]:text-xs [&_h3]:text-xs [&_h4]:text-xs [&_h5]:text-xs [&_ul]:list-disc [&_ul]:pl-10",
-              "[overflow-wrap:anywhere]",
+              "[overflow-wrap:anywhere]"
             )}
           >
             {htmlParser(docs)}
@@ -153,7 +153,7 @@ const formatArgs = (args: unknown): unknown => {
     return Object.fromEntries(
       Object.entries(obj)
         .filter(([, v]) => v !== undefined)
-        .map(([k, v]) => [k, formatArgs(v)]),
+        .map(([k, v]) => [k, formatArgs(v)])
     )
   }
 

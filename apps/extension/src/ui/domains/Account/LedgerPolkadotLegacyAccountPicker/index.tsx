@@ -21,7 +21,7 @@ export const LedgerPolkadotLegacyAccountPicker: FC<LedgerPolkadotLegacyAccountPi
       onChange?.([])
       setMode(newMode)
     },
-    [mode, onChange],
+    [mode, onChange]
   )
 
   return (

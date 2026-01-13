@@ -16,7 +16,7 @@ import { CoinbaseBuyOptions, CoinbaseBuyQuoteRequest, CoinbaseBuyQuoteResponse }
 import { useCoinbaseBuyOptions } from "./useCoinbaseBuyOptions"
 
 export const useCoinbaseBuyQuote = (
-  config: RampsBuyQuoteOptions | null,
+  config: RampsBuyQuoteOptions | null
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
@@ -42,7 +42,7 @@ export const useCoinbaseBuyQuote = (
 
     const getInputErrorDescription = (
       config: RampsBuyQuoteOptions,
-      coinbaseOpts: CoinbaseBuyOptions,
+      coinbaseOpts: CoinbaseBuyOptions
     ) => {
       const limit = coinbaseOpts.payment_currencies
         .find((c) => c.id === config.currencyCode)
@@ -95,7 +95,7 @@ export const useCoinbaseBuyQuote = (
                 coinbaseToken.purchaseSymbol,
                 coinbaseToken.purchaseNetwork,
                 res.data.quote_id,
-                address,
+                address
               ),
           }
         : null
@@ -148,7 +148,7 @@ type FetchCoinbaseBuyQuoteResult =
 const fetchCoinbaseBuyQuote = async (
   currencyCode: string,
   amountIn: number,
-  coinbaseToken: CoinbaseTokenSpecs,
+  coinbaseToken: CoinbaseTokenSpecs
 ): Promise<FetchCoinbaseBuyQuoteResult> => {
   const body: CoinbaseBuyQuoteRequest = {
     paymentCurrency: currencyCode,

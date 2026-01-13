@@ -22,7 +22,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         className={classNames(
           "inline-flex items-center justify-start gap-[0.5em]",
           !disabled && "cursor-pointer",
-          className,
+          className
         )}
         {...containerProps}
       >
@@ -33,7 +33,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             "checked:hover:border-body-secondary checked:active hover:border-white checked:active:focus-visible:border-transparent",
             "active:bg-grey-700 enabled:focus-visible:border-white",
             "[&.form-checkbox:]:focus:!ring-0 !outline-0 !ring-0 [&.form-checkbox]:focus:!outline-0 [&.form-checkbox]:focus:!outline-offset-0 [&.form-checkbox]:focus:ring-offset-0",
-            "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent",
+            "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent"
           )}
           ref={ref}
           disabled={disabled}
@@ -44,7 +44,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={classNames(
               "text-left",
               disabled && "text-body-disabled",
-              childProps.className,
+              childProps.className
             )}
             {...childProps}
           >
@@ -53,6 +53,6 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         )}
       </label>
     )
-  },
+  }
 )
 Checkbox.displayName = "Checkbox"

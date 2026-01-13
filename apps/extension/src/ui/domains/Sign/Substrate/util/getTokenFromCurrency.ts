@@ -16,7 +16,7 @@ const normalizeTokenId = (tokenId: unknown) => {
             typeof value === "string" ? value.toLowerCase() : normalizeTokenId(value)
         return acc
       },
-      {} as Record<string, unknown>,
+      {} as Record<string, unknown>
     )
   }
   return tokenId
@@ -37,7 +37,7 @@ type SubstrateTokenId = Enum<Record<string, unknown>>
 export const getTokenFromCurrency = (
   currencyId: number | SubstrateTokenId,
   chain: DotNetwork,
-  tokens: Token[],
+  tokens: Token[]
 ): Token => {
   const chainTokens = tokens.filter((t) => t.networkId === chain.id)
 
@@ -46,7 +46,7 @@ export const getTokenFromCurrency = (
     if (typeof currencyId === "number") {
       if (currencyId === 0) return chainTokens.find((t) => t.id === chain.nativeTokenId) as Token
       const token = chainTokens.find(
-        (t) => t.type === "substrate-tokens" && String(t.onChainId) === String(currencyId),
+        (t) => t.type === "substrate-tokens" && String(t.onChainId) === String(currencyId)
       )
       if (token) return token
       log.warn("unknown currencyId %d on chain %s", currencyId, chain.id)
@@ -65,7 +65,7 @@ export const getTokenFromCurrency = (
             tokenSymbol === t.symbol.toLowerCase())) || // ACA
         (t.type === "substrate-tokens" &&
           (isSameTokenId(t.onChainId, currencyId) || // ex: vsKSM
-            t.onChainId?.toString()?.toLowerCase() === currencyId?.toString().toLowerCase())), // ex: aUSD
+            t.onChainId?.toString()?.toLowerCase() === currencyId?.toString().toLowerCase())) // ex: aUSD
     )
     if (token) return token
 

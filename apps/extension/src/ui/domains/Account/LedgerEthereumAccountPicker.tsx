@@ -19,7 +19,7 @@ const useLedgerEthereumAccounts = (
   derivationPathType: LedgerEthDerivationPathType,
   selectedAccounts: LedgerAccountDefEthereum[],
   pageIndex: number,
-  itemsPerPage: number,
+  itemsPerPage: number
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
@@ -110,7 +110,7 @@ const useLedgerEthereumAccounts = (
         refIsBusy.current = false
       }
     },
-    [derivationPathType, getAddress, itemsPerPage, name, t],
+    [derivationPathType, getAddress, itemsPerPage, name, t]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -124,10 +124,10 @@ const useLedgerEthereumAccounts = (
               name: "",
               createdAt: Date.now(),
               derivationPath: "",
-            }),
+            })
           )
         : [],
-    [derivedAccounts, itemsPerPage, withBalances],
+    [derivedAccounts, itemsPerPage, withBalances]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -137,11 +137,11 @@ const useLedgerEthereumAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find((wa) =>
-          isAddressEqual(wa.address, acc.address),
+          isAddressEqual(wa.address, acc.address)
         )
 
         const accountBalances = balances.balances.find((b) =>
-          isAddressEqual(b.address, acc.address),
+          isAddressEqual(b.address, acc.address)
         )
         const isBalanceLoading =
           withBalances &&
@@ -157,7 +157,7 @@ const useLedgerEthereumAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances],
+    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances]
   )
 
   useEffect(() => {
@@ -193,7 +193,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     derivationPathType,
     selectedAccounts,
     pageIndex,
-    itemsPerPage,
+    itemsPerPage
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -206,7 +206,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
             name,
             address,
             derivationPath,
-          }),
+          })
     )
   }, [])
 

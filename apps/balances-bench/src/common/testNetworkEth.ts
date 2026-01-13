@@ -25,7 +25,7 @@ type TestOptions = {
 
 const DEFAULT_OPTIONS: TestOptions = {
   modules: BALANCE_MODULES.filter((mod) => mod.platform === "ethereum").map(
-    (mod) => mod.type as TokenType,
+    (mod) => mod.type as TokenType
   ),
   fetchBalances: true,
   transfer: true,
@@ -50,7 +50,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
     const connector = new ChainConnectorEthStub(network as unknown as EthNetwork)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "ethereum").filter((mod) =>
-      opts.modules?.includes(mod.type as TokenType),
+      opts.modules?.includes(mod.type as TokenType)
     )) {
       const source = mod.type
       log.log()

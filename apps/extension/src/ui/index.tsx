@@ -45,7 +45,7 @@ export type RenderTalismanOptions = {
 // could possibly re-org this slightly better
 export const renderTalisman = (
   app: ReactNode,
-  { keepWalletUnlockedMode }: RenderTalismanOptions = {},
+  { keepWalletUnlockedMode }: RenderTalismanOptions = {}
 ) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
@@ -65,6 +65,6 @@ export const renderTalisman = (
           </Suspense>
         </ErrorBoundaryDatabaseMigration>
       </TalismanErrorBoundary>
-    </StrictMode>,
+    </StrictMode>
   )
 }

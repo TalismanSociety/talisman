@@ -66,7 +66,7 @@ export const updateNftsStore = ({
 
   // cleanup orphan nfts
   newStoreData.nfts.filter((nft) =>
-    newStoreData.collections.some((col) => col.id === nft.collectionId),
+    newStoreData.collections.some((col) => col.id === nft.collectionId)
   )
 
   if (!isEqual(subject.value, newStoreData)) {

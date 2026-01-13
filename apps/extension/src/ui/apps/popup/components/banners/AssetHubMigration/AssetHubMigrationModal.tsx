@@ -98,7 +98,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           </ul>
           <p className="text-body-secondary mt-8 text-sm">
             {t(
-              "No action is required: all balances will be transfered automatically as part of the migration.",
+              "No action is required: all balances will be transfered automatically as part of the migration."
             )}
           </p>
         </div>
@@ -109,7 +109,7 @@ const ModalContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             onClick={() => {
               window.open(
                 "https://support.polkadot.network/support/solutions/articles/65000190561",
-                "_blank",
+                "_blank"
               )
             }}
           >

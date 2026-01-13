@@ -19,10 +19,10 @@ import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const usePartialFee = (
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  extrinsic: GenericExtrinsic | null | undefined,
+  extrinsic: GenericExtrinsic | null | undefined
 ) => {
   const chain = useNetworkByGenesisHash(
-    payload && isJsonPayload(payload) ? payload.genesisHash : undefined,
+    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
   )
 
   return useQuery({
@@ -108,7 +108,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const payload = useMemo(
     () => modifiedPayload || signingRequest.request.payload,
-    [modifiedPayload, signingRequest.request.payload],
+    [modifiedPayload, signingRequest.request.payload]
   )
 
   const decodedCall = useMemo(() => {
@@ -124,7 +124,7 @@ const usePolkadotSigningRequestProvider = ({
 
   const isDryRunAvailable = useMemo(
     () => sapi?.isApiAvailable("DryRunApi", "dry_run_call") || false,
-    [sapi],
+    [sapi]
   )
 
   const {
@@ -174,7 +174,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload],
+    [baseRequest, modifiedPayload]
   )
 
   const approveQr = useCallback(
@@ -189,7 +189,7 @@ const usePolkadotSigningRequestProvider = ({
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },
-    [baseRequest, modifiedPayload],
+    [baseRequest, modifiedPayload]
   )
 
   const approveSignet = useCallback(async () => {
@@ -241,5 +241,5 @@ const usePolkadotSigningRequestProvider = ({
 }
 
 export const [PolkadotSigningRequestProvider, usePolkadotSigningRequest] = provideContext(
-  usePolkadotSigningRequestProvider,
+  usePolkadotSigningRequestProvider
 )

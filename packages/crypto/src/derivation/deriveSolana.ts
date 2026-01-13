@@ -36,7 +36,7 @@ export const deriveSolana = (seed: Uint8Array, derivationPath: string): Keypair 
         (index >> 8) & 0xff,
         index & 0xff,
       ]),
-      1 + secretKey.length,
+      1 + secretKey.length
     )
 
     I = hmac(sha512, chainCode, data)

@@ -17,9 +17,9 @@ export const [useBalanceTotals, balanceTotals$] = bind(
         accounts.map(({ address }) => [
           address,
           balances.find({ address }).sum.fiat(currency).total,
-        ]),
-      ),
-    ),
+        ])
+      )
+    )
   ),
-  {},
+  {}
 )

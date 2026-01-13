@@ -128,7 +128,7 @@ const TransactionError = () => {
           className={cn(
             "text-brand-orange text-center text-xs",
             // do not display error while isProcessing=true, as it has already has been executed
-            (isProcessing || !transaction?.error) && "invisible",
+            (isProcessing || !transaction?.error) && "invisible"
           )}
         >
           <AlertCircleIcon className="inline-block align-text-top text-sm" /> {transaction?.error}

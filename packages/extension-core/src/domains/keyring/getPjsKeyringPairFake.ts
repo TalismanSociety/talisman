@@ -41,6 +41,6 @@ export const getPjsKeyringPairFake = (address: Address) => {
       secretKey: new Uint8Array(),
     },
     { name: "Unknown" },
-    type,
+    type
   )
 }

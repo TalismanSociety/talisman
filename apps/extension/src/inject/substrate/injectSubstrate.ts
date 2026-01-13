@@ -13,7 +13,7 @@ const rpcProvider = (sendRequest: SendRequest) => ({
   rpcByGenesisHashSend: (
     genesisHash: HexString,
     method: string,
-    params: unknown[],
+    params: unknown[]
   ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.send)">> =>
     sendRequest("pub(talisman.rpc.byGenesisHash.send)", { genesisHash, method, params }),
 
@@ -23,17 +23,17 @@ const rpcProvider = (sendRequest: SendRequest) => ({
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout: number | false,
+    timeout: number | false
   ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.subscribe)">> =>
     sendRequest(
       "pub(talisman.rpc.byGenesisHash.subscribe)",
       { genesisHash, subscribeMethod, responseMethod, params, timeout },
-      ({ error, data }) => callback(error, data),
+      ({ error, data }) => callback(error, data)
     ),
 
   rpcByGenesisHashUnsubscribe: (
     subscriptionId: string,
-    unsubscribeMethod: string,
+    unsubscribeMethod: string
   ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.unsubscribe)">> =>
     sendRequest("pub(talisman.rpc.byGenesisHash.unsubscribe)", {
       subscriptionId,

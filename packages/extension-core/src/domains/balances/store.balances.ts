@@ -69,7 +69,7 @@ walletReady.then(() => {
 
       if (balances.length !== blobData.balances.length)
         log.debug(
-          `[balances] deleting ${blobData.balances.length - balances.length} balances that do not match keyring addresses`,
+          `[balances] deleting ${blobData.balances.length - balances.length} balances that do not match keyring addresses`
         )
 
       setBalances({
@@ -89,7 +89,7 @@ walletReady.then(() => {
     .pipe(skip(1), debounceTime(2_000), distinctUntilChanged<BalancesStorage>(isEqual))
     .subscribe((storage) => {
       log.debug(
-        `[balances] updating db blob with data (bal:${storage.balances.length}, meta:${storage.miniMetadatas.length})`,
+        `[balances] updating db blob with data (bal:${storage.balances.length}, meta:${storage.miniMetadatas.length})`
       )
       blobStore.set(storage)
     })

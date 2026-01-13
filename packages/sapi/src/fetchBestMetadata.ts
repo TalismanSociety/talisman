@@ -16,24 +16,24 @@ type RpcSendFunc = <T>(method: string, params: unknown[], isCacheable?: boolean)
  */
 export const fetchBestMetadata = async (
   rpcSend: RpcSendFunc,
-  allowLegacyFallback?: boolean,
+  allowLegacyFallback?: boolean
 ): Promise<`0x${string}`> => {
   try {
     // fetch available versions of metadata
     const metadataVersions = await rpcSend<string>(
       "state_call",
       ["Metadata_metadata_versions", "0x"],
-      true,
+      true
     )
     const availableVersions = Vector(u32).dec(metadataVersions)
     const bestVersion = Math.max(
-      ...availableVersions.filter((v) => v <= MAX_SUPPORTED_METADATA_VERSION),
+      ...availableVersions.filter((v) => v <= MAX_SUPPORTED_METADATA_VERSION)
     )
 
     const metadata = await rpcSend<`0x${string}`>(
       "state_call",
       ["Metadata_metadata_at_version", toHex(u32.enc(bestVersion))],
-      true,
+      true
     )
 
     return normalizeMetadata(metadata)

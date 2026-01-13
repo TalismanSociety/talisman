@@ -5,7 +5,7 @@ import { log } from "extension-shared"
 import { FixedSizeBinary } from "polkadot-api"
 
 export const getAddressFromXcmLocation = (
-  multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation,
+  multiLocation: XcmVersionedLocation | HydrationXcmVersionedLocation
 ): Address => {
   try {
     const interior = multiLocation.value.interior

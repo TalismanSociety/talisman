@@ -189,7 +189,7 @@ const NetworkRow: FC<{
 }> = ({ network, activeNetworksState }) => {
   const isActive = useMemo(
     () => isNetworkActive(network, activeNetworksState),
-    [activeNetworksState, network],
+    [activeNetworksState, network]
   )
 
   const navigate = useNavigate()
@@ -209,7 +209,7 @@ const NetworkRow: FC<{
     (e) => {
       activeNetworksStore.setActive(network.id, e.target.checked)
     },
-    [network.id],
+    [network.id]
   )
 
   return (
@@ -268,7 +268,7 @@ const ResetAllNetworksModalContent: FC<{
           ? t("This will reset active state of all networks to their Talisman defaults.")
           : t(
               "This will reset active state of all {{platform}} networks to their Talisman defaults.",
-              { platform },
+              { platform }
             )}
       </p>
 

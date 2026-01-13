@@ -12,7 +12,7 @@ const Content = () => {
 
   const options = useMemo(
     () => Object.entries(languages).map(([value, label]) => ({ value, label })),
-    [],
+    []
   )
 
   return (

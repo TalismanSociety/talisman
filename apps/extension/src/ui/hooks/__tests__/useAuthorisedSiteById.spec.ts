@@ -14,7 +14,7 @@ test("Can get Authorised Site by id", async () => {
     {
       initialProps: { siteId: TALISMAN_WEB_APP_DOMAIN, providerType: "polkadot" },
       wrapper: TestWrapper,
-    },
+    }
   )
 
   await waitFor(() => expect(result.current.addresses?.length).toBe(2))

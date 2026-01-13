@@ -110,7 +110,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -154,7 +154,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
       case "pri(sites.requests.approveSolSignIn)":
         return this.authorizeApproveSolSignIn(
-          request as RequestTypes["pri(sites.requests.approveSolSignIn)"],
+          request as RequestTypes["pri(sites.requests.approveSolSignIn)"]
         )
 
       default:
@@ -164,7 +164,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 }
 
 const getSolSignInSignature = async (
-  result: RequestTypes["pri(sites.requests.approveSolSignIn)"]["result"],
+  result: RequestTypes["pri(sites.requests.approveSolSignIn)"]["result"]
 ): Promise<{
   account: Account
   signature: string

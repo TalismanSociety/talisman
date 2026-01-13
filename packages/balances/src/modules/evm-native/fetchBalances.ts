@@ -22,13 +22,13 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   for (const [token, addresses] of tokensWithAddresses) {
     if (token.type !== MODULE_TYPE || token.networkId !== networkId)
       throw new Error(
-        `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`,
+        `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`
       )
 
     for (const address of addresses)
       if (!isEthereumAddress(address))
         throw new Error(
-          `Invalid ethereum address for EVM ERC20 balance module: ${address} for token ${token.id}`,
+          `Invalid ethereum address for EVM ERC20 balance module: ${address} for token ${token.id}`
         )
   }
 
@@ -44,7 +44,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
 const fetchWithoutMulticall = async (
   client: PublicClient,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
+  balanceDefs: BalanceDef<typeof MODULE_TYPE>[]
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
@@ -68,10 +68,10 @@ const fetchWithoutMulticall = async (
           `Failed to get balance for token ${token.id} and address ${address} on chain ${client.chain?.id}`,
           token.id,
           address,
-          err as Error,
+          err as Error
         )
       }
-    }),
+    })
   )
 
   return results.reduce<FetchBalanceResults>(
@@ -87,14 +87,14 @@ const fetchWithoutMulticall = async (
       }
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 }
 
 const fetchWithMulticall = async (
   client: PublicClient,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  multicall3Address: `0x${string}`,
+  multicall3Address: `0x${string}`
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
@@ -128,13 +128,13 @@ const fetchWithMulticall = async (
               `Failed to get balance for token ${balanceDefs[index].token.id} and address ${balanceDefs[index].address} on chain ${client.chain?.id}`,
               balanceDefs[index].token.id,
               balanceDefs[index].address,
-              result.error,
+              result.error
             ),
           } as FetchBalanceErrors[number])
         }
         return acc
       },
-      { success: [], errors: [] },
+      { success: [], errors: [] }
     )
   } catch (err) {
     const errors = balanceDefs.map((balanceDef): FetchBalanceErrors[number] => ({
@@ -143,7 +143,7 @@ const fetchWithMulticall = async (
       error: new BalanceFetchNetworkError(
         `Failed to get balances for evm-erc20 tokens on chain ${client.chain?.id}`,
         String(client.chain?.id),
-        err as Error,
+        err as Error
       ),
     }))
     return { success: [], errors }

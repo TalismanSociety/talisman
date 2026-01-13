@@ -42,7 +42,7 @@ async function generateInitData() {
 
   fs.writeFileSync(
     path.resolve(__dirname, "../src/state/initChaindata.json"),
-    JSON.stringify(initData, null, 2),
+    JSON.stringify(initData, null, 2)
   )
 
   execSync(`prettier --write '${path.resolve(__dirname, "../src/state/initChaindata.json")}'`, {

@@ -18,7 +18,7 @@ export const AuthorisedSiteAccount: FC<{
     (e) => {
       onChange(e.target.checked)
     },
-    [onChange],
+    [onChange]
   )
 
   if (!account) return null

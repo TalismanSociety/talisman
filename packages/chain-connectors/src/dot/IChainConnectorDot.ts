@@ -11,7 +11,7 @@ export interface IChainConnectorDot {
     isCacheable?: boolean,
     extraOptions?: {
       expectErrors?: boolean
-    },
+    }
   ): Promise<T>
 
   subscribe(
@@ -20,7 +20,7 @@ export interface IChainConnectorDot {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout?: number | false,
+    timeout?: number | false
   ): Promise<(unsubscribeMethod: string) => void>
 
   reset(chainId: DotNetworkId): Promise<void>

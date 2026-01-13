@@ -78,7 +78,7 @@ export default interface MessageTypes {
     currentPw: string,
     newPw: string,
     newPwConfirm: string,
-    cb: (val: ChangePasswordStatusUpdate) => void,
+    cb: (val: ChangePasswordStatusUpdate) => void
   ) => UnsubscribeFn
   checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
@@ -95,17 +95,17 @@ export default interface MessageTypes {
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSign: (
     id: SigningRequestID<"substrate-sign">,
-    payload?: SignerPayloadJSON,
+    payload?: SignerPayloadJSON
   ) => Promise<boolean>
   approveSignHardware: (
     id: SigningRequestID<"substrate-sign">,
     signature: HexString,
-    payload?: SignerPayloadJSON,
+    payload?: SignerPayloadJSON
   ) => Promise<boolean>
   approveSignQr: (
     id: SigningRequestID<"substrate-sign">,
     signature: HexString,
-    payload?: SignerPayloadJSON,
+    payload?: SignerPayloadJSON
   ) => Promise<boolean>
   approveSignSignet: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
 
@@ -139,18 +139,18 @@ export default interface MessageTypes {
   accountsCatalogSubscribe: (cb: (trees: Trees) => void) => UnsubscribeFn
   accountsCatalogRunActions: (actions: RequestAccountsCatalogAction[]) => Promise<boolean>
   accountsOnChainIdsResolveNames: (
-    names: string[],
+    names: string[]
   ) => Promise<Record<string, [string, NsLookupType] | null>>
   accountsOnChainIdsLookupAddresses: (addresses: string[]) => Promise<Record<string, string | null>>
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
     address: string,
     password: string,
-    exportPw: string,
+    exportPw: string
   ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountExportAll: (
     password: string,
-    exportPw: string,
+    exportPw: string
   ) => Promise<{ exportedJson: KeyringPairs$Json }>
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
@@ -163,7 +163,7 @@ export default interface MessageTypes {
   balances: (cb: (balances: BalanceSubscriptionResponse) => void) => UnsubscribeFn
   balancesByParams: (
     addressesAndTokens: AddressesAndTokens,
-    cb: (balances: BalanceSubscriptionResponse) => void,
+    cb: (balances: BalanceSubscriptionResponse) => void
   ) => UnsubscribeFn
 
   // authorized sites message types ------------------------------------------
@@ -182,19 +182,19 @@ export default interface MessageTypes {
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
   authrequestApproveSolSignIn: (
     id: KnownRequestId<"auth-sol-signIn">,
-    result: AuthSolanaSignInApprove["result"],
+    result: AuthSolanaSignInApprove["result"]
   ) => Promise<boolean>
 
   metadataUpdatesSubscribe: (
     genesisHash: HexString,
-    cb: (status: MetadataUpdateStatus) => void,
+    cb: (status: MetadataUpdateStatus) => void
   ) => UnsubscribeFn
 
   // chain message types
   generateChainSpecsQr: (genesisHash: SignerPayloadGenesisHash) => Promise<HexString>
   generateChainMetadataQr: (
     genesisHash: SignerPayloadGenesisHash,
-    specVersion?: number,
+    specVersion?: number
   ) => Promise<HexString>
 
   // networks message types
@@ -214,27 +214,27 @@ export default interface MessageTypes {
   ethSignAndSend: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
-    txInfo?: WalletTransactionInfo,
+    txInfo?: WalletTransactionInfo
   ) => Promise<HexString>
   ethSendSigned: (
     evmNetworkId: NetworkId,
     unsigned: TransactionRequest<string>,
     signed: HexString,
-    txInfo?: WalletTransactionInfo,
+    txInfo?: WalletTransactionInfo
   ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
     id: SigningRequestID<"eth-sign">,
-    signature: HexString,
+    signature: HexString
   ) => Promise<boolean>
   ethApproveSignAndSend: (
     id: SigningRequestID<"eth-send">,
-    transaction: TransactionRequest<string>,
+    transaction: TransactionRequest<string>
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
     unsigned: TransactionRequest<string>,
-    signedTransaction: HexString,
+    signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: (request: AnyEthRequestChainId) => Promise<unknown>
@@ -251,30 +251,30 @@ export default interface MessageTypes {
     chainId: NetworkId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean,
+    isCacheable?: boolean
   ) => Promise<T>
   subSubmit: (
     payload: SignerPayloadJSON,
     signature?: HexString,
-    txInfo?: WalletTransactionInfo,
+    txInfo?: WalletTransactionInfo
   ) => Promise<{ hash: HexString }>
   subSubmitWithBittensorMevShield: (
     payload: SignerPayloadJSON,
-    txInfo?: WalletTransactionInfo,
+    txInfo?: WalletTransactionInfo
   ) => Promise<{ hash: HexString }>
 
   solSend: <T>(networkId: string, request: SolRpcRequest) => Promise<SolRpcResponse<T>>
   solSubmit: (
     networkId: string,
     transaction: string,
-    txInfo?: WalletTransactionInfo,
+    txInfo?: WalletTransactionInfo
   ) => Promise<ResponseSolanaSubmit>
   solSignApprove: (req: RequestSolanaSignApprove) => Promise<void>
 
   // substrate chain metadata
   subChainMetadata: (
     genesisHash: HexString,
-    specVersion?: number,
+    specVersion?: number
   ) => Promise<MetadataDef | undefined>
 
   assetDiscoveryStartScan: (scope: AssetDiscoveryScanScope) => Promise<boolean>
@@ -288,16 +288,16 @@ export default interface MessageTypes {
   defiPositionsSubscribe: (cb: (positions: Loadable<DefiPosition[]>) => void) => UnsubscribeFn
 
   yieldxyzPositionsSubscribe: (
-    cb: (positions: Loadable<YieldxyzPosition[]>) => void,
+    cb: (positions: Loadable<YieldxyzPosition[]>) => void
   ) => UnsubscribeFn
   yieldxyzPositionRefresh: (args: YieldxyzPositionRefreshRequest) => Promise<void>
   yieldxyzProductsSubscribe: (cb: (positions: Loadable<YieldDto[]>) => void) => UnsubscribeFn
   yieldxyzProvidersSubscribe: (
-    cb: (positions: Loadable<YieldxyzProvider[]>) => void,
+    cb: (positions: Loadable<YieldxyzProvider[]>) => void
   ) => UnsubscribeFn
 
   bittensorValidatorsSubscribe: (
-    cb: (validators: Loadable<BittensorValidator[]>) => void,
+    cb: (validators: Loadable<BittensorValidator[]>) => void
   ) => UnsubscribeFn
 
   confirmedAddressesSubscribe: (cb: (data: ConfirmedExternalAddresses) => void) => UnsubscribeFn

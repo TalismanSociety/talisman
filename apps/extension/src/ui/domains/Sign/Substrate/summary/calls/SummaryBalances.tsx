@@ -246,7 +246,7 @@ const TransferAll: DecodedCallSummaryComponent<
           />
         ) : (
           t(
-            "This may remove the sender account from the chain state if it doesn't own any other sufficient assets.",
+            "This may remove the sender account from the chain state if it doesn't own any other sufficient assets."
           )
         )}
       </SummaryAlert>

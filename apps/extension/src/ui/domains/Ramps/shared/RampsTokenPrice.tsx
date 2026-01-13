@@ -16,7 +16,7 @@ export const RampsTokenPrice: FC<{
       tokenId && tokenRates?.[tokenId]
         ? (tokenRates?.[tokenId]?.[selectedCurrency]?.price ?? null)
         : null,
-    [selectedCurrency, tokenId, tokenRates],
+    [selectedCurrency, tokenId, tokenRates]
   )
 
   if (tokenId && isLoading)

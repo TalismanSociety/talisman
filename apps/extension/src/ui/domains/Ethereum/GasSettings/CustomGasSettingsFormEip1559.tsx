@@ -82,7 +82,7 @@ const useIsValidGasSettings = (
   tx: TransactionRequest,
   maxBaseFeeGwei: string,
   maxPriorityFeeGwei: string,
-  gasLimit: number,
+  gasLimit: number
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
     maxBaseFeeGwei,
@@ -108,7 +108,7 @@ const useIsValidGasSettings = (
       setIsLoading(false)
     },
     250,
-    [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit],
+    [maxBaseFeeGwei, maxPriorityFeeGwei, gasLimit]
   )
 
   const publicClient = usePublicClient(evmNetworkId)
@@ -129,7 +129,7 @@ const useIsValidGasSettings = (
   const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
     publicClient,
     txPrepared,
-    "custom",
+    "custom"
   )
 
   return {
@@ -170,7 +170,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       customSettings: gasSettingsByPriority.custom as EthGasSettingsEip1559,
       highSettings: gasSettingsByPriority.high as EthGasSettingsEip1559,
     }),
-    [gasSettingsByPriority],
+    [gasSettingsByPriority]
   )
 
   const baseFeeDisplay = useMemo(
@@ -180,7 +180,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
             notation: "standard",
           })
         : t("N/A"),
-    [t, txDetails],
+    [t, txDetails]
   )
 
   const defaultValues: FormData = useMemo(
@@ -189,7 +189,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       maxPriorityFeeGwei: formatGwei(customSettings.maxPriorityFeePerGas),
       gasLimit: Number(customSettings.gas),
     }),
-    [customSettings],
+    [customSettings]
   )
 
   const {
@@ -300,7 +300,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId],
+    [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
   const {
@@ -312,7 +312,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     tx,
     maxBaseFeeGwei,
     maxPriorityFeeGwei,
-    gasLimit,
+    gasLimit
   )
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
@@ -324,7 +324,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
   return (
@@ -390,7 +390,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
               {t("Max Priority Fee")}{" "}
               <WithTooltip
                 tooltip={t(
-                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed",
+                  "This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed"
                 )}
               >
                 <InfoIcon className="inline align-text-top" />
@@ -435,7 +435,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           {t("Total Max Fee")}{" "}
           <WithTooltip
             tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit",
+              "The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit"
             )}
           >
             <InfoIcon className="inline-block align-text-top" />

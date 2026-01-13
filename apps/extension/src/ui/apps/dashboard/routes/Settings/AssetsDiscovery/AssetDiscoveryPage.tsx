@@ -98,7 +98,7 @@ const AccountsTooltip: FC<{ addresses: Address[] }> = ({ addresses }) => {
       [...new Set(addresses)]
         .map((add) => allAccounts.find((acc) => acc.address === add))
         .filter(isNotNil),
-    [allAccounts, addresses],
+    [allAccounts, addresses]
   )
   const { t } = useTranslation()
   return (
@@ -132,10 +132,10 @@ const NetworksTooltip: FC<{ networks: Network[] }> = ({ networks }) => {
       networks
         .map(
           (n) =>
-            [n, tokens.filter((t) => t.networkId === n.id || t.networkId === n.id).length] as const,
+            [n, tokens.filter((t) => t.networkId === n.id || t.networkId === n.id).length] as const
         )
         .sort((a, b) => b[1] - a[1]),
-    [networks, tokens],
+    [networks, tokens]
   )
 
   return (
@@ -179,7 +179,7 @@ const useCoingeckoUrl = (token: Token | null) => {
   return useMemo(
     () =>
       token?.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token],
+    [token]
   )
 }
 
@@ -207,7 +207,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       [...new Set(assets.map((a) => a.address))]
         .map((add) => allAccounts.find((acc) => acc.address === add))
         .filter(isNotNil),
-    [allAccounts, assets],
+    [allAccounts, assets]
   )
 
   const isActive = useMemo(
@@ -216,7 +216,7 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       !!token &&
       isNetworkActive(evmNetwork, activeEvmNetworks) &&
       isTokenActive(token, activeTokens),
-    [activeEvmNetworks, activeTokens, evmNetwork, token],
+    [activeEvmNetworks, activeTokens, evmNetwork, token]
   )
 
   const handleToggleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -230,12 +230,12 @@ const AssetRowContent: FC<{ tokenId: TokenId; assets: DiscoveredBalance[] }> = (
       // if token is not native, allow it to be toggled. Native tokens are taken care of by the network toggle
       if (token.type !== "evm-native") activeTokensStore.setActive(token.id, checked)
     },
-    [evmNetwork, token],
+    [evmNetwork, token]
   )
 
   const isInactiveNetwork = useMemo(
     () => evmNetwork && !isNetworkActive(evmNetwork, activeEvmNetworks),
-    [activeEvmNetworks, evmNetwork],
+    [activeEvmNetworks, evmNetwork]
   )
 
   const navigate = useNavigate()
@@ -394,7 +394,7 @@ const Header: FC = () => {
   const activeNetworks = useActiveNetworksState()
   const recommendedNetworks = useMemo(() => {
     return allNetworks.filter(
-      (n) => isNetworkActive(n, activeNetworks) || (n.forceScan && activeNetworks[n.id] !== false),
+      (n) => isNetworkActive(n, activeNetworks) || (n.forceScan && activeNetworks[n.id] !== false)
     )
   }, [activeNetworks, allNetworks])
 
@@ -413,7 +413,7 @@ const Header: FC = () => {
       })
       isInitializingScan$.next(false)
     },
-    [recommendedNetworks, addresses, allNetworks],
+    [recommendedNetworks, addresses, allNetworks]
   )
 
   const handleCancelScanClick = useCallback(() => {
@@ -425,7 +425,7 @@ const Header: FC = () => {
       <DiamondIcon
         className={classNames(
           "text-lg",
-          isInProgress || isInitializing ? "text-primary" : "text-body-secondary",
+          isInProgress || isInitializing ? "text-primary" : "text-body-secondary"
         )}
       />
       <div className="flex grow flex-col gap-4 pr-10">
@@ -442,7 +442,7 @@ const Header: FC = () => {
                           tokensCount,
                           accountsCount,
                           networksCount,
-                        },
+                        }
                       )
                     : t(
                         "Scanned {{tokensCount}} tokens for {{accountsCount}} account(s) on {{networksCount}} network(s)",
@@ -450,7 +450,7 @@ const Header: FC = () => {
                           tokensCount,
                           accountsCount,
                           networksCount,
-                        },
+                        }
                       )}
               </div>
               <div className="text-primary">{effectivePercent}%</div>
@@ -459,7 +459,7 @@ const Header: FC = () => {
               <div
                 className={classNames(
                   "bg-primary-500 absolute left-0 top-0 h-4 w-full rounded-lg",
-                  effectivePercent && "transition-transform duration-300 ease-out", // no animation on restart
+                  effectivePercent && "transition-transform duration-300 ease-out" // no animation on restart
                 )}
                 style={{
                   transform: `translateX(-${100 - effectivePercent}%)`,
@@ -490,7 +490,7 @@ const Header: FC = () => {
           <ContextMenuTrigger
             className={classNames(
               "bg-primary flex h-16 items-center gap-2 rounded-full border border-transparent px-4 text-xs text-black",
-              "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent",
+              "focus:border focus:border-white focus:ring-2 focus:ring-white active:border-transparent"
             )}
           >
             <SearchIcon className="text-base" />
@@ -575,8 +575,8 @@ const ScanInfo: FC = () => {
     await activeNetworksStore.set(Object.fromEntries(evmNetworkIds.map((id) => [id, true])))
     await activeTokensStore.set(
       Object.fromEntries(
-        tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true]),
-      ),
+        tokenIds.filter((id) => !id.includes("evm-native")).map((id) => [id, true])
+      )
     )
   }, [balancesByTokenId, tokensMap])
 
@@ -588,11 +588,11 @@ const ScanInfo: FC = () => {
   const accounts = useAccounts()
   const lastAccounts = useMemo(
     () => accounts.filter((a) => lastScanAccounts.includes(a.address)),
-    [accounts, lastScanAccounts],
+    [accounts, lastScanAccounts]
   )
   const lastNetworks = useMemo<Network[]>(
     () => lastScanNetworks.map((id) => networksMap[id]).filter(isNotNil),
-    [lastScanNetworks, networksMap],
+    [lastScanNetworks, networksMap]
   )
 
   if (isInitializing) return null

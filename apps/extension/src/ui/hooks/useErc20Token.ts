@@ -6,7 +6,7 @@ import { useTokens } from "@ui/state"
 
 export const useErc20Token = (
   evmNetworkId: EthNetworkId | null | undefined,
-  contractAddress: EvmAddress | null | undefined,
+  contractAddress: EvmAddress | null | undefined
 ) => {
   const tokens = useTokens()
 
@@ -19,9 +19,9 @@ export const useErc20Token = (
           .find(
             (t) =>
               t.networkId === evmNetworkId &&
-              t.contractAddress.toLowerCase() === contractAddress.toLowerCase(),
+              t.contractAddress.toLowerCase() === contractAddress.toLowerCase()
           )) ||
       null,
-    [evmNetworkId, contractAddress, tokens],
+    [evmNetworkId, contractAddress, tokens]
   )
 }

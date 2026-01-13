@@ -8,7 +8,7 @@ export const useMnemonicsAllBackedUp = () => {
 
   const allBackedUp = useMemo(
     () => !hasMnemonics || mnemonics.every((mnemonic) => mnemonic.confirmed),
-    [mnemonics, hasMnemonics],
+    [mnemonics, hasMnemonics]
   )
 
   return allBackedUp

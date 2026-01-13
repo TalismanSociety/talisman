@@ -8,7 +8,7 @@ export const getCheckMetadataHashPayloadProps = (
   metadataRpc: string,
   specName: string,
   specVersion: number,
-  token: SubNativeToken,
+  token: SubNativeToken
 ) => {
   const metadata = unifyMetadata(decAnyMetadata(metadataRpc))
 

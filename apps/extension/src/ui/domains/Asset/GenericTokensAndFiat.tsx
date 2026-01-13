@@ -49,7 +49,7 @@ const GenericTokensAndFiatInner: FC<GenericTokensAndFiatProps> = ({
       typeof decimals === "number" && (typeof planck === "bigint" || typeof planck === "string")
         ? new BalanceFormatter(planck, decimals, tokenRates)
         : null,
-    [decimals, planck, tokenRates],
+    [decimals, planck, tokenRates]
   )
   const currency = useSelectedCurrency()
 
@@ -62,7 +62,7 @@ const GenericTokensAndFiatInner: FC<GenericTokensAndFiatProps> = ({
           url={logo}
           className={classNames(
             "mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub",
-            logoClassName,
+            logoClassName
           )}
         />
       ) : null}

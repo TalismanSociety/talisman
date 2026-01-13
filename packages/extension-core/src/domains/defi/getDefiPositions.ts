@@ -18,7 +18,7 @@ export const defiPositions$ = walletReady$.pipe(
   switchMap((addresses) => {
     return defiPositionsStore$.pipe(
       take(1), // we only want an initial value, changes to the store should not re-emit
-      switchMap((storage) => getDefiPositions$(addresses, storage)),
+      switchMap((storage) => getDefiPositions$(addresses, storage))
     )
   }),
   tap({
@@ -30,17 +30,17 @@ export const defiPositions$ = walletReady$.pipe(
     },
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
-  keepAlive(3000),
+  keepAlive(3000)
 )
 
 const accountAddresses$ = keyringStore.accounts$.pipe(
-  map((accounts) => accounts.filter(isAccountNotContact).map((account) => account.address)),
+  map((accounts) => accounts.filter(isAccountNotContact).map((account) => account.address))
 )
 
 const filterDefiPositions = (addresses: string[], positions: DefiPosition[]) => {
   // keep only positions that match any of the provided addresses
   return positions.filter((position) =>
-    addresses.some((addr) => isAddressEqual(addr, position.address)),
+    addresses.some((addr) => isAddressEqual(addr, position.address))
   )
 }
 
@@ -56,12 +56,12 @@ const fetchDefiPositions = async (addresses: string[]) => {
 
 const getDefiPositions$ = (addresses: string[], storage: DefiPosition[]) =>
   getSharedObservable("defi-positions", { addresses, REFRESH_INTERVAL }, () =>
-    getLoadable$(() => fetchDefiPositions(addresses), { refreshInterval: REFRESH_INTERVAL }),
+    getLoadable$(() => fetchDefiPositions(addresses), { refreshInterval: REFRESH_INTERVAL })
   ).pipe(
     map((loadable) => ({
       ...loadable,
       // fallback to storage
       data: loadable.data ?? filterDefiPositions(addresses, storage),
     })),
-    distinctUntilChanged<Loadable<DefiPosition[]>>(isEqual),
+    distinctUntilChanged<Loadable<DefiPosition[]>>(isEqual)
   )

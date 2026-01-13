@@ -14,7 +14,7 @@ export const useActivableToken = (token: Token | undefined) => {
       if (!token) throw new Error("Token not found")
       await activeTokensStore.setActive(token.id, active)
     },
-    [token],
+    [token]
   )
 
   const toggleActive = useCallback(async () => {

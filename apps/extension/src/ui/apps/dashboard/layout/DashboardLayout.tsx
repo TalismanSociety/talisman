@@ -44,7 +44,7 @@ export const DashboardLayout: FC<{
                 <div
                   className={classNames(
                     // minimum width is automatically set by the horizontal nav bar which never shrinks
-                    "animate-fade-in w-full grow",
+                    "animate-fade-in w-full grow"
                   )}
                 >
                   <LayoutBreadcrumb />
@@ -64,7 +64,7 @@ const RESPONSIVE_FLEX_SPACING = classNames(
   "gap-5 px-5",
   "md:gap-10 md:px-10",
   "lg:gap-20 lg:px-20",
-  "xl:gap-32 xl:px-32",
+  "xl:gap-32 xl:px-32"
 )
 
 const NavButton: FC<{
@@ -86,7 +86,7 @@ const NavButton: FC<{
       className={classNames(
         "text-body-inactive hover:text-body-secondary flex items-center gap-4",
         routeMatch && "!text-body",
-        className,
+        className
       )}
       onClick={onClick}
     >

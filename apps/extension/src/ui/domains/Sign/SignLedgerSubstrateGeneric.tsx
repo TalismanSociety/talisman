@@ -29,7 +29,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
 
   const migrationAppName = useMemo(
     () => (isAccountOfType(account, "ledger-polkadot") ? account.app : null),
-    [account],
+    [account]
   )
 
   const legacyApp = useLedgerSubstrateAppByName(migrationAppName as string)
@@ -48,7 +48,7 @@ export const SignLedgerSubstrateGeneric: FC<SignHardwareSubstrateProps> = ({
         payload,
         account as AccountLedgerPolkadot,
         registry,
-        shortMetadata,
+        shortMetadata
       )
 
       // await to keep loader spinning until popup closes

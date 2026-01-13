@@ -78,7 +78,7 @@ export const useSendFundsTransactionDot = ({
 
   const estimatedFee = useMemo(
     () => (qEstimateFee.data ? qEstimateFee.data.partialFee.toString() : null),
-    [qEstimateFee.data],
+    [qEstimateFee.data]
   )
 
   const [isLoading, isRefetching, error] = useMemo(() => {

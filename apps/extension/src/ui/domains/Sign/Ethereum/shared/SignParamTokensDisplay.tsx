@@ -29,7 +29,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
     <span
       className={classNames(
         "text-body-secondary inline-flex gap-3 px-4 pt-0.5 text-base",
-        className,
+        className
       )}
     >
       {withIcon && (

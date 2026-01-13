@@ -24,14 +24,14 @@ export type NetworkOfPlatform<P extends NetworkPlatform> = Extract<Network, { pl
 
 export const isNetworkOfPlatform = <P extends NetworkPlatform>(
   network: Network | null | undefined,
-  platform: P,
+  platform: P
 ): network is Extract<Network, { platform: P }> => {
   return !!network && network.platform === platform
 }
 
 export const isNetworkInPlatforms = <P extends NetworkPlatform[]>(
   network: Network | null | undefined,
-  platforms: P,
+  platforms: P
 ): network is NetworkOfPlatform<P[number]> => {
   return platforms.some((platform) => isNetworkOfPlatform(network, platform))
 }
@@ -52,7 +52,7 @@ export const getNetworkGenesisHash = <
   Net extends Network,
   Res = Net extends DotNetwork ? DotNetwork["genesisHash"] : undefined,
 >(
-  network: Net | null | undefined,
+  network: Net | null | undefined
 ): Res => {
   return (isNetworkDot(network) ? network.genesisHash : undefined) as Res
 }
@@ -65,7 +65,7 @@ export type SolToken = TokenOfPlatform<"solana">
 
 export const isTokenOfPlatform = <P extends NetworkPlatform>(
   token: Token | null | undefined,
-  platform: P,
+  platform: P
 ): token is TokenOfPlatform<P> => {
   return !!token && token.platform === platform
 }
@@ -86,14 +86,14 @@ export const isTokenNeedExistentialDeposit = (token: Token) => "existentialDepos
 
 export const isTokenOfType = <T extends TokenType>(
   token: Token | null | undefined,
-  type: T,
+  type: T
 ): token is TokenOfType<T> => {
   return !!token && token.type === type
 }
 
 export const isTokenInTypes = <T extends TokenType[]>(
   token: Token | null | undefined,
-  types: T,
+  types: T
 ): token is TokenOfType<T[number]> => {
   return types.some((type) => isTokenOfType(token, type))
 }
@@ -195,7 +195,7 @@ export type NativeToken<P extends NetworkPlatform = NetworkPlatform> = Extract<
 
 export const isNativeTokenType = <P extends NetworkPlatform = NetworkPlatform>(
   type: TokenType,
-  platform?: P,
+  platform?: P
 ): type is NativeTokenType<P> => {
   if (platform) return type === PLATFORM_NATIVE_TOKENS[platform]
   return Object.values(PLATFORM_NATIVE_TOKENS).includes(type as NativeTokenType)
@@ -203,7 +203,7 @@ export const isNativeTokenType = <P extends NetworkPlatform = NetworkPlatform>(
 
 export const isNativeToken = <P extends NetworkPlatform = NetworkPlatform>(
   token: Token,
-  platform?: P,
+  platform?: P
 ): token is NativeToken<P> => {
   return (isNativeTokenType(token.type, platform) && !platform) || token.platform === platform
 }

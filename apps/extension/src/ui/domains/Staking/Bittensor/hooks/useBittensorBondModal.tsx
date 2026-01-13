@@ -17,7 +17,7 @@ export const useBittensorBondModal = () => {
       reset(opts)
       innerOpen()
     },
-    [innerOpen, reset],
+    [innerOpen, reset]
   )
 
   return { isOpen, open, close }

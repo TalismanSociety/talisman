@@ -41,7 +41,7 @@ export const getExtensionPublicClient = (evmNetwork: EthNetwork): PublicClient =
       {
         // backend will retry, at it's own transport level
         retryCount: 0,
-      },
+      }
     ),
   })
 }

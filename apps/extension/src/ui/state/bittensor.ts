@@ -19,7 +19,7 @@ const bittensorValidatorsRaw$ = new Observable<Loadable<BittensorValidator[]>>((
   }
 }).pipe(
   debugObservable("bittensorValidatorsRaw$", true),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useBittensorValidators, bittensorValidators$] = bind(bittensorValidatorsRaw$, {
@@ -32,9 +32,9 @@ export const [useBittensorValidatorsMap, bittensorValidatorsMap$] = bind(
     map((loadable) => ({
       status: loadable.status,
       data: keyBy(loadable.data ?? [], (v) => v.hotkey.ss58),
-    })),
+    }))
   ),
-  { status: "loading", data: {} },
+  { status: "loading", data: {} }
 )
 
 export const [useBittensorValidator, getBittensorValidator$] = bind(
@@ -47,9 +47,9 @@ export const [useBittensorValidator, getBittensorValidator$] = bind(
           status: loadable.status,
           data: loadable.data[address] ?? null,
         } as Loadable<BittensorValidator | null>
-      }),
+      })
     ),
-  { status: "loading", data: null },
+  { status: "loading", data: null }
 )
 
 export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
@@ -58,17 +58,17 @@ export const [useBittensorNetworkIds, bittensorNetworkIds$] = bind(
       uniq(
         tokens
           .filter((t) => t.type === "substrate-dtao" && t.networkId === "bittensor") // TODO: remove networkId check once testnets work
-          .map((t) => t.networkId),
-      ),
-    ),
+          .map((t) => t.networkId)
+      )
+    )
   ),
-  [],
+  []
 )
 
 export const [useIsBittensorNetwork, isBittensorNetwork$] = bind(
   (networkId: string | null | undefined) =>
     bittensorNetworkIds$.pipe(
-      map((networkIds) => (networkId ? networkIds.includes(networkId) : false)),
+      map((networkIds) => (networkId ? networkIds.includes(networkId) : false))
     ),
-  false,
+  false
 )

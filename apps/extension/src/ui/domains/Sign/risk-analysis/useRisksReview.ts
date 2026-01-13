@@ -5,7 +5,7 @@ import { RiskAnalysisPlatform, RiskAnalysisResponse } from "./types"
 
 const getValidationResultType = (
   platform: RiskAnalysisPlatform,
-  response: RiskAnalysisResponse<RiskAnalysisPlatform> | null | undefined,
+  response: RiskAnalysisResponse<RiskAnalysisPlatform> | null | undefined
 ) => {
   switch (platform) {
     case "ethereum": {
@@ -23,7 +23,7 @@ const getValidationResultType = (
 
 export const useRisksReview = (
   platform: RiskAnalysisPlatform,
-  response: RiskAnalysisResponse | null | undefined,
+  response: RiskAnalysisResponse | null | undefined
 ) => {
   const [isRiskAcknowledged, setIsRiskAcknowledged] = useState(false)
 

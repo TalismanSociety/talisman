@@ -22,7 +22,7 @@ export const SendFundsTokenButton = ({
 
   const { canSendFunds, cannotSendFundsReason, openSendFundsPopup } = useSendFundsPopup(
     selectedAccount,
-    token?.id,
+    token?.id
   )
 
   const handleClick = useCallback(() => {

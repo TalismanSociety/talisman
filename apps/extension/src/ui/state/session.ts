@@ -8,14 +8,14 @@ import { debugObservable } from "./util/debugObservable"
 const session$ = sessionStore.observable.pipe(debugObservable("session$"), shareReplay(1))
 
 export const [useSessionValue, getSessionValue$] = bind((key: keyof SessionStoreData) =>
-  session$.pipe(map((state) => state[key])),
+  session$.pipe(map((state) => state[key]))
 ) as [
   <K extends keyof SessionStoreData, V = SessionStoreData[K]>(key: K) => V,
   <K extends keyof SessionStoreData, V = SessionStoreData[K]>(key: K) => Observable<V>,
 ]
 
 export const useSessionState = <K extends keyof SessionStoreData, V = SessionStoreData[K]>(
-  key: K,
+  key: K
 ) => {
   const state = useSessionValue(key)
 
@@ -27,7 +27,7 @@ export const useSessionState = <K extends keyof SessionStoreData, V = SessionSto
       }
       await sessionStore.set({ [key]: value })
     },
-    [key],
+    [key]
   )
 
   return [state, setState] as const

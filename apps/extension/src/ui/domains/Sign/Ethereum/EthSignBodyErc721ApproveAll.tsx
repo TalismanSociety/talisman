@@ -31,7 +31,7 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
           <SignAlertMessage>
             <span className="text-body-secondary">
               {t(
-                "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked.",
+                "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked."
               )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">

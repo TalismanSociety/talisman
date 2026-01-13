@@ -19,7 +19,7 @@ export const useBittensorStakingPositions = (networkId: DotNetworkId | null | un
         (b) =>
           b.token?.type === "substrate-dtao" &&
           b.token.networkId === networkId &&
-          b.free.planck > 0n,
+          b.free.planck > 0n
       )
       .map((balance) => {
         const token = balance.token as SubDTaoToken

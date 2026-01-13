@@ -49,7 +49,7 @@ export const Fiat = ({
         "fiat whitespace-nowrap",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
-        className,
+        className
       )}
     >
       {render && (
@@ -80,7 +80,7 @@ const DisplayValue = React.memo(
 
         return formatFiat(amount, currency, currencyDisplay, decimalPlaces)
       },
-      [currency, currencyDisplay, decimalPlaces, isBalance],
+      [currency, currencyDisplay, decimalPlaces, isBalance]
     )
     const formatted = useMemo(() => format(amount), [format, amount])
 
@@ -97,7 +97,7 @@ const DisplayValue = React.memo(
         preserveValue
       />
     )
-  },
+  }
 )
 DisplayValue.displayName = "DisplayValue"
 

@@ -18,7 +18,7 @@ export class ChainConnectorEthStub implements IChainConnectorEth {
 
   async getWalletClientForEvmNetwork(
     networkId: EthNetworkId,
-    account?: `0x${string}` | Account,
+    account?: `0x${string}` | Account
   ): Promise<WalletClient | null> {
     return getEvmNetworkWalletClient(this.#network, { account })
   }

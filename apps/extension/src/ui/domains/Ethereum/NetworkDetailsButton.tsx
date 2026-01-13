@@ -79,7 +79,7 @@ export const NetworkDetailsLink: FC<{
         onClick={open}
         className={classNames(
           "text-body-secondary hover:text-grey-300 active:text-body ring-body underline focus-visible:ring-1",
-          className,
+          className
         )}
       >
         {label ?? t("View Details")}

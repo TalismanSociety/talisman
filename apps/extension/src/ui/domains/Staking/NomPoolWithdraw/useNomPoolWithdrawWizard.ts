@@ -47,7 +47,7 @@ export const useResetNomPoolWithdrawWizard = () => {
   return useCallback(
     (init: Pick<WizardState, "address" | "tokenId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
-    [],
+    []
   )
 }
 
@@ -71,7 +71,7 @@ export const useNomPoolWithdrawWizard = () => {
       genericEvent("NomPool Withdraw", { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId],
+    [genericEvent, tokenId]
   )
 
   const { data: currentEra } = useCurrentStakingEra(token?.networkId)
@@ -99,7 +99,7 @@ export const useNomPoolWithdrawWizard = () => {
       typeof plancksToWithdraw === "bigint"
         ? new BalanceFormatter(plancksToWithdraw, token?.decimals, tokenRates)
         : null,
-    [plancksToWithdraw, token?.decimals, tokenRates],
+    [plancksToWithdraw, token?.decimals, tokenRates]
   )
 
   const {
@@ -118,7 +118,7 @@ export const useNomPoolWithdrawWizard = () => {
           member_account: Enum("Id", address),
           num_slashing_spans: 0, // :jean:
         },
-        { address },
+        { address }
       )
     },
   })

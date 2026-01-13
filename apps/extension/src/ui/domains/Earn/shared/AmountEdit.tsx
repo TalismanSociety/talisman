@@ -33,7 +33,7 @@ const TokenInput: FC<{
 }> = ({ token, value, onValueChanged, onTokenClick }) => {
   const formatter = useMemo(
     () => (value !== null ? new BalanceFormatter(value, token.decimals) : null),
-    [token.decimals, value],
+    [token.decimals, value]
   )
 
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
@@ -65,7 +65,7 @@ const TokenInput: FC<{
         onValueChanged(null)
       }
     },
-    [onValueChanged, token],
+    [onValueChanged, token]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -99,7 +99,7 @@ const TokenInput: FC<{
         onClick={onTokenClick}
         className={cn(
           "text-body flex shrink-0 items-center gap-2 text-base font-normal",
-          onTokenClick ? "cursor-pointer" : "cursor-default",
+          onTokenClick ? "cursor-pointer" : "cursor-default"
         )}
       >
         <TokenLogo className="text-lg" tokenId={token.id} />
@@ -121,12 +121,12 @@ const FiatInput: FC<{
 
   const formatter = useMemo(
     () => (value === null ? null : new BalanceFormatter(value, token.decimals, tokenRates)),
-    [token.decimals, tokenRates, value],
+    [token.decimals, tokenRates, value]
   )
 
   const formattedValue = useMemo(
     () => formatter?.fiat(currency)?.toString() ?? "",
-    [currency, formatter],
+    [currency, formatter]
   )
 
   const [inputValue, setInputValue] = useState(formattedValue)
@@ -160,7 +160,7 @@ const FiatInput: FC<{
       return onValueChanged(null)
     },
 
-    [token, tokenRates, currency, onValueChanged],
+    [token, tokenRates, currency, onValueChanged]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -210,7 +210,7 @@ const FiatDisplay: FC<{ token: Token; value: bigint | null; tokenRates: TokenRat
   const currency = useSelectedCurrency()
   const formatter = useMemo(
     () => (tokenRates ? new BalanceFormatter(value ?? 0n, token.decimals, tokenRates) : null),
-    [token.decimals, value, tokenRates],
+    [token.decimals, value, tokenRates]
   )
 
   if (!formatter) return null
@@ -225,7 +225,7 @@ const FiatDisplay: FC<{ token: Token; value: bigint | null; tokenRates: TokenRat
 const TokenDisplay: FC<{ token: Token; value: bigint | null }> = ({ token, value }) => {
   const formatter = useMemo(
     () => new BalanceFormatter(value ?? 0n, token.decimals),
-    [token.decimals, value],
+    [token.decimals, value]
   )
 
   if (!token || !value) return null

@@ -19,7 +19,7 @@ export const TreeItemAccount: FC<{
 }> = ({ accounts, address, balanceTotalPerAccount, isInFolder, noTooltip }) => {
   const account = useMemo(
     () => accounts.find((account) => account.address === address),
-    [accounts, address],
+    [accounts, address]
   )
   const balanceTotal = balanceTotalPerAccount[account?.address ?? ""] ?? 0
   const formattedAddress = useFormattedAddressForAccount(account)
@@ -31,7 +31,7 @@ export const TreeItemAccount: FC<{
       <div
         className={classNames(
           "flex h-[5.9rem] flex-grow items-center gap-8 overflow-hidden rounded-sm border-[1px] border-transparent px-8",
-          isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850",
+          isInFolder ? "bg-grey-800 pr-4" : "bg-grey-850"
         )}
       >
         <AccountIcon

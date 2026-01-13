@@ -21,7 +21,7 @@ export const cleanBadContacts: Migration = {
           log.log("Error normalising address", error)
           return false
         }
-      }),
+      })
     )
     await addressBookStore.replace(cleanContacts)
   }),
@@ -65,12 +65,12 @@ export const migrateEnabledTestnets: Migration = {
 
       const chainTestnetIds = chains.filter((n) => n.isTestnet).map((n) => n.id)
       await activeChainsStore.mutate((prev) =>
-        Object.fromEntries(Object.entries(prev).filter(([id]) => !chainTestnetIds.includes(id))),
+        Object.fromEntries(Object.entries(prev).filter(([id]) => !chainTestnetIds.includes(id)))
       )
 
       const evmTestnetIds = evmNetworks.filter((n) => n.isTestnet).map((n) => n.id)
       await activeEvmNetworksStore.mutate((prev) =>
-        Object.fromEntries(Object.entries(prev).filter(([id]) => !evmTestnetIds.includes(id))),
+        Object.fromEntries(Object.entries(prev).filter(([id]) => !evmTestnetIds.includes(id)))
       )
     }
 

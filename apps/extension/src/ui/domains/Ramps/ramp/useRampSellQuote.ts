@@ -17,7 +17,7 @@ import { RampCryptoAsset, useRampCryptoAsset } from "./useRampCryptoAsset"
 import { useRampCurrencies } from "./useRampCurrencies"
 
 export const useRampSellQuote = (
-  config: RampsSellQuoteOptions | null,
+  config: RampsSellQuoteOptions | null
 ): UseQueryResult<RampsSellQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
@@ -29,7 +29,7 @@ export const useRampSellQuote = (
     if (!config || !currencies) return null
 
     const currency = currencies.find(
-      (c) => c.fiatCurrency === config.currencyCode && c.onrampAvailable,
+      (c) => c.fiatCurrency === config.currencyCode && c.onrampAvailable
     )
     if (!currency)
       return {
@@ -98,7 +98,7 @@ export const useRampSellQuote = (
                 res.data.CARD.cryptoAmount,
                 address,
                 config.currencyCode,
-                countryInfo?.countryCode ?? "",
+                countryInfo?.countryCode ?? ""
               ),
           }
         : null
@@ -112,7 +112,7 @@ type FetchRampSellQuoteResult = { type: "success"; data: RampSellQuoteResult } |
 const fetchRampSellQuote = async (
   currencyCode: string,
   cryptoAssetSymbol: string,
-  plancks: string,
+  plancks: string
 ): Promise<FetchRampSellQuoteResult> => {
   const url = `${RAMPS_RAMP_API_URL}/api/host-api/v3/offramp/quote/all`
 

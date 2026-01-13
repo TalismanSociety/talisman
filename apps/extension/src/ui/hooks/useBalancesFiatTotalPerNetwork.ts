@@ -13,8 +13,8 @@ export const useBalancesFiatTotalPerNetwork = (balances: Balances) => {
         uniq(balances.each.map((b) => b.networkId)).map((networkId) => [
           networkId,
           balances.find({ networkId }).sum.fiat(currency).total,
-        ]),
+        ])
       ),
-    [balances, currency],
+    [balances, currency]
   )
 }

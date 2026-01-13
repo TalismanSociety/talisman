@@ -76,20 +76,20 @@ export const getLocalStorage = async (): Promise<GettableStoreData> =>
   Object.fromEntries(
     await Promise.all(
       Object.entries(localStorageStores).map(([storeName, store]) =>
-        getStoreData([storeName as GettableStoreKeys, store]),
-      ),
-    ),
+        getStoreData([storeName as GettableStoreKeys, store])
+      )
+    )
   )
 
 export const setLocalStorage = async <T extends GettableStoreKeys>(
   data: Partial<{
     [K in GettableStoreKeys]: Partial<GettableStoreData[K]>
-  }>,
+  }>
 ) => {
   return Promise.all(
     (Object.entries(data) as Array<[T, Partial<GettableStoreData[T]>]>).map(
-      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never),
-    ),
+      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never)
+    )
   )
 }
 

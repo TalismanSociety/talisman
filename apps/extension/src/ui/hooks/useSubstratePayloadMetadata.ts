@@ -57,7 +57,7 @@ const getSubstratePayloadMetadata = async ({
     const { registry, metadataRpc } = await getFrontendTypeRegistry(
       network,
       payload.specVersion,
-      payload.signedExtensions,
+      payload.signedExtensions
     )
     assert(metadataRpc, "Unable to get metadata rpc")
 
@@ -77,7 +77,7 @@ const getSubstratePayloadMetadata = async ({
             token,
             network.hasCheckMetadataHash,
             network.signedExtensions,
-            network.registryTypes,
+            network.registryTypes
           )
         : null
 

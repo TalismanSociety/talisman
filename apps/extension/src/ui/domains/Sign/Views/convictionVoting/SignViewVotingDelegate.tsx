@@ -16,7 +16,7 @@ const FormattedAddress = ({ address }: { address: string }) => {
 
   const label = useMemo(
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
-    [address, isKnown],
+    [address, isKnown]
   )
 
   return (
@@ -41,7 +41,7 @@ export const SignViewVotingDelegate: FC<{
   const { t } = useTranslation()
   const url = useMemo(
     () => (explorerUrl && representative ? `${explorerUrl}/address/${representative}` : undefined),
-    [representative, explorerUrl],
+    [representative, explorerUrl]
   )
 
   const handleClick = useCallback(() => {

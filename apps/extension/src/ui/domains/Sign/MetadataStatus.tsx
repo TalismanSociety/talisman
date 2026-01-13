@@ -45,7 +45,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
     return (
       <ErrorAlert>
         {t(
-          "Failed to update metadata. Please update metadata manually or your transaction may fail.",
+          "Failed to update metadata. Please update metadata manually or your transaction may fail."
         )}
       </ErrorAlert>
     )
@@ -75,7 +75,7 @@ export const MetadataStatus = ({ genesisHash, specVersion }: Props) => {
     return (
       <ErrorAlert>
         {t(
-          "This network requires a manual metadata update. Please update or your transaction may fail.",
+          "This network requires a manual metadata update. Please update or your transaction may fail."
         )}
       </ErrorAlert>
     )

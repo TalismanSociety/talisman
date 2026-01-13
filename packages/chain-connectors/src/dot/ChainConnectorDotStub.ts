@@ -25,7 +25,7 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
     chainId: DotNetworkId,
     method: string,
     params: unknown[],
-    isCacheable?: boolean,
+    isCacheable?: boolean
   ): Promise<T> {
     await this.#provider.isReady
 
@@ -38,7 +38,7 @@ export class ChainConnectorDotStub implements IChainConnectorDot {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout?: number | false,
+    timeout?: number | false
   ): Promise<(unsubscribeMethod: string) => void> {
     await this.#provider.isReady
 

@@ -63,7 +63,7 @@ const NftCollectionRowInner: FC<{
 
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   const imageUrl = useMemo(() => {
@@ -203,7 +203,7 @@ const NftCollectionTileInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   // favorites are the first ones in the list, can check just the first one

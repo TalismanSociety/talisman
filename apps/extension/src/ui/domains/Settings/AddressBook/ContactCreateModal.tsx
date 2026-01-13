@@ -81,7 +81,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           }),
         genesisHash: yup.mixed<HexString>(),
       }),
-    [accounts, t],
+    [accounts, t]
   )
 
   const {
@@ -139,7 +139,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const compatibleNetworks = useChainsFilteredByAddressPrefix(address)
   const [compatibleNetworksById, compatibleNetworksByGenesisHash] = useMemo(
     () => [keyBy(compatibleNetworks, (n) => n.id), keyBy(compatibleNetworks, (n) => n.genesisHash)],
-    [compatibleNetworks],
+    [compatibleNetworks]
   )
 
   const selectedNetworkId = useMemo(() => {
@@ -158,7 +158,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldValidate: true,
       })
     },
-    [compatibleNetworksById, setValue],
+    [compatibleNetworksById, setValue]
   )
 
   const submit = useCallback(
@@ -188,7 +188,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         setError("address", { message: (error as Error).message }, { shouldFocus: true })
       }
     },
-    [close, setError, t],
+    [close, setError, t]
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

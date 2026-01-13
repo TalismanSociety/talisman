@@ -84,7 +84,7 @@ export interface IBalanceModule<
           metadataRpc: `0x${string}`
           config?: ModuleConfig
         }
-      : never,
+      : never
   ) => TokenPlatform<Type> extends "polkadot" ? MiniMetadata<MiniMetadataExtra> : never
 
   // cache is used for modules that need to do a lot of queries to validate token data from chain, such as evm-erc20 and evm-uniswapv2
@@ -103,7 +103,7 @@ export interface IBalanceModule<
           tokens: TokenConfig[]
           connector: PlatformConnector<TokenPlatform<Type>>
           cache: Record<TokenId, unknown>
-        },
+        }
   ) => Promise<TokenOfType<Type>[]>
 
   fetchBalances: (
@@ -118,7 +118,7 @@ export interface IBalanceModule<
           networkId: EthNetworkId
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
-        },
+        }
   ) => Promise<FetchBalanceResults>
 
   subscribeBalances: (
@@ -133,7 +133,7 @@ export interface IBalanceModule<
           networkId: EthNetworkId
           tokensWithAddresses: TokensWithAddresses
           connector: PlatformConnector<TokenPlatform<Type>>
-        },
+        }
   ) => Observable<FetchBalanceResults>
 
   getTransferCallData: (
@@ -163,6 +163,6 @@ export interface IBalanceModule<
               token: Token
               connector: PlatformConnector<TokenPlatform<Type>>
             }
-          : never,
+          : never
   ) => CallDataOf<TokenPlatform<Type>> | Promise<CallDataOf<TokenPlatform<Type>>> // because of psp22
 }

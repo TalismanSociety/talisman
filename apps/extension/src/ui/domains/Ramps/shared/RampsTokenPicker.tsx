@@ -45,7 +45,7 @@ export const RampsTokenPicker: FC<{
           rates: tokenRates?.[t.id],
         }))
         .filter((t) => !!t.network),
-    [tokens, networksMap, tokenRates],
+    [tokens, networksMap, tokenRates]
   )
 
   const sortedTokens = useMemo(
@@ -63,7 +63,7 @@ export const RampsTokenPicker: FC<{
           ? (t1.network.name ?? "").localeCompare(t2.network.name ?? "")
           : t1.symbol.localeCompare(t2.symbol)
       }),
-    [remoteConfig, selected, tokensWithNetwork],
+    [remoteConfig, selected, tokensWithNetwork]
   )
 
   const filteredTokens = useMemo(() => {
@@ -184,7 +184,7 @@ const TokenButtonRow: FC<{
       tabIndex={0}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary",
+        selected && "bg-grey-800 text-body-secondary"
       )}
     >
       <div className="flex w-full items-center gap-8 overflow-hidden">

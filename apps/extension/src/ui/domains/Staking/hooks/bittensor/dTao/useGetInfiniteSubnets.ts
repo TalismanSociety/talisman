@@ -44,7 +44,7 @@ export const useGetSubnets = () => {
         acc.push(...page.data)
         return acc
       }, []),
-    [paginatedData?.pages],
+    [paginatedData?.pages]
   )
   return { ...infiniteSubnetsIfo, data }
 }

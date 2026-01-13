@@ -17,7 +17,7 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
-      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`,
+      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
 
@@ -25,7 +25,7 @@ export const getMiniMetadata: IBalanceModule<typeof MODULE_TYPE>["getMiniMetadat
 
   if (unifiedMetadata.version < 14)
     throw new Error(
-      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`,
+      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`
     )
 
   return {

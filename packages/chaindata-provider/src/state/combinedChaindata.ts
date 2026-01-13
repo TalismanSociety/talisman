@@ -19,7 +19,7 @@ const DEFAULT_CUSTOM_CHAINDATA: CustomChaindata = { networks: [], tokens: [] }
 export const getCombinedChaindata$ = (
   default$: Observable<Chaindata>,
   custom$: Observable<CustomChaindata> | CustomChaindata | undefined,
-  dynamicTokens$: Observable<Token[]>,
+  dynamicTokens$: Observable<Token[]>
 ): Observable<Chaindata> => {
   // ensure custom$ is an observable
   if (!custom$) custom$ = of(DEFAULT_CUSTOM_CHAINDATA)
@@ -32,7 +32,7 @@ export const getCombinedChaindata$ = (
       const result = CustomChaindataSchema.safeParse(data)
       if (!result.success) log.error("Invalid custom chaindata provided", result.error)
       return result.success ? result.data : DEFAULT_CUSTOM_CHAINDATA
-    }),
+    })
   )
 
   // append valid dynamic tokens to chaindata tokens (they must not be considered custom tokens)
@@ -42,10 +42,10 @@ export const getCombinedChaindata$ = (
       tokens: values(
         keyBy(
           data.tokens.concat(dynamicTokens.filter((t) => TokenSchema.safeParse(t).success)),
-          (t) => t.id,
-        ),
+          (t) => t.id
+        )
       ),
-    })),
+    }))
   )
 
   // merge custom into default
@@ -55,7 +55,7 @@ export const getCombinedChaindata$ = (
       const parsed = ChaindataProviderDataSchema.safeParse(data)
       log.debug(
         "[ChaindataProvider] Combined chaindata schema validation: %sms",
-        (performance.now() - start).toFixed(2),
+        (performance.now() - start).toFixed(2)
       )
       if (!parsed.success) {
         log.error("Failed to parse chaindata provider data", { parsed, data })
@@ -63,7 +63,7 @@ export const getCombinedChaindata$ = (
       }
       return parsed.data as Chaindata
     }),
-    shareReplay({ bufferSize: 1, refCount: true }),
+    shareReplay({ bufferSize: 1, refCount: true })
   )
 }
 
@@ -84,7 +84,7 @@ const ChaindataProviderDataSchema = z
   .transform(({ defaultData, customData }) => {
     const defaultNetworksById = keyBy(
       defaultData.networks.map((n) => ({ ...n, __isKnown: true, __isCustom: false })),
-      (n) => n.id,
+      (n) => n.id
     )
     const customNetworksById = keyBy(
       customData.networks?.map((t) => ({
@@ -92,7 +92,7 @@ const ChaindataProviderDataSchema = z
         __isKnown: !!defaultNetworksById[t.id],
         __isCustom: true,
       })),
-      (n) => n.id,
+      (n) => n.id
     )
     const networksById = assign({}, defaultNetworksById, customNetworksById)
 
@@ -103,7 +103,7 @@ const ChaindataProviderDataSchema = z
         __isKnown: true,
         __isTestnet: !!networksById[n.networkId]?.isTestnet,
       })),
-      (n) => n.id,
+      (n) => n.id
     )
     const customTokensById = keyBy(
       customData.tokens.map((t) => ({
@@ -112,7 +112,7 @@ const ChaindataProviderDataSchema = z
         __isKnown: !!defaultTokensById[t.id],
         __isTestnet: !!networksById[t.networkId]?.isTestnet,
       })),
-      (n) => n.id,
+      (n) => n.id
     )
     const tokensById = assign({}, defaultTokensById, customTokensById)
 

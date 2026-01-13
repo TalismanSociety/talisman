@@ -27,7 +27,7 @@ export const MsgSignButtonSol: FC<MsgSignButtonProps<"solana">> = ({
 
       onSubmit(base58.encode(output.signature))
     },
-    [onSubmit],
+    [onSubmit]
   )
 
   const signerPayload = useMemo<SolSignPayload>(() => {

@@ -71,7 +71,7 @@ const DrawerContent: FC<{
     (legacyFormat: boolean) => () => {
       onSelect(legacyFormat)
     },
-    [onSelect],
+    [onSelect]
   )
 
   return (
@@ -108,7 +108,7 @@ const LearnMore = () => {
       window.open(
         remoteConfig.documentation.unifiedAddressDocsUrl,
         "_blank",
-        "nooppener noreferrer",
+        "nooppener noreferrer"
       )
     } catch (err) {
       log.error("Unable to open unified address docs", { cause: err })

@@ -63,7 +63,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   }
   if (miniMetadata.chainId !== networkId) {
     log.warn(
-      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`,
+      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`
     )
     return {
       success: [],
@@ -85,7 +85,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         miniMetadata.data!,
         "StakeInfoRuntimeApi",
         "get_stake_info_for_coldkeys",
-        [addresses],
+        [addresses]
       ),
       fetchRuntimeCallResult<GetDynamicInfosResult>(
         connector,
@@ -93,14 +93,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         miniMetadata.data!,
         "SubnetInfoRuntimeApi",
         "get_all_dynamic_info",
-        [],
+        []
       ),
     ])
 
     const rootHotkeys = uniq(
       stakeInfos.flatMap(([, stakes]) =>
-        stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey),
-      ),
+        stakes.filter((stake) => stake.netuid === ROOT_NETUID).map((stake) => stake.hotkey)
+      )
     )
     const rootClaimableRatesByHotkey =
       rootHotkeys.length && miniMetadata.data
@@ -129,7 +129,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
             connector,
             networkId,
             miniMetadata.data,
-            addressHotkeyNetuidPairs,
+            addressHotkeyNetuidPairs
           )
         : new Map<string, Map<string, Map<number, bigint>>>()
 
@@ -142,7 +142,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       acc: Record<string, SubDTaoBalance>,
       address: string,
       tokenId: string,
-      balance: SubDTaoBalance,
+      balance: SubDTaoBalance
     ): void => {
       const key = `${address}:${tokenId}`
       const recordedBalance = acc[key]
@@ -203,14 +203,14 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
         }
         return acc
       },
-      {},
+      {}
     )
 
     const balances = Object.values(balancesRaw)
 
     const tokensById = keyBy(
       tokensWithAddresses.map(([token]) => token),
-      (t) => t.id,
+      (t) => t.id
     )
     const dynamicTokens: SubDTaoToken[] = []
 
@@ -313,7 +313,7 @@ const buildStorageCoder = (metadataRpc: `0x${string}`, pallet: string, entry: st
 const buildRootClaimableStorageCoder = async (
   connector: IChainConnectorDot,
   networkId: string,
-  metadataRpc: `0x${string}` | null,
+  metadataRpc: `0x${string}` | null
 ): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
   let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
 
@@ -323,7 +323,7 @@ const buildRootClaimableStorageCoder = async (
     } catch (cause) {
       log.warn(
         `Failed to build storage coder for SubtensorModule.RootClaimable using provided metadata on ${networkId}`,
-        { cause },
+        { cause }
       )
     }
   }
@@ -333,7 +333,7 @@ const buildRootClaimableStorageCoder = async (
 
 const buildRootClaimedStorageCoder = async (
   networkId: string,
-  metadataRpc: `0x${string}` | null,
+  metadataRpc: `0x${string}` | null
 ): Promise<ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]> | null> => {
   let storageCoder: ReturnType<typeof buildStorageCoder> | null = null
 
@@ -343,7 +343,7 @@ const buildRootClaimedStorageCoder = async (
     } catch (cause) {
       log.warn(
         `Failed to build storage coder for SubtensorModule.RootClaimed using provided metadata on ${networkId}`,
-        { cause },
+        { cause }
       )
     }
   }
@@ -354,7 +354,7 @@ const buildRootClaimedStorageCoder = async (
 const buildRootClaimableQueries = (
   networkId: string,
   hotkeys: string[],
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>,
+  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, Map<number, bigint>]>> => {
   return hotkeys.map((hotkey) => {
     let stateKey: MaybeStateKey = null
@@ -373,7 +373,7 @@ const buildRootClaimableQueries = (
       const decoded = decodeScale<[number, bigint][] | null>(
         storageCoder,
         hexValue,
-        `Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`,
+        `Failed to decode RootClaimable for hotkey ${hotkey} on ${networkId}`
       )
       return [hotkey, decoded ? new Map(decoded) : new Map<number, bigint>()]
     }
@@ -389,7 +389,7 @@ const fetchRootClaimableRates = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  hotkeys: string[],
+  hotkeys: string[]
 ): Promise<Map<string, Map<number, bigint>>> => {
   if (!hotkeys.length) return new Map<string, Map<number, bigint>>()
 
@@ -414,7 +414,7 @@ const fetchRootClaimableRates = async (
 const buildRootClaimedQueries = (
   networkId: string,
   addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>,
-  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>,
+  storageCoder: ReturnType<ReturnType<typeof parseMetadataRpc>["builder"]["buildStorage"]>
 ): Array<RpcQueryPack<[string, string, number, bigint]>> => {
   return addressHotkeyNetuidPairs.map(([address, hotkey, netuid]) => {
     let stateKey: MaybeStateKey = null
@@ -424,7 +424,7 @@ const buildRootClaimedQueries = (
     } catch (cause) {
       log.warn(
         `Failed to encode storage key for RootClaimed (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
-        { cause },
+        { cause }
       )
     }
 
@@ -437,7 +437,7 @@ const buildRootClaimedQueries = (
       const decoded = decodeScale<bigint | null>(
         storageCoder,
         hexValue,
-        `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`,
+        `Failed to decode RootClaimed for (netuid=${netuid}, hotkey=${hotkey}, address=${address}) on ${networkId}`
       )
       return [address, hotkey, netuid, decoded ?? 0n]
     }
@@ -453,7 +453,7 @@ const fetchRootClaimedAmounts = async (
   connector: IChainConnectorDot,
   networkId: string,
   metadataRpc: `0x${string}`,
-  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>,
+  addressHotkeyNetuidPairs: Array<[address: string, hotkey: string, netuid: number]>
 ): Promise<Map<string, Map<string, Map<number, bigint>>>> => {
   if (!addressHotkeyNetuidPairs.length) {
     return new Map<string, Map<string, Map<number, bigint>>>()

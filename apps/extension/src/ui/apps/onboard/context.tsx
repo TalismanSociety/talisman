@@ -47,7 +47,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
 
   const completeOnboarding = useCallback(
     () => (location.href = "dashboard.html#/portfolio?onboarded"),
-    [],
+    []
   )
 
   // update

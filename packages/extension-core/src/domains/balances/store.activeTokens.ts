@@ -38,6 +38,6 @@ export const isTokenActive = (token: Token, activeTokens: ActiveTokens) => {
 
 export const filterActiveTokens = (tokens: TokenList, activeTokens: ActiveTokens) => {
   return Object.fromEntries(
-    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens)),
+    Object.entries(tokens).filter(([, token]) => isTokenActive(token as Token, activeTokens))
   ) as TokenList
 }

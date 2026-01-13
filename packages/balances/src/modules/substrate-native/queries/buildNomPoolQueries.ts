@@ -11,7 +11,7 @@ import { BaseBalance, NomPoolMemberInfo } from "./buildBaseQueries"
 export const buildNomPoolQueries = (
   networkId: string,
   partialBalances: BaseBalance[],
-  miniMetadata: MiniMetadata<MiniMetadataExtra>,
+  miniMetadata: MiniMetadata<MiniMetadataExtra>
 ): Array<RpcQueryPack<IBalance>> => {
   const networkStorageCoders = getNomPoolCoders(networkId, miniMetadata)
 
@@ -22,7 +22,7 @@ export const buildNomPoolQueries = (
     const stateKeys = getNomPoolStateKeys(
       networkStorageCoders,
       nomPoolMemberInfo,
-      miniMetadata.extra,
+      miniMetadata.extra
     )
 
     return {
@@ -35,17 +35,17 @@ export const buildNomPoolQueries = (
         const { poolPoints = "0" } = decodePoolPoints(
           networkStorageCoders.bondedPools!,
           changes[0]!,
-          networkId,
+          networkId
         )
         const { poolTotalActiveStake = "0" } = decodePoolStake(
           networkStorageCoders.ledger!,
           changes[1]!,
-          networkId,
+          networkId
         )
         const { metadata = "0" } = decodePoolMeta(
           networkStorageCoders.metadata!,
           changes[2]!,
-          networkId,
+          networkId
         )
 
         const amount =
@@ -55,7 +55,7 @@ export const buildNomPoolQueries = (
 
         const unbondingAmount = nomPoolMemberInfo.unbondingEras.reduce(
           (total, { amount }) => total + BigInt(amount ?? "0"),
-          0n,
+          0n
         )
 
         return {
@@ -109,7 +109,7 @@ const decodePoolPoints = (coder: ScaleStorageCoder, value: string, networkId: st
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode bondedPools on chain ${networkId}`,
+    `Failed to decode bondedPools on chain ${networkId}`
   )
 
   return { poolPoints: decoded?.points.toString() }
@@ -128,7 +128,7 @@ const decodePoolStake = (coder: ScaleStorageCoder, value: string, networkId: str
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode ledger on chain ${networkId}`,
+    `Failed to decode ledger on chain ${networkId}`
   )
 
   return { poolTotalActiveStake: decoded?.active.toString() }
@@ -141,7 +141,7 @@ const decodePoolMeta = (coder: ScaleStorageCoder, value: string, networkId: stri
   const decoded = decodeScale<DecodedType>(
     coder,
     value,
-    `Failed to decode metadata on chain ${networkId}`,
+    `Failed to decode metadata on chain ${networkId}`
   )
 
   const metadata = decoded?.asText()
@@ -152,7 +152,7 @@ const decodePoolMeta = (coder: ScaleStorageCoder, value: string, networkId: stri
 const getNomPoolStateKeys = (
   coders: ReturnType<typeof getNomPoolCoders>,
   nomPoolMemberInfo: NomPoolMemberInfo | null,
-  extra: MiniMetadataExtra,
+  extra: MiniMetadataExtra
 ): `0x${string}`[] => {
   if (
     !nomPoolMemberInfo ||

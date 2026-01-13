@@ -29,7 +29,7 @@ export const AssetPriceChart: FC<{
   const tokensMap = useTokensMap()
   const tokensWithCoingeckoId = useMemo(
     () => tokenIds.map((id) => tokensMap[id]).filter((t) => !!t?.coingeckoId),
-    [tokenIds, tokensMap],
+    [tokenIds, tokensMap]
   )
 
   const selectedCurrency = useSelectedCurrency()
@@ -53,7 +53,7 @@ export const AssetPriceChart: FC<{
   }, [selectedCurrency, tokenRates, tokensWithCoingeckoId])
 
   const [selectedTokenId, setSelectedTokenId] = useState<TokenId | null>(
-    selectableTokens[0]?.id ?? null,
+    selectableTokens[0]?.id ?? null
   )
   useEffect(() => {
     // workaround empty button when changing account to one that doesnt have balance for the selecte done
@@ -63,7 +63,7 @@ export const AssetPriceChart: FC<{
 
   const coingeckoId = useMemo(
     () => tokensWithCoingeckoId.find((t) => t.id === selectedTokenId)?.coingeckoId ?? null,
-    [selectedTokenId, tokensWithCoingeckoId],
+    [selectedTokenId, tokensWithCoingeckoId]
   )
 
   const [timespan, setTimespan] = useState<ChartSpan>("D")
@@ -82,7 +82,7 @@ export const AssetPriceChart: FC<{
     window.open(
       `https://www.coingecko.com/en/coins/${coingeckoId}`,
       "_blank",
-      "noopener noreferrer",
+      "noopener noreferrer"
     )
   }, [coingeckoId])
 
@@ -102,14 +102,14 @@ export const AssetPriceChart: FC<{
         "bg-black-secondary relative flex w-full shrink-0 flex-col gap-0 overflow-hidden rounded-sm",
         variant === "small" && "h-[16.8rem]",
         variant === "large" && "h-[19.2rem]",
-        className,
+        className
       )}
     >
       <div
         className={classNames(
           "flex shrink-0 items-center justify-between",
           variant === "small" && "h-20 px-4",
-          variant === "large" && "h-24 px-5",
+          variant === "large" && "h-24 px-5"
         )}
       >
         <TokenSelect
@@ -125,7 +125,7 @@ export const AssetPriceChart: FC<{
                 "text-body-secondary font-bold",
                 variant === "small" && "text-base",
                 variant === "large" && "text-[2rem]",
-                formattedHoveredValue && "text-body",
+                formattedHoveredValue && "text-body"
               )}
             >
               {formattedHoveredValue ?? (
@@ -162,7 +162,7 @@ export const AssetPriceChart: FC<{
           className={classNames(
             "text-body-inactive absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center",
             variant === "small" && "text-base",
-            variant === "large" && "text-lg",
+            variant === "large" && "text-lg"
           )}
         >
           {t("No price history")}
@@ -216,7 +216,7 @@ const CHART_TIMESPANS: Record<string, ChartSpanConfig> = {
 const useMarketChart = (
   coingeckoId: string | null,
   currency: TokenRateCurrency,
-  timespan: ChartSpan,
+  timespan: ChartSpan
 ) => {
   return useQuery({
     queryKey: ["priceChart", coingeckoId, currency, timespan],
@@ -227,7 +227,7 @@ const useMarketChart = (
       const getMarketChart = async (
         coingeckoId: string | null,
         vs_currency: TokenRateCurrency,
-        days: string,
+        days: string
       ): Promise<{ prices: [number, number][] }> => {
         const query = new URLSearchParams({ vs_currency, days })
         const url = `/api/v3/coins/${coingeckoId}/market_chart?${query.toString()}`
@@ -246,7 +246,7 @@ const useMarketChart = (
           ([timestamp, price], index): [number, number] => [
             timestamp,
             price / (taoUsdChart.prices[index]?.[1] ?? 1),
-          ],
+          ]
         )
 
         return { prices: tokenTaoChart }
@@ -458,7 +458,7 @@ const TimespanSelect: FC<{
         "text-body-secondary flex w-full shrink-0 items-center justify-center gap-2 font-bold",
         variant === "small" && "h-16",
         variant === "large" && "h-20",
-        className,
+        className
       )}
     >
       {Object.entries(CHART_TIMESPANS).map(([key, { label }]) => (
@@ -470,7 +470,7 @@ const TimespanSelect: FC<{
             "pointer-events-auto",
             variant === "small" && "text-[1rem]",
             variant === "large" && "text-sm",
-            value === key && "bg-white/10 text-white",
+            value === key && "bg-white/10 text-white"
           )}
           onClick={() => onChange(key as ChartSpan)}
         >
@@ -497,7 +497,7 @@ const TokenSelect: FC<{
         className={classNames(
           "flex items-center gap-2 p-2 font-bold",
           variant === "small" && "text-base",
-          variant === "large" && "text-[2rem]",
+          variant === "large" && "text-[2rem]"
         )}
       >
         <div className="flex flex-col justify-center">
@@ -518,7 +518,7 @@ const TokenSelect: FC<{
             "bg-grey-850 hover:bg-grey-800 group rounded",
             "flex items-center gap-2 p-2 font-bold",
             variant === "small" && "text-base",
-            variant === "large" && "text-[2rem]",
+            variant === "large" && "text-[2rem]"
           )}
         >
           <div className="flex flex-col justify-center">
@@ -565,7 +565,7 @@ const TokenSelectOption: FC<{ token: Token; selected: boolean; onClick: () => vo
       onClick={handleClick}
       className={classNames(
         "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 px-3 text-left",
-        "flex w-full items-center justify-between gap-16",
+        "flex w-full items-center justify-between gap-16"
       )}
     >
       <div className="flex items-center gap-4">
@@ -603,7 +603,7 @@ const MarketCap: FC<{ tokenId: TokenId }> = ({ tokenId }) => {
             notation: "compact",
           }).format(tokenRates[currency].marketCap)
         : t("unknown"),
-    [tokenRates, currency, t],
+    [tokenRates, currency, t]
   )
 
   return <span className="font-bold">{display}</span>

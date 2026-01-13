@@ -15,7 +15,7 @@ export const isWalletReady$ = subjectIsWalletReady.asObservable()
 export const walletReady$ = isWalletReady$.pipe(
   filter((isReady) => isReady),
   distinctUntilChanged(),
-  shareReplay(1),
+  shareReplay(1)
 )
 
 // returns a promise that resolves when the wallet is ready

@@ -29,12 +29,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address],
+    [selectedAccount?.address, address]
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [rowAddress, data?.accounts],
+    [rowAddress, data?.accounts]
   )
 
   const withdrawIn = useMemo(
@@ -44,12 +44,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
             locale,
           })
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale]
   )
 
   const canUnbond = useMemo(
     () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === BITTENSOR_TOKEN_ID,
-    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+    [accountStatus?.canUnstake, rowMeta.poolId, tokenId]
   )
 
   if (!rowAddress) return null
@@ -64,7 +64,7 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
             <TooltipTrigger
               className={classNames(
                 "text-body-secondary bg-body/10 h-10 rounded-sm px-3 text-xs opacity-60",
-                isLoading && "animate-pulse",
+                isLoading && "animate-pulse"
               )}
             >
               <div className="flex items-center gap-2">

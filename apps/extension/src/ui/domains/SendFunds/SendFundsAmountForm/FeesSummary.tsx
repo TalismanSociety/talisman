@@ -87,7 +87,7 @@ export const FeesSummary = () => {
         <div
           className={classNames(
             "flex grow items-center justify-end gap-2 truncate",
-            isLoading && estimatedFee && "animate-pulse",
+            isLoading && estimatedFee && "animate-pulse"
           )}
         >
           {isLoading && !estimatedFee && (

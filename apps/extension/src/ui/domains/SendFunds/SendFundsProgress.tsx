@@ -35,7 +35,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
         gotoProgress({ txId: newHash, networkId: network.id })
       }
     },
-    [gotoProgress, network],
+    [gotoProgress, network]
   )
 
   if (!network) return null
@@ -237,7 +237,7 @@ const SendFundsProgressSolana: FC<SendFundsProgressSolanaProps> = ({ tx, onClose
             id: tx.signature,
           })[0]
         : undefined,
-    [network, tx.signature],
+    [network, tx.signature]
   )
 
   return <SendFundsProgressBase tx={tx} className={className} onClose={onClose} href={href} />

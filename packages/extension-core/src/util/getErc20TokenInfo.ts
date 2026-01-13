@@ -9,7 +9,7 @@ export const getErc20TokenInfo = async (
   client: Client,
   networkId: EthNetworkId,
   contractAddress: EvmAddress,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<EvmErc20Token> => {
   const [{ decimals, symbol, name }, coinGeckoData] = await Promise.all([
     getErc20ContractData(client, contractAddress),

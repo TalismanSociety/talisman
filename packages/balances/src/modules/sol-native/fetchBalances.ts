@@ -20,13 +20,13 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   for (const [token, addresses] of tokensWithAddresses) {
     if (token.type !== MODULE_TYPE || token.networkId !== networkId)
       throw new Error(
-        `Invalid token type or networkId for balance module: ${token.type} on ${token.networkId}`,
+        `Invalid token type or networkId for balance module: ${token.type} on ${token.networkId}`
       )
 
     for (const address of addresses)
       if (!isSolanaAddress(address))
         throw new Error(
-          `Invalid solana address for balance module: ${address} for token ${token.id}`,
+          `Invalid solana address for balance module: ${address} for token ${token.id}`
         )
   }
 
@@ -51,10 +51,10 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
           `Failed to get balance for token ${token.id} and address ${address} on chain ${networkId}`,
           token.id,
           address,
-          err as Error,
+          err as Error
         )
       }
-    }),
+    })
   )
 
   return results.reduce<FetchBalanceResults>(
@@ -70,6 +70,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 }

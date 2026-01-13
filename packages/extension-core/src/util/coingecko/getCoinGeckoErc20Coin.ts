@@ -55,7 +55,7 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string, signal?: Abort
 
   return (
     assetPlatformCache.data.find(({ id, chain_identifier }) =>
-      [id, chain_identifier?.toString()].filter(isTruthy).includes(assetPlatformId),
+      [id, chain_identifier?.toString()].filter(isTruthy).includes(assetPlatformId)
     ) ?? null
   )
 }
@@ -63,7 +63,7 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string, signal?: Abort
 export const getCoinGeckoErc20Coin = async (
   assetPlatformId: string,
   contractAddress: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<CoinGeckoErc20Coin | null> => {
   const assetPlatform = await getCoinGeckoAssetPlatform(assetPlatformId, signal)
   if (!assetPlatform) return null
@@ -71,7 +71,7 @@ export const getCoinGeckoErc20Coin = async (
   try {
     const fetchErc20Coin = await fetchFromCoingecko(
       `/api/v3/coins/${assetPlatform.id}/contract/${contractAddress.toLowerCase()}`,
-      { signal },
+      { signal }
     )
     const res = await fetchErc20Coin.json()
 

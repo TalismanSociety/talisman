@@ -19,7 +19,7 @@ const AccountTypeButton: FC<{
       "bg-field allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
       disabled && "text-body-secondary opacity-40",
       !disabled && "hover:bg-grey-800",
-      className,
+      className
     )}
     disabled={disabled}
     onClick={onClick}
@@ -59,7 +59,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<EthereumCircleLogo />}
         title={t("Ethereum")}
@@ -73,7 +73,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "polkadot" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<PolkadotCircleLogo />}
         title={t("Polkadot")}
@@ -87,7 +87,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "solana" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<SolanaLogo />}
         title={t("Solana")}

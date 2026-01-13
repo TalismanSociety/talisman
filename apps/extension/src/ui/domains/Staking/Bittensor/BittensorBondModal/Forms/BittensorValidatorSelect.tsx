@@ -69,7 +69,7 @@ export const BittensorValidatorSelect = () => {
   const search = useDeferredValue(rawSearch)
 
   const [sortedValidators, setSortedValidators] = useState<BondOptionType[] | undefined>(() =>
-    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined,
+    combinedValidatorsData.length ? sortBondOptions(combinedValidatorsData, sortMethod) : undefined
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -81,7 +81,7 @@ export const BittensorValidatorSelect = () => {
     return sortedValidators.filter(
       (delegate) =>
         delegate.name.toLowerCase().includes(lowerSearch) ||
-        delegate.hotkey.toLowerCase().includes(lowerSearch),
+        delegate.hotkey.toLowerCase().includes(lowerSearch)
     )
   }, [sortedValidators, search])
 
@@ -90,7 +90,7 @@ export const BittensorValidatorSelect = () => {
       setStep("form")
       setHotkey(hotkey)
     },
-    [setHotkey, setStep],
+    [setHotkey, setStep]
   )
 
   const [, startTransition] = useTransition()
@@ -124,7 +124,7 @@ export const BittensorValidatorSelect = () => {
             <SearchInputControlled
               containerClassName={classNames(
                 "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
               )}
               placeholder={t("Search validators")}
               value={search}
@@ -186,12 +186,12 @@ const SortMethodButton: FC<{
       { label: t("N° of Stakers"), value: "totalStakers" },
       { label: t("30 days APY"), value: "apr" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -320,7 +320,7 @@ const ValidatorRow: FC<{
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected && "bg-grey-800 text-body-secondary",
+        isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
       <AccountIcon address={option.hotkey} className="size-16 shrink-0 text-xl" />
@@ -347,7 +347,7 @@ const ValidatorRow: FC<{
         <div
           className={cn(
             "text-body-secondary flex w-full justify-between text-xs",
-            isLoading && "animate-pulse",
+            isLoading && "animate-pulse"
           )}
         >
           <div className="flex items-center gap-4">

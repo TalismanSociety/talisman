@@ -9,6 +9,6 @@ export const getConstantValue = <T>(chain: Chain, pallet: string, constant: stri
       unifiedMetadata: chain.metadata,
     },
     pallet,
-    constant,
+    constant
   )
 }

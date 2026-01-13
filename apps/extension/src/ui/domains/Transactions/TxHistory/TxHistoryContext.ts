@@ -31,12 +31,12 @@ const useTxHistoryProvider = () => {
 
   const network = useMemo<Network | null>(
     () => networks.find((n) => n.id === networkId) ?? null,
-    [networkId, networks],
+    [networkId, networks]
   )
 
   const transactions = useMemo(
     () => getTransactions(encodedAddresses, networkId, allTransactions),
-    [encodedAddresses, allTransactions, networkId],
+    [encodedAddresses, allTransactions, networkId]
   )
 
   const setAddress = useCallback(
@@ -47,12 +47,12 @@ const useTxHistoryProvider = () => {
         return { addresses, networkId: txs.length ? state.networkId : null }
       })
     },
-    [allTransactions],
+    [allTransactions]
   )
 
   const setNetworkId = useCallback(
     (networkId: HexString | EthNetworkId | null) => setState((state) => ({ ...state, networkId })),
-    [],
+    []
   )
 
   // only for popup, where we can only select 1 account
@@ -75,14 +75,14 @@ export const [TxHistoryProvider, useTxHistory] = provideContext(useTxHistoryProv
 const getTransactions = (
   addresses: string[] | null,
   networkId: HexString | EthNetworkId | null,
-  allTransactions: WalletTransaction[] | undefined,
+  allTransactions: WalletTransaction[] | undefined
 ) => {
   const encodedAddresses = addresses?.map(normalizeAddress) ?? []
 
   return (
     allTransactions
       ?.filter(
-        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
+        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
       )
       .filter((tx) => !networkId || tx.networkId === networkId) ?? []
   )

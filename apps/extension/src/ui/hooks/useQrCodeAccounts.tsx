@@ -7,6 +7,6 @@ export const useQrCodeAccounts = () => {
   const accounts = useAccounts()
   return useMemo(
     () => accounts.filter((account) => isAccountOfType(account, "polkadot-vault")),
-    [accounts],
+    [accounts]
   )
 }

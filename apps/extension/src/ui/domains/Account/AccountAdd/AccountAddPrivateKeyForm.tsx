@@ -71,7 +71,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
   const allAccounts = useAccounts()
   const existingAccountNames = useMemo(
     () => allAccounts.map((a) => a.name.trim().toLowerCase()),
-    [allAccounts],
+    [allAccounts]
   )
   const existingAccountAddresses = useMemo(() => allAccounts.map((a) => a.address), [allAccounts])
 
@@ -96,14 +96,14 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
         .refine(
           (data) =>
             !existingAccountAddresses.includes(
-              privateKeyToAddress(data.privateKey, data.platform) as string,
+              privateKeyToAddress(data.privateKey, data.platform) as string
             ),
           {
             message: "Account already exists",
             path: ["privateKey"],
-          },
+          }
         ),
-    [existingAccountAddresses, existingAccountNames],
+    [existingAccountAddresses, existingAccountNames]
   )
 
   const form = useForm({
@@ -118,7 +118,7 @@ export const AccountAddPrivateKeyForm = ({ onSuccess }: AccountAddPageProps) => 
           title: t("Importing account"),
           subtitle: t("Please wait"),
         },
-        { autoClose: false },
+        { autoClose: false }
       )
       try {
         const secretKey = parseSecretKey(value.privateKey, value.platform)

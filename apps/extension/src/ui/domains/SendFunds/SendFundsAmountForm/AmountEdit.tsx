@@ -52,9 +52,9 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens,
-        token?.decimals,
+        token?.decimals
       ),
-    [maxAmount, sendMax, token?.decimals, transfer?.tokens],
+    [maxAmount, sendMax, token?.decimals, transfer?.tokens]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -79,7 +79,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         set("amount", tokensToPlanck(nextValue, token.decimals))
       else remove("amount")
     },
-    [remove, sendMax, set, token],
+    [remove, sendMax, set, token]
   )
 
   const refInitialized = useRef(false)
@@ -93,7 +93,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
     <div
       className={classNames(
         "flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4",
-        isEstimatingMaxAmount && "animate-pulse",
+        isEstimatingMaxAmount && "animate-pulse"
       )}
     >
       {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
@@ -107,7 +107,7 @@ const TokenInput = ({ onTokenClick }: { onTokenClick: () => void }) => {
         className={classNames(
           "text-body peer inline-block min-w-0 text-ellipsis bg-transparent text-xl",
           sendMax && "placeholder:text-white",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
@@ -129,9 +129,9 @@ const FiatInput = () => {
     () =>
       normalizeStringNumber(
         sendMax && maxAmount ? maxAmount.fiat(currency) : transfer?.fiat(currency),
-        2,
+        2
       ),
-    [currency, maxAmount, sendMax, transfer],
+    [currency, maxAmount, sendMax, transfer]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -160,7 +160,7 @@ const FiatInput = () => {
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
     },
-    [currency, remove, sendMax, set, token, tokenRates],
+    [currency, remove, sendMax, set, token, tokenRates]
   )
 
   if (!tokenRates) return null
@@ -170,7 +170,7 @@ const FiatInput = () => {
       className={classNames(
         // display flex in reverse order to leverage peer css
         "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
-        isEstimatingMaxAmount && "animate-pulse",
+        isEstimatingMaxAmount && "animate-pulse"
       )}
     >
       <input
@@ -183,7 +183,7 @@ const FiatInput = () => {
         placeholder={"0.00"}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
-          isEstimatingMaxAmount && "hidden", // hide until value is known
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
@@ -191,7 +191,7 @@ const FiatInput = () => {
       <div
         className={classNames(
           "block shrink-0",
-          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled",
+          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
         )}
       >
         {currencyConfig[currency]?.symbol}
@@ -266,7 +266,7 @@ export const AmountEdit = ({ onTokenClick }: { onTokenClick: () => void }) => {
           <div
             className={classNames(
               "mt-4 flex max-w-full items-center justify-center gap-4",
-              isEstimatingMaxAmount && "invisible",
+              isEstimatingMaxAmount && "invisible"
             )}
           >
             {tokenRates && (

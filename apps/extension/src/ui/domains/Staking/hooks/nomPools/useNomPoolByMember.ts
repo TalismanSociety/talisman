@@ -7,7 +7,7 @@ import { NomPoolMember } from "../../types"
 
 export const useNomPoolByMember = (
   chainId: DotNetworkId | null | undefined,
-  address: string | null | undefined,
+  address: string | null | undefined
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 

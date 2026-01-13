@@ -25,7 +25,7 @@ export const NomPoolUnbondButton: FC<{
 
   const canUnstake = useMemo(
     () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canUnstake),
-    [address, stakingStatus?.accounts],
+    [address, stakingStatus?.accounts]
   )
 
   const handleClick = useCallback(() => {
@@ -41,7 +41,7 @@ export const NomPoolUnbondButton: FC<{
         "bg-body/10 hover:bg-body/20 text-body-secondary hover:text-body font-light",
         variant === "small" && "h-10 rounded-sm px-3 text-xs",
         variant === "large" && "h-14 rounded px-4 text-sm",
-        className,
+        className
       )}
       type="button"
       onClick={handleClick}
@@ -51,7 +51,7 @@ export const NomPoolUnbondButton: FC<{
           className={classNames(
             "shrink-0",
             variant === "small" && "text-xs",
-            variant === "large" && "text-base",
+            variant === "large" && "text-base"
           )}
         />
         <div>{t("Unbond")}</div>

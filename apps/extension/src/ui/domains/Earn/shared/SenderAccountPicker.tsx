@@ -144,7 +144,7 @@ const AccountRow: FC<{
       className={cn(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
       disabled={account.disabled}
     >
@@ -181,7 +181,7 @@ const AccountTokenBalance: FC<{ token: Token; balance?: Balance }> = ({ token, b
     <div
       className={cn(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        balance.status === "cache" && "animate-pulse",
+        balance.status === "cache" && "animate-pulse"
       )}
     >
       <div>

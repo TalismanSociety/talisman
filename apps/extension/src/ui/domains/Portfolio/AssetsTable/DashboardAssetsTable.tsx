@@ -20,7 +20,7 @@ const AssetRowSkeleton: FC<{ className?: string }> = ({ className }) => {
     <div
       className={classNames(
         "text-body-secondary bg-grey-850 mb-4 mt-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
-        className,
+        className
       )}
     >
       <div>

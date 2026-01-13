@@ -53,7 +53,7 @@ const ConfirmDrawer = ({
         <div className="text-body-secondary my-8 text-sm">
           <p className="px-4 text-center">
             {t(
-              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key.",
+              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key."
             )}
           </p>
           <p className="mt-12 text-center">
@@ -107,12 +107,12 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
           <div className="text-body-secondary space-y-12">
             <p className="text-center">
               {t(
-                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords.",
+                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords."
               )}
             </p>
             <p className="text-center">
               {t(
-                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase.",
+                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase."
               )}
             </p>
           </div>

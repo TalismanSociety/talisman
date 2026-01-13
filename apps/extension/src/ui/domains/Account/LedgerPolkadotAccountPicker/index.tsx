@@ -22,7 +22,7 @@ export const LedgerPolkadotAccountPicker: FC<LedgerPolkadotGenericAccountPickerP
       onChange?.([])
       setMode(newMode)
     },
-    [mode, onChange],
+    [mode, onChange]
   )
 
   return (

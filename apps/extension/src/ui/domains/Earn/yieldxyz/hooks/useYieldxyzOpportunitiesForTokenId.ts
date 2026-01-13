@@ -26,8 +26,8 @@ export const useYieldxyzOpportunitiesForTokenId = (tokenId: TokenId) => {
               ? inputTokenIds[0]
               : inputTokenIds.find((tokenId) =>
                   ["evm-native", "substrate-native", "sol-native"].includes(
-                    parseTokenId(tokenId).type,
-                  ),
+                    parseTokenId(tokenId).type
+                  )
                 )
 
           return inputTokenId === tokenId

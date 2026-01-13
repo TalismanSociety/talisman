@@ -13,5 +13,5 @@ export const [useAuthorisedSites, authorisedSites$] = bind(
     return () => {
       unsubscribe()
     }
-  }),
+  })
 )

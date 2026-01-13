@@ -21,7 +21,7 @@ const useMnemonicDeleteModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   const canDelete = useCallback(
@@ -29,7 +29,7 @@ const useMnemonicDeleteModalProvider = () => {
       const mnemonic = mnemonics.find((m) => m.id === mnemonicId)
       return !!mnemonic?.confirmed
     },
-    [mnemonics],
+    [mnemonics]
   )
 
   return {
@@ -42,7 +42,7 @@ const useMnemonicDeleteModalProvider = () => {
 }
 
 export const [MnemonicDeleteModalProvider, useMnemonicDeleteModal] = provideContext(
-  useMnemonicDeleteModalProvider,
+  useMnemonicDeleteModalProvider
 )
 
 export const MnemonicDeleteModal = () => {

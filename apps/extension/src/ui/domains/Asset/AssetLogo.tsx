@@ -32,7 +32,7 @@ export const AssetLogo: FC<{
       className={classNames(
         "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
-        className,
+        className
       )}
       style={style}
       alt=""

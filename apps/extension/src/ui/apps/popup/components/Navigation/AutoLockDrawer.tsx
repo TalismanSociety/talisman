@@ -24,7 +24,7 @@ const AutoLockEditor = () => {
       { value: 30, label: t("{{count}} minutes", { count: 30 }) },
       { value: 60, label: t("{{count}} minutes", { count: 60 }) },
     ],
-    [t],
+    [t]
   )
 
   const handleChange = useCallback(
@@ -32,7 +32,7 @@ const AutoLockEditor = () => {
       setAutoLockTimeout(value)
       close()
     },
-    [close, setAutoLockTimeout],
+    [close, setAutoLockTimeout]
   )
 
   return <ExclusiveButtonsList options={options} value={autoLockTimeout} onChange={handleChange} />
@@ -54,7 +54,7 @@ const AutoLockDrawerContent = () => {
       <div className="px-8">
         <p className="text-xs">
           {t(
-            "Set a timer to automatically lock the Talisman wallet extension after the following period of inactivity",
+            "Set a timer to automatically lock the Talisman wallet extension after the following period of inactivity"
           )}
         </p>
       </div>

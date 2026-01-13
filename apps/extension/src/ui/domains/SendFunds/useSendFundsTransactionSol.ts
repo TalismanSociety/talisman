@@ -53,7 +53,7 @@ export const useSendFundsTransactionSol = ({
 
   const serializedTx = useMemo(
     () => (qPayload.data ? serializeTransaction(qPayload.data) : null),
-    [qPayload.data],
+    [qPayload.data]
   )
 
   // force a risk analysis scan if the account isnt owned

@@ -103,23 +103,23 @@ const useBittensorClaimSettingsWizardProvider = () => {
 
   const setAddress = useCallback(
     (newAddress: Address) => setWizardState((prev) => ({ ...prev, address: newAddress })),
-    [],
+    []
   )
 
   const setStep = useCallback(
     (newStep: ClaimSettingsStep) => setWizardState((prev) => ({ ...prev, step: newStep })),
-    [],
+    []
   )
 
   const setSelectedClaimType = useCallback(
     (claimType: RootClaimType) =>
       setWizardState((prev) => ({ ...prev, selectedClaimType: claimType })),
-    [],
+    []
   )
 
   const setSelectedSubnets = useCallback(
     (subnets: number[]) => setWizardState((prev) => ({ ...prev, selectedSubnets: subnets })),
-    [],
+    []
   )
 
   const onSubmitted = useCallback(
@@ -131,7 +131,7 @@ const useBittensorClaimSettingsWizardProvider = () => {
         onSubmittedCallback()
       }
     },
-    [onSubmittedCallback],
+    [onSubmittedCallback]
   )
 
   return {

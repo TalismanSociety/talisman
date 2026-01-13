@@ -20,6 +20,6 @@ export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) 
     map((mnemonics) => {
       if (!id) return null
       return mnemonics.find((m) => m.id === id) ?? null
-    }),
-  ),
+    })
+  )
 )

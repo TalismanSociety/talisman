@@ -26,7 +26,7 @@ export class SubHandler extends ExtensionHandler {
     const { registry } = await getTypeRegistry(
       payload.genesisHash,
       payload.specVersion,
-      payload.signedExtensions,
+      payload.signedExtensions
     )
 
     if (!signature) {
@@ -45,7 +45,7 @@ export class SubHandler extends ExtensionHandler {
               signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
                 // use chaindata override value of `withType`
                 withType: chain.hasExtrinsicSignatureTypePrefix,
-              }),
+              })
             )
       })
 
@@ -57,7 +57,7 @@ export class SubHandler extends ExtensionHandler {
     const tx = registry.createType(
       "Extrinsic",
       { method: payload.method },
-      { version: payload.version },
+      { version: payload.version }
     )
 
     // apply signature to the modified payload
@@ -83,7 +83,7 @@ export class SubHandler extends ExtensionHandler {
       const { registry, metadataRpc } = await getTypeRegistry(
         payload.genesisHash,
         payload.specVersion,
-        payload.signedExtensions,
+        payload.signedExtensions
       )
       if (!metadataRpc) throw new Error("Metadata RPC not found")
 
@@ -103,7 +103,7 @@ export class SubHandler extends ExtensionHandler {
       const innerTx = registry.createType(
         "Extrinsic",
         { method: innerPayload.method },
-        { version: innerPayload.version },
+        { version: innerPayload.version }
       )
 
       // apply signature to the modified payload
@@ -119,7 +119,7 @@ export class SubHandler extends ExtensionHandler {
         chain.id,
         "state_getStorage",
         [stateKey],
-        false,
+        false
       )
       if (!hexValue) throw new Error("MevShield NextKey not found")
       const nextKeyBinary = storageCodec.value.dec(hexValue) as Binary
@@ -156,7 +156,7 @@ export class SubHandler extends ExtensionHandler {
       const outerTx = registry.createType(
         "Extrinsic",
         { method: outerPayload.method },
-        { version: outerPayload.version },
+        { version: outerPayload.version }
       )
 
       // apply signature to the modified payload
@@ -201,7 +201,7 @@ export class SubHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -215,7 +215,7 @@ export class SubHandler extends ExtensionHandler {
 
       case "pri(substrate.rpc.submit.withBittensorMevShield)":
         return this.submitWithBittensorMevShield(
-          request as RequestTypes["pri(substrate.rpc.submit.withBittensorMevShield)"],
+          request as RequestTypes["pri(substrate.rpc.submit.withBittensorMevShield)"]
         )
 
       // --------------------------------------------------------------------

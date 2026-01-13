@@ -65,16 +65,16 @@ export const useGetSeekStaked = (): {
             balance: new BalanceFormatter(data[i] || 0n, tokenDecimals),
           }))
         : [],
-    [data, ethAccounts, tokenDecimals],
+    [data, ethAccounts, tokenDecimals]
   )
   const totalStakedAmount = useMemo(
     () => balances.reduce((total, account) => total + account.balance.planck, 0n),
-    [balances],
+    [balances]
   )
 
   const totalStaked = useMemo(
     () => new BalanceFormatter(totalStakedAmount, tokenDecimals),
-    [totalStakedAmount, tokenDecimals],
+    [totalStakedAmount, tokenDecimals]
   )
 
   return { data: { balances, totalStaked }, isLoading, isError, refetch }

@@ -16,13 +16,13 @@ export const ConnectedAccountsPolkadot: FC<{
 
   const hasEthereumActiveAccounts = useMemo(
     () => activeAccounts.some((acc) => isAccountAddressEthereum(acc[0]) && acc[1]),
-    [activeAccounts],
+    [activeAccounts]
   )
   const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
 
   const displayedAccounts = useMemo(
     () => activeAccounts.filter(([acc]) => enableEvmAccounts || !isAccountAddressEthereum(acc)),
-    [activeAccounts, enableEvmAccounts],
+    [activeAccounts, enableEvmAccounts]
   )
 
   const handleAccountToggle = useCallback(
@@ -34,7 +34,7 @@ export const ConnectedAccountsPolkadot: FC<{
         : [...otherActive, address]
       onUpdateAccounts(newActive)
     },
-    [activeAccounts, onUpdateAccounts],
+    [activeAccounts, onUpdateAccounts]
   )
 
   const handleDisconnectAllClick = useCallback(() => {
@@ -51,7 +51,7 @@ export const ConnectedAccountsPolkadot: FC<{
         onUpdateAccounts(
           activeAccounts
             .filter(([acc, isConnected]) => !isAccountAddressEthereum(acc) && isConnected)
-            .map(([a]) => a.address),
+            .map(([a]) => a.address)
         )
       }
       return !enabled
@@ -73,7 +73,7 @@ export const ConnectedAccountsPolkadot: FC<{
             </TooltipTrigger>
             <TooltipContent>
               {t(
-                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps.",
+                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps."
               )}
             </TooltipContent>
           </Tooltip>

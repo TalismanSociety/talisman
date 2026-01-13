@@ -52,7 +52,7 @@ export const RiskAnalysisPlaceholderImage: React.FC<{
 }> = ({ width, height, borderRadius, type }) => {
   const style = useMemo<CSSProperties>(
     () => ({ width, height, borderRadius }),
-    [borderRadius, height, width],
+    [borderRadius, height, width]
   )
 
   return (

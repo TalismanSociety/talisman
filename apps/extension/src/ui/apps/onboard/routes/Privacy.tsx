@@ -35,7 +35,7 @@ export const PrivacyPage = () => {
       updateData({ allowTracking })
       setOnboarded()
     },
-    [updateData, setOnboarded],
+    [updateData, setOnboarded]
   )
 
   const handleLearnMoreClick = useCallback(() => {

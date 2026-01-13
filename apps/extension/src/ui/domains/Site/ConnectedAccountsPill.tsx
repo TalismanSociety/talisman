@@ -19,7 +19,7 @@ export const ConnectedAccountsPill: FC = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id],
+    [authorisedSites, currentSite?.id]
   )
 
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false)
@@ -46,7 +46,7 @@ export const ConnectedAccountsPill: FC = () => {
       count
         ? "bg-gradient-to-r from-green-500/50 to-grey-800"
         : "bg-gradient-to-r from-brand-orange/50 to-grey-800",
-    [count],
+    [count]
   )
 
   const host = useMemo(() => {
@@ -68,7 +68,7 @@ export const ConnectedAccountsPill: FC = () => {
         className={classNames(
           "group h-[3.6rem] w-full overflow-hidden rounded-full p-0.5",
           containerColors,
-          "text-body-secondary hover:text-grey-300",
+          "text-body-secondary hover:text-grey-300"
         )}
         onClick={() => setShowConnectedAccounts(true)}
       >

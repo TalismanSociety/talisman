@@ -43,7 +43,7 @@ export const Scan = () => {
                   {
                     title: t("Approve camera permissions"),
                     body: t(
-                      "It looks like you’ve blocked permissions for Talisman to access your camera",
+                      "It looks like you’ve blocked permissions for Talisman to access your camera"
                     ),
                     extra: (
                       <button
@@ -80,7 +80,7 @@ export const Scan = () => {
               {
                 title: t("Scan QR code"),
                 body: t(
-                  "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading",
+                  "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading"
                 ),
               },
             ].map(({ title, body, extra, errorIcon }, index) => (

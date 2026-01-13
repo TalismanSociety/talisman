@@ -51,7 +51,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
             message: new TextEncoder().encode(message),
           } as MsgSignButtonPayloadSol)
         : null,
-    [message, address],
+    [message, address]
   )
 
   const handleSubmit = useCallback(
@@ -68,7 +68,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
         notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
       }
     },
-    [address, message, signInRequest, t],
+    [address, message, signInRequest, t]
   )
 
   const handleReject = useCallback(() => {

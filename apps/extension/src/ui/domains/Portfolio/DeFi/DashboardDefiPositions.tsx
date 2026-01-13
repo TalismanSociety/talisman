@@ -59,9 +59,9 @@ const VirtualizedRows: FC<{ positions: Loadable<DefiPosition[]> }> = ({ position
   const rows = useMemo(
     () =>
       (positions.data ?? []).concat(
-        ...(positions.status === "loading" ? [{ id: "SHIMMER" } as DefiPosition] : []),
+        ...(positions.status === "loading" ? [{ id: "SHIMMER" } as DefiPosition] : [])
       ),
-    [positions],
+    [positions]
   )
 
   const virtualizer = useVirtualizer({
@@ -111,9 +111,9 @@ const TotalRow: FC<{ positions: DefiPosition[] }> = ({ positions }) => {
       positions.reduce(
         (total, position) =>
           total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0),
-        0,
+        0
       ),
-    [positions],
+    [positions]
   )
 
   if (!positions.length) return null
@@ -140,7 +140,7 @@ const ToggleCurrency = () => {
       className={classNames(
         "border-grey-750 bg-grey-800 text-body-secondary hover:bg-grey-700 pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border text-center text-sm transition-colors duration-100 ease-out",
         currencyConfig[currency]?.symbol?.length === 2 && "text-[1rem]",
-        currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]",
+        currencyConfig[currency]?.symbol?.length > 2 && "text-[0.8rem]"
       )}
       onClick={(event) => {
         event.stopPropagation()
@@ -182,7 +182,7 @@ const DefiPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded-sm px-8",
+        "bg-grey-850 hover:bg-grey-800 flex h-[6.6rem] w-full items-center gap-8 overflow-hidden rounded-sm px-8"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >

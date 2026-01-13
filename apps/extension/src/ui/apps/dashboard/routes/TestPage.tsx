@@ -165,7 +165,7 @@ const PortfolioContent = () => {
 
   const balancesByType = useMemo(
     () => groupBy(allBalances.each, (b) => b.token?.type),
-    [allBalances],
+    [allBalances]
   )
 
   return (

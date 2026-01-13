@@ -123,8 +123,8 @@ const getExposures = (scan: TransactionScanResponse | null | undefined) => {
     .flat()
     .flatMap(({ spenders, ...rest }) =>
       toPairs(spenders as Record<string, Erc20Exposure | Erc721Exposure | Erc1155Exposure>).map(
-        ([spender, exposure]) => ({ ...rest, spender, exposure }),
-      ),
+        ([spender, exposure]) => ({ ...rest, spender, exposure })
+      )
     )
 }
 

@@ -82,7 +82,7 @@ export const BittensorClaimSubnetSelect = () => {
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(BITTENSOR_NETWORK_ID)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
-    sortSubnetOptions(subnetData, sortMethod),
+    sortSubnetOptions(subnetData, sortMethod)
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -97,10 +97,10 @@ export const BittensorClaimSubnetSelect = () => {
 
     // Put confirmed subnets at the top, maintaining their relative order
     const confirmed = filtered.filter(
-      (s) => s.netuid !== undefined && preselectedSubnets.includes(s.netuid),
+      (s) => s.netuid !== undefined && preselectedSubnets.includes(s.netuid)
     )
     const others = filtered.filter(
-      (s) => s.netuid === undefined || !preselectedSubnets.includes(s.netuid),
+      (s) => s.netuid === undefined || !preselectedSubnets.includes(s.netuid)
     )
 
     return [...confirmed, ...others]
@@ -111,10 +111,10 @@ export const BittensorClaimSubnetSelect = () => {
       setSelectedSubnets(
         selectedSubnets.includes(netuid)
           ? selectedSubnets.filter((id) => id !== netuid)
-          : [...selectedSubnets, netuid],
+          : [...selectedSubnets, netuid]
       )
     },
-    [selectedSubnets, setSelectedSubnets],
+    [selectedSubnets, setSelectedSubnets]
   )
 
   const handleSortMethodChange = useCallback(
@@ -123,7 +123,7 @@ export const BittensorClaimSubnetSelect = () => {
       setPreselectedSubnets(selectedSubnets)
       setSortMethod(method)
     },
-    [selectedSubnets],
+    [selectedSubnets]
   )
 
   const [, startTransition] = useTransition()
@@ -166,7 +166,7 @@ export const BittensorClaimSubnetSelect = () => {
             <SearchInputControlled
               containerClassName={classNames(
                 "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
               )}
               placeholder={t("Search subnets")}
               value={search}
@@ -226,12 +226,12 @@ const SortMethodButton: FC<{
       { label: t("UID"), value: "netuid" },
       { label: t("Emissions"), value: "emission" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -326,7 +326,7 @@ const SubnetRow: FC<{
 
   const dtaoTokenId = useMemo(
     () => subDTaoTokenId(networkId, option.netuid!),
-    [networkId, option.netuid],
+    [networkId, option.netuid]
   )
   const tokenAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
@@ -336,7 +336,7 @@ const SubnetRow: FC<{
         ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
-    [option.emission, t],
+    [option.emission, t]
   )
 
   if (!tokenAlpha) return null
@@ -348,7 +348,7 @@ const SubnetRow: FC<{
       onClick={onClick}
       className={classNames(
         "hover:bg-grey-750 focus-visible:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       <TokenLogo tokenId={tokenAlpha.id} className="size-16 shrink-0" />
@@ -363,7 +363,7 @@ const SubnetRow: FC<{
       <div
         className={classNames(
           "mx-2 h-4 w-4 shrink-0 rounded-full",
-          isSelected ? "bg-primary" : "bg-grey-700",
+          isSelected ? "bg-primary" : "bg-grey-700"
         )}
       />
     </button>

@@ -27,7 +27,7 @@ export const notifyCustom = (content: ToastContent<unknown>, options: ToastOptio
 export const notifyUpdate = async (
   toastId: Id,
   content: NotificationProps,
-  options: ToastOptions = {},
+  options: ToastOptions = {}
 ) => {
   // toast.isActive may return false if the toast is not yet rendered
   await sleep(50)

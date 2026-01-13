@@ -27,7 +27,7 @@ export const PlatformSelect: FC<{
       setSelected(item.value)
       if (onChange) onChange(item.value)
     },
-    [onChange],
+    [onChange]
   )
 
   return (

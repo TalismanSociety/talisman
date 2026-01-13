@@ -36,10 +36,10 @@ const AccountRowContainer: FC<
       classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         isSelected && "bg-grey-800 ",
-        "text-body-secondary hover:text-body",
+        "text-body-secondary hover:text-body"
       ),
 
-    [isSelected],
+    [isSelected]
   )
 
   return onClick ? (
@@ -58,7 +58,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected }) => {
 
   const formatted = useMemo(
     () => encodeAnyAddress(account.address, { ss58Format: accountChain?.prefix }),
-    [account.address, accountChain?.prefix],
+    [account.address, accountChain?.prefix]
   )
 
   const isCopiable = useMemo(() => {
@@ -138,7 +138,7 @@ export const AccountsList: FC<AccountsListProps> = ({ selected, accounts, onSele
     (address: string) => () => {
       onSelect?.(address)
     },
-    [onSelect],
+    [onSelect]
   )
 
   return (
@@ -177,9 +177,9 @@ export const CopyAddressAccountForm = () => {
         .filter(
           (account) =>
             !addresses?.length ||
-            addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address)),
+            addresses.map((a) => normalizeAddress(a)).includes(normalizeAddress(account.address))
         ),
-    [allAccounts, network, search, addresses],
+    [allAccounts, network, search, addresses]
   )
 
   return (

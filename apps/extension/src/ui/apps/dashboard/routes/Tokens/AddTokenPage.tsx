@@ -47,7 +47,7 @@ export const AddTokenPage = () => {
       <HeaderBlock
         title={t("Add custom token")}
         text={t(
-          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
         )}
       />
       <AddCustomTokenForm />
@@ -378,7 +378,7 @@ const AddCustomTokenForm = () => {
 const getEthereumTokenInfo = async (
   network: EthNetwork,
   address: `0x${string}`,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<Token | undefined> => {
   if (!network || !address) throw new Error("Network and address are required")
 

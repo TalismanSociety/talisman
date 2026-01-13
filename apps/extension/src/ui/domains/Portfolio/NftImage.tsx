@@ -33,7 +33,7 @@ export const NftImage = ({
     <div
       className={classNames(
         "bg-grey-800 relative size-16 shrink-0 overflow-hidden rounded-sm",
-        className,
+        className
       )}
     >
       {isLoading && !hasError && (

@@ -38,14 +38,14 @@ export const [useAllNetworkOptions, allNetworkOptions$] = bind(
         networks
           .filter(isNetworkEth)
           .map((n) => n.substrateChainId)
-          .filter(isTruthy),
+          .filter(isTruthy)
       )
 
       const networkOptions: NetworkOption[] = networks
         .filter((n) => !networkIdsToExclude.has(n.id) && !!networkDisplayNames[n.id])
         .map((n) => {
           const networkIds = [n.id, n.platform === "ethereum" ? n.substrateChainId : null].filter(
-            isTruthy,
+            isTruthy
           )
 
           return {
@@ -57,18 +57,18 @@ export const [useAllNetworkOptions, allNetworkOptions$] = bind(
         .sort((a, b) => a.name.localeCompare(b.name))
 
       return networkOptions
-    }),
-  ),
+    })
+  )
 )
 
 // id of the currently selected network option
 // feels like this should be in the location state, not in an observable
 const subjectPortfolioNetworkOptionId$ = new BehaviorSubject<NetworkOption["id"] | undefined>(
-  undefined,
+  undefined
 )
 
 export const [usePortfolioNetworkOptionId, portfolioNetworkOptionId$] = bind(
-  subjectPortfolioNetworkOptionId$,
+  subjectPortfolioNetworkOptionId$
 )
 
 // ⚠️ suspenses
@@ -77,8 +77,8 @@ export const [usePortfolioNetworkFilter, portfolioNetworkFilter$] = bind(
     map(([allNetworkOptions, portfolioNetworkOptionId]) => {
       if (!portfolioNetworkOptionId) return undefined
       return allNetworkOptions.find((n) => n.id === portfolioNetworkOptionId)
-    }),
-  ),
+    })
+  )
 )
 
 export const setPortfolioNetworkFilter = (network: NetworkOption | undefined) =>
@@ -110,7 +110,7 @@ const getFilteredBalances = ({
 const subjectPortfolioSelectedAccounts$ = new BehaviorSubject<Account[] | undefined>(undefined)
 
 export const [usePortfolioSelectedAccounts, portfolioSelectedAccounts$] = bind(
-  subjectPortfolioSelectedAccounts$,
+  subjectPortfolioSelectedAccounts$
 )
 
 export const setPortfolioSelectedAccounts = (accounts: Account[] | undefined) =>
@@ -139,7 +139,7 @@ export const [usePortfolioGlobalData, portfolioGlobalData$] = bind<PortfolioGlob
     portfolioBalances: new Balances([]),
     isInitialising: false,
     isProvisioned: false,
-  },
+  }
 )
 
 const portfolioForSelectedNetwork$ = combineLatest([
@@ -155,7 +155,7 @@ const portfolioForSelectedNetwork$ = combineLatest([
     ]) => {
       const allBalances = selectedAccounts
         ? allAccountsBalances.find((b) =>
-            selectedAccounts.some((a) => isAddressEqual(a.address, b.address)),
+            selectedAccounts.some((a) => isAddressEqual(a.address, b.address))
           )
         : portfolioBalances
 
@@ -165,9 +165,9 @@ const portfolioForSelectedNetwork$ = combineLatest([
         allBalances,
         networkBalances,
       }
-    },
+    }
   ),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [usePortfolioBalances, portfolioBalances$] = bind(
@@ -183,11 +183,11 @@ export const [usePortfolioBalances, portfolioBalances$] = bind(
         ...portfolioForSelectedNetwork,
         searchBalances,
       }
-    }),
+    })
   ),
   {
     allBalances: new Balances([]),
     searchBalances: new Balances([]),
     networkBalances: new Balances([]),
-  },
+  }
 )

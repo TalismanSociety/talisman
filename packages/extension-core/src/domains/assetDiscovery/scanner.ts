@@ -89,15 +89,15 @@ class AssetDiscoveryScanner {
           accounts
             .filter(isAccountNotContact)
             .map((account) => account.address)
-            .sort(),
+            .sort()
         ),
-        distinct((addresses) => addresses.join("")),
+        distinct((addresses) => addresses.join(""))
       )
       .subscribe(async (allAddresses) => {
         try {
           if (prevAllAddresses && !this.#preventAutoStart) {
             const addresses = allAddresses.filter(
-              (k) => !(prevAllAddresses as string[]).includes(k),
+              (k) => !(prevAllAddresses as string[]).includes(k)
             )
 
             if (addresses.length) {
@@ -133,15 +133,15 @@ class AssetDiscoveryScanner {
         map(({ networksById, activeNetworks }) =>
           Object.keys(activeNetworks)
             .filter((k) => !!activeNetworks[k] && networksById[k])
-            .sort(),
+            .sort()
         ),
-        distinct((allActiveNetworkIds) => allActiveNetworkIds.join("")),
+        distinct((allActiveNetworkIds) => allActiveNetworkIds.join(""))
       )
       .subscribe(async (allActiveNetworkIds) => {
         try {
           if (prevAllActiveNetworkIds && !this.#preventAutoStart) {
             const networkIds = allActiveNetworkIds.filter(
-              (k) => !(prevAllActiveNetworkIds as string[]).includes(k),
+              (k) => !(prevAllActiveNetworkIds as string[]).includes(k)
             )
 
             if (networkIds.length) {
@@ -384,7 +384,7 @@ class AssetDiscoveryScanner {
 
       const tokensByNetwork: Record<EthNetworkId, Token[]> = groupBy(
         tokensToScan,
-        (t) => t.networkId,
+        (t) => t.networkId
       )
 
       const totalChecks = tokensToScan.length * scope.addresses.length
@@ -394,7 +394,7 @@ class AssetDiscoveryScanner {
         "[AssetDiscovery] Starting scan: %d tokens, %d total checks",
         totalTokens,
         totalChecks,
-        { networkIds: scope.networkIds },
+        { networkIds: scope.networkIds }
       )
 
       const subScopeChange = assetDiscoveryStore.observable
@@ -408,7 +408,7 @@ class AssetDiscoveryScanner {
       const erc20aggregators = Object.fromEntries(
         Object.values(evmNetworks)
           .filter((n) => n.contracts?.Erc20Aggregator)
-          .map((n) => [n.id, n.contracts?.Erc20Aggregator] as const),
+          .map((n) => [n.id, n.contracts?.Erc20Aggregator] as const)
       )
 
       const stop = log.timer("[AssetDiscovery] Scan completed")
@@ -428,10 +428,10 @@ class AssetDiscoveryScanner {
             const allChecks = sortBy(
               tokensByNetwork[networkId]
                 .map((t) =>
-                  scope.addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a })),
+                  scope.addresses.map((a) => ({ tokenId: t.id, type: t.type, address: a }))
                 )
                 .flat(),
-              (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap),
+              (c) => getSortableIdentifier(c.tokenId, c.address, tokensMap)
             )
 
             let startIndex = 0
@@ -448,7 +448,7 @@ class AssetDiscoveryScanner {
             //Split into chunks of 50 token+id
             const chunkedChecks = chunk(
               remainingChecks,
-              NETWORK_BALANCES_FETCH_CHUNK_SIZE[networkId] ?? BALANCES_FETCH_CHUNK_SIZE,
+              NETWORK_BALANCES_FETCH_CHUNK_SIZE[networkId] ?? BALANCES_FETCH_CHUNK_SIZE
             )
 
             for (const checks of chunkedChecks) {
@@ -462,7 +462,7 @@ class AssetDiscoveryScanner {
                     token: tokensMap[c.tokenId],
                     address: c.address as EvmAddress,
                   })),
-                  erc20aggregators[networkId],
+                  erc20aggregators[networkId]
                 ),
                 throwAfter(10_000, "Timeout"),
               ])
@@ -498,12 +498,12 @@ class AssetDiscoveryScanner {
                 // => use the min of both ratios as current progress
                 const totalScanned = Object.values(currentScanCursors).reduce(
                   (acc, cur) => acc + cur.scanned,
-                  0,
+                  0
                 )
                 const tokensProgress = Math.round((100 * totalScanned) / totalChecks)
                 const networksProgress = Math.round(
                   (100 * Object.keys(currentScanCursors).length) /
-                    Object.keys(tokensByNetwork).length,
+                    Object.keys(tokensByNetwork).length
                 )
                 const currentScanProgressPercent = Math.min(tokensProgress, networksProgress)
 
@@ -599,7 +599,7 @@ class AssetDiscoveryScanner {
 
       const evmNetworkIds = uniq(tokens.map((token) => token.networkId))
       await activeNetworksStore.set(
-        Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true])),
+        Object.fromEntries(evmNetworkIds.map((networkId) => [networkId, true]))
       )
 
       await sleep(100) // pause to ensure local storage observables fires before we exit, to prevent unnecessary scans to be triggered (see watchEnabledNetworks up top)
@@ -673,7 +673,7 @@ type BalanceDef = { token: Token; address: EvmAddress }
 
 const getEvmTokenBalancesWithoutAggregator = async (
   client: PublicClient,
-  balanceDefs: BalanceDef[],
+  balanceDefs: BalanceDef[]
 ) => {
   if (balanceDefs.length === 0) return []
 
@@ -698,24 +698,24 @@ const getEvmTokenBalancesWithoutAggregator = async (
         log.warn(`[AssetDiscovery] Failed to get balance of ${token.id} for ${address}: `, { err })
         return "0"
       }
-    }),
+    })
   )
 }
 
 const getEvmTokenBalancesWithAggregator = async (
   client: PublicClient,
   balanceDefs: BalanceDef[],
-  aggregatorAddress: EvmAddress,
+  aggregatorAddress: EvmAddress
 ) => {
   if (balanceDefs.length === 0) return []
 
   // keep track of index so we can split queries and rebuild the original order afterwards
   const indexedBalanceDefs = balanceDefs.map((bd, index) => ({ ...bd, index }))
   const erc20BalanceDefs = indexedBalanceDefs.filter(
-    (b) => b.token.type === "evm-erc20" || b.token.type === "evm-uniswapv2",
+    (b) => b.token.type === "evm-erc20" || b.token.type === "evm-uniswapv2"
   )
   const otherBalanceDefs = indexedBalanceDefs.filter(
-    (b) => b.token.type !== "evm-erc20" && b.token.type !== "evm-uniswapv2",
+    (b) => b.token.type !== "evm-erc20" && b.token.type !== "evm-uniswapv2"
   )
 
   const [erc20Balances, otherBalances] = await Promise.all([
@@ -736,7 +736,7 @@ const getEvmTokenBalancesWithAggregator = async (
   const resByIndex = new Map<number, string>(
     erc20Balances
       .map((res, i) => [erc20BalanceDefs[i].index, String(res)] as [number, string])
-      .concat(otherBalances.map((res, i) => [otherBalanceDefs[i].index, String(res)])),
+      .concat(otherBalances.map((res, i) => [otherBalanceDefs[i].index, String(res)]))
   )
 
   return balanceDefs.map((_bd, i) => resByIndex.get(i)!)
@@ -745,7 +745,7 @@ const getEvmTokenBalancesWithAggregator = async (
 const getEvmTokenBalances = (
   client: PublicClient,
   balanceDefs: BalanceDef[],
-  aggregatorAddress: EvmAddress | undefined,
+  aggregatorAddress: EvmAddress | undefined
 ) => {
   return aggregatorAddress
     ? getEvmTokenBalancesWithAggregator(client, balanceDefs, aggregatorAddress)

@@ -162,7 +162,7 @@ const TokenRow: FC<TokenRowProps> = ({
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        selected && "bg-grey-800 text-body-secondary",
+        selected && "bg-grey-800 text-body-secondary"
       )}
     >
       <div className="w-16 shrink-0">
@@ -172,7 +172,7 @@ const TokenRow: FC<TokenRowProps> = ({
         <div
           className={classNames(
             "flex w-full justify-between gap-6 overflow-hidden text-sm font-bold",
-            selected ? "text-body-secondary" : "text-body",
+            selected ? "text-body-secondary" : "text-body"
           )}
         >
           <div className="flex grow items-center gap-2 overflow-hidden">
@@ -264,7 +264,7 @@ const TokensList: FC<TokensListProps> = ({
 
   const accountBalances = useMemo(
     () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
-    [address, selected, balances],
+    [address, selected, balances]
   )
 
   const filterAccountCompatibleTokens = useCallback(
@@ -275,7 +275,7 @@ const TokensList: FC<TokensListProps> = ({
 
       return isAccountCompatibleWithNetwork(network, account)
     },
-    [account, networksMap],
+    [account, networksMap]
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -336,7 +336,7 @@ const TokensList: FC<TokensListProps> = ({
         // keep alphabetical sort
         return 0
       }),
-    [currency, selected, priorityTokens],
+    [currency, selected, priorityTokens]
   )
 
   const tokensWithBalances = useMemo<TokenData[]>(() => {
@@ -369,8 +369,7 @@ const TokensList: FC<TokensListProps> = ({
     return tokensWithBalances
       .filter(
         (t) =>
-          !ls ||
-          [t.token.symbol, t.token.name, t.chainNameSearch].join().toLowerCase().includes(ls),
+          !ls || [t.token.symbol, t.token.name, t.chainNameSearch].join().toLowerCase().includes(ls)
       )
       .sort((t1, t2) => {
         const s1 = t1.token.symbol.toLowerCase()
@@ -385,7 +384,7 @@ const TokensList: FC<TokensListProps> = ({
     (tokenId: string) => {
       onSelect?.(tokenId)
     },
-    [onSelect],
+    [onSelect]
   )
 
   return (

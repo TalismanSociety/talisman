@@ -48,7 +48,7 @@ export const TxHistoryList = () => {
 
   const selectedTx = useMemo(
     () => transactions.find((tx) => tx.id === selectedTxId),
-    [selectedTxId, transactions],
+    [selectedTxId, transactions]
   )
 
   const handleSelectTx = useCallback((tx: WalletTransaction) => {
@@ -314,7 +314,7 @@ const TransactionRowBase: FC<{
       disabled={!onClick}
       className={classNames(
         "bg-grey-850 hover:bg-grey-800 relative z-0 flex w-full grow items-center rounded-sm text-left",
-        IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8",
+        IS_POPUP ? "h-[5.2rem] gap-6 px-6" : "h-[5.8rem] gap-8 px-8"
       )}
     >
       {logo}
@@ -323,7 +323,7 @@ const TransactionRowBase: FC<{
           <div
             className={classNames(
               "text-body flex h-10 items-center gap-2 font-bold",
-              IS_POPUP ? "text-sm" : "text-base",
+              IS_POPUP ? "text-sm" : "text-base"
             )}
           >
             {status}

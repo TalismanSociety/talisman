@@ -27,7 +27,7 @@ type YieldxyzEthTransaction = {
 
 const deserializeYieldxyzEthTransaction = (
   tx: TransactionDto,
-  nonce: number | undefined,
+  nonce: number | undefined
 ): TransactionRequest | null => {
   try {
     const parsedTx = JSON.parse(tx.unsignedTransaction as string) as YieldxyzEthTransaction

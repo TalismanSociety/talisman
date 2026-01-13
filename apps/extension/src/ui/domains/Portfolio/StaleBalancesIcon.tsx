@@ -20,7 +20,7 @@ export const StaleBalancesIcon = ({ className, staleChains = [] }: Props) => {
 
   const tooltipText = t(
     `Latest balance is not available for {{chains}}.\nDisplayed value may be out of date.`,
-    { chains: namedChain + andNMore },
+    { chains: namedChain + andNMore }
   )
   const tooltip = <span className="whitespace-pre-wrap">{tooltipText}</span>
 

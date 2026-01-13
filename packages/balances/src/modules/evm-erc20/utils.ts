@@ -10,7 +10,7 @@ import {
 
 export const getErc20ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ): Promise<{ symbol: string; decimals: number; name: string }> => {
   try {
     const contract = getTypedContract(client, erc20Abi, contractAddress)
@@ -43,7 +43,7 @@ export const getErc20ContractData = async (
 const getTypedContract = <TAbi extends Abi>(
   client: Client,
   abi: TAbi,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ) =>
   getContract({
     address: contractAddress,

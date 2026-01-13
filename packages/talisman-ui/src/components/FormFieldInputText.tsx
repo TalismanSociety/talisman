@@ -26,7 +26,7 @@ export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
       className={classNames(
         "text-grey-300 bg-field text-md focus-within:border-grey-600 flex w-full items-center gap-4 rounded border border-transparent px-12 font-light leading-none",
         small ? "h-24" : "h-28",
-        className,
+        className
       )}
     />
   )
@@ -56,12 +56,12 @@ export const FormFieldInputText = forwardRef<HTMLInputElement, FormFieldInputTex
           {...props}
           className={classNames(
             "focus:text-body placeholder:text-body-disabled disabled:text-body-disabled h-full min-w-0 grow bg-transparent focus-visible:outline-none",
-            props.className,
+            props.className
           )}
         />
         {after}
       </FormFieldInputContainer>
     )
-  },
+  }
 )
 FormFieldInputText.displayName = "FormFieldInputText"

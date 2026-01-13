@@ -71,7 +71,7 @@ export const BittensorSubnetSelect = () => {
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
-    sortSubnetOptions(subnetData, sortMethod),
+    sortSubnetOptions(subnetData, sortMethod)
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -90,7 +90,7 @@ export const BittensorSubnetSelect = () => {
       setNetuid(netuid)
       setStep("form")
     },
-    [setNetuid, setStep],
+    [setNetuid, setStep]
   )
 
   const [, startTransition] = useTransition()
@@ -123,7 +123,7 @@ export const BittensorSubnetSelect = () => {
             <SearchInputControlled
               containerClassName={classNames(
                 "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
               )}
               placeholder={t("Search subnets")}
               value={search}
@@ -173,12 +173,12 @@ const SortMethodButton: FC<{
       { label: t("TAO in Pool"), value: "total_tao" },
       { label: t("Emissions"), value: "emission" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -274,7 +274,7 @@ const SubnetRow: FC<{
 
   const [taoTokenId, dtaoTokenId] = useMemo(
     () => [subNativeTokenId(networkId), subDTaoTokenId(networkId, option.netuid!)] as const,
-    [networkId, option.netuid],
+    [networkId, option.netuid]
   )
   const tokanAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
@@ -284,7 +284,7 @@ const SubnetRow: FC<{
         ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
-    [option.emission, t],
+    [option.emission, t]
   )
 
   if (!tokanAlpha) return null
@@ -297,7 +297,7 @@ const SubnetRow: FC<{
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected && "bg-grey-800 text-body-secondary",
+        isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
       <TokenLogo tokenId={tokanAlpha.id} className="size-16 shrink-0" />
@@ -313,7 +313,7 @@ const SubnetRow: FC<{
           <div
             className={cn(
               "text-body-secondary flex w-full items-center justify-between gap-8 overflow-hidden text-xs",
-              isLoading && "animate-pulse",
+              isLoading && "animate-pulse"
             )}
           >
             <div className="flex grow items-center gap-2 overflow-hidden">

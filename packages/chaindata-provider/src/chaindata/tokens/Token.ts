@@ -105,6 +105,6 @@ export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {
       noDiscovery,
     },
     // token type specifics go after
-    token,
+    token
   )
 })

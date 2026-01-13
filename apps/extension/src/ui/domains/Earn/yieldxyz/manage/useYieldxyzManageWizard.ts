@@ -89,5 +89,5 @@ const useYieldxyzManageWizardProvider = ({
 }
 
 export const [YieldxyzManageWizardProvider, useYieldxyzManageWizard] = provideContext(
-  useYieldxyzManageWizardProvider,
+  useYieldxyzManageWizardProvider
 )

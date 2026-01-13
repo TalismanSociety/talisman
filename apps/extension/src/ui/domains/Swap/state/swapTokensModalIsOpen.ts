@@ -4,7 +4,7 @@ import { firstValueFrom, map } from "rxjs"
 import { searchParams$, setSearchParams } from "./searchParams"
 
 export const swapTokensModalIsOpen$ = state(
-  searchParams$.pipe(map((params) => params.has("swapTokens"))),
+  searchParams$.pipe(map((params) => params.has("swapTokens")))
 )
 
 export const setSwapTokensModalIsOpen = async (isOpen?: boolean) => {

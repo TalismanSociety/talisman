@@ -30,7 +30,7 @@ export const Modal: FC<ModalProps> = ({
       e.stopPropagation()
       onDismiss()
     },
-    [onDismiss],
+    [onDismiss]
   )
 
   const container = (containerId && document.getElementById(containerId)) || document.body
@@ -42,7 +42,7 @@ export const Modal: FC<ModalProps> = ({
         className={classNames(
           "bg-grey-900/50 left-0 top-0 z-20 h-full w-full backdrop-blur-sm",
           containerId ? "absolute" : "fixed",
-          onDismiss && "cursor-pointer",
+          onDismiss && "cursor-pointer"
         )}
         enter="ease-out duration-300"
         enterFrom="opacity-0"
@@ -58,7 +58,7 @@ export const Modal: FC<ModalProps> = ({
           "pointer-events-none flex flex-col items-center",
           containerId ? "absolute" : "fixed",
           anchor === "center" && "justify-center",
-          anchor === "bottom" && "justify-end",
+          anchor === "bottom" && "justify-end"
         )}
       >
         <TransitionChild
@@ -66,7 +66,7 @@ export const Modal: FC<ModalProps> = ({
           className={classNames(
             "pointer-events-auto overflow-hidden",
             containerId ? "max-h-full max-w-full" : "max-h-[100dvh] max-w-[dvw]",
-            className,
+            className
           )}
           enter="ease-out duration-200"
           enterFrom="opacity-0 scale-90"
@@ -85,6 +85,6 @@ export const Modal: FC<ModalProps> = ({
         </TransitionChild>
       </div>
     </Transition>,
-    container,
+    container
   )
 }

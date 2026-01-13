@@ -27,7 +27,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
   const txBase = useMemo(
     () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),
-    [signingRequest],
+    [signingRequest]
   )
 
   // once the payload is sent to ledger, we must freeze it
@@ -76,7 +76,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis]
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -142,7 +142,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent],
+    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent]
   )
 
   return {
@@ -171,5 +171,5 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 }
 
 export const [EthSignTransactionRequestProvider, useEthSignTransactionRequest] = provideContext(
-  useEthSignTransactionRequestProvider,
+  useEthSignTransactionRequestProvider
 )

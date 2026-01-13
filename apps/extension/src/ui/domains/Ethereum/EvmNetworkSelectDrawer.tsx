@@ -23,7 +23,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id],
+    [authorisedSites, currentSite?.id]
   )
   // persist initial setting to prevent reordering when changing networks
   const [initialNetworkId] = useState(() => site?.ethChainId?.toString())
@@ -50,7 +50,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
           arr.push(network)
           return acc
         },
-        [[] as EthNetwork[], [] as EthNetwork[]],
+        [[] as EthNetwork[], [] as EthNetwork[]]
       )
   }, [activeEvmNetworksState, currentNetwork?.id, evmNetworks])
 
@@ -72,7 +72,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()
     },
-    [activeEvmNetworksState, currentSite.id, onClose],
+    [activeEvmNetworksState, currentSite.id, onClose]
   )
 
   const handleManageNetworksClick = useCallback(async () => {
@@ -108,7 +108,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
             <div
               className={classNames(
                 "text-body-secondary text-xs",
-                !!activeEvmNetworks.length && "mt-4",
+                !!activeEvmNetworks.length && "mt-4"
               )}
             >
               {t("Inactive networks")}
@@ -178,7 +178,7 @@ const NetworkButton: FC<{
           <div
             className={classNames(
               "mx-4 h-4 w-4 shrink-0 rounded-full",
-              isSelected ? "bg-primary" : "bg-grey-700",
+              isSelected ? "bg-primary" : "bg-grey-700"
             )}
           ></div>
         </button>
@@ -196,7 +196,7 @@ const NetworkRows: FC<{
     (id: string) => () => {
       onSelect(id)
     },
-    [onSelect],
+    [onSelect]
   )
 
   if (!networks.length) return null

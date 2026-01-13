@@ -55,7 +55,7 @@ export const SolSignMessageRequest: FC<{
       address: account.address,
       message: Buffer.from(base58.decode(message)),
     }),
-    [account, message],
+    [account, message]
   )
 
   const handleReject = async () => {

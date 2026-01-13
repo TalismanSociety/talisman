@@ -58,7 +58,7 @@ export default class SigningHandler extends ExtensionHandler {
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
           specVersion,
-          signedExtensions,
+          signedExtensions
         )
 
         registry = fullRegistry
@@ -89,7 +89,7 @@ export default class SigningHandler extends ExtensionHandler {
                 signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
                   // use chaindata override value of `withType`
                   withType: chain.hasExtrinsicSignatureTypePrefix,
-                }),
+                })
               )
 
         if (payload.withSignedTransaction) {
@@ -97,7 +97,7 @@ export default class SigningHandler extends ExtensionHandler {
             const tx = registry.createType(
               "Extrinsic",
               { method: payload.method },
-              { version: payload.version },
+              { version: payload.version }
             )
 
             // apply signature to the modified payload
@@ -122,7 +122,7 @@ export default class SigningHandler extends ExtensionHandler {
           // eslint-disable-next-line no-console
           console.warn(
             "Unable to find chain for genesis hash, transaction will not be watched",
-            payload.genesisHash,
+            payload.genesisHash
           )
         }
       } else {
@@ -134,7 +134,7 @@ export default class SigningHandler extends ExtensionHandler {
         {
           ...analyticsProperties,
           networkType: "substrate",
-        },
+        }
       )
 
       resolve({
@@ -185,7 +185,7 @@ export default class SigningHandler extends ExtensionHandler {
           const tx = registry.createType(
             "Extrinsic",
             { method: payload.method },
-            { version: payload.version },
+            { version: payload.version }
           )
 
           // apply signature to the modified payload
@@ -202,7 +202,7 @@ export default class SigningHandler extends ExtensionHandler {
         // eslint-disable-next-line no-console
         console.warn(
           "Unable to find chain for genesis hash, transaction will not be watched",
-          payload.genesisHash,
+          payload.genesisHash
         )
       }
     }
@@ -222,7 +222,7 @@ export default class SigningHandler extends ExtensionHandler {
         ...analyticsProperties,
         networkType: "substrate",
         hardwareType,
-      },
+      }
     )
 
     return true
@@ -277,7 +277,7 @@ export default class SigningHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(signing.approveSign)":

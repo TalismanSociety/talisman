@@ -4,7 +4,7 @@ import { log } from "extension-shared"
 
 export const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,
-  chain: DotNetwork,
+  chain: DotNetwork
 ): { tokenId: TokenId; value: bigint } => {
   if (assets.type === "V3") {
     // our view only support displaying one asset

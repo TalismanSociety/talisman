@@ -61,7 +61,7 @@ export const SwapForm = ({
   const fromAssets = useAtomValue(loadable(fromAssetsAtom))
   const toAssets = useAtomValue(loadable(toAssetsAtom))
   const [cachedToAmount, setCachedToAmount] = useState(
-    toAmount.state === "hasData" ? toAmount.data : undefined,
+    toAmount.state === "hasData" ? toAmount.data : undefined
   )
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
   const quotes = useAtomValue(swapQuotesAtom)
@@ -93,7 +93,7 @@ export const SwapForm = ({
       if (asset && toAsset && asset.id === toAsset.id) reverse()
       else setFromAsset(asset)
     },
-    [reverse, setFromAsset, toAsset],
+    [reverse, setFromAsset, toAsset]
   )
 
   const handleChangeToAsset = useCallback(
@@ -101,7 +101,7 @@ export const SwapForm = ({
       if (asset && fromAsset && asset.id === fromAsset.id) reverse()
       else setToAsset(asset)
     },
-    [fromAsset, reverse, setToAsset],
+    [fromAsset, reverse, setToAsset]
   )
 
   const insufficientBalance = useMemo(() => {

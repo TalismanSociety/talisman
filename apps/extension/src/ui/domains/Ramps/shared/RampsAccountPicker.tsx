@@ -60,14 +60,14 @@ export const RampsAccountPicker: FC<{
       if (a2.address === selected) return 1
 
       return a1.name.localeCompare(a2.name)
-    }),
+    })
   )
 
   const filteredAccounts = useMemo(() => {
     const ls = search.toLowerCase()
     return sortedAccounts.filter(
       (account) =>
-        account.address.toLowerCase().includes(ls) || account.name.toLowerCase().includes(ls),
+        account.address.toLowerCase().includes(ls) || account.name.toLowerCase().includes(ls)
     )
   }, [search, sortedAccounts])
 
@@ -216,7 +216,7 @@ const AccountButtonRow: FC<{
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 overflow-hidden px-12 text-left",
         isSelected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       <AccountIcon
@@ -277,7 +277,7 @@ const AccountTokenBalance: FC<{
     <div
       className={classNames(
         "space-y-2 whitespace-nowrap text-right text-sm",
-        loadingStatus !== "live" && "animate-pulse",
+        loadingStatus !== "live" && "animate-pulse"
       )}
     >
       <div>

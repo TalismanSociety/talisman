@@ -17,7 +17,7 @@ export class ChainsHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(chains.generateQr.addNetworkSpecs)": {

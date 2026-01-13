@@ -26,7 +26,7 @@ export const ViewDetailsAddress: FC<
             ss58Format: network?.platform === "polkadot" ? network.prefix : undefined,
           })
         : "",
-    [address, network],
+    [address, network]
   )
 
   const blockExplorerUrl = useMemo(() => {

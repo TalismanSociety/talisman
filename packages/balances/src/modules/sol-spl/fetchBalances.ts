@@ -57,16 +57,16 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       setDetectedTokenIds(
         address,
         MODULE_TYPE,
-        balances.map((b) => b.tokenId),
+        balances.map((b) => b.tokenId)
       )
 
       return [address, balances] as const
-    }),
+    })
   )
 
   const allBalancesByKey = keyBy(
     balancesPerAddress.flatMap(([, addressBalances]) => addressBalances),
-    (b) => getBalanceKey(b.tokenId, b.address),
+    (b) => getBalanceKey(b.tokenId, b.address)
   )
 
   const balanceDefs = getBalanceDefs<typeof MODULE_TYPE>(tokensWithAddresses)

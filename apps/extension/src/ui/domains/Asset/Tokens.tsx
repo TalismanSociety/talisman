@@ -27,7 +27,7 @@ type DisplayValueProps = {
 const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCountUp }) => {
   const num = useMemo(
     () => (BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)),
-    [amount],
+    [amount]
   )
 
   const formated = useMemo(() => formatDecimals(num), [num])
@@ -72,7 +72,7 @@ export const Tokens: FC<TokensProps> = ({
       `${formatDecimals(amount, decimals ?? MAX_DECIMALS_FORMAT, { notation: "standard" })} ${
         symbol ?? ""
       }`.trim(),
-    [amount, decimals, symbol],
+    [amount, decimals, symbol]
   )
   const tooltip = useMemo(() => (noTooltip ? null : tooltipAmount), [noTooltip, tooltipAmount])
 
@@ -85,7 +85,7 @@ export const Tokens: FC<TokensProps> = ({
         "tokens",
         isRevealable && "balance-revealable",
         isRevealed && "balance-reveal",
-        className,
+        className
       )}
     >
       {render && (

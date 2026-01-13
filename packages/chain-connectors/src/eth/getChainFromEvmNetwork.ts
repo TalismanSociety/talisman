@@ -14,7 +14,7 @@ const VIEM_CHAINS = Object.keys(validViemChains).reduce(
     acc[chain.id] = chain
     return acc
   },
-  {} as Record<number, Chain>,
+  {} as Record<number, Chain>
 )
 
 const chainsCache = new Map<string, Chain>()
@@ -52,7 +52,7 @@ export const getChainFromEvmNetwork = (network: EthNetwork): Chain => {
               toPairs(network.contracts).map(([name, address]): [string, ChainContract] => [
                 camelCase(name),
                 { address },
-              ]),
+              ])
             )
           : {}),
       },

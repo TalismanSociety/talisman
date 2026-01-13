@@ -24,7 +24,7 @@ type ExtrinsicPayload = Awaited<ReturnType<typeof getExtrinsicPayload>>
 
 const createRootClaimTypeEnum = (
   claimType: RootClaimType,
-  selectedSubnets?: number[],
+  selectedSubnets?: number[]
 ): RootClaimTypeEnum => {
   if (claimType === "KeepSubnets") {
     // Ensure subnets are plain numbers and sorted (chain may expect specific format)
@@ -52,7 +52,7 @@ const getExtrinsicPayload = async ({
     "SubtensorModule",
     "set_root_claim_type",
     { new_root_claim_type: createRootClaimTypeEnum(claimType, selectedSubnets) },
-    { address },
+    { address }
   )
 }
 

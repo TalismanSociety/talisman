@@ -32,7 +32,7 @@ export const useEnableTokens = () => {
         log.error("Failed to activate tokens", { err, tokenIdsToActivate })
       }
     },
-    [activeTokens, tokens],
+    [activeTokens, tokens]
   )
 
   return { enableTokens }

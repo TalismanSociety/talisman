@@ -65,5 +65,5 @@ const useExternalAddressWarningProvider = () => {
 
 // provider is designed to wrap the confirm form, so it resets if the user goes back
 export const [ExternalAddressWarningProvider, useExternalAddressWarning] = provideContext(
-  useExternalAddressWarningProvider,
+  useExternalAddressWarningProvider
 )

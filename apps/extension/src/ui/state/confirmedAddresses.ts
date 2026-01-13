@@ -16,7 +16,7 @@ const confirmedAddressesRaw$ = new Observable<ConfirmedExternalAddresses>((subsc
   }
 }).pipe(
   debugObservable("confirmedAddressesRaw$", true),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useConfirmedAddresses, confirmedAddresses$] = bind(confirmedAddressesRaw$, {})

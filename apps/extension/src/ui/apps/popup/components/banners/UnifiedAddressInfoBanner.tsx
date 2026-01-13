@@ -15,7 +15,7 @@ export const UnifiedAddressInfoBanner = () => {
 
   const showBanner = useMemo(
     () => allowBanner && !hideBanner && accounts.some(isAccountAddressSs58),
-    [accounts, allowBanner, hideBanner],
+    [accounts, allowBanner, hideBanner]
   )
 
   if (!showBanner) return null
@@ -25,7 +25,7 @@ export const UnifiedAddressInfoBanner = () => {
       className={classNames(
         "relative z-0 overflow-hidden",
         "text-tiny select-none rounded-sm px-6 py-4",
-        "bg-gradient-to-r from-[#9F7998] to-[#EB5D93]",
+        "bg-gradient-to-r from-[#9F7998] to-[#EB5D93]"
       )}
     >
       <div className="relative z-10">

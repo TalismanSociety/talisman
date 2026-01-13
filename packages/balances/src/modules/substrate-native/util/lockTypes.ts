@@ -66,7 +66,7 @@ const isBaseLock = (lock: Pick<LockedAmount<string>, "label">) =>
   baseLockLabels.includes(lock.label)
 const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock(lock)
 export const filterBaseLocks = (
-  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>,
+  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
 ) => {
   const hasNonBaseLocks = locks.some(isNonBaseLock)
   if (!hasNonBaseLocks) return locks
@@ -78,7 +78,7 @@ export const filterBaseLocks = (
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { balance }: { balance?: Balance } = {},
+  { balance }: { balance?: Balance } = {}
 ) => {
   if (!lock.label) return lock.label
 

@@ -25,7 +25,7 @@ export const getTokenFromCoinbaseAsset = (asset: CoinbaseTokenNetwork, tokens: T
 export const getTokenFromRampAsset = (
   asset: RampAssetInfo,
   remoteConfig: RemoteConfigStoreData,
-  tokens: TokenList,
+  tokens: TokenList
 ) => {
   const networkId = remoteConfig.ramps.rampNetworks[asset.chain]
   if (!networkId) return null

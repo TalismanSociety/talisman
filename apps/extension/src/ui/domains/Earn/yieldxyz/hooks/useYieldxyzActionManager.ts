@@ -51,7 +51,7 @@ export const useYieldxyzTransactionManager = ({
 
   const pendingTx = useMemo(
     () => action?.transactions.find((tx) => tx.id === pendingTxId) ?? null,
-    [action, pendingTxId],
+    [action, pendingTxId]
   )
 
   const onSubmit = useCallback(
@@ -67,7 +67,7 @@ export const useYieldxyzTransactionManager = ({
         setIsSubmitting(false)
       }
     },
-    [action, stepIndex, submitActionTransaction],
+    [action, stepIndex, submitActionTransaction]
   )
 
   // simple polling to refresh action while a tx is pending

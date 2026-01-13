@@ -21,7 +21,7 @@ const useAccountCreate = () => {
         return params
       })
     },
-    [setSearchParams],
+    [setSearchParams]
   )
 
   return { methodType, setMethodType }

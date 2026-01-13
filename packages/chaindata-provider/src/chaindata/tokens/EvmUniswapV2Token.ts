@@ -36,7 +36,7 @@ export type EvmUniswapV2TokenIdSpecs = {
 
 export const evmUniswapV2TokenId = (
   networkId: NetworkId,
-  contractAddress: EvmUniswapV2Token["contractAddress"],
+  contractAddress: EvmUniswapV2Token["contractAddress"]
 ) => generateTokenId(networkId, TOKEN_TYPE, contractAddress.toLowerCase())
 
 export const parseEvmUniswapV2TokenId = (tokenId: TokenId): EvmUniswapV2TokenIdSpecs => {

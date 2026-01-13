@@ -48,7 +48,7 @@ export const getEvmNetworkPublicClient = (network: EthNetwork): PublicClient => 
         chain,
         transport,
         batch,
-      }),
+      })
     )
   }
 

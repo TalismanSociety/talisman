@@ -49,21 +49,21 @@ export const YieldxyzTransactionsStepper: FC<{
                 <div
                   className={classNames(
                     "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full",
-                    isActive ? "bg-primary-500" : "bg-grey-600",
+                    isActive ? "bg-primary-500" : "bg-grey-600"
                   )}
                 >
                   {isProcessing ? (
                     <LoaderIcon
                       className={classNames(
                         "animate-spin-slow h-8 w-8",
-                        isActive ? "text-black" : "text-grey-700",
+                        isActive ? "text-black" : "text-grey-700"
                       )}
                     />
                   ) : (
                     <span
                       className={classNames(
                         "text-sm font-bold leading-none",
-                        isActive ? "text-black" : "text-body-secondary",
+                        isActive ? "text-black" : "text-body-secondary"
                       )}
                     >
                       {index + 1}
@@ -89,7 +89,7 @@ export const YieldxyzTransactionsStepper: FC<{
               key={transaction.id ?? `label-${index}`}
               className={classNames(
                 "text-center text-base font-bold capitalize leading-tight",
-                isActive ? "text-primary-500" : "text-grey-600",
+                isActive ? "text-primary-500" : "text-grey-600"
               )}
             >
               {label}

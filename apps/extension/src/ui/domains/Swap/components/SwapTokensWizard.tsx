@@ -40,7 +40,7 @@ export const SwapTokensWizard = () => {
       }
 
       return undefined
-    }, [fromAsset, fromEvmAddress, fromSubstrateAddress]),
+    }, [fromAsset, fromEvmAddress, fromSubstrateAddress])
   )
 
   // START: some things to keep loaded when switching between swaps views

@@ -125,7 +125,7 @@ const useYieldxyzExitWizardProvider = ({
 }
 
 export const [YieldxyzExitWizardProvider, useYieldxyzExitWizard] = provideContext(
-  useYieldxyzExitWizardProvider,
+  useYieldxyzExitWizardProvider
 )
 
 const getExitableBalance = (position: YieldxyzPositionEnhanced | null) => {

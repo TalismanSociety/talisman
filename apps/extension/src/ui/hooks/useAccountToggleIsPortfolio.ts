@@ -15,7 +15,7 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
         ? t("Make followed-only account")
         : t("Add to portfolio"),
     }),
-    [account, t],
+    [account, t]
   )
 
   const toggleIsPortfolio = useCallback(async () => {
@@ -29,7 +29,7 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
         title: t("Please wait"),
         subtitle: isPortfolio ? t(`Removing from portfolio`) : t("Adding to portfolio"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
 
     try {

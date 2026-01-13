@@ -9,7 +9,7 @@ import { useNetworkByGenesisHash } from "@ui/state"
 const useMetadata = (genesisHash?: HexString) => {
   const metadata = useLiveQuery(
     async () => (genesisHash ? ((await db.metadata.get(genesisHash)) ?? null) : null),
-    [genesisHash],
+    [genesisHash]
   )
 
   return { isLoaded: metadata !== undefined, metadata: metadata ?? null }

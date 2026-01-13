@@ -72,7 +72,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
   const [compatibleNetworks, compatibleNetworksById, compatibleNetworksByGenesisHash] =
     useMemo(() => {
       const arrResult = dotNetworks.filter((n) =>
-        isAddressCompatibleWithNetwork(n, contact.address),
+        isAddressCompatibleWithNetwork(n, contact.address)
       )
       return [arrResult, keyBy(arrResult, (n) => n.id), keyBy(arrResult, (n) => n.genesisHash)]
     }, [dotNetworks, contact.address])
@@ -98,7 +98,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         setError("name", error as Error)
       }
     },
-    [close, contact, setError],
+    [close, contact, setError]
   )
 
   const handleNetworkChange = useCallback(
@@ -112,7 +112,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         shouldValidate: true,
       })
     },
-    [compatibleNetworksById, setValue],
+    [compatibleNetworksById, setValue]
   )
 
   const address = useMemo(() => {

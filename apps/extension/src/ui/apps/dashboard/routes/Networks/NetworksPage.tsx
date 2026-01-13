@@ -68,7 +68,7 @@ const NoticeTooltip: FC = () => {
       </TooltipTrigger>
       <TooltipContent>
         {t(
-          "Ethereum network settings are taken from the community maintained Ethereum Lists Github repository.",
+          "Ethereum network settings are taken from the community maintained Ethereum Lists Github repository."
         )}
         <br />
         {t("Talisman does not curate or control which RPCs are used for these networks.")}
@@ -85,11 +85,11 @@ const Content = () => {
   const location = useLocation()
 
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
-    location.state?.platform as PlatformOption,
+    location.state?.platform as PlatformOption
   )
   const [search, setSearch] = useState(() => (location.state?.search as string) ?? "")
   const [activeOnly, setActiveOnly] = useState(
-    () => (location.state?.activeOnly as boolean) ?? false,
+    () => (location.state?.activeOnly as boolean) ?? false
   )
 
   useEffect(() => {

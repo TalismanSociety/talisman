@@ -25,7 +25,7 @@ export const SwapHeader = () => {
       ["form", "approve-recipient"].includes(swapView)
         ? closeSwapTokensModal
         : () => void setSwapView("form"),
-    [closeSwapTokensModal, setSwapView, swapView],
+    [closeSwapTokensModal, setSwapView, swapView]
   )
 
   return (

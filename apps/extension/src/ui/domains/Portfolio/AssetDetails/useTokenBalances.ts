@@ -86,7 +86,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         balance: b,
-      })),
+      }))
     )
 
     // RESERVED
@@ -103,7 +103,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         address: account ? undefined : b.address,
         meta: reserve.meta,
         balance: b,
-      })),
+      }))
     )
 
     // STAKED (NOM POOLS)
@@ -120,7 +120,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         address: account ? undefined : b.address,
         meta: nomPool.meta,
         balance: b,
-      })),
+      }))
     )
 
     return [...available, ...locked, ...reserved, ...staked]

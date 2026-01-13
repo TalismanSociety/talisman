@@ -80,7 +80,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .map((tree) => {
           const treeAddresses = recGetAllAddresses(tree)
           const removeAddresses = treeAddresses.filter(
-            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va)),
+            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va))
           )
           if (!removeAddresses.length) return false
 

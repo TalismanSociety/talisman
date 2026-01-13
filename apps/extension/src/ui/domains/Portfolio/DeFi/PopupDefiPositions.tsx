@@ -61,9 +61,9 @@ const VirtualizedRows: FC<{ positions: Loadable<DefiPosition[]> }> = ({ position
   const rows = useMemo(
     () =>
       (positions.data ?? []).concat(
-        ...(positions.status === "loading" ? [{ id: "SHIMMER" } as DefiPosition] : []),
+        ...(positions.status === "loading" ? [{ id: "SHIMMER" } as DefiPosition] : [])
       ),
-    [positions],
+    [positions]
   )
 
   const virtualizer = useVirtualizer({
@@ -113,9 +113,9 @@ const TotalRow: FC<{ positions: DefiPosition[] }> = ({ positions }) => {
       positions.reduce(
         (total, position) =>
           total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0),
-        0,
+        0
       ),
-    [positions],
+    [positions]
   )
 
   return (
@@ -157,7 +157,7 @@ const DefiPositionRow: FC<{
     <button
       type="button"
       className={classNames(
-        "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6",
+        "bg-grey-850 hover:bg-grey-800 flex h-28 w-full items-center gap-4 overflow-hidden rounded-sm px-6"
       )}
       onClick={() => navigate(`/portfolio/defi/${position.id}`)}
     >

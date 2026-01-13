@@ -21,7 +21,7 @@ const useBatchItemDrawerProvider = ({ decodedCall }: { decodedCall: DecodedBatch
 
   const currentCall = useMemo<DecodedCall | undefined>(
     () => batchCalls[currentIndex],
-    [currentIndex, batchCalls],
+    [currentIndex, batchCalls]
   )
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const useBatchItemDrawerProvider = ({ decodedCall }: { decodedCall: DecodedBatch
 
   const canGoNext = useMemo(
     () => batchItemModalIndex < decodedCall.args.calls.length - 1,
-    [batchItemModalIndex, decodedCall.args.calls.length],
+    [batchItemModalIndex, decodedCall.args.calls.length]
   )
 
   const goNext = useCallback(() => {
@@ -66,5 +66,5 @@ const useBatchItemDrawerProvider = ({ decodedCall }: { decodedCall: DecodedBatch
 }
 
 export const [SubSignDecodedBatchDrawerProvider, useSubSignDecodedBatchDrawer] = provideContext(
-  useBatchItemDrawerProvider,
+  useBatchItemDrawerProvider
 )

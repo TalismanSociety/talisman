@@ -11,7 +11,7 @@ type MultiLocation = {
 export const getMultiLocationTokenId = (
   location: MultiLocation,
   chain: DotNetwork,
-  tokens: TokenList,
+  tokens: TokenList
 ): TokenId | null => {
   if (location.interior.type === "Here") {
     // native token
@@ -31,7 +31,7 @@ export const getMultiLocationTokenId = (
           (token: Token) =>
             token.type === "substrate-assets" &&
             token.networkId === chain.id &&
-            BigInt(token.assetId) === assetId,
+            BigInt(token.assetId) === assetId
         )?.id ?? null
       )
     }

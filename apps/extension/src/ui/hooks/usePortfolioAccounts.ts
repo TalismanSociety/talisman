@@ -20,7 +20,7 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
     map(([accounts, ownedAccounts, portfolioAccounts, catalog, currency, balanceTotals]) => {
       const portfolioTotal = portfolioAccounts.reduce(
         (total, { address }) => (balanceTotals[address] ?? 0) + total,
-        0,
+        0
       )
 
       return {
@@ -32,7 +32,7 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
         balanceTotals,
         portfolioTotal,
       }
-    }),
+    })
   ),
   // default value to prevent bind() from keeping a subscription on balances
   {
@@ -43,5 +43,5 @@ export const [usePortfolioAccounts, portfolioAccounts$] = bind(
     currency: "usd",
     balanceTotals: {},
     portfolioTotal: 0,
-  },
+  }
 )

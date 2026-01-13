@@ -26,7 +26,7 @@ export const SendFundsAccountPicker = () => {
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => network && isAccountCompatibleWithNetwork(network, account)),
-    [allAccounts, network, search],
+    [allAccounts, network, search]
   )
 
   const handleSelect = useCallback(
@@ -34,7 +34,7 @@ export const SendFundsAccountPicker = () => {
       if (to && encodeAnyAddress(to) === encodeAnyAddress(address)) remove("to")
       set("from", address, true)
     },
-    [remove, set, to],
+    [remove, set, to]
   )
 
   return (

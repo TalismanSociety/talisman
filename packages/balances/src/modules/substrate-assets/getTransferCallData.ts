@@ -46,7 +46,7 @@ const getEncodedArgs = (
   assetId: string,
   to: string,
   value: string,
-  argsCodec: Codec<unknown>,
+  argsCodec: Codec<unknown>
 ): Uint8Array => {
   try {
     switch (method) {
@@ -78,7 +78,7 @@ const getTransferEncodedArgs = (
   assetId: string,
   to: string,
   value: string,
-  codec: Codec<unknown>,
+  codec: Codec<unknown>
 ) => {
   return getEncodedValue(codec, [
     () => ({

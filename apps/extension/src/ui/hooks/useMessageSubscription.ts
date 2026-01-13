@@ -17,7 +17,7 @@ export const useMessageSubscription = <S, R = S>(
   key: string,
   initialSubjectValue: S,
   subscribe: InitSubscriptionCallback<S>,
-  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM,
+  transform: MapSubjectToResult<S, R> = DEFAULT_TRANSFORM
 ): R => {
   // create the rxJS subject if it doesn't exist
   if (!subscriptions[key])

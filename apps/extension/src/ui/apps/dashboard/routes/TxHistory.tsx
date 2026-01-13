@@ -21,7 +21,7 @@ const NetworkFilterButton = () => {
       setNetworkId(networkId)
       close()
     },
-    [close, setNetworkId],
+    [close, setNetworkId]
   )
 
   return (

@@ -20,7 +20,7 @@ export const BondPillButton: FC<{
     () =>
       isPortfolio &&
       balances.each.some((balance) => parseTokenId(balance.tokenId).type === "substrate-native"),
-    [balances, isPortfolio],
+    [balances, isPortfolio]
   )
 
   const { onClick } = useBondButton({ balances, ignoreExistingSettings })
@@ -31,7 +31,7 @@ export const BondPillButton: FC<{
     <button
       className={classNames(
         "bg-primary/10 hover:bg-primary/20 text-primary h-16 rounded-[28px] px-4 text-sm font-light",
-        className,
+        className
       )}
       type="button"
       onClick={onClick}

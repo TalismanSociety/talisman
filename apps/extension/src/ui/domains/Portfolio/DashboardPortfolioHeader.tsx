@@ -120,7 +120,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
     <div
       className={classNames(
         "bg-grey-900 relative z-0 flex h-[19.2rem] flex-col items-start justify-between rounded-lg p-10",
-        className,
+        className
       )}
     >
       {!!selectedAccounts.length && (
@@ -136,7 +136,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
             className={classNames(
               "bg-grey-700/20 text-grey-200 hover:text-body hover:bg-body/10 pointer-events-auto flex size-[4.4rem] shrink-0 items-center justify-center rounded-full text-center text-lg leading-none shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-md",
-              currencyConfig[currency]?.symbol?.length > 2 && "text-base",
+              currencyConfig[currency]?.symbol?.length > 2 && "text-base"
             )}
             onClick={(event) => {
               event.stopPropagation()
@@ -147,7 +147,7 @@ export const DashboardPortfolioHeader: FC<{ className?: string }> = ({ className
           </button>
           <Fiat
             className={classNames(
-              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]",
+              "font-inter overflow-hidden text-ellipsis whitespace-pre pr-10 text-[4.8rem] font-bold leading-[4.8rem]"
             )}
             amount={selectedTotal}
             isBalance
@@ -191,7 +191,7 @@ const Action: FC<ActionProps> = ({
       })
       onClick()
     },
-    [onClick, analyticsAction, analyticsName],
+    [onClick, analyticsAction, analyticsName]
   )
 
   return (
@@ -201,7 +201,7 @@ const Action: FC<ActionProps> = ({
           type="button"
           className={classNames(
             "text-body-secondary pointer-events-auto flex h-14 items-center gap-4 rounded-full bg-white/5 px-5 text-base opacity-90 backdrop-blur-sm disabled:opacity-70",
-            "enabled:hover:text-body enabled:hover:bg-white/10",
+            "enabled:hover:text-body enabled:hover:bg-white/10"
           )}
           onClick={handleClick}
           disabled={disabled}
@@ -315,7 +315,7 @@ const TopActions: FC = () => {
       openCopyAddressModal,
       openSwapTokensModal,
       openRampsModal,
-    ],
+    ]
   )
 
   return (
@@ -342,7 +342,7 @@ const SeekBenefitsLink = () => {
     <button
       type="button"
       className={classNames(
-        "text-primary-700 hover:text-primary flex shrink-0 items-center gap-3 text-base",
+        "text-primary-700 hover:text-primary flex shrink-0 items-center gap-3 text-base"
       )}
       onClick={handleSeekClick}
     >

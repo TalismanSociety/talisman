@@ -81,7 +81,7 @@ export const EditTokenPage = () => {
           </div>
         }
         text={t(
-          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token.",
+          "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
         )}
       />
       <TokenForm token={token} />
@@ -464,7 +464,7 @@ type ExplorerLinkTarget =
 
 const getExplorerLinkTargetUrl = (
   explorerUrl: string,
-  target: ExplorerLinkTarget,
+  target: ExplorerLinkTarget
 ): string | null => {
   const url = new URL(explorerUrl)
   switch (target.type) {

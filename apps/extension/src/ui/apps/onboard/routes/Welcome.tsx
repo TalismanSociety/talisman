@@ -79,7 +79,7 @@ export const WelcomePage = () => {
       })
       navigate("/password")
     },
-    [navigate, reset],
+    [navigate, reset]
   )
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export const WelcomePage = () => {
           </div>
           <div className="welcome-subtitle text-[2rem] lg:text-[2.8rem]">
             {t(
-              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic",
+              "Talisman supports all Ethereum and Polkadot networks, including chains like Base, Bittensor, and Sonic"
             )}
           </div>
           <SupportedNetworks />

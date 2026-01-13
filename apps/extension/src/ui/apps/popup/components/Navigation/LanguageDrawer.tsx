@@ -16,7 +16,7 @@ const LanguagesList = () => {
 
   const options = useMemo(
     () => Object.entries(languages).map(([value, label]) => ({ value, label })),
-    [],
+    []
   )
 
   const handleLanguageClick = useCallback(
@@ -24,7 +24,7 @@ const LanguagesList = () => {
       i18n.changeLanguage(lang ?? "en")
       close()
     },
-    [close, i18n],
+    [close, i18n]
   )
 
   return (

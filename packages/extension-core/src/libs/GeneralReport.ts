@@ -170,7 +170,7 @@ async function getGeneralReport({
     ])
 
     const balanceJsons = allBalances.filter((b) =>
-      ownedAddresses.some((address) => isAddressEqual(address, b.address)),
+      ownedAddresses.some((address) => isAddressEqual(address, b.address))
     )
     /* eslint-disable-next-line no-var */
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
@@ -188,9 +188,9 @@ async function getGeneralReport({
       (balance) =>
         balance &&
         (!balance.token || !isTokenCustom(balance.token)) &&
-        (!balance.network || !isNetworkCustom(balance.network)),
+        (!balance.network || !isNetworkCustom(balance.network))
     ),
-    (balance) => `${balance.networkId}-${balance.tokenId}`,
+    (balance) => `${balance.networkId}-${balance.tokenId}`
   )
 
   // get fiat sum object for those arrays of balances
@@ -245,7 +245,7 @@ async function getGeneralReport({
       {
         dot: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
         eth: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
-      },
+      }
     )
   const ecosystemBreakdown = Object.fromEntries(
     Object.entries(unroundedEcosystemBreakdown).map(([eco, totals]) => [
@@ -255,7 +255,7 @@ async function getGeneralReport({
         transferableBalance: privacyRoundCurrency(totals.transferableBalance),
         unavailableBalance: privacyRoundCurrency(totals.unavailableBalance),
       },
-    ]),
+    ])
   )
 
   const topChainTokens = sortedFiatSumPerChainToken
@@ -274,7 +274,7 @@ async function getGeneralReport({
   //
   const { nfts, collections } = await firstValueFrom(nftsStore$)
   const ownedNfts = nfts.filter((nft) =>
-    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress)),
+    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress))
   )
 
   const TOP_NFT_COLLECTIONS_COUNT = 20
@@ -286,7 +286,7 @@ async function getGeneralReport({
     nfts
       .concat()
       .sort((n1, n2) => (n1.price ?? 0) - (n2.price ?? 0))
-      .map((nft) => nft.collectionId),
+      .map((nft) => nft.collectionId)
   )
     .slice(0, TOP_NFT_COLLECTIONS_COUNT)
     .map((cid) => collections.find((c) => c.id === cid)?.name)

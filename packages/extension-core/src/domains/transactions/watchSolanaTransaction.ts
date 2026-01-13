@@ -13,7 +13,7 @@ import { TransactionStatus, WatchTransactionOptions } from "./types"
 export const watchSolanaTransaction = async (
   networkId: SolNetworkId,
   transaction: Transaction | VersionedTransaction,
-  options: WatchTransactionOptions = {},
+  options: WatchTransactionOptions = {}
 ) => {
   try {
     const { siteUrl, notifications, txInfo } = options
@@ -45,7 +45,7 @@ async function watchUntilFinalized(
   networkName: string,
   notificationTxUrl?: string,
   maxRetries = 30,
-  intervalMs = 2000,
+  intervalMs = 2000
 ) {
   let txStatus: TransactionStatus = "pending"
 

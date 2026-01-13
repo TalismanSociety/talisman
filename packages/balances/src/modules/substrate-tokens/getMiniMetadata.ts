@@ -18,7 +18,7 @@ export const getMiniMetadata: IBalanceModule<
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
-      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`,
+      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
@@ -27,7 +27,7 @@ export const getMiniMetadata: IBalanceModule<
 
   if (unifiedMetadata.version < 14)
     throw new Error(
-      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`,
+      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`
     )
 
   const extra: MiniMetadataExtra = { palletId: config?.palletId ?? "Tokens" }

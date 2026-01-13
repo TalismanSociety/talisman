@@ -42,7 +42,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
           return { id, name: networkNamesById[id], logo: network?.logo }
         })
         .filter(isTruthy) ?? [],
-    [allNetworksMap, ids, networkNamesById],
+    [allNetworksMap, ids, networkNamesById]
   )
   const sorted = useMemo(
     () =>
@@ -55,7 +55,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
 
         return a.name?.localeCompare(b.name) ?? 0
       }),
-    [networks],
+    [networks]
   )
 
   const { visibleNetworks, moreNetworks } = useMemo(
@@ -63,7 +63,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
       visibleNetworks: sorted?.slice(0, max) ?? [],
       moreNetworks: sorted?.slice(max) ?? [],
     }),
-    [sorted, max],
+    [sorted, max]
   )
 
   return (

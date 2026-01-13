@@ -19,7 +19,7 @@ export const getSignerPayloadJSON = async (
   methodName: string,
   args: unknown,
   signerConfig: PayloadSignerConfig,
-  chainInfo: ChainInfo,
+  chainInfo: ChainInfo
 ): Promise<{
   payload: SignerPayloadJSON
   txMetadata: Uint8Array | undefined
@@ -34,7 +34,7 @@ export const getSignerPayloadJSON = async (
     chain,
     "chain_getFinalizedHead",
     [],
-    false,
+    false
   )
 
   const [nonce, genesisHash, blockNumberFinalized, blockNumberCurrent] = await Promise.all([

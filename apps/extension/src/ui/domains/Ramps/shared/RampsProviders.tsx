@@ -52,7 +52,7 @@ export const RampsProviders: FC<{
 }
 
 const RampsProviderButton: FC<RampsProviderProps & { onClick: () => void; isSelected: boolean }> = (
-  props,
+  props
 ) => {
   switch (props.type) {
     case "loading":
@@ -93,7 +93,7 @@ const RampsProviderButtonAvailable: FC<
         "bg-grey-900 leading-paragraph flex h-[9.2rem] flex-col justify-between gap-8 rounded border p-6 text-left",
         isSelected
           ? "border-body bg-grey-850 text-body"
-          : "border-grey-700 enabled:hover:bg-grey-850 enabled:hover:border-grey-500 text-body-secondary",
+          : "border-grey-700 enabled:hover:bg-grey-850 enabled:hover:border-grey-500 text-body-secondary"
       )}
       onClick={onClick}
     >
@@ -179,7 +179,7 @@ const ProviderLabel: FC<{ provider: RampsProvider }> = ({ provider }) => {
       <span
         className={classNames(
           "inline-block size-8 rounded-full",
-          provider === "ramp" && "bg-white p-1", // figma didnt use an svg, wrap the official one to make it look as expected
+          provider === "ramp" && "bg-white p-1" // figma didnt use an svg, wrap the official one to make it look as expected
         )}
       >
         <img src={logo} alt="" className="size-full" />

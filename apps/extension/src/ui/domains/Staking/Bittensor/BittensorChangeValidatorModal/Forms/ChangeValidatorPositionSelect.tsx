@@ -41,7 +41,7 @@ export const ChangeValidatorPositionSelect = () => {
       ]
         .join()
         .toLowerCase()
-        .includes(lowerSearch),
+        .includes(lowerSearch)
     )
   }, [positions, search])
 
@@ -49,7 +49,7 @@ export const ChangeValidatorPositionSelect = () => {
     (position: BittensorStakingPosition) => () => {
       setPosition(position)
     },
-    [setPosition],
+    [setPosition]
   )
 
   return (
@@ -68,7 +68,7 @@ export const ChangeValidatorPositionSelect = () => {
           <SearchInputControlled
             containerClassName={classNames(
               "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
-              "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+              "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10"
             )}
             placeholder={t("Search")}
             value={searchSync}
@@ -118,7 +118,7 @@ const Position: FC<{
       onClick={onClick}
       className={cn(
         "hover:bg-black-tertiary flex h-28 w-full shrink-0 items-center gap-4 overflow-hidden px-10",
-        isSelected && "bg-black-tertiary",
+        isSelected && "bg-black-tertiary"
       )}
     >
       <TokenLogo tokenId={position.token.id} className="shrink-0 text-2xl" />

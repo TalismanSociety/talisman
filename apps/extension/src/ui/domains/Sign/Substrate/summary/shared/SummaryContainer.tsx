@@ -11,7 +11,7 @@ export const SummaryContainer: FC<PropsWithChildren & { className?: string }> = 
       "leading-paragraph mb-8 mt-4 rounded text-left",
       "bg-grey-850 border-grey-700 text-body-secondary border",
       "empty:hidden",
-      className,
+      className
     )}
   >
     {children}

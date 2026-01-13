@@ -23,7 +23,7 @@ export const OnboardBackground = () => {
       // must reach opacity 0 at stage 3 (account creation UI is meant for black bg)
       opacity: Number(BASE_STYLE.opacity ?? 1) * getStageOpacity(stage),
     }),
-    [stage],
+    [stage]
   )
 
   return (

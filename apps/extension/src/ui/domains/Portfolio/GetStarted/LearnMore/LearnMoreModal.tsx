@@ -28,7 +28,7 @@ export const LearnMoreModal = () => {
       sendAnalyticsEvent({ ...ANALYTICS_PAGE, name: "Goto", action })
       navigate(path)
     },
-    [close, navigate],
+    [close, navigate]
   )
 
   return (

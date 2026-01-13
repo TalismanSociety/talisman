@@ -43,7 +43,7 @@ export const LedgerConnectionStatus = ({
     <div
       className={classNames(
         "text-body-secondary bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm p-8",
-        className,
+        className
       )}
     >
       {status === "ready" && (

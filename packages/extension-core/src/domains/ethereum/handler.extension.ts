@@ -405,7 +405,7 @@ export class EthHandler extends ExtensionHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -419,7 +419,7 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(
-          request as RequestTypes["pri(eth.signing.approveSignAndSend)"],
+          request as RequestTypes["pri(eth.signing.approveSignAndSend)"]
         )
 
       case "pri(eth.signing.approveSign)":
@@ -427,12 +427,12 @@ export class EthHandler extends ExtensionHandler {
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignHardware)"],
+          request as RequestTypes["pri(eth.signing.approveSignHardware)"]
         )
 
       case "pri(eth.signing.approveSignAndSendHardware)":
         return this.signAndSendApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"],
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
         )
 
       case "pri(eth.signing.cancel)":
@@ -443,12 +443,12 @@ export class EthHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
         return this.ethWatchAssetRequestCancel(
-          request as RequestTypes["pri(eth.watchasset.requests.cancel)"],
+          request as RequestTypes["pri(eth.watchasset.requests.cancel)"]
         )
 
       case "pri(eth.watchasset.requests.approve)":
         return this.ethWatchAssetRequestApprove(
-          request as RequestTypes["pri(eth.watchasset.requests.approve)"],
+          request as RequestTypes["pri(eth.watchasset.requests.approve)"]
         )
 
       // --------------------------------------------------------------------

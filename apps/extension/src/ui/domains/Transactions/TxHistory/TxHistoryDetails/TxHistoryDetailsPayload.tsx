@@ -25,7 +25,7 @@ export const TxHistoryDetailsPayloadDisplayMode = () => {
         onClick={() => subjectDisplayMode.next("yaml")}
         className={cn(
           "cursor-pointer",
-          displayMode === "yaml" ? "text-body" : "hover:text-grey-300 underline",
+          displayMode === "yaml" ? "text-body" : "hover:text-grey-300 underline"
         )}
       >
         YAML
@@ -36,7 +36,7 @@ export const TxHistoryDetailsPayloadDisplayMode = () => {
         onClick={() => subjectDisplayMode.next("json")}
         className={cn(
           "cursor-pointer",
-          displayMode === "json" ? "text-body" : "hover:text-grey-300 underline",
+          displayMode === "json" ? "text-body" : "hover:text-grey-300 underline"
         )}
       >
         JSON
@@ -103,7 +103,7 @@ const decodeSolanaTx = (encoded: string) => {
           throw new Error(`Invalid byte value: "${s}"`)
         }
         return n
-      }),
+      })
     )
 
     // 2. Encode as base58

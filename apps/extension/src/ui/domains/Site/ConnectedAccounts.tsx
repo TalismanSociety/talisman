@@ -19,19 +19,19 @@ const SubAccounts: FC<{ site: AuthorizedSite }> = ({ site }) => {
 
   // using a local state allows for optimistic updates
   const [activeAccounts, setActiveAccounts] = useState(() =>
-    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [Account, boolean]),
+    accounts.map((acc) => [acc, site.addresses?.some(isMatch(acc))] as [Account, boolean])
   )
 
   const handleUpdateAccounts = useCallback(
     (addresses: string[]) => {
       setActiveAccounts(
-        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [Account, boolean]),
+        accounts.map((acc) => [acc, addresses.some(isMatch(acc))] as [Account, boolean])
       )
       api.authorizedSiteUpdate(site.id, {
         addresses,
       })
     },
-    [accounts, site.id],
+    [accounts, site.id]
   )
 
   return (
@@ -49,7 +49,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const activeAccounts = useMemo(
     () =>
       accounts.map((acc) => [acc, site?.ethAddresses?.some(isMatch(acc))] as [Account, boolean]),
-    [accounts, site?.ethAddresses],
+    [accounts, site?.ethAddresses]
   )
 
   const handleAccountClick = useCallback(
@@ -59,7 +59,7 @@ const EthAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       const ethAddresses = isConnected ? [] : [address]
       await api.authorizedSiteUpdate(site?.id, { ethAddresses })
     },
-    [site?.ethAddresses, site?.id],
+    [site?.ethAddresses, site?.id]
   )
 
   return (
@@ -84,7 +84,7 @@ const SolAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
   const activeAccounts = useMemo(
     () =>
       accounts.map((acc) => [acc, site?.solAddresses?.some(isMatch(acc))] as [Account, boolean]),
-    [accounts, site?.solAddresses],
+    [accounts, site?.solAddresses]
   )
 
   const handleAccountClick = useCallback(
@@ -94,7 +94,7 @@ const SolAccounts: FC<{ site: AuthorizedSite | null }> = ({ site }) => {
       const solAddresses = isConnected ? [] : [address]
       await api.authorizedSiteUpdate(site?.id, { solAddresses })
     },
-    [site?.solAddresses, site?.id],
+    [site?.solAddresses, site?.id]
   )
 
   return (
@@ -121,7 +121,7 @@ export const ConnectedAccounts: FC = () => {
   const authorisedSites = useAuthorisedSites()
   const site = useMemo(
     () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
-    [authorisedSites, currentSite?.id],
+    [authorisedSites, currentSite?.id]
   )
 
   return (

@@ -87,7 +87,7 @@ export default class Tabs extends TabsHandler {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
-        `No Talisman wallet accounts are authorised to connect to ${url}`,
+        `No Talisman wallet accounts are authorised to connect to ${url}`
       )
 
       return false
@@ -104,12 +104,12 @@ export default class Tabs extends TabsHandler {
   async #getFilteredAccounts(
     site: AuthorizedSite,
     { anyType }: RequestAccountList,
-    developerMode: boolean,
+    developerMode: boolean
   ) {
     return getPublicAccounts(
       await keyringStore.getAccounts(),
       filterAccountsByAddresses(site.addresses, anyType),
-      { developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) },
+      { developerMode, includePortalOnlyInfo: isTalismanUrl(site.url) }
     )
   }
 
@@ -142,14 +142,14 @@ export default class Tabs extends TabsHandler {
         if (!site || !site.addresses) return []
 
         return await this.#getFilteredAccounts(site, { anyType: true }, settings.developerMode)
-      },
+      }
     )
   }
 
   private async bytesSign(
     url: string,
     request: SignerPayloadRaw,
-    port: Port,
+    port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
 
@@ -162,7 +162,7 @@ export default class Tabs extends TabsHandler {
   private async extrinsicSign(
     url: string,
     request: SignerPayloadJSON,
-    port: Port,
+    port: Port
   ): Promise<SubstrateSignResponse> {
     const address = request.address
 
@@ -175,7 +175,7 @@ export default class Tabs extends TabsHandler {
   private async messageEncrypt(
     url: string,
     request: EncryptPayload,
-    port: Port,
+    port: Port
   ): Promise<ResponseEncryptEncrypt> {
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
@@ -186,7 +186,7 @@ export default class Tabs extends TabsHandler {
   private async messageDecrypt(
     url: string,
     request: DecryptPayload,
-    port: Port,
+    port: Port
   ): Promise<ResponseEncryptDecrypt> {
     const account = await keyringStore.getAccount(request.address)
     if (!account) throw new Error("Account not found")
@@ -213,7 +213,7 @@ export default class Tabs extends TabsHandler {
           acc[genesisHash] = Math.max(acc[genesisHash] ?? 0, Number(specVersion))
         return acc
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     )
 
     return Object.entries(dicSpecVersions).map(([genesisHash, specVersion]) => ({
@@ -237,7 +237,7 @@ export default class Tabs extends TabsHandler {
   private async rpcSubscribe(
     request: RequestRpcSubscribe,
     id: string,
-    port: Port,
+    port: Port
   ): Promise<boolean> {
     const innerCb = createSubscription<"pub(rpc.subscribe)">(id, port)
     const cb = (_error: Error | null, data: SubscriptionMessageTypes["pub(rpc.subscribe)"]): void =>
@@ -256,7 +256,7 @@ export default class Tabs extends TabsHandler {
     const innerCb = createSubscription<"pub(rpc.subscribeConnected)">(id, port)
     const cb = (
       _error: Error | null,
-      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"],
+      data: SubscriptionMessageTypes["pub(rpc.subscribeConnected)"]
     ): void => innerCb(data)
 
     this.#rpcState.rpcSubscribeConnected(request, cb, port)
@@ -276,7 +276,7 @@ export default class Tabs extends TabsHandler {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
     const url = `${chrome.runtime.getURL(
-      "dashboard.html",
+      "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
     chrome.tabs.query({ url: nonFragment }).then((tabs) => {
@@ -288,7 +288,7 @@ export default class Tabs extends TabsHandler {
             // eslint-disable-next-line no-console
             console.error("Failed to redirect tab to phishing page", { err })
             sentry.captureException(err, { extra: { url } })
-          }),
+          })
         )
     })
   }
@@ -315,7 +315,7 @@ export default class Tabs extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    url: string,
+    url: string
   ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
       return this.redirectIfPhishing(url)
@@ -363,7 +363,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadRaw).address,
+          (request as SignerPayloadRaw).address
         )
         return this.bytesSign(url, request as SignerPayloadRaw, port)
 
@@ -371,7 +371,7 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(
           url,
           false,
-          (request as SignerPayloadJSON).address,
+          (request as SignerPayloadJSON).address
         )
         return this.extrinsicSign(url, request as SignerPayloadJSON, port)
 

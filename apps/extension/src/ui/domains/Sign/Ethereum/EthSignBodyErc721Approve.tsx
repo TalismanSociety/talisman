@@ -40,7 +40,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name],
+    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name]
   )
 
   if (qMetadata.isLoading || !operator || !account || !network || !decodedTx.targetAddress)
@@ -55,7 +55,7 @@ export const EthSignBodyErc721Approve: FC = () => {
           <SignAlertMessage>
             <span className="text-body-secondary">
               {t(
-                "This contract will have permission to transfer this NFT on your behalf until manually revoked.",
+                "This contract will have permission to transfer this NFT on your behalf until manually revoked."
               )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">

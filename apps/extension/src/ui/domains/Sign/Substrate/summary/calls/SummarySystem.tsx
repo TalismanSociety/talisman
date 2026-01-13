@@ -14,7 +14,7 @@ const Remark: DecodedCallSummaryComponent<PolkadotCalls["System"]["remark"]> = (
 
   const remark = useMemo(
     () => (isAscii(args.remark.asText()) ? args.remark.asText() : args.remark.asHex()),
-    [args.remark],
+    [args.remark]
   )
 
   if (mode !== "block")
@@ -49,7 +49,7 @@ const RemarkWithEvent: DecodedCallSummaryComponent<
 
   const remark = useMemo(
     () => (isAscii(args.remark.asText()) ? args.remark.asText() : args.remark.asHex()),
-    [args.remark],
+    [args.remark]
   )
 
   if (mode !== "block")

@@ -92,7 +92,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   const payload = u8aToU8a(
     $addNetworkSpecsPayload.enc({
       specs,
-    }),
+    })
   )
 
   try {
@@ -111,8 +111,8 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
       new Uint8Array([0xc1]), // c1 = add_specs
       publicKey,
       payload,
-      signature,
-    ),
+      signature
+    )
   )
 }
 
@@ -122,7 +122,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
 
 export const generateQrUpdateNetworkMetadata = async (
   chainIdOrHash: string,
-  specVersion?: number,
+  specVersion?: number
 ) => {
   const [chain, genesisHash] = await getChainAndGenesisHashFromIdOrHash(chainIdOrHash)
   if (!chain) return
@@ -134,7 +134,7 @@ export const generateQrUpdateNetworkMetadata = async (
     chain,
     genesisHash,
     runtimeSpecVersion,
-    getLegacyMetadataRpc,
+    getLegacyMetadataRpc
   )
   assert(metadataDef, "Failed to fetch metadata")
 
@@ -161,7 +161,7 @@ export const generateQrUpdateNetworkMetadata = async (
       new Uint8Array([0x80]), // 0x80 = load_metadata
       publicKey,
       payload,
-      signature,
-    ),
+      signature
+    )
   )
 }

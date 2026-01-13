@@ -126,7 +126,7 @@ export type QuoteFunction<TData = any> = Atom<
 export type SwapFunction<TData> = (
   get: Getter,
   set: Setter,
-  props: SwapProps,
+  props: SwapProps
 ) => Promise<Omit<SwapActivity<TData>, "timestamp">>
 export type GetEstimateGasTxFunction = (get: Getter) => Promise<QuoteFee | null>
 
@@ -140,7 +140,7 @@ export type SwapModule = {
   evmTransactionAtom: Atom<Promise<TransactionRequest | undefined>>
   substratePayloadAtom: (
     sapi?: ScaleApi | null,
-    allowReap?: boolean,
+    allowReap?: boolean
   ) => Atom<Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>>
 
   // talisman curated data
@@ -160,7 +160,7 @@ export const validateAddress = (
   account: Account | undefined,
   address: string,
   network: Network | undefined,
-  networkType: "evm" | "substrate" | "btc",
+  networkType: "evm" | "substrate" | "btc"
 ) => {
   if (network) {
     if (account) return isAccountCompatibleWithNetwork(network, account)
@@ -221,7 +221,7 @@ export const toAddressAtom = atom((get) => {
 
 export const swappingAtom = atom(false)
 export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
-  "bestRate",
+  "bestRate"
 )
 export const swapQuoteRefresherAtom = atom(new Date().getTime())
 
@@ -255,7 +255,7 @@ const _swapsStorage = unstable_withStorageValidator(validateSwaps)(
       if (key === "timestamp" && typeof value === "number") new Date(value)
       return value
     },
-  }),
+  })
 )
 
 const filterAndSortStoredSwaps = (swaps: StoredSwaps) =>
@@ -272,7 +272,7 @@ const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
 
 export const swapsAtom = atom(
   (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
-  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps),
+  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
 )
 
 // helpers
@@ -280,7 +280,7 @@ export const swapsAtom = atom(
 export const getTokenIdForSwappableAsset = (
   chainType: "substrate" | "evm" | "btc",
   chainId: number | string,
-  contractAddress?: string,
+  contractAddress?: string
 ) => {
   switch (chainType) {
     case "evm":
@@ -299,7 +299,7 @@ export const getTokenIdForSwappableAsset = (
 export const saveAddressForQuest = async (
   swapId: string,
   fromAddress: string,
-  provider: string,
+  provider: string
 ) => {
   const { questApi } = await remoteConfigStore.get("swaps")
   if (!questApi) return

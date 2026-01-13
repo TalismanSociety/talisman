@@ -81,6 +81,6 @@ const hasQrCodeAccounts = async () => {
   const localData = await chrome.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, LegacyAccount]) =>
-      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr,
+      key.startsWith("account:0x") && account.meta?.origin === LegacyAccountOrigin.Qr
   )
 }

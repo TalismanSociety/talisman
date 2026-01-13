@@ -38,11 +38,11 @@ const YieldPositionRow: FC<{
       type="button"
       className={cn(
         "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
-        IS_POPUP && "gap-4 px-6 text-xs",
+        IS_POPUP && "gap-4 px-6 text-xs"
       )}
       onClick={() =>
         navigate(
-          `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`,
+          `/earn/positions/yieldxyz/${encodeURIComponent(position.yieldId)}/${encodeURIComponent(position.address)}`
         )
       }
     >
@@ -126,7 +126,7 @@ const TokenRow: FC<{
         className={cn(
           "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
           !isCollapsed && "bg-grey-800",
-          IS_POPUP && "gap-4 px-6",
+          IS_POPUP && "gap-4 px-6"
         )}
       >
         <TokenLogo tokenId={token.id} className="size-16" />
@@ -146,7 +146,7 @@ const TokenRow: FC<{
         <div
           className={cn(
             "flex shrink-0 items-center gap-4",
-            status === "loading" && "animate-pulse",
+            status === "loading" && "animate-pulse"
           )}
         >
           <FiatFromUsd amount={totalUsd} noCountUp />
@@ -175,7 +175,7 @@ const EarnTokenRowSkeleton: FC<{ className?: string }> = ({ className }) => {
     <div
       className={classNames(
         "text-body-secondary bg-grey-850 mb-4 grid w-full grid-cols-[40%_30%_30%] rounded text-left text-base",
-        className,
+        className
       )}
     >
       <div>
@@ -231,7 +231,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
     return toPairs(positionsByTokenIdMap)
       .map(([tokenId, allPositions]) => {
         const positions = allPositions.filter((position) =>
-          accountAddresses.some((address) => isAddressEqual(address, position.address)),
+          accountAddresses.some((address) => isAddressEqual(address, position.address))
         )
         const totalUsd = positions.reduce((sum, pos) => {
           return (
@@ -258,7 +258,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
         search.push(
           position.product.metadata.name,
           position.product.providerId,
-          ...(position.product.tags ?? []),
+          ...(position.product.tags ?? [])
         )
         for (const balance of position.balances)
           search.push(balance.token.symbol, balance.token.name)
@@ -277,7 +277,7 @@ export const EarnPositionsList: FC<{ search: string }> = ({ search }) => {
   // Calculate total fiat value from all Defi positions
   const totalDefiAmountUsd = useMemo(
     () => displayPositions.reduce((sum, { totalUsd }) => sum + totalUsd, 0),
-    [displayPositions],
+    [displayPositions]
   )
 
   if (!displayPositions.length && !isInitialising && !isLoading) {

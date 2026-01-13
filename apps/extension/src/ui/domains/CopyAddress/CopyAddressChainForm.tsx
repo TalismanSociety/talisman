@@ -68,7 +68,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
         copySpecific(
           legacyFormat ? format.oldAddress : format.address,
           format.chainId,
-          legacyFormat,
+          legacyFormat
         )
       if (mode === "qr") {
         setChainId(format.chainId, legacyFormat)
@@ -77,7 +77,7 @@ const ChainFormatButton = ({ format }: { format: ChainFormat }) => {
       // close drawer
       setMigratedFormatPicker(undefined)
     },
-    [copySpecific, migratedFormatPicker, setChainId],
+    [copySpecific, migratedFormatPicker, setChainId]
   )
 
   return (
@@ -164,7 +164,7 @@ export const CopyAddressChainForm = () => {
       prefix: null,
       name: `Substrate (${t("Generic")})`,
     }),
-    [t],
+    [t]
   )
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
@@ -173,7 +173,7 @@ export const CopyAddressChainForm = () => {
       .filter((c) => typeof c.prefix === "number" && c.account !== "secp256k1")
       .filter(
         // if ledger generic account, restrict to compatible chains
-        (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash,
+        (c) => !isAccountLedgerPolkadotGeneric(account) || c.hasCheckMetadataHash
       )
       .sort((a, b) => {
         if (a.id === "polkadot") return -1
@@ -230,7 +230,7 @@ export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ 
 
   const showBanner = useMemo(
     () => allowBanner && formats.some(isMigratedFormat),
-    [allowBanner, formats],
+    [allowBanner, formats]
   )
 
   const handleClick = useCallback(() => {
@@ -238,7 +238,7 @@ export const UnifiedAddressMigrationBanner: FC<{ formats: ChainFormat[] }> = ({ 
       window.open(
         remoteConfig.documentation.unifiedAddressDocsUrl,
         "_blank",
-        "nooppener noreferrer",
+        "nooppener noreferrer"
       )
     } catch (err) {
       log.error("Unable to open unified address docs", { cause: err })

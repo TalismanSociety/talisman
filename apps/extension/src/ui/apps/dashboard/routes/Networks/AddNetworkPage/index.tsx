@@ -142,7 +142,7 @@ const NetworkCreateForm: FC = () => {
                   fieldApi.form.setFieldValue("name", networkInfo.name)
                   fieldApi.form.setFieldValue(
                     "dotNetworkSpecifics",
-                    networkInfo.dotNetworkSpecifics,
+                    networkInfo.dotNetworkSpecifics
                   )
                   fieldApi.form.setFieldValue("nativeCurrency", networkInfo.nativeCurrency)
                   fieldApi.form.validate("change")
@@ -450,7 +450,7 @@ const NetworkCreateForm: FC = () => {
 
 const getDotNetworkInfo = async (
   t: TFunction,
-  rpcUrl: string,
+  rpcUrl: string
 ): Promise<
   Pick<NetworkCreateFormData, "id" | "dotNetworkSpecifics" | "nativeCurrency" | "name"> | string
 > => {

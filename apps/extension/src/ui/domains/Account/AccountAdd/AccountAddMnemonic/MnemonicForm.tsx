@@ -68,7 +68,7 @@ export const AccountAddMnemonicForm = () => {
           platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
-              ["first", "custom", "multi"].includes(v),
+              ["first", "custom", "multi"].includes(v)
             )
             .defined(),
           derivationPath: yup.string().defined().trim(),
@@ -78,7 +78,7 @@ export const AccountAddMnemonicForm = () => {
             .required(" ")
             .transform(cleanupMnemonic)
             .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
-              api.validateMnemonic(val as string),
+              api.validateMnemonic(val as string)
             ),
         })
         .required()
@@ -109,7 +109,7 @@ export const AccountAddMnemonicForm = () => {
 
           return true
         }),
-    [accountAddresses, t],
+    [accountAddresses, t]
   )
 
   const {
@@ -127,12 +127,12 @@ export const AccountAddMnemonicForm = () => {
   const { platform, mnemonic, mode, derivationPath } = watch()
   const curve = useMemo(
     () => (platform ? getDefaultCurveForAccountPlatform(platform) : null),
-    [platform],
+    [platform]
   )
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(isTruthy).length ?? 0,
-    [mnemonic],
+    [mnemonic]
   )
 
   const [targetAddress, setTargetAddress] = useState<string>()
@@ -148,7 +148,7 @@ export const AccountAddMnemonicForm = () => {
             mnemonic: cleanupMnemonic(mnemonic),
             derivationPath,
             curve,
-          }),
+          })
         )
       } catch (err) {
         setTargetAddress(undefined)
@@ -173,7 +173,7 @@ export const AccountAddMnemonicForm = () => {
             title: t("Importing account"),
             subtitle: t("Please wait"),
           },
-          { autoClose: false },
+          { autoClose: false }
         )
         try {
           const [address] = await api.accountAddDerive([
@@ -203,7 +203,7 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [updateData, navigate, t, onSuccess],
+    [updateData, navigate, t, onSuccess]
   )
 
   const handleTypeChange = useCallback(
@@ -216,10 +216,10 @@ export const AccountAddMnemonicForm = () => {
           : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
         {
           shouldValidate: true,
-        },
+        }
       )
     },
-    [setValue],
+    [setValue]
   )
 
   const handleModeChange = useCallback(
@@ -233,10 +233,10 @@ export const AccountAddMnemonicForm = () => {
             : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
           {
             shouldValidate: true,
-          },
+          }
         )
     },
-    [setValue, platform],
+    [setValue, platform]
   )
 
   useEffect(() => {

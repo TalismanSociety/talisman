@@ -50,7 +50,7 @@ export const SwapConfirmSubstrate = ({
   const swapModule = useAtomValue(selectedSwapModuleAtom)
   const exchangeAtom = useMemo(
     () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom],
+    [swapModule?.exchangeAtom]
   )
 
   const insufficientBalance = useMemo(() => {
@@ -59,18 +59,18 @@ export const SwapConfirmSubstrate = ({
   }, [fastBalance, fromAmount.planck])
 
   const { data: sapi } = useScaleApi(
-    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null,
+    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
   )
   const allowReap = useMemo(
     () =>
       fastBalance?.balance?.stayAlive.planck !== undefined &&
       fromAmount.planck > fastBalance.balance.stayAlive.planck,
-    [fastBalance, fromAmount.planck],
+    [fastBalance, fromAmount.planck]
   )
   const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
   const substratePayloadAtom = useMemo(
     () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
-    [swapModule, sapi, allowReap],
+    [swapModule, sapi, allowReap]
   )
   const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 
@@ -151,7 +151,7 @@ export const SwapConfirmSubstrate = ({
       swapModule?.protocol,
       toAsset,
       txInfo,
-    ],
+    ]
   )
 
   return (

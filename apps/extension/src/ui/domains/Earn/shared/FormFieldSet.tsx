@@ -11,7 +11,7 @@ export const FormFieldSet: FC<PropsWithChildren<{ className?: string }>> = ({
     <div
       className={cn(
         "bg-grey-850 flex w-full flex-col justify-center gap-2 rounded p-8 py-4",
-        className,
+        className
       )}
     >
       {children}
@@ -43,7 +43,7 @@ export const FormFieldSetRow: FC<
         "text-body-secondary flex h-[1.5em] w-full items-center justify-between gap-4 overflow-hidden text-base",
         variant === "small" && "text-sm",
         variant === "xs" && "text-xs",
-        className,
+        className
       )}
     >
       <Tooltip>

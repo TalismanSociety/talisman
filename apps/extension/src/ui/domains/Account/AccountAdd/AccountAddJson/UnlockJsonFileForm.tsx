@@ -53,7 +53,7 @@ export const UnlockJsonFileForm: FC = () => {
         setError("password", { message: t("Incorrect password") }, { shouldFocus: true })
       }
     },
-    [clearErrors, setError, t, unlockFile],
+    [clearErrors, setError, t, unlockFile]
   )
 
   useEffect(() => {

@@ -16,7 +16,7 @@ export const usePortfolioNetworks = (ids: NetworkId[] | undefined) => {
       ids
         ?.map((id) => ({ id, name: networkNamesMap[id] }))
         .filter((n): n is PortfolioNetwork => !!n.name) ?? [],
-    [networkNamesMap, ids],
+    [networkNamesMap, ids]
   )
 
   return networks

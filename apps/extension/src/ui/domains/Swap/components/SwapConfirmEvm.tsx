@@ -63,11 +63,11 @@ export const SwapConfirmEvm = ({
   const swapModule = useAtomValue(selectedSwapModuleAtom)
   const exchangeAtom = useMemo(
     () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom],
+    [swapModule?.exchangeAtom]
   )
   const evmTransactionAtom = useMemo(
     () => swapModule?.evmTransactionAtom ?? atom(null),
-    [swapModule?.evmTransactionAtom],
+    [swapModule?.evmTransactionAtom]
   )
   const subProtocol = useAtomValue(selectedSubProtocolAtom)
 
@@ -145,7 +145,7 @@ export const SwapConfirmEvm = ({
   } = useEthTransaction(
     evmTxLoadable?.state === "hasData" ? (evmTxLoadable.data ?? undefined) : undefined,
     fromAsset?.chainId.toString(),
-    isPayloadLocked,
+    isPayloadLocked
   )
 
   const handleFeeChange = useCallback(
@@ -153,7 +153,7 @@ export const SwapConfirmEvm = ({
       setPriority(priority)
       // setReady() // clear error from previous submit attempt
     },
-    [setPriority],
+    [setPriority]
   )
 
   const [isProcessing, setIsProcessing] = useState(false)
@@ -216,7 +216,7 @@ export const SwapConfirmEvm = ({
           fromAsset?.chainId.toString(),
           serialized,
           signature,
-          txInfo,
+          txInfo
         )
 
         if (txInfo && txInfo.type === "swap-simpleswap")
@@ -255,7 +255,7 @@ export const SwapConfirmEvm = ({
       transaction,
       txInfo,
       toAsset,
-    ],
+    ]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])

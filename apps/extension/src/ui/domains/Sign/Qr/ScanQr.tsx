@@ -62,7 +62,7 @@ export const ScanQr = <T extends Types>({
         onError?.(error)
       }
     },
-    [onError, onScan, type],
+    [onError, onScan, type]
   )
 
   return (
@@ -150,7 +150,7 @@ const Scanner = ({
         ref={preview}
         className={classNames(
           "absolute h-full w-full -scale-x-100 object-cover",
-          blur && "blur-sm",
+          blur && "blur-sm"
         )}
       />
       {inputDevices.length > 1 ? (
@@ -176,7 +176,7 @@ const Scanner = ({
               <div
                 className={classNames(
                   "h-4 w-4 shrink-0 rounded-full",
-                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700",
+                  device.deviceId === selectedVideoInput ? "bg-primary" : "bg-grey-700"
                 )}
               />
               <span className="truncate">{device.label}</span>
@@ -201,7 +201,7 @@ const parseAddress = (data: string) => {
   const isValidPrefix = validPrefixes.includes(prefix)
   if (!isValidPrefix)
     throw new Error(
-      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`,
+      `Invalid prefix received, expected '${validPrefixes.join("' or '")}', found '${prefix}'`
     )
 
   const isSubstrateAddress = prefix === "substrate"

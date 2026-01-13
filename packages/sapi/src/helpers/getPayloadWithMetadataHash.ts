@@ -9,7 +9,7 @@ import { Chain, ChainInfo } from "./types"
 export const getPayloadWithMetadataHash = (
   chain: Chain,
   chainInfo: ChainInfo,
-  payload: SignerPayloadJSON,
+  payload: SignerPayloadJSON
 ): { payload: SignerPayloadJSON; txMetadata?: Uint8Array } => {
   if (!chain.hasCheckMetadataHash || !payload.signedExtensions.includes("CheckMetadataHash"))
     return {

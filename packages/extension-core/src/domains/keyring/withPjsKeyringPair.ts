@@ -10,7 +10,7 @@ import { keyringStore } from "./store"
 
 export const withPjsKeyringPair = async <T>(
   address: Address,
-  cb: (pair: KeyringPair) => T | Promise<T>,
+  cb: (pair: KeyringPair) => T | Promise<T>
 ): Promise<Result<T, "Unauthorised" | "Account not found" | "Private key unavailable" | Error>> => {
   // use a PJS in-memory keyring to create the pair
   const keyring = new Keyring({ type: "sr25519" })

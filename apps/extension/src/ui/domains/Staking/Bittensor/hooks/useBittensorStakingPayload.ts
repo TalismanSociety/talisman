@@ -87,7 +87,7 @@ export const useBittensorStakingPayload = ({
 
   const effectiveFeeRate = useMemo(
     () => calculateEffectiveFeeRate(netuid, subnetFee, tier.discount),
-    [netuid, subnetFee, tier.discount],
+    [netuid, subnetFee, tier.discount]
   )
 
   // minimum input that accounts for swap fee and talisman fee

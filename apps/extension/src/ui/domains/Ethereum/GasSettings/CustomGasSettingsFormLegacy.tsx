@@ -73,7 +73,7 @@ const useIsValidGasSettings = (
   evmNetworkId: EthNetworkId,
   tx: TransactionRequest,
   gasPriceGwei: string,
-  gasLimit: number,
+  gasLimit: number
 ) => {
   const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
     gasPriceGwei,
@@ -94,7 +94,7 @@ const useIsValidGasSettings = (
       setIsLoading(false)
     },
     250,
-    [gasPriceGwei, gasLimit],
+    [gasPriceGwei, gasLimit]
   )
 
   const provider = usePublicClient(evmNetworkId)
@@ -115,7 +115,7 @@ const useIsValidGasSettings = (
   const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
     provider,
     txPrepared,
-    "custom",
+    "custom"
   )
 
   return {
@@ -160,7 +160,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       formatDecimals(formatGwei(txDetails.gasPrice), undefined, {
         notation: "standard",
       }),
-    [txDetails.gasPrice],
+    [txDetails.gasPrice]
   )
 
   const defaultValues: FormData = useMemo(
@@ -168,7 +168,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       gasPriceGwei: formatGwei(customSettings.gasPrice),
       gasLimit: Number(customSettings.gas),
     }),
-    [customSettings.gas, customSettings.gasPrice],
+    [customSettings.gas, customSettings.gasPrice]
   )
 
   const {
@@ -256,7 +256,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onConfirm, txDetails.evmNetworkId],
+    [genericEvent, onConfirm, txDetails.evmNetworkId]
   )
 
   const {
@@ -274,7 +274,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
   return (
@@ -299,7 +299,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
             tooltip={t(
-              "The Gas Price is set by the network and changes depending on network usage",
+              "The Gas Price is set by the network and changes depending on network usage"
             )}
           >
             <InfoIcon />
@@ -357,7 +357,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           {t("Total Max Fee")}{" "}
           <WithTooltip
             tooltip={t(
-              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit",
+              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit"
             )}
           >
             <InfoIcon className="inline-block align-text-top" />

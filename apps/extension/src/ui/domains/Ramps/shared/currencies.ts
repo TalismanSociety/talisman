@@ -91,7 +91,7 @@ const RAMPS_CURRENCIES_MAP: RampsCurrencies = {
 export type RampsCurrency = RampsCurrencies[keyof RampsCurrencies] & { code: string }
 
 export const RAMPS_CURRENCIES: RampsCurrency[] = Object.entries(RAMPS_CURRENCIES_MAP).map(
-  ([code, data]) => ({ code, ...data }),
+  ([code, data]) => ({ code, ...data })
 )
 
 export const getRampsCurrency = (code: string): RampsCurrency | null =>

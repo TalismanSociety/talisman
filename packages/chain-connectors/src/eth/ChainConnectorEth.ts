@@ -25,7 +25,7 @@ export class ChainConnectorEth implements IChainConnectorEth {
 
   async getWalletClientForEvmNetwork(
     evmNetworkId: EthNetworkId,
-    account?: `0x${string}` | Account,
+    account?: `0x${string}` | Account
   ): Promise<WalletClient | null> {
     const network = await this.#chaindataProvider.getNetworkById(evmNetworkId, "ethereum")
     if (!network) return null

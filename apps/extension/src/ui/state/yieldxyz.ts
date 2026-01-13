@@ -34,9 +34,9 @@ export const [useTalismanNetworkIdFromYieldNetworkId, getTalismanNetworkIdFromYi
   bind(
     (yieldNetworkId: Networks | null | undefined) =>
       yieldNetworkIdToTalismanNetworkIdMap$.pipe(
-        map((map) => map[yieldNetworkId as Networks] ?? null),
+        map((map) => map[yieldNetworkId as Networks] ?? null)
       ),
-    null,
+    null
   )
 
 export const [useTalismanNetworkIdToYieldNetworkIdMap, talismanNetworkIdToYieldNetworkIdMap$] =
@@ -46,9 +46,9 @@ export const [useYieldNetworkIdFromTalismanNetworkId, getYieldNetworkIdFromTalis
   bind(
     (talismanNetworkId: NetworkId | null | undefined) =>
       talismanNetworkIdToYieldNetworkIdMap$.pipe(
-        map((map) => map[talismanNetworkId as NetworkId] ?? null),
+        map((map) => map[talismanNetworkId as NetworkId] ?? null)
       ),
-    null,
+    null
   )
 
 const rawYieldxyzProviders$ = new Observable<Loadable<YieldxyzProvider[]>>((subscriber) => {
@@ -72,9 +72,9 @@ export const [useYieldxyzProvider, yieldxyzProvider$] = bind(
           return { status: "success", data: null } as Loadable<YieldxyzProvider | null>
         const provider = loadable.data?.find((p) => p.id === providerId) || null
         return { ...loadable, data: provider } as Loadable<YieldxyzProvider | null>
-      }),
+      })
     ),
-  { status: "loading", data: null },
+  { status: "loading", data: null }
 )
 
 const rawYieldxyzProducts$ = new Observable<Loadable<YieldDto[]>>((subscriber) => {
@@ -105,12 +105,12 @@ export const [useYieldxyzProducts, yieldxyzProducts$] = bind(
           return network.platform === "ethereum"
         }),
       }
-    }),
+    })
   ),
   {
     status: "loading",
     data: [],
-  },
+  }
 )
 
 export const [useYieldxyzProduct, yieldxyzProduct$] = bind(
@@ -120,9 +120,9 @@ export const [useYieldxyzProduct, yieldxyzProduct$] = bind(
         if (!yieldId) return { status: "success", data: null } as Loadable<YieldDto | null>
         const product = loadable.data?.find((p) => p.id === yieldId) || null
         return { ...loadable, data: product } as Loadable<YieldDto | null>
-      }),
+      })
     ),
-  { status: "loading", data: null },
+  { status: "loading", data: null }
 )
 
 // Add new observable for grouped yield balances using bind()
@@ -147,12 +147,12 @@ export const [useYieldxyzPositionsEnhanced, yieldxyzPositionsEnhanced$] = bind(
           : undefined
 
       return { status, data } as Loadable<YieldxyzPositionEnhanced[]>
-    }),
+    })
   ),
   {
     status: "loading",
     data: [],
-  },
+  }
 )
 
 export type YieldxyzPositionEnhanced = YieldxyzPosition & {
@@ -181,21 +181,21 @@ export const [useYieldxyzTalismanInputTokenIds, yieldxyzTalismanInputTokenIds$] 
         const tokenId = getYieldxyzTokenId(
           inputToken,
           yieldNetworkIdToTalismanNetworkIdMap,
-          networksMap,
+          networksMap
         )
         if (tokenId) tokenIds.add(tokenId)
       }
 
       return Array.from(tokenIds)
-    }),
+    })
   ),
-  [],
+  []
 )
 
 export const getYieldxyzTokenId = (
   token: TokenDto,
   yieldxyzToTalismanNetworkId: Record<string, string>,
-  networksMap: Record<NetworkId, Network>,
+  networksMap: Record<NetworkId, Network>
 ) => {
   const networkId = yieldxyzToTalismanNetworkId[token.network]
   if (!networkId) return null
@@ -224,7 +224,7 @@ export const getYieldxyzTokenId = (
 
 const enhanceYieldxyzPositions = (
   positions: YieldxyzPosition[],
-  products: YieldDto[],
+  products: YieldDto[]
 ): YieldxyzPositionEnhanced[] => {
   const productById = keyBy(products, (p) => p.id)
 
@@ -249,7 +249,7 @@ const enhanceYieldxyzPositions = (
 
       const totalAmountUsd = position.balances.reduce(
         (sum, b) => sum + parseFloat(b.amountUsd || "0"),
-        0,
+        0
       )
 
       return { ...position, totalAmountUsd, product }

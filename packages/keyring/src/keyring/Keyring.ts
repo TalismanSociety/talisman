@@ -99,7 +99,7 @@ export class Keyring {
         account.secretKey = await changeEncryptedDataPassword(
           account.secretKey,
           password,
-          jsonPassword,
+          jsonPassword
         )
 
     // reset password check
@@ -114,7 +114,7 @@ export class Keyring {
 
   public async addMnemonic(
     { name, mnemonic, confirmed }: AddMnemonicOptions,
-    password: string,
+    password: string
   ): Promise<Mnemonic> {
     if (typeof name !== "string" || !name) throw new Error("name is required")
     if (typeof mnemonic !== "string") throw new Error("mnemonic is required")
@@ -267,7 +267,7 @@ export class Keyring {
             mnemonic,
             confirmed,
           },
-          password,
+          password
         )
 
         return id
@@ -283,7 +283,7 @@ export class Keyring {
 
   public async addAccountDerive(
     options: AddAccountDeriveOptions,
-    password: string,
+    password: string
   ): Promise<Account> {
     await this.checkPassword(password)
 
@@ -318,7 +318,7 @@ export class Keyring {
 
   public async addAccountKeypair(
     { curve, name, secretKey }: AddAccountKeypairOptions,
-    password: string,
+    password: string
   ): Promise<Account> {
     await this.checkPassword(password)
 
@@ -357,7 +357,7 @@ export class Keyring {
     mnemonicId: string,
     derivationPath: string,
     curve: KeypairCurve,
-    password: string,
+    password: string
   ): Promise<string> {
     if (typeof mnemonicId !== "string" || !mnemonicId) throw new Error("mnemonicId is required")
     if (typeof password !== "string" || !password) throw new Error("password is required")

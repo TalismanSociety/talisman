@@ -33,13 +33,13 @@ export const PolkadotSignMessageRequest = () => {
 
   const errorMessage = useMemo(
     () => (status === "ERROR" ? statusMessage : ""),
-    [status, statusMessage],
+    [status, statusMessage]
   )
 
   const bytes = (request?.payload as SignerPayloadRaw).data
   const messageText = useMemo(
     () => (isAscii(bytes) ? u8aToString(u8aUnwrapBytes(bytes)) : bytes),
-    [bytes],
+    [bytes]
   )
 
   useEffect(() => {

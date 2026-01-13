@@ -33,7 +33,7 @@ const DefiPositionActionRow: FC<{ position: DefiPosition }> = ({ position }) => 
       position.name.startsWith(position.defiName)
         ? position.name.substring(position.defiName.length).trim()
         : position.name,
-    [position],
+    [position]
   )
 
   return (

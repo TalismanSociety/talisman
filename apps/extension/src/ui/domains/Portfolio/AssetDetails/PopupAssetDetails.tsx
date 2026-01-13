@@ -69,7 +69,7 @@ export const PopupAssetDetails: FC<{
   const { balancesByToken: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
-    [rows],
+    [rows]
   )
 
   if (!hasBalance) return <NoTokens symbol={symbol} />

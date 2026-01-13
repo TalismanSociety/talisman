@@ -34,7 +34,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const result = await contractCall(
         address,
         token.contractAddress,
-        Psp22Abi.findMessage("PSP22::balance_of").toU8a([address]),
+        Psp22Abi.findMessage("PSP22::balance_of").toU8a([address])
       )
 
       if (!result.result.isOk) throw new Error("Failed to fetch balance")
@@ -51,7 +51,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
 
       return balance
-    }),
+    })
   )
 
   return results.reduce<FetchBalanceResults>(
@@ -67,6 +67,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 }

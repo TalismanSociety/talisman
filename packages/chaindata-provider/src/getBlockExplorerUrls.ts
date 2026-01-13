@@ -36,14 +36,14 @@ export const getBlockExplorerUrls = (network: Network, query: BlockExplorerQuery
   return uniq(
     network.blockExplorerUrls
       .map((explorerUrl) => getExplorerUrl(explorerUrl, query, network.rpcs?.[0]))
-      .filter(Boolean) as string[],
+      .filter(Boolean) as string[]
   )
 }
 
 const getExplorerUrl = (
   explorerUrl: string,
   query: BlockExplorerQuery,
-  rpcUrl?: string,
+  rpcUrl?: string
 ): string | null => {
   if (explorerUrl.includes("{RPC_URL}")) {
     if (!rpcUrl) return null

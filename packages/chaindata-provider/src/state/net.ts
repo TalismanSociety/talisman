@@ -23,7 +23,7 @@ type FetchJsonFromGitHubOptions<T> = {
 
 const fetchJsonFromGithubUrl = async <T>(
   url: string,
-  { signal, schema }: FetchJsonFromGitHubOptions<T> = {},
+  { signal, schema }: FetchJsonFromGitHubOptions<T> = {}
 ): Promise<T> => {
   const req = await fetch(url, { signal })
 

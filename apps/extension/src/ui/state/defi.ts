@@ -53,12 +53,12 @@ export const [useDefiProtocolFilterOptions, defiProtocolFilterOptions$] = bind(
           (acc, position) => {
             const positionValue = position.breakdown.reduce(
               (sum, breakdown) => sum + (breakdown.valueUsd ?? 0),
-              0,
+              0
             )
             acc[position.defiName] = (acc[position.defiName] || 0) + positionValue
             return acc
           },
-          {} as Record<string, number>,
+          {} as Record<string, number>
         ) ?? {}
 
       const protocols: ProtocolOption[] = []
@@ -72,9 +72,9 @@ export const [useDefiProtocolFilterOptions, defiProtocolFilterOptions$] = bind(
       }
 
       return protocols.sort((a, b) => b.valueUsd - a.valueUsd)
-    }),
+    })
   ),
-  [],
+  []
 )
 
 export const [useDefiProtocolFilterOption, getDefiProtocolFilterOption$] = bind(
@@ -82,9 +82,9 @@ export const [useDefiProtocolFilterOption, getDefiProtocolFilterOption$] = bind(
     map(([protocolOptions, protocolId]) => {
       if (!protocolId) return null
       return protocolOptions.find((option) => option.name === protocolId) ?? null
-    }),
+    })
   ),
-  null,
+  null
 )
 
 const filteredDefiPositions$ = combineLatest({
@@ -120,7 +120,7 @@ const filteredDefiPositions$ = combineLatest({
       data,
     } as Loadable<DefiPosition[]>
   }),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useDefiPositionsDisplay, defiPositionsDisplay$] = bind(
@@ -133,18 +133,18 @@ export const [useDefiPositionsDisplay, defiPositionsDisplay$] = bind(
       return {
         ...filtered,
         data: filtered.data?.filter(({ name, symbol }) =>
-          [name, symbol].join("").toLowerCase().includes(lowerSearch),
+          [name, symbol].join("").toLowerCase().includes(lowerSearch)
         ),
       } as Loadable<DefiPosition[]>
-    }),
+    })
   ),
-  DEFAULT_DEFI_POSITIONS,
+  DEFAULT_DEFI_POSITIONS
 )
 
 export const [useDefiPosition] = bind(
   (id: string | null | undefined) =>
     defiPositions$.pipe(
-      map((loadable) => loadable.data?.find((position) => position.id === id) ?? null),
+      map((loadable) => loadable.data?.find((position) => position.id === id) ?? null)
     ),
-  null,
+  null
 )

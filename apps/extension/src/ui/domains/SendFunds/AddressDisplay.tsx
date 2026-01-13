@@ -19,7 +19,7 @@ import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 const useBlockExplorerUrl = (
   address: TAddress | null | undefined,
   networkId: NetworkId | null | undefined,
-  shouldFormatAddress = true,
+  shouldFormatAddress = true
 ) => {
   const network = useAnyNetwork(networkId)
   const resolvedAddress = useMemo(() => {
@@ -91,7 +91,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
 
   const text = useMemo(
     () => account?.name ?? (address ? shortenAddress(address, 6, 6) : null),
-    [account?.name, address],
+    [account?.name, address]
   )
 
   const handleCopyAddress = useCallback(() => {
@@ -113,7 +113,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
       <TooltipTrigger
         className={classNames(
           "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
-          className,
+          className
         )}
       >
         <AccountIcon

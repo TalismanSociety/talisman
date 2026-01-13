@@ -21,7 +21,7 @@ const checkDerivedAddress = async (
   mnemonic: string,
   derivationPath: string,
   curve: KeypairCurve,
-  address: string,
+  address: string
 ) => {
   const entropy = mnemonicToEntropy(mnemonic)
   const seed = await entropyToSeed(entropy, curve)
@@ -40,7 +40,7 @@ describe("deriveKeyPair", () => {
       POLKADOT_MNEMONIC,
       POLKADOT_ALICE_DP,
       "sr25519",
-      POLKADOT_ALICE_ADDRESS_SR25519,
+      POLKADOT_ALICE_ADDRESS_SR25519
     )
   })
 
@@ -49,7 +49,7 @@ describe("deriveKeyPair", () => {
       POLKADOT_MNEMONIC,
       POLKADOT_ALICE_DP,
       "ed25519",
-      POLKADOT_ALICE_ADDRESS_ED25519,
+      POLKADOT_ALICE_ADDRESS_ED25519
     )
   })
 

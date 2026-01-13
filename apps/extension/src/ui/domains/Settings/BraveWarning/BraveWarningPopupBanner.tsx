@@ -18,7 +18,7 @@ const BraveWarningPopupBanner = () => {
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean | undefined>(true)
   // we should display the warning only once in the popup
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean | undefined>(
-    true,
+    true
   )
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const BraveWarningPopupBanner = () => {
 
   const showWarning = useMemo(
     () => isBrave && !hideBraveWarning && !hasBraveWarningBeenShown,
-    [hasBraveWarningBeenShown, hideBraveWarning, isBrave],
+    [hasBraveWarningBeenShown, hideBraveWarning, isBrave]
   )
 
   if (!showWarning && !isOpen) return null

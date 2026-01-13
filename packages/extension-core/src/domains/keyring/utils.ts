@@ -17,7 +17,7 @@ import { keyringStore } from "./store"
  */
 export const getNextDerivationPathForMnemonicId = async (
   mnemonicId: string,
-  curve: KeypairCurve,
+  curve: KeypairCurve
 ): Promise<
   Result<
     string,
@@ -43,7 +43,7 @@ export const getNextDerivationPathForMnemonicId = async (
         mnemonicId,
         derivationPath,
         curve,
-        password,
+        password
       )
       if (!allAddresses.includes(derivedAddress)) return Ok(derivationPath)
     }

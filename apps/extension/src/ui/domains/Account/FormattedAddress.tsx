@@ -38,7 +38,7 @@ export const FormattedAddress: FC<{
         <span
           className={classNames(
             "inline-flex max-w-full items-baseline gap-[0.3em] overflow-hidden",
-            className,
+            className
           )}
         >
           <div>

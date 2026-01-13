@@ -6,7 +6,7 @@ export const getStorageValue = async <T>(
   pallet: string,
   entry: string,
   keys: unknown[],
-  at?: string,
+  at?: string
 ) => {
   const storageCodec = chain.builder.buildStorage(pallet, entry)
   const stateKey = storageCodec.keys.enc(...keys)

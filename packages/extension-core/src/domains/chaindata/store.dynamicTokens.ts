@@ -35,7 +35,7 @@ const getStore = () => {
       // Compare previousTokens with currentTokens
       if (!isEqual(previousTokens, currentTokens)) {
         log.debug(
-          `[dynamicTokens] updating storage previous:${previousTokens.length} new:${currentTokens.length}`,
+          `[dynamicTokens] updating storage previous:${previousTokens.length} new:${currentTokens.length}`
         )
         blobStore.set(currentTokens)
       }

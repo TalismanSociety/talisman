@@ -222,5 +222,5 @@ const useNetworkCreateFormProvider = () => {
 }
 
 export const [NetworkCreateFormProvider, useNetworkCreateForm] = provideContext(
-  useNetworkCreateFormProvider,
+  useNetworkCreateFormProvider
 )

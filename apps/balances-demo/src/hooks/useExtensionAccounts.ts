@@ -38,5 +38,5 @@ const accountsAtom = atomWithObservable(
 
       // trigger abort signal when our component is unmounted
       return () => abort.abort("Unsubscribed")
-    }),
+    })
 )

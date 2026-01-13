@@ -14,7 +14,7 @@ export class ChaindataHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(chaindata.networks.subscribe)": {

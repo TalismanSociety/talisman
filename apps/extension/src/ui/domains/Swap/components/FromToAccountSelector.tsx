@@ -99,7 +99,7 @@ const FromAccount = () => {
       setToBtcAddress,
       setToEvmAddress,
       setToSubstrateAddress,
-    ],
+    ]
   )
 
   return (
@@ -177,7 +177,7 @@ const ToAccount = () => {
         return
       }
     },
-    [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress],
+    [allAccounts, setBtcAddress, setEvmAddress, setSubstrateAddress]
   )
 
   return (

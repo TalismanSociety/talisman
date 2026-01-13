@@ -50,7 +50,7 @@ export const SelectTokenModal: React.FC<Props> = ({
       onSelectAsset(asset)
       setOpen(false)
     },
-    [onSelectAsset, safeList],
+    [onSelectAsset, safeList]
   )
   const assetIds = assets?.map((a) => a.id)
   const handleSelectAssetId = useCallback(
@@ -60,7 +60,7 @@ export const SelectTokenModal: React.FC<Props> = ({
 
       return handleSelectAsset(asset)
     },
-    [assets, handleSelectAsset, onSelectAsset],
+    [assets, handleSelectAsset, onSelectAsset]
   )
 
   const remoteConfig = useRemoteConfig()
@@ -74,7 +74,7 @@ export const SelectTokenModal: React.FC<Props> = ({
             : undefined
       return promotedTokens?.includes(token.id) || false
     },
-    [priorityMode, remoteConfig],
+    [priorityMode, remoteConfig]
   )
 
   const { tokenFilterOptions, defaultTokenFilterOption, onSelectTokenFilterOption } =
@@ -82,7 +82,7 @@ export const SelectTokenModal: React.FC<Props> = ({
 
   const tokenFilter = useCallback(
     (token: Token) => assetIds?.includes(token.id) ?? false,
-    [assetIds],
+    [assetIds]
   )
 
   return (

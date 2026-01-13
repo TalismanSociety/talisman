@@ -50,7 +50,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
-    accountGenesisHash ?? genesisHash,
+    accountGenesisHash ?? genesisHash
   )
 
   if (!address) return null
@@ -253,7 +253,7 @@ export const CopyAddressCopyForm = () => {
                                 "Only use this address for receiving assets on the {{name}} network.",
                                 {
                                   name: network.name,
-                                },
+                                }
                               )
                             : t("This address is not specific to a network. Use at your own risk.")}
                         </TooltipContent>
@@ -295,7 +295,7 @@ export const CopyAddressCopyForm = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Ethereum and EVM compatible networks",
+                            "Use this address for receiving assets on Ethereum and EVM compatible networks"
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -328,7 +328,7 @@ export const CopyAddressCopyForm = () => {
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Solana and compatible networks",
+                            "Use this address for receiving assets on Solana and compatible networks"
                           )}
                         </TooltipContent>
                       </Tooltip>

@@ -54,7 +54,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
     (url: string) => () => {
       window.open(url, "_blank", "")
     },
-    [],
+    []
   )
 
   const isCollectionHidden = useIsHiddenNftCollection(nft.collectionId)
@@ -74,7 +74,7 @@ const NftContextMenu: FC<{ nft: Nft }> = ({ nft }) => {
         title: t("Requesting refresh"),
         subtitle: t("Please wait"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
 
     try {
@@ -434,7 +434,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       { label: t("Collection"), value: "collection" },
       { label: t("NFT"), value: "nft" },
     ],
-    [t],
+    [t]
   )
 
   useEffect(() => {
@@ -443,7 +443,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
 
   const webResourceUrl = useMemo(
     () => nft.videoUrl ?? nft.audioUrl ?? nft.imageUrl ?? nft.previewUrl,
-    [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl],
+    [nft.audioUrl, nft.imageUrl, nft.previewUrl, nft.videoUrl]
   )
 
   const handleFullScreenViewClick = useCallback(() => {
@@ -456,7 +456,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
         "h-full w-full",
         "@2xl:overflow-hidden",
         "bg-black shadow",
-        "@2xl:grid-cols-2 @2xl:grid",
+        "@2xl:grid-cols-2 @2xl:grid"
       )}
     >
       <div className="@2xl:block hidden overflow-hidden">
@@ -472,7 +472,7 @@ const DialogContent: FC<{ onDismiss: () => void; collection: NftCollection; nft:
       <div
         className={classNames(
           "flex h-full grow flex-col overflow-y-auto font-light",
-          "@2xl:overflow-hidden",
+          "@2xl:overflow-hidden"
         )}
       >
         <div className="@2xl:bg-transparent @2xl:px-12 @2xl:py-8 flex w-full items-center gap-4 bg-black px-8 py-6">
@@ -546,7 +546,7 @@ const NftDialogInner: FC<{
       onDismiss={handleDismiss}
       className={classNames(
         "@container h-[50rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg",
+        IS_POPUP ? "h-full w-full" : "lg:w-[100rem] lg:rounded-lg"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

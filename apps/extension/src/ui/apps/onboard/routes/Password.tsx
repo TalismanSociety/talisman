@@ -109,7 +109,7 @@ export const PasswordPage = () => {
       })
       navigateNext()
     },
-    [setError, createPassword, navigateNext],
+    [setError, createPassword, navigateNext]
   )
 
   return (
@@ -121,12 +121,12 @@ export const PasswordPage = () => {
           <div className="text-body-secondary flex flex-col gap-8">
             <p>
               {t(
-                "You can change your password in the settings at any time after you've onboarded.",
+                "You can change your password in the settings at any time after you've onboarded."
               )}
             </p>
             <p>
               {t(
-                "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process.",
+                "If you can't remember the password you set, you should re-install Talisman now, and restart this onboarding process."
               )}
             </p>
             <Button fullWidth primary className="mt-16" type="button" onClick={navigateNext}>
@@ -139,7 +139,7 @@ export const PasswordPage = () => {
         <OnboardDialog title={t("First, let's set a password")}>
           <p>
             {t(
-              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.",
+              "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
             )}
           </p>
           <form onSubmit={handleSubmit(submit)} autoComplete="off">
@@ -147,7 +147,7 @@ export const PasswordPage = () => {
               <div className="mb-4 mt-12 flex h-[1.2em] items-center justify-between text-sm">
                 <div
                   className={classNames(
-                    password ? "text-body-secondary" : "text-body-secondary/50",
+                    password ? "text-body-secondary" : "text-body-secondary/50"
                   )}
                 >
                   {t("Password strength")}: <PasswordStrength password={password} />

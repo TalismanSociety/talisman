@@ -48,7 +48,7 @@ const SendFundsButton: FC<{ account?: Account | null }> = ({ account }) => {
         onClick={canSendFunds ? sendFunds : undefined}
         className={classNames(
           "text-body-secondary text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
-          canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50",
+          canSendFunds ? "hover:bg-grey-800 hover:text-body" : "cursor-default opacity-50"
         )}
       >
         <SendIcon />
@@ -113,14 +113,14 @@ export const PortfolioAssetsHeader: FC<{ backBtnTo?: string }> = ({ backBtnTo })
         ? new Balances(balancesByAddress.get(account.address) ?? [])
         : folder
           ? new Balances(
-              folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? []),
+              folder.tree.flatMap((account) => balancesByAddress.get(account.address) ?? [])
             )
           : // only show networkBalances when no account / folder selected
             // networkBalances is basically the full portfolio, without any watch-only accounts
             // i.e. `Total Portfolio`
             // on the other hand, allBalances includes watch-only accounts
             networkBalances,
-    [account, balancesByAddress, folder, networkBalances],
+    [account, balancesByAddress, folder, networkBalances]
   )
 
   const formattedAddress = useFormattedAddress(account?.address, getAccountGenesisHash(account))

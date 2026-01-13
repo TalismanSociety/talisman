@@ -18,7 +18,7 @@ export const tokenRates$ = new Observable<TokenRatesStorage>((subscriber) => {
 }).pipe(debugObservable("tokenRates$"), shareReplay(1))
 
 export const [useTokenRatesMap, tokenRatesMap$] = bind(
-  tokenRates$.pipe(map((tokenRates) => tokenRates.tokenRates)),
+  tokenRates$.pipe(map((tokenRates) => tokenRates.tokenRates))
 )
 
 export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | undefined) =>
@@ -26,6 +26,6 @@ export const [useTokenRates, getTokenRates$] = bind((tokenId: TokenId | null | u
     map((tokenRatesMap) => {
       if (!tokenId) return null
       return tokenRatesMap[tokenId] ?? null
-    }),
-  ),
+    })
+  )
 )

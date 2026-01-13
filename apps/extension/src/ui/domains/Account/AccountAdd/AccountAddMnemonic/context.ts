@@ -30,5 +30,5 @@ const useAccountAddMnemonicProvider = ({ onSuccess }: { onSuccess: (address: str
 }
 
 export const [AccountAddMnemonicProvider, useAccountAddMnemonic] = provideContext(
-  useAccountAddMnemonicProvider,
+  useAccountAddMnemonicProvider
 )

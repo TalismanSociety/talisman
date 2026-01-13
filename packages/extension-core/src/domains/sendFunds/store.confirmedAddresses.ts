@@ -39,7 +39,7 @@ export const addConfirmedAddress = (tokenId: string, address: string): Promise<v
 export const isAddressConfirmedForToken = (
   data: ConfirmedExternalAddresses,
   tokenId: string,
-  address: string,
+  address: string
 ): boolean => {
   const confirmedForToken = data[tokenId] ?? []
   return confirmedForToken.some((confirmed) => isAddressEqual(confirmed, address))

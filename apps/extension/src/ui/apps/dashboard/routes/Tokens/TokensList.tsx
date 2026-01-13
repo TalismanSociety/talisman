@@ -57,7 +57,7 @@ export const TokensList: FC<{
     return sortBy(
       results,
       (t) => networksMap[t.networkId]?.name,
-      (t) => t.symbol,
+      (t) => t.symbol
     )
   }, [tokens, networksMap, networkId])
 
@@ -77,7 +77,7 @@ export const TokensList: FC<{
           !lowerSearch ||
           [t.symbol, t.name, t.type].join().toLowerCase().includes(lowerSearch) ||
           (isTokenInTypes(t, ["evm-erc20", "evm-uniswapv2"]) &&
-            isAddressEqual(t.contractAddress, lowerSearch)),
+            isAddressEqual(t.contractAddress, lowerSearch))
       )
 
     // exact matches first
@@ -251,6 +251,6 @@ const useCoingeckoUrl = (token: Token) => {
   return useMemo(
     () =>
       token.coingeckoId ? urlJoin("https://coingecko.com/en/coins/", token.coingeckoId) : null,
-    [token],
+    [token]
   )
 }

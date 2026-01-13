@@ -18,7 +18,7 @@ export const YieldxyzEnterStepToken: FC = () => {
       if (!pickerTokenIds) return false // safety check to block user, this should not happen
       return pickerTokenIds.includes(token.id)
     },
-    [pickerTokenIds],
+    [pickerTokenIds]
   )
 
   if (!pickerTokenIds) throw new Error("PickerTokenIds is not defined")

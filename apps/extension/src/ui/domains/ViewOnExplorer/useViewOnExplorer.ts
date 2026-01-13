@@ -19,12 +19,12 @@ export const useViewOnExplorer = (address: string, networkIdOrHash?: string | nu
   const blockExplorerUrl = useMemo(
     () =>
       network ? (getBlockExplorerUrls(network, { type: "address", address })[0] ?? null) : null,
-    [address, network],
+    [address, network]
   )
 
   const canOpen = useMemo(
     () => !networkIdOrHash || blockExplorerUrl,
-    [blockExplorerUrl, networkIdOrHash],
+    [blockExplorerUrl, networkIdOrHash]
   )
 
   const open = useCallback(() => {

@@ -22,7 +22,7 @@ export const BittensorDelegatorNameButton = ({
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
-    [combinedValidatorsData, hotkey],
+    [combinedValidatorsData, hotkey]
   )
 
   const label = useMemo(() => {

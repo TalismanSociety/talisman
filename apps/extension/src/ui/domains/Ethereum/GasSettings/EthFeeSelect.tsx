@@ -71,7 +71,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       if (onChange) onChange(priority)
       close()
     },
-    [close, genericEvent, onChange],
+    [close, genericEvent, onChange]
   )
 
   const handleSelect = useCallback(
@@ -79,7 +79,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       if (priority === "custom") setShowCustomSettings(true)
       else setPriority(priority)
     },
-    [setPriority],
+    [setPriority]
   )
 
   const handleSetCustomSettings = useCallback(
@@ -87,7 +87,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       setCustomSettings(gasSettings)
       setPriority("custom")
     },
-    [setCustomSettings, setPriority],
+    [setCustomSettings, setPriority]
   )
 
   const handleCancelCustomSettings = useCallback(() => {

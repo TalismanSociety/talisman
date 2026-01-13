@@ -51,9 +51,9 @@ const getSwapStatus$ = state((protocolAndId?: string): Observable<SwapStatus | u
           // update cache with latest value
           // this will prevent further api requests for this swap
           cacheSwapStatus$.next({ protocolAndId, status })
-        }),
+        })
       )
-    }),
+    })
   )
 })
 
@@ -79,7 +79,7 @@ completedSwapsCache$.next(JSON.parse(localStorage.getItem(completedSwapsCacheKey
 
 // save cache changes to localstorage
 completedSwapsCache$.subscribe((cache) =>
-  localStorage.setItem(completedSwapsCacheKey, JSON.stringify(cache ?? {})),
+  localStorage.setItem(completedSwapsCacheKey, JSON.stringify(cache ?? {}))
 )
 
 // cacheSwapStatus$ makes sure that there's no race condition when saving new swap statuses to the cache.
@@ -98,7 +98,7 @@ cacheSwapStatus$
       firstValueFrom(completedSwapsCache$).then((cache) => {
         cache[newValue.protocolAndId] = newValue.status
         return completedSwapsCache$.next(cache)
-      }),
-    ),
+      })
+    )
   )
   .subscribe()

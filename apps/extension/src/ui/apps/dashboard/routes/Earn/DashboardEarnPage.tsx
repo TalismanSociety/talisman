@@ -37,7 +37,7 @@ export const DashboardEarnPage: FC = () => {
   const navigate = useNavigateWithQuery()
   const selectedTab = useMemo<EarnTabKey>(
     () => getTabFromPath(location.pathname),
-    [location.pathname],
+    [location.pathname]
   )
   const [search, setSearch] = useState("")
 
@@ -47,7 +47,7 @@ export const DashboardEarnPage: FC = () => {
 
       navigate(TAB_TO_PATH[tab])
     },
-    [navigate, selectedTab],
+    [navigate, selectedTab]
   )
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])

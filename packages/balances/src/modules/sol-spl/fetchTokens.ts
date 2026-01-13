@@ -67,7 +67,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     const token = assign(
       base,
       cached?.isValid ? omit(cached, ["isValid"]) : {},
-      tokenConfig,
+      tokenConfig
     ) as SolSplToken
 
     const parsed = SolSplTokenSchema.safeParse(token)
@@ -105,7 +105,7 @@ const fetchOnChainTokenData = async (connector: IChainConnectorSol, tokenId: str
 
     const [metadataPDA] = PublicKey.findProgramAddressSync(
       [Buffer.from("metadata"), METAPLEX_PROGRAM_ID.toBuffer(), mintPubKey.toBuffer()],
-      METAPLEX_PROGRAM_ID,
+      METAPLEX_PROGRAM_ID
     )
 
     // 3. Fetch metadata account directly (traditional way)

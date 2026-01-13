@@ -24,7 +24,7 @@ const ModalHeader = () => {
     <div
       className={classNames(
         "text-body-secondary flex min-h-32 w-full shrink-0 items-center justify-between px-10",
-        step === "follow-up" ? "invisible" : "visible",
+        step === "follow-up" ? "invisible" : "visible"
       )}
     >
       <IconButton

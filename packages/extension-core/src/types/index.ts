@@ -204,16 +204,16 @@ export type UnsubscribeFn = () => void
 
 export interface SendRequest {
   <TMessageType extends MessageTypesWithNullRequest>(
-    message: TMessageType,
+    message: TMessageType
   ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithNoSubscriptions>(
     message: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
   ): Promise<ResponseTypes[TMessageType]>
   <TMessageType extends MessageTypesWithSubscriptions>(
     message: TMessageType,
     request: RequestTypes[TMessageType],
-    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void,
+    subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
   ): Promise<ResponseTypes[TMessageType]>
 }
 

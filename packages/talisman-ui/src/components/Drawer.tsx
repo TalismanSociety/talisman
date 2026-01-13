@@ -87,12 +87,12 @@ export const Drawer: FC<DrawerProps> = ({
       e.stopPropagation()
       onDismiss()
     },
-    [onDismiss],
+    [onDismiss]
   )
 
   const { position, drawer, enterFrom, enterTo, leaveFrom, leaveTo } = useMemo(
     () => getAnchorClasses(anchor, !!containerId),
-    [anchor, containerId],
+    [anchor, containerId]
   )
 
   const container = (containerId && document.getElementById(containerId)) || document.body
@@ -105,7 +105,7 @@ export const Drawer: FC<DrawerProps> = ({
         className={classNames(
           "bg-grey-900 left-0 top-0 z-10 h-full w-full bg-opacity-80",
           onDismiss ? "cursor-pointer" : "cursor-not-allowed",
-          position,
+          position
         )}
         enter="transition-opacity ease-linear duration-300"
         enterFrom="opacity-0"
@@ -134,6 +134,6 @@ export const Drawer: FC<DrawerProps> = ({
         <OpenCloseStatusProvider status={status}>{children}</OpenCloseStatusProvider>
       </TransitionChild>
     </Transition>,
-    container,
+    container
   )
 }

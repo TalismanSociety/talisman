@@ -44,7 +44,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
       token && planck !== undefined
         ? new BalanceFormatter(planck, token.decimals, tokenRates)
         : null,
-    [planck, token, tokenRates],
+    [planck, token, tokenRates]
   )
   const currency = useSelectedCurrency()
 
@@ -57,7 +57,7 @@ const TokensAndFiatInner: FC<TokensAndFiatProps> = ({
           tokenId={tokenId}
           className={classNames(
             "mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub",
-            logoClassName,
+            logoClassName
           )}
         />
       ) : null}

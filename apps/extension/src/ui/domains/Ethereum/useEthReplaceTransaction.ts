@@ -10,7 +10,7 @@ export const useEthReplaceTransaction = (
   txToReplace: TransactionRequest<string>,
   evmNetworkId: EthNetworkId,
   type: TxReplaceType,
-  lock?: boolean,
+  lock?: boolean
 ) => {
   const replaceTx = useMemo(() => {
     const parsed = parseTransactionRequest(txToReplace)

@@ -27,12 +27,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address],
+    [selectedAccount?.address, address]
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [data?.accounts, rowAddress],
+    [data?.accounts, rowAddress]
   )
 
   const withdrawIn = useMemo(
@@ -42,12 +42,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
             locale,
           })
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale]
   )
 
   const canUnbond = useMemo(
     () => accountStatus?.canUnstake && rowMeta.poolId,
-    [accountStatus?.canUnstake, rowMeta.poolId],
+    [accountStatus?.canUnstake, rowMeta.poolId]
   )
 
   if (!rowAddress) return null

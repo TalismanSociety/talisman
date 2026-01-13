@@ -115,7 +115,7 @@ export const BittensorSubnetBondReview = () => {
   const totalDiscountPercent = useMemo(() => `${totalFeeDiscount * 100}%`, [totalFeeDiscount])
   const isSeekDrawerEnabled = useMemo(
     () => isSeekTaoDiscountEnabled && totalFeeDiscount < MAX_TOTAL_FEE_DISCOUNT,
-    [isSeekTaoDiscountEnabled, totalFeeDiscount],
+    [isSeekTaoDiscountEnabled, totalFeeDiscount]
   )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {
@@ -250,7 +250,7 @@ export const BittensorSubnetBondReview = () => {
               className={classNames(
                 "text-body",
                 !!priceImpact && priceImpact >= HIGH_PRICE_IMPACT && "text-orange-500",
-                !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500",
+                !!priceImpact && priceImpact >= VERY_HIGH_PRICE_IMPACT && "text-red-500"
               )}
             >
               {priceImpact?.toFixed(2)}%
@@ -318,7 +318,7 @@ export const BittensorSubnetBondReview = () => {
                   type="button"
                   className={classNames(
                     "rounded-[43px] bg-[#D5FF5C] bg-opacity-[0.1] px-3 py-1",
-                    !isSeekDrawerEnabled && "cursor-default",
+                    !isSeekDrawerEnabled && "cursor-default"
                   )}
                   onClick={isSeekDrawerEnabled ? seekDiscountDrawer.open : undefined}
                 >
@@ -407,33 +407,33 @@ const MevShieldInfoDrawer: FC<{ isOpen: boolean; onDismiss: () => void }> = ({
         <div className="text-md text-center font-bold">{t("MEV Shield")}</div>
         <p className="text-sm">
           {t(
-            'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.',
+            'MEV Shield protects your subnet staking transaction from frontrunning by wrapping it in an encrypted "shield" transaction.'
           )}
         </p>
         <ul className="text-body-secondary list-outside list-disc space-y-2 pl-8 text-sm">
           <li>
             {t(
-              "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block.",
+              "You submit one encrypted wrapper transaction. If it succeeds, your staking transaction is automatically included in the next block."
             )}
           </li>
           <li>
             {t(
-              "You still pay network fees for both the encrypted wrapper and the staking transaction.",
+              "You still pay network fees for both the encrypted wrapper and the staking transaction."
             )}
           </li>
           <li>
             {t(
-              "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain).",
+              "Even if the wrapper executes successfully, the staking transaction is not guaranteed to succeed (it can still fail on-chain)."
             )}
           </li>
           <li>
             {t(
-              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one.",
+              "The validator's public key for the next block is embedded in the encrypted payload, so the transaction is only valid for that single block. This makes it too time-sensitive for hardware wallets, so MEV Shield is disabled when using one."
             )}
           </li>
           <li>
             {t(
-              "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking.",
+              "Rootnet staking is not subject to MEV attacks in the same way, so MEV Shield is disabled for Rootnet staking."
             )}
           </li>
         </ul>

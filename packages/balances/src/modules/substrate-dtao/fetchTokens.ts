@@ -41,7 +41,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       anyMiniMetadata.data,
       "SubnetInfoRuntimeApi",
       "get_all_dynamic_info",
-      [],
+      []
     ),
   ])
 
@@ -89,7 +89,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
 const fetchTransferableTokensMap = async (
   connector: IChainConnectorDot,
   metadata: `0x${string}`,
-  networkId: DotNetworkId,
+  networkId: DotNetworkId
 ) => {
   const { builder } = parseMetadataRpc(metadata)
   const transferToggleCodec = builder.buildStorage("SubtensorModule", "TransferToggle")
@@ -101,7 +101,7 @@ const fetchTransferableTokensMap = async (
   const transferToggleResults = await connector.send<QueryStorageResult>(
     networkId,
     "state_queryStorageAt",
-    [transferToggleKeys],
+    [transferToggleKeys]
   )
 
   const transferToggleEntries = transferToggleResults.length ? transferToggleResults[0].changes : []
@@ -111,6 +111,6 @@ const fetchTransferableTokensMap = async (
       const [netuid] = transferToggleCodec.keys.dec(key) as [number]
       const isTransferable = transferToggleCodec.value.dec(value) as boolean
       return [netuid, isTransferable]
-    }),
+    })
   )
 }

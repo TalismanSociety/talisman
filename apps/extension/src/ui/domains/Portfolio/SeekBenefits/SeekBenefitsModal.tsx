@@ -33,7 +33,7 @@ export const SeekBenefitsModal = () => {
       onDismiss={close}
       className={classNames(
         "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border"
       )}
       containerId={IS_POPUP ? "main" : undefined}
     >

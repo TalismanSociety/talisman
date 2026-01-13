@@ -37,7 +37,7 @@ const simpleLocalizeFetch = async <T = unknown>(url: string) => {
 
 const fetchSupportedLanguages = async () => {
   const result = await simpleLocalizeFetch<{ key: string; name: string }[]>(
-    "https://api.simplelocalize.io/api/v1/languages",
+    "https://api.simplelocalize.io/api/v1/languages"
   )
 
   if (result.status !== 200) {
@@ -58,7 +58,7 @@ const fetchNamespaceUrls = async () => {
   const result = await simpleLocalizeFetch<{
     files: Array<{ url: string; namespace: string; language: string }>
   }>(
-    "https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES",
+    "https://api.simplelocalize.io/api/v4/export?downloadFormat=single-language-json&downloadOptions=SPLIT_BY_NAMESPACES"
   )
 
   if (result.status !== 200) {
@@ -89,7 +89,7 @@ const downloadTranslations = async () => {
   console.log(
     "Downloading %s languages: ",
     Object.keys(languages).length,
-    Object.keys(languages).join(", "),
+    Object.keys(languages).join(", ")
   )
 
   for (const lang of namespaces) {

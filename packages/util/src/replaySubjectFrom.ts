@@ -13,7 +13,7 @@ import { isPromise } from "./isPromise"
  * For any other type of value, it will be immediately published into the {@link ReplaySubject}.
  */
 export const replaySubjectFrom = <T>(
-  initialValue: T | Promise<T> | ReplaySubject<T>,
+  initialValue: T | Promise<T> | ReplaySubject<T>
 ): ReplaySubject<T> => {
   if (initialValue instanceof ReplaySubject) return initialValue
 
@@ -23,7 +23,7 @@ export const replaySubjectFrom = <T>(
   if (isPromise(initialValue)) {
     initialValue.then(
       (value) => subject.next(value),
-      (error) => subject.error(error),
+      (error) => subject.error(error)
     )
     return subject
   }

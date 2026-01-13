@@ -4,7 +4,7 @@ import { useYieldxyzPositionsEnhanced } from "@ui/state"
 
 export const useYieldxyzYieldPositions = (
   yieldId: string | null | undefined,
-  address: string | null | undefined,
+  address: string | null | undefined
 ) => {
   const positionsEnhanced = useYieldxyzPositionsEnhanced()
 
@@ -12,7 +12,7 @@ export const useYieldxyzYieldPositions = (
     if (!yieldId || !address || !positionsEnhanced.data) return undefined
 
     return positionsEnhanced.data.filter(
-      (pos) => pos.yieldId === yieldId && pos.address === address,
+      (pos) => pos.yieldId === yieldId && pos.address === address
     )
   }, [yieldId, address, positionsEnhanced.data])
 

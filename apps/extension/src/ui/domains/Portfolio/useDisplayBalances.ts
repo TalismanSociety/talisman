@@ -38,7 +38,7 @@ export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [evmNativeTokenId("1")]
 const shouldDisplayBalance = (
   accounts: Account[] | undefined,
   networksById: Record<NetworkId, Network>,
-  balances: Balances,
+  balances: Balances
 ) => {
   const accountHasSomeBalance =
     balances.find((b) => !accounts || accounts.some((a) => isAddressEqual(a.address, b.address)))
@@ -86,14 +86,14 @@ export const [usePortfolioDisplayBalances, portfolioDisplayBalances$] = bind(
             return networkBalances.find(shouldDisplayBalance(accounts, networksById, allBalances))
           case "network":
             return networkBalances.find(
-              shouldDisplayBalance(accounts, networksById, networkBalances),
+              shouldDisplayBalance(accounts, networksById, networkBalances)
             )
           case "search":
             return searchBalances.find(shouldDisplayBalance(accounts, networksById, searchBalances))
         }
-      }),
+      })
     ),
-  new Balances([]),
+  new Balances([])
 )
 
 /**
@@ -105,6 +105,6 @@ export const useDisplayBalances = (balances: Balances) => {
 
   return useMemo(
     () => balances.find(shouldDisplayBalance(accounts, networksById, balances)),
-    [accounts, balances, networksById],
+    [accounts, balances, networksById]
   )
 }

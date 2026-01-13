@@ -51,7 +51,7 @@ const STANDARD_CONTRACTS = [
 
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
-  tx: TransactionRequestBase,
+  tx: TransactionRequestBase
 ) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx

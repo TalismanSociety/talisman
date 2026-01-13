@@ -63,7 +63,7 @@ export const RiskAnalysisAssetImage = (props: AssetImageProps) => {
         className={classNames(
           "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
           props.side === "in" && "bg-[#16541D]",
-          props.side === "out" && "bg-[#262C54]",
+          props.side === "out" && "bg-[#262C54]"
         )}
       >
         {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}

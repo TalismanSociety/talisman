@@ -18,7 +18,7 @@ export type RampCryptoAsset = {
 export const useRampCryptoAsset = (
   currencyCode: string | undefined,
   tokenId: string | undefined,
-  mode: RampsMode,
+  mode: RampsMode
 ): RampCryptoAsset | null => {
   const { data: rampAssets } = useRampTokens(currencyCode, mode)
   const token = useToken(tokenId)
@@ -37,7 +37,7 @@ export const useRampCryptoAsset = (
         a.type === type &&
         (token.type !== "evm-erc20" ||
           a.address?.toLowerCase() === token.contractAddress.toLowerCase()) &&
-        (token.type !== "substrate-assets" || token.assetId === a.address),
+        (token.type !== "substrate-assets" || token.assetId === a.address)
     )
 
     return asset
@@ -68,7 +68,7 @@ const getRampTokenType = (token: Token) => {
 
 const getRampChainId = (remoteConfig: RemoteConfigStoreData, talismanNetworkId: string) => {
   const entry = Object.entries(remoteConfig.ramps.rampNetworks).find(
-    ([, talismanId]) => talismanId === talismanNetworkId,
+    ([, talismanId]) => talismanId === talismanNetworkId
   )
   return entry ? entry[0] : undefined
 }

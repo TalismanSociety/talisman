@@ -63,7 +63,7 @@ export const ConnectSignetPage = () => {
         setIsConnecting(false)
       }
     },
-    [navigate, setVaults, signetUrlOrigin, t],
+    [navigate, setVaults, signetUrlOrigin, t]
   )
 
   // clean up vaults when user clicks "Back" on confirmation page
@@ -78,7 +78,7 @@ export const ConnectSignetPage = () => {
         text={
           <>
             {t(
-              "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at ",
+              "Signet is the Enterprise & Institutional solution from Talisman, once you have set-up a vault in Signet you can connect below. Find out more at "
             )}
             <Link to={SIGNET_LANDING_URL} target="_blank" className="text-primary-500">
               {SIGNET_LANDING_URL}

@@ -47,7 +47,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       onChange,
       onSubmit,
     },
-    ref,
+    ref
   ) => {
     const internalRef = useRef<HTMLInputElement>(null)
 
@@ -61,7 +61,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       (e) => {
         setSearch(e.target.value)
       },
-      [setSearch],
+      [setSearch]
     )
 
     const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
@@ -70,7 +70,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           onSubmit?.()
         }
       },
-      [onSubmit],
+      [onSubmit]
     )
 
     useEffect(() => {
@@ -86,7 +86,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         small: small === undefined ? INPUT_CONTAINER_PROPS.small : small,
         className: classNames(INPUT_CONTAINER_PROPS.className, containerClassName),
       }),
-      [containerClassName, small],
+      [containerClassName, small]
     )
 
     const handleClear = useCallback(() => {
@@ -119,7 +119,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
         onKeyUp={handleKeyUp}
       />
     )
-  },
+  }
 )
 
 SearchInput.displayName = "SearchInput"

@@ -28,7 +28,7 @@ type BittensorValidatorsData = {
 
 const fetchBittensorValidatorsPage = async (
   page: number = 1,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<BittensorValidatorsData> => {
   const res = await fetch(
     `${TAOSTATS_BASE_PATH}/api/dtao/validator/latest/v1?page=${page}&limit=${MAX_PAGE_SIZE}`,
@@ -38,7 +38,7 @@ const fetchBittensorValidatorsPage = async (
         "Content-Type": "application/json",
       },
       signal,
-    },
+    }
   )
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
   return await res.json()
@@ -99,5 +99,5 @@ export const bittensorValidators$ = new Observable<Loadable<BittensorValidator[]
 }).pipe(
   startWith({ status: "loading", data: [] }),
   shareReplay({ bufferSize: 1, refCount: true }),
-  keepAlive(2_000), // prevents rapid re-fetching on unsubscriptions
+  keepAlive(2_000) // prevents rapid re-fetching on unsubscriptions
 )

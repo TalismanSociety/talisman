@@ -95,7 +95,7 @@ const TokenProducts: FC<{
         className={cn(
           "hover:bg-grey-750 flex h-28 w-full items-center gap-6 overflow-hidden px-8",
           isOpen && "bg-grey-800",
-          IS_POPUP && "gap-4 px-6",
+          IS_POPUP && "gap-4 px-6"
         )}
       >
         <TokenLogo tokenId={tokenId} className="size-16" />
@@ -152,7 +152,7 @@ const ProductRow: FC<{ product: YieldDto }> = ({ product }) => {
       type="button"
       className={cn(
         "hover:bg-grey-750 flex h-28 w-full items-center gap-6 px-8 text-sm",
-        IS_POPUP && "gap-4 px-6",
+        IS_POPUP && "gap-4 px-6"
       )}
       onClick={() => open({ productId: product.id, address: selectedAccount?.address })}
     >

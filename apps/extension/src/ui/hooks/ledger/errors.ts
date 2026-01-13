@@ -17,7 +17,7 @@ type NativeLedgerError = {
 // used to generate an error-like object when using an api (substrate legacy app) that returns error message as part of the response without throwing it
 export const getCustomNativeLedgerError = (
   message: string,
-  statusCode?: number,
+  statusCode?: number
 ): NativeLedgerError => {
   const error = new Error(message) as NativeLedgerError
   error.name = "Unknown"
@@ -51,7 +51,7 @@ export class TalismanLedgerError extends Error {
 
 export const getTalismanLedgerError = (
   error: unknown,
-  appName: string = "Unknown App",
+  appName: string = "Unknown App"
 ): TalismanLedgerError => {
   if (error instanceof TalismanLedgerError) return error
 
@@ -70,7 +70,7 @@ export const getTalismanLedgerError = (
         return new TalismanLedgerError(
           "BrowserSecurity",
           t("Failed to connect USB. Restart your browser and retry."),
-          { cause },
+          { cause }
         )
 
       case "NotFoundError":
@@ -80,21 +80,21 @@ export const getTalismanLedgerError = (
         return new TalismanLedgerError(
           "Network",
           t("Failed to connect to Ledger (network error)"),
-          { cause },
+          { cause }
         )
 
       case "InvalidStateError":
         return new TalismanLedgerError(
           "Unknown",
           t("Failed to connect to Ledger (invalid state). Ledger might be busy."),
-          { cause },
+          { cause }
         )
 
       case "UnsupportedVersion": // For ethereum only
         return new TalismanLedgerError(
           "UnsupportedVersion",
           t("Please update your Ledger Ethereum app"),
-          { cause },
+          { cause }
         )
 
       case "TransportStatusError":
@@ -110,7 +110,7 @@ export const getTalismanLedgerError = (
         return new TalismanLedgerError(
           "BrowserSecurity",
           t("Failed to connect to your Ledger (browser security)"),
-          { cause },
+          { cause }
         )
     }
   }
@@ -129,7 +129,7 @@ export const getTalismanLedgerError = (
       return new TalismanLedgerError(
         "BrowserSecurity",
         t("Failed to connect to your Ledger (browser security)"),
-        { cause },
+        { cause }
       )
 
     case "App does not seem to be open": // locked but underlying app is eth
@@ -156,23 +156,23 @@ export const getTalismanLedgerError = (
       return new TalismanLedgerError(
         "InvalidRequest",
         t(
-          "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again.",
+          "This instruction is not supported on your ledger. You should check for firmware and app updates in Ledger Live before trying again."
         ),
-        { cause },
+        { cause }
       )
 
     case ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE:
       return new TalismanLedgerError(
         "InvalidRequest",
         t("This transaction cannot be signed via an Ethereum Ledger account."),
-        { cause },
+        { cause }
       )
 
     case ERROR_LEDGER_NO_APP:
       return new TalismanLedgerError(
         "InvalidRequest",
         t("There is no Ledger app available for this network."),
-        { cause },
+        { cause }
       )
   }
 
@@ -191,7 +191,7 @@ export const getOpenLedgerAppError = (appName: string, cause?: unknown) => {
     t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
       appName: capitalize(appName),
     }),
-    { cause },
+    { cause }
   )
 }
 
@@ -201,7 +201,7 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
       return new TalismanLedgerError(
         "UserRejected",
         t("Transaction was rejected by the Ledger device."),
-        { cause },
+        { cause }
       )
 
     case 27404: // locked
@@ -221,7 +221,7 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
         t(`Please open <strong>{{appName}}</strong> app on your Ledger.`, {
           appName: capitalize(appName),
         }),
-        { cause },
+        { cause }
       )
   }
 }

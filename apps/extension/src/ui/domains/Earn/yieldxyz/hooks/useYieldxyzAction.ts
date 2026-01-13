@@ -39,7 +39,7 @@ export const useYieldxyzAction = (props: UseYieldxyzActionProps) => {
         props.type,
         props.yieldId,
         props.address,
-        props.args,
+        props.args
       )
       // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
       fetchedAction.transactions.sort(sortTransactionsByStepIndex)
@@ -98,7 +98,7 @@ export const useYieldxyzAction = (props: UseYieldxyzActionProps) => {
         throw err
       }
     },
-    [state.action],
+    [state.action]
   )
 
   return { ...state, canCreateAction, createAction, refreshAction, submitActionTransaction }
@@ -109,7 +109,7 @@ const fetchYieldxyzCreateAction = async (
   yieldId: string,
   address: string,
   args: ActionArgumentsDto,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/actions/${type}`, {
     method: "POST",
@@ -142,7 +142,7 @@ const fetchYieldxyzAction = async (actionId: string, signal?: AbortSignal): Prom
 const submitYieldxyzTransactionHash = async (
   transactionId: string,
   hash: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto["transactions"][number]> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/transactions/${transactionId}/submit-hash`, {
     method: "PUT",

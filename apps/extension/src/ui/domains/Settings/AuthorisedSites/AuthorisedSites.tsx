@@ -39,7 +39,7 @@ export const AuthorisedSites = () => {
       Object.values(sites).some((site) => !!site.ethAddresses),
       Object.values(sites).some((site) => !!site.solAddresses),
     ],
-    [sites],
+    [sites]
   )
 
   const showBatchActions = useMemo(
@@ -48,7 +48,7 @@ export const AuthorisedSites = () => {
       (providerType === "ethereum" && hasEthereumSites) ||
       (providerType === "solana" && hasSolanaSites),
 
-    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType],
+    [hasEthereumSites, hasPolkadotSites, hasSolanaSites, providerType]
   )
 
   return (

@@ -10,7 +10,7 @@ import { MODULE_TYPE } from "./config"
 export const buildQueries = (
   networkId: string,
   balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
-  miniMetadata: MiniMetadata,
+  miniMetadata: MiniMetadata
 ): Array<RpcQueryPack<IBalance>> => {
   const networkStorageCoders = buildNetworkStorageCoders(networkId, miniMetadata, {
     storage: ["Assets", "Account"],
@@ -25,7 +25,7 @@ export const buildQueries = (
 
       if (!stateKey) {
         log.warn(
-          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`,
+          `Invalid assetId / address in ${networkId} storage query ${token.assetId} / ${address}`
         )
         return null
       }
@@ -47,7 +47,7 @@ export const buildQueries = (
         const decoded = decodeScale<DecodedType>(
           scaleCoder,
           changes[0],
-          `Failed to decode substrate-assets balance on chain ${networkId}`,
+          `Failed to decode substrate-assets balance on chain ${networkId}`
         ) ?? {
           balance: 0n,
           is_frozen: false,

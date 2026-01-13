@@ -40,7 +40,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         const submitted = await api.solSubmit(
           tx.networkId,
           serializeTransaction(output.transaction),
-          tx.txInfo,
+          tx.txInfo
         )
 
         onSubmit(submitted.signature)
@@ -53,7 +53,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         })
       }
     },
-    [onSubmit, tx],
+    [onSubmit, tx]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)

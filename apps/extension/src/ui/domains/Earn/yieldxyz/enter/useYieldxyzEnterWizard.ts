@@ -72,7 +72,7 @@ const useYieldxyzEnterWizardProvider = ({
     if (tokens.length > 1) {
       // some products support both ETH and WETH as inputs. allow those but force native token as input
       const natives = tokens.filter((t) =>
-        isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"]),
+        isTokenInTypes(t, ["evm-native", "substrate-native", "sol-native"])
       )
       if (natives.length === 1) return natives[0]!
 
@@ -226,5 +226,5 @@ const useYieldxyzEnterWizardProvider = ({
 }
 
 export const [YieldxyzEnterWizardProvider, useYieldxyzEnterWizard] = provideContext(
-  useYieldxyzEnterWizardProvider,
+  useYieldxyzEnterWizardProvider
 )

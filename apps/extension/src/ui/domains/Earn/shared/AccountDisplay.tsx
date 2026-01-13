@@ -18,7 +18,7 @@ export const AccountDisplay: FC<{
 }> = ({ address, ss58Format, className, iconClassName, textClassName }) => {
   const formattedAddress = useMemo(
     () => encodeAnyAddress(address, { ss58Format }),
-    [address, ss58Format],
+    [address, ss58Format]
   )
 
   const account = useAccountByAddress(address)
@@ -29,7 +29,7 @@ export const AccountDisplay: FC<{
         <span
           className={cn(
             "inline-flex max-w-full items-center gap-[0.5em] overflow-hidden",
-            className,
+            className
           )}
         >
           <AccountIcon

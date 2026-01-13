@@ -30,7 +30,7 @@ export const SeekPresaleBanner: FC<{ variant: "small" | "large"; className?: str
         className={cn(
           "relative h-[6.4rem] w-full shrink-0 overflow-hidden rounded-sm p-0.5 text-left text-xs",
           variant === "large" && "h-[6.4rem]",
-          variant === "small" && "h-[5.9rem]",
+          variant === "small" && "h-[5.9rem]"
         )}
       >
         <div className="absolute inset-0 rounded-sm bg-gradient-to-l from-[#606060]/60 to-[#5A6825]" />
@@ -39,7 +39,7 @@ export const SeekPresaleBanner: FC<{ variant: "small" | "large"; className?: str
             className={cn(
               "absolute left-0 top-0 z-10 flex size-full flex-col justify-center gap-2 overflow-hidden px-8",
               variant === "large" && "gap-3",
-              variant === "small" && "gap-2",
+              variant === "small" && "gap-2"
             )}
           >
             <div className="text-body truncate text-sm font-bold">

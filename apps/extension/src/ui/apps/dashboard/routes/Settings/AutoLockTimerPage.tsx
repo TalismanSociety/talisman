@@ -22,7 +22,7 @@ export const Content = () => {
       { value: 30, label: t("{{count}} minutes", { count: 30 }) },
       { value: 60, label: t("{{count}} minutes", { count: 60 }) },
     ],
-    [t],
+    [t]
   )
 
   return (
@@ -30,7 +30,7 @@ export const Content = () => {
       <HeaderBlock
         title={t("Auto-lock Timer")}
         text={t(
-          "Set a timer to automatically lock the Talisman wallet extension after the following period of inactivity",
+          "Set a timer to automatically lock the Talisman wallet extension after the following period of inactivity"
         )}
       />
       <Spacer />

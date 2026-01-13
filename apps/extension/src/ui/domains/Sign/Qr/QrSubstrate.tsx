@@ -80,7 +80,7 @@ export const QrSubstrate = ({
 }: Props): ReactElement<Props> => {
   const { t } = useTranslation()
   const [scanState, setScanState] = useState<ScanState>(
-    skipInit ? { page: "SEND" } : { page: "INIT" },
+    skipInit ? { page: "SEND" } : { page: "INIT" }
   )
   const chain = useNetworkByGenesisHash(genesisHash)
   const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
@@ -106,7 +106,7 @@ export const QrSubstrate = ({
     <div
       className={classNames(
         "bg-black-primary absolute left-0 top-0 flex h-full w-full flex-col items-center",
-        className,
+        className
       )}
     >
       {/* don't show header on UPDATE_METADATA view */}
@@ -139,7 +139,7 @@ export const QrSubstrate = ({
         className={classNames(
           "w-full grow",
           // don't pad the UPDATE_METADATA view
-          scanState.page !== "UPDATE_METADATA" && "px-12",
+          scanState.page !== "UPDATE_METADATA" && "px-12"
         )}
       >
         {/*
@@ -182,7 +182,7 @@ export const QrSubstrate = ({
             <QrCodeSourceSelector className="mt-4 text-base" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               {t(
-                "Scan the QR video with the Polkadot Vault app on your phone to update your metadata.",
+                "Scan the QR video with the Polkadot Vault app on your phone to update your metadata."
               )}
             </div>
             <div></div>
@@ -211,7 +211,7 @@ export const QrSubstrate = ({
           // than the sign tx popup does
           // we replicate that here so that the buttons at the bottom don't
           // move around when switching to this component
-          narrowMargin ? "py-8" : "py-10",
+          narrowMargin ? "py-8" : "py-10"
         )}
       >
         {scanState.page === "SEND" && (
@@ -279,12 +279,12 @@ const SendPage = ({
 
   const canSignWithProof = useMemo(
     () => !!shortMetadata && !!chain?.hasCheckMetadataHash,
-    [chain?.hasCheckMetadataHash, shortMetadata],
+    [chain?.hasCheckMetadataHash, shortMetadata]
   )
 
   const signWithProof = useMemo(
     () => canSignWithProof && embedProof,
-    [canSignWithProof, embedProof],
+    [canSignWithProof, embedProof]
   )
 
   return (
@@ -304,7 +304,7 @@ const SendPage = ({
             checked={!!embedProof}
             className={classNames(
               "text-body-secondary hover:text-body gap-8! text-sm",
-              !canSignWithProof && "invisible",
+              !canSignWithProof && "invisible"
             )}
           >
             {t("I use Polkadot Vault v7.0 or later")}
@@ -342,7 +342,7 @@ const SendPage = ({
               type="button"
               className={classNames(
                 "text-grey-200 mt-4 text-xs font-light hover:text-white",
-                signWithProof && "invisible",
+                signWithProof && "invisible"
               )}
               onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
             >
@@ -364,7 +364,7 @@ const SendPage = ({
           <div className="mb-16 font-bold">{t("Unable to sign")}</div>
           <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
             {t(
-              "Your Polkadot Vault app needs data about this network to sign this transaction, but no secure source of network data is available. You will be unable to sign this transaction.",
+              "Your Polkadot Vault app needs data about this network to sign this transaction, but no secure source of network data is available. You will be unable to sign this transaction."
             )}
             <p className="mt-6">
               <a
@@ -489,7 +489,7 @@ const SendPage = ({
           <div className="mb-5 font-bold">{t("You may need to update metadata")}</div>
           <div className="text-body-secondary max-w-md text-center text-sm leading-10">
             {t(
-              "If you’re receiving an error on your Polkadot Vault when trying to scan the QR code, it likely means your metadata is out of date.",
+              "If you’re receiving an error on your Polkadot Vault when trying to scan the QR code, it likely means your metadata is out of date."
             )}
           </div>
           <div className="py-8">

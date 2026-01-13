@@ -5,7 +5,7 @@ import { nfts$, refreshNftMetadata } from "./service"
 import { setFavoriteNft, setHiddenNftCollection } from "./store"
 
 const handleSetHiddenNftCollection: MessageHandler<"pri(nfts.collection.setHidden)"> = (
-  request,
+  request
 ) => {
   const { id, isHidden } = request
   setHiddenNftCollection(id, isHidden)
@@ -37,7 +37,7 @@ export class NftsHandler extends ExtensionHandler {
 
       case "pri(nfts.collection.setHidden)":
         return handleSetHiddenNftCollection(
-          request as RequestTypes["pri(nfts.collection.setHidden)"],
+          request as RequestTypes["pri(nfts.collection.setHidden)"]
         ) as Response
 
       case "pri(nfts.setFavorite)":
@@ -45,7 +45,7 @@ export class NftsHandler extends ExtensionHandler {
 
       case "pri(nfts.refreshMetadata)":
         return handleRefreshNftMetadata(
-          request as RequestTypes["pri(nfts.refreshMetadata)"],
+          request as RequestTypes["pri(nfts.refreshMetadata)"]
         ) as Response
 
       default:

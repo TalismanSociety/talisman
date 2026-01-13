@@ -18,7 +18,7 @@ export const NomPoolUnbondingPeriod = ({ chainId }: NomPoolUnbondingPeriodProps)
 
   const display = useMemo(
     () => (data ? formatDistance(0, Number(data?.toString()) || 0, { locale }) : t("N/A")),
-    [data, t, locale],
+    [data, t, locale]
   )
 
   if (isLoading)

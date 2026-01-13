@@ -65,8 +65,8 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             addresses.map(async (address) => [
               address,
               !!(await stakingSapi.getStorage("Staking", "Bonded", [address])),
-            ]),
-          ),
+            ])
+          )
         ) as Record<string, boolean>,
 
         Object.fromEntries(
@@ -76,13 +76,13 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
               await stakingSapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
                 address,
               ]),
-            ]),
-          ),
+            ])
+          )
         ) as Record<string, NomPoolMember | null>,
       ])
 
       const transferableByAddress = Object.fromEntries(
-        balances.map(({ address, transferable }) => [address, transferable.planck]),
+        balances.map(({ address, transferable }) => [address, transferable.planck])
       )
 
       const accounts = await Promise.all(
@@ -102,7 +102,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             canWithdraw: maxUnbondingEra <= currentEra,
             canWithdrawIn: getWithdrawWaitDuration(stakingSapi, babeSapi, erasToUnbonding),
           }
-        }),
+        })
       )
 
       return { accounts, poolId }

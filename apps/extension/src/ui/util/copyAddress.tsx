@@ -25,7 +25,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
         ) : undefined,
       },
       // set an id to prevent multiple clicks to display multiple notifications
-      { toastId },
+      { toastId }
     )
     return true
   } catch (err) {
@@ -35,7 +35,7 @@ export const copyAddress = async (address: string, onQrClick?: () => void) => {
         title: i18next.t(`Copy failed`),
         subtitle: shortenAddress(address),
       },
-      { toastId },
+      { toastId }
     )
     return false
   }

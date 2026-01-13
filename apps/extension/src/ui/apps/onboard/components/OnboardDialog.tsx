@@ -12,7 +12,7 @@ export const OnboardDialog = ({ title, children, className }: OnboardDialogProps
     <div
       className={classNames(
         "bg-body/5 transform-gpu backdrop-blur-xl",
-        "flex w-full flex-col gap-16 rounded-lg p-16 text-left",
+        "flex w-full flex-col gap-16 rounded-lg p-16 text-left"
       )}
     >
       {title && <div className="text-xl text-white">{title}</div>}

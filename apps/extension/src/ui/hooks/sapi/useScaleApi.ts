@@ -15,7 +15,7 @@ import { useDotNetwork, useToken } from "@ui/state"
  */
 export const useScaleApi = (
   chainIdOrHash: DotNetworkId | HexString | null | undefined,
-  specVersion?: number,
+  specVersion?: number
 ) => {
   const chain = useDotNetwork(chainIdOrHash)
   const token = useToken(chain?.nativeTokenId)
@@ -42,7 +42,7 @@ export const useScaleApi = (
         token,
         chain.hasCheckMetadataHash,
         chain.signedExtensions,
-        chain.registryTypes,
+        chain.registryTypes
       ) as ScaleApi
     },
     refetchInterval: false,

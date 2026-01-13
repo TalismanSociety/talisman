@@ -70,7 +70,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -100,7 +100,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         })
       }
     },
-    [setError, onSuccess, password],
+    [setError, onSuccess, password]
   )
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const ExportAllAccountsForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         </p>
         <p className="text-body-secondary text-sm">
           {t(
-            "Please note that only polkadot.js compatible accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported.",
+            "Please note that only polkadot.js compatible accounts with stored private keys can be exported. Hardware, QR-based, and watch-only accounts will not be exported."
           )}
         </p>
         <div className="mt-12">
@@ -186,9 +186,9 @@ export const useExportAllAccountsModal = () => {
           // export only keypair accounts, others have metadata that are specific to each wallet
           account.type === "keypair" &&
           // only export pjs compatible accounts to be compatible with pjs json format
-          ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve),
+          ["sr25519", "ed25519", "ecdsa", "ethereum"].includes(account.curve)
       ),
-    [accounts],
+    [accounts]
   )
 
   return {

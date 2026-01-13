@@ -227,7 +227,7 @@ export const addAccount = (tree: Tree, address: string) => {
   const accountIsInTree = !!tree.find((item) =>
     item.type === "account"
       ? isAddressEqual(item.address, address)
-      : item.tree.find((account) => isAddressEqual(account.address, address)),
+      : item.tree.find((account) => isAddressEqual(account.address, address))
   )
   if (accountIsInTree) return
 

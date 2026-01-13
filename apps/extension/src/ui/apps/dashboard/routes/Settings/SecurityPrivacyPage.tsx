@@ -69,7 +69,7 @@ const Content = () => {
                   </TooltipTrigger>
                   <TooltipContent>
                     {t(
-                      "This service is only available for some Ethereum networks and Solana, please visit Blockaid website for more information.",
+                      "This service is only available for some Ethereum networks and Solana, please visit Blockaid website for more information."
                     )}
                   </TooltipContent>
                 </Tooltip>

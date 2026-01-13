@@ -141,7 +141,7 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
 
   const buttonsCount = useMemo(
     () => (swapInfo ? 1 : 0) + (explorerLinks.length ? 1 : 0),
-    [explorerLinks.length, swapInfo],
+    [explorerLinks.length, swapInfo]
   )
 
   if (!buttonsCount) return null
@@ -150,7 +150,7 @@ const TxHistoryActions: FC<TxHistoryActionsProps> = ({ tx }) => {
     <div
       className={cn(
         buttonsCount === 1 && "grid grid-cols-1",
-        buttonsCount === 2 && "grid grid-cols-2 gap-4",
+        buttonsCount === 2 && "grid grid-cols-2 gap-4"
       )}
     >
       {swapHref && tx.status === "success" && (

@@ -160,7 +160,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           title: t("Importing account"),
           subtitle: "Please wait",
         },
-        { autoClose: false },
+        { autoClose: false }
       )
 
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
@@ -218,7 +218,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, state, t],
+    [onSuccess, state, t]
   )
 
   const submitConfigure = useCallback(
@@ -232,7 +232,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       // otherwise, dispatch to setConfigureVerifierCert
       dispatch({ method: "setConfigureVerifierCert" })
     },
-    [submit, state, hasVerifierCertMnemonic, vaultAccounts],
+    [submit, state, hasVerifierCertMnemonic, vaultAccounts]
   )
 
   return { state, dispatch, submitConfigure, submit }

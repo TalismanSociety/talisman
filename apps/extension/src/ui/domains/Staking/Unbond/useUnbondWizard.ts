@@ -46,7 +46,7 @@ export const useResetNomPoolUnbondWizard = () => {
   return useCallback(
     (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
-    [],
+    []
   )
 }
 
@@ -87,7 +87,7 @@ export const useUnbondWizard = () => {
       genericEvent(`${unbondType} Unbond`, { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId, unbondType],
+    [genericEvent, tokenId, unbondType]
   )
 
   const amountToUnbond = useMemo(
@@ -95,7 +95,7 @@ export const useUnbondWizard = () => {
       typeof plancksToUnbond === "bigint"
         ? new BalanceFormatter(plancksToUnbond, token?.decimals, tokenRates)
         : null,
-    [plancksToUnbond, token?.decimals, tokenRates],
+    [plancksToUnbond, token?.decimals, tokenRates]
   )
 
   const existentialDeposit = useExistentialDeposit(token?.id)

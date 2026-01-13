@@ -26,7 +26,7 @@ export const BackupReminderBanner = () => {
       className={classNames(
         "relative z-0 overflow-hidden",
         "select-none rounded-sm p-6 py-4 text-xs",
-        "border-body-secondary border",
+        "border-body-secondary border"
       )}
     >
       <div className="relative z-10">
@@ -41,10 +41,10 @@ export const BackupReminderBanner = () => {
         <p className="text-body-secondary mt-2">
           {hasFundsInNotBackedUpMnemonics
             ? t(
-                "You have funds! Talisman is a non custodial wallet so only you have access to your keys, make sure you have backed them up or you may lose access to your funds.",
+                "You have funds! Talisman is a non custodial wallet so only you have access to your keys, make sure you have backed them up or you may lose access to your funds."
               )
             : t(
-                "Your recovery phrases control your accounts. Talisman is a non-custodial wallet, so only you have access to your keys. Make sure you’ve backed them up.",
+                "Your recovery phrases control your accounts. Talisman is a non-custodial wallet, so only you have access to your keys. Make sure you’ve backed them up."
               )}
         </p>
         <div className="mt-5 grid grid-cols-2 gap-4">
@@ -74,7 +74,7 @@ const useBackupBanner = () => {
 
   const notBackedUpMnemonicIds = useMemo(
     () => mnemonics.filter((mnemonic) => !mnemonic.confirmed).map((mnemonic) => mnemonic.id),
-    [mnemonics],
+    [mnemonics]
   )
 
   const notBackedUpAddresses = useMemo(
@@ -84,15 +84,15 @@ const useBackupBanner = () => {
           (account) =>
             account.type === "keypair" &&
             account.mnemonicId &&
-            notBackedUpMnemonicIds.includes(account.mnemonicId),
+            notBackedUpMnemonicIds.includes(account.mnemonicId)
         )
         .map((account) => account.address),
-    [accounts, notBackedUpMnemonicIds],
+    [accounts, notBackedUpMnemonicIds]
   )
 
   const hasFundsInNotBackedUpMnemonics = useMemo(
     () => notBackedUpAddresses.some((address) => !!balanceTotals[address]),
-    [balanceTotals, notBackedUpAddresses],
+    [balanceTotals, notBackedUpAddresses]
   )
 
   const isSnoozed = useMemo(() => {

@@ -60,7 +60,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       try {
         const { token0, token1, name, decimals } = await getUniswapV2PairContractData(
           client,
-          tokenConfig.contractAddress,
+          tokenConfig.contractAddress
         )
 
         const { symbol: symbol0, decimals: decimals0 } = await getErc20ContractData(client, token0)
@@ -90,7 +90,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         } else {
           log.warn(
             `Failed to fetch UniswapV2 token data for ${tokenConfig.contractAddress}`,
-            (err as BaseError).shortMessage,
+            (err as BaseError).shortMessage
           )
         }
         continue
@@ -113,7 +113,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     const token = assign(
       base,
       cached2?.isValid ? omit(cached2, ["isValid"]) : {},
-      tokenConfig,
+      tokenConfig
     ) as EvmUniswapV2Token
 
     const parsed = EvmUniswapV2TokenSchema.safeParse(token)

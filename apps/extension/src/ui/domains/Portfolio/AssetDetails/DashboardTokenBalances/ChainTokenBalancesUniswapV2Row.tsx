@@ -34,7 +34,7 @@ export const ChainTokenBalancesUniswapV2Row = ({
     <div
       className={classNames(
         "bg-black-secondary flex w-full flex-col justify-center gap-8 px-7 py-6",
-        isLastBalance && "rounded-b-sm",
+        isLastBalance && "rounded-b-sm"
       )}
     >
       {/* only show address when we're viewing balances for all accounts */}
@@ -52,7 +52,7 @@ export const ChainTokenBalancesUniswapV2Row = ({
           <div
             className={classNames(
               "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
             <div className={"font-bold text-white"}>

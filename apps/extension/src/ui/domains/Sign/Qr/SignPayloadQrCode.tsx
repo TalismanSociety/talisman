@@ -52,7 +52,7 @@ const registry = new TypeRegistry()
 const getQrSignPayload = (
   account: AccountPolkadotVault,
   payload: SignerPayloadJSON | SignerPayloadRaw,
-  proof: string | undefined,
+  proof: string | undefined
 ) => {
   if (isRawPayload(payload))
     return u8aConcat(
@@ -61,7 +61,7 @@ const getQrSignPayload = (
       PV_CMD_SIGN_MESSAGE,
       decodeAddress(account.address),
       wrapBytes(payload.data),
-      u8aToU8a(account.genesisHash || POLKADOT_GENESIS_HASH),
+      u8aToU8a(account.genesisHash || POLKADOT_GENESIS_HASH)
     )
 
   registry.setSignedExtensions(payload.signedExtensions)
@@ -76,7 +76,7 @@ const getQrSignPayload = (
         decodeAddress(account.address),
         fromHex(proof),
         u8aToU8a(encodedPayload),
-        u8aToU8a(payload.genesisHash),
+        u8aToU8a(payload.genesisHash)
       )
     : u8aConcat(
         PV_PREFIX_SUBSTRATE,
@@ -84,6 +84,6 @@ const getQrSignPayload = (
         PV_CMD_SIGN_TX,
         decodeAddress(account.address),
         u8aToU8a(encodedPayload),
-        u8aToU8a(payload.genesisHash),
+        u8aToU8a(payload.genesisHash)
       )
 }

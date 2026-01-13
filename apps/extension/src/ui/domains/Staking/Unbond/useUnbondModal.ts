@@ -26,7 +26,7 @@ export const useUnbondModal = () => {
       // then open the modal
       innerOpen()
     },
-    [innerOpen, reset],
+    [innerOpen, reset]
   )
 
   return { isOpen, open, close }

@@ -29,7 +29,7 @@ export const githubChaindata$ = new Observable<Chaindata>((subscriber) => {
       const validation = ChaindataFileSchema.safeParse(data)
       log.debug(
         "[githubChaindata$] Chaindata schema validation: %sms",
-        (performance.now() - start).toFixed(2),
+        (performance.now() - start).toFixed(2)
       )
       if (!validation.success) throw new Error("GitHub chaindata failed schema validation")
 

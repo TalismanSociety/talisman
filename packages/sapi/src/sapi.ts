@@ -26,7 +26,7 @@ export const getScaleApi = (
   token: { symbol: string; decimals: number },
   hasCheckMetadataHash?: boolean,
   signedExtensions?: ExtDef,
-  registryTypes?: unknown,
+  registryTypes?: unknown
 ) => {
   const { unifiedMetadata: metadata, lookupFn: lookup, builder } = parseMetadataRpc(hexMetadata)
 
@@ -76,7 +76,7 @@ export const getScaleApi = (
       pallet: string,
       method: string,
       args: unknown,
-      config: PayloadSignerConfig,
+      config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chain, pallet, method, args, config, chainInfo),
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload, chainInfo),
@@ -90,7 +90,7 @@ export const getScaleApi = (
       payload: SignerPayloadJSON,
       signature?: `0x${string}`,
       txInfo?: unknown,
-      mode?: ScaleApiSubmitMode,
+      mode?: ScaleApiSubmitMode
     ) => submit(chain, payload, signature, txInfo, mode),
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),

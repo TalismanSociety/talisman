@@ -22,7 +22,7 @@ export const SendFundsSubmitted = () => {
       (searchParams.get("txId") as string) ?? undefined,
       (searchParams.get("networkId") as string) ?? undefined,
     ],
-    [searchParams],
+    [searchParams]
   )
 
   const handleClose = useCallback(() => {

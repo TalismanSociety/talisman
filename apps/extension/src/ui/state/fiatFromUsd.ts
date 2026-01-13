@@ -27,7 +27,7 @@ const refTokenRates$ = combineLatest([tokenRates$, selectedCurrency$]).pipe(
 
     return refTokenRates
   }),
-  shareReplay({ bufferSize: 1, refCount: true }),
+  shareReplay({ bufferSize: 1, refCount: true })
 )
 
 export const [useFiatFromUsd, getFiatFromUsd$] = bind(
@@ -41,9 +41,9 @@ export const [useFiatFromUsd, getFiatFromUsd$] = bind(
         const targetRate = refTokenRates[selectedCurrency]?.price
         if (!usdRate || !targetRate) return null
         return (usd / usdRate) * targetRate
-      }),
+      })
     ),
-  null,
+  null
 )
 
 export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
@@ -54,7 +54,7 @@ export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
         if (!refTokenRates || !usd || !usdRate) return null
         if (usd === 0)
           return fromPairs(
-            toPairs(refTokenRates).map(([currency]) => [currency, null] as const),
+            toPairs(refTokenRates).map(([currency]) => [currency, null] as const)
           ) as TokenRates
 
         return fromPairs(
@@ -64,9 +64,9 @@ export const [useTokenRatesFromUsd, getTokenRatesFromUsd$] = bind(
               price: (usd / usdRate) * rate.price,
             }
             return [currency, data] as const
-          }),
+          })
         ) as TokenRates
-      }),
+      })
     ),
-  null,
+  null
 )

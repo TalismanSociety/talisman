@@ -8,10 +8,10 @@ export type BalanceDef<T extends TokenType = TokenType> = {
 }
 
 export const getBalanceDefs = <T extends TokenType = TokenType>(
-  addressesByToken: TokensWithAddresses,
+  addressesByToken: TokensWithAddresses
 ): BalanceDef<T>[] => {
   return addressesByToken.flatMap(([token, addresses]) =>
-    addresses.map((address) => ({ token, address })),
+    addresses.map((address) => ({ token, address }))
   ) as BalanceDef<T>[]
 }
 

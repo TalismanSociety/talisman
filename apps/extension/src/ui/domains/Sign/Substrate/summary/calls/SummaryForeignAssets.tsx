@@ -32,7 +32,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["ForeignAssets
       (t) =>
         t.type === "substrate-foreignassets" &&
         t.networkId === sapi.chainId &&
-        t.onChainId === papiStringify(decodedCall.args.id),
+        t.onChainId === papiStringify(decodedCall.args.id)
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])
 
@@ -108,7 +108,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
       (t) =>
         t.type === "substrate-foreignassets" &&
         t.networkId === sapi.chainId &&
-        t.onChainId === papiStringify(decodedCall.args.id),
+        t.onChainId === papiStringify(decodedCall.args.id)
     ) as SubForeignAssetsToken | undefined
   }, [decodedCall.args.id, sapi.chainId, tokens])
 

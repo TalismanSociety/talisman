@@ -166,7 +166,7 @@ const ValidatorSelectButton: FC<{
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
-    [combinedValidatorsData, hotkey],
+    [combinedValidatorsData, hotkey]
   )
 
   const label = useMemo(() => {
@@ -179,7 +179,7 @@ const ValidatorSelectButton: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "bg-pill hover:bg-grey-700 flex max-w-full cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
+        "bg-pill hover:bg-grey-700 flex max-w-full cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light"
       )}
     >
       <SettingsIcon className="text-body-secondary shrink-0" />

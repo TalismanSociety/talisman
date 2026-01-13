@@ -19,7 +19,7 @@ class AuthError extends Error {}
 export const requestAuthoriseSite = async (
   url: string,
   request: RequestAuthorizeTab,
-  port: Port,
+  port: Port
 ) => {
   const { err, val: domain } = urlToDomain(url)
   if (err) throw new AuthError(domain)
@@ -41,7 +41,7 @@ export const requestAuthoriseSite = async (
         request,
         type: "auth",
       },
-      port,
+      port
     )
     .then(async (response) => {
       const { addresses = [] } = response
@@ -90,7 +90,7 @@ export const ignoreRequest = ({ id }: KnownRequestIdOnly<"auth">) => {
 export const requestSolanaSignIn = async (
   { input }: RequestSolanaSignIn,
   url: string,
-  port: Port,
+  port: Port
 ) => {
   const { err, val: domain } = urlToDomain(url)
   if (err) throw new AuthError(domain)
@@ -109,7 +109,7 @@ export const requestSolanaSignIn = async (
       url,
       input,
     },
-    port,
+    port
   )
 
   const siteAuth = (await sitesAuthorisedStore.getSiteFromUrl(url)) ?? ({} as AuthorizedSite)

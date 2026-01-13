@@ -19,7 +19,7 @@ export const EthSignMoonStakingStake: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<number>(decodedTx, "autoCompound"),
     ],
-    [decodedTx],
+    [decodedTx]
   )
 
   if (!network?.nativeTokenId || !planck || !token) return null

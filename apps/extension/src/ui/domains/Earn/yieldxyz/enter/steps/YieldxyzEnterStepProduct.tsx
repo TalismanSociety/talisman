@@ -111,7 +111,7 @@ const ProductRow: FC<{
       className={cn(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-sm",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
       <YieldxyzProviderLogo providerId={product.providerId} className="shrink-0 !text-xl" />

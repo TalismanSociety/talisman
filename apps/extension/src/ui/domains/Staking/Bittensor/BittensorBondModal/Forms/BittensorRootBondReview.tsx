@@ -38,7 +38,7 @@ export const BittensorRootBondReview = () => {
 
   const rootAlphaTokenId = useMemo(
     () => (nativeToken?.networkId ? subDTaoTokenId(nativeToken.networkId, 0) : null),
-    [nativeToken?.networkId],
+    [nativeToken?.networkId]
   )
 
   const txInfo: WalletTransactionInfo | undefined = useMemo(() => {

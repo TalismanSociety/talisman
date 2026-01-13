@@ -110,7 +110,7 @@ export const SeekGetFeeDiscountsDrawer = ({
             <div
               className={cn(
                 "rounded-[43px] px-4 py-2",
-                !hasSeekStaked && "bg-[#D5FF5C] bg-opacity-[0.1]",
+                !hasSeekStaked && "bg-[#D5FF5C] bg-opacity-[0.1]"
               )}
             >
               <div className="text-[14px] text-[#D5FF5C]">
@@ -122,7 +122,7 @@ export const SeekGetFeeDiscountsDrawer = ({
         <div
           className={cn(
             "grid w-full grid-cols-2 gap-8",
-            totalOwned && totalOwned.planck > 0n ? "grid-cols-2" : "grid-cols-1",
+            totalOwned && totalOwned.planck > 0n ? "grid-cols-2" : "grid-cols-1"
           )}
         >
           {totalOwned && totalOwned.planck > 0n && (

@@ -18,7 +18,7 @@ export const AssetHubMigrationBanner = () => {
 
   const showBanner = useMemo(
     () => !!allowBanner && !hideBanner && accounts.some(isAccountAddressSs58),
-    [allowBanner, hideBanner, accounts],
+    [allowBanner, hideBanner, accounts]
   )
 
   if (!showBanner) return null

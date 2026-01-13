@@ -13,6 +13,6 @@ export const useRampsBuyQuotes = (config: RampsBuyQuoteOptions | null) => {
       { provider: "coinbase", query: queryCoinbase },
       { provider: "ramp", query: queryRamp },
     ],
-    [queryRamp, queryCoinbase],
+    [queryRamp, queryCoinbase]
   )
 }

@@ -17,7 +17,7 @@ export const MigrationProgress = () => {
     <div
       className={classNames(
         // displayed as the only content of the page, while a migration is running.
-        !IS_POPUP && "flex h-screen w-screen flex-col items-center justify-center",
+        !IS_POPUP && "flex h-screen w-screen flex-col items-center justify-center"
       )}
     >
       <div className="animate-fade-in-slow flex h-[60rem] w-[40rem] flex-col items-center justify-between overflow-hidden p-8">

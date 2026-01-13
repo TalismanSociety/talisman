@@ -32,20 +32,20 @@ export const useBalancesByParams = ({
     (subject: BehaviorSubject<BalanceSubscriptionResponse>) => {
       return api.balancesByParams(addressesAndTokens, (update) => subject.next(update))
     },
-    [addressesAndTokens],
+    [addressesAndTokens]
   )
 
   // subscription must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
     () => `useBalancesByParams-${md5(JSON.stringify(addressesAndTokens))}`,
-    [addressesAndTokens],
+    [addressesAndTokens]
   )
 
   const data = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
   const [debouncedBalances, setDebouncedBalances] = useState<BalanceSubscriptionResponse>(
-    () => data,
+    () => data
   )
   useDebounce(() => setDebouncedBalances(data), 100, [data])
 
@@ -54,6 +54,6 @@ export const useBalancesByParams = ({
       status: debouncedBalances.status,
       balances: new Balances(debouncedBalances.balances, hydrate),
     }),
-    [debouncedBalances, hydrate],
+    [debouncedBalances, hydrate]
   )
 }

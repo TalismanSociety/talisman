@@ -17,7 +17,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
         "bg-grey-850 hover:bg-grey-800 border-grey-700 text-body-secondary",
         "left-align group flex w-full items-center gap-4 overflow-x-hidden truncate rounded border pl-8 pr-4 text-left font-normal",
         mode === "multiline" && "leading-paragraph py-4",
-        mode === "compact" && "h-[3.6rem]",
+        mode === "compact" && "h-[3.6rem]"
       )}
       onClick={onClick}
     >
@@ -25,7 +25,7 @@ export const SubSignDecodedButtonBase: DecodedCallComponent<
         className={classNames(
           "grow align-baseline",
           mode === "compact" && "truncate",
-          mode === "multiline" && "line-clamp-5 whitespace-normal",
+          mode === "multiline" && "line-clamp-5 whitespace-normal"
         )}
       >
         <SubSignDecodedCallButtonContent

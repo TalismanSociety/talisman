@@ -32,8 +32,8 @@ export const [useAccountsCatalog] = bind(accountsCatalog$)
 
 export const accountsMap$ = accounts$.pipe(
   map((accounts) =>
-    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account])),
-  ),
+    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account]))
+  )
 )
 
 export const [useAccountsMap] = bind(accountsMap$)
@@ -45,8 +45,8 @@ export const [useAccountByAddress, getAccountByAddress$] = bind(
         if (!address) return null
         const normalizedAddress = normalizeAddress(address)
         return accountsMap[normalizedAddress] ?? null
-      }),
-    ),
+      })
+    )
 )
 
 export type AccountCategory =
@@ -75,6 +75,6 @@ export const [useAccounts, getAccountsByCategory$] = bind(
           case "all":
             return accounts
         }
-      }),
-    ),
+      })
+    )
 )

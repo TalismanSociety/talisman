@@ -51,7 +51,7 @@ export const TokenBalancesList = ({
       <div
         className={classNames(
           "bg-grey-800 grid grid-cols-[40%_30%_30%]",
-          detailRowsLength ? "rounded-t" : "rounded",
+          detailRowsLength ? "rounded-t" : "rounded"
         )}
       >
         <div className="flex">
@@ -101,7 +101,7 @@ export const TokenBalancesList = ({
             tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
         </div>
@@ -116,7 +116,7 @@ export const TokenBalancesList = ({
             tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(
-              status.status === "fetching" && "animate-pulse transition-opacity",
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           />
         </div>

@@ -87,7 +87,7 @@ export const useBondButton = ({
       ignoreExistingSettings,
       remoteConfig.seek.webAppStakingPath,
       open,
-    ],
+    ]
   )
 
   return {
@@ -128,7 +128,7 @@ const getBondableBalance = (
   balance: Balance,
   remoteConfig: RemoteConfigStoreData,
   bittensorNetworkIds: string[],
-  allBalances: Balances,
+  allBalances: Balances
 ): BondableBalance | null => {
   const token = balance.token
   if (!token) return null
@@ -157,7 +157,7 @@ const getBondableBalance = (
         b.networkId === token.networkId &&
         b.token?.type === "substrate-dtao" &&
         b.address === balance.address &&
-        b.free.planck > 0n,
+        b.free.planck > 0n
     )
 
     return {

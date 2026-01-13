@@ -40,7 +40,7 @@ const TxReplaceActions: FC<TxReplaceActionsProps> = ({ tx, onReplacementComplete
         onReplacementComplete?.({ txId: newHash, networkId: tx.networkId })
       }
     },
-    [onReplacementComplete, tx],
+    [onReplacementComplete, tx]
   )
 
   const evmNetwork = useNetworkById(tx.networkId, "ethereum")

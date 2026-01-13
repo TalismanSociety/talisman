@@ -28,7 +28,7 @@ class TalismanAnalytics {
   async captureDelayed(
     eventName: string,
     properties?: PostHogCaptureProperties,
-    delaySeconds = 900,
+    delaySeconds = 900
   ) {
     analyticsStore.captureDelayed(eventName, properties, delaySeconds)
   }

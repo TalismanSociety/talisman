@@ -31,7 +31,7 @@ export const useGetNomPoolUnbondPayload = ({ sapi, address, pool }: GetNomPoolUn
           member_account: Enum("Id", address),
           unbonding_points: pool.points,
         },
-        { address },
+        { address }
       )
     },
   })

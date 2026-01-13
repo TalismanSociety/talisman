@@ -23,7 +23,7 @@ export const useSendFundsPopup = (
   account: Account | null | undefined,
   tokenId?: TokenId,
   tokenSymbol?: string,
-  to?: Address,
+  to?: Address
 ) => {
   const { t } = useTranslation()
   const token = useToken(tokenId)

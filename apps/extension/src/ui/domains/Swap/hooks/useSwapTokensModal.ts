@@ -17,5 +17,5 @@ const toggle = () => setIsOpen((v) => !v)
 
 const setIsOpen = async (isOpen: SetStateAction<boolean>) =>
   setSwapTokensModalIsOpen(
-    typeof isOpen === "function" ? isOpen(await swapTokensModalIsOpen$.getValue()) : isOpen,
+    typeof isOpen === "function" ? isOpen(await swapTokensModalIsOpen$.getValue()) : isOpen
   )

@@ -37,15 +37,15 @@ const Content = () => {
 
   // filters to persist in location state
   const [isActiveOnly, setIsActiveOnly] = useState(
-    (location.state?.isActiveOnly as boolean) ?? true,
+    (location.state?.isActiveOnly as boolean) ?? true
   )
   const [isCustomOnly, setIsCustomOnly] = useState(
-    (location.state?.isCustomOnly as boolean) ?? false,
+    (location.state?.isCustomOnly as boolean) ?? false
   )
   const [isHidePools, setIsHidePools] = useState((location.state?.isHidePools as boolean) ?? false)
   const [search, setSearch] = useState((location.state?.search as string) ?? "")
   const [platform, setPlatform, platformOptions] = usePlatformOptions(
-    (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption),
+    (location.state?.platform as PlatformOption) ?? ("all" as PlatformOption)
   )
   const [networkId, setNetworkId] = useState<NetworkId | null>(location.state?.networkId ?? null)
   const networks = useNetworks({ platform, activeOnly: true, includeTestnets: true })
@@ -56,7 +56,7 @@ const Content = () => {
 
   const networkOptions = useMemo(
     () => networks.concat().sort((n1, n2) => n1.name?.localeCompare(n2.name ?? "") ?? 0),
-    [networks],
+    [networks]
   )
 
   const network = useAnyNetwork(networkId)

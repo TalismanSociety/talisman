@@ -44,13 +44,13 @@ export const yieldxyzProviders$ = defer(() =>
       }).pipe(
         map(
           (loadable): Loadable<YieldxyzProvider[]> =>
-            loadable.status === "success" ? loadable : { status: "loading", data: defaultValue },
+            loadable.status === "success" ? loadable : { status: "loading", data: defaultValue }
         ),
         startWith({
           status: "loading",
           data: defaultValue,
-        } as Loadable<YieldxyzProvider[]>),
-      ),
+        } as Loadable<YieldxyzProvider[]>)
+      )
     ),
     distinctUntilChanged<Loadable<YieldxyzProvider[]>>(isEqual),
     tap({
@@ -61,6 +61,6 @@ export const yieldxyzProviders$ = defer(() =>
       unsubscribe: () => log.debug("[yield.xyz] stopping yield providers subscription"),
     }),
     shareReplay({ refCount: true, bufferSize: 1 }),
-    keepAlive(KEEP_ALIVE),
-  ),
+    keepAlive(KEEP_ALIVE)
+  )
 )

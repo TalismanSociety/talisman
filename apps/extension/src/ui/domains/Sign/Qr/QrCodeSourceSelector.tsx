@@ -21,7 +21,7 @@ const lastSelected = new (class {
   set = (genesisHash: string, lastSelected: QrCodeSource) =>
     localStorage.setItem(
       this.#key,
-      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected))),
+      JSON.stringify(Array.from(this.#map().set(genesisHash, lastSelected)))
     )
 })()
 
@@ -53,7 +53,7 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
         if (isNovasama(chainspecQrUrl) && isNovasama(latestMetadataQrUrl)) return ["novasama"]
 
         return ["other"]
-      })(),
+      })()
     )
   }, [chainspecQrUrl, latestMetadataQrUrl, verifierCertificateMnemonic])
 
@@ -84,7 +84,7 @@ export const useQrCodeSourceSelectorState = (genesisHash: HexString | null | und
   const [source, _setSource] = useState<QrCodeSource | undefined>(
     lastSourceForChain && sources.includes(lastSourceForChain)
       ? lastSourceForChain
-      : defaultSourceForChain,
+      : defaultSourceForChain
   )
   const setSource = (source: QrCodeSource) => {
     _setSource(source)
@@ -133,7 +133,7 @@ export const QrCodeSourceSelector = ({
       <PopoverContent
         className={classNames(
           "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
-          showPopover ? "visible opacity-100" : "invisible opacity-0",
+          showPopover ? "visible opacity-100" : "invisible opacity-0"
         )}
       >
         {sources.map((source) => (

@@ -29,7 +29,7 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
         className={classNames(
           "relative inline-flex items-center",
           props.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
-          className,
+          className
         )}
       >
         <input id={id} ref={ref} type="checkbox" className="peer sr-only" {...props} />
@@ -39,13 +39,13 @@ export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
             "peer-focus-visible:border-body peer-focus:outline-none",
             "peer-checked:after:bg-primary peer-checked:after:translate-x-full",
             "after:bg-grey-800 relative after:absolute after:left-1 after:top-1 after:rounded-full after:transition-all after:content-['']",
-            VARIANTS[variant],
+            VARIANTS[variant]
           )}
           data-testid="component-toggle-button"
         ></div>
         {children && <span className="ml-3">{children}</span>}
       </label>
     )
-  },
+  }
 )
 Toggle.displayName = "Toggle"

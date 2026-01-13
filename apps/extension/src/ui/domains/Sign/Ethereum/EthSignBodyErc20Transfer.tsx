@@ -31,7 +31,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
 
   const isOnBehalf = useMemo(
     () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
-    [account, from],
+    [account, from]
   )
 
   const token = useErc20Token(network?.id, decodedTx.targetAddress)

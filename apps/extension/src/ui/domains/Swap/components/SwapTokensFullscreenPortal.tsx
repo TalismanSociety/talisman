@@ -11,7 +11,7 @@ export const SwapTokensFullscreenPortalContainer = () => {
   const childRef = useRef<HTMLDivElement | null>(null)
   useEffect(
     () => void setFullscreenPortalContainerRef(childRef.current?.parentElement ?? null),
-    [setFullscreenPortalContainerRef],
+    [setFullscreenPortalContainerRef]
   )
 
   return <div ref={childRef} />

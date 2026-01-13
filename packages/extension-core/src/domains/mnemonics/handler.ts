@@ -52,7 +52,7 @@ export default class MnemonicHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(mnemonics.subscribe)":

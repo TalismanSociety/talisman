@@ -81,7 +81,7 @@ const NavHeader: FC<{
   const navigate = useNavigateWithQuery()
   const totalUsd = useMemo(
     () => positions?.reduce((acc, position) => acc + position.totalAmountUsd, 0),
-    [positions],
+    [positions]
   )
 
   return (
@@ -133,7 +133,7 @@ const Position: FC<{ position: YieldxyzPositionEnhanced; isLoading: boolean }> =
         }
         return acc
       },
-      { supplied: [], rewards: [] },
+      { supplied: [], rewards: [] }
     )
   }, [position.balances])
 
@@ -206,7 +206,7 @@ const PositionHeader: FC<{ position: YieldxyzPositionEnhanced }> = ({ position }
 
   const networkId = useMemo(
     () => toTalismanNetworkId[position.product.network],
-    [position.product.network, toTalismanNetworkId],
+    [position.product.network, toTalismanNetworkId]
   )
 
   const productTokens = useMemo(() => {
@@ -290,14 +290,14 @@ const PositionActions: FC<{ position: YieldxyzPositionEnhanced }> = ({ position 
 
   const isGridLayout = useMemo(
     () => IS_POPUP && (withdrawableBalances.length || claimableBalances.length),
-    [claimableBalances.length, withdrawableBalances.length],
+    [claimableBalances.length, withdrawableBalances.length]
   )
 
   return (
     <div
       className={cn(
         "flex w-full justify-end gap-8 overflow-hidden",
-        isGridLayout && "grid grid-cols-2 gap-8",
+        isGridLayout && "grid grid-cols-2 gap-8"
       )}
     >
       <Button
@@ -378,7 +378,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
         balance,
       })
     },
-    [openManage, position],
+    [openManage, position]
   )
 
   const onWithdrawClick = useCallback(
@@ -391,7 +391,7 @@ const usePositionActions = (position: YieldxyzPositionEnhanced) => {
         balance,
       })
     },
-    [openManage, position],
+    [openManage, position]
   )
 
   return {

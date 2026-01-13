@@ -48,8 +48,8 @@ const [useDisplayAssetPrice] = bind(
           change24h,
           changeClassName,
         }
-      }),
-    ),
+      })
+    )
 )
 
 export const AssetPrice: FC<{

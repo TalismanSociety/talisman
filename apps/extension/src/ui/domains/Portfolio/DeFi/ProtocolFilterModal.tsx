@@ -27,7 +27,7 @@ const ProtocolOptionRow: FC<{
       className={classNames(
         "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
-        isSelected && "!bg-grey-700",
+        isSelected && "!bg-grey-700"
       )}
     >
       {isAllProtocolsOption(option) ? (
@@ -115,9 +115,9 @@ const ProtocolOptionsModalContent: FC<{
       positions.reduce(
         (total, position) =>
           total + position.breakdown.reduce((sum, item) => sum + item.valueUsd, 0),
-        0,
+        0
       ),
-    [positions],
+    [positions]
   )
 
   // freeze order on first render so it doesnt change when selecting an option
@@ -135,7 +135,7 @@ const ProtocolOptionsModalContent: FC<{
     (option: ProtocolOption) => {
       onChange(isAllProtocolsOption(option) ? null : option)
     },
-    [onChange],
+    [onChange]
   )
 
   const [rawSearch, setSearch] = useState<string>("")
@@ -192,7 +192,7 @@ export const ProtocolOptionsModal: FC<{
       onDismiss={onClose}
       className={classNames(
         "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}
     >

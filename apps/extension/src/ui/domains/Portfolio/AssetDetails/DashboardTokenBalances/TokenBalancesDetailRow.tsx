@@ -46,7 +46,7 @@ export const TokenBalancesDetailRow = ({
           locked={row.locked}
           balancesStatus={status}
           className={classNames(
-            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity",
+            (status.status === "fetching" || row.isLoading) && "animate-pulse transition-opacity"
           )}
         />
       </div>

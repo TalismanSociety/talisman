@@ -29,12 +29,12 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
   const chain = useNetworkById(chainId, "polkadot")
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
-    [chain],
+    [chain]
   )
 
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, chain?.name ?? "Polkadot", app),
+    getNextAccountDetails(walletAccounts, chain?.name ?? "Polkadot", app)
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -67,7 +67,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
             },
           ]
         : [],
-    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve],
+    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve]
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -108,7 +108,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
           </div>
           <div className="leading-paragraph">
             {t(
-              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live.",
+              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live."
             )}
           </div>
         </div>
@@ -221,7 +221,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 const getNextAccountDetails = (
   accounts: Account[],
   networkName: string,
-  app: SubstrateAppParams | null | undefined,
+  app: SubstrateAppParams | null | undefined
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -231,7 +231,7 @@ const getNextAccountDetails = (
         a.app === app?.name &&
         a.addressOffset === 0 &&
         typeof a.accountIndex === "number" &&
-        !a.genesisHash,
+        !a.genesisHash
     )
     .map((a) => a.accountIndex as number)
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++)
@@ -252,7 +252,7 @@ const getNextAccountDetails = (
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
   curve: LedgerPolkadotCurve,
-  app: SubstrateAppParams | null | undefined,
+  app: SubstrateAppParams | null | undefined
 ) => {
   const { t } = useTranslation()
   const { getAddress } = useGetLedgerPolkadotAddress(curve, app)

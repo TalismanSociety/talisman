@@ -17,7 +17,7 @@ export const BittensorSelectStakeDrawer = ({ containerId }: BittensorSelectStake
         <div className="text-body font-bold">{t("Select the staking type")}</div>
         <p className="text-body-secondary text-sm">
           {t(
-            "Choose either to stake on root or on a subnet. Root staking lets you earn rewards in TAO. Subnet staking converts your TAO into subnet alpha tokens, and your rewards are also paid in these tokens.",
+            "Choose either to stake on root or on a subnet. Root staking lets you earn rewards in TAO. Subnet staking converts your TAO into subnet alpha tokens, and your rewards are also paid in these tokens."
           )}
         </p>
         <div className="grid w-full grid-cols-2 gap-8">

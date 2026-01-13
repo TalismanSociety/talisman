@@ -32,7 +32,7 @@ export const RampsTokenPickerButton: FC<{
       onSelect(currency)
       close()
     },
-    [close, onSelect],
+    [close, onSelect]
   )
 
   return (
@@ -43,7 +43,7 @@ export const RampsTokenPickerButton: FC<{
         disabled={!tokens}
         className={classNames(
           "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
-          "enabled:hover:bg-grey-750 disabled:opacity-80 disabled:grayscale",
+          "enabled:hover:bg-grey-750 disabled:opacity-80 disabled:grayscale"
         )}
       >
         {token ? <TokenContent token={token} /> : <EmptyContent />}

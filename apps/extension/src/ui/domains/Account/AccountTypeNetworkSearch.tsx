@@ -59,7 +59,7 @@ export function AccountTypeNetworkSearch({
           return a.label?.localeCompare(b.label ?? "") ?? 0
         }),
 
-    [allNetworksAggregated, networkNameById, networkTypeById, tokensMap, activeNetworkStates],
+    [allNetworksAggregated, networkNameById, networkTypeById, tokensMap, activeNetworkStates]
   )
   type Network = (typeof filteredNetworkItems)[number]
 
@@ -68,7 +68,7 @@ export function AccountTypeNetworkSearch({
     return allNetworkItems.filter(
       (network) =>
         network.label?.toLowerCase().includes(search.toLowerCase().trim()) ||
-        network.symbol?.toLowerCase().includes(search.toLowerCase().trim()),
+        network.symbol?.toLowerCase().includes(search.toLowerCase().trim())
     )
   }, [allNetworkItems, search])
 
@@ -83,7 +83,7 @@ export function AccountTypeNetworkSearch({
 
       setAccountPlatform(getAccountPlatform(allNetworksMap[option.id]))
     },
-    [allNetworksMap, setAccountPlatform],
+    [allNetworksMap, setAccountPlatform]
   )
 
   const networksWithHeader = useMemo(
@@ -99,7 +99,7 @@ export function AccountTypeNetworkSearch({
       },
       ...filteredNetworkItems,
     ],
-    [filteredNetworkItems],
+    [filteredNetworkItems]
   )
 
   return (
@@ -118,7 +118,7 @@ export function AccountTypeNetworkSearch({
         <div
           className={classNames(
             "bg-grey-850 text-body-secondary/50 flex h-24 w-full items-center gap-4 rounded-sm px-8 text-sm",
-            open && "rounded-b-none",
+            open && "rounded-b-none"
           )}
         >
           <SearchIcon className="shrink-0 text-base" />
@@ -178,7 +178,7 @@ export function AccountTypeNetworkSearch({
 }
 
 function getAccountPlatform<T extends { id: string } | { id: string; account?: string }>(
-  network: T,
+  network: T
 ) {
   if ("account" in network && network.account !== "secp256k1") return "polkadot"
   if ("account" in network && network.account === "secp256k1") return "ethereum"

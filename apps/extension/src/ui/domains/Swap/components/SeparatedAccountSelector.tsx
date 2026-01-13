@@ -70,7 +70,7 @@ export const SeparatedAccountSelector = ({
   const chain = useNetworkById(String(asset?.chainId), "polkadot")
 
   const defaultSubstrateAccounts = allAccounts.filter(
-    (a) => chain && isAccountCompatibleWithNetwork(chain, a),
+    (a) => chain && isAccountCompatibleWithNetwork(chain, a)
   )
   const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
 
@@ -131,7 +131,7 @@ export const SeparatedAccountSelector = ({
     return evmAccounts.filter(
       (account) =>
         account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase()),
+        account.name?.toLowerCase().includes(query.toLowerCase())
     )
   }, [query, evmAccounts])
 
@@ -143,7 +143,7 @@ export const SeparatedAccountSelector = ({
         encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
           .toLowerCase()
           .includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase()),
+        account.name?.toLowerCase().includes(query.toLowerCase())
     )
   }, [query, substrateAccountPrefix, substrateAccounts])
 
@@ -178,7 +178,7 @@ export const SeparatedAccountSelector = ({
       setOpen(false)
       onAccountChange?.(address)
     },
-    [onAccountChange],
+    [onAccountChange]
   )
 
   // selected account is invalid, clear it

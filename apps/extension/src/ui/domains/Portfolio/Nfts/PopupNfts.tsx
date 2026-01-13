@@ -73,7 +73,7 @@ const NftCollectionRowInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   const imageUrl = useMemo(() => {
@@ -134,7 +134,7 @@ const NftCollectionRowInner: FC<{
         <div
           className={classNames(
             "text-body-secondary",
-            value === null && "select-none text-transparent",
+            value === null && "select-none text-transparent"
           )}
         >
           {value !== null ? <Fiat amount={value} forceCurrency="usd" noCountUp /> : "N/A"}
@@ -212,7 +212,7 @@ const NftCollectionTileInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   // favorites are the first ones in the list, can check just the first one

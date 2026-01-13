@@ -79,7 +79,7 @@ const getAssetsByChainId = async (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Promise<SwappableAssetBaseType<Partial<Record<SupportedSwapProtocol, any>>>[]>
   >[],
-  signal: AbortSignal,
+  signal: AbortSignal
 ) => {
   const withRetry = async <T>(fn: () => Promise<T>, retries = 3): Promise<T | never[]> => {
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -110,7 +110,7 @@ const getAssetsByChainId = async (
     await Promise.all(
       allAssetsSelector.map((assetSelectorAtom) => {
         return withRetry(() => get(assetSelectorAtom))
-      }),
+      })
     )
   ).flat()
 
@@ -136,14 +136,14 @@ const getAssetsByChainId = async (
       acc[cur.chainId.toString()] = assets
       return acc
     },
-    {} as Record<string, Record<string, SwappableAssetWithDecimals>>,
+    {} as Record<string, Record<string, SwappableAssetWithDecimals>>
   )
 }
 
 const getCoingeckoCategoryTokens = async (
   get: Getter,
   categoryId: string,
-  tokens: SwappableAssetWithDecimals[],
+  tokens: SwappableAssetWithDecimals[]
 ): Promise<SwappableAssetWithDecimals[]> => {
   const platforms = await get(coingeckoAssetPlatformsAtom)
   const coinsList = await get(coingeckoListAtom)
@@ -155,7 +155,7 @@ const getCoingeckoCategoryTokens = async (
   return coins
     .map((c) => {
       const coinPlatforms = Object.entries(
-        coinsList.find((coin) => coin.id === c.id)?.platforms ?? {},
+        coinsList.find((coin) => coin.id === c.id)?.platforms ?? {}
       )
       if (coinPlatforms.length === 0) {
         const token = tokens.find((t) => t.symbol.toLowerCase() === c.symbol.toLowerCase())
@@ -168,7 +168,7 @@ const getCoingeckoCategoryTokens = async (
         const token = tokens.find(
           (t) =>
             (t.networkType === "evm" ? +t.chainId : t.chainId) === platform?.chain_identifier &&
-            t.contractAddress?.toLowerCase() === address.toLowerCase(),
+            t.contractAddress?.toLowerCase() === address.toLowerCase()
         )
         if (token && !token.image && c.image) token.image = c.image
         return token
@@ -271,11 +271,11 @@ export const coingeckoCoinsByCategoryAtom = atomFamily((category: string) =>
 
     const response = await fetch(
       `${apiUrl}/api/v3/coins/markets?vs_currency=usd&category=${category}&include_platform=true`,
-      { headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {} },
+      { headers: apiKeyName && apiKeyValue ? { [apiKeyName]: apiKeyValue } : {} }
     )
 
     return await response.json()
-  }),
+  })
 )
 
 const uniswapSafeTokensSet = atom(async () => {
@@ -326,7 +326,7 @@ const coingeckoCoinByAddressAtom = atomFamily((addressPlatform: string) =>
         thumb: string
       }
     }
-  }),
+  })
 )
 
 export const swapFromSearchAtom = atom<string>("")
@@ -391,13 +391,13 @@ const erc20Atom = atomFamily((addressChainId: string) =>
       contractAddress: address,
       image: coingeckoData?.image?.small,
     }
-  }),
+  })
 )
 
 const filterAndSortTokens = async (
   get: Getter,
   tokens: SwappableAssetWithDecimals[],
-  search: string,
+  search: string
 ): Promise<SwappableAssetWithDecimals[]> => {
   if (search.trim().length > 0) {
     const isSearchingAddress = isAddress(search)
@@ -406,7 +406,7 @@ const filterAndSortTokens = async (
       (t) =>
         t.symbol.toLowerCase().startsWith(searchLoweredCase) ||
         t.name.toLowerCase().startsWith(searchLoweredCase) ||
-        (isSearchingAddress && t.contractAddress?.startsWith(searchLoweredCase)),
+        (isSearchingAddress && t.contractAddress?.startsWith(searchLoweredCase))
     )
 
     if (isSearchingAddress && knownFilteredTokens.length === 0) {
@@ -423,7 +423,7 @@ const filterAndSortTokens = async (
           allEvmChains.zkSync,
         ]
           .flatMap((chain) => (chain ? chain : []))
-          .map((chain: ViemChain) => get(erc20Atom(`${search}:${chain?.id}`))),
+          .map((chain: ViemChain) => get(erc20Atom(`${search}:${chain?.id}`)))
       )
       return allOnChainTokens.filter((t) => t !== null)
     }
@@ -475,7 +475,7 @@ const filterAndSortTokens = async (
     filteredSortedTokens = await getCoingeckoCategoryTokens(
       get,
       coingeckoCategoryId,
-      filteredSortedTokens,
+      filteredSortedTokens
     )
 
   return filteredSortedTokens
@@ -495,8 +495,8 @@ export const fromAssetsAtom = atom(async (get, { signal }) => {
   const tokens = Object.values(assetsByChains)
     .map((tokens) =>
       Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),
-      ),
+        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
+      )
     )
     .flat()
 
@@ -518,8 +518,8 @@ export const toAssetsAtom = atom(async (get, { signal }) => {
   const tokens = Object.values(assetsByChains)
     .map((tokens) =>
       Object.values(tokens).sort((a, b) =>
-        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", "")),
-      ),
+        a.symbol.replaceAll("$", "").localeCompare(b.symbol.replaceAll("$", ""))
+      )
     )
     .flat()
 
@@ -532,7 +532,7 @@ export const swapQuotesAtom = loadable(
     const toAsset = get(toAssetAtom)
     const allQuoters = swapModules
       .filter((m) =>
-        fromAsset && toAsset ? toAsset.context[m.protocol] && fromAsset.context[m.protocol] : true,
+        fromAsset && toAsset ? toAsset.context[m.protocol] && fromAsset.context[m.protocol] : true
       )
       .map((module) => module.quote)
     const fromAmount = get(fromAmountAtom)
@@ -555,7 +555,7 @@ export const swapQuotesAtom = loadable(
       if (!q.data || Array.isArray(q.data)) return false
       return q.data.outputAmountBN > 0n
     }) as Loadable<Promise<BaseQuote | null>>[] | null
-  }),
+  })
 )
 
 export const sortedQuotesAtom = atom(async (get) => {
@@ -610,7 +610,7 @@ export const selectedQuoteAtom = atom(async (get) => {
         q.quote.state === "hasData" &&
         q.quote.data &&
         q.quote.data.protocol === selectedProtocol &&
-        (q.quote.data.subProtocol ? q.quote.data.subProtocol === subProtocol : true),
+        (q.quote.data.subProtocol ? q.quote.data.subProtocol === subProtocol : true)
     ) ?? quotes[0]
   if (!quote) return null
 
@@ -638,14 +638,14 @@ export const approvalAtom = atom(async (get) => {
   if (!approval) return null
 
   const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-    (c) => c?.id === approval.chainId,
+    (c) => c?.id === approval.chainId
   )
   // chain unsupported
   if (!chain) return null
 
   const evmNetworks = await get(atomWithObservable(() => getNetworks$({ platform: "ethereum" })))
   const network = evmNetworks.find(
-    (network) => network.id.toString() === approval.chainId.toString(),
+    (network) => network.id.toString() === approval.chainId.toString()
   )
   if (!network) return null
 
@@ -729,14 +729,14 @@ export const useFromAccount = () => {
 
   const fromEvmAccount = useMemo(
     () => ethAccounts.find((a) => a.address.toLowerCase() === fromEvmAddress?.toLowerCase()),
-    [ethAccounts, fromEvmAddress],
+    [ethAccounts, fromEvmAddress]
   )
   const fromSubstrateAccount = useMemo(
     () =>
       substrateAccounts.find(
-        (a) => a.address.toLowerCase() === fromSubstrateAddress?.toLowerCase(),
+        (a) => a.address.toLowerCase() === fromSubstrateAddress?.toLowerCase()
       ),
-    [fromSubstrateAddress, substrateAccounts],
+    [fromSubstrateAddress, substrateAccounts]
   )
 
   // pick first account from keyring if no account is set
@@ -778,7 +778,7 @@ export const useSetToAddress = () => {
       fromAddress
         ? allAccounts.find((account) => isAddressEqual(account.address, fromAddress))
         : null,
-    [allAccounts, fromAddress],
+    [allAccounts, fromAddress]
   )
   const toNetwork = useNetworkById(String(toAsset?.chainId ?? ""))
 
@@ -828,7 +828,7 @@ export const useSetToAddress = () => {
       default:
         // eslint-disable-next-line no-console
         console.error(
-          `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`,
+          `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`
         )
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
     }
@@ -861,7 +861,7 @@ export const useSwapErc20Approval = () => {
   const approval = useAtomValue(loadable(approvalAtom))
   const approvalData = useMemo(
     () => (approval.state === "hasData" && approval.data) || null,
-    [approval],
+    [approval]
   )
   const approveTxLoadable = useAtomValue(loadable(erc20ApprovalTxAtom))
 

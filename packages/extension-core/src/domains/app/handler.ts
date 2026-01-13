@@ -108,7 +108,7 @@ export default class AppHandler extends ExtensionHandler {
   private async changePassword(
     id: string,
     port: Port,
-    { currentPw, newPw, newPwConfirm }: RequestTypes["pri(app.changePassword)"],
+    { currentPw, newPw, newPwConfirm }: RequestTypes["pri(app.changePassword)"]
   ) {
     const progressObservable = new BehaviorSubject<ChangePasswordStatusUpdate>({
       status: ChangePasswordStatusUpdateStatus.VALIDATING,
@@ -124,7 +124,7 @@ export default class AppHandler extends ExtensionHandler {
       const mnemonicsUnconfirmed = mnemonics.some((m) => !m.confirmed)
       assert(
         !mnemonicsUnconfirmed,
-        "Please backup all recovery phrases before attempting to change your password.",
+        "Please backup all recovery phrases before attempting to change your password."
       )
 
       // check given PW
@@ -238,7 +238,7 @@ export default class AppHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -257,7 +257,7 @@ export default class AppHandler extends ExtensionHandler {
         return genericSubscription<"pri(app.authStatus.subscribe)">(
           id,
           port,
-          this.stores.password.isLoggedIn,
+          this.stores.password.isLoggedIn
         )
 
       case "pri(app.lock)":
@@ -268,7 +268,7 @@ export default class AppHandler extends ExtensionHandler {
         return await this.changePassword(
           id,
           port,
-          request as RequestTypes["pri(app.changePassword)"],
+          request as RequestTypes["pri(app.changePassword)"]
         )
 
       case "pri(app.checkPassword)":
@@ -297,7 +297,7 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.phishing.addException)": {
         return protector.addException(
-          (request as RequestTypes["pri(app.phishing.addException)"]).url,
+          (request as RequestTypes["pri(app.phishing.addException)"]).url
         )
       }
 

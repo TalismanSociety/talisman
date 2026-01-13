@@ -17,7 +17,7 @@ export const fetchTokens: IBalanceModule<
 
   const { tokenSymbol: symbol, tokenDecimals: decimals } = await getChainProperties(
     connector,
-    networkId,
+    networkId
   )
 
   if (!miniMetadata.extra.existentialDeposit)

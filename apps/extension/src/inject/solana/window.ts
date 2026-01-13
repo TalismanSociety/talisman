@@ -19,7 +19,7 @@ export interface TalismanSolEventEmitter {
   off<E extends keyof TalismanSolEvent>(
     event: E,
     listener: TalismanSolEvent[E],
-    context?: any,
+    context?: any
   ): void
 }
 
@@ -35,7 +35,7 @@ export interface TalismanSol extends TalismanSolEventEmitter {
   disconnect(): Promise<void>
   signAndSendTransaction<T extends Transaction | VersionedTransaction>(
     transaction: T,
-    options?: SendOptions,
+    options?: SendOptions
   ): Promise<{ signature: TransactionSignature }>
   signTransaction<T extends Transaction | VersionedTransaction>(transaction: T): Promise<T>
   signAllTransactions<T extends Transaction | VersionedTransaction>(transactions: T[]): Promise<T[]>

@@ -45,14 +45,14 @@ const AppVersionButton: FC<{
         "disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-body bg-grey-800"
-          : "border-body-disabled enabled:hover:border-body-secondary enabled:hover:bg-grey-800",
+          : "border-body-disabled enabled:hover:border-body-secondary enabled:hover:bg-grey-800"
       )}
       disabled={disabled}
     >
       <div
         className={classNames(
           "group-enabled:group-hover:text-body text-base",
-          selected && "text-body",
+          selected && "text-body"
         )}
       >
         {title}
@@ -131,7 +131,7 @@ export const AddLedgerSelectNetwork = () => {
           }
           return true
         }),
-    [chains, t],
+    [chains, t]
   )
 
   const {
@@ -158,7 +158,7 @@ export const AddLedgerSelectNetwork = () => {
       updateData({ platform, chainId, substrateAppType })
       navigate("account")
     },
-    [navigate, updateData],
+    [navigate, updateData]
   )
 
   const handleNetworkChange = useCallback(
@@ -168,14 +168,14 @@ export const AddLedgerSelectNetwork = () => {
         chainId: chain?.id,
       })
     },
-    [reset],
+    [reset]
   )
 
   const handlePlatformChange = useCallback(
     (platform: AccountPlatform) => {
       reset({ platform })
     },
-    [reset],
+    [reset]
   )
 
   const handleSubstrateAppTypeClick = useCallback(
@@ -184,7 +184,7 @@ export const AddLedgerSelectNetwork = () => {
         shouldValidate: true,
       })
     },
-    [setValue],
+    [setValue]
   )
 
   const [isLedgerReady, setIsLedgerReady] = useState(false)
@@ -255,7 +255,7 @@ export const AddLedgerSelectNetwork = () => {
                         <span
                           className={classNames(
                             "bg-green/10 text-green rounded-[1.2rem] px-4 py-1",
-                            chain?.hasCheckMetadataHash ? "visible" : "invisible",
+                            chain?.hasCheckMetadataHash ? "visible" : "invisible"
                           )}
                         >
                           {t("Recommended")}

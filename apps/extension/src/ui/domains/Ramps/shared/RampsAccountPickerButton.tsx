@@ -48,7 +48,7 @@ export const RampsAccountPickerButton: FC<{
       onSelect(currency)
       close()
     },
-    [close, onSelect],
+    [close, onSelect]
   )
 
   return (

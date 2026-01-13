@@ -103,7 +103,7 @@ export const TryTalismanContent: FC<{
         setError(t("Please enter a valid Polkadot or Ethereum address"))
       }
     },
-    [analytics, address, isNsLookup, searchAddress, navigate, close, t],
+    [analytics, address, isNsLookup, searchAddress, navigate, close, t]
   )
   const onInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>((event) => {
     setSearchAddress(event.target.value)
@@ -128,7 +128,7 @@ export const TryTalismanContent: FC<{
                 type="text"
                 className={classNames(
                   "bg-black-secondary text-body placeholder:text-body-disabled w-full rounded px-8 py-6",
-                  isNsLookup && "pr-16",
+                  isNsLookup && "pr-16"
                 )}
                 placeholder={t("Enter any wallet address")}
                 value={searchAddress}
@@ -148,7 +148,7 @@ export const TryTalismanContent: FC<{
             <button
               className={classNames(
                 "text-body-disabled border-body-disabled rounded border px-8 py-6",
-                address.length && "bg-primary border-primary hover:bg-primary/95 text-black",
+                address.length && "bg-primary border-primary hover:bg-primary/95 text-black"
               )}
               disabled={!address.length}
             >
@@ -228,7 +228,7 @@ const FollowAccountButton = ({
 
   const isAdded = useMemo(
     () => allAccounts.some((a) => isAddressEqual(a.address, address)),
-    [allAccounts, address],
+    [allAccounts, address]
   )
 
   const content = (

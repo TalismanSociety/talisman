@@ -17,7 +17,7 @@ export const getSwapSimulation = async (
   sapi: ScaleApi,
   netuid: number,
   direction: StakeDirection,
-  amount: bigint,
+  amount: bigint
 ) => {
   const method = direction === "taoToAlpha" ? "sim_swap_tao_for_alpha" : "sim_swap_alpha_for_tao"
 
@@ -31,7 +31,7 @@ export const getSwapSimulation = async (
 export const getLimitPrice = (
   simulation: BittensorSwapSimulation,
   direction: StakeDirection,
-  tolerance: number = 0, // 0.0005 = 0.05%
+  tolerance: number = 0 // 0.0005 = 0.05%
 ) => {
   // prevent division by zero
   if (!simulation.alpha_amount) return 0n
@@ -85,7 +85,7 @@ export const getBittensorStakingPayload = async ({
           }),
         ],
       },
-      { address },
+      { address }
     )
   }
   return sapi.getExtrinsicPayload(
@@ -109,7 +109,7 @@ export const getBittensorStakingPayload = async ({
         }),
       ],
     },
-    { address },
+    { address }
   )
 }
 
@@ -158,7 +158,7 @@ export const getBittensorUnbondPayload = ({
           }),
         ],
       },
-      { address },
+      { address }
     )
   }
   return sapi.getExtrinsicPayload(
@@ -182,7 +182,7 @@ export const getBittensorUnbondPayload = ({
         }),
       ],
     },
-    { address },
+    { address }
   )
 }
 
@@ -232,6 +232,6 @@ export const getBittensorMoveStakePayload = ({
         }),
       ],
     },
-    { address },
+    { address }
   )
 }

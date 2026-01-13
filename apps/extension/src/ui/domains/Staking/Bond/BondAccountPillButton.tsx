@@ -35,11 +35,11 @@ export const BondAccountPillButton: FC<AccountPillButtonProps> = ({
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
-    tokenGenesisHash ?? accountGenesisHash,
+    tokenGenesisHash ?? accountGenesisHash
   )
   const displayAddress = useMemo(
     () => (account ? formattedAddress : address) ?? undefined,
-    [account, address, formattedAddress],
+    [account, address, formattedAddress]
   )
 
   return (

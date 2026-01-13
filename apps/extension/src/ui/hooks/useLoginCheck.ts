@@ -8,5 +8,5 @@ export const [useLoginCheck] = bind(
     isLoggedIn: isLoggedIn$,
     isOnboarded: isOnboarded$,
     isMigrating: currentMigration$.pipe(map((currentMigration) => !!currentMigration)),
-  }),
+  })
 )

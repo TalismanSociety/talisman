@@ -13,7 +13,7 @@
     "papi": "papi",
     "papi:once": "test -d .papi/descriptors/dist && echo 'existing papi descriptors found! run \"pnpm papi\" to regenerate them' || papi",
     "papi:update": "papi update",
-    "format": "biome format --write --changed .",
+    "format": "biome format --write .",
     "chore:update-translations": "pnpm run --filter extension chore:update-translations",
     "chore:update:translations": "pnpm chore:update-translations",
     "chore:download-translations": "pnpm run --filter extension chore:download-translations",

@@ -52,7 +52,7 @@ export const SwapApproveErc20 = () => {
   const { transaction } = useEthTransaction(
     approveTxLoadable?.state === "hasData" ? (approveTxLoadable.data ?? undefined) : undefined,
     fromAsset?.chainId.toString(),
-    isPayloadLocked,
+    isPayloadLocked
   )
 
   const publicClient = usePublicClient(approvalData?.chainId?.toString())
@@ -104,7 +104,7 @@ export const SwapApproveErc20 = () => {
           fromAsset?.chainId.toString(),
           serialized,
           signature,
-          txInfo,
+          txInfo
         )
 
         const approved = await publicClient.waitForTransactionReceipt({ hash })
@@ -123,7 +123,7 @@ export const SwapApproveErc20 = () => {
         setIsApproving(false)
       }
     },
-    [fromAsset, publicClient, setApprovalCounter, transaction, txInfo],
+    [fromAsset, publicClient, setApprovalCounter, transaction, txInfo]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
@@ -147,7 +147,7 @@ export const SwapApproveErc20 = () => {
           {t(`Approving {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
             amount: formatDecimals(
-              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0),
+              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0)
             ),
             symbol: fromAsset?.symbol,
           })}
@@ -161,7 +161,7 @@ export const SwapApproveErc20 = () => {
           {t(`Approve {{protocolName}} to spend {{amount}} {{symbol}}`, {
             protocolName: protocolNameCache?.current,
             amount: formatDecimals(
-              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0),
+              planckToTokens(amountCache?.current?.toString(), fromAsset?.decimals ?? 0)
             ),
             symbol: fromAsset?.symbol,
           })}

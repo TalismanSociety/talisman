@@ -20,7 +20,7 @@ export type LoadableOptions = {
 
 export function getLoadable$<T>(
   factory: () => Promise<T>,
-  options: LoadableOptions = {},
+  options: LoadableOptions = {}
 ): Observable<Loadable<T>> {
   const { getError, refreshInterval } = options
 
@@ -30,14 +30,14 @@ export function getLoadable$<T>(
         (data): Loadable<T> => ({
           status: "success",
           data,
-        }),
+        })
       ),
       catchError((error) =>
         of<Loadable<T>>({
           status: "error",
           error: getError ? getError(error) : getGenericError(error),
-        }),
-      ),
+        })
+      )
     )
 
   const source$ = refreshInterval
@@ -47,7 +47,7 @@ export function getLoadable$<T>(
   return source$.pipe(
     startWith<Loadable<T>>({
       status: "loading",
-    } as Loadable<T>),
+    } as Loadable<T>)
   )
 }
 

@@ -118,20 +118,20 @@ type XcmV3MultiLocation = {
 const getTokenFromlocation = (
   chain: DotNetwork,
   tokens: Token[],
-  location: XcmV3MultiLocation,
+  location: XcmV3MultiLocation
 ): Token => {
   // foreign asset ?
   const onChainId = papiStringify(location)
   const token = tokens.find(
     (t) =>
-      t.type === "substrate-foreignassets" && t.networkId === chain.id && t.onChainId === onChainId,
+      t.type === "substrate-foreignassets" && t.networkId === chain.id && t.onChainId === onChainId
   ) as SubForeignAssetsToken
   if (token) return token
 
   if (location.parents === 0) {
     if (location.interior.type === "Here") {
       const token = tokens.find(
-        (t) => t.type === "substrate-native" && t.networkId === chain.id,
+        (t) => t.type === "substrate-native" && t.networkId === chain.id
       ) as SubNativeToken
       if (token) return token
     }
@@ -144,7 +144,7 @@ const getTokenFromlocation = (
     ) {
       const assetId = location.interior.value[1].value
       const token = tokens.find(
-        (t) => t.type === "substrate-assets" && BigInt(t.assetId) === assetId,
+        (t) => t.type === "substrate-assets" && BigInt(t.assetId) === assetId
       ) as SubAssetsToken
       if (token) return token
     }
@@ -157,7 +157,7 @@ const getTokenFromlocation = (
   ) {
     const relayId = chain.topology.relayId
     const token = tokens.find(
-      (t) => t.type === "substrate-native" && t.networkId === relayId,
+      (t) => t.type === "substrate-native" && t.networkId === relayId
     ) as SubNativeToken
     if (token) return token
   }

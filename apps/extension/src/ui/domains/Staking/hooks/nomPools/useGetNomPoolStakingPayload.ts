@@ -51,7 +51,7 @@ export const useGetNomPoolStakingPayload = ({
         poolId,
         amount ?? 0n,
         hasJoinedNomPool,
-        withSetClaimPermission,
+        withSetClaimPermission
       )
       return response
     },

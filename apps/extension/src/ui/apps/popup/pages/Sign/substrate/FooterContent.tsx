@@ -184,7 +184,7 @@ const EstimatedFeesRow: FC = () => {
         plancks: fee.plancks,
         tokenId: fee.tokenId,
         balance: null,
-      }),
+      })
     )
   }, [chain, dryRun, t, tokens])
 
@@ -200,8 +200,8 @@ const EstimatedFeesRow: FC = () => {
               .filter(isTruthy) ?? [],
         },
       }),
-      [deliveryFees, signingRequest?.account?.address, feeToken?.id],
-    ),
+      [deliveryFees, signingRequest?.account?.address, feeToken?.id]
+    )
   )
 
   const fees = useMemo<FeeDetails[]>(() => {
@@ -233,7 +233,7 @@ const EstimatedFeesRow: FC = () => {
       fees
         .filter((fee) => fee.tokenId === feeToken?.id)
         .reduce((acc, fee) => acc + fee.plancks, 0n),
-    [fees, feeToken?.id],
+    [fees, feeToken?.id]
   )
 
   return (
@@ -282,7 +282,7 @@ const FeeInfo = ({
     if (!fees?.length) return []
 
     const balances = uniq(
-      fees?.filter((fee) => typeof fee.balance === "bigint").map((fee) => fee.tokenId),
+      fees?.filter((fee) => typeof fee.balance === "bigint").map((fee) => fee.tokenId)
     )
       .map((tokenId) => {
         const fee = fees?.find((fee) => fee.tokenId === tokenId && typeof fee.balance === "bigint")

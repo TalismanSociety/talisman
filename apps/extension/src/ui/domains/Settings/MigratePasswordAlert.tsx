@@ -30,7 +30,7 @@ export const AlertCard = ({ className, onAccept }: Props) => {
         <>
           <p className="text-sm">
             {t(
-              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman.",
+              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman."
             )}
           </p>
 

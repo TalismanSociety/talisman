@@ -13,7 +13,7 @@ export const SendFundsTokenPicker = () => {
     (tokenId: TokenId) => {
       set("tokenId", tokenId, true)
     },
-    [set],
+    [set]
   )
 
   const tokenFilter = useMemo<((token: Token) => boolean) | undefined>(() => {

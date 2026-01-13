@@ -146,7 +146,7 @@ export const LedgerTransportTypeSelect = () => {
         getIsLedgerCapable("hid") ? { value: "hid", label: t("HID") } : null,
         getIsLedgerCapable("usb") ? { value: "usb", label: t("USB") } : null,
       ].filter(isNotNil) as { value: LedgerTransportType; label: string }[],
-    [t],
+    [t]
   )
 
   const ledgerTransportTypeValue = useMemo(() => {
@@ -235,7 +235,7 @@ const LedgerTransportCheckModalDialog: FC<{
         <div
           className={classNames(
             "flex size-24 shrink-0 items-center justify-center rounded-full",
-            s.ok ? "text-alert-success bg-alert-success/10" : "text-alert-warn bg-alert-warn/10",
+            s.ok ? "text-alert-success bg-alert-success/10" : "text-alert-warn bg-alert-warn/10"
           )}
         >
           {s.ok ? <CheckIcon className="size-12" /> : <XIcon className="size-12" />}
@@ -257,7 +257,7 @@ const LedgerTransportCheckModalDialog: FC<{
         <p className="text-body-secondary mt-8">
           {t(
             "You may need to reload this page before being able to try again, some browsers prevent multiple {{transport}} connection attempts.",
-            { transport: transport.toUpperCase() },
+            { transport: transport.toUpperCase() }
           )}
         </p>
       )}

@@ -21,7 +21,7 @@ const FormattedAddress = ({ address, className }: { address: string; className?:
 
   const label = useMemo(
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
-    [address, isKnown],
+    [address, isKnown]
   )
 
   return (
@@ -81,7 +81,7 @@ export const SignViewXTokensTransfer: FC<{
 
   const amount = useMemo(
     () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
-    [tokenDecimals, tokenRates, value],
+    [tokenDecimals, tokenRates, value]
   )
 
   const currency = useSelectedCurrency()

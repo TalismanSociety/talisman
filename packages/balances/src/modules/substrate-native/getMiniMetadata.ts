@@ -19,7 +19,7 @@ export const getMiniMetadata: IBalanceModule<
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
-      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`,
+      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
@@ -28,7 +28,7 @@ export const getMiniMetadata: IBalanceModule<
 
   if (unifiedMetadata.version < 14)
     throw new Error(
-      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`,
+      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`
     )
 
   if (config?.disable)
@@ -45,18 +45,18 @@ export const getMiniMetadata: IBalanceModule<
   const existentialDeposit = tryGetConstantValue<bigint>(
     metadataRpc,
     "Balances",
-    "ExistentialDeposit",
+    "ExistentialDeposit"
   )?.toString()
   const nominationPoolsPalletId = tryGetConstantValue<Binary>(
     metadataRpc,
     "NominationPools",
-    "PalletId",
+    "PalletId"
   )?.asText()
 
   const hasFreezesItem = Boolean(
     unifiedMetadata.pallets
       .find(({ name }) => name === "Balances")
-      ?.storage?.items.find(({ name }) => name === "Freezes"),
+      ?.storage?.items.find(({ name }) => name === "Freezes")
   )
   const useLegacyTransferableCalculation = !hasFreezesItem
 

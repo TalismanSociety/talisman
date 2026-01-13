@@ -186,7 +186,7 @@ export default class Extension extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     // --------------------------------------------------------------------
     // First try to unsubscribe                          ------------------

@@ -39,7 +39,7 @@ export const fetchBalances: IBalanceModule<
   }
   if (miniMetadata.chainId !== networkId) {
     log.warn(
-      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`,
+      `Ignoring miniMetadata with chainId ${miniMetadata.chainId} in ${MODULE_TYPE}. Expected chainId is ${networkId}`
     )
     return {
       success: [],
@@ -58,7 +58,7 @@ export const fetchBalances: IBalanceModule<
   return balanceDefs.reduce<FetchBalanceResults>(
     (acc, def) => {
       const balance = balances.find(
-        (b) => b?.address === def.address && b?.tokenId === def.token.id,
+        (b) => b?.address === def.address && b?.tokenId === def.token.id
       )
       if (balance) acc.success.push(balance)
       //if no entry consider empty balance
@@ -76,6 +76,6 @@ export const fetchBalances: IBalanceModule<
         })
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 }

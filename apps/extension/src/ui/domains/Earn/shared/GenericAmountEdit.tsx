@@ -32,7 +32,7 @@ const TokenInput: FC<{
 }> = ({ symbol, decimals, logo, value, onValueChanged, onTokenClick }) => {
   const formatter = useMemo(
     () => (value !== null ? new BalanceFormatter(value, decimals) : null),
-    [decimals, value],
+    [decimals, value]
   )
 
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
@@ -64,7 +64,7 @@ const TokenInput: FC<{
         onValueChanged(null)
       }
     },
-    [onValueChanged, decimals],
+    [onValueChanged, decimals]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -98,7 +98,7 @@ const TokenInput: FC<{
         onClick={onTokenClick}
         className={cn(
           "text-body flex shrink-0 items-center gap-2 text-base font-normal",
-          onTokenClick ? "cursor-pointer" : "cursor-default",
+          onTokenClick ? "cursor-pointer" : "cursor-default"
         )}
       >
         <AssetLogo className="text-lg" url={logo} />
@@ -119,12 +119,12 @@ const FiatInput: FC<{
 
   const formatter = useMemo(
     () => (value === null ? null : new BalanceFormatter(value, decimals, tokenRates)),
-    [decimals, tokenRates, value],
+    [decimals, tokenRates, value]
   )
 
   const formattedValue = useMemo(
     () => formatter?.fiat(currency)?.toString() ?? "",
-    [currency, formatter],
+    [currency, formatter]
   )
 
   const [inputValue, setInputValue] = useState(formattedValue)
@@ -158,7 +158,7 @@ const FiatInput: FC<{
       return onValueChanged(null)
     },
 
-    [tokenRates, currency, onValueChanged, decimals],
+    [tokenRates, currency, onValueChanged, decimals]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -209,7 +209,7 @@ const FiatDisplay: FC<{ decimals: number; value: bigint | null; priceUsd: number
   const currency = useSelectedCurrency()
   const formatter = useMemo(
     () => (tokenRates ? new BalanceFormatter(value ?? 0n, decimals, tokenRates) : null),
-    [tokenRates, value, decimals],
+    [tokenRates, value, decimals]
   )
 
   if (!formatter) return null

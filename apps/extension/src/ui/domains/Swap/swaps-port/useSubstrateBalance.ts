@@ -32,8 +32,8 @@ export const useSubstrateBalance = (props?: UseSubstrateBalanceProps) => {
               assethubAssetId: props?.assetHubAssetId,
             }
           : undefined,
-      [props?.assetHubAssetId, props?.chainId],
-    ),
+      [props?.assetHubAssetId, props?.chainId]
+    )
   )
   const unsubRef = useRef<() => void>()
   const chains = useNetworksMapById({ platform: "polkadot" })

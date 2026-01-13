@@ -39,7 +39,7 @@ export const ChangePasswordModal = ({
             <AlertTriangleIcon className="text-alert-warn shrink-0 text-lg" />
             <div>
               {t(
-                "Please wait while we change your password. This can take some time. Do not close the browser window.",
+                "Please wait while we change your password. This can take some time. Do not close the browser window."
               )}
             </div>
           </div>

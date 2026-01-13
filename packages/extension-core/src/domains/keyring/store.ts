@@ -46,19 +46,19 @@ class KeyringStore {
     this.#keyring$ = this.#json$.pipe(
       map((json) => (json ? Keyring.load(json) : Keyring.create())),
       map((keyring) => Object.freeze(keyring)),
-      shareReplay(1),
+      shareReplay(1)
     )
 
     this.#accounts$ = this.#keyring$.pipe(
       map((keyring) => keyring.getAccounts()),
       distinctUntilChanged(isEqual),
-      shareReplay(1),
+      shareReplay(1)
     )
 
     this.#mnemonics$ = this.#keyring$.pipe(
       map((keyring) => keyring.getMnemonics()),
       distinctUntilChanged(isEqual),
-      shareReplay(1),
+      shareReplay(1)
     )
 
     this.init()
@@ -114,7 +114,7 @@ class KeyringStore {
    * @returns
    */
   private async updateWithPassword<T>(
-    change: (keyring: Keyring, password: string) => T | Promise<T>,
+    change: (keyring: Keyring, password: string) => T | Promise<T>
   ) {
     return this.withLock(async () => {
       const password = await passwordStore.getPassword()
@@ -201,13 +201,13 @@ class KeyringStore {
 
   public addAccountExternalMulti(options: AddAccountExternalOptions[]) {
     return this.updateWithoutPassword((keyring) =>
-      Promise.all(options.map((acc) => keyring.addAccountExternal(acc))),
+      Promise.all(options.map((acc) => keyring.addAccountExternal(acc)))
     )
   }
 
   public addAccountDerive(options: AddAccountDeriveOptions) {
     return this.updateWithPassword((keyring, password) =>
-      keyring.addAccountDerive(options, password),
+      keyring.addAccountDerive(options, password)
     )
   }
 
@@ -224,13 +224,13 @@ class KeyringStore {
 
   public addAccountKeypair(options: AddAccountKeypairOptions) {
     return this.updateWithPassword((keyring, password) =>
-      keyring.addAccountKeypair(options, password),
+      keyring.addAccountKeypair(options, password)
     )
   }
 
   public addAccountKeypairMulti(options: AddAccountKeypairOptions[]) {
     return this.updateWithPassword((keyring, password) =>
-      Promise.all(options.map((acc) => keyring.addAccountKeypair(acc, password))),
+      Promise.all(options.map((acc) => keyring.addAccountKeypair(acc, password)))
     )
   }
 
@@ -243,7 +243,7 @@ class KeyringStore {
     mnemonicId: string,
     derivationPath: string,
     curve: KeypairCurve,
-    password: string,
+    password: string
   ): Promise<string> {
     const keyring = await firstValueFrom(this.#keyring$)
     return keyring.getDerivedAddress(mnemonicId, derivationPath, curve, password)

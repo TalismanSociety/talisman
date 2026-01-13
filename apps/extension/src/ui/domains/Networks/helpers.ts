@@ -116,7 +116,7 @@ export const getDotChainInfoFromRpc = (rpcUrl: string): Promise<SubstrateRpcInfo
       const ss58Prefix = getSs58Prefix(metadata)
       const account = getAccountType(metadata)
       const hasCheckMetadataHash = metadata.extrinsic.signedExtensions.some(
-        ({ identifier }) => identifier === "CheckMetadataHash",
+        ({ identifier }) => identifier === "CheckMetadataHash"
       )
 
       const result: SubstrateRpcInfo = {

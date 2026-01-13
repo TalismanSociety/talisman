@@ -23,7 +23,7 @@ export const AccountAddMnemonicAccountsForm = () => {
 
   const name = useMemo(
     () => data.name ?? t("{{curve}} Account", { curve: startCase(data.curve) }),
-    [data.name, data.curve, t],
+    [data.name, data.curve, t]
   )
 
   const onSubmit = useCallback(async () => {
@@ -34,7 +34,7 @@ export const AccountAddMnemonicAccountsForm = () => {
         title: t("Importing {{count}} accounts", { count: accountsToImport.length }),
         subtitle: "Please wait",
       },
-      { autoClose: false },
+      { autoClose: false }
     )
     try {
       const addresses = await api.accountAddDerive(accountsToImport)

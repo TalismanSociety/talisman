@@ -59,7 +59,7 @@ const SquareButton = forwardRef<
     ref={ref}
     className={classNames(
       "enabled:hover:bg-grey-700 enabled:hover:text-body-secondary flex h-[3.2rem] w-[3.2rem] items-center justify-center rounded-sm enabled:cursor-pointer disabled:cursor-not-allowed",
-      props.className,
+      props.className
     )}
   ></button>
 ))
@@ -78,12 +78,12 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     undefined,
     undefined,
     undefined,
-    contact.address,
+    contact.address
   )
   const contactChain = useNetworkByGenesisHash(contact.genesisHash)
   const { open: viewOnExplorer, canOpen: canViewOnExplorer } = useViewOnExplorer(
     contact.address,
-    contact.genesisHash,
+    contact.genesisHash
   )
 
   const handleViewOnExplorer = useCallback(() => {
@@ -197,14 +197,14 @@ const Content = () => {
   const contacts = useContacts()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
-    [contacts],
+    [contacts]
   )
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
   const contactsToDisplay = useMemo(
     () => contacts.concat().sort((a, b) => a.name.localeCompare(b.name)),
-    [contacts],
+    [contacts]
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

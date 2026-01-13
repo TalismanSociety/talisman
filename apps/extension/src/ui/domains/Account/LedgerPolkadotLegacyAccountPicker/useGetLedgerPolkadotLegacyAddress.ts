@@ -20,7 +20,7 @@ export const useGetLedgerPolkadotLegacyAddress = (genesisHash: `0x${string}`) =>
 
       return address
     },
-    [genesisHash, getAccountAddress],
+    [genesisHash, getAccountAddress]
   )
 
   return { getAddress }

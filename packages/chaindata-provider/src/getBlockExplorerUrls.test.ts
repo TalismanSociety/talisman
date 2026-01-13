@@ -60,7 +60,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.ibp.network%2Fpolkadot#/explorer/query/0xa0fa6f935643cf6b2e72b13a470e0c3724880dcb1298c655c870c0f16aab25d7",
+      "https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Frpc.ibp.network%2Fpolkadot#/explorer/query/0xa0fa6f935643cf6b2e72b13a470e0c3724880dcb1298c655c870c0f16aab25d7"
     )
     expect(urls.length).toBe(1) // polkadot.js only
   })
@@ -72,10 +72,10 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://polkadot.statescan.io/#/accounts/13xTKARCtSSTtveDMuTz6s3t9nb1cU1Qasi3iA7BiHobxUdy",
+      "https://polkadot.statescan.io/#/accounts/13xTKARCtSSTtveDMuTz6s3t9nb1cU1Qasi3iA7BiHobxUdy"
     )
     expect(urls).toContain(
-      "https://polkadot.subscan.io/account/13xTKARCtSSTtveDMuTz6s3t9nb1cU1Qasi3iA7BiHobxUdy",
+      "https://polkadot.subscan.io/account/13xTKARCtSSTtveDMuTz6s3t9nb1cU1Qasi3iA7BiHobxUdy"
     )
     expect(urls.length).toBe(2) // polkadot.js does not provide an address page
   })
@@ -97,7 +97,7 @@ describe("getExplorerUrls", () => {
     })
 
     expect(urls).toContain(
-      "https://polkadot.subscan.io/tx/0x45028400dd2c7e96aa307edf9f583f814d6665ed80306e3c9a0055daa18b6dd35873d62600df46b792d582c94581f30b10065174fa51e2ed2098b7446e3063314ea30515bf2daa336d3e3244b2d74d67b3079a4fc0f9a9494ca6388c6d9c54b1b89d2ac00366060400000500003d0f887e609fbfc84f3eba39b873844a42ed0ef99c9f460d9a829d4e2ef5fe7b0784a0e7b027",
+      "https://polkadot.subscan.io/tx/0x45028400dd2c7e96aa307edf9f583f814d6665ed80306e3c9a0055daa18b6dd35873d62600df46b792d582c94581f30b10065174fa51e2ed2098b7446e3063314ea30515bf2daa336d3e3244b2d74d67b3079a4fc0f9a9494ca6388c6d9c54b1b89d2ac00366060400000500003d0f887e609fbfc84f3eba39b873844a42ed0ef99c9f460d9a829d4e2ef5fe7b0784a0e7b027"
     )
     expect(urls.length).toBe(1) // subscan only
   })

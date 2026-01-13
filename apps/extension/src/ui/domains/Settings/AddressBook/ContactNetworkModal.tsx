@@ -26,7 +26,7 @@ export const ContactNetworkPickerButton: FC<{
           id: network.id,
           name: network.name,
           networkIds: [network.id],
-        }),
+        })
       )
       .sort((a, b) => a.name.localeCompare(b.name))
 
@@ -50,7 +50,7 @@ export const ContactNetworkPickerButton: FC<{
         className={classNames(
           "flex h-[5.6rem] w-full items-center gap-6 overflow-hidden rounded-sm px-8",
           "bg-grey-850 enabled:hover:bg-grey-800 text-body-secondary enabled:hover:text-body",
-          className,
+          className
         )}
         onClick={open}
       >

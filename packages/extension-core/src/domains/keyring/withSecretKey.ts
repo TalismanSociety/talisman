@@ -7,7 +7,7 @@ import { keyringStore } from "./store"
 
 export const withSecretKey = async <T>(
   address: Address,
-  cb: (secretKey: Uint8Array, curve: KeypairCurve) => T | Promise<T>,
+  cb: (secretKey: Uint8Array, curve: KeypairCurve) => T | Promise<T>
 ): Promise<Result<T, "Unauthorised" | "Account not found" | "Private key unavailable" | Error>> => {
   let secretKey: Uint8Array | null = null
   let curve: KeypairCurve

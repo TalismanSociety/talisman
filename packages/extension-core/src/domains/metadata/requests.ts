@@ -9,7 +9,7 @@ export const requestInjectMetadata = async (url: string, request: MetadataDef, p
       url,
       request,
     },
-    port,
+    port
   )
   return true
 }

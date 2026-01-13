@@ -14,7 +14,7 @@ export const requestEncrypt = (
   url: string,
   payload: EncryptPayload,
   account: Account,
-  port: Port,
+  port: Port
 ): Promise<ResponseEncryptEncrypt> => {
   return requestStore.createRequest(
     {
@@ -23,7 +23,7 @@ export const requestEncrypt = (
       request: { payload },
       account,
     },
-    port,
+    port
   ) as Promise<ResponseEncryptEncrypt>
 }
 
@@ -31,7 +31,7 @@ export const requestDecrypt = (
   url: string,
   payload: DecryptPayload,
   account: Account,
-  port: Port,
+  port: Port
 ): Promise<ResponseEncryptDecrypt> => {
   return requestStore.createRequest(
     {
@@ -40,6 +40,6 @@ export const requestDecrypt = (
       request: { payload },
       account,
     },
-    port,
+    port
   )
 }

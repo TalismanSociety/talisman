@@ -30,7 +30,7 @@ export const TxHistoryNetworkPicker: FC<{
 
   const networks = useMemo(
     () => allNetworks.filter((network) => !search || network.name?.toLowerCase().includes(search)),
-    [allNetworks, search],
+    [allNetworks, search]
   )
 
   return (
@@ -110,7 +110,7 @@ const NetworkRow: FC<{
       className={classNames(
         "text-body-secondary hover:text-body hover:bg-grey-800 flex h-28 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
-        selected && "!bg-grey-700",
+        selected && "!bg-grey-700"
       )}
     >
       {network ? (

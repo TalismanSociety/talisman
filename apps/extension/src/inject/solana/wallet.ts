@@ -141,7 +141,7 @@ export class TalismanSolWallet implements Wallet {
 
   #off<E extends StandardEventsNames>(event: E, listener: StandardEventsListeners[E]): void {
     this.#listeners[event] = this.#listeners[event]?.filter(
-      (existingListener) => listener !== existingListener,
+      (existingListener) => listener !== existingListener
     )
   }
 
@@ -194,7 +194,7 @@ export class TalismanSolWallet implements Wallet {
           minContextSlot,
           maxRetries,
           skipPreflight,
-        },
+        }
       )
 
       outputs.push({ signature: bs58.decode(signature) })
@@ -218,7 +218,7 @@ export class TalismanSolWallet implements Wallet {
       if (chain && !isSolanaChain(chain)) throw new Error("invalid chain")
 
       const signedTransaction = await this.#talisman.signTransaction(
-        VersionedTransaction.deserialize(transaction),
+        VersionedTransaction.deserialize(transaction)
       )
 
       const serializedTransaction = isVersionedTransaction(signedTransaction)
@@ -227,7 +227,7 @@ export class TalismanSolWallet implements Wallet {
             (signedTransaction as Transaction).serialize({
               requireAllSignatures: false,
               verifySignatures: false,
-            }),
+            })
           )
 
       outputs.push({ signedTransaction: serializedTransaction })
@@ -246,7 +246,7 @@ export class TalismanSolWallet implements Wallet {
       }
 
       const transactions = inputs.map(({ transaction }) =>
-        VersionedTransaction.deserialize(transaction),
+        VersionedTransaction.deserialize(transaction)
       )
 
       const signedTransactions = await this.#talisman.signAllTransactions(transactions)
@@ -259,11 +259,11 @@ export class TalismanSolWallet implements Wallet {
                 (signedTransaction as Transaction).serialize({
                   requireAllSignatures: false,
                   verifySignatures: false,
-                }),
+                })
               )
 
           return { signedTransaction: serializedTransaction }
-        }),
+        })
       )
     }
 

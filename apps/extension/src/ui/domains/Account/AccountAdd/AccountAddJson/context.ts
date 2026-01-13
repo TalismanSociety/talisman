@@ -51,7 +51,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     { publicKey: decodeAddress(address, true) },
     meta,
     isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
-    encType,
+    encType
   )
 }
 
@@ -66,9 +66,9 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
           curve: p.type,
           name: p.meta.name ?? "",
           createdAt: Date.now(),
-        }),
+        })
       ),
-    [pairs],
+    [pairs]
   )
   const allBalances = useAccountImportBalances(accounts)
 
@@ -87,7 +87,7 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
           [address]: { balances, isLoading },
         }
       },
-      {} as Record<Address, { balances: Balances; isLoading: boolean }>,
+      {} as Record<Address, { balances: Balances; isLoading: boolean }>
     )
   }, [accounts, allBalances])
 }
@@ -157,7 +157,7 @@ const useJsonAccountImportProvider = () => {
         }, 1)
       })
     },
-    [existingAccounts, file],
+    [existingAccounts, file]
   )
 
   const chains = useNetworks({ platform: "polkadot" })
@@ -204,7 +204,7 @@ const useJsonAccountImportProvider = () => {
   const selectAll = useCallback(() => {
     if (!accounts) return
     setSelectedAccounts(
-      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id),
+      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id)
     )
   }, [accounts])
 
@@ -216,12 +216,12 @@ const useJsonAccountImportProvider = () => {
         return prev.filter((a) => a !== id)
       })
     },
-    [accounts],
+    [accounts]
   )
 
   const requiresAccountUnlock = useMemo(
     () => !!accounts?.filter((a) => a.selected && a.isLocked).length,
-    [accounts],
+    [accounts]
   )
 
   // track progress to display a progress bar
@@ -261,7 +261,7 @@ const useJsonAccountImportProvider = () => {
 
       setUnlockAttemptProgress(0)
     },
-    [accounts, pairs],
+    [accounts, pairs]
   )
 
   const canImport = useMemo<boolean>(() => {
@@ -278,7 +278,7 @@ const useJsonAccountImportProvider = () => {
     assert(pairs, "Pairs unavailable")
 
     const pairsToImport = selectedAccounts.map(
-      (address) => pairs.find((p) => p.address === address) as KeyringPair,
+      (address) => pairs.find((p) => p.address === address) as KeyringPair
     )
     for (const pair of pairsToImport) {
       assert(pair, "Pair not found")
@@ -309,5 +309,5 @@ const useJsonAccountImportProvider = () => {
 }
 
 export const [JsonAccountImportProvider, useJsonAccountImport] = provideContext(
-  useJsonAccountImportProvider,
+  useJsonAccountImportProvider
 )

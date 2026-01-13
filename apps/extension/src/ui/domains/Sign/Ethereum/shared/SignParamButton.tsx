@@ -25,7 +25,7 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
 }) => {
   const url = useMemo(
     () => (explorerUrl && address ? `${explorerUrl}/address/${address}` : undefined),
-    [address, explorerUrl],
+    [address, explorerUrl]
   )
 
   const handleClick = useCallback(() => {
@@ -39,7 +39,7 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
       onClick={handleClick}
       className={classNames(
         "text-body-secondary inline-flex h-[1.2em] max-w-full gap-3 overflow-hidden text-ellipsis whitespace-nowrap px-4 text-base hover:text-white",
-        className,
+        className
       )}
     >
       {iconPrefix && (

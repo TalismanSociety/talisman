@@ -45,7 +45,7 @@ export default class MetadataHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     // Then try remaining which are present in this class
     switch (type) {

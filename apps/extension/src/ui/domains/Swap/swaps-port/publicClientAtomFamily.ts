@@ -18,5 +18,5 @@ export const publicClientAtomFamily: AtomFamily<
       return
 
     return getExtensionPublicClient(evmNetwork)
-  }),
+  })
 )

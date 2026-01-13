@@ -39,7 +39,7 @@ export const useAccountExportPrivateKeyModal = () => {
       setLocalAccount(account ?? null)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   const canExportAccountFunc = (account?: Account | null) =>
@@ -53,7 +53,7 @@ export const useAccountExportPrivateKeyModal = () => {
       if (!account) return
       return api.accountExportPrivateKey(account.address, password)
     },
-    [account],
+    [account]
   )
 
   return { account, canExportAccountFunc, canExportAccount, exportAccount, isOpen, open, close }
@@ -81,7 +81,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           subtitle: t("Private key copied to clipboard"),
         },
         // set an id to prevent multiple clicks to display multiple notifications
-        { toastId },
+        { toastId }
       )
       return true
     } catch (err) {
@@ -91,7 +91,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
           title: t("Copy failed"),
           subtitle: (err as Error).message,
         },
-        { toastId },
+        { toastId }
       )
       return false
     }
@@ -121,7 +121,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
     <div className="text-body-secondary flex h-full w-full flex-col text-left">
       <div className="w-full text-left">
         {t(
-          "This private key can be used to access your account's funds. Don't share it with anyone.",
+          "This private key can be used to access your account's funds. Don't share it with anyone."
         )}
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6">

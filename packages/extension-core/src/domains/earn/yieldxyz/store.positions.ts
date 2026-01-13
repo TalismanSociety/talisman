@@ -74,11 +74,11 @@ const matchesYieldIdAndAddress = (position: YieldxyzPosition, yieldId: string, a
 // Remove all 1/n entries matching yieldId + address.
 export const removeYieldxyzPositionsByYieldIdAndAddress = async (
   yieldId: string,
-  address: string,
+  address: string
 ) => {
   const currentYieldxyzPositions = await firstValueFrom(subjectYieldxyzPositionsStore$)
   const next = currentYieldxyzPositions.filter(
-    (p) => !matchesYieldIdAndAddress(p, yieldId, address),
+    (p) => !matchesYieldIdAndAddress(p, yieldId, address)
   )
   if (!isEqual(next, currentYieldxyzPositions)) subjectYieldxyzPositionsStore$.next(next)
 }
@@ -87,7 +87,7 @@ export const removeYieldxyzPositionsByYieldIdAndAddress = async (
 export const upsertYieldxyzPositionsByYieldIdAndAddress = async (position: YieldxyzPosition) => {
   const currentYieldxyzPositions = await firstValueFrom(subjectYieldxyzPositionsStore$)
   const remaining = currentYieldxyzPositions.filter(
-    (p) => !matchesYieldIdAndAddress(p, position.yieldId, position.address),
+    (p) => !matchesYieldIdAndAddress(p, position.yieldId, position.address)
   )
   subjectYieldxyzPositionsStore$.next([...remaining, position])
 }

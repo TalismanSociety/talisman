@@ -24,7 +24,7 @@ export const SupportOpsRestoreButton = () => {
 
 const RestoreModalDialog: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [state, setState] = useState<{ isInvalid?: boolean; backup?: TalismanJsonBackup }>(
-    () => ({}),
+    () => ({})
   )
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {

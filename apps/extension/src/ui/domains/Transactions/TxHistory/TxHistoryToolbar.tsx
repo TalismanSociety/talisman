@@ -32,7 +32,7 @@ const AccountFilterButton = () => {
       setAddress(address ? [address] : null)
       close()
     },
-    [close, setAddress],
+    [close, setAddress]
   )
 
   return (
@@ -79,7 +79,7 @@ const NetworkFilterButton = () => {
       setNetworkId(networkId)
       close()
     },
-    [close, setNetworkId],
+    [close, setNetworkId]
   )
 
   return (

@@ -53,12 +53,12 @@ export const BittensorClaimSettingsForm = () => {
         value: "KeepSubnets" as RootClaimType,
         title: t("Receive rewards in Selected Alpha"),
         description: t(
-          "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao.",
+          "Rewards are kept in alpha tokens for the subnets you specify, the remainder is converted to Tao."
         ),
         disabled: false,
       },
     ],
-    [t],
+    [t]
   )
 
   const handleSelectAccount = useCallback(
@@ -66,7 +66,7 @@ export const BittensorClaimSettingsForm = () => {
       setAddress(address)
       accountPicker.close()
     },
-    [accountPicker, setAddress],
+    [accountPicker, setAddress]
   )
 
   return (
@@ -108,7 +108,7 @@ export const BittensorClaimSettingsForm = () => {
                   isSelected
                     ? "text-body"
                     : "text-body-secondary hover:border-grey-700 hover:text-body border-transparent",
-                  option.disabled && "cursor-not-allowed opacity-50",
+                  option.disabled && "cursor-not-allowed opacity-50"
                 )}
               >
                 <div className="flex flex-col gap-1 pr-10">
@@ -127,7 +127,7 @@ export const BittensorClaimSettingsForm = () => {
                   <span
                     className={classNames(
                       "h-3.5 w-3.5 rounded-full transition-colors",
-                      isSelected ? "bg-primary" : "bg-transparent",
+                      isSelected ? "bg-primary" : "bg-transparent"
                     )}
                   />
                 </span>

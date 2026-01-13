@@ -14,7 +14,7 @@ export const getUniswapV2TokenInfo = async (
   client: Client,
   networkId: EthNetworkId,
   contractAddress: EvmAddress,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<EvmUniswapV2Token> => {
   const { symbol, decimals, tokenAddress0, tokenAddress1, token0, token1, name } =
     await getUniswapV2ContractData(client, contractAddress)

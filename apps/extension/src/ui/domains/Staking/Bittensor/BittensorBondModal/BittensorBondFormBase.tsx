@@ -75,7 +75,7 @@ const TokenDisplay = () => {
 
   const tokenPlancks = useMemo(
     () => planckToTokens(String(amountIn || 0n), nativeToken?.decimals),
-    [amountIn, nativeToken?.decimals],
+    [amountIn, nativeToken?.decimals]
   )
 
   const symbol = useMemo(() => {
@@ -107,7 +107,7 @@ const TokenInput = () => {
 
   const formattedValue = useMemo(
     () => (isSubnetUnbond ? (amountAlpha?.tokens ?? "") : (amountTao?.tokens ?? "")),
-    [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond],
+    [amountTao?.tokens, amountAlpha?.tokens, isSubnetUnbond]
   )
 
   const [value, setValue] = useState(formattedValue)
@@ -137,7 +137,7 @@ const TokenInput = () => {
         setPlancks(null)
       }
     },
-    [setPlancks, nativeToken],
+    [setPlancks, nativeToken]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -210,14 +210,14 @@ const FiatInput = () => {
         try {
           const fiat = parseFloat(nextValue)
           let tokens: string = (fiat / tokenRates[currency].price).toFixed(
-            Math.ceil(nativeToken.decimals / 3),
+            Math.ceil(nativeToken.decimals / 3)
           )
 
           if (isSubnetUnbond) {
             tokens = String(
               (
                 Number(tokens) * Number(planckToTokens(swapPrice.toString(), nativeToken.decimals))
-              ).toFixed(Math.ceil(nativeToken.decimals / 3)),
+              ).toFixed(Math.ceil(nativeToken.decimals / 3))
             )
           }
           const plancks = tokensToPlanck(tokens, nativeToken.decimals)
@@ -230,7 +230,7 @@ const FiatInput = () => {
       return setPlancks(null)
     },
 
-    [nativeToken, tokenRates, currency, swapPrice, setPlancks, isSubnetUnbond],
+    [nativeToken, tokenRates, currency, swapPrice, setPlancks, isSubnetUnbond]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
@@ -364,7 +364,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
 
   const isSubnetUnbond = useMemo(
     () => stakeDirection === "unbond" && netuid !== ROOT_NETUID,
-    [netuid, stakeDirection],
+    [netuid, stakeDirection]
   )
 
   const handleSelectAccount = useCallback(
@@ -372,7 +372,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
       setAddress(address)
       accountPicker.close()
     },
-    [accountPicker, setAddress],
+    [accountPicker, setAddress]
   )
 
   return (
@@ -418,7 +418,7 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
         <div
           className={classNames(
             "flex gap-8",
-            stakeType === "subnet" ? "flex-col-reverse" : "flex-col",
+            stakeType === "subnet" ? "flex-col-reverse" : "flex-col"
           )}
         >
           <div className="flex items-center justify-between gap-6">

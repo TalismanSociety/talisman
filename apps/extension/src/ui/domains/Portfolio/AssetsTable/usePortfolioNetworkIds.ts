@@ -7,8 +7,8 @@ export const usePortfolioNetworkIds = (balances: Balances) => {
   return useMemo<NetworkId[]>(
     () =>
       [...new Set(balances.each.filter((b) => b.total.planck > 0).map((b) => b.networkId))].filter(
-        isNotNil,
+        isNotNil
       ),
-    [balances],
+    [balances]
   )
 }

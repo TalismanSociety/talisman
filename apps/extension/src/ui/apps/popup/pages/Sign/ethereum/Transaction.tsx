@@ -82,7 +82,7 @@ export const EthSignTransactionRequest = () => {
       setPriority(priority)
       setReady() // clear error from previous submit attempt
     },
-    [setPriority, setReady],
+    [setPriority, setReady]
   )
 
   return (

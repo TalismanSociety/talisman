@@ -31,7 +31,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const assetStorageResults = await connector.send<QueryStorageResult>(
     networkId,
     "state_queryStorageAt",
-    [allAssetStorageKeys],
+    [allAssetStorageKeys]
   )
 
   const assetStorageEntries = assetStorageResults.length ? assetStorageResults[0].changes : []
@@ -77,7 +77,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals: asset.decimals ?? 0,
           existentialDeposit: asset.existentialDeposit,
           isDefault: true,
-        }),
+        })
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {

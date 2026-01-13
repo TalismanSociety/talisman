@@ -42,8 +42,8 @@ export const SignLedgerEthereum: FC<SignHardwareEthereumProps> = ({
       if (errCheck.reason === "invalid object key - maxPriorityFeePerGas") {
         setError(
           getTalismanLedgerError(
-            t("Sorry, Talisman doesn't support signing transactions with Ledger on this network."),
-          ),
+            t("Sorry, Talisman doesn't support signing transactions with Ledger on this network.")
+          )
         )
       } else {
         const error = getTalismanLedgerError(err)

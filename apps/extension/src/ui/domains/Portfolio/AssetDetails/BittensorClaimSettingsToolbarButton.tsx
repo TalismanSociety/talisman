@@ -32,7 +32,7 @@ export const BittensorClaimSettingsToolbarButton: FC<{
           b.token?.type === "substrate-dtao" &&
           b.token.netuid === ROOT_NETUID &&
           bittensorNetworkIds.includes(b.token.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)),
+          accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 

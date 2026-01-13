@@ -31,10 +31,10 @@ const useExplorerNetworks = (address: string, search: string): Network[] => {
           // account is undefined for contacts
           (account
             ? isAccountCompatibleWithNetwork(chain, account)
-            : isAddressCompatibleWithNetwork(chain, address)),
+            : isAddressCompatibleWithNetwork(chain, address))
       ),
 
-    [account, address, networks],
+    [account, address, networks]
   )
 
   const sortedNetworks = useMemo(() => {
@@ -90,7 +90,7 @@ export const ExplorerNetworkPicker: FC<{ address: string; onClose: () => void }>
       window.open(url, "_blank")
       onClose()
     },
-    [address, onClose],
+    [address, onClose]
   )
 
   return (

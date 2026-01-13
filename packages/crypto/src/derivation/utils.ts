@@ -47,7 +47,7 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
 export const addressFromMnemonic = async (
   mnemonic: string,
   derivationPath: string,
-  curve: KeypairCurve,
+  curve: KeypairCurve
 ) => {
   const entropy = mnemonicToEntropy(mnemonic)
   const seed = await entropyToSeed(entropy, curve)

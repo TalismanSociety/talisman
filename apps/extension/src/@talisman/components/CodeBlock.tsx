@@ -21,7 +21,7 @@ export const CodeBlock = ({ className, code }: CodeBlockProps) => {
     <pre
       className={classNames(
         "bg-grey-800 text-body-secondary scrollable scrollable-700 overflow-x-auto rounded-sm p-8 py-4",
-        className,
+        className
       )}
     >
       <code className="[&>.hljs-string]:text-body [&>.hljs-number]:text-body">

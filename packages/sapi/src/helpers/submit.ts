@@ -9,7 +9,7 @@ export const submit = async (
   payload: SignerPayloadJSON,
   signature?: `0x${string}`,
   txInfo?: unknown,
-  mode?: ScaleApiSubmitMode,
+  mode?: ScaleApiSubmitMode
 ) => {
   switch (mode) {
     case "bittensor-mev-shield":

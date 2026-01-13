@@ -24,8 +24,8 @@ export const ConnectSignetSelectAccounts = () => {
         acc[vault.address] = true
         return acc
       },
-      {} as Record<string, boolean>,
-    ),
+      {} as Record<string, boolean>
+    )
   )
 
   const handleToggle = useCallback(
@@ -35,7 +35,7 @@ export const ConnectSignetSelectAccounts = () => {
         [address]: !prev?.[address],
       }))
     },
-    [setSelectedAccounts],
+    [setSelectedAccounts]
   )
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export const ConnectSignetSelectAccounts = () => {
         title: t("Importing account"),
         subtitle: t("Please wait"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
     try {
       const [address] = await api.accountAddExternal(
@@ -65,7 +65,7 @@ export const ConnectSignetSelectAccounts = () => {
           address: vault.address,
           genesisHash: vault.chain.genesisHash,
           url: signetUrlOrigin,
-        })),
+        }))
       )
 
       notifyUpdate(notificationId, {

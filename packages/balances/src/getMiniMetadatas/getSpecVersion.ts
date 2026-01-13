@@ -9,7 +9,7 @@ const fetchSpecVersion = async (chainConnector: IChainConnectorDot, networkId: D
     networkId,
     "state_getRuntimeVersion",
     [],
-    true,
+    true
   )
   return specVersion
 }
@@ -19,7 +19,7 @@ const fetchSpecVersion = async (chainConnector: IChainConnectorDot, networkId: D
  */
 export const getSpecVersion = async (
   chainConnector: IChainConnectorDot,
-  networkId: DotNetworkId,
+  networkId: DotNetworkId
 ) => {
   if (CACHE_GET_SPEC_VERSION.has(networkId)) return CACHE_GET_SPEC_VERSION.get(networkId)!
 

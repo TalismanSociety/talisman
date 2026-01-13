@@ -28,7 +28,7 @@ export const BittensorUnstakeToolbarButton: FC<{ balances: Balances; className?:
         (b) =>
           b.token?.type === "substrate-dtao" &&
           bittensorNetworkIds.includes(b.token.networkId) &&
-          accounts.some((a) => isAddressEqual(a.address, b.address)),
+          accounts.some((a) => isAddressEqual(a.address, b.address))
       )
       .sort((a, b) => (a.free.planck > b.free.planck ? -1 : 1))[0]
 

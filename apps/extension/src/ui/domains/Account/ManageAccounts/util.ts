@@ -28,7 +28,7 @@ export const getTreeItemsMap = (items: UiTreeItem[]) => {
       if (item.type === "folder") for (const child of item.tree) acc[child.id] = child
       return acc
     },
-    {} as Record<string, UiTreeItem>,
+    {} as Record<string, UiTreeItem>
   )
 }
 

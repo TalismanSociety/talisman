@@ -19,7 +19,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
     // port: Port,
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
@@ -85,7 +85,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
                 !ed25519.verify(
                   base58.decode(signature),
                   base58.decode(dappRequest.message),
-                  base58.decode(signRequest.account.address),
+                  base58.decode(signRequest.account.address)
                 )
               )
                 throw new Error("Signature verification failed")
@@ -102,7 +102,7 @@ export class SolanaExtensionHandler extends ExtensionHandler {
               async (secretKey) => {
                 const payload = base58.decode(dappRequest.message)
                 return ed25519.sign(payload, secretKey)
-              },
+              }
             )
 
             return signRequest.resolve({

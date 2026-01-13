@@ -16,7 +16,7 @@ type DryRunResult = (
 export const getDryRunCall = async <T>(
   chain: Chain,
   from: string,
-  decodedCall: DecodedCall<unknown>,
+  decodedCall: DecodedCall<unknown>
 ): Promise<
   | {
       available: boolean

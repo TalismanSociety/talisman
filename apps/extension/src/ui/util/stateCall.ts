@@ -10,7 +10,7 @@ export const stateCall = async <K extends string = string>(
   resultType: K,
   args: Codec[],
   blockHash?: HexString,
-  isCacheable?: boolean,
+  isCacheable?: boolean
 ) => {
   // on a state call there are always arguments
   const registry = args[0].registry
@@ -21,7 +21,7 @@ export const stateCall = async <K extends string = string>(
     chainId,
     "state_call",
     [method, bytes.toHex(), blockHash],
-    isCacheable,
+    isCacheable
   )
 
   return registry.createType(resultType, result)

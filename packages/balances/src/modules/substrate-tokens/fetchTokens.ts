@@ -29,7 +29,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           existentialDeposit: tokenConfig.existentialDeposit ?? "0",
           isDefault: true,
         },
-        tokenConfig,
-      ),
+        tokenConfig
+      )
   )
 }

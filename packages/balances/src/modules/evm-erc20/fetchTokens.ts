@@ -46,7 +46,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       try {
         const { name, decimals, symbol } = await getErc20ContractData(
           client,
-          tokenConfig.contractAddress,
+          tokenConfig.contractAddress
         )
 
         cache[tokenId] = TokenCacheSchema.parse({
@@ -67,7 +67,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         else
           log.warn(
             `Failed to fetch ERC20 token data for ${networkId}:${tokenConfig.contractAddress}`,
-            (err as BaseError).shortMessage,
+            (err as BaseError).shortMessage
           )
         continue
       }
@@ -89,7 +89,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     const token = assign(
       base,
       cached2?.isValid ? omit(cached2, ["isValid"]) : {},
-      tokenConfig,
+      tokenConfig
     ) as EvmErc20Token
 
     const parsed = EvmErc20TokenSchema.safeParse(token)

@@ -24,7 +24,7 @@ const NetworkOptionRow: FC<{
       className={classNames(
         "text-body-secondary hover:text-body hover:bg-grey-800 flex h-24 w-full items-center gap-6 overflow-hidden px-12",
         "focus-visible:bg-grey-800",
-        isSelected && "!bg-grey-700",
+        isSelected && "!bg-grey-700"
       )}
     >
       <NetworkLogo networkId={option.networkIds[0]} className="shrink-0 text-xl" />
@@ -113,7 +113,7 @@ const NetworkOptionsModalContent: FC<{
     (option: NetworkOption) => {
       onChange(option.id === "ALL_NETWORKS" ? null : option)
     },
-    [onChange],
+    [onChange]
   )
 
   const [rawSearch, setSearch] = useState<string>("")
@@ -170,7 +170,7 @@ export const NetworkOptionsModal: FC<{
       onDismiss={onClose}
       className={classNames(
         "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black",
-        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow",
+        IS_POPUP ? "max-h-full max-w-full" : "rounded-lg border shadow"
       )}
       containerId={containerId ?? (IS_POPUP ? "main" : undefined)}
     >

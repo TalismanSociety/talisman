@@ -19,7 +19,7 @@ export const getNftQuantity = (nft: Nft, owner?: string) => {
 export const getNftCollectionLastUpdatedAt = (
   collection: NftCollection,
   nfts: Nft[],
-  owner?: string,
+  owner?: string
 ): number | null => {
   const timestamps = nfts
     .filter((n) => !owner || !!n.owners[owner])

@@ -3,7 +3,7 @@ export const pbkdf2 = async (
   entropy: Uint8Array,
   salt: Uint8Array,
   iterations: number,
-  outputLenBytes: number,
+  outputLenBytes: number
 ) => {
   // NOTE: react-native-quick-crypto (our `global.crypto` polyfill on Talisman Mobile) doesn't support `crypto.subtle.deriveKey`.
   // But, we can work around this by using `crypto.subtle.deriveBits` and `crypto.subtle.importKey`, which when used together
@@ -12,7 +12,7 @@ export const pbkdf2 = async (
   const derivedBits = await crypto.subtle.deriveBits(
     { name: "PBKDF2", salt, iterations, hash },
     keyMaterial,
-    outputLenBytes * 8,
+    outputLenBytes * 8
   )
   return new Uint8Array(derivedBits)
 }

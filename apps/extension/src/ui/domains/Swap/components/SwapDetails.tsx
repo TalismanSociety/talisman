@@ -62,7 +62,7 @@ const Details = () => {
   useEffect(() => {
     // Reset protocol selection if no valid protocol found in cached quotes
     const isSelectedProtocolAvailable = !cachedQuotes.find(
-      ({ quote }) => quote.state === "hasData" && quote.data?.protocol === selectedProtocol,
+      ({ quote }) => quote.state === "hasData" && quote.data?.protocol === selectedProtocol
     )
     if (isSelectedProtocolAvailable) {
       setSelectedProtocol(null)
@@ -92,7 +92,7 @@ const Details = () => {
       .flatMap((cachedQuote) =>
         cachedQuote.quote?.state === "hasError"
           ? (cachedQuote.quote?.error as any)?.message // eslint-disable-line @typescript-eslint/no-explicit-any
-          : [],
+          : []
       )
       .join("\n")
     return (
@@ -135,7 +135,7 @@ const Details = () => {
           />
         ) : quote.state === "loading" ? (
           <SwapDetailsCardSkeleton key={index} />
-        ) : null,
+        ) : null
       )}
     </div>
   )

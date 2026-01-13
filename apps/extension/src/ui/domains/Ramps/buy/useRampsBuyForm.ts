@@ -85,9 +85,9 @@ export const useRampsBuyForm = (defaults: RampsFormSharedData) => {
   const accounts = useMemo(
     () =>
       allAccounts.filter(
-        (account) => !!network && isAccountCompatibleWithNetwork(network, account),
+        (account) => !!network && isAccountCompatibleWithNetwork(network, account)
       ),
-    [allAccounts, network],
+    [allAccounts, network]
   )
 
   // clear provider choice if the token or currency change

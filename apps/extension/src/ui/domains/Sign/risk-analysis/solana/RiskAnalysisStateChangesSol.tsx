@@ -12,7 +12,7 @@ import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
 import { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (
-  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary,
+  accountSummary: MessageScanResponse.Result.Simulation.AccountSummary
 ) => {
   return (
     accountSummary.account_assets_diff?.map((diff) => {
