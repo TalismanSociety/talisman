@@ -7,14 +7,13 @@ import {
   TrendingUpIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation, useMatch, useNavigate } from "react-router-dom"
-
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 import { usePopupNavOpenClose } from "@ui/hooks/usePopupNavOpenClose"
+import { type FC, type ReactNode, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation, useMatch, useNavigate } from "react-router-dom"
 
 import {
   QuickSettingsModal,
@@ -99,7 +98,7 @@ export const BottomNav = () => {
         <QuickSettingsModal />
         <div
           className={classNames(
-            "border-grey-800 flex h-[5.2rem] w-full items-center justify-between rounded border bg-black/90 px-7 backdrop-blur-[2px]",
+            "flex h-[5.2rem] w-full items-center justify-between rounded border border-grey-800 bg-black/90 px-7 backdrop-blur-[2px]"
           )}
         >
           <NavButton
@@ -157,32 +156,32 @@ const NavButton: FC<{
       type="button"
       className={classNames(
         "group",
-        "text-body-disabled h-20 w-20",
+        "h-20 w-20 text-body-disabled",
         "enabled:hover:text-body-secondary",
         "enabled:focus-visible:border",
         routeMatch && "!text-body",
-        className,
+        className
       )}
       onClick={onClick}
     >
       <div
         className={classNames(
           "flex w-full flex-col items-center justify-center gap-[0.15rem] overflow-visible",
-          "translate-y-4 transition-transform group-hover:translate-y-0",
+          "translate-y-4 transition-transform group-hover:translate-y-0"
         )}
       >
         {withBadge ? (
           <div className="relative size-10 shrink-0">
             <Icon className="size-10" />
-            <div className="bg-primary absolute -right-1 -top-1 size-3 rounded-full"></div>
+            <div className="absolute -top-1 -right-1 size-3 rounded-full bg-primary"></div>
           </div>
         ) : (
           <Icon className="size-10 shrink-0" />
         )}
         <div
           className={classNames(
-            "leading-paragraph text-[1rem]",
-            "text-nowrap opacity-0 transition-opacity group-hover:opacity-100",
+            "text-[1rem] leading-paragraph",
+            "text-nowrap opacity-0 transition-opacity group-hover:opacity-100"
           )}
         >
           {label}

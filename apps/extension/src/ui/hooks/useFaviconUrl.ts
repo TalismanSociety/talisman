@@ -13,7 +13,7 @@ export const useFaviconUrl = (siteUrl: string) => {
         const [tab] = await chrome.tabs.query({ url: `${origin}/*` })
         if (tab?.favIconUrl) setFavIconUrl(tab.favIconUrl)
         else setFavIconUrl(getDuckDuckGoIconUrl(siteUrl))
-      } catch (err) {
+      } catch {
         // this is safe
         setFavIconUrl(getDuckDuckGoIconUrl(siteUrl))
       }

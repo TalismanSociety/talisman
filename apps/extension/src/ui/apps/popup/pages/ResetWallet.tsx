@@ -1,11 +1,10 @@
-import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer, FormFieldInputText } from "talisman-ui"
-
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { type ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer, FormFieldInputText } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupLayout } from "../Layout/PopupLayout"
 
@@ -41,19 +40,19 @@ const ConfirmDrawer = ({
 
   return (
     <Drawer isOpen={isOpen} anchor="bottom">
-      <div className="bg-grey-800 items-center rounded-t-xl p-12 pt-12">
+      <div className="items-center rounded-t-xl bg-grey-800 p-12 pt-12">
         <div className="flex flex-col items-center gap-12 px-12 text-center">
           <div className="text-3xl">
-            <AlertTriangleIcon className="text-brand-orange text-[4.8rem]" />
+            <AlertTriangleIcon className="text-[4.8rem] text-brand-orange" />
           </div>
-          <div className="max-w-[30rem] font-bold leading-[2.2rem] text-white">
+          <div className="max-w-[30rem] font-bold text-white leading-[2.2rem]">
             {t("Are you sure you want to reset your Talisman wallet?")}
           </div>
         </div>
-        <div className="text-body-secondary my-8 text-sm">
+        <div className="my-8 text-body-secondary text-sm">
           <p className="px-4 text-center">
             {t(
-              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key.",
+              "Your current wallet, accounts and assets will be erased from Talisman. You will need to re-import your original account using your recovery (seed) phrase or private key."
             )}
           </p>
           <p className="mt-12 text-center">
@@ -93,7 +92,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
 
   return (
     <PopupLayout>
-      <div className="text-body-secondary flex h-32 items-center justify-center px-12 pr-[16px]">
+      <div className="flex h-32 items-center justify-center px-12 pr-[16px] text-body-secondary">
         <ChevronLeftIcon
           className="flex-shrink cursor-pointer text-lg hover:text-white"
           onClick={closeResetWallet}
@@ -102,17 +101,17 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </div>
       <PopupContent>
         <div className="flex h-full flex-col items-center justify-end gap-16 pb-8">
-          <LockIcon className="text-primary-500 text-[4.8rem]" />
-          <div className="text-lg font-bold">{t("Forgot your password?")}</div>
-          <div className="text-body-secondary space-y-12">
+          <LockIcon className="text-[4.8rem] text-primary-500" />
+          <div className="font-bold text-lg">{t("Forgot your password?")}</div>
+          <div className="space-y-12 text-body-secondary">
             <p className="text-center">
               {t(
-                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords.",
+                "This action will reset your current wallet, accounts and assets. There is no way for us to recover your password as it is only stored on your device. You can also try other passwords."
               )}
             </p>
             <p className="text-center">
               {t(
-                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase.",
+                "If you still want to reset your wallet, you will need to import your original recovery phrase. Proceed only if you have your recovery phrase."
               )}
             </p>
           </div>

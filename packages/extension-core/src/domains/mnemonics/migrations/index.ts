@@ -2,7 +2,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import md5 from "blueimp-md5"
 
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
 import { decryptMnemonic } from "../legacy/helpers"
 import {
@@ -63,11 +63,11 @@ export const migrateSeedStoreToMultiple: Migration = {
 
     const allAccounts = keyring.getAccounts()
     const parentAccount = allAccounts.find(
-      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType),
+      ({ meta: { origin } }) => origin && mnemonicAccountTypes.includes(origin as AccountType)
     )
     const derivedAccounts = allAccounts.filter(
       ({ meta: { parent, origin } }) =>
-        parent === parentAccount?.address && origin === AccountTypes.DERIVED,
+        parent === parentAccount?.address && origin === AccountTypes.DERIVED
     )
     const migrationAccounts = [...derivedAccounts, parentAccount]
 
@@ -88,7 +88,7 @@ export const migrateSeedStoreToMultiple: Migration = {
       if (legacyVCData.cipher !== legacyData.cipher) {
         const { encrypted: vcCipher, hash: vcId } = await getMnemonicHash(
           legacyVCData.cipher,
-          password,
+          password
         )
 
         appStoreVCId = vcId

@@ -1,13 +1,12 @@
 import { hexToU8a } from "@polkadot/util"
-import { Address } from "@talismn/balances"
+import type { Address } from "@talismn/balances"
 import { encodeAddressSs58, encodeAnyAddress } from "@talismn/crypto"
-import { EvmAddress } from "extension-core"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useCoinGeckoTokenRates } from "@ui/hooks/useCoingeckoTokenRates"
 import { useEvmTokenInfo } from "@ui/hooks/useEvmTokenInfo"
 import { useNetworkById, useNetworks, useToken, useTokens } from "@ui/state"
+import type { EvmAddress } from "extension-core"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -43,7 +42,7 @@ const decodeInterior = (interior: string): Interior => {
       return { type: "account" as const, address: encodeAddressSs58(address, prefix) }
     }
     default:
-      throw new Error("Unimplemented prelude " + prelude)
+      throw new Error(`Unimplemented prelude ${prelude}`)
   }
 }
 
@@ -76,7 +75,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       getContractCallArg<bigint>(decodedTx, "amount"),
       getContractCallArg<EvmAddress>(decodedTx, "currency_address"),
     ],
-    [decodedTx],
+    [decodedTx]
   )
 
   const erc20 = useEvmTokenInfo(network?.id, currencyAddress)
@@ -94,7 +93,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       (t) =>
         t.type === "evm-erc20" &&
         t.networkId === network?.id &&
-        t.contractAddress === currencyAddress,
+        t.contractAddress === currencyAddress
     )
 
     if (token) {
@@ -131,7 +130,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
       targetChain && target?.address
         ? encodeAnyAddress(target.address, { ss58Format: targetChain?.prefix })
         : undefined,
-    [target, targetChain],
+    [target, targetChain]
   )
 
   const { data: tokenRates } = useCoinGeckoTokenRates(coingeckoId)

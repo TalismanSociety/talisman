@@ -1,13 +1,9 @@
-import { Address, BalanceFormatter } from "@talismn/balances"
-import { NetworkId } from "@talismn/chaindata-provider"
-import { ArrowRightIcon } from "@talismn/icons"
-import { TokenRates } from "@talismn/token-rates"
-import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { type Address, BalanceFormatter } from "@talismn/balances"
+import type { NetworkId } from "@talismn/chaindata-provider"
+import { ArrowRightIcon } from "@talismn/icons"
+import type { TokenRates } from "@talismn/token-rates"
+import { classNames } from "@talismn/util"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { Fiat } from "@ui/domains/Asset/Fiat"
@@ -15,13 +11,17 @@ import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useNetworkById, useSelectedCurrency } from "@ui/state"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
   const isKnown = useIsKnownAddress(address)
 
   const label = useMemo(
+    // biome-ignore lint/complexity/useOptionalChain: legacy
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
-    [address, isKnown],
+    [address, isKnown]
   )
 
   return (
@@ -43,7 +43,7 @@ const NetworkAndAccount: FC<{ networkId: string; networkName: string; address: s
   <div className="flex w-[150px] flex-col items-center gap-5 overflow-hidden">
     <div className="flex w-full items-center justify-center gap-2">
       <NetworkLogo networkId={networkId} className="!h-9 !w-9 shrink-0" />
-      <div className="text-md text-body overflow-hidden text-ellipsis whitespace-nowrap font-bold">
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap font-bold text-body text-md">
         {networkName}
       </div>
     </div>
@@ -81,7 +81,7 @@ export const SignViewXTokensTransfer: FC<{
 
   const amount = useMemo(
     () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
-    [tokenDecimals, tokenRates, value],
+    [tokenDecimals, tokenRates, value]
   )
 
   const currency = useSelectedCurrency()
@@ -92,8 +92,8 @@ export const SignViewXTokensTransfer: FC<{
         <div>
           <AssetLogo url={tokenLogo} className="h-24 w-24 text-[48px]" />
         </div>
-        <div className="text-body flex-col items-start gap-4">
-          <div className="text-md text-left font-bold">
+        <div className="flex-col items-start gap-4 text-body">
+          <div className="text-left font-bold text-md">
             <Tokens
               amount={amount.tokens}
               decimals={tokenDecimals}
@@ -102,7 +102,7 @@ export const SignViewXTokensTransfer: FC<{
             />
           </div>
           {amount.fiat(currency) && (
-            <div className="text-body-secondary text-left">
+            <div className="text-left text-body-secondary">
               (<Fiat amount={amount} noCountUp />)
             </div>
           )}

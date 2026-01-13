@@ -21,13 +21,13 @@ const filteredChaindataAtom = atom(async (get) => {
 
   const chaindata = await get(chaindataAtom)
   const networks = chaindata.networks.filter(
-    (n) => (enabledNetworkIds?.includes(n.id) || n.isDefault) && (enableTestnets || !n.isTestnet),
+    (n) => (enabledNetworkIds?.includes(n.id) || n.isDefault) && (enableTestnets || !n.isTestnet)
   )
 
   const networkById = keyBy(networks, (n) => n.id)
   const tokens = chaindata.tokens.filter(
     (token) =>
-      (enabledTokenIds?.includes(token.id) || token.isDefault) && networkById[token.networkId],
+      (enabledTokenIds?.includes(token.id) || token.isDefault) && networkById[token.networkId]
   )
 
   return { networks, tokens }

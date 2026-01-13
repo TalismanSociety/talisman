@@ -1,11 +1,7 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { existsSync, readFileSync, writeFileSync } from "fs"
-
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { BALANCE_MODULES } from "@talismn/balances"
 import { ChainConnectorEthStub } from "@talismn/chain-connectors"
-import { EthNetwork, TokenType } from "@talismn/chaindata-provider"
+import type { EthNetwork, TokenType } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export type EthNetworkConfig = Pick<EthNetwork, "id" | "rpcs" | "contracts"> & {
@@ -25,7 +21,7 @@ type TestOptions = {
 
 const DEFAULT_OPTIONS: TestOptions = {
   modules: BALANCE_MODULES.filter((mod) => mod.platform === "ethereum").map(
-    (mod) => mod.type as TokenType,
+    (mod) => mod.type as TokenType
   ),
   fetchBalances: true,
   transfer: true,
@@ -50,7 +46,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
     const connector = new ChainConnectorEthStub(network as unknown as EthNetwork)
 
     for (const mod of BALANCE_MODULES.filter((mod) => mod.platform === "ethereum").filter((mod) =>
-      opts.modules?.includes(mod.type as TokenType),
+      opts.modules?.includes(mod.type as TokenType)
     )) {
       const source = mod.type
       log.log()
@@ -60,6 +56,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
       log.log()
 
       const tokenConfigs =
+        // biome-ignore lint/suspicious/noExplicitAny: kiss
         mod.type === "evm-native" ? [network.nativeCurrency] : (network.tokens[mod.type] as any)
       log.log("Token configs", tokenConfigs)
       log.log()
@@ -68,7 +65,7 @@ export const testNetworkEth = async (network: EthNetworkConfig, options?: TestOp
         networkId,
         tokens: tokenConfigs,
         connector,
-        // @ts-ignore
+        // @ts-expect-error
         cache: cache[mod.type] ?? {},
       })
 

@@ -1,8 +1,7 @@
+import { useNetworkById } from "@ui/state"
 import { useMemo } from "react"
 
-import { useNetworkById } from "@ui/state"
-
-import { UseYieldxyzTransactionProps } from "./types"
+import type { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzTransactionDot } from "./useYieldxyzTransactionDot"
 import { useYieldxyzTransactionEth } from "./useYieldxyzTransactionEth"
 import { useYieldxyzTransactionSol } from "./useYieldxyzTransactionSol"

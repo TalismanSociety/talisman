@@ -1,4 +1,4 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isAccountAddressEthereum, isAccountOwned } from "@talismn/keyring"
 import { parseAbi } from "viem"
 
@@ -33,8 +33,8 @@ export const hasErc721Nft = async ({
         abi: parseAbi(abiErc721),
         functionName: "balanceOf",
         args: [address],
-      }),
-    ),
+      })
+    )
   )
 
   return Object.fromEntries(evmAddresses.map((address, i) => [address, data[i] > 0n]))

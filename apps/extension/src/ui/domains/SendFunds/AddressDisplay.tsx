@@ -1,17 +1,16 @@
-import { Address as TAddress } from "@talismn/balances"
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { Address as TAddress } from "@talismn/balances"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useOnChainId } from "@ui/hooks/useOnChainId"
 import { useAccountByAddress, useAnyNetwork, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
+import { getAccountGenesisHash, getAccountSignetUrl } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -19,7 +18,7 @@ import { AccountTypeIcon } from "../Account/AccountTypeIcon"
 const useBlockExplorerUrl = (
   address: TAddress | null | undefined,
   networkId: NetworkId | null | undefined,
-  shouldFormatAddress = true,
+  shouldFormatAddress = true
 ) => {
   const network = useAnyNetwork(networkId)
   const resolvedAddress = useMemo(() => {
@@ -91,7 +90,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
 
   const text = useMemo(
     () => account?.name ?? (address ? shortenAddress(address, 6, 6) : null),
-    [account?.name, address],
+    [account?.name, address]
   )
 
   const handleCopyAddress = useCallback(() => {
@@ -112,8 +111,8 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
       </TooltipContent>
       <TooltipTrigger
         className={classNames(
-          "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
-          className,
+          "inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base text-body",
+          className
         )}
       >
         <AccountIcon
@@ -121,7 +120,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
           address={resolvedAddress}
           genesisHash={getAccountGenesisHash(account)}
         />
-        <div className="leading-base grow truncate">{text}</div>
+        <div className="grow truncate leading-base">{text}</div>
         <AccountTypeIcon
           type={account?.type}
           className="text-primary"
@@ -135,7 +134,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({ address, networkId, cl
           <button
             onClick={handleCopyAddress}
             type="button"
-            className="text-md text-grey-300 hover:text-white"
+            className="text-grey-300 text-md hover:text-white"
           >
             <CopyIcon />
           </button>

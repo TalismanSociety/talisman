@@ -1,6 +1,6 @@
-import type { SolSerializedWalletAccount } from "extension-core"
 import { Transaction, VersionedTransaction } from "@solana/web3.js"
 import bs58 from "bs58"
+import type { SolSerializedWalletAccount } from "extension-core"
 
 import { TalismanSolWalletAccount } from "./account"
 import { isVersionedTransaction } from "./solana"
@@ -26,7 +26,7 @@ export function arraysEqual<T>(a: Indexed<T>, b: Indexed<T>): boolean {
 }
 
 export const deserializeSolWalletAccount = (
-  account: SolSerializedWalletAccount,
+  account: SolSerializedWalletAccount
 ): TalismanSolWalletAccount => {
   return new TalismanSolWalletAccount({
     address: account.address,
@@ -41,7 +41,7 @@ export const serializeTransaction = (transaction: Transaction | VersionedTransac
     return bs58.encode(transaction.serialize())
   } else {
     return bs58.encode(
-      transaction.serialize({ requireAllSignatures: false, verifySignatures: false }),
+      transaction.serialize({ requireAllSignatures: false, verifySignatures: false })
     )
   }
 }

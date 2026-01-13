@@ -1,9 +1,8 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { FC } from "react"
-
+import type { TokenId } from "@talismn/chaindata-provider"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { FC } from "react"
 
-import { SummaryDisplayMode } from "../../types"
+import type { SummaryDisplayMode } from "../../types"
 
 export const SummaryTokensAndFiat: FC<{
   tokenId: TokenId

@@ -72,7 +72,8 @@ export const runActionOnTrees =
 
     // force compilation error if any action types don't have a case
     const exhaustiveCheck: never = type
-    DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`) // eslint-disable-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
+    DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
     return
   }
 
@@ -175,6 +176,7 @@ const removeFolder = (tree: Tree, { id }: RemoveFolderAction) => {
   if (folder.type !== "folder") return
 
   // insert folder accounts back into tree
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   folder.tree.forEach((account) => addAccount(tree, account.address))
 
   // inform the store that a change was made
@@ -199,7 +201,8 @@ const findBeforeItemIndex = (tree: Tree, beforeItem: MoveBeforeTarget) => {
 
 /** Recursive, removes an account from anywhere in the tree, including inside folders */
 const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undefined => {
-  let account = undefined
+  // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
+  let account
   const removeFromSet = (set: TreeItem[], address: string) => {
     const indexes = set.reduceRight((indexes, item, index) => {
       if (item.type === "account" && isAddressEqual(item.address, address)) {
@@ -209,6 +212,7 @@ const removeAccountFromTree = (tree: Tree, address: string): TreeAccount | undef
       if (item.type === "folder") removeFromSet(item.tree, address)
       return indexes
     }, [] as number[])
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     indexes.forEach((index) => set.splice(index, 1))
   }
 
@@ -227,7 +231,7 @@ export const addAccount = (tree: Tree, address: string) => {
   const accountIsInTree = !!tree.find((item) =>
     item.type === "account"
       ? isAddressEqual(item.address, address)
-      : item.tree.find((account) => isAddressEqual(account.address, address)),
+      : item.tree.find((account) => isAddressEqual(account.address, address))
   )
   if (accountIsInTree) return
 

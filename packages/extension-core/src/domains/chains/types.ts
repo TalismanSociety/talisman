@@ -1,6 +1,6 @@
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 
-import { SignerPayloadGenesisHash } from "../signing/types"
+import type { SignerPayloadGenesisHash } from "../signing/types"
 
 export type RequestChainGenerateQrAddNetworkSpecs = {
   genesisHash: SignerPayloadGenesisHash // ussing the imported type from above enables us to stay up to date with upstream changes

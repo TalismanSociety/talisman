@@ -1,12 +1,11 @@
 import { isTokenNeedExistentialDeposit } from "@talismn/chaindata-provider"
 import { InfoIcon } from "@talismn/icons"
 import { planckToTokens } from "@talismn/util"
+import { useToken } from "@ui/state"
 import { log } from "extension-shared"
-import { FC } from "react"
+import type { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
-
-import { useToken } from "@ui/state"
 
 import { Tokens } from "../../Asset/Tokens"
 import { useSendFunds } from "../useSendFunds"
@@ -61,12 +60,12 @@ export const ForfeitWarningDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
+      <div className="rounded-t-xl bg-black-tertiary p-12 text-center">
         <div>
-          <InfoIcon className="text-primary-500 inline-block text-3xl" />
+          <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
         <div className="mt-10 font-bold">{t("Confirm forfeit")}</div>
-        <div className="text-body-secondary mt-5 text-sm">
+        <div className="mt-5 text-body-secondary text-sm">
           {tokensToBeReaped?.map(({ token, amount }) => (
             <ForfeitDetails key={token.id} tokenId={token.id} planck={amount.planck.toString()} />
           ))}
@@ -75,6 +74,7 @@ export const ForfeitWarningDrawer = ({
               className="text-white underline"
               target="_blank"
               href="https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-"
+              rel="noopener"
             >
               {t("Learn more")}
             </a>

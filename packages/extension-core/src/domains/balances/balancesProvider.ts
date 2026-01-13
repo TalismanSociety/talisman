@@ -18,9 +18,9 @@ const balancesProvider$ = balancesStore$.pipe(
         return provider.storage$
           .pipe(skip(1), debounceTime(200))
           .subscribe((data) => updateBalancesStore(data))
-      }),
+      })
   ),
-  shareReplay(1),
+  shareReplay(1)
 )
 
 export const balancesProvider = {

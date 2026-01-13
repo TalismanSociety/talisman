@@ -1,7 +1,4 @@
 import { bind } from "@react-rxjs/core"
-import { FC, PropsWithChildren, useEffect } from "react"
-import { combineLatest } from "rxjs"
-
 import {
   authorisedSites$,
   preloadBalances$,
@@ -9,6 +6,8 @@ import {
   setPortfolioSelectedAccounts,
   usePortfolioGlobalData,
 } from "@ui/state"
+import { type FC, type PropsWithChildren, useEffect } from "react"
+import { combineLatest } from "rxjs"
 
 import { PortfolioNavigationProvider, usePortfolioNavigation } from "./usePortfolioNavigation"
 

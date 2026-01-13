@@ -1,19 +1,18 @@
-import { TypeRegistry } from "@polkadot/types"
+import type { TypeRegistry } from "@polkadot/types"
 import { u8aToHex, u8aWrapBytes } from "@polkadot/util"
 import { isAddressEqual } from "@talismn/crypto"
+import { useNetworkByGenesisHash } from "@ui/state"
 import { SubstrateApp } from "@zondax/ledger-substrate"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 import {
-  AccountLedgerPolkadot,
+  type AccountLedgerPolkadot,
   isJsonPayload,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
+  type SignerPayloadJSON,
+  type SignerPayloadRaw,
 } from "extension-core"
 import { t } from "i18next"
 import { useCallback, useRef } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useNetworkByGenesisHash } from "@ui/state"
 
 import { LEDGER_HARDENED_OFFSET, LEDGER_SUCCESS_CODE } from "./common"
 import {
@@ -58,21 +57,21 @@ export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
         refIsBusy.current = false
       }
     },
-    [app, chain?.account, closeTransport, ensureTransport, t],
+    [app, chain?.account, closeTransport, ensureTransport, t]
   )
 
   const getAddress = useCallback(
     (accountIndex = 0, addressIndex = 0) => {
       return withLedger((ledger) => getAccountAddress(ledger, accountIndex, addressIndex))
     },
-    [withLedger],
+    [withLedger]
   )
 
   const sign = useCallback(
     (
       payload: SignerPayloadJSON | SignerPayloadRaw,
       account: AccountLedgerPolkadot,
-      registry?: TypeRegistry,
+      registry?: TypeRegistry
     ) => {
       if (!app?.cla) throw new TalismanLedgerError("Unknown", ERROR_LEDGER_NO_APP)
       if (isJsonPayload(payload) && !registry) throw getTalismanLedgerError("Missing registry.")
@@ -80,10 +79,10 @@ export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
       return withLedger((ledger) =>
         isJsonPayload(payload)
           ? signJsonPayload(ledger, app, payload, account, registry!)
-          : signRawPayload(ledger, app, payload, account),
+          : signRawPayload(ledger, app, payload, account)
       )
     },
-    [app, withLedger],
+    [app, withLedger]
   )
 
   return {
@@ -96,7 +95,7 @@ export const useLedgerSubstrateLegacy = (genesis?: `0x${string}` | null) => {
 const getAccountAddress = async (
   ledger: SubstrateApp,
   accountIndex: number,
-  addressIndex: number,
+  addressIndex: number
 ): Promise<{ address: string }> => {
   const change = 0
 
@@ -104,13 +103,13 @@ const getAccountAddress = async (
     LEDGER_HARDENED_OFFSET + accountIndex,
     LEDGER_HARDENED_OFFSET + change,
     LEDGER_HARDENED_OFFSET + addressIndex,
-    false,
+    false
   )
 
   if (!address)
     throw getCustomNativeLedgerError(
       error_message || "Ledger provided an empty address",
-      return_code,
+      return_code
     )
 
   return { address }
@@ -121,13 +120,13 @@ const signJsonPayload = async (
   app: SubstrateAppParams,
   payload: SignerPayloadJSON,
   account: AccountLedgerPolkadot,
-  registry: TypeRegistry,
+  registry: TypeRegistry
 ) => {
   // Legacy dapps don't support the CheckMetadataHash signed extension
   if (payload.signedExtensions.includes("CheckMetadataHash"))
     throw new TalismanLedgerError(
       "GenericAppRequired",
-      "This network requires the Polkadot Generic app",
+      "This network requires the Polkadot Generic app"
     )
 
   await checkAppAndDevice(account, ledger, app)
@@ -155,13 +154,13 @@ const signRawPayload = async (
   ledger: SubstrateApp,
   app: SubstrateAppParams,
   payload: SignerPayloadRaw,
-  account: AccountLedgerPolkadot,
+  account: AccountLedgerPolkadot
 ) => {
   const unsigned = u8aWrapBytes(payload.data)
   if (unsigned.length > 256)
     throw new TalismanLedgerError(
       "InvalidRequest",
-      t("The message is too long to be signed with Ledger."),
+      t("The message is too long to be signed with Ledger.")
     )
 
   await checkAppAndDevice(account, ledger, app)
@@ -171,8 +170,8 @@ const signRawPayload = async (
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(
-        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
-      ),
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry."
+      )
     )
 
   const {
@@ -197,7 +196,7 @@ const getAccountSpecs = (account: AccountLedgerPolkadot) => ({
 const checkAppAndDevice = async (
   account: AccountLedgerPolkadot,
   ledger: SubstrateApp,
-  app: SubstrateAppParams,
+  app: SubstrateAppParams
 ) => {
   if (ledger.cla !== app.cla) throw getOpenLedgerAppError(app.name)
 
@@ -205,7 +204,7 @@ const checkAppAndDevice = async (
   const { address, error_message, return_code } = await ledger.getAddress(
     accountIndex,
     change,
-    addressOffset,
+    addressOffset
   )
 
   if (return_code !== LEDGER_SUCCESS_CODE)
@@ -214,7 +213,7 @@ const checkAppAndDevice = async (
   if (!isAddressEqual(address, account.address))
     throw getTalismanLedgerError(
       t(
-        "Connected Ledger device does not match the selected account. Please connect the correct device and retry.",
-      ),
+        "Connected Ledger device does not match the selected account. Please connect the correct device and retry."
+      )
     )
 }

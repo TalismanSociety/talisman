@@ -1,13 +1,12 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
+import type { Token, TokenId } from "@talismn/chaindata-provider"
 import { PlusIcon } from "@talismn/icons"
-import { TokenRatesList } from "@talismn/token-rates"
+import type { TokenRatesList } from "@talismn/token-rates"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Drawer, useOpenClose } from "talisman-ui"
-
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useNetworkById } from "@ui/state"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Drawer, useOpenClose } from "talisman-ui"
 
 import { RampsTokenPicker } from "./RampsTokenPicker"
 
@@ -32,7 +31,7 @@ export const RampsTokenPickerButton: FC<{
       onSelect(currency)
       close()
     },
-    [close, onSelect],
+    [close, onSelect]
   )
 
   return (
@@ -42,8 +41,8 @@ export const RampsTokenPickerButton: FC<{
         onClick={handleOpen}
         disabled={!tokens}
         className={classNames(
-          "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
-          "enabled:hover:bg-grey-750 disabled:opacity-80 disabled:grayscale",
+          "flex h-full w-[14rem] items-center gap-4 rounded-[12px] border border-grey-750 bg-grey-800 px-4 py-3 focus-visible:border-grey-600",
+          "enabled:hover:bg-grey-750 disabled:opacity-80 disabled:grayscale"
         )}
       >
         {token ? <TokenContent token={token} /> : <EmptyContent />}
@@ -71,12 +70,12 @@ const TokenContent: FC<{ token: Token }> = ({ token }) => {
 
   return (
     <div className="flex items-center gap-4 truncate text-left">
-      <div className="bg-body-disabled size-14 shrink-0 rounded-full">
+      <div className="size-14 shrink-0 rounded-full bg-body-disabled">
         <TokenLogo tokenId={token.id} className="size-14" />
       </div>
       <div className="min-w-0 text-[16px]">
         <div className="text-white">{token.symbol}</div>
-        <div className="text-tiny truncate">{network?.name ?? null}</div>
+        <div className="truncate text-tiny">{network?.name ?? null}</div>
       </div>
     </div>
   )
@@ -88,9 +87,9 @@ const EmptyContent: FC = () => {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
-        <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
+        <PlusIcon className="m-[0.3rem] size-10 text-primary-500" />
       </div>
-      <div className="text-xs text-white">{t("Select token")}</div>
+      <div className="text-white text-xs">{t("Select token")}</div>
     </div>
   )
 }

@@ -11,8 +11,8 @@ export const SwapDetailsError = ({
   const { t } = useTranslation()
 
   return (
-    <div className="border-grey-800 mt-4 flex flex-col items-center justify-center rounded border p-8">
-      <h4 className="text-center text-sm font-bold">{t("Failed to get quote")}</h4>
+    <div className="mt-4 flex flex-col items-center justify-center rounded border border-grey-800 p-8">
+      <h4 className="text-center font-bold text-sm">{t("Failed to get quote")}</h4>
       <p className={classNames("text-center text-[14px] text-gray-400", messageClassName)}>
         {message}
       </p>

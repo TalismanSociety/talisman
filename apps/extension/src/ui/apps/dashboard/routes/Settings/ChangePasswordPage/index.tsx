@@ -1,19 +1,21 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify } from "@talisman/components/Notifications"
 import { InfoIcon } from "@talismn/icons"
-import { ChangePasswordStatusUpdateStatus, ChangePasswordStatusUpdateType } from "extension-core"
+import { api } from "@ui/api"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
+import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import {
+  ChangePasswordStatusUpdateStatus,
+  type ChangePasswordStatusUpdateType,
+} from "extension-core"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
 
 import { ChangePasswordModal } from "./ChangePasswordModal"
 
@@ -51,7 +53,7 @@ const Content = () => {
           return true
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -107,7 +109,7 @@ const Content = () => {
               unsub()
               resolve()
             }
-          },
+          }
         )
       }).catch((err) => {
         switch (err.message) {
@@ -126,7 +128,7 @@ const Content = () => {
         }
       })
     },
-    [setError, t],
+    [setError, t]
   )
 
   const handleBackupClick = useCallback(() => {
@@ -144,17 +146,17 @@ const Content = () => {
   return (
     <>
       <HeaderBlock title={t("Change your password")} />
-      <p className="text-body-secondary my-10">
+      <p className="my-10 text-body-secondary">
         {t(
-          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.",
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
         )}
       </p>
       {!allBackedUp && (
         <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
           <div className="flex items-center justify-between">
-            <InfoIcon className="text-primary mr-10 text-3xl" />
+            <InfoIcon className="mr-10 text-3xl text-primary" />
             {t(
-              "You'll need to confirm your recovery phrase is backed up before you change your password.",
+              "You'll need to confirm your recovery phrase is backed up before you change your password."
             )}
           </div>
           <div className="flex justify-end">
@@ -170,7 +172,6 @@ const Content = () => {
             placeholder={t("Enter Old Password")}
             spellCheck={false}
             autoComplete="off"
-            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             data-lpignore
             type="password"

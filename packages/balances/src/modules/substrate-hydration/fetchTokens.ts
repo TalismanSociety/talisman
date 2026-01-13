@@ -1,16 +1,16 @@
 import {
-  AnyMiniMetadata,
-  SubHydrationToken,
-  subHydrationTokenId,
+  type AnyMiniMetadata,
+  type SubHydrationToken,
   SubHydrationTokenSchema,
+  subHydrationTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy } from "lodash-es"
-import { Binary } from "polkadot-api"
+import type { Binary } from "polkadot-api"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { QueryStorageResult } from "../shared"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import type { QueryStorageResult } from "../shared"
+import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -31,7 +31,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   const assetStorageResults = await connector.send<QueryStorageResult>(
     networkId,
     "state_queryStorageAt",
-    [allAssetStorageKeys],
+    [allAssetStorageKeys]
   )
 
   const assetStorageEntries = assetStorageResults.length ? assetStorageResults[0].changes : []
@@ -77,7 +77,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals: asset.decimals ?? 0,
           existentialDeposit: asset.existentialDeposit,
           isDefault: true,
-        }),
+        })
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {

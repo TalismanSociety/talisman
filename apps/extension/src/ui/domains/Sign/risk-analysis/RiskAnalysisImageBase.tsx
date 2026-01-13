@@ -1,8 +1,8 @@
 import { ImageIcon, QuestionCircleIcon } from "@talismn/icons"
-import { IPFS_GATEWAY } from "extension-shared"
-import React, { CSSProperties, memo, useCallback, useMemo, useState } from "react"
-
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { IPFS_GATEWAY } from "extension-shared"
+import type React from "react"
+import { type CSSProperties, memo, useCallback, useMemo, useState } from "react"
 
 export const RiskAnalysisImageBase: React.FC<{
   src?: string | null | undefined
@@ -52,13 +52,13 @@ export const RiskAnalysisPlaceholderImage: React.FC<{
 }> = ({ width, height, borderRadius, type }) => {
   const style = useMemo<CSSProperties>(
     () => ({ width, height, borderRadius }),
-    [borderRadius, height, width],
+    [borderRadius, height, width]
   )
 
   return (
     <div
       style={style}
-      className="bg-grey-800 text-md text-body-disabled flex flex-col items-center justify-center"
+      className="flex flex-col items-center justify-center bg-grey-800 text-body-disabled text-md"
     >
       {type === "nft" && <ImageIcon />}
       {type === "currency" && <TokenLogo className="h-full w-full" />}

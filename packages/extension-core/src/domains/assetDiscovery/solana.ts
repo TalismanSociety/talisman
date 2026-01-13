@@ -1,5 +1,5 @@
-import { Connection, PublicKey } from "@solana/web3.js"
-import { networkIdFromTokenId, solSplTokenId, TokenId } from "@talismn/chaindata-provider"
+import { type Connection, PublicKey } from "@solana/web3.js"
+import { networkIdFromTokenId, solSplTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { isSolanaAddress } from "@talismn/crypto"
 import { isAccountNotContact, isAccountPlatformSolana } from "@talismn/keyring"
 import { log } from "extension-shared"
@@ -36,7 +36,7 @@ const discoverSolanaAssets = async (addresses?: string[]) => {
   const results = await Promise.all(
     addresses.map((address) => {
       return getSplTokenIdsForOwner(connection, address)
-    }),
+    })
   )
 
   const splTokenIds = uniq(results.flat().filter((id) => knownSplTokenIds.includes(id)))
@@ -62,12 +62,12 @@ const getSplTokenIdsForOwner = async (connection: Connection, address: string) =
       {
         programId: new PublicKey(SPL_PROGRAM_ID), // SPL Token Program ID
       },
-      "confirmed",
+      "confirmed"
     )
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
-  } catch (err) {
+  } catch {
     return []
   }
 }
@@ -77,7 +77,7 @@ export const initialiseSolanaAssetDiscovery = () => {
   isWalletReady$
     .pipe(
       filter((ready) => ready),
-      first(),
+      first()
     )
     .subscribe(() => {
       log.debug("[discoverSolanaAssets] wallet is ready, launching scan")
@@ -94,7 +94,7 @@ export const initialiseSolanaAssetDiscovery = () => {
       map(({ activeNetworks }) => !!activeNetworks["solana-mainnet"]),
       distinctUntilChanged(),
       pairwise(), // Emit pairs of [previous, current] enabled state
-      filter(([previous, current]) => !previous && current), // Only emit when it changes from false to true
+      filter(([previous, current]) => !previous && current) // Only emit when it changes from false to true
     )
     .subscribe(() => {
       log.debug("[discoverSolanaAssets] solana-mainnet enabled, launching scan")
@@ -109,18 +109,18 @@ export const initialiseSolanaAssetDiscovery = () => {
         accounts
           .filter(isAccountNotContact)
           .filter(isAccountPlatformSolana)
-          .map((acc) => acc.address),
+          .map((acc) => acc.address)
       ),
       distinctUntilChanged<string[]>(isEqual),
       pairwise(), // Emit pairs of [previous, current] solana addresses
       filter(([previous, current]) => previous.length < current.length),
       map(([previous, current]) => current.filter((addr) => !previous.includes(addr))),
-      filter((newAddresses) => !!newAddresses.length),
+      filter((newAddresses) => !!newAddresses.length)
     )
     .subscribe((newSolanaAddresses) => {
       log.debug(
         "[discoverSolanaAssets] %s new solana accounts found, launching scan",
-        newSolanaAddresses.length,
+        newSolanaAddresses.length
       )
       discoverSolanaAssets(newSolanaAddresses)
     })
@@ -136,14 +136,14 @@ export const initialiseSolanaAssetDiscovery = () => {
         accounts
           .filter(isAccountNotContact)
           .filter(isAccountPlatformSolana)
-          .map((acc) => acc.address),
+          .map((acc) => acc.address)
       ),
       switchMap((addresses) =>
         combineLatest([...addresses.map(balancesProvider.getDetectedTokensId$)]).pipe(
-          map((allTokenIds) => uniq(allTokenIds.flat()).sort()),
-        ),
+          map((allTokenIds) => uniq(allTokenIds.flat()).sort())
+        )
       ),
-      distinctUntilChanged<TokenId[]>(isEqual),
+      distinctUntilChanged<TokenId[]>(isEqual)
     )
     .subscribe(async (tokenIds: TokenId[]) => {
       log.debug("[discoverSolanaAssets] detectedTokens$")

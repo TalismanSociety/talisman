@@ -1,5 +1,5 @@
 import { isNotNil } from "@talismn/util"
-import { Nft, NftCollection } from "extension-core"
+import type { Nft, NftCollection } from "extension-core"
 
 export const getPortfolioNftCollectionPreviewUrl = (collection: NftCollection, nfts: Nft[]) => {
   const collectionNfts = nfts.filter((nft) => nft.collectionId === collection.id)
@@ -19,7 +19,7 @@ export const getNftQuantity = (nft: Nft, owner?: string) => {
 export const getNftCollectionLastUpdatedAt = (
   collection: NftCollection,
   nfts: Nft[],
-  owner?: string,
+  owner?: string
 ): number | null => {
   const timestamps = nfts
     .filter((n) => !owner || !!n.owners[owner])

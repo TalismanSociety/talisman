@@ -1,9 +1,8 @@
-import { FC, PropsWithChildren, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer } from "talisman-ui"
-
 import { STAKING_MODAL_CONTENT_CONTAINER_ID } from "@ui/domains/Staking/shared/ModalContent"
 import { useAppState } from "@ui/state"
+import { type FC, type PropsWithChildren, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, Drawer } from "talisman-ui"
 
 import { useBittensorBondWizard } from "../../hooks/useBittensorBondWizard"
 
@@ -21,8 +20,8 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} containerId={STAKING_MODAL_CONTENT_CONTAINER_ID}>
-      <div className="bg-grey-850 flex w-full flex-col items-center gap-8 rounded-t-xl p-12">
-        <div className="text-body font-bold">{t("Subnet staking warning")}</div>
+      <div className="flex w-full flex-col items-center gap-8 rounded-t-xl bg-grey-850 p-12">
+        <div className="font-bold text-body">{t("Subnet staking warning")}</div>
         <p className="text-body-secondary text-sm">
           <Trans
             t={t}
@@ -32,7 +31,7 @@ export const BittensorWarningDrawer = ({ setHasAckWarning }: BittensorWarningDra
             }}
           />
         </p>
-        <div className="text-body-secondary w-full text-sm">
+        <div className="w-full text-body-secondary text-sm">
           <Checkbox onChange={(e) => setDontShowThisAgain(e.target.checked)}>
             {t("Don't show this again")}
           </Checkbox>

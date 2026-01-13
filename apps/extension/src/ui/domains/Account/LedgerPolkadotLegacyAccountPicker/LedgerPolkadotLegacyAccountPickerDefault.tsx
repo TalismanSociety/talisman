@@ -1,19 +1,21 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil, validateHexString } from "@talismn/util"
-import { Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useActiveNetworksState, useNetworkById } from "@ui/state"
+import { type Account, getAccountGenesisHash, isNetworkActive } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
-import { LedgerPolkadotAccountPickerDef, LedgerPolkadotLegacyAccountPickerProps } from "./types"
+import type { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import type {
+  LedgerPolkadotAccountPickerDef,
+  LedgerPolkadotLegacyAccountPickerProps,
+} from "./types"
 
 export const LedgerPolkadotLegacyAccountPickerDefault: FC<
   LedgerPolkadotLegacyAccountPickerProps
@@ -25,7 +27,7 @@ export const LedgerPolkadotLegacyAccountPickerDefault: FC<
     chainId,
     selectedAccounts,
     pageIndex,
-    itemsPerPage,
+    itemsPerPage
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -43,7 +45,7 @@ export const LedgerPolkadotLegacyAccountPickerDefault: FC<
             addressOffset,
             curve: "ed25519",
             genesisHash: validateHexString(genesisHash as string),
-          }),
+          })
     )
   }, [])
 
@@ -78,7 +80,7 @@ const useLedgerChainAccounts = (
   chainId: string,
   selectedAccounts: LedgerAccountDefSubstrate[],
   pageIndex: number,
-  itemsPerPage: number,
+  itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -86,7 +88,7 @@ const useLedgerChainAccounts = (
   const activeChains = useActiveNetworksState()
   const withBalances = useMemo(
     () => !chain?.isTestnet && !!chain && isNetworkActive(chain, activeChains),
-    [chain, activeChains],
+    [chain, activeChains]
   )
 
   const { getAddress, app } = useLedgerSubstrateLegacy(chain?.genesisHash)
@@ -104,6 +106,7 @@ const useLedgerChainAccounts = (
 
   // derivation path => address cache, used when going back to previous page
   const refAddressCache = useRef<Record<string, { address: string }>>({})
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     refAddressCache.current = {} // reset if app changes
   }, [app])
@@ -176,7 +179,7 @@ const useLedgerChainAccounts = (
         refIsBusy.current = false
       }
     },
-    [app, chain, getAddress, itemsPerPage, t],
+    [app, chain, getAddress, itemsPerPage, t]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -187,10 +190,10 @@ const useLedgerChainAccounts = (
             (acc): Account => ({
               ...acc,
               createdAt: 0,
-            }),
+            })
           )
         : [],
-    [withBalances, itemsPerPage, ledgerAccounts],
+    [withBalances, itemsPerPage, ledgerAccounts]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -201,12 +204,11 @@ const useLedgerChainAccounts = (
 
         const existingAccount = walletAccounts?.find(
           (wa) =>
-            isAddressEqual(wa.address, acc.address) &&
-            acc.genesisHash === getAccountGenesisHash(wa),
+            isAddressEqual(wa.address, acc.address) && acc.genesisHash === getAccountGenesisHash(wa)
         )
 
         const accountBalances = balances.balances.find(
-          (b) => isAddressEqual(b.address, acc.address) && b.networkId === chain?.id,
+          (b) => isAddressEqual(b.address, acc.address) && b.networkId === chain?.id
         )
 
         const isBalanceLoading =
@@ -231,7 +233,7 @@ const useLedgerChainAccounts = (
       ledgerAccounts,
       selectedAccounts,
       walletAccounts,
-    ],
+    ]
   )
 
   useEffect(() => {

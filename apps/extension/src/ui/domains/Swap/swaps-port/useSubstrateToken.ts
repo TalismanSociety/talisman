@@ -1,8 +1,7 @@
+import { useNetworkById } from "@ui/state"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useEffect, useState } from "react"
-
-import { useNetworkById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 
@@ -59,6 +58,7 @@ export const useSubstrateToken = (props?: UseSubstrateTokenProps) => {
     return () => abortController.abort()
   }, [apiLoadable, chain, props, token])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!token) return
     return () => setToken(null)

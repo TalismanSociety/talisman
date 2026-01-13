@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 
 import { fetchTaostats } from "./fetchTaostats"
-import { SubnetApiResponse } from "./types"
+import type { SubnetApiResponse } from "./types"
 
 export function useGetInfiniteSubnetPools() {
   return useInfiniteQuery({

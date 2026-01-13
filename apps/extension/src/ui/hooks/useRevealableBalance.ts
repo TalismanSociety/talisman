@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-
 import { useSettingValue } from "@ui/state"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) => {
   // keeping noCountUp param in state because we do not want it to change to true after component is mounted

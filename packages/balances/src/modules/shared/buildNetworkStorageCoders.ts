@@ -1,14 +1,14 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import {
   decAnyMetadata,
   getDynamicBuilder,
   getLookupFn,
-  ScaleStorageCoder,
+  type ScaleStorageCoder,
   unifyMetadata,
 } from "@talismn/scale"
 
 import log from "../../log"
-import { MiniMetadata } from "../../types"
+import type { MiniMetadata } from "../../types"
 
 type NetworkCoders = { [key: string]: [string, string] }
 
@@ -19,7 +19,7 @@ type NetworkStorageCoders<TCoders extends NetworkCoders> = {
 export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [string, string] }>(
   chainId: DotNetworkId,
   miniMetadata: MiniMetadata,
-  coders: TCoders,
+  coders: TCoders
 ): NetworkStorageCoders<TCoders> | null => {
   if (!miniMetadata.data) return null
 
@@ -42,12 +42,12 @@ export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [stri
           } catch (cause) {
             log.trace(
               `Failed to build SCALE coder for chain ${chainId} (${module}::${method})`,
-              cause,
+              cause
             )
             return []
           }
-        },
-      ),
+        }
+      )
     ) as {
       [Property in keyof TCoders]: ReturnType<(typeof scaleBuilder)["buildStorage"]> | undefined
     }
@@ -56,7 +56,7 @@ export const buildNetworkStorageCoders = <TCoders extends { [key: string]: [stri
   } catch (cause) {
     log.error(
       `Failed to build SCALE coders for chain ${chainId} (${JSON.stringify(coders)})`,
-      cause,
+      cause
     )
   }
 

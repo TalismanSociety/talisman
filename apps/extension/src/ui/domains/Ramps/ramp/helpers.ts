@@ -5,7 +5,7 @@ export const getRampBuyUrl = async (
   amount: number,
   cryptoAssetSymbol: string,
   address: string,
-  countryCode: string,
+  countryCode: string
 ) => {
   // https://docs.ramp.network/configuration
   const params = new URLSearchParams({
@@ -20,7 +20,7 @@ export const getRampBuyUrl = async (
   })
 
   const response = await fetch(
-    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`,
+    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`
   )
   if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
 
@@ -35,7 +35,7 @@ export const getRampSellUrl = async (
   plancks: string | bigint,
   address: string,
   currencyCode: string,
-  countryCode: string,
+  countryCode: string
 ) => {
   const params = new URLSearchParams({
     defaultFlow: "OFFRAMP",
@@ -49,7 +49,7 @@ export const getRampSellUrl = async (
   })
 
   const response = await fetch(
-    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`,
+    `${RAMPS_RAMP_API_URL}/talisman/getSignedBuySellUrl?${params.toString()}`
   )
   if (!response.ok) throw new Error(`Failed to generate Ramp URL`)
 

@@ -1,17 +1,16 @@
+import { OptionSwitch } from "@talisman/components/OptionSwitch"
 import { XIcon } from "@talismn/icons"
-import { FC, useCallback, useState } from "react"
+import { useSelectedCurrency } from "@ui/state"
+import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { IconButton } from "talisman-ui"
-
-import { OptionSwitch } from "@talisman/components/OptionSwitch"
-import { useSelectedCurrency } from "@ui/state"
 
 import { RampsBuyForm } from "./buy/RampsBuyForm"
 import { useRampsBuyTokens } from "./buy/useRampsBuyTokens"
 import { RampsSellForm } from "./sell/RampsSellForm"
 import { useRampsSellTokens } from "./sell/useRampsSellTokens"
 import { getRampsCurrency } from "./shared/currencies"
-import { RampsFormSharedData } from "./shared/types"
+import type { RampsFormSharedData } from "./shared/types"
 import { useRampsModal } from "./useRampsModal"
 
 type FormMode = "buy" | "sell"
@@ -84,7 +83,7 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
       // without this check we run into infinite loop
       if (value !== mode) onChange(value)
     },
-    [mode, onChange],
+    [mode, onChange]
   )
 
   return (
@@ -93,7 +92,7 @@ const FormModeSwitch: FC<{ mode: FormMode; onChange: (mode: FormMode) => void }>
         ["buy", t("Buy")],
         ["sell", t("Sell")],
       ]}
-      className="bg-[#464646] text-xs text-white [&>div]:h-full"
+      className="bg-[#464646] text-white text-xs [&>div]:h-full"
       defaultOption={mode}
       onChange={handleChange}
     />

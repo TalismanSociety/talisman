@@ -1,10 +1,3 @@
-import { formatDuration, intervalToDuration } from "date-fns"
-import { TimePeriodDto } from "extension-core"
-import { isEqual } from "lodash-es"
-import { useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, WizardModalDialog } from "talisman-ui"
-
 import { FiatFromUsd } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { AccountDisplay } from "@ui/domains/Earn/shared/AccountDisplay"
@@ -13,6 +6,12 @@ import { YieldxyzProviderDisplay } from "@ui/domains/Earn/yieldxyz/components/Yi
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { NetworkName } from "@ui/domains/Networks/NetworkName"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
+import type { TimePeriodDto } from "extension-core"
+import { isEqual } from "lodash-es"
+import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, WizardModalDialog } from "talisman-ui"
 
 import { FormFieldSet, FormFieldSetRow } from "../../../shared/FormFieldSet"
 import { YieldxyzProductTitleDisplay } from "../../components/YieldxyzProductTitleDisplay"
@@ -161,7 +160,7 @@ const NetworkDisplay = () => {
   if (!position) return null
 
   return (
-    <div className="text-body flex w-full items-center gap-2 overflow-hidden">
+    <div className="flex w-full items-center gap-2 overflow-hidden text-body">
       <NetworkLogo className="size-8" networkId={position.networkId} />
       <NetworkName className="truncate" networkId={position.networkId} />
     </div>

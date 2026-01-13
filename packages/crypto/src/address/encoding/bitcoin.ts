@@ -40,7 +40,7 @@ export function isBase58CheckAddress(address: string) {
 export function fromBech32m(address: string) {
   const result = bech32m.decode(address)
   const version = result.words[0]
-  if (version === 0) throw new TypeError(address + " uses wrong encoding")
+  if (version === 0) throw new TypeError(`${address} uses wrong encoding`)
   const data = bech32m.fromWords(result.words.slice(1))
   return {
     version,
@@ -58,7 +58,7 @@ export function fromBech32m(address: string) {
 export function fromBech32(address: string) {
   const result = bech32.decode(address)
   const version = result.words[0]
-  if (version !== 0) throw new TypeError(address + " uses wrong encoding")
+  if (version !== 0) throw new TypeError(`${address} uses wrong encoding`)
   const data = bech32.fromWords(result.words.slice(1))
   return {
     version,
@@ -76,8 +76,8 @@ export function fromBech32(address: string) {
  */
 export function fromBase58Check(address: string) {
   const payload = bs58check.decode(address)
-  if (payload.length < 21) throw new TypeError(address + " is too short")
-  if (payload.length > 21) throw new TypeError(address + " is too long")
+  if (payload.length < 21) throw new TypeError(`${address} is too short`)
+  if (payload.length > 21) throw new TypeError(`${address} is too long`)
   function readUInt8(buffer: Uint8Array, offset: number) {
     if (offset + 1 > buffer.length) {
       throw new Error("Offset is outside the bounds of Uint8Array")

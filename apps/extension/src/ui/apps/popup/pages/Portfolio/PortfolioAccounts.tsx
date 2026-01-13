@@ -1,5 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { bind } from "@react-rxjs/core"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -9,26 +11,8 @@ import {
   SettingsIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import {
-  Account,
-  AccountsCatalogTree,
-  AccountType,
-  getAccountGenesisHash,
-  getAccountSignetUrl,
-  isAccountPortfolio,
-  TreeFolder,
-  TreeItem,
-} from "extension-core"
-import { FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
-import { BehaviorSubject } from "rxjs"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { SearchInput } from "@talisman/components/SearchInput"
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { AllAccountsHeader } from "@ui/apps/popup/components/AllAccountsHeader"
 import { AccountFolderIcon } from "@ui/domains/Account/AccountFolderIcon"
 import { AccountIconCopyAddressButton } from "@ui/domains/Account/AccountIconCopyAddressButton"
@@ -43,6 +27,21 @@ import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNaviga
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useBalances } from "@ui/state"
+import {
+  type Account,
+  type AccountsCatalogTree,
+  type AccountType,
+  getAccountGenesisHash,
+  getAccountSignetUrl,
+  isAccountPortfolio,
+  type TreeFolder,
+  type TreeItem,
+} from "extension-core"
+import { type FC, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import { BehaviorSubject } from "rxjs"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AuthorisedSiteToolbar } from "../../components/AuthorisedSiteToolbar"
 import { PopupHomeBanners } from "../../components/banners/PopupHomeBanners"
@@ -99,7 +98,7 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
       type="button"
       tabIndex={0}
       className={classNames(
-        "text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white",
+        "flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm bg-black-secondary px-6 text-body-secondary hover:bg-grey-800 hover:text-white"
       )}
       onClick={handleClick}
     >
@@ -107,10 +106,10 @@ const FolderButton: FC<{ option: FolderAccountOption }> = ({ option }) => {
         <AccountFolderIcon />
       </div>
       <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
-        <div className="text-body flex w-full items-center gap-3 text-base">
+        <div className="flex w-full items-center gap-3 text-base text-body">
           <div className="truncate">{option.name}</div>
         </div>
-        <div className="text-body-secondary flex w-full truncate text-left text-sm">
+        <div className="flex w-full truncate text-left text-body-secondary text-sm">
           <Fiat amount={option.total} isBalance />
         </div>
       </div>
@@ -135,14 +134,14 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
     <div
       className={classNames(
         "group",
-        "bg-black-secondary hover:bg-grey-800 relative h-[5.9rem] w-full rounded-sm",
+        "relative h-[5.9rem] w-full rounded-sm bg-black-secondary hover:bg-grey-800"
       )}
     >
       <button
         type="button"
         tabIndex={0}
         className={classNames(
-          "text-body-secondary flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white",
+          "flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 text-body-secondary hover:text-white"
         )}
         onClick={handleClick}
       >
@@ -150,7 +149,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
           <div className="size-[3.2rem]"></div>
         </div>
         <div className="flex grow flex-col items-start justify-center gap-1 overflow-hidden">
-          <div className="text-body flex w-full items-center gap-3 text-base">
+          <div className="flex w-full items-center gap-3 text-base text-body">
             <div className="truncate">{option.name}</div>
             <AccountTypeIcon
               className="text-primary"
@@ -158,7 +157,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
               signetUrl={option.signetUrl}
             />
           </div>
-          <div className="text-body-secondary flex w-full truncate text-left text-sm">
+          <div className="flex w-full truncate text-left text-body-secondary text-sm">
             <Fiat amount={option.total} isBalance className="group-hover:hidden" />
             <Address
               className="hidden truncate group-hover:block"
@@ -176,7 +175,7 @@ const AccountButton: FC<{ option: AccountAccountOption }> = ({ option }) => {
         </div>
       </button>
       {/* Absolute positioning based on parent, to prevent a "button inside a button" situation */}
-      <div className="absolute left-6 top-0 flex h-[5.9rem] flex-col justify-center">
+      <div className="absolute top-0 left-6 flex h-[5.9rem] flex-col justify-center">
         <div className="relative size-[3.2rem] text-xl">
           <AccountIconCopyAddressButton address={option.address} genesisHash={option.genesisHash} />
         </div>
@@ -223,8 +222,8 @@ const AccountsToolbar = () => {
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.2rem] w-full border border-field text-sm !px-4",
-            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+            "!bg-field !px-4 h-[3.2rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
           )}
           placeholder={t("Search account or folder")}
           onChange={setPortfolioAccountsSearch}
@@ -267,7 +266,7 @@ const AccountsList = ({ className, options }: { className?: string; options: Acc
           <FolderButton key={option.id} option={option} />
         ) : (
           <AccountButton key={`account-${option.address}`} option={option} />
-        ),
+        )
       )}
     </div>
   )
@@ -308,7 +307,7 @@ const Accounts = ({
       {hasPortfolioOptions && <AccountsList options={portfolioOptions} />}
 
       {hasWatchedOptions && (
-        <div className={classNames("text-body-secondary flex items-center gap-2 font-bold")}>
+        <div className={classNames("flex items-center gap-2 font-bold text-body-secondary")}>
           <EyeIcon />
           <div>{t("Followed only")}</div>
         </div>
@@ -316,7 +315,7 @@ const Accounts = ({
       {hasWatchedOptions && <AccountsList options={watchedOptions} />}
 
       {hasAnyAccount && !portfolioOptions.length && !watchedOptions.length && (
-        <div className="bg-grey-900 text-body-disabled flex h-[10rem] items-center justify-center rounded-sm text-xs opacity-50">
+        <div className="flex h-[10rem] items-center justify-center rounded-sm bg-grey-900 text-body-disabled text-xs opacity-50">
           {t("No accounts found")}
         </div>
       )}
@@ -337,7 +336,7 @@ const FolderHeader = ({ folder, folderTotal }: { folder: TreeFolder; folderTotal
       </div>
       <div className="flex grow flex-col gap-1 overflow-hidden pl-2 text-sm">
         <div className="flex items-center gap-3">
-          <div className="text-body-secondary truncate">{folder.name}</div>
+          <div className="truncate text-body-secondary">{folder.name}</div>
         </div>
         <div className="truncate">
           <Fiat amount={folderTotal} isBalance />
@@ -403,7 +402,7 @@ export const PortfolioAccounts = () => {
               name: item.name,
               total: item.tree.reduce(
                 (sum, account) => sum + (balanceTotals[account.address] ?? 0),
-                0,
+                0
               ),
               addresses: item.tree.map((account) => account.address),
               searchContent: item.tree
@@ -428,12 +427,12 @@ export const PortfolioAccounts = () => {
     (option: AccountOption): boolean => {
       return !search || option.searchContent.includes(ls)
     },
-    [ls, search],
+    [ls, search]
   )
 
   const [portfolioOptions, watchedOptions] = useMemo(
     () => [allPortfolioOptions.filter(searchFilter), allWatchedOptions.filter(searchFilter)],
-    [allPortfolioOptions, allWatchedOptions, searchFilter],
+    [allPortfolioOptions, allWatchedOptions, searchFilter]
   )
 
   const folderTotal = useMemo(
@@ -441,7 +440,7 @@ export const PortfolioAccounts = () => {
       folder
         ? folder.tree.reduce((sum, account) => sum + (balanceTotals[account.address] ?? 0), 0)
         : undefined,
-    [balanceTotals, folder],
+    [balanceTotals, folder]
   )
 
   useEffect(() => {

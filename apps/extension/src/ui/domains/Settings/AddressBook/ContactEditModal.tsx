@@ -1,10 +1,16 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { CopyIcon } from "@talismn/icons"
-import { HexString } from "@talismn/util"
+import type { HexString } from "@talismn/util"
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useNetworks } from "@ui/state"
 import { isAccountAddressSs58, isAddressCompatibleWithNetwork } from "extension-core"
 import { keyBy } from "lodash-es"
-import { FC, useCallback, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import {
@@ -17,15 +23,8 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useNetworks } from "@ui/state"
-
 import { ContactNetworkPickerButton } from "./ContactNetworkModal"
-import { ExistingContactModalProps } from "./types"
+import type { ExistingContactModalProps } from "./types"
 
 type FormValues = {
   name: string
@@ -72,7 +71,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
   const [compatibleNetworks, compatibleNetworksById, compatibleNetworksByGenesisHash] =
     useMemo(() => {
       const arrResult = dotNetworks.filter((n) =>
-        isAddressCompatibleWithNetwork(n, contact.address),
+        isAddressCompatibleWithNetwork(n, contact.address)
       )
       return [arrResult, keyBy(arrResult, (n) => n.id), keyBy(arrResult, (n) => n.genesisHash)]
     }, [dotNetworks, contact.address])
@@ -98,7 +97,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         setError("name", error as Error)
       }
     },
-    [close, contact, setError],
+    [close, contact, setError]
   )
 
   const handleNetworkChange = useCallback(
@@ -112,7 +111,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         shouldValidate: true,
       })
     },
-    [compatibleNetworksById, setValue],
+    [compatibleNetworksById, setValue]
   )
 
   const address = useMemo(() => {

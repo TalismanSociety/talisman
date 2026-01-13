@@ -1,11 +1,18 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { notify } from "@talisman/components/Notifications"
 import {
   getAccountPlatformFromAddress,
   isAddressEqual,
   isAddressValid,
   isSs58Address,
 } from "@talismn/crypto"
-import { HexString } from "@talismn/util"
+import type { HexString } from "@talismn/util"
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useResolveNsName } from "@ui/hooks/useResolveNsName"
+import { useAccounts } from "@ui/state"
 import { keyBy } from "lodash-es"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
@@ -13,17 +20,9 @@ import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
 
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { AddressFieldNsBadge } from "@ui/domains/Account/AddressFieldNsBadge"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useResolveNsName } from "@ui/hooks/useResolveNsName"
-import { useAccounts } from "@ui/state"
-
 import { ContactNetworkPickerButton } from "./ContactNetworkModal"
 import { useChainsFilteredByAddressPrefix } from "./hooks"
-import { ContactModalProps } from "./types"
+import type { ContactModalProps } from "./types"
 
 type FormValues = {
   name: string
@@ -81,7 +80,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           }),
         genesisHash: yup.mixed<HexString>(),
       }),
-    [accounts, t],
+    [accounts, t]
   )
 
   const {
@@ -105,6 +104,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const { searchAddress, address, genesisHash } = watch()
   const isAddressSs58 = useMemo(() => isSs58Address(address), [address])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // reset genesisHash if address changes
     setValue("genesisHash", undefined, {
@@ -139,7 +139,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const compatibleNetworks = useChainsFilteredByAddressPrefix(address)
   const [compatibleNetworksById, compatibleNetworksByGenesisHash] = useMemo(
     () => [keyBy(compatibleNetworks, (n) => n.id), keyBy(compatibleNetworks, (n) => n.genesisHash)],
-    [compatibleNetworks],
+    [compatibleNetworks]
   )
 
   const selectedNetworkId = useMemo(() => {
@@ -158,7 +158,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         shouldValidate: true,
       })
     },
-    [compatibleNetworksById, setValue],
+    [compatibleNetworksById, setValue]
   )
 
   const submit = useCallback(
@@ -172,12 +172,12 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             address,
             genesisHash,
           },
-        ]),
-          sendAnalyticsEvent({
-            ...ANALYTICS_PAGE,
-            name: "Interact",
-            action: "Create address book contact",
-          })
+        ])
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Interact",
+          action: "Create address book contact",
+        })
         notify({
           type: "success",
           title: t("New contact added"),
@@ -188,7 +188,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
         setError("address", { message: (error as Error).message }, { shouldFocus: true })
       }
     },
-    [close, setError, t],
+    [close, setError, t]
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)

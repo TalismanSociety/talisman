@@ -1,10 +1,10 @@
-import { XcmVersionedAssets } from "@polkadot-api/descriptors"
-import { DotNetwork, subAssetTokenId, TokenId } from "@talismn/chaindata-provider"
+import type { XcmVersionedAssets } from "@polkadot-api/descriptors"
+import { type DotNetwork, subAssetTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
 export const getMultiAssetTokenId = (
   assets: XcmVersionedAssets,
-  chain: DotNetwork,
+  chain: DotNetwork
 ): { tokenId: TokenId; value: bigint } => {
   if (assets.type === "V3") {
     // our view only support displaying one asset

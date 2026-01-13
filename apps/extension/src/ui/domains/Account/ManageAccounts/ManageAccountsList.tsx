@@ -1,22 +1,20 @@
 import {
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   DragOverlay,
-  DragStartEvent,
+  type DragStartEvent,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { Account, AccountsCatalogTree } from "extension-core"
-import { CSSProperties, FC, useCallback, useEffect, useMemo, useState } from "react"
-import { createPortal } from "react-dom"
-import { useTranslation } from "react-i18next"
-
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
-
-import type { UiTree, UiTreePosition } from "./types"
+import type { Account, AccountsCatalogTree } from "extension-core"
+import { type CSSProperties, type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
+import { useTranslation } from "react-i18next"
 import { KeyboardSensor, MouseSensor } from "./DragAndDrop"
 import { TreeItem, TreeItems } from "./TreeItems"
+import type { UiTree, UiTreePosition } from "./types"
 import { getTreeItemsMap, moveTreeItem, uiTreeToDataTree } from "./util"
 
 const DRAGGED_OVERLAY_STYLE: CSSProperties = {
@@ -43,12 +41,12 @@ export const ManageAccountsList: FC<{
 
   const draggedItem = useMemo(
     () => (draggedItemId ? itemsMap[draggedItemId] : null),
-    [draggedItemId, itemsMap],
+    [draggedItemId, itemsMap]
   )
 
   const isDraggedItemInFolder = useMemo(
     () => !!draggedItem && !items.some((i) => i.id === draggedItem.id),
-    [draggedItem, items],
+    [draggedItem, items]
   )
 
   const isDraggingFolder = useMemo(() => draggedItem?.type === "folder", [draggedItem?.type])
@@ -67,7 +65,7 @@ export const ManageAccountsList: FC<{
           const newItems = moveTreeItem(
             items,
             active.id as string,
-            over.data.current as UiTreePosition,
+            over.data.current as UiTreePosition
           )
           // asynchronously update backend
           await api.accountsCatalogRunActions([
@@ -75,7 +73,7 @@ export const ManageAccountsList: FC<{
           ])
 
           setItems(newItems)
-        } catch (err) {
+        } catch {
           notify({
             type: "error",
             title: t("Error"),
@@ -86,7 +84,7 @@ export const ManageAccountsList: FC<{
 
       return setDraggedItemId(null)
     },
-    [items, t, treeName],
+    [items, t, treeName]
   )
 
   return (
@@ -114,12 +112,12 @@ export const ManageAccountsList: FC<{
                   balanceTotalPerAccount={balanceTotalPerAccount}
                 />
               </DragOverlay>,
-              document.getElementById("main") ?? document.body,
+              document.getElementById("main") ?? document.body
             )
           : null}
       </DndContext>
       {!items.filter((i) => i.isVisible).length && (
-        <div className="bg-grey-850 text-body-disabled flex h-40 items-center justify-center rounded text-sm">
+        <div className="flex h-40 items-center justify-center rounded bg-grey-850 text-body-disabled text-sm">
           {t("No accounts found")}
         </div>
       )}

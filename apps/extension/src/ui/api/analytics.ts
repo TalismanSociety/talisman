@@ -1,4 +1,4 @@
-import { PostHogCaptureProperties } from "extension-core"
+import type { PostHogCaptureProperties } from "extension-core"
 
 import { api } from "./api"
 

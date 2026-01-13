@@ -1,4 +1,4 @@
-import { CSSProperties, useMemo } from "react"
+import { type CSSProperties, useMemo } from "react"
 
 import { useOnboard } from "../context"
 
@@ -23,12 +23,12 @@ export const OnboardBackground = () => {
       // must reach opacity 0 at stage 3 (account creation UI is meant for black bg)
       opacity: Number(BASE_STYLE.opacity ?? 1) * getStageOpacity(stage),
     }),
-    [stage],
+    [stage]
   )
 
   return (
     <div
-      className="fixed left-0 top-0 z-0 h-lvh w-lvw transition-opacity duration-[1s] ease-linear"
+      className="fixed top-0 left-0 z-0 h-lvh w-lvw transition-opacity duration-[1s] ease-linear"
       style={style}
     ></div>
   )

@@ -1,9 +1,9 @@
-import { parseMetadataRpc, UnifiedMetadata } from "@talismn/scale"
+import { parseMetadataRpc, type UnifiedMetadata } from "@talismn/scale"
 
 export const hasStorageItem = (
   metadata: UnifiedMetadata,
   palletName: string,
-  itemName: string,
+  itemName: string
 ): boolean => {
   const pallet = metadata.pallets.find((p) => p.name === palletName)
   if (!pallet || !pallet.storage) return false
@@ -13,7 +13,7 @@ export const hasStorageItem = (
 export const hasStorageItems = (
   metadata: UnifiedMetadata,
   palletName: string,
-  itemNames: string[],
+  itemNames: string[]
 ): boolean => {
   const pallet = metadata.pallets.find((p) => p.name === palletName)
   if (!pallet || !pallet.storage) return false
@@ -23,7 +23,7 @@ export const hasStorageItems = (
 export const hasRuntimeApi = (
   metadata: UnifiedMetadata,
   apiName: string,
-  method: string,
+  method: string
 ): boolean => {
   const api = metadata.apis.find((api) => api.name === apiName)
   if (!api || !api.methods) return false
@@ -33,7 +33,7 @@ export const hasRuntimeApi = (
 export const getConstantValue = <T>(
   metadataRpc: `0x${string}`,
   pallet: string,
-  constant: string,
+  constant: string
 ) => {
   const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
 
@@ -51,7 +51,7 @@ export const getConstantValue = <T>(
 export const tryGetConstantValue = <T>(
   metadataRpc: `0x${string}`,
   pallet: string,
-  constant: string,
+  constant: string
 ) => {
   const { unifiedMetadata, builder } = parseMetadataRpc(metadataRpc)
 

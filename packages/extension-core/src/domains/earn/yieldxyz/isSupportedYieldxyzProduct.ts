@@ -1,4 +1,4 @@
-import { YieldDto, YieldType } from "@yieldxyz/sdk"
+import type { YieldDto, YieldType } from "@yieldxyz/sdk"
 
 export const isSupportedYieldxyzProduct = (product: YieldDto): boolean => {
   if (!isSupportedType(product.mechanics.type)) return false
@@ -32,7 +32,7 @@ const isSupportedType = (type: YieldType): boolean => {
 
     // case "liquidity_pool": // multi asset input (typing missing somehow)
     // case "concentrated_liquidity_pool": // multi asset input (typing missing somehow)
-    case "real_world_asset": // havent seen any yet, need to test
+    // case "real_world_asset": // havent seen any yet, need to test
     default:
       return false
   }

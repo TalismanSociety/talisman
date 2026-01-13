@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: this is copied from @wallet-standard/wallet
 // This is copied from @wallet-standard/wallet
 
 import type {
@@ -19,7 +19,7 @@ export function registerWallet(wallet: Wallet): void {
   try {
     ;(window as WalletEventsWindow).addEventListener(
       "wallet-standard:app-ready",
-      ({ detail: api }) => callback(api),
+      ({ detail: api }) => callback(api)
     )
   } catch (error) {
     console.error("wallet-standard:app-ready event listener could not be added\n", error)
@@ -66,8 +66,9 @@ class RegisterWalletEvent extends Event implements WindowRegisterWalletEvent {
 export function DEPRECATED_registerWallet(wallet: Wallet): void {
   registerWallet(wallet)
   try {
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     ;((window as DEPRECATED_WalletsWindow).navigator.wallets ||= []).push(({ register }) =>
-      register(wallet),
+      register(wallet)
     )
   } catch (error) {
     console.error("window.navigator.wallets could not be pushed\n", error)

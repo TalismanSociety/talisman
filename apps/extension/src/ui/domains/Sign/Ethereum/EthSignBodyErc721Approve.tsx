@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
-import { TOKEN_APPROVALS_URL } from "extension-shared"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { UnsafeImage } from "talisman-ui"
-
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { getNftMetadata } from "@ui/util/getNftMetadata"
+import { TOKEN_APPROVALS_URL } from "extension-shared"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -40,7 +39,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       name: qMetadata?.data?.name ?? `${asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name],
+    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, asset?.name]
   )
 
   if (qMetadata.isLoading || !operator || !account || !network || !decodedTx.targetAddress)
@@ -49,13 +48,13 @@ export const EthSignBodyErc721Approve: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
+      title={approve ? t("NFT Approval Request") : t("Revoke NFT Approval Request")}
       alert={
         approve ? (
           <SignAlertMessage>
             <span className="text-body-secondary">
               {t(
-                "This contract will have permission to transfer this NFT on your behalf until manually revoked.",
+                "This contract will have permission to transfer this NFT on your behalf until manually revoked."
               )}
             </span>{" "}
             <a className="text-white" href={TOKEN_APPROVALS_URL} target="_blank">
@@ -85,9 +84,9 @@ export const EthSignBodyErc721Approve: FC = () => {
         />
       </div>
       {!!image && (
-        <div className="mb-[-0.8rem] mt-12 text-center">
+        <div className="mt-12 mb-[-0.8rem] text-center">
           <UnsafeImage
-            className="bg-grey-800 inline-block h-48 w-48 rounded"
+            className="inline-block h-48 w-48 rounded bg-grey-800"
             src={image}
             alt={name}
           />

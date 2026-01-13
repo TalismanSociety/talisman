@@ -1,4 +1,4 @@
-import { Metadata } from "@polkadot-api/substrate-bindings"
+import type { Metadata } from "@polkadot-api/substrate-bindings"
 
 import { metadata as scaleMetadata, toHex } from "../papito"
 

@@ -1,13 +1,13 @@
-import { KeypairCurve } from "@talismn/crypto"
-import { Err, Ok, Result } from "ts-results"
+import type { KeypairCurve } from "@talismn/crypto"
+import { Err, Ok, type Result } from "ts-results"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 import { passwordStore } from "../app/store.password"
 import { keyringStore } from "./store"
 
 export const withSecretKey = async <T>(
   address: Address,
-  cb: (secretKey: Uint8Array, curve: KeypairCurve) => T | Promise<T>,
+  cb: (secretKey: Uint8Array, curve: KeypairCurve) => T | Promise<T>
 ): Promise<Result<T, "Unauthorised" | "Account not found" | "Private key unavailable" | Error>> => {
   let secretKey: Uint8Array | null = null
   let curve: KeypairCurve

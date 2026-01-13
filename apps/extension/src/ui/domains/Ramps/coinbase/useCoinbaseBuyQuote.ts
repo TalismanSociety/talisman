@@ -1,22 +1,21 @@
 import { isTokenDot, isTokenEth } from "@talismn/chaindata-provider"
 import { formatPrice, tokensToPlanck } from "@talismn/util"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { type UseQueryResult, useQuery } from "@tanstack/react-query"
+import { useToken } from "@ui/state"
 import { RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import urlJoin from "url-join"
 
-import { useToken } from "@ui/state"
-
-import { RampsBuyQuote, RampsBuyQuoteOptions } from "../buy/types"
+import type { RampsBuyQuote, RampsBuyQuoteOptions } from "../buy/types"
 import { getRampsQuoteError } from "../shared/getRampsQuoteError"
-import { RampsQuoteError } from "../shared/types"
+import type { RampsQuoteError } from "../shared/types"
 import { getCoinbaseBuyUrl } from "./helpers"
-import { CoinbaseBuyOptions, CoinbaseBuyQuoteRequest, CoinbaseBuyQuoteResponse } from "./types"
+import type { CoinbaseBuyOptions, CoinbaseBuyQuoteRequest, CoinbaseBuyQuoteResponse } from "./types"
 import { useCoinbaseBuyOptions } from "./useCoinbaseBuyOptions"
 
 export const useCoinbaseBuyQuote = (
-  config: RampsBuyQuoteOptions | null,
+  config: RampsBuyQuoteOptions | null
 ): UseQueryResult<RampsBuyQuote | null, Error> => {
   const { t } = useTranslation()
   const token = useToken(config?.tokenId)
@@ -42,7 +41,7 @@ export const useCoinbaseBuyQuote = (
 
     const getInputErrorDescription = (
       config: RampsBuyQuoteOptions,
-      coinbaseOpts: CoinbaseBuyOptions,
+      coinbaseOpts: CoinbaseBuyOptions
     ) => {
       const limit = coinbaseOpts.payment_currencies
         .find((c) => c.id === config.currencyCode)
@@ -95,7 +94,7 @@ export const useCoinbaseBuyQuote = (
                 coinbaseToken.purchaseSymbol,
                 coinbaseToken.purchaseNetwork,
                 res.data.quote_id,
-                address,
+                address
               ),
           }
         : null
@@ -148,7 +147,7 @@ type FetchCoinbaseBuyQuoteResult =
 const fetchCoinbaseBuyQuote = async (
   currencyCode: string,
   amountIn: number,
-  coinbaseToken: CoinbaseTokenSpecs,
+  coinbaseToken: CoinbaseTokenSpecs
 ): Promise<FetchCoinbaseBuyQuoteResult> => {
   const body: CoinbaseBuyQuoteRequest = {
     paymentCurrency: currencyCode,

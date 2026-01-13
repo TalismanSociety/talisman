@@ -1,9 +1,8 @@
 import { Balances } from "@talismn/balances"
-import { subNativeTokenId, TokenId } from "@talismn/chaindata-provider"
+import { subNativeTokenId, type TokenId } from "@talismn/chaindata-provider"
+import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 import { uniq } from "lodash-es"
 import { useMemo } from "react"
-
-import { usePortfolioGlobalData, useSelectedCurrency } from "@ui/state"
 
 export const useAssetDetails = (balances: Balances) => {
   const { hydrate } = usePortfolioGlobalData()
@@ -11,7 +10,7 @@ export const useAssetDetails = (balances: Balances) => {
 
   const tokenIds = useMemo<TokenId[]>(
     () => uniq(balances.each.map((b) => b.tokenId)),
-    [balances.each],
+    [balances.each]
   )
 
   const balancesByToken = useMemo(
@@ -44,7 +43,7 @@ export const useAssetDetails = (balances: Balances) => {
           // keep alphabetical sort
           return 0
         }),
-    [balances, currency, hydrate, tokenIds],
+    [balances, currency, hydrate, tokenIds]
   )
 
   return { balancesByToken }

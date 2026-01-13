@@ -75,7 +75,6 @@ describe("Extension", () => {
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
     await extensionStores.app.setOnboarded()
   })

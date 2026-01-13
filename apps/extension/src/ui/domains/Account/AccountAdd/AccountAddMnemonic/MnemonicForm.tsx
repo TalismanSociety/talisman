@@ -1,6 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { AccountPlatform, isAddressEqual } from "@talismn/crypto"
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { Spacer } from "@talisman/components/Spacer"
+import { type AccountPlatform, isAddressEqual } from "@talismn/crypto"
 import { classNames, isTruthy } from "@talismn/util"
+import { api } from "@ui/api"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
+import { useAccounts } from "@ui/state"
 import {
   getDefaultCurveForAccountPlatform,
   getDerivationPathForCurve,
@@ -8,8 +15,8 @@ import {
   SUPPORTED_ACCOUNT_PLATFORMS,
 } from "extension-core"
 import { DEBUG } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { useForm, UseFormSetValue } from "react-hook-form"
+import { type FC, useCallback, useEffect, useMemo, useState } from "react"
+import { type UseFormSetValue, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -23,16 +30,8 @@ import {
 } from "talisman-ui"
 import * as yup from "yup"
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { Spacer } from "@talisman/components/Spacer"
-import { api } from "@ui/api"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { AccountPlatformSelector } from "@ui/domains/Account/AccountPlatformSelector"
-import { useAccounts } from "@ui/state"
-
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
-import { AccountAddDerivationMode, useAccountAddMnemonic } from "./context"
+import { type AccountAddDerivationMode, useAccountAddMnemonic } from "./context"
 import { DerivationModeDropdown } from "./DerivationModeDropdown"
 
 const cleanupMnemonic = (input = "") =>
@@ -68,7 +67,7 @@ export const AccountAddMnemonicForm = () => {
           platform: yup.mixed<AccountPlatform>().oneOf(SUPPORTED_ACCOUNT_PLATFORMS).defined(),
           mode: yup
             .mixed<AccountAddDerivationMode>((v): v is AccountAddDerivationMode =>
-              ["first", "custom", "multi"].includes(v),
+              ["first", "custom", "multi"].includes(v)
             )
             .defined(),
           derivationPath: yup.string().defined().trim(),
@@ -78,7 +77,7 @@ export const AccountAddMnemonicForm = () => {
             .required(" ")
             .transform(cleanupMnemonic)
             .test("is-valid-mnemonic", t("Invalid recovery phrase"), async (val) =>
-              api.validateMnemonic(val as string),
+              api.validateMnemonic(val as string)
             ),
         })
         .required()
@@ -93,7 +92,7 @@ export const AccountAddMnemonicForm = () => {
           let address: string
           try {
             address = await api.addressLookup({ type: "mnemonic", mnemonic, curve, derivationPath })
-          } catch (err) {
+          } catch {
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
@@ -109,7 +108,7 @@ export const AccountAddMnemonicForm = () => {
 
           return true
         }),
-    [accountAddresses, t],
+    [accountAddresses, t]
   )
 
   const {
@@ -127,16 +126,17 @@ export const AccountAddMnemonicForm = () => {
   const { platform, mnemonic, mode, derivationPath } = watch()
   const curve = useMemo(
     () => (platform ? getDefaultCurveForAccountPlatform(platform) : null),
-    [platform],
+    [platform]
   )
 
   const words = useMemo(
     () => cleanupMnemonic(mnemonic).split(" ").filter(isTruthy).length ?? 0,
-    [mnemonic],
+    [mnemonic]
   )
 
   const [targetAddress, setTargetAddress] = useState<string>()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
@@ -148,9 +148,9 @@ export const AccountAddMnemonicForm = () => {
             mnemonic: cleanupMnemonic(mnemonic),
             derivationPath,
             curve,
-          }),
+          })
         )
-      } catch (err) {
+      } catch {
         setTargetAddress(undefined)
       }
     }
@@ -173,7 +173,7 @@ export const AccountAddMnemonicForm = () => {
             title: t("Importing account"),
             subtitle: t("Please wait"),
           },
-          { autoClose: false },
+          { autoClose: false }
         )
         try {
           const [address] = await api.accountAddDerive([
@@ -203,7 +203,7 @@ export const AccountAddMnemonicForm = () => {
         }
       }
     },
-    [updateData, navigate, t, onSuccess],
+    [updateData, navigate, t, onSuccess]
   )
 
   const handleTypeChange = useCallback(
@@ -216,10 +216,10 @@ export const AccountAddMnemonicForm = () => {
           : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
         {
           shouldValidate: true,
-        },
+        }
       )
     },
-    [setValue],
+    [setValue]
   )
 
   const handleModeChange = useCallback(
@@ -233,10 +233,10 @@ export const AccountAddMnemonicForm = () => {
             : getDerivationPathForCurve(getDefaultCurveForAccountPlatform(platform)),
           {
             shouldValidate: true,
-          },
+          }
         )
     },
-    [setValue, platform],
+    [setValue, platform]
   )
 
   useEffect(() => {
@@ -285,9 +285,9 @@ export const AccountAddMnemonicForm = () => {
             spellCheck={false}
           />
           <div className="mt-2 flex w-full items-center justify-between gap-4 overflow-hidden text-xs">
-            <div className="text-grey-600 shrink-0">{t("Word count: {{words}}", { words })}</div>
+            <div className="shrink-0 text-grey-600">{t("Word count: {{words}}", { words })}</div>
             <DevMnemonicButton setValue={setValue} />
-            <div className="text-alert-warn grow truncate text-right">
+            <div className="grow truncate text-right text-alert-warn">
               {errors.mnemonic?.message}
             </div>
           </div>

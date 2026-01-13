@@ -58,14 +58,13 @@ const client = new BrowserClient({
 
     // Print to console instead of Sentry in DEBUG/development builds
     if (DEBUG) {
-      log.error("[DEBUG - Background] Sentry event occurred", event) // eslint-disable-line no-console
+      log.error("[DEBUG - Background] Sentry event occurred", event)
       return null
     }
 
     const errorTracking = await firstValueFrom(useErrorTracking)
     return errorTracking ? event : null
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   beforeBreadcrumb: (breadCrumb, _hint) => {
     if (breadCrumb.data?.url) {
       breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)

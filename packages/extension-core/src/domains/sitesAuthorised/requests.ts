@@ -2,15 +2,14 @@ import { assert } from "@polkadot/util"
 import { base58 } from "@talismn/crypto"
 import { getTalismanOrbDataUrl } from "@talismn/orb"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
-
-import type { Port } from "../../types/base"
-import type { AuthorizedSite, AuthSolanaSignInRequest, RequestAuthorizeTab } from "./types"
 import { requestStore } from "../../libs/requests/store"
-import { KnownRequestIdOnly } from "../../libs/requests/types"
+import type { KnownRequestIdOnly } from "../../libs/requests/types"
+import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { SOLANA_WALLET_CHAINS, SOLANA_WALLET_STANDARD_FEATURES } from "../solana/constants"
-import { RequestSolanaSignIn, ResponseSolanaSignIn } from "../solana/types.tabs"
+import type { RequestSolanaSignIn, ResponseSolanaSignIn } from "../solana/types.tabs"
 import sitesAuthorisedStore from "./store"
+import type { AuthorizedSite, AuthSolanaSignInRequest, RequestAuthorizeTab } from "./types"
 
 export const ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE =
   "Pending authorisation request already exists for this site. Please accept or reject the request."
@@ -19,7 +18,7 @@ class AuthError extends Error {}
 export const requestAuthoriseSite = async (
   url: string,
   request: RequestAuthorizeTab,
-  port: Port,
+  port: Port
 ) => {
   const { err, val: domain } = urlToDomain(url)
   if (err) throw new AuthError(domain)
@@ -41,7 +40,7 @@ export const requestAuthoriseSite = async (
         request,
         type: "auth",
       },
-      port,
+      port
     )
     .then(async (response) => {
       const { addresses = [] } = response
@@ -90,7 +89,7 @@ export const ignoreRequest = ({ id }: KnownRequestIdOnly<"auth">) => {
 export const requestSolanaSignIn = async (
   { input }: RequestSolanaSignIn,
   url: string,
-  port: Port,
+  port: Port
 ) => {
   const { err, val: domain } = urlToDomain(url)
   if (err) throw new AuthError(domain)
@@ -109,7 +108,7 @@ export const requestSolanaSignIn = async (
       url,
       input,
     },
-    port,
+    port
   )
 
   const siteAuth = (await sitesAuthorisedStore.getSiteFromUrl(url)) ?? ({} as AuthorizedSite)

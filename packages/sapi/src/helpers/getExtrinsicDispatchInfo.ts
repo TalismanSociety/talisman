@@ -1,11 +1,11 @@
-import { GenericExtrinsic } from "@polkadot/types"
-import { Codec } from "@polkadot/types-codec/types"
-import { RuntimeDispatchInfo } from "@polkadot/types/interfaces"
+import type { GenericExtrinsic } from "@polkadot/types"
+import type { RuntimeDispatchInfo } from "@polkadot/types/interfaces"
+import type { Codec } from "@polkadot/types-codec/types"
 import { assert, u8aConcatStrict } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 
-import { JsonRpcRequestSend } from "../types"
-import { Chain } from "./types"
+import type { JsonRpcRequestSend } from "../types"
+import type { Chain } from "./types"
 
 type ExtrinsicDispatchInfo = {
   partialFee: string
@@ -14,7 +14,7 @@ type ExtrinsicDispatchInfo = {
 // used for chains that dont have metadata v15 yet
 export const getExtrinsicDispatchInfo = async (
   chain: Chain,
-  signedExtrinsic: GenericExtrinsic,
+  signedExtrinsic: GenericExtrinsic
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
@@ -26,7 +26,7 @@ export const getExtrinsicDispatchInfo = async (
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
     undefined,
-    true,
+    true
   )) as RuntimeDispatchInfo
 
   return {
@@ -40,7 +40,7 @@ const stateCall = async <K extends string = string>(
   resultType: K,
   args: Codec[],
   blockHash?: HexString,
-  isCacheable?: boolean,
+  isCacheable?: boolean
 ) => {
   // on a state call there are always arguments
   const registry = args[0].registry

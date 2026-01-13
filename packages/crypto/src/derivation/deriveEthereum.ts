@@ -1,8 +1,7 @@
 import { secp256k1 } from "@noble/curves/secp256k1"
 import { HDKey } from "@scure/bip32"
-
-import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
+import type { Keypair } from "../types"
 
 export const deriveEthereum = (seed: Uint8Array, derivationPath: string): Keypair => {
   const hdkey = HDKey.fromMasterSeed(seed)

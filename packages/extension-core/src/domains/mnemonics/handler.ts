@@ -3,10 +3,10 @@ import { isValidMnemonic } from "@talismn/crypto"
 
 import { genericAsyncSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestType, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestType, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { keyringStore } from "../keyring/store"
-import { RequestSetVerifierCertificateMnemonic } from "./types"
+import type { RequestSetVerifierCertificateMnemonic } from "./types"
 
 export default class MnemonicHandler extends ExtensionHandler {
   private async setVerifierCertMnemonic(options: RequestSetVerifierCertificateMnemonic) {
@@ -52,7 +52,7 @@ export default class MnemonicHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(mnemonics.subscribe)":

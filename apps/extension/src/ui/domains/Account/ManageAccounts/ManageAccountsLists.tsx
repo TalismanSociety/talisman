@@ -1,14 +1,13 @@
 import { EyeIcon, TalismanHandIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Account } from "extension-core"
-import { FC, ReactNode, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
+import type { Account } from "extension-core"
+import { type FC, type ReactNode, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ManageAccountsList } from "./ManageAccountsList"
 import { useManageAccounts } from "./ManageAccountsProvider"
-import { UiTree, UiTreeAccount, UiTreeFolder } from "./types"
+import type { UiTree, UiTreeAccount, UiTreeFolder } from "./types"
 import { dataTreeToUiTree } from "./util"
 
 export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) => {
@@ -17,7 +16,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 
   const accountsMap = useMemo(
     () => Object.fromEntries(accounts.map((account) => [account.address, account])),
-    [accounts],
+    [accounts]
   )
   const { search } = useManageAccounts()
 
@@ -26,7 +25,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
       dataTreeToUiTree(catalog.portfolio),
       dataTreeToUiTree(catalog.watched),
     ],
-    [catalog],
+    [catalog]
   )
 
   const [portfolioTree, watchedTree] = useMemo(() => {
@@ -65,7 +64,7 @@ export const ManageAccountsLists: FC<{ className?: string }> = ({ className }) =
 const searchTree = (
   tree: UiTree,
   lowerSearch: string,
-  accountsMap: Record<string, Account>,
+  accountsMap: Record<string, Account>
 ): UiTree => {
   const workTree = structuredClone(tree)
 
@@ -95,9 +94,9 @@ const Separator: FC<{ label: ReactNode; icon: FC<{ className?: string }> }> = ({
   icon: Icon,
   label,
 }) => (
-  <div className="text-body-disabled @xl:text-sm flex w-full items-center gap-4 text-xs font-bold">
+  <div className="flex w-full items-center gap-4 font-bold @xl:text-sm text-body-disabled text-xs">
     <Icon className="inline" />
     <div>{label}</div>
-    <div className="bg-grey-800 h-0.5 grow"></div>
+    <div className="h-0.5 grow bg-grey-800"></div>
   </div>
 )

@@ -1,4 +1,4 @@
-import { OnChainId, OnChainIds, ResolvedNames } from "@talismn/on-chain-id"
+import { OnChainId, type OnChainIds, type ResolvedNames } from "@talismn/on-chain-id"
 
 import { chainConnectors } from "../../rpcs/balance-modules"
 

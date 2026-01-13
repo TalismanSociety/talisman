@@ -1,9 +1,8 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { FC, ReactNode, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
-
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { type FC, type ReactNode, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 
 type SendFundsLayoutProps = {
   title?: ReactNode
@@ -35,11 +34,11 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
 
   return (
     <div id="main" className="relative flex h-full w-full flex-col">
-      <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
+      <div className="flex h-32 min-h-[6.4rem] w-full items-center px-12 text-body-secondary">
         {showBackButton ? (
           <button
             type="button"
-            className="text-body-secondary flex cursor-pointer items-center text-lg hover:text-white"
+            className="flex cursor-pointer items-center text-body-secondary text-lg hover:text-white"
             onClick={handleBackClick}
           >
             <ChevronLeftIcon />

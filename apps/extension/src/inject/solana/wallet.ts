@@ -12,7 +12,14 @@ import type {
   SolanaSignTransactionMethod,
   SolanaSignTransactionOutput,
 } from "@solana/wallet-standard-features"
+import {
+  SolanaSignAndSendTransaction,
+  SolanaSignIn,
+  SolanaSignMessage,
+  SolanaSignTransaction,
+} from "@solana/wallet-standard-features"
 import type { Transaction } from "@solana/web3.js"
+import { VersionedTransaction } from "@solana/web3.js"
 import type { Wallet } from "@wallet-standard/base"
 import type {
   StandardConnectFeature,
@@ -24,23 +31,14 @@ import type {
   StandardEventsNames,
   StandardEventsOnMethod,
 } from "@wallet-standard/features"
-// import { base58 } from "@scure/base" // smaller import than @talismn/crypto
-import {
-  SolanaSignAndSendTransaction,
-  SolanaSignIn,
-  SolanaSignMessage,
-  SolanaSignTransaction,
-} from "@solana/wallet-standard-features"
-import { VersionedTransaction } from "@solana/web3.js"
 import { StandardConnect, StandardDisconnect, StandardEvents } from "@wallet-standard/features"
 import bs58 from "bs58"
 import { TALISMAN_LOGO_BASE64 } from "inject/shared/logo"
-
+import type { TalismanSolWalletAccount } from "./account"
 import type { SolanaChain } from "./solana"
-import type { TalismanSol } from "./window"
-import { TalismanSolWalletAccount } from "./account"
 import { isSolanaChain, isVersionedTransaction, SOLANA_CHAINS } from "./solana"
 import { deserializeSolWalletAccount } from "./util"
+import type { TalismanSol } from "./window"
 
 export class TalismanSolWallet implements Wallet {
   readonly #listeners: { [E in StandardEventsNames]?: StandardEventsListeners[E][] } = {}
@@ -127,6 +125,7 @@ export class TalismanSolWallet implements Wallet {
   }
 
   #on: StandardEventsOnMethod = (event, listener) => {
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     this.#listeners[event]?.push(listener) || (this.#listeners[event] = [listener])
     return (): void => this.#off(event, listener)
   }
@@ -135,13 +134,13 @@ export class TalismanSolWallet implements Wallet {
     event: E,
     ...args: Parameters<StandardEventsListeners[E]>
   ): void {
-    // eslint-disable-next-line prefer-spread
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     this.#listeners[event]?.forEach((listener) => listener.apply(null, args))
   }
 
   #off<E extends StandardEventsNames>(event: E, listener: StandardEventsListeners[E]): void {
     this.#listeners[event] = this.#listeners[event]?.filter(
-      (existingListener) => listener !== existingListener,
+      (existingListener) => listener !== existingListener
     )
   }
 
@@ -194,7 +193,7 @@ export class TalismanSolWallet implements Wallet {
           minContextSlot,
           maxRetries,
           skipPreflight,
-        },
+        }
       )
 
       outputs.push({ signature: bs58.decode(signature) })
@@ -218,7 +217,7 @@ export class TalismanSolWallet implements Wallet {
       if (chain && !isSolanaChain(chain)) throw new Error("invalid chain")
 
       const signedTransaction = await this.#talisman.signTransaction(
-        VersionedTransaction.deserialize(transaction),
+        VersionedTransaction.deserialize(transaction)
       )
 
       const serializedTransaction = isVersionedTransaction(signedTransaction)
@@ -227,12 +226,12 @@ export class TalismanSolWallet implements Wallet {
             (signedTransaction as Transaction).serialize({
               requireAllSignatures: false,
               verifySignatures: false,
-            }),
+            })
           )
 
       outputs.push({ signedTransaction: serializedTransaction })
     } else if (inputs.length > 1) {
-      let chain: SolanaChain | undefined = undefined
+      let chain: SolanaChain | undefined
       for (const input of inputs) {
         if (input.account !== this.#account) throw new Error("invalid account")
         if (input.chain) {
@@ -246,7 +245,7 @@ export class TalismanSolWallet implements Wallet {
       }
 
       const transactions = inputs.map(({ transaction }) =>
-        VersionedTransaction.deserialize(transaction),
+        VersionedTransaction.deserialize(transaction)
       )
 
       const signedTransactions = await this.#talisman.signAllTransactions(transactions)
@@ -259,11 +258,11 @@ export class TalismanSolWallet implements Wallet {
                 (signedTransaction as Transaction).serialize({
                   requireAllSignatures: false,
                   verifySignatures: false,
-                }),
+                })
               )
 
           return { signedTransaction: serializedTransaction }
-        }),
+        })
       )
     }
 

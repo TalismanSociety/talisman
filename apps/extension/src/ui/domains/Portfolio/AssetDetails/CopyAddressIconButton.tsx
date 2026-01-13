@@ -1,12 +1,11 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { CopyIcon } from "@talismn/icons"
-import { FC, Suspense, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { NetworkId } from "@talismn/chaindata-provider"
+import { CopyIcon } from "@talismn/icons"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { type FC, Suspense, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 
@@ -34,7 +33,7 @@ const CopyAddressButtonInner: FC<CopyAddressButtonProps> = ({ networkId }) => {
         <button
           type="button"
           onClick={handleClick}
-          className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 rounded-xs inline-flex h-9 w-9 items-center justify-center text-xs"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xs text-body-secondary text-xs hover:bg-grey-700 hover:text-body focus:bg-grey-700 focus:text-body"
         >
           <CopyIcon />
         </button>

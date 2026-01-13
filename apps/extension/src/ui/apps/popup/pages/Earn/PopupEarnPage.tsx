@@ -1,17 +1,24 @@
-import { Balances } from "@talismn/balances"
-import { cn } from "@talismn/util"
-import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useOutletContext } from "react-router-dom"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import { Balances } from "@talismn/balances"
+import { cn } from "@talismn/util"
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { EarnTabs } from "@ui/domains/Earn/components/EarnTabs"
 import { useYieldxyzOpportunitiesByTokenId } from "@ui/domains/Earn/yieldxyz/hooks/useYieldxyzOpportunitiesByTokenId"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useSelectedCurrency } from "@ui/state"
+import {
+  type FC,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { Outlet, useLocation, useOutletContext } from "react-router-dom"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"
@@ -39,7 +46,7 @@ const PageHeader = () => {
 
   return (
     <div className="flex w-full shrink-0 flex-col px-4 pt-8">
-      <div className="text-body text-lg font-bold">{t("Earn")}</div>
+      <div className="font-bold text-body text-lg">{t("Earn")}</div>
     </div>
   )
 }
@@ -59,12 +66,12 @@ const PopupEarnHeader = () => {
   }, [currency, tokenProducts])
 
   return (
-    <div className="text-body-secondary bg-grey-850 border-grey-800 flex justify-between rounded-[0.75rem] border text-left text-base">
+    <div className="flex justify-between rounded-[0.75rem] border border-grey-800 bg-grey-850 text-left text-base text-body-secondary">
       <div className="flex flex-col gap-4 px-6 py-8">
         <div className="text-body-secondary text-xs">{t("Yield-Eligible Capital")}</div>
-        <div className="text-body text-xl font-bold">
+        <div className="font-bold text-body text-xl">
           {!eligibleTotal && status === "loading" ? (
-            <div className="bg-grey-700 text-grey-700 animate-pulse rounded">$0.00</div>
+            <div className="animate-pulse rounded bg-grey-700 text-grey-700">$0.00</div>
           ) : (
             <Fiat amount={eligibleTotal} className={cn(status === "loading" && "animate-pulse")} />
           )}
@@ -80,7 +87,7 @@ export const PopupEarnPage: FC = () => {
   const navigate = useNavigateWithQuery()
   const selectedTab = useMemo<EarnTabKey>(
     () => getTabFromPath(location.pathname),
-    [location.pathname],
+    [location.pathname]
   )
   const [search, setSearch] = useState("")
 
@@ -90,14 +97,14 @@ export const PopupEarnPage: FC = () => {
 
       navigate(TAB_TO_PATH[tab])
     },
-    [navigate, selectedTab],
+    [navigate, selectedTab]
   )
 
   const outletContext = useMemo<DashboardEarnOutletContext>(() => ({ search }), [search])
   return (
     <>
       <Content>
-        <div className="text-body-secondary flex w-full flex-col gap-6 text-left text-base">
+        <div className="flex w-full flex-col gap-6 text-left text-base text-body-secondary">
           {/* Page Header */}
           <PageHeader />
 
@@ -135,6 +142,7 @@ const Content: FC<PropsWithChildren> = ({ children }) => {
   const scrollableRef = useRef<HTMLDivElement>(null)
   const location = useLocation()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollableRef.current?.scrollTo(0, 0)
   }, [location.pathname])

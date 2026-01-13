@@ -5,8 +5,8 @@ import { ExtensionHandler } from "../../libs/Handler"
 import { chainConnector } from "../../rpcs/chain-connector"
 import { chainConnectorEvm } from "../../rpcs/chain-connector-evm"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { customChaindataStore } from "./store.customChaindata"
 
 export class ChaindataHandler extends ExtensionHandler {
@@ -14,7 +14,7 @@ export class ChaindataHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(chaindata.networks.subscribe)": {

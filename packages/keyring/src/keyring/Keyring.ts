@@ -9,13 +9,14 @@ import {
   getPublicKeyFromSecret,
   isAddressEqual,
   isValidMnemonic,
-  KeypairCurve,
+  type KeypairCurve,
   mnemonicToEntropy,
   normalizeAddress,
   utf8,
 } from "@talismn/crypto"
 
 import type { Account, Mnemonic } from "../types"
+import { isAccountExternal } from "../types"
 import type {
   AddAccountDeriveOptions,
   AddAccountExternalOptions,
@@ -24,9 +25,8 @@ import type {
   UpdateAccountOptions,
   UpdateMnemonicOptions,
 } from "../types/keyring"
-import type { AccountStorage, MnemonicStorage } from "./types"
-import { isAccountExternal } from "../types"
 import { changeEncryptedDataPassword, decryptData, encryptData } from "./encryption"
+import type { AccountStorage, MnemonicStorage } from "./types"
 import { isHexString } from "./utils"
 
 export type KeyringStorage = {
@@ -55,7 +55,6 @@ export class Keyring {
 
     // automatic upgrade : set default values for newly introduced properties
     for (const account of data.accounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       if (account.type === "ledger-polkadot" && !account.curve) account.curve = "ed25519"
     }
@@ -99,7 +98,7 @@ export class Keyring {
         account.secretKey = await changeEncryptedDataPassword(
           account.secretKey,
           password,
-          jsonPassword,
+          jsonPassword
         )
 
     // reset password check
@@ -114,7 +113,7 @@ export class Keyring {
 
   public async addMnemonic(
     { name, mnemonic, confirmed }: AddMnemonicOptions,
-    password: string,
+    password: string
   ): Promise<Mnemonic> {
     if (typeof name !== "string" || !name) throw new Error("name is required")
     if (typeof mnemonic !== "string") throw new Error("mnemonic is required")
@@ -163,7 +162,7 @@ export class Keyring {
   }
 
   public removeMnemonic(id: string) {
-    const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id == id)
+    const index = this.#data.mnemonics.findIndex((mnemonic) => mnemonic.id === id)
     if (index === -1) throw new Error("Mnemonic not found")
     this.#data.mnemonics.splice(index, 1)
   }
@@ -267,7 +266,7 @@ export class Keyring {
             mnemonic,
             confirmed,
           },
-          password,
+          password
         )
 
         return id
@@ -283,7 +282,7 @@ export class Keyring {
 
   public async addAccountDerive(
     options: AddAccountDeriveOptions,
-    password: string,
+    password: string
   ): Promise<Account> {
     await this.checkPassword(password)
 
@@ -318,7 +317,7 @@ export class Keyring {
 
   public async addAccountKeypair(
     { curve, name, secretKey }: AddAccountKeypairOptions,
-    password: string,
+    password: string
   ): Promise<Account> {
     await this.checkPassword(password)
 
@@ -357,7 +356,7 @@ export class Keyring {
     mnemonicId: string,
     derivationPath: string,
     curve: KeypairCurve,
-    password: string,
+    password: string
   ): Promise<string> {
     if (typeof mnemonicId !== "string" || !mnemonicId) throw new Error("mnemonicId is required")
     if (typeof password !== "string" || !password) throw new Error("password is required")

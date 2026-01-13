@@ -1,11 +1,11 @@
 import { Icon } from "@iconify/react/dist/iconify.js"
 import { PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Drawer, useOpenClose } from "talisman-ui"
 
-import { getRampsCurrency, RampsCurrency } from "./currencies"
+import { getRampsCurrency, type RampsCurrency } from "./currencies"
 import { RampsCurrencyPicker } from "./RampsCurrencyPicker"
 
 export const RampsCurrencyPickerButton: FC<{
@@ -27,7 +27,7 @@ export const RampsCurrencyPickerButton: FC<{
       onSelect(currency)
       close()
     },
-    [close, onSelect],
+    [close, onSelect]
   )
 
   return (
@@ -36,8 +36,8 @@ export const RampsCurrencyPickerButton: FC<{
         type="button"
         onClick={handleOpen}
         className={classNames(
-          "border-grey-750 bg-grey-800 focus-visible:border-grey-600 flex h-full w-[14rem] items-center gap-4 rounded-[12px] border px-4 py-3",
-          "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale",
+          "flex h-full w-[14rem] items-center gap-4 rounded-[12px] border border-grey-750 bg-grey-800 px-4 py-3 focus-visible:border-grey-600",
+          "enabled:hover:bg-grey-750 disabled:opacity-50 disabled:grayscale"
         )}
       >
         {currency ? <CurrencyContent currency={currency} /> : <EmptyContent />}
@@ -56,12 +56,12 @@ export const RampsCurrencyPickerButton: FC<{
 
 const CurrencyContent: FC<{ currency: RampsCurrency }> = ({ currency }) => (
   <div className="flex items-center gap-4 truncate text-left">
-    <div className="bg-body-disabled size-14 shrink-0 rounded-full">
+    <div className="size-14 shrink-0 rounded-full bg-body-disabled">
       <Icon icon={currency.icon} className="size-14" />
     </div>
     <div className="min-w-0 text-[16px]">
       <div className="text-white">{currency.code}</div>
-      <div className="text-tiny truncate">{currency.name}</div>
+      <div className="truncate text-tiny">{currency.name}</div>
     </div>
   </div>
 )
@@ -72,9 +72,9 @@ const EmptyContent: FC = () => {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="flex items-center justify-center rounded-full bg-[#D5FF5C] bg-opacity-10">
-        <PlusIcon className="text-primary-500 m-[0.3rem] size-10" />
+        <PlusIcon className="m-[0.3rem] size-10 text-primary-500" />
       </div>
-      <div className="text-xs text-white">{t("Select currency")}</div>
+      <div className="text-white text-xs">{t("Select currency")}</div>
     </div>
   )
 }

@@ -1,4 +1,3 @@
-import type { Chain as ViemChain } from "viem/chains"
 import { MultiAddress } from "@polkadot-api/descriptors"
 import {
   chainConnectorsAtom,
@@ -8,24 +7,26 @@ import {
   subNativeTokenId,
 } from "@talismn/balances-react"
 import { encodeAnyAddress, isAddressEqual, isEthereumAddress } from "@talismn/crypto"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
+import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
 import { UNKNOWN_TOKEN_URL } from "extension-shared"
-import { atom, ExtractAtomValue } from "jotai"
+import { atom, type ExtractAtomValue } from "jotai"
 import { atomWithObservable, loadable } from "jotai/utils"
 import {
   catchError,
   defer,
   interval,
-  Observable,
+  type Observable,
   of,
   retry,
   startWith,
   switchMap,
   takeWhile,
 } from "rxjs"
-import { encodeFunctionData, erc20Abi, publicActions, TransactionRequest } from "viem"
+import { encodeFunctionData, erc20Abi, publicActions, type TransactionRequest } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 import {
   arbitrum,
   arbitrumNova,
@@ -42,30 +43,27 @@ import {
   sonic,
   zksync,
 } from "viem/chains"
-
-import { accounts$, getNetworks$, getNetworksMapById$, getToken$, getTokensMap$ } from "@ui/state"
-
-import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import { apiPromiseAtom } from "../swaps-port/apiPromiseAtom"
 import { Decimal } from "../swaps-port/Decimal"
 import { publicClientAtomFamily } from "../swaps-port/publicClientAtomFamily"
 import { vanaMainnet } from "../swaps-port/vana"
 import {
-  BaseQuote,
+  type BaseQuote,
   fromAddressAtom,
   fromAmountAtom,
   fromAssetAtom,
-  GetEstimateGasTxFunction,
+  type GetEstimateGasTxFunction,
   getTokenIdForSwappableAsset,
-  QuoteFunction,
-  SwapModule,
-  SwappableAssetBaseType,
-  SwappableAssetWithDecimals,
+  type QuoteFunction,
+  type SwapModule,
+  type SwappableAssetBaseType,
+  type SwappableAssetWithDecimals,
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
   validateAddress,
 } from "./common.swap-module"
+import type { QuoteFee, QuoteResponse, SupportedSwapProtocol } from "./common.swap-module.ts"
 import simpleswapLogo from "./simpleswap-logo.svg?url"
 
 export const PROTOCOL: SupportedSwapProtocol = "simpleswap"
@@ -331,7 +329,7 @@ const simpleSwapSdk = {
   getAllCurrencies: async (): Promise<SimpleSwapCurrency[]> => {
     const { simpleswapApiKey } = await remoteConfigStore.get("swaps")
     const allCurrenciesRes = await fetch(
-      `https://api.simpleswap.io/get_all_currencies?api_key=${simpleswapApiKey}`,
+      `https://api.simpleswap.io/get_all_currencies?api_key=${simpleswapApiKey}`
     )
     return await allCurrenciesRes.json()
   },
@@ -354,11 +352,11 @@ const simpleSwapSdk = {
         amount: props.amount,
       })
       const allCurrenciesRes = await fetch(
-        `https://api.simpleswap.io/get_estimated?${search.toString()}`,
+        `https://api.simpleswap.io/get_estimated?${search.toString()}`
       )
       return await allCurrenciesRes.json()
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to fetch all simpleswap currencies", { cause }))
       return null
     }
@@ -380,7 +378,7 @@ const simpleSwapSdk = {
       const allPairs = await fetch(`https://api.simpleswap.io/get_pairs?${search.toString()}`)
       return await allPairs.json()
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to fetch simpleswap pairs", { cause }))
       return null
     }
@@ -473,7 +471,7 @@ const simpleswapAssetsAtom = atom(async (get) => {
           ? getTokenIdForSwappableAsset(
               "evm",
               evmChain.id,
-              currency.contract_address ? currency.contract_address : undefined,
+              currency.contract_address ? currency.contract_address : undefined
             )
           : polkadotAsset?.id
         const chainId = evmChain ? evmChain.id : polkadotAsset?.chainId
@@ -502,10 +500,11 @@ const simpleswapAssetsAtom = atom(async (get) => {
             },
           },
         }
+        // biome-ignore lint/performance/noAccumulatingSpread: legacy
         return { ...acc, [id]: asset }
       },
-      {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>,
-    ),
+      {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>
+    )
   )
 })
 
@@ -536,7 +535,7 @@ const toAssetsSelector = atom(async (get) => {
 
   const validDestinations = new Set(pairs.map(pairKeyFromPair))
   const validDestAssets = allAssets.filter((asset) =>
-    validDestinations.has(pairKeyFromAsset(asset)),
+    validDestinations.has(pairKeyFromAsset(asset))
   )
 
   return [fromAsset, ...validDestAssets]
@@ -560,7 +559,7 @@ const quote: QuoteFunction = loadable(
       currency_from: currencyFrom,
       currency_to: currencyTo,
     })
-    if (range && range.min.isGreaterThan(fromAmount.toString()))
+    if (range?.min.isGreaterThan(fromAmount.toString()))
       throw new Error(`SimpleSwap minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
     const output = await simpleSwapSdk.getEstimate({
@@ -612,7 +611,7 @@ const quote: QuoteFunction = loadable(
       providerName: PROTOCOL_NAME,
       talismanFee,
     }
-  }),
+  })
 )
 export const saveIdForMonitoring = async (swapId: string, txHash: string) => {
   await fetch(`https://swap-providers-monitor.fly.dev/simpleswap/exchange`, {
@@ -628,17 +627,17 @@ export type SimpleswapExchange = Exchange
 const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
   try {
     const substrateChains = await get(
-      atomWithObservable(() => getNetworks$({ platform: "polkadot" })),
+      atomWithObservable(() => getNetworks$({ platform: "polkadot" }))
     )
     const formatAddress = (
       address: string | null,
-      asset: SwappableAssetWithDecimals<unknown> | null,
+      asset: SwappableAssetWithDecimals<unknown> | null
     ) => {
       if (!address) return address
       if (asset?.networkType !== "substrate") return address
 
       const substrateChain = substrateChains.find(
-        (c) => c.id.toString() === asset.chainId.toString(),
+        (c) => c.id.toString() === asset.chainId.toString()
       )
       if (!substrateChain) return address
       return encodeAnyAddress(address, { ss58Format: substrateChain.prefix })
@@ -702,7 +701,7 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
     }
     // verify that the created exchange has the same assets we are trying to swap
     if (exchange.currency_from !== currency_from || exchange.currency_to !== currency_to) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.trace(
         "exchange.currency_from",
         exchange.currency_from,
@@ -711,7 +710,7 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
         "exchange.currency_to",
         exchange.currency_to,
         "currency_to",
-        currency_to,
+        currency_to
       )
       throw new Error("Incorrect currencies from provider. Please try again later")
     }
@@ -722,7 +721,7 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
 
     return exchange
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
@@ -743,7 +742,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
     if (fromAsset.networkType !== "evm") return
 
     const chain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString(),
+      (c) => c?.id.toString() === fromAsset.chainId.toString()
     )
     if (!chain) throw new Error("Network not supported")
 
@@ -775,7 +774,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       account: fromAddress as `0x${string}`,
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
@@ -807,18 +806,18 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
                 target: MultiAddress.Id(exchange.address_from),
                 amount: depositAmount.planck,
               },
-              { address: fromAddress },
+              { address: fromAddress }
             )
           : await sapi.getExtrinsicPayload(
               "Balances",
               allowReap ? "transfer_allow_death" : "transfer_keep_alive",
               { dest: MultiAddress.Id(exchange.address_from), value: depositAmount.planck },
-              { address: fromAddress },
+              { address: fromAddress }
             )
 
       return payload
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to create substrate payload", { cause }))
       throw cause
     }
@@ -833,12 +832,12 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
   if (fromAsset.networkType === "evm") {
     if (!isEthereumAddress(fromAddress)) return null // invalid ethereum address
     const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
     )
     const network = knownEvmNetworks[fromAsset.chainId]
     const nativeToken = await get(atomWithObservable(() => getToken$(network?.nativeTokenId)))
     const evmChain = Object.values(supportedEvmChains).find(
-      (c) => c?.id.toString() === fromAsset.chainId.toString(),
+      (c) => c?.id.toString() === fromAsset.chainId.toString()
     )
 
     const data = fromAsset.contractAddress
@@ -878,14 +877,14 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   const transferTx =
     fromAsset.assetHubAssetId !== undefined
-      ? (polkadotApi.tx.assets["transferAllowDeath"] ?? polkadotApi.tx.assets["transfer"])(
+      ? (polkadotApi.tx.assets.transferAllowDeath ?? polkadotApi.tx.assets.transfer)(
           fromAsset.assetHubAssetId,
           fromAddress,
-          fromAmount.planck,
+          fromAmount.planck
         )
-      : (polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"])(
+      : (polkadotApi.tx.balances.transferAllowDeath ?? polkadotApi.tx.balances.transfer)(
           fromAddress,
-          fromAmount.planck,
+          fromAmount.planck
         )
   const decimals = transferTx.registry.chainDecimals[0] ?? 10 // default to polkadot decimals 10
   const paymentInfo = await transferTx.paymentInfo(fromAddress)
@@ -920,11 +919,11 @@ export const swapStatus$ = (id: string): Observable<Exchange["status"] | undefin
         return interval(20_000).pipe(
           startWith(-1),
           switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
-          takeWhile((status) => shouldRefresh(status), true),
+          takeWhile((status) => shouldRefresh(status), true)
         )
       }
       return of(status)
-    }),
+    })
   )
 
 const retryStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>
@@ -934,8 +933,8 @@ const retryStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>
 
     // log when all retries failed, and return undefined
     catchError((error) => {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
-    }),
+    })
   )

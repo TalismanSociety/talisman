@@ -1,9 +1,8 @@
-import { Account, isAccountPortfolio } from "extension-core"
-import { useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
+import { type Account, isAccountPortfolio } from "extension-core"
+import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 export const useAccountToggleIsPortfolio = (account?: Account) => {
   const { t } = useTranslation()
@@ -15,7 +14,7 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
         ? t("Make followed-only account")
         : t("Add to portfolio"),
     }),
-    [account, t],
+    [account, t]
   )
 
   const toggleIsPortfolio = useCallback(async () => {
@@ -29,7 +28,7 @@ export const useAccountToggleIsPortfolio = (account?: Account) => {
         title: t("Please wait"),
         subtitle: isPortfolio ? t(`Removing from portfolio`) : t("Adding to portfolio"),
       },
-      { autoClose: false },
+      { autoClose: false }
     )
 
     try {

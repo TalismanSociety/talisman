@@ -4,7 +4,7 @@ import { getSafeImageUrl } from "./getSafeImageUrl"
 export const getNftMetadata = async (
   metadataUri?: string,
   thumbWidth?: number,
-  thumbHeight?: number,
+  thumbHeight?: number
 ) => {
   if (!metadataUri) return null
 
@@ -16,7 +16,7 @@ export const getNftMetadata = async (
       description,
       image: getSafeImageUrl(image, thumbWidth, thumbHeight),
     }
-  } catch (err) {
+  } catch {
     // failed, ignore
     return null
   }

@@ -1,6 +1,6 @@
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, SVGProps, useMemo } from "react"
-import { CtaButtonSize, getContainerClassName } from "talisman-ui"
+import { type FC, type ReactNode, type SVGProps, useMemo } from "react"
+import { type CtaButtonSize, getContainerClassName } from "talisman-ui"
 
 export const Setting: FC<{
   iconLeft?: FC<SVGProps<SVGSVGElement>>
@@ -30,15 +30,15 @@ export const Setting: FC<{
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 flex w-full items-center gap-8 rounded-sm px-8",
+        "flex w-full items-center gap-8 rounded-sm bg-grey-850 px-8 text-body-secondary",
         containerClassName,
-        className,
+        className
       )}
     >
-      {IconLeft && <IconLeft className={classNames("text-body shrink-0", iconLeftClassName)} />}
+      {IconLeft && <IconLeft className={classNames("shrink-0 text-body", iconLeftClassName)} />}
       <div className={classNames("flex grow flex-col items-start", contentClassName)}>
         <div className={classNames("text-body", titleClassName)}>{title}</div>
-        <div className={classNames("text-body-secondary text-left", subtitleClassName)}>
+        <div className={classNames("text-left text-body-secondary", subtitleClassName)}>
           {subtitle}
         </div>
       </div>

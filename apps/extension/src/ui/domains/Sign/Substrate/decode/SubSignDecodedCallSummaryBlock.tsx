@@ -1,7 +1,7 @@
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
-import { DecodedCallComponent } from "../types"
+import type { DecodedCallComponent } from "../types"
 import { useDecodedCallComponent } from "../util/useDecodedCallComponent"
 
 export const SubSignDecodedCallSummaryBlock: DecodedCallComponent<unknown> = (props) => {

@@ -1,8 +1,8 @@
 import { ApiPromise } from "@polkadot/api"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { atom } from "jotai"
-import { atomEffect } from "jotai-effect"
 import { atomFamily } from "jotai/utils"
+import { atomEffect } from "jotai-effect"
 
 /**
  * This atom can be used to get access to an `ApiPromise` for talking to a Polkadot blockchain.
@@ -25,7 +25,7 @@ export const apiPromiseAtom = atomFamily((chainId?: string) =>
 
     await apiPromise.isReady
     return apiPromise
-  }),
+  })
 )
 
 const cleanupApiPromiseEffect = (chainId: string | undefined, apiPromise: ApiPromise) =>
@@ -35,7 +35,8 @@ const cleanupApiPromiseEffect = (chainId: string | undefined, apiPromise: ApiPro
       try {
         apiPromise.disconnect()
       } catch (cause) {
-        console.warn(`Failed to close ${chainId} apiPromise: ${cause}`) // eslint-disable-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
+        console.warn(`Failed to close ${chainId} apiPromise: ${cause}`)
       }
     }
   })

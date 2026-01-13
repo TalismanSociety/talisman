@@ -8,7 +8,6 @@ const mockGetPolkadotData = vi.fn(async () => ({
   deny: ["badsite.com", "an.other-badsite.io"],
   allow: ["goodsite.com", "polkadot.js.org"],
 }))
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const mockGetMetamaskData = vi.fn(() => require("eth-phishing-detect/src/config.json"))
 
 vi.spyOn(ParaverseProtector.prototype, "getCommitSha").mockImplementation(mockGetCommitSha)

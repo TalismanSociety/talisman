@@ -1,6 +1,6 @@
 import { addTrailingSlash } from "@talismn/util"
 
-import { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
+import type { SignetVault } from "@ui/domains/Account/AccountAdd/AccountAddSignet/types"
 
 export const signet = {
   /**

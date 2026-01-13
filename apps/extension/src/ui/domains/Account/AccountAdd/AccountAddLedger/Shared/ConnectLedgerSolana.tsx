@@ -1,7 +1,6 @@
-import { getSolLedgerDerivationPath } from "extension-core"
-import { FC, useCallback } from "react"
-
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
+import { getSolLedgerDerivationPath } from "extension-core"
+import { type FC, useCallback } from "react"
 
 import { ConnectLedgerBase } from "./ConnectLedgerBase"
 

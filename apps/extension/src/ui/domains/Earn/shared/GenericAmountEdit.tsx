@@ -1,10 +1,13 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { AlertCircleIcon, SwapIcon } from "@talismn/icons"
 import { classNames, cn, tokensToPlanck } from "@talismn/util"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
+import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
+import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
 import {
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
+  type ChangeEventHandler,
+  type FC,
+  type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -13,10 +16,6 @@ import {
 } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
-
-import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
-import { useInputAutoWidth } from "@ui/hooks/useInputAutoWidth"
-import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
 
 import { currencyConfig } from "../../Asset/currencyConfig"
 import { Fiat } from "../../Asset/Fiat"
@@ -32,7 +31,7 @@ const TokenInput: FC<{
 }> = ({ symbol, decimals, logo, value, onValueChanged, onTokenClick }) => {
   const formatter = useMemo(
     () => (value !== null ? new BalanceFormatter(value, decimals) : null),
-    [decimals, value],
+    [decimals, value]
   )
 
   const formattedValue = useMemo(() => formatter?.tokens ?? "", [formatter?.tokens])
@@ -59,12 +58,12 @@ const TokenInput: FC<{
       try {
         const plancks = tokensToPlanck(nextValue, decimals)
         onValueChanged(BigInt(plancks))
-      } catch (err) {
+      } catch {
         // invalid input, ignore
         onValueChanged(null)
       }
     },
-    [onValueChanged, decimals],
+    [onValueChanged, decimals]
   )
 
   const refTokensInput = useRef<HTMLInputElement>(null)
@@ -75,7 +74,7 @@ const TokenInput: FC<{
     if (refInitialized.current) return
     refInitialized.current = true
     if (value === null) refTokensInput.current?.focus()
-  }, [refTokensInput, value])
+  }, [value])
 
   // resize input to keep content centered
   useInputAutoWidth(refTokensInput)
@@ -90,15 +89,15 @@ const TokenInput: FC<{
         placeholder="0"
         step="any"
         value={inputValue}
-        className={"text-body peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-xl"}
+        className={"peer inline-block w-fit min-w-0 text-ellipsis bg-transparent text-body text-xl"}
         onChange={handleChange}
       />
       <button
         type="button"
         onClick={onTokenClick}
         className={cn(
-          "text-body flex shrink-0 items-center gap-2 text-base font-normal",
-          onTokenClick ? "cursor-pointer" : "cursor-default",
+          "flex shrink-0 items-center gap-2 font-normal text-base text-body",
+          onTokenClick ? "cursor-pointer" : "cursor-default"
         )}
       >
         <AssetLogo className="text-lg" url={logo} />
@@ -119,12 +118,12 @@ const FiatInput: FC<{
 
   const formatter = useMemo(
     () => (value === null ? null : new BalanceFormatter(value, decimals, tokenRates)),
-    [decimals, tokenRates, value],
+    [decimals, tokenRates, value]
   )
 
   const formattedValue = useMemo(
     () => formatter?.fiat(currency)?.toString() ?? "",
-    [currency, formatter],
+    [currency, formatter]
   )
 
   const [inputValue, setInputValue] = useState(formattedValue)
@@ -150,7 +149,7 @@ const FiatInput: FC<{
           const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(decimals))
           const plancks = tokensToPlanck(tokens, decimals)
           return onValueChanged(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -158,13 +157,14 @@ const FiatInput: FC<{
       return onValueChanged(null)
     },
 
-    [tokenRates, currency, onValueChanged, decimals],
+    [tokenRates, currency, onValueChanged, decimals]
   )
 
   const refFiatInput = useRef<HTMLInputElement>(null)
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true
@@ -188,7 +188,7 @@ const FiatInput: FC<{
         inputMode="decimal"
         value={inputValue}
         placeholder={"0.00"}
-        className="text-body peer inline-block min-w-0 bg-transparent text-xl"
+        className="peer inline-block min-w-0 bg-transparent text-body text-xl"
         onChange={handleChange}
       />
       <div className="block shrink-0">{currencyConfig[currency]?.symbol}</div>
@@ -197,7 +197,7 @@ const FiatInput: FC<{
 }
 
 const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
-  return <div className="text-body-secondary max-w-[264px] truncate text-sm">{children}</div>
+  return <div className="max-w-[264px] truncate text-body-secondary text-sm">{children}</div>
 }
 
 const FiatDisplay: FC<{ decimals: number; value: bigint | null; priceUsd: number | null }> = ({
@@ -209,7 +209,7 @@ const FiatDisplay: FC<{ decimals: number; value: bigint | null; priceUsd: number
   const currency = useSelectedCurrency()
   const formatter = useMemo(
     () => (tokenRates ? new BalanceFormatter(value ?? 0n, decimals, tokenRates) : null),
-    [tokenRates, value, decimals],
+    [tokenRates, value, decimals]
   )
 
   if (!formatter) return null
@@ -272,7 +272,7 @@ export const GenericAmountEdit: FC<{
 
   return (
     <div className="size-full">
-      <div className="flex h-[50%] flex-col justify-end text-xl font-bold">
+      <div className="flex h-[50%] flex-col justify-end font-bold text-xl">
         {isTokenEdit || !priceUsd ? (
           <TokenInput
             decimals={decimals}
@@ -302,7 +302,7 @@ export const GenericAmountEdit: FC<{
             <PillButton
               onClick={toggleIsTokenEdit}
               size="xs"
-              className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
+              className="!px-0 !py-0 h-[2.2rem] w-[2.2rem] rounded-full"
             >
               <SwapIcon />
             </PillButton>
@@ -311,12 +311,12 @@ export const GenericAmountEdit: FC<{
         <PillButton
           onClick={onMaxClick}
           size="xs"
-          className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
+          className={classNames("!px-4 !py-0 h-[2.2rem] rounded-sm")}
         >
           {t("Max")}
         </PillButton>
       </div>
-      <div className={cn("text-brand-orange mt-4 text-center text-xs", !error && "invisible")}>
+      <div className={cn("mt-4 text-center text-brand-orange text-xs", !error && "invisible")}>
         <AlertCircleIcon className="inline-block align-text-top text-sm" /> {error}
       </div>
     </div>

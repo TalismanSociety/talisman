@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef, useState } from "react"
+import { type MutableRefObject, useEffect, useRef, useState } from "react"
 
 export const useImageLoaded = (): [
   MutableRefObject<HTMLImageElement | null>,
@@ -10,8 +10,9 @@ export const useImageLoaded = (): [
 
   const onLoad = () => setLoaded(true)
   useEffect(() => {
-    ref.current && ref.current.complete && onLoad()
-  })
+    ref.current?.complete && onLoad()
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
+  }, [onLoad])
 
   return [ref, loaded, onLoad]
 }

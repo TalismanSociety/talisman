@@ -1,11 +1,10 @@
-import { AccountPlatform } from "@talismn/crypto"
+import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@talisman/theme/logos"
+import type { AccountPlatform } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
 import { keyBy } from "lodash-es"
-import { FC, ReactNode, useMemo } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Dropdown } from "talisman-ui"
-
-import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@talisman/theme/logos"
 
 type AccountPlatformOption = {
   value: AccountPlatform

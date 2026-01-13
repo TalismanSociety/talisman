@@ -1,3 +1,4 @@
+import type { HexString } from "@polkadot/util/types"
 import type {
   EthNetwork,
   EthNetworkId,
@@ -8,14 +9,14 @@ import type {
   EIP1193Parameters,
   Address as EvmAddress,
   Chain as EvmChain,
+  PublicRpcSchema,
+  RpcSchema,
   TransactionRequest,
+  WalletRpcSchema,
 } from "viem"
-import { HexString } from "@polkadot/util/types"
-import { PublicRpcSchema, RpcSchema, WalletRpcSchema } from "viem"
-
+import type { BaseRequest, BaseRequestId } from "../../types/base"
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "../signing/types"
-import { BaseRequest, BaseRequestId } from "../../types/base"
-import { WalletTransactionInfo } from "../transactions"
+import type { WalletTransactionInfo } from "../transactions"
 
 export type { EvmAddress, EvmChain }
 

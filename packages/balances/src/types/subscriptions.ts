@@ -3,7 +3,7 @@
  */
 export interface SubscriptionCallback<Result> {
   (error: null, result: Result): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   (error: any, result?: never): void
 }
 

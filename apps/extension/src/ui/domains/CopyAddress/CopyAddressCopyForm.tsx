@@ -1,18 +1,17 @@
-import { Address as TAddress } from "@talismn/balances"
+import { FadeIn } from "@talisman/components/FadeIn"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { Address as TAddress } from "@talismn/balances"
 import { getNetworkGenesisHash } from "@talismn/chaindata-provider"
 import { getAccountPlatformFromAddress, isAddressEqual } from "@talismn/crypto"
 import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { FadeIn } from "@talisman/components/FadeIn"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress, useAccounts, useNetworkById } from "@ui/state"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../Account/AccountIcon"
 import { AccountTypeIcon } from "../Account/AccountTypeIcon"
@@ -50,16 +49,16 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
-    accountGenesisHash ?? genesisHash,
+    accountGenesisHash ?? genesisHash
   )
 
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-[240px] !px-4", className)} onClick={onClick}>
-      <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
+    <PillButton className={classNames("!px-4 h-16 max-w-[240px]", className)} onClick={onClick}>
+      <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
-        <div className="leading-base grow truncate">
+        <div className="grow truncate leading-base">
           {name ?? <Address address={formattedAddress} startCharCount={6} endCharCount={6} />}
         </div>
         <AccountTypeIcon type={account?.type} className="text-primary" />
@@ -87,8 +86,8 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   // substrate generic format
   if (chainId === null)
     return (
-      <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-        <div className="text-body flex flex-nowrap items-center gap-4 text-base">
+      <PillButton className={classNames("!px-4 !py-2 h-16", className)} onClick={onClick}>
+        <div className="flex flex-nowrap items-center gap-4 text-base text-body">
           <div className="flex shrink-0 flex-col justify-center">
             <AccountIcon type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
@@ -100,8 +99,8 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (!chain) return null
 
   return (
-    <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
-      <div className="text-body flex flex-nowrap items-center gap-4 text-base">
+    <PillButton className={classNames("!px-4 !py-2 h-16", className)} onClick={onClick}>
+      <div className="flex flex-nowrap items-center gap-4 text-base text-body">
         <div className="shrink-0">
           <NetworkLogo className="!text-lg" networkId={chain.id} />
         </div>
@@ -125,7 +124,7 @@ const ExternalAddressWarning = () => {
   if (!showWarning) return null
 
   return (
-    <div className="text-alert-warn mb-6 flex items-center justify-center gap-4 text-xs">
+    <div className="mb-6 flex items-center justify-center gap-4 text-alert-warn text-xs">
       <AlertCircleIcon />
       <div>{t("This address is an external account")}</div>
     </div>
@@ -193,8 +192,8 @@ export const CopyAddressCopyForm = () => {
   return (
     <CopyAddressLayout title={t("Copy address")}>
       <div className="flex h-full w-full flex-col items-center px-12 pb-12">
-        <div className="bg-grey-900 flex w-full flex-col gap-4 rounded px-8 py-4">
-          <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+        <div className="flex w-full flex-col gap-4 rounded bg-grey-900 px-8 py-4">
+          <div className="flex h-16 w-full items-center justify-between text-body-secondary">
             <div>{t("Account")}</div>
             <div>
               <AddressPillButton
@@ -205,7 +204,7 @@ export const CopyAddressCopyForm = () => {
             </div>
           </div>
           {networkId !== undefined && (
-            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+            <div className="flex h-16 w-full items-center justify-between text-body-secondary">
               <div>{t("Network")}</div>
               <div>
                 <NetworkPillButton
@@ -217,7 +216,7 @@ export const CopyAddressCopyForm = () => {
             </div>
           )}
           {isMigratedChain && (
-            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+            <div className="flex h-16 w-full items-center justify-between text-body-secondary">
               <div>{t("Format")}</div>
               <div>
                 <FormatIndicator legacyFormat={legacyFormat} />
@@ -234,7 +233,7 @@ export const CopyAddressCopyForm = () => {
             )}
           </div>
           {platform === "polkadot" && (
-            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
+            <div className="flex flex-col items-center gap-1 text-center text-body-secondary leading-paragraph">
               <div>
                 <Trans
                   t={t}
@@ -245,7 +244,7 @@ export const CopyAddressCopyForm = () => {
                     Tooltip: (
                       <Tooltip>
                         <TooltipTrigger>
-                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                          <InfoIcon className="inline align-middle text-xs hover:text-body" />
                         </TooltipTrigger>
                         <TooltipContent>
                           {network
@@ -253,7 +252,7 @@ export const CopyAddressCopyForm = () => {
                                 "Only use this address for receiving assets on the {{name}} network.",
                                 {
                                   name: network.name,
-                                },
+                                }
                               )
                             : t("This address is not specific to a network. Use at your own risk.")}
                         </TooltipContent>
@@ -282,7 +281,7 @@ export const CopyAddressCopyForm = () => {
             </div>
           )}
           {platform === "ethereum" && (
-            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
+            <div className="flex flex-col items-center gap-1 text-center text-body-secondary leading-paragraph">
               <div>
                 <Trans
                   t={t}
@@ -291,11 +290,11 @@ export const CopyAddressCopyForm = () => {
                     Tooltip: (
                       <Tooltip>
                         <TooltipTrigger>
-                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                          <InfoIcon className="inline align-middle text-xs hover:text-body" />
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Ethereum and EVM compatible networks",
+                            "Use this address for receiving assets on Ethereum and EVM compatible networks"
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -315,7 +314,7 @@ export const CopyAddressCopyForm = () => {
             </div>
           )}
           {platform === "solana" && (
-            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
+            <div className="flex flex-col items-center gap-1 text-center text-body-secondary leading-paragraph">
               <div>
                 <Trans
                   t={t}
@@ -324,11 +323,11 @@ export const CopyAddressCopyForm = () => {
                     Tooltip: (
                       <Tooltip>
                         <TooltipTrigger>
-                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                          <InfoIcon className="inline align-middle text-xs hover:text-body" />
                         </TooltipTrigger>
                         <TooltipContent>
                           {t(
-                            "Use this address for receiving assets on Solana and compatible networks",
+                            "Use this address for receiving assets on Solana and compatible networks"
                           )}
                         </TooltipContent>
                       </Tooltip>
@@ -361,7 +360,7 @@ const FormatIndicator: FC<{ legacyFormat?: boolean }> = ({ legacyFormat }) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="text-body flex items-center gap-2">
+        <div className="flex items-center gap-2 text-body">
           <span>{legacyFormat ? t("Legacy format") : t("New format")}</span>
           <InfoIcon />
         </div>

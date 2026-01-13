@@ -1,7 +1,7 @@
 import { Balances } from "@talismn/balances"
 import { isNetworkCustom, isTokenCustom } from "@talismn/chaindata-provider"
 import { isAddressEqual } from "@talismn/crypto"
-import { Account, isAccountOwned } from "@talismn/keyring"
+import { type Account, isAccountOwned } from "@talismn/keyring"
 import { isNotNil } from "@talismn/util"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { uniq } from "lodash-es"
@@ -10,7 +10,7 @@ import { filter, firstValueFrom, map } from "rxjs"
 
 import { sentry } from "../config/sentry"
 import { LegacyAccountOrigin } from "../domains/accounts/types"
-import { PostHogCaptureProperties } from "../domains/analytics/types"
+import type { PostHogCaptureProperties } from "../domains/analytics/types"
 import { appStore } from "../domains/app/store.app"
 import { settingsStore } from "../domains/app/store.settings"
 import { balancesStore$ } from "../domains/balances/store.balances"
@@ -91,7 +91,8 @@ export const spawnTaskToCreateNewReport = async ({
       await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
     } catch (cause) {
       const error = new Error("Failed to build general report", { cause })
-      console.warn(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      console.warn(error)
       sentry.captureException(error)
     } finally {
       // set this flag back to false so we don't block the next report
@@ -161,7 +162,7 @@ async function getGeneralReport({
 
   // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
   try {
-    /* eslint-disable-next-line no-var */
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var [networks, tokens, tokenRates, allBalances] = await Promise.all([
       chaindataProvider.getNetworksMapById(),
       chaindataProvider.getTokensMapById(),
@@ -170,13 +171,14 @@ async function getGeneralReport({
     ])
 
     const balanceJsons = allBalances.filter((b) =>
-      ownedAddresses.some((address) => isAddressEqual(address, b.address)),
+      ownedAddresses.some((address) => isAddressEqual(address, b.address))
     )
-    /* eslint-disable-next-line no-var */
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
-    DEBUG && console.error(error) // eslint-disable-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
+    DEBUG && console.error(error)
     throw error
   }
 
@@ -188,9 +190,9 @@ async function getGeneralReport({
       (balance) =>
         balance &&
         (!balance.token || !isTokenCustom(balance.token)) &&
-        (!balance.network || !isNetworkCustom(balance.network)),
+        (!balance.network || !isNetworkCustom(balance.network))
     ),
-    (balance) => `${balance.networkId}-${balance.tokenId}`,
+    (balance) => `${balance.networkId}-${balance.tokenId}`
   )
 
   // get fiat sum object for those arrays of balances
@@ -245,7 +247,7 @@ async function getGeneralReport({
       {
         dot: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
         eth: { totalBalance: 0, transferableBalance: 0, unavailableBalance: 0 },
-      },
+      }
     )
   const ecosystemBreakdown = Object.fromEntries(
     Object.entries(unroundedEcosystemBreakdown).map(([eco, totals]) => [
@@ -255,7 +257,7 @@ async function getGeneralReport({
         transferableBalance: privacyRoundCurrency(totals.transferableBalance),
         unavailableBalance: privacyRoundCurrency(totals.unavailableBalance),
       },
-    ]),
+    ])
   )
 
   const topChainTokens = sortedFiatSumPerChainToken
@@ -274,7 +276,7 @@ async function getGeneralReport({
   //
   const { nfts, collections } = await firstValueFrom(nftsStore$)
   const ownedNfts = nfts.filter((nft) =>
-    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress)),
+    ownedAddresses.some((ownedAddress) => isAddressEqual(nft.owner, ownedAddress))
   )
 
   const TOP_NFT_COLLECTIONS_COUNT = 20
@@ -286,7 +288,7 @@ async function getGeneralReport({
     nfts
       .concat()
       .sort((n1, n2) => (n1.price ?? 0) - (n2.price ?? 0))
-      .map((nft) => nft.collectionId),
+      .map((nft) => nft.collectionId)
   )
     .slice(0, TOP_NFT_COLLECTIONS_COUNT)
     .map((cid) => collections.find((c) => c.id === cid)?.name)

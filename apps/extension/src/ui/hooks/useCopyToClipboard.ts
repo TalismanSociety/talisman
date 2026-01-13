@@ -1,7 +1,6 @@
+import { notify } from "@talisman/components/Notifications"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-
-import { notify } from "@talisman/components/Notifications"
 
 export const useCopyToClipboard = () => {
   const { t } = useTranslation()
@@ -19,20 +18,20 @@ export const useCopyToClipboard = () => {
             subtitle: text,
           },
           // set an id to prevent multiple clicks to display multiple notifications
-          { toastId },
+          { toastId }
         )
         return true
-      } catch (err) {
+      } catch {
         notify(
           {
             type: "error",
             title: t(`Copy failed`),
           },
-          { toastId },
+          { toastId }
         )
         return false
       }
     },
-    [t, toastId],
+    [t, toastId]
   )
 }

@@ -1,4 +1,4 @@
-import { Balances, IBalance } from "@talismn/balances"
+import { Balances, type IBalance } from "@talismn/balances"
 import { normalizeAddress } from "@talismn/crypto"
 import { isAccountOwned } from "@talismn/keyring"
 import { log } from "extension-shared"
@@ -32,7 +32,7 @@ export const hideGetStartedOnceFunded = async () => {
     .subscribe(async ([settings, accounts, tokens, networksById, balances, tokenRates]) => {
       try {
         const mapOwnedAccounts = Object.fromEntries(
-          accounts.filter(isAccountOwned).map((account) => [account.address, account]),
+          accounts.filter(isAccountOwned).map((account) => [account.address, account])
         )
 
         if (!Object.keys(mapOwnedAccounts).length) return
@@ -51,7 +51,7 @@ export const hideGetStartedOnceFunded = async () => {
 
             return acc
           },
-          {} as Record<string, IBalance[]>,
+          {} as Record<string, IBalance[]>
         )
 
         for (const address of Object.keys(mapOwnedAccounts)) {

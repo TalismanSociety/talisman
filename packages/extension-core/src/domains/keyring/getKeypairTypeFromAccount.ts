@@ -1,6 +1,6 @@
-import { KeypairType } from "@polkadot/util-crypto/types"
+import type { KeypairType } from "@polkadot/util-crypto/types"
 import { isEthereumAddress } from "@talismn/crypto"
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 
 // unsafe, use only when injecting accounts into Polkadot dapps
 export const getAccountKeypairType = (account: Account): KeypairType => {
@@ -21,7 +21,7 @@ export const getAccountKeypairType = (account: Account): KeypairType => {
       // it is not possible to determine the curve of a polkadot address, assume sr25519
       return isEthereumAddress(account.address) ? "ethereum" : "sr25519"
     default:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       throw new Error(`Unsupported account type '${(account as any).type}'`)
   }
 }

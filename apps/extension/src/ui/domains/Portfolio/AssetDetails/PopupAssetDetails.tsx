@@ -1,15 +1,14 @@
-import { Balances } from "@talismn/balances"
-import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { PillButton } from "talisman-ui"
-
 import { FadeIn } from "@talisman/components/FadeIn"
+import type { Balances } from "@talismn/balances"
+import { ArrowDownIcon, CreditCardIcon } from "@talismn/icons"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useRampsModal } from "@ui/domains/Ramps/useRampsModal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useFeatureFlag } from "@ui/state"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { PillButton } from "talisman-ui"
 
 import { MonadAnimation } from "./animations/monad/MonadAnimation"
 import { SeekAnimation } from "./animations/seek/SeekAnimation"
@@ -39,7 +38,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   return (
     <FadeIn>
-      <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
+      <div className="rounded-sm bg-field p-10 text-center text-body-secondary text-sm leading-base">
         <div>
           {selectedAccount
             ? t("You don't have any {{symbol}} in this account", { symbol })
@@ -69,7 +68,7 @@ export const PopupAssetDetails: FC<{
   const { balancesByToken: rows } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
-    [rows],
+    [rows]
   )
 
   if (!hasBalance) return <NoTokens symbol={symbol} />

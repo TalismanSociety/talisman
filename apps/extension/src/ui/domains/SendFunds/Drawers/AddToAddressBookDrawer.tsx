@@ -1,19 +1,18 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { detectAddressEncoding, normalizeAddress } from "@talismn/crypto"
-import { HexString } from "@talismn/util"
-import { FC, FormEventHandler, useCallback, useEffect, useMemo } from "react"
-import { useForm } from "react-hook-form"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import * as yup from "yup"
-
+import type { HexString } from "@talismn/util"
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { LimitToNetworkTooltip } from "@ui/domains/Settings/AddressBook/LimitToNetworkTooltip"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useNetworkByGenesisHash } from "@ui/state"
+import { type FC, type FormEventHandler, useCallback, useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Checkbox, Drawer, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import * as yup from "yup"
 
 import { AccountIcon } from "../../Account/AccountIcon"
 
@@ -43,7 +42,7 @@ const AddToAddressBookDrawerForm: FC<{
   const addressType = useMemo(() => detectAddressEncoding(address), [address])
   const isGenericAddress = useMemo(
     () => addressType === "ss58" && address === normalizeAddress(address),
-    [address, addressType],
+    [address, addressType]
   )
   const {
     register,
@@ -87,7 +86,7 @@ const AddToAddressBookDrawerForm: FC<{
         setError("name", err as Error)
       }
     },
-    [address, addressType, tokenGenesisHash, onClose, setError],
+    [address, addressType, tokenGenesisHash, onClose, setError]
   )
 
   // don't bubble up submit event, in case we're in another form (send funds)
@@ -97,20 +96,22 @@ const AddToAddressBookDrawerForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setFocus("name")
     }, 250)
+    return () => clearTimeout(timeout)
   }, [setFocus, reset])
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <form
-      className="bg-grey-800 flex h-[26.8rem] flex-col justify-end rounded-t-xl p-12"
+      className="flex h-[26.8rem] flex-col justify-end rounded-t-xl bg-grey-800 p-12"
       onSubmit={submitWithoutBubbleUp}
     >
       <header className="flex flex-col items-center justify-center gap-6">
@@ -140,7 +141,7 @@ const AddToAddressBookDrawerForm: FC<{
               t={t}
               defaults="Limit to <Chain><ChainLogo />{{chainName}}</Chain>"
               components={{
-                Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+                Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
                 ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
               }}
               values={{ chainName: chain?.name }}

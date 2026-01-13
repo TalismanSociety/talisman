@@ -1,15 +1,14 @@
-import { HexString } from "@polkadot/util/types"
-import { detectAddressEncoding } from "@talismn/crypto"
-import { useCallback, useReducer } from "react"
-import { useTranslation } from "react-i18next"
-
+import type { HexString } from "@polkadot/util/types"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
+import { detectAddressEncoding } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
+import { useCallback, useReducer } from "react"
+import { useTranslation } from "react-i18next"
 
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 
 type AccountConfigState = {
   name: string
@@ -160,7 +159,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
           title: t("Importing account"),
           subtitle: "Please wait",
         },
-        { autoClose: false },
+        { autoClose: false }
       )
 
       const { name, address, genesisHash, lockToNetwork } = state.accountConfig
@@ -218,7 +217,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
         })
       }
     },
-    [onSuccess, state, t],
+    [onSuccess, state, t]
   )
 
   const submitConfigure = useCallback(
@@ -232,7 +231,7 @@ const useAccountAddQrContext = ({ onSuccess }: AccountAddPageProps) => {
       // otherwise, dispatch to setConfigureVerifierCert
       dispatch({ method: "setConfigureVerifierCert" })
     },
-    [submit, state, hasVerifierCertMnemonic, vaultAccounts],
+    [submit, state, hasVerifierCertMnemonic, vaultAccounts]
   )
 
   return { state, dispatch, submitConfigure, submit }

@@ -1,19 +1,26 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Address, BalanceFormatter } from "@talismn/balances"
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { type Address, BalanceFormatter } from "@talismn/balances"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { EditIcon } from "@talismn/icons"
 import { formatDecimals, tokensToPlanck } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { abiErc20, EvmAddress } from "extension-core"
+import { Fiat } from "@ui/domains/Asset/Fiat"
+import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useErc20Token } from "@ui/hooks/useErc20Token"
+import { useSelectedCurrency, useTokenRates } from "@ui/state"
+import { abiErc20, type EvmAddress } from "extension-core"
 import { log } from "extension-shared"
-import { FC, FormEventHandler, useCallback, useMemo } from "react"
+import { type FC, type FormEventHandler, useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
   Drawer,
   FormFieldContainer,
-  FormFieldInputContainerProps,
+  type FormFieldInputContainerProps,
   FormFieldInputText,
   PillButton,
   Tooltip,
@@ -24,16 +31,8 @@ import {
 import { formatUnits, getContract, hexToBigInt, parseAbi, parseUnits } from "viem"
 import * as yup from "yup"
 
-import { notify } from "@talisman/components/Notifications"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { Fiat } from "@ui/domains/Asset/Fiat"
-import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useErc20Token } from "@ui/hooks/useErc20Token"
-import { useSelectedCurrency, useTokenRates } from "@ui/state"
-
 export const ERC20_UNLIMITED_ALLOWANCE = hexToBigInt(
-  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 )
 
 const INPUT_PROPS: FormFieldInputContainerProps = {
@@ -57,7 +56,7 @@ const isValidAmount =
     if (value === "") return true // Unlimited
     try {
       return BigInt(tokensToPlanck(value, decimals)) > 0n
-    } catch (err) {
+    } catch {
       return false
     }
   }
@@ -100,14 +99,14 @@ const EditAllowanceForm: FC<{
           .defined()
           .test("limit", "Invalid amount", isValidAmount(token.decimals)),
       }),
-    [token],
+    [token]
   )
 
   const defaultValues = useMemo(
     () => ({
       limit: allowance === ERC20_UNLIMITED_ALLOWANCE ? "" : formatUnits(allowance, token.decimals),
     }),
-    [allowance, token.decimals],
+    [allowance, token.decimals]
   )
 
   const {
@@ -132,7 +131,7 @@ const EditAllowanceForm: FC<{
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [genericEvent, onSubmit, token.decimals],
+    [genericEvent, onSubmit, token.decimals]
   )
 
   // don't bubble up submit event to the parent approval form
@@ -142,13 +141,13 @@ const EditAllowanceForm: FC<{
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
-    [handleSubmit, submit],
+    [handleSubmit, submit]
   )
 
   const { data: balance } = useFetchErc20Balance(account, token)
   const max = useMemo(
     () => (balance ? formatUnits(balance, token.decimals) : ""),
-    [balance, token.decimals],
+    [balance, token.decimals]
   )
 
   const handleMaxClick = useCallback(() => {
@@ -156,9 +155,9 @@ const EditAllowanceForm: FC<{
   }, [max, setValue])
 
   return (
-    <form onSubmit={submitWithoutBubbleUp} className="bg-grey-800 rounded-t-xl p-12">
+    <form onSubmit={submitWithoutBubbleUp} className="rounded-t-xl bg-grey-800 p-12">
       <div className="text-center font-bold">{t("Edit spending limit")}</div>
-      <p className="text-body-secondary my-12 text-sm">
+      <p className="my-12 text-body-secondary text-sm">
         <Trans
           components={{
             Highlight: <span className="text-body"></span>,
@@ -230,7 +229,7 @@ export const SignParamAllowanceButton: FC<{
       onChange(limit)
       close()
     },
-    [close, onChange],
+    [close, onChange]
   )
 
   return (

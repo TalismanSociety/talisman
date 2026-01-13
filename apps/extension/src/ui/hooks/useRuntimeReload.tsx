@@ -1,8 +1,7 @@
 import { connectionMetaDb } from "@talismn/connection-meta"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { assetDiscoveryStore, db as talismanDb } from "extension-core"
 import { useCallback, useState } from "react"
-
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 
 export const useRuntimeReload = (analyticsPage: AnalyticsPage) => {
   const [hasRuntimeReloadFn] = useState(() => typeof chrome?.runtime?.reload === "function")

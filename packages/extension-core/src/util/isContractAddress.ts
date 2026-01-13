@@ -1,12 +1,12 @@
-import { PublicClient } from "viem"
+import type { PublicClient } from "viem"
 
-import { EvmAddress } from "../domains/ethereum/types"
+import type { EvmAddress } from "../domains/ethereum/types"
 
 export const isContractAddress = async (client: PublicClient, address: EvmAddress) => {
   try {
     const code = await client.getBytecode({ address })
     return !!code && code !== "0x"
-  } catch (error) {
+  } catch {
     // not a contract
     return false
   }

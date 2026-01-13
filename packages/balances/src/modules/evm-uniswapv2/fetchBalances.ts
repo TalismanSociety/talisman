@@ -2,13 +2,13 @@ import { parseTokenId } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import BigNumber from "bignumber.js"
 import { keyBy, uniq } from "lodash-es"
-import { getContract, PublicClient } from "viem"
+import { getContract, type PublicClient } from "viem"
 
-import { ExtraAmount } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { ExtraAmount } from "../../types"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import { uniswapV2PairAbi } from "../abis"
 import { BalanceFetchError, BalanceFetchNetworkError } from "../shared/errors"
-import { BalanceDef, getBalanceDefs } from "../shared/types"
+import { type BalanceDef, getBalanceDefs } from "../shared/types"
 import { MODULE_TYPE } from "./config"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
@@ -24,13 +24,13 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
   for (const [token, addresses] of tokensWithAddresses) {
     if (token.type !== MODULE_TYPE || token.networkId !== networkId)
       throw new Error(
-        `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`,
+        `Invalid token type or networkId for EVM ERC20 balance module: ${token.type} on ${token.networkId}`
       )
 
     for (const address of addresses)
       if (!isEthereumAddress(address))
         throw new Error(
-          `Invalid ethereum address for EVM ERC20 balance module: ${address} for token ${token.id}`,
+          `Invalid ethereum address for EVM ERC20 balance module: ${address} for token ${token.id}`
         )
   }
 
@@ -41,7 +41,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
 
 const fetchPoolBalances = async (
   client: PublicClient,
-  balanceDefs: BalanceDef<typeof MODULE_TYPE>[],
+  balanceDefs: BalanceDef<typeof MODULE_TYPE>[]
 ): Promise<FetchBalanceResults> => {
   if (balanceDefs.length === 0) return { success: [], errors: [] }
 
@@ -59,7 +59,7 @@ const fetchPoolBalances = async (
           contract.read.getReserves(),
         ])
         return { address, totalSupply, reserve0, reserve1 }
-      }),
+      })
     ),
     // balances for each address
     Promise.allSettled(
@@ -72,13 +72,13 @@ const fetchPoolBalances = async (
         } as const)
 
         return { pool: token.contractAddress, address, balance }
-      }),
+      })
     ),
   ])
 
   const poolInfo = keyBy(
     poolResults.filter((r) => r.status === "fulfilled").map((r) => r.value),
-    (p) => p.address,
+    (p) => p.address
   )
 
   const results = balanceDefs.reduce<FetchBalanceResults>(
@@ -90,7 +90,7 @@ const fetchPoolBalances = async (
           address,
           error: new BalanceFetchNetworkError(
             `Pool data not found for token ${token.id} at address ${token.contractAddress}`,
-            parseTokenId(token.id).networkId,
+            parseTokenId(token.id).networkId
           ),
         })
         return acc
@@ -106,7 +106,7 @@ const fetchPoolBalances = async (
             `Failed to fetch balance for token ${token.id} at address ${address}`,
             token.id,
             address,
-            balanceResult.reason as Error,
+            balanceResult.reason as Error
           ),
         })
         return acc
@@ -141,7 +141,7 @@ const fetchPoolBalances = async (
 
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 
   return results

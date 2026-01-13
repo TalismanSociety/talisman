@@ -1,14 +1,14 @@
 import {
-  DotNetwork,
-  EthNetwork,
-  EvmNativeToken,
+  type DotNetwork,
+  type EthNetwork,
+  type EvmNativeToken,
   getChaindataDbV3,
-  LegacyChain,
-  LegacyCustomChain,
-  LegacyCustomEvmNetwork,
-  LegacyEvmNetwork,
+  type LegacyChain,
+  type LegacyCustomChain,
+  type LegacyCustomEvmNetwork,
+  type LegacyEvmNetwork,
+  type SubNativeToken,
   subForeignAssetTokenId,
-  SubNativeToken,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
@@ -16,7 +16,7 @@ import { assign, fromPairs, keyBy, toPairs } from "lodash-es"
 import { filter, firstValueFrom } from "rxjs"
 
 import { db as walletDb } from "../../../db"
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
 import { assetDiscoveryStore } from "../../assetDiscovery/store"
 import { activeNetworksStore } from "../../balances/store.activeNetworks"
@@ -57,7 +57,7 @@ const executeMigration = async () => {
 
     const oldTokensMap = keyBy(oldTokens, (t) => t.id)
     const oldToNewTokenId = fromPairs(
-      oldTokens.map((token) => [token.id, getChaindataV4TokenId(token.id, oldTokensMap)]),
+      oldTokens.map((token) => [token.id, getChaindataV4TokenId(token.id, oldTokensMap)])
     )
 
     // migrate active networks and tokens
@@ -71,8 +71,8 @@ const executeMigration = async () => {
           .map(([oldTokenId, isActive]) => {
             return [oldToNewTokenId[oldTokenId], isActive]
           })
-          .filter(([tokenId]) => !!tokenId),
-      ),
+          .filter(([tokenId]) => !!tokenId)
+      )
     )
 
     await appStore.set({ currentMigration: { name: MIGRATION_LABEL, progress: 0.6 } })
@@ -114,7 +114,7 @@ const executeMigration = async () => {
 
     // wait for user to aknowledge that balances will be reloaded
     await firstValueFrom(
-      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.acknowledged)),
+      appStore.observable.pipe(filter((appState) => !!appState.currentMigration?.acknowledged))
     )
   } catch (error) {
     // actually none of the migrations should throw, unless there are storage (quota?) issues
@@ -176,8 +176,8 @@ const getChaindataV3Entities = async () => {
 
 const getChaindataV4TokenId = (
   oldTokenId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokens: Record<string, any>,
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  oldTokens: Record<string, any>
 ): string | null => {
   if (oldTokenId.includes("-evm-native")) return oldTokenId.replace("-evm-native", ":evm-native")
 
@@ -206,7 +206,7 @@ const getChaindataV4TokenId = (
 
   if (oldTokenId.includes("-substrate-foreignassets-")) {
     const oldToken = oldTokens[oldTokenId]
-    if (oldToken && oldToken.chainId && oldToken.onChainId)
+    if (oldToken?.chainId && oldToken.onChainId)
       return subForeignAssetTokenId(oldToken.chainId, oldToken.onChainId)
 
     log.debug("Unable to migrate foreign asset token ID", oldTokenId)
@@ -219,14 +219,14 @@ const getChaindataV4TokenId = (
 
 const migrateCustomChains = async (
   oldChains: (LegacyChain | LegacyCustomChain)[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokensMap: Record<string, any>,
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  oldTokensMap: Record<string, any>
 ) => {
   // custom networks and tokens
   for (const customChain of oldChains.filter(
-    (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomChain => "isCustom" in chain && chain.isCustom
   )) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const oldNativeToken: any = oldTokensMap[customChain.nativeToken?.id ?? ""]
     if (!oldNativeToken) {
       log.warn(`No native token found for custom chain ${customChain.id}, skipping migration`)
@@ -275,24 +275,23 @@ const migrateCustomChains = async (
       await customChaindataStore.upsertNetwork(customNetwork, nativeToken)
     } catch (err) {
       log.error(`Error migrating custom chain ${customChain.id}`, err)
-      continue
     }
   }
 }
 
 const migrateCustomEvmNetworks = async (
   oldEvmNetworks: (LegacyEvmNetwork | LegacyCustomEvmNetwork)[],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oldTokensMap: Record<string, any>,
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  oldTokensMap: Record<string, any>
 ) => {
   for (const customEvmNetwork of oldEvmNetworks.filter(
-    (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom,
+    (chain): chain is LegacyCustomEvmNetwork => "isCustom" in chain && chain.isCustom
   )) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const oldNativeToken: any = oldTokensMap[customEvmNetwork.nativeToken?.id ?? ""]
     if (!oldNativeToken) {
       log.warn(
-        `No native token found for custom evmNetwork ${customEvmNetwork.id}, skipping migration`,
+        `No native token found for custom evmNetwork ${customEvmNetwork.id}, skipping migration`
       )
       continue
     }
@@ -331,7 +330,6 @@ const migrateCustomEvmNetworks = async (
       await customChaindataStore.upsertNetwork(customNetwork, nativeToken)
     } catch (err) {
       log.error(`Error migrating custom chain ${customEvmNetwork.id}`, err)
-      continue
     }
   }
 }

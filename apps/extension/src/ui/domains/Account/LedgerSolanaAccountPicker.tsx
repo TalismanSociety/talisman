@@ -1,25 +1,28 @@
 import { encodeAddressSolana, isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { Account, getSolLedgerDerivationPath, LedgerSolDerivationPathType } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
-import { LedgerAccountDefSolana } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
+import type { LedgerAccountDefSolana } from "@ui/domains/Account/AccountAdd/AccountAddLedger/context"
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSolana } from "@ui/hooks/ledger/useLedgerSolana"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
+import {
+  type Account,
+  getSolLedgerDerivationPath,
+  type LedgerSolDerivationPathType,
+} from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "./LedgerConnectionStatus"
 
 const useLedgerSolanaAccounts = (
   name: string,
   derivationPathType: LedgerSolDerivationPathType,
   selectedAccounts: LedgerAccountDefSolana[],
   pageIndex: number,
-  itemsPerPage: number,
+  itemsPerPage: number
 ) => {
   const { t } = useTranslation()
   const walletAccounts = useAccounts()
@@ -113,7 +116,7 @@ const useLedgerSolanaAccounts = (
         refIsBusy.current = false
       }
     },
-    [derivationPathType, getAddress, itemsPerPage, name, t],
+    [derivationPathType, getAddress, itemsPerPage, name, t]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -127,10 +130,10 @@ const useLedgerSolanaAccounts = (
               name: "",
               createdAt: Date.now(),
               derivationPath: "",
-            }),
+            })
           )
         : [],
-    [derivedAccounts, itemsPerPage, withBalances],
+    [derivedAccounts, itemsPerPage, withBalances]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -140,11 +143,11 @@ const useLedgerSolanaAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find((wa) =>
-          isAddressEqual(wa.address, acc.address),
+          isAddressEqual(wa.address, acc.address)
         )
 
         const accountBalances = balances.balances.find((b) =>
-          isAddressEqual(b.address, acc.address),
+          isAddressEqual(b.address, acc.address)
         )
         const isBalanceLoading =
           withBalances &&
@@ -160,7 +163,7 @@ const useLedgerSolanaAccounts = (
           isBalanceLoading,
         }
       }),
-    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances],
+    [balances, derivedAccounts, selectedAccounts, walletAccounts, withBalances]
   )
 
   useEffect(() => {
@@ -196,7 +199,7 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
     derivationPathType,
     selectedAccounts,
     pageIndex,
-    itemsPerPage,
+    itemsPerPage
   )
 
   const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
@@ -209,7 +212,7 @@ export const LedgerSolanaAccountPicker: FC<LedgerSolanaAccountPickerProps> = ({
             name,
             address,
             derivationPath,
-          }),
+          })
     )
   }, [])
 

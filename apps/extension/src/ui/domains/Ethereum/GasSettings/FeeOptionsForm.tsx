@@ -1,28 +1,27 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import {
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-  EthTransactionDetails,
-  GasSettingsByPriority,
-  getTotalFeesFromGasSettings,
-} from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useNetworkById, useToken } from "@ui/state"
+import {
+  type EthPriorityOptionName,
+  type EthPriorityOptionNameEip1559,
+  type EthPriorityOptionNameLegacy,
+  type EthTransactionDetails,
+  type GasSettingsByPriority,
+  getTotalFeesFromGasSettings,
+} from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { useFeePriorityOptionsUI } from "./common"
 
 const getGasSettings = (
   gasSettingsByPriority: GasSettingsByPriority,
-  priority: EthPriorityOptionName,
+  priority: EthPriorityOptionName
 ) => {
   switch (gasSettingsByPriority.type) {
     case "eip1559":
@@ -67,18 +66,16 @@ const Eip1559FeeTooltip: FC<{
   if (!estimated || !max) return null
 
   return (
-    <>
-      <div className="flex flex-col gap-2 pt-1">
-        <div className="flex w-full items-center justify-between gap-4">
-          <div>{t("Estimated Fee:")}</div>
-          <div className="font-mono">{estimated}</div>
-        </div>
-        <div className="flex w-full items-center justify-between gap-4">
-          <div>{t("Maximum Fee:")}</div>
-          <div className="font-mono">{max}</div>
-        </div>
+    <div className="flex flex-col gap-2 pt-1">
+      <div className="flex w-full items-center justify-between gap-4">
+        <div>{t("Estimated Fee:")}</div>
+        <div className="font-mono">{estimated}</div>
       </div>
-    </>
+      <div className="flex w-full items-center justify-between gap-4">
+        <div>{t("Maximum Fee:")}</div>
+        <div className="font-mono">{max}</div>
+      </div>
+    </div>
   )
 }
 
@@ -105,7 +102,7 @@ const PriorityOption = ({
       gasSettings,
       txDetails.estimatedGas,
       txDetails.baseFeePerGas,
-      txDetails.estimatedL1DataFee ?? 0n,
+      txDetails.estimatedL1DataFee ?? 0n
     )
   }, [
     gasSettingsByPriority,
@@ -122,8 +119,8 @@ const PriorityOption = ({
       onClick={onClick}
       type="button"
       className={classNames(
-        "hover:bg-grey-700 mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:text-white",
-        selected ? "bg-grey-700 text-white" : "text-body-secondary bg-grey-750",
+        "mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:bg-grey-700 hover:text-white",
+        selected ? "bg-grey-700 text-white" : "bg-grey-750 text-body-secondary"
       )}
     >
       <div>
@@ -176,12 +173,12 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
     (priority: EthPriorityOptionName) => () => {
       if (onChange) onChange(priority)
     },
-    [onChange],
+    [onChange]
   )
 
   return (
-    <div className="text-body-secondary bg-black-tertiary flex flex-col gap-12 rounded-t-xl p-12 text-sm">
-      <h3 className="text-body mb-0 text-center text-base font-bold">{t("Fee Options")}</h3>
+    <div className="flex flex-col gap-12 rounded-t-xl bg-black-tertiary p-12 text-body-secondary text-sm">
+      <h3 className="mb-0 text-center font-bold text-base text-body">{t("Fee Options")}</h3>
       <div>
         <Trans t={t}>
           This network requires a fee to validate your transaction. The fee will vary depending on

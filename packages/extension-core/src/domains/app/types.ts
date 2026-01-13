@@ -1,8 +1,8 @@
-import { DotNetworkId, EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { DotNetworkId, EthNetworkId, NetworkId, TokenId } from "@talismn/chaindata-provider"
 
-import { ValidRequests } from "../../libs/requests/types"
-import { Address } from "../../types/base"
-import { PostHogCaptureProperties } from "../analytics/types"
+import type { ValidRequests } from "../../libs/requests/types"
+import type { Address } from "../../types/base"
+import type { PostHogCaptureProperties } from "../analytics/types"
 
 export type RemoteConfigStoreData = {
   featureFlags: FeatureFlags

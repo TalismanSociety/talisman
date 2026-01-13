@@ -1,7 +1,7 @@
 import Keyring, { decodeAddress } from "@polkadot/keyring"
 import { decodeSs58Address, detectAddressEncoding, isEthereumAddress } from "@talismn/crypto"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 
 // TODO This is non-sense, delete after migrating to PAPI
 const getPublicKeyFromAddress = (address: string) => {
@@ -41,6 +41,6 @@ export const getPjsKeyringPairFake = (address: Address) => {
       secretKey: new Uint8Array(),
     },
     { name: "Unknown" },
-    type,
+    type
   )
 }

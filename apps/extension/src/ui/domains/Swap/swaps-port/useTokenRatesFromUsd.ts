@@ -1,7 +1,6 @@
 import type { TokenRates } from "@talismn/token-rates"
-import { useMemo } from "react"
-
 import { useTokenRatesMap } from "@ui/state"
+import { useMemo } from "react"
 
 /**
  * Given a usd value, derive rate of this value in all available currencies:
@@ -21,6 +20,7 @@ export const useTokenRatesFromUsd = (usdValue: string | number | undefined | nul
     return Object.entries(defaultTokenRate).reduce((acc, [currency, rate]) => {
       if (rate === null || rate === undefined) return acc
       return {
+        // biome-ignore lint/performance/noAccumulatingSpread: legacy
         ...acc,
         [currency]: (+usdValue * rate?.price) / baseRate,
       }

@@ -1,10 +1,9 @@
-import { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
-import { log } from "extension-shared"
-import { useMemo } from "react"
-import { createPublicClient, custom, PublicClient } from "viem"
-
+import type { EthNetwork, EthNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { useNetworkById } from "@ui/state"
+import { log } from "extension-shared"
+import { useMemo } from "react"
+import { createPublicClient, custom, type PublicClient } from "viem"
 
 type ViemRequest = (arg: { method: string; params?: unknown[] }) => Promise<unknown>
 
@@ -41,7 +40,7 @@ export const getExtensionPublicClient = (evmNetwork: EthNetwork): PublicClient =
       {
         // backend will retry, at it's own transport level
         retryCount: 0,
-      },
+      }
     ),
   })
 }

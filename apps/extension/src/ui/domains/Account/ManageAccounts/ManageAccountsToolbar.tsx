@@ -1,6 +1,12 @@
+import { SearchInput } from "@talisman/components/SearchInput"
 import { FolderPlusIcon, MoreHorizontalIcon, PlusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback } from "react"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
+import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
+import { IS_POPUP } from "@ui/util/constants"
+import { type FC, type ReactNode, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -12,13 +18,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "talisman-ui"
-
-import { SearchInput } from "@talisman/components/SearchInput"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useNewFolderModal } from "@ui/domains/Account/NewFolderModal"
-import { PortfolioToolbarButton } from "@ui/domains/Portfolio/PortfolioToolbarButton"
-import { IS_POPUP } from "@ui/util/constants"
 
 import { ExportAllAccountsModal, useExportAllAccountsModal } from "../ExportAllAccountsModal"
 import { useManageAccounts } from "./ManageAccountsProvider"
@@ -46,15 +45,15 @@ export const ManageAccountsToolbar: FC<{
     <div
       className={classNames(
         "@container flex w-full shrink-0 items-center justify-between gap-4 overflow-hidden",
-        className,
+        className
       )}
     >
       <div className="flex grow items-center overflow-hidden">
         <SearchInput
           containerClassName={classNames(
-            "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] w-full border border-field text-sm !px-4",
-            "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
-            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
+            "!bg-field !px-4 h-[3.6rem] w-full rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+            "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
+            "@2xl:h-[4.4rem] @2xl:[&>input]:text-base @2xl:[&>svg]:size-10"
           )}
           placeholder={t("Search account or folder")}
           onChange={onSearchChange}
@@ -78,7 +77,7 @@ const ToolbarButton: FC<{
       <PortfolioToolbarButton
         className={classNames(
           "size-[3.6rem]",
-          !IS_POPUP && "@2xl:h-[4.4rem] @2xl:px-6 flex h-[3.6rem] w-auto items-center gap-3 px-4",
+          !IS_POPUP && "flex @2xl:h-[4.4rem] h-[3.6rem] w-auto items-center gap-3 @2xl:px-6 px-4"
         )}
         onClick={onClick}
       >
@@ -103,9 +102,9 @@ const AccountsContextMenu = () => {
       <ContextMenu placement="bottom-end">
         <ContextMenuTrigger
           className={classNames(
-            "bg-grey-900 hover:bg-grey-800 text-body-secondary border-content flex items-center justify-center rounded-sm",
-            "focus-visible:border-grey-700 border border-transparent ring-transparent",
-            "@2xl:size-[4.4rem] size-[3.6rem]",
+            "flex items-center justify-center rounded-sm border-content bg-grey-900 text-body-secondary hover:bg-grey-800",
+            "border border-transparent ring-transparent focus-visible:border-grey-700",
+            "@2xl:size-[4.4rem] size-[3.6rem]"
           )}
         >
           <MoreHorizontalIcon />

@@ -1,4 +1,4 @@
-import { Mnemonic } from "@talismn/keyring"
+import type { Mnemonic } from "@talismn/keyring"
 
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean

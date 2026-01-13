@@ -1,14 +1,14 @@
-import { IBalance } from "@talismn/balances"
+import type { IBalance } from "@talismn/balances"
 import { getSharedObservable } from "@talismn/util"
 import { fromPairs } from "lodash-es"
-import { filter, firstValueFrom, map, Observable, of } from "rxjs"
+import { filter, firstValueFrom, map, type Observable, of } from "rxjs"
 
 import { genericSubscription } from "../../handlers/subscriptions"
 import { ExtensionHandler } from "../../libs/Handler"
-import { MessageTypes, RequestTypes, ResponseType } from "../../types"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestTypes, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { balancesProvider } from "./balancesProvider"
-import {
+import type {
   BalanceSubscriptionResponse,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
@@ -20,7 +20,7 @@ export class BalancesHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    port: Port,
+    port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -39,7 +39,7 @@ export class BalancesHandler extends ExtensionHandler {
         return genericSubscription(
           id,
           port,
-          getBalancesByParams$(request as RequestBalancesByParamsSubscribe),
+          getBalancesByParams$(request as RequestBalancesByParamsSubscribe)
         )
 
       default:
@@ -52,13 +52,13 @@ const getBalance = ({ address, tokenId }: RequestBalance) => {
   return firstValueFrom(
     balancesProvider.getBalances$({ [tokenId]: [address] }).pipe(
       filter((res) => res.status === "live"),
-      map((res): IBalance | null => res.balances[0] ?? null),
-    ),
+      map((res): IBalance | null => res.balances[0] ?? null)
+    )
   )
 }
 
 const getBalancesByParams$ = (
-  params: RequestBalancesByParamsSubscribe,
+  params: RequestBalancesByParamsSubscribe
 ): Observable<BalanceSubscriptionResponse> => {
   return getSharedObservable(
     "getBalancesByParams$",
@@ -76,11 +76,11 @@ const getBalancesByParams$ = (
 
       const addressesByTokenId = fromPairs(
         addressesAndTokens.tokenIds.map(
-          (tokenId) => [tokenId, addressesAndTokens.addresses] as [string, string[]],
-        ),
+          (tokenId) => [tokenId, addressesAndTokens.addresses] as [string, string[]]
+        )
       )
 
       return balancesProvider.getBalances$(addressesByTokenId)
-    },
+    }
   )
 }

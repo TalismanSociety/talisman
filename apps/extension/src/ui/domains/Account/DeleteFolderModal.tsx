@@ -1,12 +1,11 @@
 import { bind } from "@react-rxjs/core"
-import { AccountsCatalogTree } from "extension-core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { api } from "@ui/api"
+import type { AccountsCatalogTree } from "extension-core"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { BehaviorSubject } from "rxjs"
 import { Button, Modal, ModalDialog } from "talisman-ui"
-
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { api } from "@ui/api"
 
 type FolderProps = {
   id: string | null
@@ -35,7 +34,7 @@ export const useDeleteFolderModal = () => {
       setLocalFolder({ id, name, treeName })
       _open()
     },
-    [_open],
+    [_open]
   )
 
   return {

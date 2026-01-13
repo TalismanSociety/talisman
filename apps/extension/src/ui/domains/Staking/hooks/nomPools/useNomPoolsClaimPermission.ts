@@ -1,13 +1,13 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
-import { NomPoolsClaimPermission } from "../../types"
+import type { NomPoolsClaimPermission } from "../../types"
 
 export const useNomPoolsClaimPermission = (
   chainId: DotNetworkId | null | undefined,
-  address: string | null | undefined,
+  address: string | null | undefined
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 
@@ -18,7 +18,7 @@ export const useNomPoolsClaimPermission = (
       const result = await sapi.getStorage<NomPoolsClaimPermission>(
         "NominationPools",
         "ClaimPermissions",
-        [address],
+        [address]
       )
 
       return result?.type ?? "Permissioned"

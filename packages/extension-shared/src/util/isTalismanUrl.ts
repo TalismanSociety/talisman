@@ -5,7 +5,7 @@ export const isTalismanUrl = (url: string | undefined) => {
   try {
     const hostname = new URL(url).hostname
     return isTalismanHostname(hostname)
-  } catch (e) {
+  } catch {
     return false
   }
 }

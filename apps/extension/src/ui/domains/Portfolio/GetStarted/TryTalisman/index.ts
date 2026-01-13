@@ -1,2 +1,2 @@
-export * from "./useTryTalismanModal"
 export * from "./TryTalismanModal"
+export * from "./useTryTalismanModal"

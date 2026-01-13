@@ -1,13 +1,12 @@
 import { bind } from "@react-rxjs/core"
+import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
 import { detectAddressEncoding, encodeAnyAddress, normalizeAddress } from "@talismn/crypto"
+import { useNetworksMapById } from "@ui/state"
+import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
 
-import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
-import { useNetworksMapById } from "@ui/state"
-import { copyAddress } from "@ui/util/copyAddress"
-
-import { CopyAddressWizardInputs } from "./types"
+import type { CopyAddressWizardInputs } from "./types"
 
 const copyAddressInputs$ = new BehaviorSubject<CopyAddressWizardInputs>({})
 
@@ -55,7 +54,7 @@ export const useCopyAddressModal = () => {
       setCopyAddressInputs(opts)
       innerOpen()
     },
-    [chainsMap, innerOpen],
+    [chainsMap, innerOpen]
   )
 
   return {

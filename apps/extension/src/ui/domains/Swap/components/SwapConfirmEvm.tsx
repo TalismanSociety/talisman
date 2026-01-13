@@ -1,10 +1,16 @@
+import { notify } from "@talisman/components/Notifications"
 import { LoaderIcon } from "@talismn/icons"
+import { api } from "@ui/api"
+import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
+import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
+import { useNetworkById, useToken } from "@ui/state"
+import { useAccountByAddress } from "@ui/state/accounts"
 import {
   activeNetworksStore,
   activeTokensStore,
-  EthPriorityOptionName,
+  type EthPriorityOptionName,
   serializeTransactionRequest,
-  WalletTransactionInfo,
+  type WalletTransactionInfo,
 } from "extension-core"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
@@ -13,13 +19,6 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 import { EstimateGasExecutionError } from "viem"
-
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
-import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
-import { useNetworkById, useToken } from "@ui/state"
-import { useAccountByAddress } from "@ui/state/accounts"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import {
@@ -33,9 +32,9 @@ import {
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import { useFastBalance } from "../swaps-port/useFastBalance"
 import { selectedSwapModuleAtom, toAmountAtom } from "../swaps.api"
+import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateEvm } from "./FeeEstimateEvm"
 
 export const SwapConfirmEvm = ({
@@ -63,11 +62,11 @@ export const SwapConfirmEvm = ({
   const swapModule = useAtomValue(selectedSwapModuleAtom)
   const exchangeAtom = useMemo(
     () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom],
+    [swapModule?.exchangeAtom]
   )
   const evmTransactionAtom = useMemo(
     () => swapModule?.evmTransactionAtom ?? atom(null),
-    [swapModule?.evmTransactionAtom],
+    [swapModule?.evmTransactionAtom]
   )
   const subProtocol = useAtomValue(selectedSubProtocolAtom)
 
@@ -145,7 +144,7 @@ export const SwapConfirmEvm = ({
   } = useEthTransaction(
     evmTxLoadable?.state === "hasData" ? (evmTxLoadable.data ?? undefined) : undefined,
     fromAsset?.chainId.toString(),
-    isPayloadLocked,
+    isPayloadLocked
   )
 
   const handleFeeChange = useCallback(
@@ -153,7 +152,7 @@ export const SwapConfirmEvm = ({
       setPriority(priority)
       // setReady() // clear error from previous submit attempt
     },
-    [setPriority],
+    [setPriority]
   )
 
   const [isProcessing, setIsProcessing] = useState(false)
@@ -184,7 +183,7 @@ export const SwapConfirmEvm = ({
       if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to submit swap", { cause }))
       notify({
         title: `Failed to submit swap`,
@@ -216,7 +215,7 @@ export const SwapConfirmEvm = ({
           fromAsset?.chainId.toString(),
           serialized,
           signature,
-          txInfo,
+          txInfo
         )
 
         if (txInfo && txInfo.type === "swap-simpleswap")
@@ -235,7 +234,7 @@ export const SwapConfirmEvm = ({
         if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
         navigate("/tx-history")
       } catch (cause) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error(new Error("Failed to submit swap", { cause }))
         notify({
           title: `Failed to submit swap`,
@@ -255,7 +254,7 @@ export const SwapConfirmEvm = ({
       transaction,
       txInfo,
       toAsset,
-    ],
+    ]
   )
 
   const onSentToDevice = useCallback(() => setIsPayloadLocked(true), [])
@@ -281,11 +280,11 @@ export const SwapConfirmEvm = ({
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
         {evmTxLoadable?.state === "hasError" &&
           (evmTxLoadable.error instanceof EstimateGasExecutionError ? (
-            <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+            <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
               {t("Insufficient {{symbol}} available to pay for gas", { symbol: gasTokenSymbol })}
             </div>
           ) : (
-            <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+            <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
               {t("Error loading transaction:")} {String(evmTxLoadable.error)}
             </div>
           ))}

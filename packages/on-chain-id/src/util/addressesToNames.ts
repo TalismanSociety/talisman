@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@talismn/crypto"
 
 import log from "../log"
-import { Config, OnChainIds } from "./types"
+import type { Config, OnChainIds } from "./types"
 
 /**
  * Looks up the on-chain identifiers for some addresses.
@@ -28,11 +28,11 @@ export const lookupAddresses = async (config: Config, addresses: string[]): Prom
  * @deprecated
  */
 export const lookupAznsAddresses = async (
-  config: Config,
-  addresses: string[],
+  _config: Config,
+  addresses: string[]
 ): Promise<OnChainIds> => {
   return new Promise<OnChainIds>((resolve) =>
-    resolve(new Map(addresses.map((address) => [address, null]))),
+    resolve(new Map(addresses.map((address) => [address, null])))
   )
 }
 
@@ -41,12 +41,12 @@ export const lookupAznsAddresses = async (
  */
 export const lookupEnsAddresses = async (
   config: Config,
-  addresses: string[],
+  addresses: string[]
 ): Promise<OnChainIds> => {
   const onChainIds: OnChainIds = new Map(addresses.map((address) => [address, null]))
 
   const client = await config.chainConnectors.evm?.getPublicClientForEvmNetwork(
-    config.networkIdEthereum,
+    config.networkIdEthereum
   )
   if (!client) {
     log.warn(`Could not find Ethereum client in OnChainId::lookupEnsAddresses`)
@@ -65,8 +65,9 @@ export const lookupEnsAddresses = async (
         const errorMessage = (cause as { shortMessage?: string })?.shortMessage ?? String(cause)
         throw new Error(`Failed to resolve ENS domain for address '${address}': ${errorMessage}`)
       }
-    }),
+    })
   )
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   results.forEach((result) => result.status === "rejected" && log.warn(result.reason.message))
 
   return onChainIds

@@ -1,11 +1,11 @@
 import { isEqual } from "lodash-es"
-import { firstValueFrom, map, Observable, shareReplay, Subject } from "rxjs"
+import { firstValueFrom, map, Observable, type Subject, shareReplay } from "rxjs"
 
 import log from "../log"
-import { ChaindataStorage } from "../provider/ChaindataProvider"
+import type { ChaindataStorage } from "../provider/ChaindataProvider"
 import { githubChaindata$ } from "./githubChaindata"
 import initChaindata from "./initChaindata.json"
-import { Chaindata, ChaindataFileSchema } from "./schema"
+import { type Chaindata, ChaindataFileSchema } from "./schema"
 
 const EMPTY_DATA: Chaindata = { networks: [], tokens: [], miniMetadatas: [] }
 
@@ -16,7 +16,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
       const validation = ChaindataFileSchema.safeParse(data)
       log.debug(
         "[storageValidated$] Chaindata schema validation: %sms",
-        (performance.now() - start).toFixed(2),
+        (performance.now() - start).toFixed(2)
       )
       if (!validation.success)
         log.warn("[storageValidated$] Chaindata schema validation failed", {
@@ -25,7 +25,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
 
       // schema is invalid, fallback to empty data
       return validation.success ? validation.data : EMPTY_DATA
-    }),
+    })
   )
 
   return new Observable<Chaindata>((subscriber) => {
@@ -40,7 +40,7 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
         )
           return log.info(
             "[defaultChaindata$] DB is not empty, skipping initial data provision",
-            storageData,
+            storageData
           )
 
         try {
@@ -61,12 +61,12 @@ export const getDefaultChaindata$ = (storage$: Subject<ChaindataStorage>) => {
           const shouldUpdate = !isEqual(storageData, githubData)
           if (!shouldUpdate)
             return log.debug(
-              `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`,
+              `[defaultChaindata$] No db updates needed: ${performance.now() - now}ms`
             )
 
           // update local chaindata if github chaindata is different
           log.debug(
-            `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`,
+            `[defaultChaindata$] Updating chaindata in DB (networks:${githubData.networks.length}, tokens:${githubData.tokens.length}, meta:${githubData.miniMetadatas.length})`
           )
           storage$.next(githubData)
 

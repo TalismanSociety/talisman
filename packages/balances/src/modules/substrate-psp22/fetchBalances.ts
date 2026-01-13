@@ -1,12 +1,12 @@
 import { Abi } from "@polkadot/api-contract"
 import { TypeRegistry } from "@polkadot/types"
 
-import { IBalance } from "../../types"
-import { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalance } from "../../types"
+import type { FetchBalanceResults, IBalanceModule } from "../../types/IBalanceModule"
 import psp22Abi from "../abis/psp22.json"
-import { BalanceFetchError } from "../shared"
+import type { BalanceFetchError } from "../shared"
 import { getBalanceDefs } from "../shared/types"
-import { MODULE_TYPE } from "./config"
+import type { MODULE_TYPE } from "./config"
 import { makeContractCaller } from "./util"
 
 export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] = async ({
@@ -34,7 +34,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       const result = await contractCall(
         address,
         token.contractAddress,
-        Psp22Abi.findMessage("PSP22::balance_of").toU8a([address]),
+        Psp22Abi.findMessage("PSP22::balance_of").toU8a([address])
       )
 
       if (!result.result.isOk) throw new Error("Failed to fetch balance")
@@ -51,7 +51,7 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
 
       return balance
-    }),
+    })
   )
 
   return results.reduce<FetchBalanceResults>(
@@ -67,6 +67,6 @@ export const fetchBalances: IBalanceModule<typeof MODULE_TYPE>["fetchBalances"] 
       }
       return acc
     },
-    { success: [], errors: [] },
+    { success: [], errors: [] }
   )
 }

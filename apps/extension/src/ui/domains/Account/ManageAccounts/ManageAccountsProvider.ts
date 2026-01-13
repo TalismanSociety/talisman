@@ -1,6 +1,5 @@
-import { useCallback, useState } from "react"
-
 import { provideContext } from "@talisman/util/provideContext"
+import { useCallback, useState } from "react"
 
 const useManageAccountsProvider = () => {
   const [{ search }, setState] = useState<{ search: string }>({

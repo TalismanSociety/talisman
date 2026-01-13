@@ -1,7 +1,7 @@
 import { base58, hex } from "@scure/base"
 
 import { entropyToSeed, getDevSeed, mnemonicToEntropy } from "../mnemonic"
-import { AccountPlatform, KeypairCurve } from "../types"
+import type { AccountPlatform, KeypairCurve } from "../types"
 import { deriveEcdsa, getPublicKeyEcdsa } from "./deriveEcdsa"
 import { deriveEd25519, getPublicKeyEd25519 } from "./deriveEd25519"
 import { deriveEthereum, getPublicKeyEthereum } from "./deriveEthereum"
@@ -47,7 +47,7 @@ export const getPublicKeyFromSecret = (secretKey: Uint8Array, curve: KeypairCurv
 export const addressFromMnemonic = async (
   mnemonic: string,
   derivationPath: string,
-  curve: KeypairCurve,
+  curve: KeypairCurve
 ) => {
   const entropy = mnemonicToEntropy(mnemonic)
   const seed = await entropyToSeed(entropy, curve)
@@ -95,7 +95,7 @@ export const isValidDerivationPath = async (derivationPath: string, curve: Keypa
   try {
     deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }

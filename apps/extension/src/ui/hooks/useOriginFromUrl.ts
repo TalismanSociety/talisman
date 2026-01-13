@@ -5,7 +5,7 @@ export const useOriginFromUrl = (url: string | undefined): string => {
     if (url) {
       try {
         return new URL(url).origin
-      } catch (err) {
+      } catch {
         // ignore
       }
     }

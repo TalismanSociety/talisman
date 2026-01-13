@@ -1,9 +1,8 @@
-import { useTranslation } from "react-i18next"
-
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { AccountCreateMenu } from "@ui/domains/Account/AccountAdd"
 import { useBalancesHydrate } from "@ui/state"
+import { useTranslation } from "react-i18next"
 
 const Content = () => {
   useBalancesHydrate() // preload

@@ -7,5 +7,5 @@ export const useOpenCloseStatusProvider = ({ status }: { status: OpenCloseStatus
 }
 
 export const [OpenCloseStatusProvider, useOpenCloseStatus] = provideContext(
-  useOpenCloseStatusProvider,
+  useOpenCloseStatusProvider
 )

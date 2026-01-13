@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Favicon } from "./Favicon"
@@ -21,7 +21,7 @@ export const AppPill: FC<{ url?: string }> = ({ url }) => {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div className="text-body-secondary bg-grey-800 flex max-w-[22rem] items-center gap-2 rounded-3xl px-4 py-2 text-sm font-light">
+        <div className="flex max-w-[22rem] items-center gap-2 rounded-3xl bg-grey-800 px-4 py-2 font-light text-body-secondary text-sm">
           <Favicon url={url} className="text-base" />
           <span className="overflow-hidden text-ellipsis whitespace-nowrap">{host}</span>
         </div>

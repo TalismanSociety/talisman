@@ -1,7 +1,6 @@
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useToken } from "@ui/state"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"

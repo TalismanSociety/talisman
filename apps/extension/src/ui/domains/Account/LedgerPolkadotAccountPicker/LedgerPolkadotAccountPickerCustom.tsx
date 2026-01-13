@@ -1,23 +1,37 @@
 import { encodeAnyAddress, isAddressEqual } from "@talismn/crypto"
 import { InfoIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, isAccountLedgerPolkadotGeneric, LedgerPolkadotCurve } from "extension-core"
-import { log } from "extension-shared"
-import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { getTalismanLedgerError, TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById } from "@ui/state"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import {
+  type Account,
+  isAccountLedgerPolkadotGeneric,
+  type LedgerPolkadotCurve,
+} from "extension-core"
+import { log } from "extension-shared"
+import {
+  type ChangeEventHandler,
+  type FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
+import { useTranslation } from "react-i18next"
+import { FormFieldContainer, FormFieldInputText, Tooltip, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "../AccountIcon"
 import { Address } from "../Address"
 import { BalancesSummaryTooltipContent } from "../BalancesSummaryTooltipContent"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
-import { LedgerPolkadotAccountPickerDef, LedgerPolkadotGenericAccountPickerProps } from "./types"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import type {
+  LedgerPolkadotAccountPickerDef,
+  LedgerPolkadotGenericAccountPickerProps,
+} from "./types"
 import { useGetLedgerPolkadotAddress } from "./useGetLedgerPolkadotAddress"
 
 export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountPickerProps> = ({
@@ -29,12 +43,12 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
   const chain = useNetworkById(chainId, "polkadot")
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
-    [chain],
+    [chain]
   )
 
   const walletAccounts = useAccounts()
   const [accountDetails, setAccountDetails] = useState<CustomAccountDetails>(() =>
-    getNextAccountDetails(walletAccounts, chain?.name ?? "Polkadot", app),
+    getNextAccountDetails(walletAccounts, chain?.name ?? "Polkadot", app)
   )
 
   const handleAccountIndexChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -67,7 +81,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
             },
           ]
         : [],
-    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve],
+    [accountDetails.accountIndex, accountDetails.addressOffset, address, app?.name, curve]
   )
 
   const balances = useAccountImportBalances(accountImportDefs)
@@ -102,13 +116,13 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
   return (
     <div className="mt-8">
       <div className="mb-8 flex flex-col gap-4">
-        <div className="text-alert-warn bg-alert-warn/5 flex items-center gap-6 rounded-sm p-8 text-sm">
-          <div className="bg-alert-warn/10 rounded-full p-4">
+        <div className="flex items-center gap-6 rounded-sm bg-alert-warn/5 p-8 text-alert-warn text-sm">
+          <div className="rounded-full bg-alert-warn/10 p-4">
             <InfoIcon className="shrink-0 text-lg" />
           </div>
           <div className="leading-paragraph">
             {t(
-              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live.",
+              "Custom mode is for advanced users only: it provides access to accounts that may not be available on other interfaces such as Ledger Live."
             )}
           </div>
         </div>
@@ -147,7 +161,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
 
         <div className="col-span-2">
           <FormFieldContainer label={t("Preview")}>
-            <div className="bg-black-tertiary flex h-32 w-full items-center gap-8 rounded-sm px-8 py-4">
+            <div className="flex h-32 w-full items-center gap-8 rounded-sm bg-black-tertiary px-8 py-4">
               {accountDef ? (
                 <>
                   <AccountIcon address={accountDef.address} className="text-xl" />
@@ -167,7 +181,7 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                   </div>
                   <div className="flex items-center justify-end gap-2">
                     {balances.status === "initialising" ? (
-                      <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+                      <div className="h-[1.8rem] w-[6.8rem] animate-pulse rounded-xs bg-grey-750"></div>
                     ) : (
                       <Tooltip placement="bottom-end">
                         <TooltipTrigger asChild>
@@ -188,21 +202,21 @@ export const LedgerPolkadotAccountPickerCustom: FC<LedgerPolkadotGenericAccountP
                 </>
               ) : connectionStatus.status === "connecting" ? (
                 <>
-                  <div className="bg-grey-750 size-[3.2rem] animate-pulse rounded-full" />
+                  <div className="size-[3.2rem] animate-pulse rounded-full bg-grey-750" />
                   <div className="flex flex-grow flex-col gap-2 overflow-hidden">
                     <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-                      <span className="bg-grey-750 text-grey-750 rounded-xs animate-pulse select-none">
+                      <span className="animate-pulse select-none rounded-xs bg-grey-750 text-grey-750">
                         Account Name
                       </span>
                     </div>
                     <div className="text-body-secondary text-sm">
-                      <span className="bg-grey-750 text-grey-750 rounded-xs animate-pulse select-none">
+                      <span className="animate-pulse select-none rounded-xs bg-grey-750 text-grey-750">
                         AAAAAA…AAAAAA
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2">
-                    <div className="bg-grey-750 text-grey-750 rounded-xs animate-pulse select-none">
+                    <div className="animate-pulse select-none rounded-xs bg-grey-750 text-grey-750">
                       00.00$
                     </div>
                   </div>
@@ -221,7 +235,7 @@ type CustomAccountDetails = { accountIndex: number; addressOffset: number; name:
 const getNextAccountDetails = (
   accounts: Account[],
   networkName: string,
-  app: SubstrateAppParams | null | undefined,
+  app: SubstrateAppParams | null | undefined
 ): CustomAccountDetails => {
   let nextAccountIndex = 0
   const existingAccountIndexes = accounts
@@ -231,7 +245,7 @@ const getNextAccountDetails = (
         a.app === app?.name &&
         a.addressOffset === 0 &&
         typeof a.accountIndex === "number" &&
-        !a.genesisHash,
+        !a.genesisHash
     )
     .map((a) => a.accountIndex as number)
   for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++)
@@ -252,7 +266,7 @@ const getNextAccountDetails = (
 const useLedgerAccountAddress = (
   account: CustomAccountDetails | undefined,
   curve: LedgerPolkadotCurve,
-  app: SubstrateAppParams | null | undefined,
+  app: SubstrateAppParams | null | undefined
 ) => {
   const { t } = useTranslation()
   const { getAddress } = useGetLedgerPolkadotAddress(curve, app)

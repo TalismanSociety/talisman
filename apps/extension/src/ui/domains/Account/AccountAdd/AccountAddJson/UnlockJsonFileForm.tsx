@@ -1,14 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { KeyIcon } from "@talismn/icons"
 import { log } from "extension-shared"
-import { FC, useCallback, useEffect } from "react"
+import { type FC, useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { FadeIn } from "@talisman/components/FadeIn"
 
 import { BackToAddAccountButton } from "../BackToAddAccountButton"
 import { useJsonAccountImport } from "./context"
@@ -53,7 +52,7 @@ export const UnlockJsonFileForm: FC = () => {
         setError("password", { message: t("Incorrect password") }, { shouldFocus: true })
       }
     },
-    [clearErrors, setError, t, unlockFile],
+    [clearErrors, setError, t, unlockFile]
   )
 
   useEffect(() => {
@@ -73,7 +72,7 @@ export const UnlockJsonFileForm: FC = () => {
   return (
     <FadeIn>
       <form onSubmit={handleSubmit(submit)} autoComplete="off">
-        <div className="text-body-secondary mb-8">
+        <div className="mb-8 text-body-secondary">
           {t("Enter the password that was used to encrypt this JSON file.")}
         </div>
         <FormFieldContainer error={errors.password?.message}>

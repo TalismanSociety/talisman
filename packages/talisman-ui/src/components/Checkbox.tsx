@@ -1,10 +1,10 @@
 import { classNames } from "@talismn/util"
 import {
-  DetailedHTMLProps,
+  type DetailedHTMLProps,
   forwardRef,
-  HTMLAttributes,
-  InputHTMLAttributes,
-  LabelHTMLAttributes,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type LabelHTMLAttributes,
 } from "react"
 
 export type CheckboxProps = DetailedHTMLProps<
@@ -22,18 +22,18 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         className={classNames(
           "inline-flex items-center justify-start gap-[0.5em]",
           !disabled && "cursor-pointer",
-          className,
+          className
         )}
         {...containerProps}
       >
         <input
           type="checkbox"
           className={classNames(
-            "form-checkbox rounded-xs border-body-secondary text-grey-800 h-[1.2em] w-[1.2em] cursor-pointer border bg-transparent",
-            "checked:hover:border-body-secondary checked:active hover:border-white checked:active:focus-visible:border-transparent",
+            "form-checkbox h-[1.2em] w-[1.2em] cursor-pointer rounded-xs border border-body-secondary bg-transparent text-grey-800",
+            "checked:active hover:border-white checked:hover:border-body-secondary checked:active:focus-visible:border-transparent",
             "active:bg-grey-700 enabled:focus-visible:border-white",
             "[&.form-checkbox:]:focus:!ring-0 !outline-0 !ring-0 [&.form-checkbox]:focus:!outline-0 [&.form-checkbox]:focus:!outline-offset-0 [&.form-checkbox]:focus:ring-offset-0",
-            "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent",
+            "disabled:cursor-default disabled:border-body-disabled disabled:bg-transparent disabled:checked:border-transparent disabled:checked:bg-grey-700"
           )}
           ref={ref}
           disabled={disabled}
@@ -44,7 +44,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={classNames(
               "text-left",
               disabled && "text-body-disabled",
-              childProps.className,
+              childProps.className
             )}
             {...childProps}
           >
@@ -53,6 +53,6 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         )}
       </label>
     )
-  },
+  }
 )
 Checkbox.displayName = "Checkbox"

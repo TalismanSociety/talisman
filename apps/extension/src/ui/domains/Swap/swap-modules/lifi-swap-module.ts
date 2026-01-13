@@ -1,7 +1,7 @@
-import type { Chain as ViemChain } from "viem/chains"
 import * as lifiSdk from "@lifi/sdk"
 import { chainConnectorsAtom } from "@talismn/balances-react"
 import { evmErc20TokenId, evmNativeTokenId } from "@talismn/chaindata-provider"
+import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
 import BigNumber from "bignumber.js"
 import { remoteConfigStore } from "extension-core"
 import { atom } from "jotai"
@@ -10,28 +10,27 @@ import {
   catchError,
   defer,
   interval,
-  Observable,
+  type Observable,
   of,
   retry,
   startWith,
   switchMap,
   takeWhile,
 } from "rxjs"
-import { publicActions, TransactionRequest, zeroAddress } from "viem"
+import { publicActions, type TransactionRequest, zeroAddress } from "viem"
+import type { Chain as ViemChain } from "viem/chains"
 import * as allEvmChains from "viem/chains"
-
-import { getNetworksMapById$, getTokensMap$ } from "@ui/state"
 
 import {
   fromAddressAtom,
   fromAmountAtom,
   fromAssetAtom,
   getTokenIdForSwappableAsset,
-  QuoteFunction,
+  type QuoteFunction,
+  type SupportedSwapProtocol,
+  type SwapModule,
+  type SwappableAssetBaseType,
   selectedSubProtocolAtom,
-  SupportedSwapProtocol,
-  SwapModule,
-  SwappableAssetBaseType,
   swapQuoteRefresherAtom,
   toAddressAtom,
   toAssetAtom,
@@ -86,19 +85,19 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
       const token = await lifiSdk.getToken(parseInt(chainId, 10), contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
     }
   }
 
   const knownEvmNetworks = await get(
-    atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+    atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
   )
   const knownTokens = await get(atomWithObservable(() => getTokensMap$({ platform: "ethereum" })))
 
   return Object.entries(allSdkTokens)
     .filter(([chainId]) => knownEvmNetworks[chainId])
-    .map(([chainId, tokens]): SwappableAssetBaseType[] =>
+    .flatMap(([chainId, tokens]): SwappableAssetBaseType[] =>
       tokens.map((token) => {
         const contractAddress = token.address === zeroAddress ? undefined : token.address
         const id = getTokenIdForSwappableAsset("evm", chainId, contractAddress)
@@ -117,9 +116,8 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
           networkType: "evm",
           context: { lifi: token },
         }
-      }),
+      })
     )
-    .flat()
 })
 
 export const fromAssetsSelector = atom(async (get) => await get(assetsSelector))
@@ -134,7 +132,7 @@ const routesAtom = atom(async (get) => {
     const toAsset = get(toAssetAtom)
     const fromAmount = get(fromAmountAtom)
     const knownEvmNetworks = await get(
-      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" })),
+      atomWithObservable(() => getNetworksMapById$({ platform: "ethereum" }))
     )
 
     if (fromAmount.planck === 0n) return null
@@ -158,7 +156,7 @@ const routesAtom = atom(async (get) => {
       options: { integrator: "talisman", fee },
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.warn("Failed to fetch lifi routes", cause)
     return {
       routes: [],
@@ -174,7 +172,7 @@ const quoteAtom: QuoteFunction<lifiSdk.Route & { transactionRequest: lifiSdk.Tra
       if (!routes) return null
 
       return routes.routes.map((route) => get(routeQuoteAtom(route.id)))
-    }),
+    })
   )
 
 const routeQuoteAtom = atomFamily((id: string) =>
@@ -238,8 +236,8 @@ const routeQuoteAtom = atomFamily((id: string) =>
                   String(gas.token.chainId) === String(fromAsset?.chainId) &&
                   gas.token.address === zeroAddress
                     ? gas.limit
-                    : "0",
-                ),
+                    : "0"
+                )
               )
               .reduce((a, c) => a.plus(c), BigNumber(0))
               .toString()
@@ -259,8 +257,8 @@ const routeQuoteAtom = atomFamily((id: string) =>
         data: { ...route, transactionRequest: transaction.transactionRequest },
         maxNativeTokenGasBuffer: totalGasLimit,
       }
-    }),
-  ),
+    })
+  )
 )
 
 // if approval is required, returns the contract to approve for, the amount, and token contract
@@ -340,7 +338,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       throw new Error("Invalid sender address")
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-      (c) => c?.id === txRequest.chainId,
+      (c) => c?.id === txRequest.chainId
     )
     if (!chain) throw new Error("Unknown chain")
 
@@ -353,7 +351,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       account: txRequest.from as `0x${string}`,
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
@@ -392,11 +390,11 @@ export const swapStatus$ = (id: string): Observable<LifiStatus | undefined> =>
         return interval(20_000).pipe(
           startWith(-1),
           switchMap((i) => (i === -1 ? of(status) : retryStatus$(id))),
-          takeWhile((status) => shouldRefresh(status), true),
+          takeWhile((status) => shouldRefresh(status), true)
         )
       }
       return of(status)
-    }),
+    })
   )
 
 const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
@@ -409,8 +407,8 @@ const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
 
     // log when all retries failed, and return undefined
     catchError((error) => {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
-    }),
+    })
   )

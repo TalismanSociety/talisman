@@ -35,14 +35,14 @@ async function generateInitData() {
 
   const parsed = ChaindataFileSchema.safeParse(initData)
   if (!parsed.success) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error("Invalid chaindata:", parsed.error.issues)
     throw new Error("Invalid chaindata")
   }
 
   fs.writeFileSync(
     path.resolve(__dirname, "../src/state/initChaindata.json"),
-    JSON.stringify(initData, null, 2),
+    JSON.stringify(initData, null, 2)
   )
 
   execSync(`prettier --write '${path.resolve(__dirname, "../src/state/initChaindata.json")}'`, {

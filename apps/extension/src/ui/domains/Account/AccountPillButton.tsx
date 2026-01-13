@@ -1,10 +1,9 @@
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useMemo } from "react"
-import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { useFormattedAddress } from "@ui/hooks/useFormattedAddress"
 import { useAccountByAddress } from "@ui/state"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useMemo } from "react"
+import { PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { AccountIcon } from "./AccountIcon"
 import { AccountTypeIcon } from "./AccountTypeIcon"
@@ -32,20 +31,20 @@ export const AccountPillButton: FC<AccountPillButtonProps> = ({
 
   const formattedAddress = useFormattedAddress(
     address ?? undefined,
-    tokenGenesisHash ?? accountGenesisHash,
+    tokenGenesisHash ?? accountGenesisHash
   )
   const displayAddress = useMemo(
     () => (account ? formattedAddress : address) ?? undefined,
-    [account, address, formattedAddress],
+    [account, address, formattedAddress]
   )
 
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
-      <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
+    <PillButton className={classNames("!px-4 h-16 max-w-full", className)} onClick={onClick}>
+      <div className="flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base text-body">
         <AccountIcon className="!text-lg" address={address} genesisHash={accountGenesisHash} />
-        <div className="leading-base grow truncate">
+        <div className="grow truncate leading-base">
           {name ? (
             <Tooltip>
               <TooltipTrigger asChild>

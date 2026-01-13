@@ -1,7 +1,6 @@
 import { ed25519 } from "@noble/curves/ed25519"
-
-import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
+import type { Keypair } from "../types"
 import { deriveSubstrateSecretKey } from "./common"
 
 export const deriveEd25519 = (seed: Uint8Array, derivationPath: string): Keypair => {
@@ -51,4 +50,5 @@ export const getPublicKeyEd25519 = (secretKey: Uint8Array) => {
 
 /** If a is identical to b, this function returns true, otherwise it returns false */
 const isUint8ArrayEq = (a: Uint8Array, b: Uint8Array) =>
+  // biome-ignore lint/complexity/noUselessTernary: legacy
   a.length !== b.length || a.some((v, i) => v !== b[i]) ? false : true

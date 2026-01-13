@@ -1,10 +1,9 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapMinusIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useNomPoolStakingStatus } from "../hooks/nomPools/useNomPoolStakingStatus"
 import { useNomPoolWithdrawModal } from "./useNomPoolWithdrawModal"
@@ -23,7 +22,7 @@ export const NomPoolWithdrawButton: FC<{
 
   const canWithdraw = useMemo(
     () => !!stakingStatus?.accounts.find((s) => s.address === address && s.canWithdraw),
-    [address, stakingStatus],
+    [address, stakingStatus]
   )
 
   const handleClick = useCallback(() => {
@@ -36,10 +35,10 @@ export const NomPoolWithdrawButton: FC<{
   return (
     <button
       className={classNames(
-        "text-primary/80 hover:text-primary bg-primary/10 hover:bg-primary/20 font-light",
+        "bg-primary/10 font-light text-primary/80 hover:bg-primary/20 hover:text-primary",
         variant === "small" && "h-10 rounded-sm px-3 text-xs",
         variant === "large" && "h-14 rounded px-4 text-sm",
-        className,
+        className
       )}
       type="button"
       onClick={handleClick}
@@ -49,7 +48,7 @@ export const NomPoolWithdrawButton: FC<{
           className={classNames(
             "shrink-0",
             variant === "small" && "text-xs",
-            variant === "large" && "text-base",
+            variant === "large" && "text-base"
           )}
         />
         <div>{t("Withdraw")}</div>

@@ -1,15 +1,14 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { ScaleApi } from "@talismn/sapi"
+import type { TokenId } from "@talismn/chaindata-provider"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
-import { log } from "extension-shared"
-import { useMemo } from "react"
-
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useBalances, useNetworkById, useToken } from "@ui/state"
+import { log } from "extension-shared"
+import { useMemo } from "react"
 
 import { getStakingEraDurationMs } from "../../helpers"
-import { NomPoolMember } from "../../types"
+import type { NomPoolMember } from "../../types"
 import { useBabeNetwork } from "./useBabeNetwork"
 import { useDetaultNomPoolId } from "./useDetaultNomPoolId"
 import { useNomPoolsMinJoinBond } from "./useNomPoolsMinJoinBond"
@@ -65,8 +64,8 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             addresses.map(async (address) => [
               address,
               !!(await stakingSapi.getStorage("Staking", "Bonded", [address])),
-            ]),
-          ),
+            ])
+          )
         ) as Record<string, boolean>,
 
         Object.fromEntries(
@@ -76,13 +75,13 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
               await stakingSapi.getStorage<NomPoolMember | null>("NominationPools", "PoolMembers", [
                 address,
               ]),
-            ]),
-          ),
+            ])
+          )
         ) as Record<string, NomPoolMember | null>,
       ])
 
       const transferableByAddress = Object.fromEntries(
-        balances.map(({ address, transferable }) => [address, transferable.planck]),
+        balances.map(({ address, transferable }) => [address, transferable.planck])
       )
 
       const accounts = await Promise.all(
@@ -102,7 +101,7 @@ export const useNomPoolStakingStatus = (tokenId: TokenId) => {
             canWithdraw: maxUnbondingEra <= currentEra,
             canWithdrawIn: getWithdrawWaitDuration(stakingSapi, babeSapi, erasToUnbonding),
           }
-        }),
+        })
       )
 
       return { accounts, poolId }

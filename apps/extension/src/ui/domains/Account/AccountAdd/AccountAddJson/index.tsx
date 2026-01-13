@@ -1,7 +1,7 @@
 import { Spacer } from "@talisman/components/Spacer"
 import { useBalancesHydrate } from "@ui/state"
 
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { JsonAccountImportProvider } from "./context"
 import { ImportJsonAccountsForm } from "./ImportJsonAccountsForm"
 import { ImportJsonFileDrop } from "./ImportJsonFileDrop"

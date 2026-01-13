@@ -2,7 +2,7 @@ import { assert, u8aToHex } from "@polkadot/util"
 
 import { ExtensionHandler } from "../../libs/Handler"
 import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "../../libs/QrGenerator"
-import { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
+import type { MessageTypes, RequestType, RequestTypes, ResponseType } from "../../types"
 import { keyringStore } from "../keyring/store"
 
 export class ChainsHandler extends ExtensionHandler {
@@ -15,9 +15,9 @@ export class ChainsHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestTypes[TMessageType]
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(chains.generateQr.addNetworkSpecs)": {

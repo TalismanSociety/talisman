@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
-import { CSSProperties, FC, useId, useMemo } from "react"
-
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
+import { type CSSProperties, type FC, useId, useMemo } from "react"
 
 const isTalismanLogo = (url?: string | null) => {
   if (!url) return false
@@ -32,7 +31,7 @@ export const AssetLogo: FC<{
       className={classNames(
         "relative block aspect-square w-[1em] shrink-0",
         rounded && "rounded-full",
-        className,
+        className
       )}
       style={style}
       alt=""

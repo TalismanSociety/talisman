@@ -1,10 +1,9 @@
+import { provideContext } from "@talisman/util/provideContext"
 import { SIGNET_APP_URL } from "extension-shared"
 import { useMemo, useState } from "react"
 
-import { provideContext } from "@talisman/util/provideContext"
-
-import { AccountAddPageProps } from "../types"
-import { SignetVault } from "./types"
+import type { AccountAddPageProps } from "../types"
+import type { SignetVault } from "./types"
 
 const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const [signetUrl, setSignetUrl] = useState(SIGNET_APP_URL)
@@ -13,7 +12,7 @@ const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const signetUrlOrigin = useMemo(() => {
     try {
       return new URL(signetUrl).origin
-    } catch (e) {
+    } catch {
       return ""
     }
   }, [signetUrl])

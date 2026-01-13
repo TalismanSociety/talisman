@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
-
 import { api } from "@ui/api"
+import { useEffect } from "react"
 
 export const useOnChainId = (address?: string) => {
   const { data: onChainId, ...rest } = useQuery({
@@ -38,7 +37,7 @@ export const useOnChainId = (address?: string) => {
 const cacheKey = "TalismanOnChainIdsCache"
 const persistItemDuration = 15_778_476_000 // 6 months in milliseconds
 const onChainIdsCache = new Map<string, { onChainId?: string | null; updated?: number }>(
-  JSON.parse(localStorage.getItem(cacheKey) ?? "[]"),
+  JSON.parse(localStorage.getItem(cacheKey) ?? "[]")
 )
 const persistOnChainIdsCache = () =>
   localStorage.setItem(
@@ -51,7 +50,7 @@ const persistOnChainIdsCache = () =>
             // check that the updated field exists
             item?.updated &&
             // check that the item has been updated within the persistItemDuration
-            Date.now() - item.updated <= persistItemDuration,
-        ),
-    ),
+            Date.now() - item.updated <= persistItemDuration
+        )
+    )
   )

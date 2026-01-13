@@ -2,8 +2,8 @@ import { isNotNil } from "@talismn/util"
 import { log } from "extension-shared"
 
 import { db } from "../../../db"
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
-import { LegacyWalletTransaction, WalletTransaction, WalletTransactionInfo } from "../types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
+import type { LegacyWalletTransaction, WalletTransaction, WalletTransactionInfo } from "../types"
 
 // For DB version 11, Wallet version 2.13.0
 export const migrateTransactionsV2: Migration = {

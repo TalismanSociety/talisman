@@ -1,8 +1,7 @@
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { FC, Suspense, useMemo } from "react"
-
 import { useSelectedCurrency, useTokenRatesFromUsd } from "@ui/state"
+import { type FC, Suspense, useMemo } from "react"
 
 import { AssetLogo } from "./AssetLogo"
 import { Fiat } from "./Fiat"
@@ -49,7 +48,7 @@ const GenericTokensAndFiatInner: FC<GenericTokensAndFiatProps> = ({
       typeof decimals === "number" && (typeof planck === "bigint" || typeof planck === "string")
         ? new BalanceFormatter(planck, decimals, tokenRates)
         : null,
-    [decimals, planck, tokenRates],
+    [decimals, planck, tokenRates]
   )
   const currency = useSelectedCurrency()
 
@@ -62,7 +61,7 @@ const GenericTokensAndFiatInner: FC<GenericTokensAndFiatProps> = ({
           url={logo}
           className={classNames(
             "mr-[0.3em] inline-block size-[1.2em] shrink-0 align-sub",
-            logoClassName,
+            logoClassName
           )}
         />
       ) : null}

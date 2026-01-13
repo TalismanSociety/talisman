@@ -1,7 +1,7 @@
 import { useRemoteConfig } from "@ui/state/remoteConfig"
 
 import { TALISMAN_FEE_BITTENSOR } from "../utils/constants"
-import { StakeDirection } from "./types"
+import type { StakeDirection } from "./types"
 
 export const useGetSubnetFee = ({
   netuid,

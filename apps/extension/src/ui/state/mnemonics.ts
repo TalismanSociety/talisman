@@ -1,8 +1,7 @@
 import { bind } from "@react-rxjs/core"
-import { Mnemonic } from "extension-core"
-import { map, Observable, shareReplay } from "rxjs"
-
 import { api } from "@ui/api"
+import type { Mnemonic } from "extension-core"
+import { map, Observable, shareReplay } from "rxjs"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -20,6 +19,6 @@ export const [useMnemonic, getMnemonic$] = bind((id: string | null | undefined) 
     map((mnemonics) => {
       if (!id) return null
       return mnemonics.find((m) => m.id === id) ?? null
-    }),
-  ),
+    })
+  )
 )

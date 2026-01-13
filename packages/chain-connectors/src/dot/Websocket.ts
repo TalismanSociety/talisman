@@ -1,3 +1,4 @@
+import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import type {
   JsonRpcResponse,
   ProviderInterfaceEmitted as PjsProviderInterfaceEmitted,
@@ -5,7 +6,6 @@ import type {
   ProviderInterfaceCallback,
   ProviderInterfaceEmitCb,
 } from "@polkadot/rpc-provider/types"
-import { RpcCoder } from "@polkadot/rpc-provider/coder"
 import { getWSErrorString } from "@polkadot/rpc-provider/ws/errors"
 import { isChildClass, isNull, isUndefined, objectSpread } from "@polkadot/util"
 import { xglobal } from "@polkadot/x-global"
@@ -103,7 +103,7 @@ export class Websocket implements ProviderInterface {
     endpoint: string | string[],
     headers: Record<string, string> = {},
     timeout?: number,
-    nextBackoffInterval?: number,
+    nextBackoffInterval?: number
   ) {
     const endpoints = Array.isArray(endpoint) ? endpoint : [endpoint]
 
@@ -190,7 +190,6 @@ export class Websocket implements ProviderInterface {
    * @description The [[Websocket]] connects automatically by default, however if you decided otherwise, you may
    * connect manually using this method.
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async connect(): Promise<void> {
     if (this.#websocket) {
       throw new Error("WebSocket is already connected")
@@ -204,8 +203,7 @@ export class Websocket implements ProviderInterface {
         typeof xglobal.WebSocket !== "undefined" &&
         isChildClass(xglobal.WebSocket as typeof WebSocket, WebSocket)
           ? new WebSocket(this.endpoint)
-          : // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - WS may be an instance of ws, which supports options
+          : // @ts-expect-error - WS may be an instance of ws, which supports options
             new WebSocket(this.endpoint, undefined, {
               headers: this.#headers,
             })
@@ -236,7 +234,7 @@ export class Websocket implements ProviderInterface {
 
     try {
       await this.connect()
-    } catch (error) {
+    } catch {
       this.scheduleNextRetry()
     }
   }
@@ -254,7 +252,7 @@ export class Websocket implements ProviderInterface {
           // does not throw
         })
       },
-      haveTriedAllEndpoints ? this.#autoConnectBackoff.next : 0,
+      haveTriedAllEndpoints ? this.#autoConnectBackoff.next : 0
     )
 
     // Increase backoff when we've tried all endpoints
@@ -269,7 +267,6 @@ export class Websocket implements ProviderInterface {
   /**
    * @description Manually disconnect from the connection, clearing auto-connect logic
    */
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async disconnect(): Promise<void> {
     // switch off autoConnect, we are in manual mode now
     this.#autoConnectBackoff.disable()
@@ -308,13 +305,13 @@ export class Websocket implements ProviderInterface {
    * @param params Encoded parameters as applicable for the method
    * @param subscription Subscription details (internally used)
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   public send<T = any>(
     method: string,
     params: unknown[],
     /** @deprecated \@talismn/chain-connector doesn't implement a cache */
-    isCacheable?: boolean,
-    subscription?: SubscriptionHandler,
+    _isCacheable?: boolean,
+    subscription?: SubscriptionHandler
   ): Promise<T> {
     const [id, body] = this.#coder.encodeJson(method, params)
     const resultPromise: Promise<T> = this.#send(id, body, method, params, subscription)
@@ -327,7 +324,7 @@ export class Websocket implements ProviderInterface {
     body: string,
     method: string,
     params: unknown[],
-    subscription?: SubscriptionHandler,
+    subscription?: SubscriptionHandler
   ): Promise<T> {
     return new Promise<T>((resolve, reject): void => {
       try {
@@ -377,7 +374,7 @@ export class Websocket implements ProviderInterface {
     type: string,
     method: string,
     params: unknown[],
-    callback: ProviderInterfaceCallback,
+    callback: ProviderInterfaceCallback
   ): Promise<number | string> {
     return this.send<number | string>(method, params, false, { callback, type })
   }
@@ -402,7 +399,7 @@ export class Websocket implements ProviderInterface {
 
     try {
       return this.isConnected && !isNull(this.#websocket) ? this.send<boolean>(method, [id]) : true
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -415,7 +412,7 @@ export class Websocket implements ProviderInterface {
     const error = new Error(
       `disconnected from ${this.endpoint}: ${event.code}:: ${
         event.reason || getWSErrorString(event.code)
-      }`,
+      }`
     )
 
     if (this.#autoConnectBackoff.isActive) {
@@ -464,6 +461,7 @@ export class Websocket implements ProviderInterface {
     try {
       const response = JSON.parse(message.data) as UnknownJsonRpcResponse
 
+      // biome-ignore lint/correctness/noVoidTypeReturn: legacy
       return isUndefined(response.method)
         ? this.#onSocketMessageResult(response)
         : this.#onSocketMessageSubscribe(response)
@@ -574,7 +572,7 @@ export class Websocket implements ProviderInterface {
         } catch (error) {
           log.error(error)
         }
-      }),
+      })
     ).catch(log.error)
   }
 
@@ -589,7 +587,7 @@ export class Websocket implements ProviderInterface {
         try {
           handler.callback(
             new Error(`No response received from RPC endpoint in ${this.#timeout / 1000}s`),
-            undefined,
+            undefined
           )
         } catch {
           // ignore

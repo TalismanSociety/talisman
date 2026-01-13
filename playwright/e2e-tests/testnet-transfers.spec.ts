@@ -7,11 +7,11 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   await importAccount({ type: "polkadot", name: DOT_ACC_NAME })
   await importAccount({ type: "ethereum", name: ETH_ACC_NAME })
   await onboardedPage.goto(
-    `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`,
+    `chrome-extension://${extensionId}/dashboard.html#/settings/networks-tokens/networks`
   )
   // enables testnet networks
   for (const data of testAssets) {
-    if (data.needsEnabling == true) {
+    if (data.needsEnabling === true) {
       await test.step(`Enabling ${data.chain}`, async () => {
         await onboardedPage.getByTestId("platform-options-switch").getByText(data.chainType).click()
         const searchParameter = data.chain.replace(/\s*\(.*?\)\s*/g, "").trim()
@@ -69,7 +69,7 @@ test("Transfer Assets", async ({ importAccount, onboardedPage, walletPopup, exte
   for (let i = 0; i < transactionCount; i++) {
     await expect(onboardedPage.getByTestId("tx-history-row-transaction").nth(i)).toContainText(
       "Confirmed",
-      { timeout: 30000 },
+      { timeout: 30000 }
     )
   }
 })

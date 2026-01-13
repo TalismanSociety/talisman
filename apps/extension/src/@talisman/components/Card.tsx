@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 
 export const Card: FC<{
   title?: ReactNode
@@ -8,7 +8,7 @@ export const Card: FC<{
   className?: string
 }> = ({ className, title, description, cta }) => {
   return (
-    <div className={classNames("bg-grey-800 flex w-full flex-col gap-10 rounded p-10", className)}>
+    <div className={classNames("flex w-full flex-col gap-10 rounded bg-grey-800 p-10", className)}>
       {title && <div>{title}</div>}
       {description && <div>{description}</div>}
       {cta && <div>{cta}</div>}

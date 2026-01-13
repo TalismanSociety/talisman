@@ -1,5 +1,5 @@
 import { db } from "../../../db"
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 
 export const migrateSubstrateTokensIds: Migration = {
   forward: new MigrationFunction(async () => {
@@ -518,7 +518,7 @@ export const migrateSubstrateTokensIds: Migration = {
           "zeitgeist-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BmAXyA",
         "zeitgeist-substrate-tokens-vdot":
           "zeitgeist-substrate-tokens-N4IgLgngDgpiBcIBiB7ATjAlgcwHYEEBnQmMEAGhADcBDAGwFc54BOAXyA",
-      }),
+      })
     )
 
     await db.transaction("readwrite", "transactions", async (t) => {

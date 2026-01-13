@@ -1,8 +1,7 @@
 import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-
 import { copyAddress } from "@ui/util/copyAddress"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
 
 export type SignParamButtonProps = {
   iconPrefix?: ReactNode
@@ -25,7 +24,7 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
 }) => {
   const url = useMemo(
     () => (explorerUrl && address ? `${explorerUrl}/address/${address}` : undefined),
-    [address, explorerUrl],
+    [address, explorerUrl]
   )
 
   const handleClick = useCallback(() => {
@@ -38,8 +37,8 @@ export const SignParamButton: FC<SignParamButtonProps> = ({
       type="button"
       onClick={handleClick}
       className={classNames(
-        "text-body-secondary inline-flex h-[1.2em] max-w-full gap-3 overflow-hidden text-ellipsis whitespace-nowrap px-4 text-base hover:text-white",
-        className,
+        "inline-flex h-[1.2em] max-w-full gap-3 overflow-hidden text-ellipsis whitespace-nowrap px-4 text-base text-body-secondary hover:text-white",
+        className
       )}
     >
       {iconPrefix && (

@@ -7,7 +7,7 @@ const getBase64ImageFromUrlRaw = async (url: string) => {
 
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = function () {
+      reader.onloadend = () => {
         try {
           if (!reader.result) throw new Error("No result")
           const base64data = reader.result.toString()
@@ -20,7 +20,7 @@ const getBase64ImageFromUrlRaw = async (url: string) => {
       reader.readAsDataURL(blob)
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     if (DEBUG) console.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined
@@ -33,7 +33,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
   size: {
     width: number
     height: number
-  },
+  }
 ) => {
   try {
     const response = await fetch(url)
@@ -41,7 +41,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
 
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = function () {
+      reader.onloadend = () => {
         try {
           if (!reader.result) throw new Error("No result")
           const strSvg = reader.result as string
@@ -66,7 +66,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
       reader.readAsText(blob)
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     if (DEBUG) console.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined
@@ -84,7 +84,7 @@ export const getBase64ImageFromUrl = async (
   defaultSvgSize?: {
     width: number
     height: number
-  },
+  }
 ) => {
   return defaultSvgSize && isSvgUrl(url)
     ? getBase64ImageFromUrlSvgDefaultSize(url, defaultSvgSize)

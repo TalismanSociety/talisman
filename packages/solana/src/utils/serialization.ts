@@ -1,7 +1,7 @@
 import {
   PublicKey,
   Transaction,
-  TransactionInstruction,
+  type TransactionInstruction,
   VersionedTransaction,
 } from "@solana/web3.js"
 import { base58 } from "@talismn/crypto"
@@ -47,7 +47,7 @@ export const serializeTransaction = (transaction: Transaction | VersionedTransac
     return base58.encode(transaction.serialize())
   } else {
     return base58.encode(
-      transaction.serialize({ requireAllSignatures: false, verifySignatures: false }),
+      transaction.serialize({ requireAllSignatures: false, verifySignatures: false })
     )
   }
 }

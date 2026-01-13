@@ -1,21 +1,20 @@
+import { sortBigBy } from "@talisman/util/bigHelper"
 import {
-  Balance,
-  BalanceLockType,
-  Balances,
+  type Balance,
+  type BalanceLockType,
+  type Balances,
   filterBaseLocks,
   getBalanceId,
   getLockTitle,
 } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import BigNumber from "bignumber.js"
-import { Address } from "extension-core"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
-import { sortBigBy } from "@talisman/util/bigHelper"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import { useNetworkById, useSelectedCurrency, useToken } from "@ui/state"
+import BigNumber from "bignumber.js"
+import type { Address } from "extension-core"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { usePortfolioNavigation } from "../usePortfolioNavigation"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -28,7 +27,8 @@ export type BalanceDetailRow = {
   fiat: number | null
   locked: boolean
   address?: Address
-  meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
+  meta?: any
   isLoading?: boolean
   balance: Balance | null
 }
@@ -86,7 +86,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
         balance: b,
-      })),
+      }))
     )
 
     // RESERVED
@@ -94,7 +94,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       b.reserves.map((reserve, index) => ({
         key: `${b.id}-reserved-${index}`,
         title: getLockTitle(reserve, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         description: (reserve.meta as any)?.description ?? undefined,
         tokens: BigNumber(reserve.amount.tokens),
         fiat: reserve.amount.fiat(currency),
@@ -103,7 +103,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         address: account ? undefined : b.address,
         meta: reserve.meta,
         balance: b,
-      })),
+      }))
     )
 
     // STAKED (NOM POOLS)
@@ -111,7 +111,7 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
       b.nompools.map((nomPool, index) => ({
         key: `${b.id}-nomPool-${index}`,
         title: getLockTitle(nomPool, { balance: b }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         description: cleanupNomPoolName((nomPool.meta as any).description) ?? undefined,
         tokens: BigNumber(nomPool.amount.tokens),
         fiat: nomPool.amount.fiat(currency),
@@ -120,11 +120,11 @@ export const useTokenBalances = ({ tokenId, balances }: TokenBalancesParams) => 
         address: account ? undefined : b.address,
         meta: nomPool.meta,
         balance: b,
-      })),
+      }))
     )
 
     return [...available, ...locked, ...reserved, ...staked]
-      .filter((row) => row && row.tokens.gt(0))
+      .filter((row) => row?.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
   }, [summary, account, t, tokenBalances, tokenId, currency])
 

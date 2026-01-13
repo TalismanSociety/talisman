@@ -1,5 +1,5 @@
-export * from "./NetworkBase"
 export * from "./DotNetwork"
 export * from "./EthNetwork"
-export * from "./SolNetwork"
 export * from "./Network"
+export * from "./NetworkBase"
+export * from "./SolNetwork"

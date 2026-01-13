@@ -1,3 +1,4 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import {
   CodeIcon,
   ExternalLinkIcon,
@@ -6,6 +7,7 @@ import {
   MapIcon,
   TalismanHandIcon,
 } from "@talismn/icons"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import {
   DISCORD_TALISMAN_URL,
   PRIVACY_POLICY_URL,
@@ -16,15 +18,12 @@ import {
 import { Trans, useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
 
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
-
 const Content = () => {
   const { t } = useTranslation()
   return (
     <>
       <HeaderBlock title={t("About")} />
-      <div className="text-body-secondary mb-12 mt-4 flex flex-col gap-4 text-sm">
+      <div className="mt-4 mb-12 flex flex-col gap-4 text-body-secondary text-sm">
         <p>
           <Trans t={t}>
             In the beginning, the paraverse swarmed with formless life and chaotic energy.
@@ -40,6 +39,7 @@ const Content = () => {
               href="https://talisman.xyz"
               target="_blank"
               className="text-grey-200 hover:text-white"
+              rel="noopener"
             >
               Talisman
             </a>{" "}

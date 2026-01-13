@@ -1,16 +1,15 @@
 import { bind } from "@react-rxjs/core"
 import { BalanceFormatter } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
-import { SetStateAction, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { BehaviorSubject } from "rxjs"
-import { Hex } from "viem"
-
+import type { TokenId } from "@talismn/chaindata-provider"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAccountByAddress, useBalance, useToken, useTokenRates } from "@ui/state"
+import type { Address } from "extension-core"
+import { type SetStateAction, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { BehaviorSubject } from "rxjs"
+import type { Hex } from "viem"
 
 import { useExistentialDeposit } from "../../../hooks/useExistentialDeposit"
 import { useGetUnbondInfo } from "../shared/useGetUnbondInfo"
@@ -46,7 +45,7 @@ export const useResetNomPoolUnbondWizard = () => {
   return useCallback(
     (init: Pick<WizardState, "address" | "tokenId" | "poolId">) =>
       setWizardState({ ...DEFAULT_STATE, ...init }),
-    [],
+    []
   )
 }
 
@@ -87,7 +86,7 @@ export const useUnbondWizard = () => {
       genericEvent(`${unbondType} Unbond`, { tokenId })
       if (hash) setWizardState((prev) => ({ ...prev, step: "follow-up", hash }))
     },
-    [genericEvent, tokenId, unbondType],
+    [genericEvent, tokenId, unbondType]
   )
 
   const amountToUnbond = useMemo(
@@ -95,7 +94,7 @@ export const useUnbondWizard = () => {
       typeof plancksToUnbond === "bigint"
         ? new BalanceFormatter(plancksToUnbond, token?.decimals, tokenRates)
         : null,
-    [plancksToUnbond, token?.decimals, tokenRates],
+    [plancksToUnbond, token?.decimals, tokenRates]
   )
 
   const existentialDeposit = useExistentialDeposit(token?.id)

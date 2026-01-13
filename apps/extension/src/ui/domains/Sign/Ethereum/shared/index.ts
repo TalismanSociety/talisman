@@ -1,6 +1,6 @@
 export * from "./SignParamAccountButton"
-export * from "./SignParamErc20TokenButton"
 export * from "./SignParamButton"
 export * from "./SignParamContractButton"
+export * from "./SignParamErc20TokenButton"
 export * from "./SignParamTokensButton"
 export * from "./SignParamTokensDisplay"

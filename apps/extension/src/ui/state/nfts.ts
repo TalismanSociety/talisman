@@ -1,7 +1,9 @@
 import { bind } from "@react-rxjs/core"
 import { isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
-import { NftData } from "extension-core"
+import { api } from "@ui/api"
+import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
+import type { NftData } from "extension-core"
 import {
   BehaviorSubject,
   combineLatest,
@@ -12,13 +14,10 @@ import {
   throttleTime,
 } from "rxjs"
 
-import { api } from "@ui/api"
-import { getNftCollectionLastUpdatedAt } from "@ui/domains/Portfolio/Nfts/helpers"
-
 import { getAccountsByCategory$ } from "./accounts"
 import { getNetworks$ } from "./chaindata"
 import {
-  NetworkOption,
+  type NetworkOption,
   portfolioNetworkFilter$,
   portfolioSearch$,
   portfolioSelectedAccounts$,
@@ -55,7 +54,7 @@ const nftData$ = new Observable<NftData>((subscriber) => {
 }).pipe(
   throttleTime(200, undefined, { leading: true, trailing: true }),
   debugObservable("nftData$"),
-  shareReplay({ refCount: true, bufferSize: 1 }),
+  shareReplay({ refCount: true, bufferSize: 1 })
 )
 
 export const [useNftData] = bind(nftData$, {
@@ -87,9 +86,9 @@ export const [useNftNetworkOptions, nftNetworkOptions$] = bind(
             evmNetworkId: network.id,
           }
         })
-    }),
+    })
   ),
-  [],
+  []
 )
 
 export const [useNfts, nfts$] = bind(
@@ -132,8 +131,8 @@ export const [useNfts, nfts$] = bind(
           // account filter
           .filter((nft) =>
             Object.entries(nft.owners).some(([address]) =>
-              addresses.some((a) => isAddressEqual(a, address)),
-            ),
+              addresses.some((a) => isAddressEqual(a, address))
+            )
           )
 
           // visibility mode
@@ -197,10 +196,10 @@ export const [useNfts, nfts$] = bind(
               // if same collection, sort by tokenId
               const tokenId1 = Number(n1.tokenId)
               const tokenId2 = Number(n2.tokenId)
-              if (!isNaN(tokenId1) && !isNaN(tokenId2)) {
+              if (!Number.isNaN(tokenId1) && !Number.isNaN(tokenId2)) {
                 return tokenId1 - tokenId2
               }
-            } catch (err) {
+            } catch {
               //ignore
             }
 
@@ -258,8 +257,8 @@ export const [useNfts, nfts$] = bind(
           })
 
         return { status, nfts, collections, favoriteNftIds, hiddenNftCollectionIds } as NftData
-      },
-    ),
+      }
+    )
   ),
   {
     status: "loading",
@@ -268,7 +267,7 @@ export const [useNfts, nfts$] = bind(
     favoriteNftIds: [],
     hiddenNftCollectionIds: [],
     timestamp: 0,
-  } as NftData,
+  } as NftData
 )
 
 export const [useNft, nft$] = bind(
@@ -284,19 +283,19 @@ export const [useNft, nft$] = bind(
         if (!collection) return null
 
         return { nft, collection }
-      }),
+      })
     ),
-  null,
+  null
 )
 
 export const [useIsHiddenNftCollection, getIsHiddenNftCollection$] = bind(
   (id: string) => nfts$.pipe(map((data) => data.hiddenNftCollectionIds.includes(id))),
-  false,
+  false
 )
 
 export const [useIsFavoriteNft, getIsFavoriteNft$] = bind(
   (id: string) => nfts$.pipe(map((data) => data.favoriteNftIds.includes(id))),
-  false,
+  false
 )
 
 export const [useNftCollection, getNftCollection$] = bind(
@@ -305,7 +304,7 @@ export const [useNftCollection, getNftCollection$] = bind(
       map(({ collections, nfts: allNfts }) => ({
         collection: collections.find((c) => c.id === collectionId) ?? null,
         nfts: allNfts.filter((nft) => nft.collectionId === collectionId) ?? [],
-      })),
+      }))
     ),
-  { collection: null, nfts: [] },
+  { collection: null, nfts: [] }
 )

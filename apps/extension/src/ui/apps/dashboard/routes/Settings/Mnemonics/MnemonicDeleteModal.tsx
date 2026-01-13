@@ -1,13 +1,12 @@
-import { AlertTriangleIcon } from "@talismn/icons"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
-
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
+import { AlertTriangleIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/state"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
 
 const useMnemonicDeleteModalProvider = () => {
   const mnemonics = useMnemonics()
@@ -21,7 +20,7 @@ const useMnemonicDeleteModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   const canDelete = useCallback(
@@ -29,7 +28,7 @@ const useMnemonicDeleteModalProvider = () => {
       const mnemonic = mnemonics.find((m) => m.id === mnemonicId)
       return !!mnemonic?.confirmed
     },
-    [mnemonics],
+    [mnemonics]
   )
 
   return {
@@ -42,7 +41,7 @@ const useMnemonicDeleteModalProvider = () => {
 }
 
 export const [MnemonicDeleteModalProvider, useMnemonicDeleteModal] = provideContext(
-  useMnemonicDeleteModalProvider,
+  useMnemonicDeleteModalProvider
 )
 
 export const MnemonicDeleteModal = () => {
@@ -79,7 +78,7 @@ export const MnemonicDeleteModal = () => {
       <ModalDialog
         title={
           <div className="flex items-center gap-4">
-            <AlertTriangleIcon className="text-brand-orange inline text-lg" />
+            <AlertTriangleIcon className="inline text-brand-orange text-lg" />
             <span>{t("Delete Recovery Phrase")}</span>
           </div>
         }
@@ -94,7 +93,7 @@ export const MnemonicDeleteModal = () => {
           />
         </p>
         <div>
-          <div className="text-body-disabled mb-4 mt-12">{t("Type Delete to continue")}</div>
+          <div className="mt-12 mb-4 text-body-disabled">{t("Type Delete to continue")}</div>
           <FormFieldInputText
             placeholder={t("Delete")}
             defaultValue=""

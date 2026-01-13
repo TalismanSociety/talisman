@@ -1,24 +1,15 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { provideContext } from "@talisman/util/provideContext"
 import {
-  DotNetwork,
-  DotNetworkId,
+  type DotNetwork,
+  type DotNetworkId,
   evmNativeTokenId,
-  Network,
-  NetworkId,
-  NetworkList,
-  Token,
+  type Network,
+  type NetworkId,
+  type NetworkList,
+  type Token,
 } from "@talismn/chaindata-provider"
 import { encodeAddressSs58, isAddressEqual, isSs58Address, normalizeAddress } from "@talismn/crypto"
-import {
-  Account,
-  Address,
-  getAccountGenesisHash,
-  isAccountCompatibleWithNetwork,
-} from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
-import { provideContext } from "@talisman/util/provideContext"
 import {
   useAccountByAddress,
   useAccounts,
@@ -30,8 +21,16 @@ import {
 import { copyAddress } from "@ui/util/copyAddress"
 import { getAccountAvatarDataUri } from "@ui/util/getAccountAvatarDataUri"
 import { getBase64ImageFromUrl } from "@ui/util/getBase64ImageFromUrl"
+import {
+  type Account,
+  type Address,
+  getAccountGenesisHash,
+  isAccountCompatibleWithNetwork,
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { CopyAddressWizardInputs } from "./types"
+import type { CopyAddressWizardInputs } from "./types"
 import { useCopyAddressModal } from "./useCopyAddressModal"
 
 export type CopyAddressWizardPage = "chain" | "account" | "copy"
@@ -41,7 +40,7 @@ const isAccountCompatibleWithChain = (
   accounts: Account[],
   chainsMap: NetworkList,
   address: Address | undefined | null,
-  networkId: NetworkId | undefined | null,
+  networkId: NetworkId | undefined | null
 ) => {
   if (!address || !networkId) return true
 
@@ -69,7 +68,7 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
 const getFormattedAddress = (
   address?: Address,
   network?: Network | null,
-  legacyFormat?: boolean,
+  legacyFormat?: boolean
 ) => {
   if (!address) return null
 
@@ -93,7 +92,7 @@ const getQrLogo = async (
   address: string | null,
   isGeneric: boolean,
   ethereum?: Token | null,
-  network?: Network | null,
+  network?: Network | null
 ) => {
   if (!address) {
     return undefined
@@ -115,7 +114,7 @@ const getQrLogo = async (
     // firefox can't detect svg size if not specified, enforce 300x300
     const data = await getBase64ImageFromUrl(logo, { width: 300, height: 300 })
     return data?.startsWith("data:image") ? data : undefined
-  } catch (err) {
+  } catch {
     return undefined
   }
 }
@@ -134,7 +133,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, network, state.legacyFormat),
-    [network, state],
+    [network, state]
   )
 
   const [isLogoLoaded, setIsLogoLoaded] = useState(false)
@@ -165,7 +164,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
       setStateAndUpdateRoute({ networkId: chainId, address, legacyFormat })
     },
-    [accounts, networksMap, setStateAndUpdateRoute, state.address],
+    [accounts, networksMap, setStateAndUpdateRoute, state.address]
   )
 
   const setAddress = useCallback(
@@ -175,14 +174,14 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
           accounts,
           networksMap,
           address,
-          state.networkId,
+          state.networkId
         )
           ? state.networkId
           : undefined
         setStateAndUpdateRoute({ address, networkId: chainId })
       } else setStateAndUpdateRoute({ address })
     },
-    [accounts, networksMap, setStateAndUpdateRoute, state.networkId],
+    [accounts, networksMap, setStateAndUpdateRoute, state.networkId]
   )
 
   const goToAddressPage = useCallback(() => {
@@ -230,7 +229,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 
       if (await copyAddress(formattedAddress, onQrClick)) close()
     },
-    [close, networksMap, open],
+    [close, networksMap, open]
   )
 
   const ctx = {
@@ -252,5 +251,5 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
 }
 
 export const [CopyAddressWizardProvider, useCopyAddressWizard] = provideContext(
-  useCopyAddressWizardProvider,
+  useCopyAddressWizardProvider
 )

@@ -1,6 +1,5 @@
-import { useMemo } from "react"
-
 import { useCurrentTab } from "@ui/state"
+import { useMemo } from "react"
 
 export const useCurrentSite = () => {
   const tab = useCurrentTab()

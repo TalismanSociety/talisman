@@ -1,4 +1,4 @@
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
 export enum Errors {
   InvalidURL = "Invalid URL",
@@ -6,12 +6,12 @@ export enum Errors {
 }
 
 export const urlToDomain = (
-  urlStr: string,
+  urlStr: string
 ): Result<string, Errors.UnsupportedProtocol | Errors.InvalidURL> => {
   let url: URL
   try {
     url = new URL(urlStr)
-  } catch (error) {
+  } catch {
     return Err(Errors.InvalidURL)
   }
 

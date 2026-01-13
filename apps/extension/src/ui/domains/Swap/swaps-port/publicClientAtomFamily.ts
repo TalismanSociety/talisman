@@ -1,11 +1,10 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
-import { Atom, atom } from "jotai"
-import { atomFamily, atomWithObservable } from "jotai/utils"
-import { AtomFamily } from "jotai/vanilla/utils/atomFamily"
-import { PublicClient } from "viem"
-
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { getExtensionPublicClient } from "@ui/domains/Ethereum/usePublicClient"
 import { getNetworkById$, getToken$ } from "@ui/state"
+import { type Atom, atom } from "jotai"
+import { atomFamily, atomWithObservable } from "jotai/utils"
+import type { AtomFamily } from "jotai/vanilla/utils/atomFamily"
+import type { PublicClient } from "viem"
 
 export const publicClientAtomFamily: AtomFamily<
   EthNetworkId | undefined,
@@ -18,5 +17,5 @@ export const publicClientAtomFamily: AtomFamily<
       return
 
     return getExtensionPublicClient(evmNetwork)
-  }),
+  })
 )

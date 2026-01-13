@@ -1,14 +1,11 @@
 export * from "./chaindata"
-export * from "./provider/ChaindataProviderInterface"
-export * from "./provider/ChaindataProvider"
-export * from "./util"
+export { MINIMETADATA_VERSION } from "./constants"
+export * from "./getBlockExplorerUrls"
 export * from "./legacy/Chain"
 export * from "./legacy/EvmNetwork"
 export * from "./legacy/TalismanChaindataDatabase"
-export * from "./getBlockExplorerUrls"
-
-export { MINIMETADATA_VERSION } from "./constants"
-
+export * from "./provider/ChaindataProvider"
+export * from "./provider/ChaindataProviderInterface"
 // make sure to export the strict minimum
 // db should definitely not be exported
 export {
@@ -21,8 +18,9 @@ export {
   isTokenTestnet,
 } from "./state/combinedChaindata"
 export {
-  ChaindataFileSchema,
-  CustomChaindataSchema,
   type Chaindata,
+  ChaindataFileSchema,
   type CustomChaindata,
+  CustomChaindataSchema,
 } from "./state/schema"
+export * from "./util"

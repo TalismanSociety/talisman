@@ -1,21 +1,21 @@
 import { CheckIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
 import {
-  ButtonHTMLAttributes,
-  FC,
+  type ButtonHTMLAttributes,
+  type FC,
   forwardRef,
-  HTMLAttributes,
-  MouseEvent,
-  ReactNode,
+  type HTMLAttributes,
+  type MouseEvent,
+  type ReactNode,
   useCallback,
 } from "react"
 
 import {
   Popover,
   PopoverContent,
-  PopoverOptions,
+  type PopoverOptions,
   PopoverTrigger,
-  PopoverTriggerProps,
+  type PopoverTriggerProps,
   usePopoverContext,
 } from "./Popover"
 
@@ -33,7 +33,7 @@ export const ContextMenuContent: FC<HTMLAttributes<HTMLDivElement>> = (props) =>
   return (
     <PopoverContent
       {...props}
-      className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg"
+      className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg"
     />
   )
 }
@@ -50,7 +50,7 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       onClick?.(e)
       setOpen(false)
     },
-    [setOpen, onClick],
+    [setOpen, onClick]
   )
 
   return (
@@ -59,8 +59,8 @@ export const ContextMenuItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
       {...props}
       onClick={handleClick}
       className={classNames(
-        "enabled:hover:bg-grey-800 focus-visible:bg-grey-800 disabled:text-body-disabled rounded-xs h-20 p-6 text-left",
-        className,
+        "h-20 rounded-xs p-6 text-left focus-visible:bg-grey-800 enabled:hover:bg-grey-800 disabled:text-body-disabled",
+        className
       )}
     />
   )
@@ -74,7 +74,7 @@ export const ContextMenuOptionItem: FC<{
   <ContextMenuItem
     className={classNames(
       "flex items-center justify-between gap-16",
-      selected ? "text-body" : "text-body-secondary",
+      selected ? "text-body" : "text-body-secondary"
     )}
     onClick={onClick}
   >

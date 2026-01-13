@@ -1,7 +1,7 @@
-import { BalanceFormatter } from "@talismn/balances"
-import { EthNetwork } from "@talismn/chaindata-provider"
+import type { BalanceFormatter } from "@talismn/balances"
+import type { EthNetwork } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"
@@ -44,7 +44,7 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
         symbol={symbol}
         fiat={fiat}
         withIcon
-        className="pr-0 pt-0"
+        className="pt-0 pr-0"
       />
     </SignParamButton>
   )

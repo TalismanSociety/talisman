@@ -1,12 +1,11 @@
+import { useIsBrave } from "@talisman/hooks/useIsBrave"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talismn/icons"
+import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
+import { useAppState } from "@ui/state"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Modal, ModalDialog } from "talisman-ui"
-
-import { useIsBrave } from "@talisman/hooks/useIsBrave"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
-import { useAppState } from "@ui/state"
 
 import { DashboardNotification } from "./DashboardNotification"
 

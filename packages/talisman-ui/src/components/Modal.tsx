@@ -1,9 +1,16 @@
 import { Transition, TransitionChild } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, ReactNode, Suspense, useCallback, useState } from "react"
+import {
+  type FC,
+  type MouseEventHandler,
+  type ReactNode,
+  Suspense,
+  useCallback,
+  useState,
+} from "react"
 import { createPortal } from "react-dom"
 
-import { OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
+import { type OpenCloseStatus, OpenCloseStatusProvider } from "../utils/useOpenCloseStatus"
 
 type ModalProps = {
   children: ReactNode
@@ -30,7 +37,7 @@ export const Modal: FC<ModalProps> = ({
       e.stopPropagation()
       onDismiss()
     },
-    [onDismiss],
+    [onDismiss]
   )
 
   const container = (containerId && document.getElementById(containerId)) || document.body
@@ -40,9 +47,9 @@ export const Modal: FC<ModalProps> = ({
       <TransitionChild
         as="div"
         className={classNames(
-          "bg-grey-900/50 left-0 top-0 z-20 h-full w-full backdrop-blur-sm",
+          "top-0 left-0 z-20 h-full w-full bg-grey-900/50 backdrop-blur-sm",
           containerId ? "absolute" : "fixed",
-          onDismiss && "cursor-pointer",
+          onDismiss && "cursor-pointer"
         )}
         enter="ease-out duration-300"
         enterFrom="opacity-0"
@@ -54,11 +61,11 @@ export const Modal: FC<ModalProps> = ({
       ></TransitionChild>
       <div
         className={classNames(
-          "left-0 top-0 z-20 h-full w-full overflow-hidden",
+          "top-0 left-0 z-20 h-full w-full overflow-hidden",
           "pointer-events-none flex flex-col items-center",
           containerId ? "absolute" : "fixed",
           anchor === "center" && "justify-center",
-          anchor === "bottom" && "justify-end",
+          anchor === "bottom" && "justify-end"
         )}
       >
         <TransitionChild
@@ -66,7 +73,7 @@ export const Modal: FC<ModalProps> = ({
           className={classNames(
             "pointer-events-auto overflow-hidden",
             containerId ? "max-h-full max-w-full" : "max-h-[100dvh] max-w-[dvw]",
-            className,
+            className
           )}
           enter="ease-out duration-200"
           enterFrom="opacity-0 scale-90"
@@ -85,6 +92,6 @@ export const Modal: FC<ModalProps> = ({
         </TransitionChild>
       </div>
     </Transition>,
-    container,
+    container
   )
 }

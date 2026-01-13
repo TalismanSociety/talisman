@@ -1,5 +1,6 @@
+import { log } from "extension-shared"
 import { atom, useAtomValue, useSetAtom } from "jotai"
-import { ReactNode, useEffect, useRef } from "react"
+import { type ReactNode, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 
 const containerRefAtom = atom<HTMLElement | null>(null)
@@ -11,7 +12,7 @@ export const SwapTokensFullscreenPortalContainer = () => {
   const childRef = useRef<HTMLDivElement | null>(null)
   useEffect(
     () => void setFullscreenPortalContainerRef(childRef.current?.parentElement ?? null),
-    [setFullscreenPortalContainerRef],
+    [setFullscreenPortalContainerRef]
   )
 
   return <div ref={childRef} />
@@ -20,8 +21,11 @@ export const SwapTokensFullscreenPortalContainer = () => {
 /** The children of this node will be rendered into the parent of <SwapTokensFullscreenPortalContainer /> */
 export const SwapTokensFullscreenPortal = ({ children }: { children?: ReactNode }) => {
   const container = useAtomValue(containerRefAtom)
-  // eslint-disable-next-line no-console
-  if (!container) return console.warn(`No SwapTokensFullscreenPortalContainer`), null
+
+  if (!container) {
+    log.warn(`No SwapTokensFullscreenPortalContainer`)
+    return null
+  }
 
   return createPortal(children, container)
 }

@@ -1,12 +1,23 @@
-import { evmErc20TokenId, NetworkList, TokenList } from "@talismn/chaindata-provider"
-import { newTokenRates, TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
-import { BigMath, isArrayOf, isBigInt, NonFunctionProperties, planckToTokens } from "@talismn/util"
+import { evmErc20TokenId, type NetworkList, type TokenList } from "@talismn/chaindata-provider"
+import {
+  newTokenRates,
+  type TokenRateCurrency,
+  type TokenRates,
+  type TokenRatesList,
+} from "@talismn/token-rates"
+import {
+  BigMath,
+  isArrayOf,
+  isBigInt,
+  type NonFunctionProperties,
+  planckToTokens,
+} from "@talismn/util"
 import BigNumber from "bignumber.js"
 
 import log from "../log"
-import { SubDTaoBalanceMeta } from "../modules"
+import type { SubDTaoBalanceMeta } from "../modules"
 import { getDTaoTokenRates } from "../modules/substrate-dtao"
-import {
+import type {
   Amount,
   AmountWithLabel,
   BalanceJson,
@@ -28,7 +39,7 @@ export function excludeFromTransferableAmount(
   locks:
     | Amount
     | FormattedAmount<LockedAmount<string>, string>
-    | Array<FormattedAmount<LockedAmount<string>, string>>,
+    | Array<FormattedAmount<LockedAmount<string>, string>>
 ): bigint {
   if (typeof locks === "string") return BigInt(locks)
   if (!Array.isArray(locks)) locks = [locks]
@@ -40,7 +51,7 @@ export function excludeFromTransferableAmount(
 }
 
 export function excludeFromFeePayableLocks(
-  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>,
+  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
 ): Array<LockedAmount<string>> {
   if (typeof locks === "string") return []
   if (!Array.isArray(locks)) locks = [locks]
@@ -51,7 +62,7 @@ export function excludeFromFeePayableLocks(
 export function includeInTotalExtraAmount(
   extra?:
     | FormattedAmount<ExtraAmount<string>, string>
-    | Array<FormattedAmount<ExtraAmount<string>, string>>,
+    | Array<FormattedAmount<ExtraAmount<string>, string>>
 ): bigint {
   if (!extra) return 0n
   if (!Array.isArray(extra)) extra = [extra]
@@ -93,25 +104,30 @@ export class Balances {
 
   constructor(
     balances: Balances | BalanceJsonList | Balance[] | IBalance[] | BalanceJson[] | Balance,
-    hydrate?: HydrateDb,
+    hydrate?: HydrateDb
   ) {
     // handle Balances (convert to Balance[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balances) return new Balances(balances.each, hydrate)
 
     // handle Balance (convert to Balance[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances instanceof Balance) return new Balances([balances], hydrate)
 
     // handle BalanceJsonList (the only remaining non-array type of balances) (convert to BalanceJson[])
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (!Array.isArray(balances)) return new Balances(Object.values(balances), hydrate)
 
     // handle no balances
+    // biome-ignore lint/correctness/noConstructorReturn: legacy
     if (balances.length === 0) return this
 
     // handle BalanceJson[]
     if (!isArrayOf(balances, Balance))
+      // biome-ignore lint/correctness/noConstructorReturn: legacy
       return new Balances(
         balances.map((storage) => new Balance(storage)),
-        hydrate,
+        hydrate
       )
 
     // handle Balance[]
@@ -133,7 +149,7 @@ export class Balances {
             return null
           }
         })
-        .filter(Array.isArray),
+        .filter(Array.isArray)
     );
 
   /**
@@ -178,7 +194,7 @@ export class Balances {
     // construct filter
     const queryArray: BalanceSearchQuery[] = Array.isArray(query) ? query : [query]
     const orQueries = queryArray.map((query) =>
-      typeof query === "function" ? query : Object.entries(query),
+      typeof query === "function" ? query : Object.entries(query)
     )
 
     // filter balances
@@ -186,7 +202,7 @@ export class Balances {
       orQueries.some((query) =>
         typeof query === "function"
           ? query(balance)
-          : query.every(([key, value]) => balance[key as keyof BalanceSearchQuery] === value),
+          : query.every(([key, value]) => balance[key as keyof BalanceSearchQuery] === value)
       )
 
     // return filter matches
@@ -212,7 +228,7 @@ export class Balances {
       | "transferable"
       | "unavailable"
       | "feePayable",
-    currency: TokenRateCurrency,
+    currency: TokenRateCurrency
   ): Balances => {
     const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
     return this.find(filter)
@@ -233,8 +249,10 @@ export class Balances {
 
     // merge balances
     const mergedBalances = Object.fromEntries(
-      this.#balances.map((balance) => [balance.id, balance]),
+      this.#balances.map((balance) => [balance.id, balance])
     )
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     balances.each.forEach((balance) => (mergedBalances[balance.id] = balance))
 
     // return new balances
@@ -344,7 +362,7 @@ export class Balance {
     new BalanceFormatter(
       isBigInt(balance) ? balance.toString() : balance,
       this.decimals || undefined,
-      this.rates,
+      this.rates
     )
 
   //
@@ -400,8 +418,8 @@ export class Balance {
       const decimals0 = this.token.decimals0
       const decimals1 = this.token.decimals1
 
-      const rates0 = this.#db?.tokenRates && this.#db.tokenRates[tokenId0]
-      const rates1 = this.#db?.tokenRates && this.#db.tokenRates[tokenId1]
+      const rates0 = this.#db?.tokenRates?.[tokenId0]
+      const rates1 = this.#db?.tokenRates?.[tokenId1]
 
       if (rates0 === undefined || rates1 === undefined) return null
 
@@ -411,9 +429,9 @@ export class Balance {
       const reserve0 = extras.find((extra) => extra.label === "reserve0")?.amount ?? "0"
       const reserve1 = extras.find((extra) => extra.label === "reserve1")?.amount ?? "0"
 
-      const totalSupplyTokens = BigNumber(totalSupply).times(Math.pow(10, -1 * decimals))
-      const reserve0Tokens = BigNumber(reserve0).times(Math.pow(10, -1 * decimals0))
-      const reserve1Tokens = BigNumber(reserve1).times(Math.pow(10, -1 * decimals1))
+      const totalSupplyTokens = BigNumber(totalSupply).times(10 ** (-1 * decimals))
+      const reserve0Tokens = BigNumber(reserve0).times(10 ** (-1 * decimals0))
+      const reserve1Tokens = BigNumber(reserve1).times(10 ** (-1 * decimals1))
 
       const rates0Currencies = new Set(Object.keys(rates0) as TokenRateCurrency[])
       const rates1Currencies = new Set(Object.keys(rates1) as TokenRateCurrency[])
@@ -428,9 +446,9 @@ export class Balance {
             // tvl (in a given currency) == reserve0*currencyRate0 + reserve1*currencyRate1
             BigNumber.sum(
               reserve0Tokens.times(rates0[currency]?.price ?? 0),
-              reserve1Tokens.times(rates1[currency]?.price ?? 0),
+              reserve1Tokens.times(rates1[currency]?.price ?? 0)
             ),
-          ] as const,
+          ] as const
       )
 
       const lpTokenRates = newTokenRates()
@@ -456,7 +474,7 @@ export class Balance {
     }
 
     // other tokens can just pick from the tokenRates db using the tokenId
-    return (this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]) || null
+    return this.#db?.tokenRates?.[this.tokenId] || null
   }
 
   /**
@@ -465,7 +483,7 @@ export class Balance {
    * @returns An array of the values matching the type with formatted amounts.
    */
   private getValue(
-    valueType: BalanceStatusTypes,
+    valueType: BalanceStatusTypes
   ): Array<FormattedAmount<AmountWithLabel<string>, string>> {
     return this.getRawValue(valueType).map((value) => ({
       ...value,
@@ -487,6 +505,8 @@ export class Balance {
    * @param valueType - The type of value to add.
    * @returns A function which can be used to add a value to the array of values for this balance.
    */
+
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: legacy
   private addValue(valueType: BalanceStatusTypes) {
     return (value: Omit<AmountWithLabel<string>, "type">) => this.#valueGetter.add(valueType, value)
   }
@@ -501,7 +521,7 @@ export class Balance {
     // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
     // if not (old model: vara, avail, cere), staked amount is not in the account and it needs to be added to the total
     const nomPoolStakedPlancks = this.locks.some(
-      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking",
+      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking"
     )
       ? 0n
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
@@ -510,7 +530,7 @@ export class Balance {
       this.free.planck +
         this.reserved.planck +
         nomPoolStakedPlancks +
-        includeInTotalExtraAmount(extra),
+        includeInTotalExtraAmount(extra)
     )
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
@@ -529,7 +549,7 @@ export class Balance {
     if (reservedValues.length === 0) return this.#format(0n)
 
     return this.#format(
-      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n),
+      reservedValues.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
     )
   }
   get reserves() {
@@ -538,7 +558,7 @@ export class Balance {
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
-      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n),
+      this.locks.map(({ amount }) => amount.planck).reduce((a, b) => BigMath.max(a, b), 0n)
     )
   }
 
@@ -600,7 +620,7 @@ export class Balance {
       // subtract the reserved amount, because locks now act upon the total balance - not just the free balance
       const untouchableAmount = BigMath.max(
         excludeFromTransferableAmount(this.locks) - this.reserved.planck,
-        0n,
+        0n
       )
 
       // subtract the untouchable amount from the free amount (but don't go below 0)
@@ -625,7 +645,7 @@ export class Balance {
     // if there is a DelegatedStaking hold (new model: polkadot, kusama), nom pool staked amount is included in reserved
     // if not (old model: vara, avail, cere), staked amount is not in the account and it needs to be added to the total
     const nomPoolStakedPlancks = this.locks.some(
-      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking",
+      (lock) => lock.source === "substrate-native-holds" && lock.label === "DelegatedStaking"
     )
       ? 0n
       : this.nompools.map(({ amount }) => amount.planck).reduce((a, b) => a + b, 0n)
@@ -675,7 +695,7 @@ export class BalanceFormatter {
   constructor(
     planck: string | bigint | undefined,
     decimals?: number | undefined,
-    fiatRatios?: TokenRates | null,
+    fiatRatios?: TokenRates | null
   ) {
     this.#planck = isBigInt(planck) ? planck.toString() : (planck ?? "0")
     this.#decimals = decimals || 0
@@ -712,7 +732,7 @@ export class PlanckSumBalancesFormatter {
   #sum = (
     balanceField: {
       [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
-    }[keyof Balance],
+    }[keyof Balance]
   ) => {
     // a function to get a planck amount from a balance
     const planck = (balance: Balance) => balance[balanceField].planck ?? 0n
@@ -721,7 +741,7 @@ export class PlanckSumBalancesFormatter {
       // add the total amount to the planck amount of each balance
       (total, balance) => total + planck(balance),
       // start with a total of 0
-      0n,
+      0n
     )
   }
 
@@ -774,7 +794,7 @@ export class FiatSumBalancesFormatter {
   #sum = (
     balanceField: {
       [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
-    }[keyof Balance],
+    }[keyof Balance]
   ) => {
     // a function to get a fiat amount from a balance
     const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) ?? 0
@@ -783,7 +803,7 @@ export class FiatSumBalancesFormatter {
       // add the total amount to the fiat amount of each balance
       (total, balance) => total + fiat(balance),
       // start with a total of 0
-      0,
+      0
     )
   }
 
@@ -855,7 +875,7 @@ export class Change24hCurrencyFormatter {
   #change24h = (
     balanceField: {
       [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
-    }[keyof Balance],
+    }[keyof Balance]
   ) => {
     const output = this.#balances.filterMirrorTokens().each.reduce(
       // add the total amount to the fiat amount of each balance
@@ -871,7 +891,7 @@ export class Change24hCurrencyFormatter {
         }
       },
       // start with a total of 0
-      { totalFiatDiff: 0, totalFiat: 0 },
+      { totalFiatDiff: 0, totalFiat: 0 }
     )
 
     return output.totalFiat === 0
@@ -908,7 +928,7 @@ export class Change24hCurrencyFormatter {
   }
 }
 
-export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
+export const filterMirrorTokens = (balance: Balance, _i: number, balances: Balance[]) => {
   const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }

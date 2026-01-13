@@ -23,11 +23,11 @@ const ss58Encode = (payload: Uint8Array, prefix = 42) => {
       ? Uint8Array.of(prefix)
       : Uint8Array.of(
           ((prefix & 0b0000_0000_1111_1100) >> 2) | 0b0100_0000,
-          (prefix >> 8) | ((prefix & 0b0000_0000_0000_0011) << 6),
+          (prefix >> 8) | ((prefix & 0b0000_0000_0000_0011) << 6)
         )
   const checksum = blake2b512(Uint8Array.of(...SS58PRE, ...prefixBytes, ...payload)).subarray(
     0,
-    CHECKSUM_LENGTH,
+    CHECKSUM_LENGTH
   )
   return base58.encode(Uint8Array.of(...prefixBytes, ...payload, ...checksum))
 }
@@ -39,7 +39,7 @@ export const decodeSs58Address = (addressStr: string): [publicKey: Uint8Array, p
 
   const addressChecksum = address.subarray(address.length - CHECKSUM_LENGTH)
   const checksum = blake2b512(
-    Uint8Array.of(...SS58PRE, ...address.subarray(0, address.length - CHECKSUM_LENGTH)),
+    Uint8Array.of(...SS58PRE, ...address.subarray(0, address.length - CHECKSUM_LENGTH))
   ).subarray(0, CHECKSUM_LENGTH)
   if (addressChecksum[0] !== checksum[0] || addressChecksum[1] !== checksum[1])
     throw new Error("Invalid checksum")
@@ -62,7 +62,7 @@ export function isSs58Address(address: string): boolean {
   try {
     decodeSs58Address(address)
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }

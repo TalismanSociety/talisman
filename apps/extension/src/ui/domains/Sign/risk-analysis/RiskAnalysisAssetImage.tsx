@@ -26,16 +26,14 @@ export const RiskAnalysisAssetImage = (props: AssetImageProps) => {
   const content = useMemo(() => {
     if (props.type === "currency") {
       return (
-        <>
-          <RiskAnalysisImageBase
-            src={props.imageUrl}
-            alt={props.name}
-            width={40}
-            height={40}
-            borderRadius="100%"
-            type="currency"
-          />
-        </>
+        <RiskAnalysisImageBase
+          src={props.imageUrl}
+          alt={props.name}
+          width={40}
+          height={40}
+          borderRadius="100%"
+          type="currency"
+        />
       )
     }
 
@@ -61,12 +59,12 @@ export const RiskAnalysisAssetImage = (props: AssetImageProps) => {
 
       <div
         className={classNames(
-          "absolute -right-4 -top-4 h-10 w-10 rounded-full p-1",
+          "absolute -top-4 -right-4 h-10 w-10 rounded-full p-1",
           props.side === "in" && "bg-[#16541D]",
-          props.side === "out" && "bg-[#262C54]",
+          props.side === "out" && "bg-[#262C54]"
         )}
       >
-        {props.side === "in" && <ArrowDownIcon className="text-green h-8 w-8" />}
+        {props.side === "in" && <ArrowDownIcon className="h-8 w-8 text-green" />}
         {props.side === "out" && <ArrowUpIcon className="h-8 w-8 text-[#6A7AEB]" />}
       </div>
     </div>

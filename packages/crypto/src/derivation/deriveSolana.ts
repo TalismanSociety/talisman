@@ -1,9 +1,8 @@
 import { ed25519 } from "@noble/curves/ed25519"
 import { hmac } from "@noble/hashes/hmac"
 import { sha512 } from "@noble/hashes/sha512"
-
-import type { Keypair } from "../types"
 import { addressFromPublicKey } from "../address"
+import type { Keypair } from "../types"
 
 // Convert a path like "m/44'/501'/0'/0'" to an array of indexes
 const parseDerivationPath = (path: string): number[] => {
@@ -36,7 +35,7 @@ export const deriveSolana = (seed: Uint8Array, derivationPath: string): Keypair 
         (index >> 8) & 0xff,
         index & 0xff,
       ]),
-      1 + secretKey.length,
+      1 + secretKey.length
     )
 
     I = hmac(sha512, chainCode, data)

@@ -1,10 +1,9 @@
-import type { Chain as ViemChain } from "viem/chains"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, erc20Abi, fallback, http, zeroAddress } from "viem"
-
-import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
+import type { Chain as ViemChain } from "viem/chains"
 import { allEvmChains } from "./allEvmChains"
 import { Decimal } from "./Decimal"
+import type { UseSubstrateBalanceProps } from "./useSubstrateBalance"
 import { useSubstrateBalance } from "./useSubstrateBalance"
 
 type EvmProps = {
@@ -18,7 +17,7 @@ export type UseFastBalanceProps = EvmProps | UseSubstrateBalanceProps
 
 export const useFastBalance = (props?: UseFastBalanceProps) => {
   const substrateBalance = useSubstrateBalance(
-    useMemo(() => (props?.type === "substrate" ? props : undefined), [props]),
+    useMemo(() => (props?.type === "substrate" ? props : undefined), [props])
   )
 
   const evmBalance = useEvmBalance(props)
@@ -44,7 +43,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
     if (props?.type !== "evm") return setEvmBalance(undefined)
 
     const chain: ViemChain | undefined = Object.values(allEvmChains).find(
-      (chain) => chain?.id === props.networkId,
+      (chain) => chain?.id === props.networkId
     )
     const rpcUrls = chain?.rpcUrls.default.http
     if (!chain || !rpcUrls?.length) return setEvmBalance(undefined)
@@ -54,7 +53,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
     const client = createPublicClient({
       transport: fallback(
         rpcUrls.map((rpc) => http(rpc, { retryCount: 0 })),
-        { retryCount: 0 },
+        { retryCount: 0 }
       ),
       chain,
       batch: { multicall: true },
@@ -73,7 +72,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
         setEvmBalance(
           Decimal.fromPlanck(balance, chain.nativeCurrency.decimals, {
             currency: chain.nativeCurrency.symbol,
-          }),
+          })
         )
         return setTimeout(refetch, timeoutMs)
       }
@@ -108,7 +107,7 @@ const useEvmBalance = (props?: UseFastBalanceProps) => {
 
       if (balanceCall.status === "failure") return setEvmBalance(undefined)
       setEvmBalance(
-        Decimal.fromPlanck(balanceCall.result as bigint, decimals, { currency: symbol }),
+        Decimal.fromPlanck(balanceCall.result as bigint, decimals, { currency: symbol })
       )
       return setTimeout(refetch, timeoutMs)
     }

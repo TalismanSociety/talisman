@@ -1,10 +1,9 @@
+import { useBittensorValidators } from "@ui/state/bittensor"
 import { keyBy } from "lodash-es"
 import { useMemo } from "react"
 
-import { useBittensorValidators } from "@ui/state/bittensor"
-
 import { useGetInfiniteValidatorsYieldByNetuid } from "./dTao/useGetInfiniteValidatorsYield"
-import { BondOption } from "./types"
+import type { BondOption } from "./types"
 
 export const useCombinedBittensorValidatorsData = (netuid?: number | null) => {
   const { data: validatorsYieldData, isLoading } = useGetInfiniteValidatorsYieldByNetuid({

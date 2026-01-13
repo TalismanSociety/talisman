@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { Navigate, useSearchParams } from "react-router-dom"
 
 export const NavigateWithQuery: FC<{ url: string; replace?: boolean }> = ({ url, replace }) => {
@@ -6,7 +6,7 @@ export const NavigateWithQuery: FC<{ url: string; replace?: boolean }> = ({ url,
 
   const to = useMemo(
     () => (searchParams.size ? `${url}?${searchParams}` : url),
-    [url, searchParams],
+    [url, searchParams]
   )
 
   return <Navigate to={to} replace={replace} />

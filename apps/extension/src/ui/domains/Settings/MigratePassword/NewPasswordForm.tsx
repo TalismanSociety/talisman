@@ -1,12 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningMessage } from "@talisman/components/CapsLockWarningMessage"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
 
 import { useMigratePassword } from "./context"
 
@@ -33,7 +32,7 @@ export const NewPasswordForm = () => {
             .oneOf([yup.ref("newPw")], t("Passwords must match!")),
         })
         .required(),
-    [t],
+    [t]
   )
 
   const {
@@ -52,9 +51,9 @@ export const NewPasswordForm = () => {
 
   return (
     <ModalDialog title={t("Enter new password")}>
-      <p className="text-body-secondary mb-16 text-sm">
+      <p className="mb-16 text-body-secondary text-sm">
         {t(
-          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.",
+          "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
         )}
       </p>
 

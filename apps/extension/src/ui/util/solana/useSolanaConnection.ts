@@ -1,10 +1,9 @@
-import { Connection, ConnectionConfig } from "@solana/web3.js"
+import { Connection, type ConnectionConfig } from "@solana/web3.js"
 import { ChainConnectorSolStub } from "@talismn/chain-connectors"
-import { SolNetworkId } from "@talismn/chaindata-provider"
-import { SolRpcRequest } from "extension-core"
-import { useMemo } from "react"
-
+import type { SolNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
+import type { SolRpcRequest } from "extension-core"
+import { useMemo } from "react"
 
 /**
  * returns a solana Connection object that proxies all requests through the extension's background script.
@@ -12,7 +11,7 @@ import { api } from "@ui/api"
  * @param networkId
  */
 const getSolanaConnection = (networkId: string) => {
-  const fetchViaBackground = async (url: string, options: RequestInit) => {
+  const fetchViaBackground = async (_url: string, options: RequestInit) => {
     if (typeof options.body !== "string")
       throw new Error("Request body is required for Solana RPC calls")
 

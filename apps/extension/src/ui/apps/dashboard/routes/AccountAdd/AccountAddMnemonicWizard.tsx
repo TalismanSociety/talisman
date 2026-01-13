@@ -1,10 +1,9 @@
-import { lazy } from "react"
-
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
+import { lazy } from "react"
 
 const AccountAddMnemonicWizard = lazy(
-  () => import("@ui/domains/Account/AccountAdd/AccountAddMnemonic/router"),
+  () => import("@ui/domains/Account/AccountAdd/AccountAddMnemonic/router")
 )
 
 const Content = () => {

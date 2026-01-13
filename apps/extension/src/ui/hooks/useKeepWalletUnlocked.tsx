@@ -1,7 +1,6 @@
+import { api } from "@ui/api"
 import throttle from "lodash-es/throttle"
 import { useEffect } from "react"
-
-import { api } from "@ui/api"
 
 /** Sets whether the wallet autolock timer should be restarted on a user-interaction, or on a 10s interval. */
 export type KeepWalletUnlockedMode = "user-interaction" | "always"

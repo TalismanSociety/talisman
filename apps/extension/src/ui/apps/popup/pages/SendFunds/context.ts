@@ -1,10 +1,9 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { Address } from "extension-core"
+import { provideContext } from "@talisman/util/provideContext"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { useTokensMap } from "@ui/state"
+import type { Address } from "extension-core"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { useTokensMap } from "@ui/state"
 
 type SendFundsWizardParams = {
   from: Address
@@ -35,14 +34,14 @@ const useSendFundsWizardProvider = () => {
       allowReap: searchParams.get("allowReap") !== null,
       sendMax: searchParams.get("sendMax") !== null,
     }),
-    [searchParams],
+    [searchParams]
   )
 
   const set = useCallback(
     <T extends keyof SendFundsWizardParams>(
       key: T,
       value: SendFundsWizardParams[T],
-      goToNextPage = false,
+      goToNextPage = false
     ) => {
       // reset amount if token changes, as decimals may be totally different
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
@@ -82,7 +81,7 @@ const useSendFundsWizardProvider = () => {
         navigate(url)
       }
     },
-    [allTokensMap, navigate, searchParams, setSearchParams],
+    [allTokensMap, navigate, searchParams, setSearchParams]
   )
 
   const remove = useCallback(
@@ -90,7 +89,7 @@ const useSendFundsWizardProvider = () => {
       searchParams.delete(key)
       setSearchParams(searchParams, { replace: true })
     },
-    [searchParams, setSearchParams],
+    [searchParams, setSearchParams]
   )
 
   const goto = useCallback(
@@ -98,7 +97,7 @@ const useSendFundsWizardProvider = () => {
       const url = `/send/${page}?${searchParams.toString()}`
       navigate(url, { replace })
     },
-    [navigate, searchParams],
+    [navigate, searchParams]
   )
 
   const gotoReview = useCallback(
@@ -113,7 +112,7 @@ const useSendFundsWizardProvider = () => {
 
       navigate(`/send/confirm?${searchParams.toString()}`)
     },
-    [amount, from, navigate, searchParams, sendMax, to, tokenId],
+    [amount, from, navigate, searchParams, sendMax, to, tokenId]
   )
 
   const gotoProgress = useCallback(
@@ -123,7 +122,7 @@ const useSendFundsWizardProvider = () => {
       qs.set("networkId", networkId)
       navigate(`/send/submitted?${qs.toString()}`)
     },
-    [navigate],
+    [navigate]
   )
 
   return {
@@ -143,5 +142,5 @@ const useSendFundsWizardProvider = () => {
 }
 
 export const [SendFundsWizardProvider, useSendFundsWizard] = provideContext(
-  useSendFundsWizardProvider,
+  useSendFundsWizardProvider
 )

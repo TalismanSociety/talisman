@@ -12,6 +12,6 @@ type IRuntimeVersion = IRuntimeVersionBase & {
 
 export const getRuntimeVersion = (chainId: string) => {
   return withRetry(() =>
-    chainConnector.send<IRuntimeVersion>(chainId, "state_getRuntimeVersion", [], true),
+    chainConnector.send<IRuntimeVersion>(chainId, "state_getRuntimeVersion", [], true)
   )
 }

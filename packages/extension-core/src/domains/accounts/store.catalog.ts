@@ -1,14 +1,14 @@
 import { isAddressEqual } from "@talismn/crypto"
-import { Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
+import { type Account, isAccountNotContact, isAccountPortfolio } from "@talismn/keyring"
 
 import { StorageProvider } from "../../libs/Store"
 import {
   addAccount,
+  type RequestAccountsCatalogAction,
   recGetAllAddresses,
   removeAccount,
-  RequestAccountsCatalogAction,
   runActionsOnTrees,
-  Trees,
+  type Trees,
 } from "./helpers.catalog"
 
 // AccountsCatalogData is here in case we want to use this to store anything
@@ -31,6 +31,7 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
     await this.withTrees((trees) => {
       orderedAddresses = [...trees.portfolio, ...trees.watched].reduce<string[]>((prev, curr) => {
         if (curr.type === "account") prev.push(curr.address)
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         if (curr.type === "folder") curr.tree.forEach((item) => prev.push(item.address))
         return prev
       }, [])
@@ -80,10 +81,11 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
         .map((tree) => {
           const treeAddresses = recGetAllAddresses(tree)
           const removeAddresses = treeAddresses.filter(
-            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va)),
+            (ta) => !validAddresses.some((va) => isAddressEqual(ta, va))
           )
           if (!removeAddresses.length) return false
 
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
           removeAddresses.forEach((a) => removeAccount(tree, a))
           return true
         })
@@ -103,6 +105,8 @@ export class AccountsCatalogStore extends StorageProvider<AccountsCatalogData> {
    * By using this helper, the data will always be a valid `Trees` type,
    * even when the underlying localStorage has never been initialized.
    */
+
+  // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   private withTrees = async (callback: (trees: Trees) => boolean | void) => {
     // get the data from localStorage
     const store = await this.get()

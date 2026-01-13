@@ -1,9 +1,8 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { ExternalLinkIcon } from "@talismn/icons"
+import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import { POLKADOT_VAULT_DOCS_URL } from "extension-shared"
 import { useTranslation } from "react-i18next"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 
 import { useAccountAddQr } from "./context"
 
@@ -43,12 +42,12 @@ export const Scan = () => {
                   {
                     title: t("Approve camera permissions"),
                     body: t(
-                      "It looks like you’ve blocked permissions for Talisman to access your camera",
+                      "It looks like you’ve blocked permissions for Talisman to access your camera"
                     ),
                     extra: (
                       <button
                         type="button"
-                        className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
+                        className="mt-6 inline-block rounded-full bg-primary/10 px-6 font-light text-primary text-sm leading-[32px] hover:bg-primary/20"
                         onClick={() => dispatch({ method: "enableScan" })}
                       >
                         {t("Retry")}
@@ -69,7 +68,7 @@ export const Scan = () => {
                       extra: (
                         <button
                           type="button"
-                          className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
+                          className="mt-6 inline-block rounded-full bg-primary/10 px-6 font-light text-primary text-sm leading-[32px] hover:bg-primary/20"
                           onClick={() => dispatch({ method: "enableScan" })}
                         >
                           {t("Turn on Camera")}
@@ -80,17 +79,18 @@ export const Scan = () => {
               {
                 title: t("Scan QR code"),
                 body: t(
-                  "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading",
+                  "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading"
                 ),
               },
             ].map(({ title, body, extra, errorIcon }, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static list
               <li className="relative ml-20" key={index}>
                 {errorIcon ? (
-                  <div className="border-alert-error text-alert-error absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold">
+                  <div className="absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 border-alert-error font-bold text-alert-error text-xs">
                     !
                   </div>
                 ) : (
-                  <div className="bg-black-tertiary text-body-secondary absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full text-xs lining-nums">
+                  <div className="absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full bg-black-tertiary text-body-secondary text-xs lining-nums">
                     {index + 1}
                   </div>
                 )}
@@ -128,11 +128,12 @@ export const Scan = () => {
                   ? t("QR code is not valid")
                   : (error.message ?? "Unknown error"),
               })
-              console.error("QR code scanning error", error) // eslint-disable-line no-console
+              // biome-ignore lint/suspicious/noConsole: legacy
+              console.error("QR code scanning error", error)
             }}
           />
           {state.scanError && (
-            <div className="text-alert-error bg-alert-error/10 mt-6 inline-block w-[260px] rounded p-4 text-center text-xs font-light">
+            <div className="mt-6 inline-block w-[260px] rounded bg-alert-error/10 p-4 text-center font-light text-alert-error text-xs">
               {state.scanError}
             </div>
           )}

@@ -1,15 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Mnemonic } from "extension-core"
-import { FC, RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
-import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
-import * as yup from "yup"
-
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useMnemonic, useMnemonics } from "@ui/state"
+import type { Mnemonic } from "extension-core"
+import { type FC, type RefCallback, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { Button, FormFieldContainer, FormFieldInputText, Modal, ModalDialog } from "talisman-ui"
+import * as yup from "yup"
 
 type FormData = {
   name: string
@@ -25,7 +24,7 @@ const MnemonicRenameForm: FC<{
   const allMnemonics = useMnemonics()
   const otherAccountNames = useMemo(
     () => allMnemonics.filter((m) => m.id !== mnemonic.id).map((a) => a.name),
-    [allMnemonics, mnemonic.id],
+    [allMnemonics, mnemonic.id]
   )
 
   const schema = useMemo(
@@ -35,14 +34,14 @@ const MnemonicRenameForm: FC<{
           name: yup.string().required(" ").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
-    [otherAccountNames, t],
+    [otherAccountNames, t]
   )
 
   const defaultValues = useMemo(
     () => ({
       name: mnemonic?.name,
     }),
-    [mnemonic?.name],
+    [mnemonic?.name]
   )
 
   const {
@@ -68,7 +67,7 @@ const MnemonicRenameForm: FC<{
         })
       }
     },
-    [mnemonic.id, onConfirm, setError],
+    [mnemonic.id, onConfirm, setError]
   )
 
   // "manual" field registration so we can hook our own ref to it
@@ -90,7 +89,7 @@ const MnemonicRenameForm: FC<{
       refName(e)
       refNameRef.current = e
     },
-    [refName],
+    [refName]
   )
 
   return (
@@ -129,7 +128,7 @@ const useMnemonicRenameModalProvider = () => {
       setMnemonicId(mnemonicId)
       innerOpen()
     },
-    [innerOpen],
+    [innerOpen]
   )
 
   return {
@@ -141,7 +140,7 @@ const useMnemonicRenameModalProvider = () => {
 }
 
 export const [MnemonicRenameModalProvider, useMnemonicRenameModal] = provideContext(
-  useMnemonicRenameModalProvider,
+  useMnemonicRenameModalProvider
 )
 
 export const MnemonicRenameModal = () => {

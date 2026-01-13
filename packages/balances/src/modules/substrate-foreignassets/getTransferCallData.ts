@@ -1,9 +1,9 @@
 import { mergeUint8 } from "@polkadot-api/utils"
 import { isTokenOfType } from "@talismn/chaindata-provider"
 import { papiParse, parseMetadataRpc } from "@talismn/scale"
-import { Binary, Codec, Enum } from "polkadot-api"
+import { Binary, type Codec, Enum } from "polkadot-api"
 
-import { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
+import type { BalanceTransferType, IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({
@@ -45,7 +45,7 @@ const getEncodedArgs = (
   onChainId: string,
   to: string,
   value: string,
-  argsCodec: Codec<unknown>,
+  argsCodec: Codec<unknown>
 ): Uint8Array => {
   try {
     switch (method) {
@@ -57,7 +57,7 @@ const getEncodedArgs = (
     }
   } catch {
     throw new Error(
-      `Failed to encode arguments for method ${method}: ${onChainId}, ${to}, ${value}`,
+      `Failed to encode arguments for method ${method}: ${onChainId}, ${to}, ${value}`
     )
   }
 }
@@ -66,7 +66,7 @@ const getEncodedValue = (codec: Codec<unknown>, possibleValue: Array<() => unkno
   for (const getArgs of possibleValue) {
     try {
       return codec.enc(getArgs())
-    } catch (error) {
+    } catch {
       // wrong inputs, ignore and try the next one
     }
   }
@@ -79,7 +79,7 @@ const getTransferEncodedArgs = (
   onChainId: string,
   to: string,
   value: string,
-  codec: Codec<unknown>,
+  codec: Codec<unknown>
 ) => {
   return getEncodedValue(codec, [
     () => ({

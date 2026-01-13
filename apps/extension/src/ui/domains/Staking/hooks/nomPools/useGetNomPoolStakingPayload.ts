@@ -1,4 +1,4 @@
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -51,7 +51,7 @@ export const useGetNomPoolStakingPayload = ({
         poolId,
         amount ?? 0n,
         hasJoinedNomPool,
-        withSetClaimPermission,
+        withSetClaimPermission
       )
       return response
     },

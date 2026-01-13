@@ -14,7 +14,7 @@ export const useIsBrave = () => {
   useEffect(() => {
     try {
       browser.brave?.isBrave().then(setIsBrave)
-    } catch (err) {
+    } catch {
       // Brave supports this since 2020 and it's ok if it fails on other browsers
       // ==> ignore any error
     }

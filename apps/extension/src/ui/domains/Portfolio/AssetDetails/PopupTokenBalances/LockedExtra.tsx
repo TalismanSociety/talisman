@@ -1,16 +1,15 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { formatDuration, intervalToDuration } from "date-fns"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { BITTENSOR_TOKEN_ID } from "@ui/domains/Staking/Bittensor/utils/constants"
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
@@ -29,12 +28,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address],
+    [selectedAccount?.address, address]
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [rowAddress, data?.accounts],
+    [rowAddress, data?.accounts]
   )
 
   const withdrawIn = useMemo(
@@ -44,12 +43,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
             locale,
           })
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale]
   )
 
   const canUnbond = useMemo(
     () => (accountStatus?.canUnstake && rowMeta.poolId) || tokenId === BITTENSOR_TOKEN_ID,
-    [accountStatus?.canUnstake, rowMeta.poolId, tokenId],
+    [accountStatus?.canUnstake, rowMeta.poolId, tokenId]
   )
 
   if (!rowAddress) return null
@@ -63,8 +62,8 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
           <Tooltip>
             <TooltipTrigger
               className={classNames(
-                "text-body-secondary bg-body/10 h-10 rounded-sm px-3 text-xs opacity-60",
-                isLoading && "animate-pulse",
+                "h-10 rounded-sm bg-body/10 px-3 text-body-secondary text-xs opacity-60",
+                isLoading && "animate-pulse"
               )}
             >
               <div className="flex items-center gap-2">

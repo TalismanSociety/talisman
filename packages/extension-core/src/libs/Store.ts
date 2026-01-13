@@ -6,17 +6,17 @@ import {
   filter,
   map,
   ReplaySubject,
-  share,
   Subject,
+  share,
   tap,
   zip,
 } from "rxjs"
 
 import { createSubscription, unsubscribe } from "../handlers/subscriptions"
-import { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
-import { Port, RequestIdOnly } from "../types/base"
+import type { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "../types"
+import type { Port, RequestIdOnly } from "../types/base"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export interface Store<T extends { [index: string]: any }> {
   get(): Promise<T>
   get<K extends keyof T, V = T[K]>(key: K): Promise<V>
@@ -29,7 +29,7 @@ export interface Store<T extends { [index: string]: any }> {
   observable: Subject<T>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   readonly #prefix: string = ""
   readonly #initialData: Partial<T> = {}
@@ -86,8 +86,8 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       bufferWhen(
         () =>
           // emit the buffer once we've fetched the current value from the store
-          currentValueReady,
-      ),
+          currentValueReady
+      )
     )
 
     // an observable which, if:
@@ -110,7 +110,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       tap(() => hasPendingMutations.next(false)),
 
       // multicast the currentValue to all subscribers
-      share(),
+      share()
     )
 
     // for each batch of mutations, get the current value we retrieved from the store and the mutations to run
@@ -140,11 +140,12 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
         concatMap(async ([newValue, callbacks]) => {
           await chrome.storage.local.set({ [this.#prefix]: newValue })
 
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
           callbacks.forEach((callback) => callback())
         }),
 
         // set isMutating to false
-        tap(() => isMutating.next(false)),
+        tap(() => isMutating.next(false))
       )
       .subscribe()
   }
@@ -211,7 +212,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   async clear(): Promise<boolean> {
     const mutation = () => ({}) as T
     return await new Promise((resolve, reject) =>
-      this.#mutationQueue.next({ mutation, callback: () => resolve(true), onError: reject }),
+      this.#mutationQueue.next({ mutation, callback: () => resolve(true), onError: reject })
     )
   }
 
@@ -222,7 +223,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    */
   async mutate(mutation: (currentValue: T) => T): Promise<T> {
     return await new Promise((resolve, reject) =>
-      this.#mutationQueue.next({ mutation, callback: resolve, onError: reject }),
+      this.#mutationQueue.next({ mutation, callback: resolve, onError: reject })
     )
   }
 
@@ -243,7 +244,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 }
 
 class SubscribableStorageProvider<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
 > extends StorageProvider<T> {
@@ -263,7 +264,7 @@ class SubscribableStorageProvider<
 }
 
 class SubscribableByIdStorageProvider<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
   SubscribeByIdMessage extends MessageTypesWithSubscriptionsById,
@@ -272,7 +273,7 @@ class SubscribableByIdStorageProvider<
     id: string,
     port: Port,
     request: RequestIdOnly,
-    unsubscribeCallback?: () => void,
+    unsubscribeCallback?: () => void
   ): boolean {
     const cb = createSubscription<SubscribeByIdMessage>(id, port)
 

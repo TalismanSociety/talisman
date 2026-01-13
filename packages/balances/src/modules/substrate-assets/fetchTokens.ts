@@ -1,16 +1,16 @@
 import {
-  AnyMiniMetadata,
-  SubAssetsToken,
+  type AnyMiniMetadata,
+  type SubAssetsToken,
   SubAssetsTokenSchema,
   subAssetTokenId,
 } from "@talismn/chaindata-provider"
 import { getStorageKeyPrefix, parseMetadataRpc } from "@talismn/scale"
 import { assign, keyBy, keys } from "lodash-es"
-import { Binary } from "polkadot-api"
+import type { Binary } from "polkadot-api"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { QueryStorageResult } from "../shared"
-import { MODULE_TYPE, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import type { QueryStorageResult } from "../shared"
+import { MODULE_TYPE, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -53,7 +53,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       }
       return { assetId, existentialDeposit: asset.min_balance, isSufficient: asset.is_sufficient }
     }),
-    (a) => a.assetId,
+    (a) => a.assetId
   )
 
   const metadataByAssetId = keyBy(
@@ -74,11 +74,11 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         symbol: metadata.symbol?.asText(),
       }
     }),
-    (a) => a.assetId,
+    (a) => a.assetId
   )
 
   const allTokens = keys(assetByAssetId).map((assetId) =>
-    assign({}, assetByAssetId[assetId], metadataByAssetId[assetId] ?? undefined),
+    assign({}, assetByAssetId[assetId], metadataByAssetId[assetId] ?? undefined)
   )
 
   const configTokenByAssetId = keyBy(tokens, (t) => t.assetId)
@@ -99,7 +99,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
           decimals: asset.decimals ?? 0,
           existentialDeposit: String(asset.existentialDeposit),
           isDefault: true,
-        }),
+        })
       )
       // keep all tokens listed in the config + all tokens marked as sufficient
       .filter((token) => {

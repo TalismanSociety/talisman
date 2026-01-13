@@ -1,12 +1,19 @@
 import { PublicKey } from "@solana/web3.js"
-import { log } from "extension-shared"
-import { groupBy } from "lodash-es"
-import { Dispatch, FC, SetStateAction, Suspense, useEffect, useMemo, useState } from "react"
-
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import { useNetworksMapById, usePortfolioGlobalData, useTokens } from "@ui/state"
 import { useDefiPositions } from "@ui/state/defi"
 import { useSolanaConnection } from "@ui/util/solana/useSolanaConnection"
+import { log } from "extension-shared"
+import { groupBy } from "lodash-es"
+import {
+  type Dispatch,
+  type FC,
+  type SetStateAction,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
 // At time time used to test the observables & hooks from ./ui/state, how often they suspense and emit
 // But can be used to test virtually anything in the app
@@ -165,7 +172,7 @@ const PortfolioContent = () => {
 
   const balancesByType = useMemo(
     () => groupBy(allBalances.each, (b) => b.token?.type),
-    [allBalances],
+    [allBalances]
   )
 
   return (

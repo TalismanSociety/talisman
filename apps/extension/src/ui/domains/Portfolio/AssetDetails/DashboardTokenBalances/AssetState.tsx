@@ -1,4 +1,4 @@
-import { Address } from "extension-core"
+import type { Address } from "extension-core"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { PortfolioAccount } from "../PortfolioAccount"
@@ -24,7 +24,7 @@ export const AssetState = ({
   return (
     <div className="flex flex-col justify-center gap-2 overflow-hidden p-8">
       <div className="flex w-full items-baseline gap-4 overflow-hidden">
-        <div className="shrink-0 whitespace-nowrap font-bold capitalize text-white">{title}</div>
+        <div className="shrink-0 whitespace-nowrap font-bold text-white capitalize">{title}</div>
         {/* show description next to title when address is set */}
         {description && address && (
           <Tooltip>
@@ -33,7 +33,7 @@ export const AssetState = ({
           </Tooltip>
         )}
         {!description && address && isLoading && (
-          <div className="bg-grey-800 rounded-xs h-[1.4rem] w-60 animate-pulse" />
+          <div className="h-[1.4rem] w-60 animate-pulse rounded-xs bg-grey-800" />
         )}
       </div>
       {address && (
@@ -43,7 +43,7 @@ export const AssetState = ({
       )}
       {/* show description below title when address is not set */}
       {isLoading && !description && !address && locked && (
-        <div className="bg-grey-800 rounded-xs h-[1.6rem] w-60 animate-pulse" />
+        <div className="h-[1.6rem] w-60 animate-pulse rounded-xs bg-grey-800" />
       )}
       {description && !address && (
         <Tooltip>

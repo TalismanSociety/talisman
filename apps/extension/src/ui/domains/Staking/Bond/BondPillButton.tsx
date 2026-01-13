@@ -1,8 +1,8 @@
-import { Balances } from "@talismn/balances"
+import type { Balances } from "@talismn/balances"
 import { parseTokenId } from "@talismn/chaindata-provider"
 import { ZapFastIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useBondButton } from "./hooks/useBondButton"
@@ -20,7 +20,7 @@ export const BondPillButton: FC<{
     () =>
       isPortfolio &&
       balances.each.some((balance) => parseTokenId(balance.tokenId).type === "substrate-native"),
-    [balances, isPortfolio],
+    [balances, isPortfolio]
   )
 
   const { onClick } = useBondButton({ balances, ignoreExistingSettings })
@@ -30,8 +30,8 @@ export const BondPillButton: FC<{
   return (
     <button
       className={classNames(
-        "bg-primary/10 hover:bg-primary/20 text-primary h-16 rounded-[28px] px-4 text-sm font-light",
-        className,
+        "h-16 rounded-[28px] bg-primary/10 px-4 font-light text-primary text-sm hover:bg-primary/20",
+        className
       )}
       type="button"
       onClick={onClick}

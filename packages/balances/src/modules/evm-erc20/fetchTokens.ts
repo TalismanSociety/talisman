@@ -1,11 +1,15 @@
-import { EvmErc20Token, evmErc20TokenId, EvmErc20TokenSchema } from "@talismn/chaindata-provider"
+import {
+  type EvmErc20Token,
+  EvmErc20TokenSchema,
+  evmErc20TokenId,
+} from "@talismn/chaindata-provider"
 import { assign, omit } from "lodash-es"
-import { BaseError } from "viem"
+import type { BaseError } from "viem"
 import z from "zod/v4"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 import { getErc20ContractData } from "./utils"
 
 const TokenCacheSchema = z.discriminatedUnion("isValid", [
@@ -46,7 +50,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       try {
         const { name, decimals, symbol } = await getErc20ContractData(
           client,
-          tokenConfig.contractAddress,
+          tokenConfig.contractAddress
         )
 
         cache[tokenId] = TokenCacheSchema.parse({
@@ -67,7 +71,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
         else
           log.warn(
             `Failed to fetch ERC20 token data for ${networkId}:${tokenConfig.contractAddress}`,
-            (err as BaseError).shortMessage,
+            (err as BaseError).shortMessage
           )
         continue
       }
@@ -89,7 +93,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
     const token = assign(
       base,
       cached2?.isValid ? omit(cached2, ["isValid"]) : {},
-      tokenConfig,
+      tokenConfig
     ) as EvmErc20Token
 
     const parsed = EvmErc20TokenSchema.safeParse(token)

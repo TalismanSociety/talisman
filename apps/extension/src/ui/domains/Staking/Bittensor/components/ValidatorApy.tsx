@@ -1,8 +1,7 @@
 import { classNames } from "@talismn/util"
+import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { useCombinedBittensorValidatorsData } from "@ui/domains/Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
 
@@ -19,7 +18,7 @@ export const ValidatorApy = () => {
   const display = useMemo(() => (apy ? `${(apy * 100).toFixed(2)}%` : "N/A"), [apy])
 
   if (isLoading) {
-    return <div className="text-grey-700 bg-grey-700 rounded-xs animate-pulse">15.00%</div>
+    return <div className="animate-pulse rounded-xs bg-grey-700 text-grey-700">15.00%</div>
   }
 
   if (isError) {

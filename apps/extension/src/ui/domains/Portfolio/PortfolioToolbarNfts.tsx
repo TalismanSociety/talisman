@@ -1,3 +1,4 @@
+import { SearchInput } from "@talisman/components/SearchInput"
 import {
   GlobeIcon,
   ToolbarFilterIcon,
@@ -6,6 +7,20 @@ import {
   ToolbarTilesIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import {
+  type NetworkOption,
+  NftVisibilityFilter,
+  setNftsVisibilityFilter,
+  setPortfolioNetworkFilter,
+  setPortfolioSearch,
+  useAllNetworkOptions,
+  useNftData,
+  useNftsVisibilityFilter,
+  usePortfolioNetworkFilter,
+  usePortfolioSearch,
+  useSetting,
+} from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -20,22 +35,6 @@ import {
   useOpenClose,
 } from "talisman-ui"
 
-import { SearchInput } from "@talisman/components/SearchInput"
-import {
-  NetworkOption,
-  NftVisibilityFilter,
-  setNftsVisibilityFilter,
-  setPortfolioNetworkFilter,
-  setPortfolioSearch,
-  useAllNetworkOptions,
-  useNftData,
-  useNftsVisibilityFilter,
-  usePortfolioNetworkFilter,
-  usePortfolioSearch,
-  useSetting,
-} from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-
 import { NetworkLogo } from "../Networks/NetworkLogo"
 import { NetworkOptionsModal } from "./NetworkOptionsModal"
 import { PortfolioToolbarButton } from "./PortfolioToolbarButton"
@@ -45,7 +44,7 @@ export const NftViewModeToggleButton = () => {
 
   const handleViewModeClick = useCallback(
     () => setViewMode((prev) => (prev === "list" ? "tiles" : "list")),
-    [setViewMode],
+    [setViewMode]
   )
 
   return (
@@ -78,7 +77,7 @@ const NetworkFilterButton = () => {
       setPortfolioNetworkFilter(option ?? undefined)
       close()
     },
-    [close],
+    [close]
   )
 
   return (
@@ -118,10 +117,10 @@ const PortfolioSearch = () => {
   return (
     <SearchInput
       containerClassName={classNames(
-        "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-16 w-full border border-field text-xs !px-4",
-        "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+        "!bg-field !px-4 h-16 w-full rounded-sm border border-field text-xs ring-transparent focus-within:border-grey-700",
+        "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8",
         "@2xl:[&>input]:text-base @2xl:[&>svg]:size-10",
-        IS_POPUP ? "w-full" : "max-w-[37.4rem]",
+        IS_POPUP ? "w-full" : "max-w-[37.4rem]"
       )}
       placeholder={t("Search")}
       onChange={setPortfolioSearch}
@@ -142,7 +141,7 @@ const VisibilityFilterButton = () => {
             <ContextMenuTrigger asChild>
               <PortfolioToolbarButton
                 className={classNames(
-                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary",
+                  nftsVisibilityFilter !== NftVisibilityFilter.Default && "text-primary"
                 )}
               >
                 <ToolbarFilterIcon />

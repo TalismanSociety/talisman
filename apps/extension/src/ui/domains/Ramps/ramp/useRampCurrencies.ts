@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { RAMPS_RAMP_API_URL } from "extension-shared"
 
-import { RampCurrency } from "./types"
+import type { RampCurrency } from "./types"
 
 const fetchRampCurrencies = async (): Promise<RampCurrency[]> => {
   try {

@@ -11,8 +11,8 @@ export const useRampsBuyTokens = (currency: string | undefined) => {
     return Object.values(
       Object.assign(
         Object.fromEntries(coinbaseTokens.map((t) => [t.id, t])),
-        Object.fromEntries(rampTokens.map((t) => [t.id, t])),
-      ),
+        Object.fromEntries(rampTokens.map((t) => [t.id, t]))
+      )
     )
   }, [coinbaseTokens, rampTokens])
 

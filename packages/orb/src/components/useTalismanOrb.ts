@@ -27,13 +27,13 @@ export const useTalismanOrb = (seed: string) => {
     try {
       // those break if seed is empty or an invalid address
 
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/correctness/noInnerDeclarations: hack
       var platform = getAccountPlatformFromAddress(seed)
 
       // seed may be specific to a ss58 prefix, get the base address
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/correctness/noInnerDeclarations: hack
       var address = normalizeAddress(seed)
-    } catch (err) {
+    } catch {
       platform = "polkadot"
       address = seed
     }
@@ -46,7 +46,7 @@ export const useTalismanOrb = (seed: string) => {
     // the 2 darkest ones will be used as gradient BG
     // the lightest one will be used as gradient circle, to mimic a 3D lighting effect
     const colors = [colorFromHash(hash1), colorFromHash(hash2), colorFromHash(hash3)].sort(
-      (c1, c2) => c1.lightness() - c2.lightness(),
+      (c1, c2) => c1.lightness() - c2.lightness()
     )
 
     // random location in top left corner, avoid beeing to close from the center

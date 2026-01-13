@@ -1,8 +1,7 @@
-import { ActionArgumentsDto, ActionDto, TransactionDto } from "extension-core"
+import { notify } from "@talisman/components/Notifications"
+import type { ActionArgumentsDto, ActionDto, TransactionDto } from "extension-core"
 import { log, YIELD_API_BASE_URL } from "extension-shared"
 import { useCallback, useMemo, useState } from "react"
-
-import { notify } from "@talisman/components/Notifications"
 
 type YieldxyzActionType = "enter" | "exit"
 
@@ -39,7 +38,7 @@ export const useYieldxyzAction = (props: UseYieldxyzActionProps) => {
         props.type,
         props.yieldId,
         props.address,
-        props.args,
+        props.args
       )
       // ⚠️ action.transactions order changes over time, make sure to sort it based on stepIndex
       fetchedAction.transactions.sort(sortTransactionsByStepIndex)
@@ -98,7 +97,7 @@ export const useYieldxyzAction = (props: UseYieldxyzActionProps) => {
         throw err
       }
     },
-    [state.action],
+    [state.action]
   )
 
   return { ...state, canCreateAction, createAction, refreshAction, submitActionTransaction }
@@ -109,7 +108,7 @@ const fetchYieldxyzCreateAction = async (
   yieldId: string,
   address: string,
   args: ActionArgumentsDto,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/actions/${type}`, {
     method: "POST",
@@ -142,7 +141,7 @@ const fetchYieldxyzAction = async (actionId: string, signal?: AbortSignal): Prom
 const submitYieldxyzTransactionHash = async (
   transactionId: string,
   hash: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<ActionDto["transactions"][number]> => {
   const req = await fetch(`${YIELD_API_BASE_URL}/v1/transactions/${transactionId}/submit-hash`, {
     method: "PUT",
@@ -160,7 +159,7 @@ const getErrorMessage = async (response: Response): Promise<string> => {
   try {
     const errorBody = await response.json()
     return errorBody.message || `Yield.xyz API error: ${response.status} ${response.statusText}`
-  } catch (err) {
+  } catch {
     return `Yield.xyz API error: ${response.status} ${response.statusText}`
   }
 }

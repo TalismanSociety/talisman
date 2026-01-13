@@ -1,4 +1,4 @@
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { keyringStore } from "../store"
 
 // keyring will automatically add the missing curve property to ledger-polkadot accounts

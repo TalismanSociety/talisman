@@ -5,7 +5,7 @@ import type { Injected, InjectedWindow, InjectOptions } from "./types"
 // be it via window (current), postMessage (under consideration) or any other mechanism
 export function injectExtension(
   enable: (origin: string) => Promise<Injected>,
-  { name, version }: InjectOptions,
+  { name, version }: InjectOptions
 ): void {
   // small helper with the typescript types, just cast window
   const windowInject = window as Window & InjectedWindow

@@ -1,4 +1,4 @@
-import { LedgerTransportType } from "extension-core"
+import type { LedgerTransportType } from "extension-core"
 
 export const getIsLedgerCapable = (type?: LedgerTransportType) => {
   const ledgerWindow = window as unknown as { USB?: unknown; HID?: unknown }

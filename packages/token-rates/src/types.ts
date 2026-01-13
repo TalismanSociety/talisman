@@ -1,4 +1,4 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 
 export const SUPPORTED_CURRENCIES = {
   btc: { name: "Bitcoin", symbol: "₿" },

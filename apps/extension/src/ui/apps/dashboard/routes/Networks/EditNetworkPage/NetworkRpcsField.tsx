@@ -1,8 +1,8 @@
-/* eslint-disable react/no-children-prop */
+/** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
+  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -12,19 +12,18 @@ import { SortableContext, sortableKeyboardCoordinates, useSortable } from "@dnd-
 import { CSS } from "@dnd-kit/utilities"
 import { DotNetworkSchema, isNetworkDot, SolNetworkSchema } from "@talismn/chaindata-provider"
 import { DragIcon, LoaderIcon, PlusIcon, TrashIcon } from "@talismn/icons"
-import { TFunction } from "i18next"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { z } from "zod/v4"
-
 import {
   fetchEthChainId,
   getDotGenesisHashFromRpc,
   getSolGenesisHashFromRpc,
 } from "@ui/domains/Networks/helpers"
+import type { TFunction } from "i18next"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
+import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { z } from "zod/v4"
 
-import { RpcFormData, useNetworkForm } from "./context"
+import { type RpcFormData, useNetworkForm } from "./context"
 
 export const NetworkRpcsField = ({
   FieldComponent = SortableRpcField,
@@ -40,7 +39,7 @@ export const NetworkRpcsField = ({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    })
   )
 
   return (
@@ -75,7 +74,7 @@ export const NetworkRpcsField = ({
           </DndContext>
           <button
             type="button"
-            className="text-body-secondary hover:text-body disabled:text-body-disabled flex gap-2 self-start text-sm disabled:cursor-not-allowed"
+            className="flex gap-2 self-start text-body-secondary text-sm hover:text-body disabled:cursor-not-allowed disabled:text-body-disabled"
             disabled={fieldRpcs.state.value.length >= 10}
             onClick={() => fieldRpcs.pushValue({ id: crypto.randomUUID(), url: "" })} // append({ url: "" }) TODO}
           >
@@ -131,7 +130,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
               before={
                 <button
                   type="button"
-                  className="allow-focus text-md ml-[-1.2rem] px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                  className="allow-focus ml-[-1.2rem] px-2 text-md opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                   disabled={!canDrag}
                   {...dragHandleProps}
                 >
@@ -146,7 +145,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
                 ) : canDelete ? (
                   <button
                     type="button"
-                    className="allow-focus text-md mr-[-1.2rem] shrink-0 px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                    className="allow-focus mr-[-1.2rem] shrink-0 px-2 text-md opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                     onClick={onDelete}
                   >
                     <TrashIcon className="transition-none" />
@@ -154,7 +153,7 @@ export const SortableRpcField: FC<SortableRpcItemProps> = ({
                 ) : null
               }
             />
-            <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs uppercase leading-none">
+            <div className="h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-alert-warn text-xs uppercase leading-none">
               {field.state.meta.errors[0]}
             </div>
           </>

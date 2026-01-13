@@ -1,8 +1,8 @@
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import { TalismanDeadHandIcon } from "@talismn/icons"
-import { DexieError } from "dexie"
+import type { DexieError } from "dexie"
 import { DEBUG, DISCORD_TALISMAN_URL } from "extension-shared"
-import { ReactNode, useCallback } from "react"
+import { type ReactNode, useCallback } from "react"
 import { Button } from "talisman-ui"
 
 export const TalismanErrorBoundary = ({ children }: { children?: ReactNode }) => (
@@ -27,9 +27,9 @@ function ErrorMessage({ error, eventId }: { error: unknown; eventId?: string }) 
   }, [])
 
   return (
-    <section className="max-w-screen text-body-secondary mx-auto flex h-[60rem] max-h-screen w-[40rem] flex-col overflow-hidden p-10 text-center">
+    <section className="mx-auto flex h-[60rem] max-h-screen w-[40rem] max-w-screen flex-col overflow-hidden p-10 text-center text-body-secondary">
       <div className="flex w-full flex-grow flex-col items-center justify-center gap-16">
-        <h1 className="m-0 text-3xl font-bold text-white">Oops!</h1>
+        <h1 className="m-0 font-bold text-3xl text-white">Oops!</h1>
         <TalismanDeadHandIcon className="text-[16rem]" />
         <div className="flex flex-col gap-2">
           <div>{errorMessage}</div>
@@ -44,7 +44,7 @@ function ErrorMessage({ error, eventId }: { error: unknown; eventId?: string }) 
                 Contact us on Discord for support
               </a>
               {eventId ? (
-                <div className="text-tiny mt-8 text-white/40">Error ID:&nbsp;{eventId}</div>
+                <div className="mt-8 text-tiny text-white/40">Error ID:&nbsp;{eventId}</div>
               ) : null}
             </>
           )}

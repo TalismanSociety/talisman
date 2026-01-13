@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { DetailedHTMLProps, forwardRef, TextareaHTMLAttributes } from "react"
+import { type DetailedHTMLProps, forwardRef, type TextareaHTMLAttributes } from "react"
 
 type FormFieldTextareaProps = DetailedHTMLProps<
   TextareaHTMLAttributes<HTMLTextAreaElement>,
@@ -12,12 +12,12 @@ export const FormFieldTextarea = forwardRef<HTMLTextAreaElement, FormFieldTextar
       <textarea
         ref={ref}
         className={classNames(
-          "focus:text-body placeholder:text-body-disabled focus-within:border-grey-600 text-grey-300 bg-field text-md disabled:text-body-disabled w-full resize-none rounded border border-transparent px-12 py-8 font-light",
-          props.className,
+          "w-full resize-none rounded border border-transparent bg-field px-12 py-8 font-light text-grey-300 text-md placeholder:text-body-disabled focus-within:border-grey-600 focus:text-body disabled:text-body-disabled",
+          props.className
         )}
         {...props}
       />
     )
-  },
+  }
 )
 FormFieldTextarea.displayName = "FormFieldTextarea"

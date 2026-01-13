@@ -1,7 +1,7 @@
-import { DecodedCall } from "@talismn/sapi"
+import type { DecodedCall } from "@talismn/sapi"
 import { useMemo } from "react"
 
-import { DecodedBatchArgs, DecodedCallComponent, isBatchCall } from "../types"
+import { type DecodedBatchArgs, type DecodedCallComponent, isBatchCall } from "../types"
 import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"
 import {
   SubSignDecodedBatchDrawerProvider,
@@ -31,6 +31,7 @@ export const SubSignDecodedBatch: DecodedCallComponent<DecodedBatchArgs> = ({
     <SubSignDecodedBatchDrawerProvider decodedCall={batchCall}>
       {childCalls.map((call, index) => (
         <BatchCallItemButton
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           key={index}
           index={index}
           decodedCall={call}

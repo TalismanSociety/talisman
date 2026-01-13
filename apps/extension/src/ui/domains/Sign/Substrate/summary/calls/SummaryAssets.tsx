@@ -1,11 +1,10 @@
-import { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
-import { SubAssetsToken } from "@talismn/chaindata-provider"
+import type { PolkadotAssetHubCalls } from "@polkadot-api/descriptors"
+import type { SubAssetsToken } from "@talismn/chaindata-provider"
+import { useNetworkById, useTokens } from "@ui/state"
 import { useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { useNetworkById, useTokens } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromMultiAddress } from "../../util/getAddressFromMultiAddress"
 import { SummaryAddressDisplay } from "../shared/SummaryAddressDisplay"
 import {
@@ -28,7 +27,7 @@ const Transfer: DecodedCallSummaryComponent<PolkadotAssetHubCalls["Assets"]["tra
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
+      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id)
     ) as SubAssetsToken | undefined
   }, [decodedCall.args.id, tokens])
 
@@ -101,7 +100,7 @@ const TransferKeepAlive: DecodedCallSummaryComponent<
 
   const token = useMemo(() => {
     return tokens.find(
-      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id),
+      (t) => t.type === "substrate-assets" && t.assetId === String(decodedCall.args.id)
     ) as SubAssetsToken | undefined
   }, [decodedCall.args.id, tokens])
 

@@ -1,5 +1,5 @@
 import {
-  Account,
+  type Account,
   isAccountNotContact,
   isAccountPlatformEthereum,
   isAccountPlatformPolkadot,
@@ -24,7 +24,7 @@ import { fetchEvmAccountNfts } from "./fetchEvmAccountNfts"
 import { fetchEvmNftRefresh } from "./fetchEvmNftRefresh"
 import { nftsStore$, updateNftsStore } from "./store"
 import { fetchDotAccountNfts } from "./subscan"
-import { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
+import type { AccountNft, AccountNfts, Nft, NftData, NftLoadingStatus } from "./types"
 
 const ONE_MINUTE = 60 * 1000
 
@@ -36,7 +36,7 @@ const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<
     [
       isAccountPlatformEthereum(account) ? fetchEvmAccountNfts(account.address, signal) : null,
       isAccountPlatformPolkadot(account) ? fetchDotAccountNfts(account, signal) : null,
-    ].filter(isNotNil),
+    ].filter(isNotNil)
   )
 
   return results.reduce(
@@ -46,7 +46,7 @@ const fetchAccountNfts = async (account: Account, signal: AbortSignal): Promise<
         collections: acc.collections.concat(...curr.collections),
       }
     },
-    { nfts: [], collections: [] },
+    { nfts: [], collections: [] }
   )
 }
 
@@ -61,10 +61,10 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           acc[nft.owner]++
           return acc
         },
-        {} as Record<string, number>,
-      ),
+        {} as Record<string, number>
+      )
     ),
-    first(), // take only the first value to not retrigger sub if more nfts are added to the store
+    first() // take only the first value to not retrigger sub if more nfts are added to the store
   )
 
   const updateData$ = combineLatest([keyringStore.accounts$, nftsCountByAccount$]).pipe(
@@ -76,8 +76,8 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
         // but prioritise evm accounts as they only need 1 request each
         .sort(
           (a1, a2) =>
-            (isAccountPlatformEthereum(a2) ? 1 : 0) - (isAccountPlatformEthereum(a1) ? 1 : 0),
-        ),
+            (isAccountPlatformEthereum(a2) ? 1 : 0) - (isAccountPlatformEthereum(a1) ? 1 : 0)
+        )
     ),
     switchMap((accounts) =>
       combineLatest(
@@ -91,10 +91,10 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
             map((nftsData) => ({
               address: account.address,
               nftsData,
-            })),
-          ),
-        ),
-      ),
+            }))
+          )
+        )
+      )
     ),
     map((accountsQueries) => {
       const status: NftLoadingStatus = accountsQueries.some((aq) => aq.nftsData.status === "error")
@@ -114,7 +114,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           acc.collections.push(...curr.nftsData.data.collections)
           return acc
         },
-        { nfts: [], collections: [] } as AccountNfts,
+        { nfts: [], collections: [] } as AccountNfts
       )
 
       return {
@@ -124,8 +124,8 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
       }
     }),
     distinctUntilChanged<{ status: NftLoadingStatus; loadedAddresses: string[] } & AccountNfts>(
-      isEqual,
-    ),
+      isEqual
+    )
   )
 
   const subUpdateStore = updateData$.subscribe((data) => {
@@ -147,7 +147,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
           favoriteNftIds,
           hiddenNftCollectionIds,
         }
-      }),
+      })
     )
     .subscribe(subscriber)
 
@@ -162,7 +162,7 @@ export const nfts$ = new Observable<NftData>((subscriber) => {
     unsubscribe: () => log.debug("[nfts] stopping main subscription"),
   }),
   shareReplay({ refCount: true, bufferSize: 1 }),
-  keepAlive(3000),
+  keepAlive(3000)
 )
 
 const mergeAccountNfts = (accountNfts: AccountNft[]): Nft[] => {

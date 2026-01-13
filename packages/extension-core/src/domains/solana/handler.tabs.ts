@@ -6,23 +6,23 @@ import { isEqual } from "lodash-es"
 import { distinctUntilChanged, map, of, switchMap } from "rxjs"
 
 import { TabsHandler } from "../../libs/Handler"
-import {
+import type {
   MessageTypes,
   RequestTypes,
   ResponseType,
   TabMessageHandler,
   TabSubscriptionHandler,
 } from "../../types"
-import { Port } from "../../types/base"
+import type { Port } from "../../types/base"
 import { urlToDomain } from "../../util/urlToDomain"
 import { keyringStore } from "../keyring/store"
 import { signSolana } from "../signing/requests"
-import { SolSignRequest, SolSignResult } from "../signing/types"
+import type { SolSignRequest, SolSignResult } from "../signing/types"
 import { requestAuthoriseSite, requestSolanaSignIn } from "../sitesAuthorised/requests"
 import sitesAuthorisedStore from "../sitesAuthorised/store"
-import { AuthorizedSite } from "../sitesAuthorised/types"
+import type { AuthorizedSite } from "../sitesAuthorised/types"
 import { watchSolanaTransaction } from "../transactions/watchSolanaTransaction"
-import { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
+import type { SolanaTabSubscriptionEvent, SolSerializedWalletAccount } from "./types.tabs"
 
 export class SolanaTabsHandler extends TabsHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -30,7 +30,7 @@ export class SolanaTabsHandler extends TabsHandler {
     type: TMessageType,
     request: RequestTypes[TMessageType],
     port: Port,
-    url: string,
+    url: string
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(solana.provider.subscribe)": {
@@ -38,7 +38,7 @@ export class SolanaTabsHandler extends TabsHandler {
           id,
           url,
           port,
-          request as RequestTypes["pub(solana.provider.subscribe)"],
+          request as RequestTypes["pub(solana.provider.subscribe)"]
         )
       }
 
@@ -46,7 +46,7 @@ export class SolanaTabsHandler extends TabsHandler {
         return requestSolanaSignIn(
           request as RequestTypes["pub(solana.provider.signIn)"],
           url,
-          port,
+          port
         )
       }
 
@@ -54,7 +54,7 @@ export class SolanaTabsHandler extends TabsHandler {
         return handleSolanaConnect(
           request as RequestTypes["pub(solana.provider.connect)"],
           url,
-          port,
+          port
         )
       }
 
@@ -62,7 +62,7 @@ export class SolanaTabsHandler extends TabsHandler {
         return handleSolanaDisconnect(
           request as RequestTypes["pub(solana.provider.disconnect)"],
           url,
-          port,
+          port
         )
       }
 
@@ -70,7 +70,7 @@ export class SolanaTabsHandler extends TabsHandler {
         return handleSolanaSignMessage(
           request as RequestTypes["pub(solana.provider.signMessage)"],
           url,
-          port,
+          port
         )
       }
 
@@ -78,7 +78,7 @@ export class SolanaTabsHandler extends TabsHandler {
         return handleSolanaSignTransaction(
           request as RequestTypes["pub(solana.provider.signTransaction)"],
           url,
-          port,
+          port
         )
       }
     }
@@ -90,7 +90,7 @@ export class SolanaTabsHandler extends TabsHandler {
 const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = async (
   request,
   url,
-  port,
+  port
 ) => {
   const site = await sitesAuthorisedStore.getSiteFromUrl(url)
 
@@ -105,7 +105,7 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
           origin: "",
           provider: "solana",
         },
-        port,
+        port
       )
     }
 
@@ -126,8 +126,8 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
 }
 
 const handleSolanaDisconnect: TabMessageHandler<"pub(solana.provider.disconnect)"> = async (
-  request,
-  url,
+  _request,
+  url
 ) => {
   const site = await sitesAuthorisedStore.getSiteFromUrl(url)
 
@@ -140,7 +140,7 @@ const handleSolanaDisconnect: TabMessageHandler<"pub(solana.provider.disconnect)
 const handleSolanaSignMessage: TabMessageHandler<"pub(solana.provider.signMessage)"> = async (
   { address, message },
   url,
-  port,
+  port
 ) => {
   const site = await sitesAuthorisedStore.getSiteFromUrl(url)
   if (!site?.solAddresses?.includes(address)) throw new Error("Unauthorized")
@@ -201,7 +201,7 @@ const handleSolanaSignTransaction: TabMessageHandler<
 const handleSolanaSubscribe: TabSubscriptionHandler<"pub(solana.provider.subscribe)"> = async (
   id,
   url,
-  port,
+  port
 ) => {
   const resSiteId = urlToDomain(url)
   const siteId = resSiteId.unwrap()
@@ -250,8 +250,8 @@ const getAuthorizedSolanaAccount$ = (siteId: string) => {
             label: account.name,
             icon: getTalismanOrbDataUrl(account.address),
           }
-        : null,
+        : null
     ),
-    distinctUntilChanged<SolSerializedWalletAccount | null>(isEqual),
+    distinctUntilChanged<SolSerializedWalletAccount | null>(isEqual)
   )
 }

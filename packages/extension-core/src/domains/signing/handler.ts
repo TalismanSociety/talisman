@@ -1,31 +1,30 @@
 import { TypeRegistry } from "@polkadot/types"
 import { sign as signExtrinsic } from "@polkadot/types/extrinsic/util"
 import { assert, u8aToHex } from "@polkadot/util"
-import { HexString } from "@polkadot/util/types"
+import type { HexString } from "@polkadot/util/types"
 import { encodeAnyAddress } from "@talismn/crypto"
 import { addTrailingSlash } from "@talismn/util"
 import { TEST } from "extension-shared"
-
-import type { MessageTypes, RequestType, ResponseType } from "../../types"
-import type {
-  KnownSigningRequestApprove,
-  KnownSigningRequestIdOnly,
-  RequestSigningApproveSignature,
-  SignerPayloadJSON,
-} from "./types"
 import { sentry } from "../../config/sentry"
 import { talismanAnalytics } from "../../libs/Analytics"
 import { ExtensionHandler } from "../../libs/Handler"
 import { requestStore } from "../../libs/requests/store"
 import { windowManager } from "../../libs/WindowManager"
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { Port } from "../../types/base"
+import type { MessageTypes, RequestType, ResponseType } from "../../types"
+import type { Port } from "../../types/base"
 import { getTypeRegistry } from "../../util/getTypeRegistry"
 import { isJsonPayload } from "../../util/isJsonPayload"
 import { validateHexString } from "../../util/validateHexString"
 import { getHostName } from "../app/helpers"
 import { withPjsKeyringPair } from "../keyring/withPjsKeyringPair"
 import { watchSubstrateTransaction } from "../transactions"
+import type {
+  KnownSigningRequestApprove,
+  KnownSigningRequestIdOnly,
+  RequestSigningApproveSignature,
+  SignerPayloadJSON,
+} from "./types"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({
@@ -58,7 +57,7 @@ export default class SigningHandler extends ExtensionHandler {
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
           specVersion,
-          signedExtensions,
+          signedExtensions
         )
 
         registry = fullRegistry
@@ -67,8 +66,8 @@ export default class SigningHandler extends ExtensionHandler {
         analyticsProperties.chain = chain?.id ?? genesisHash
       }
 
-      let signature: HexString | undefined = undefined
-      let signedTransaction: HexString | Uint8Array | undefined = undefined
+      let signature: HexString | undefined
+      let signedTransaction: HexString | Uint8Array | undefined
 
       // notify user about transaction progress
       if (isJsonPayload(payload)) {
@@ -89,7 +88,7 @@ export default class SigningHandler extends ExtensionHandler {
                 signExtrinsic(registry, pair, extrinsicPayload.toU8a({ method: true }), {
                   // use chaindata override value of `withType`
                   withType: chain.hasExtrinsicSignatureTypePrefix,
-                }),
+                })
               )
 
         if (payload.withSignedTransaction) {
@@ -97,7 +96,7 @@ export default class SigningHandler extends ExtensionHandler {
             const tx = registry.createType(
               "Extrinsic",
               { method: payload.method },
-              { version: payload.version },
+              { version: payload.version }
             )
 
             // apply signature to the modified payload
@@ -119,10 +118,10 @@ export default class SigningHandler extends ExtensionHandler {
             notifications: true,
           })
         } else if (!TEST) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn(
             "Unable to find chain for genesis hash, transaction will not be watched",
-            payload.genesisHash,
+            payload.genesisHash
           )
         }
       } else {
@@ -134,7 +133,7 @@ export default class SigningHandler extends ExtensionHandler {
         {
           ...analyticsProperties,
           networkType: "substrate",
-        },
+        }
       )
 
       resolve({
@@ -169,7 +168,7 @@ export default class SigningHandler extends ExtensionHandler {
       hostName: ok ? hostName : undefined,
     }
 
-    let signedTransaction: HexString | Uint8Array | undefined = undefined
+    let signedTransaction: HexString | Uint8Array | undefined
 
     if (isJsonPayload(payload)) {
       const genesisHash = validateHexString(payload.genesisHash)
@@ -185,7 +184,7 @@ export default class SigningHandler extends ExtensionHandler {
           const tx = registry.createType(
             "Extrinsic",
             { method: payload.method },
-            { version: payload.version },
+            { version: payload.version }
           )
 
           // apply signature to the modified payload
@@ -199,10 +198,10 @@ export default class SigningHandler extends ExtensionHandler {
           notifications: true,
         })
       } else if (!TEST) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.warn(
           "Unable to find chain for genesis hash, transaction will not be watched",
-          payload.genesisHash,
+          payload.genesisHash
         )
       }
     }
@@ -222,7 +221,7 @@ export default class SigningHandler extends ExtensionHandler {
         ...analyticsProperties,
         networkType: "substrate",
         hardwareType,
-      },
+      }
     )
 
     return true
@@ -273,11 +272,10 @@ export default class SigningHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestType<TMessageType>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    port: Port,
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(signing.approveSign)":

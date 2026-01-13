@@ -1,13 +1,13 @@
 import {
-  CustomChaindata,
+  type CustomChaindata,
   CustomChaindataSchema,
   getCleanNetwork,
   getCleanToken,
-  NativeToken,
-  Network,
-  NetworkId,
-  Token,
-  TokenId,
+  type NativeToken,
+  type Network,
+  type NetworkId,
+  type Token,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { assign, keyBy, values } from "lodash-es"
 

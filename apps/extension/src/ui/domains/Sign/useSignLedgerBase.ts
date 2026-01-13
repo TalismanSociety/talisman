@@ -1,6 +1,5 @@
+import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useCallback, useState } from "react"
-
-import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 
 export const useSignLedgerBase = () => {
   const [{ isSigning, error }, setState] = useState<{

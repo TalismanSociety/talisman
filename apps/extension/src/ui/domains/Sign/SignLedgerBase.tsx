@@ -1,9 +1,8 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { TalismanLedgerError } from "@ui/hooks/ledger/errors"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { TalismanLedgerError } from "@ui/hooks/ledger/errors"
 
 import { ErrorMessageDrawer } from "./ErrorMessageDrawer"
 import { SignApproveButton } from "./SignApproveButton"
@@ -34,7 +33,7 @@ export const SignLedgerBase: FC<{
       className={classNames(
         "grid w-full gap-8",
         onCancel ? "grid-cols-2" : "grid-cols-1",
-        className,
+        className
       )}
     >
       {!!onCancel && <Button onClick={onCancel}>{t("Cancel")}</Button>}

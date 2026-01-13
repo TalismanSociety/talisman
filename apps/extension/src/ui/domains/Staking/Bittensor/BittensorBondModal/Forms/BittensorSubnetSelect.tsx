@@ -1,10 +1,17 @@
+import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
 import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { subDTaoTokenId, subNativeTokenId } from "@talismn/chaindata-provider"
 import { ToolbarSortIcon } from "@talismn/icons"
 import { classNames, cn } from "@talismn/util"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
+import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
+import { useToken } from "@ui/state"
 import {
-  FC,
+  type FC,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -20,14 +27,6 @@ import {
   ContextMenuOptionItem,
   ContextMenuTrigger,
 } from "talisman-ui"
-
-import { ScrollContainer, useScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInputControlled } from "@talisman/components/SearchInputControlled"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { type SubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/types"
-import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { useToken } from "@ui/state"
 
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
 import { BittensorModalLayout } from "../../components/BittensorModalLayout"
@@ -71,7 +70,7 @@ export const BittensorSubnetSelect = () => {
   const { subnetData, isLoading, isSubnetsLoading } = useCombinedSubnetData(networkId)
 
   const [sortedSubnets, setSortedSubnets] = useState<SubnetData[]>(() =>
-    sortSubnetOptions(subnetData, sortMethod),
+    sortSubnetOptions(subnetData, sortMethod)
   )
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -90,7 +89,7 @@ export const BittensorSubnetSelect = () => {
       setNetuid(netuid)
       setStep("form")
     },
-    [setNetuid, setStep],
+    [setNetuid, setStep]
   )
 
   const [, startTransition] = useTransition()
@@ -102,6 +101,7 @@ export const BittensorSubnetSelect = () => {
   }, [sortMethod, subnetData])
 
   // Reset scroll to top when sort method or search changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0)
   }, [sortMethod, deferredSearch])
@@ -122,14 +122,13 @@ export const BittensorSubnetSelect = () => {
           <div className="grow">
             <SearchInputControlled
               containerClassName={classNames(
-                "!bg-field ring-transparent focus-within:border-grey-700 rounded-sm h-[3.6rem] grow border border-field text-sm !px-4 shrink-0",
-                "[&>input]:text-sm [&>svg]:size-8 [&>button>svg]:size-10",
+                "!bg-field !px-4 h-[3.6rem] shrink-0 grow rounded-sm border border-field text-sm ring-transparent focus-within:border-grey-700",
+                "[&>button>svg]:size-10 [&>input]:text-sm [&>svg]:size-8"
               )}
               placeholder={t("Search subnets")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClear={() => setSearch("")}
-              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </div>
@@ -137,7 +136,7 @@ export const BittensorSubnetSelect = () => {
         </div>
 
         <div className="flex w-full grow flex-col gap-2 overflow-hidden">
-          <div className="text-body-disabled flex justify-between pl-[6rem] pr-12 text-sm">
+          <div className="flex justify-between pr-12 pl-[6rem] text-body-disabled text-sm">
             <div>{t("Name / Pool")}</div>
             <div>{t("Emissions / Alpha Price")}</div>
           </div>
@@ -173,12 +172,12 @@ const SortMethodButton: FC<{
       { label: t("TAO in Pool"), value: "total_tao" },
       { label: t("Emissions"), value: "emission" },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => sortMethods.find((sortMethod) => sortMethod.value === method),
-    [method, sortMethods],
+    [method, sortMethods]
   )
 
   return (
@@ -186,7 +185,7 @@ const SortMethodButton: FC<{
       <ContextMenuTrigger asChild>
         <button
           type="button"
-          className="bg-field hover:bg-grey-800 text-body-secondary hover:text-grey-300 border-grey-850 flex h-full items-center gap-4 text-nowrap rounded-sm border px-[8px] py-[6px] text-sm"
+          className="flex h-full items-center gap-4 text-nowrap rounded-sm border border-grey-850 bg-field px-[8px] py-[6px] text-body-secondary text-sm hover:bg-grey-800 hover:text-grey-300"
         >
           <div>{selected?.label}</div>
           <ToolbarSortIcon className="size-10" />
@@ -240,7 +239,7 @@ const SubnetRows: FC<{
           return (
             <div
               key={item.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute top-0 left-0 w-full"
               style={{
                 height: `${item.size}px`,
                 transform: `translateY(${item.start}px)`,
@@ -274,7 +273,7 @@ const SubnetRow: FC<{
 
   const [taoTokenId, dtaoTokenId] = useMemo(
     () => [subNativeTokenId(networkId), subDTaoTokenId(networkId, option.netuid!)] as const,
-    [networkId, option.netuid],
+    [networkId, option.netuid]
   )
   const tokanAlpha = useToken(dtaoTokenId, "substrate-dtao")
 
@@ -284,7 +283,7 @@ const SubnetRow: FC<{
         ? (Number(BigInt(option?.emission || 0) * 100n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) +
           "%"
         : t("N/A"),
-    [option.emission, t],
+    [option.emission, t]
   )
 
   if (!tokanAlpha) return null
@@ -295,9 +294,9 @@ const SubnetRow: FC<{
       key={option.netuid}
       onClick={onClick}
       className={classNames(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left",
+        "flex h-[5.8rem] w-full shrink-0 items-center gap-6 overflow-hidden px-12 pl-8 text-left hover:bg-grey-750 focus:bg-grey-700",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        isSelected && "bg-grey-800 text-body-secondary",
+        isSelected && "bg-grey-800 text-body-secondary"
       )}
     >
       <TokenLogo tokenId={tokanAlpha.id} className="size-16 shrink-0" />
@@ -312,8 +311,8 @@ const SubnetRow: FC<{
         {!!option.total_tao && (
           <div
             className={cn(
-              "text-body-secondary flex w-full items-center justify-between gap-8 overflow-hidden text-xs",
-              isLoading && "animate-pulse",
+              "flex w-full items-center justify-between gap-8 overflow-hidden text-body-secondary text-xs",
+              isLoading && "animate-pulse"
             )}
           >
             <div className="flex grow items-center gap-2 overflow-hidden">
@@ -324,7 +323,7 @@ const SubnetRow: FC<{
                 noCountUp
                 noTooltip
               />
-              <div className="bg-body-disabled inline-block size-2 rounded-full" />
+              <div className="inline-block size-2 rounded-full bg-body-disabled" />
               <TokensAndFiat
                 tokenId={tokanAlpha.id}
                 planck={option.total_alpha}

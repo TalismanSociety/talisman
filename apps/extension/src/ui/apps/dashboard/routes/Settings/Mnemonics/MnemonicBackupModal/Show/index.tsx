@@ -1,7 +1,6 @@
+import { MnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { MnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 
 import { Stages, useMnemonicBackupModal } from "../context"
 import { MnemonicBackupModalBase } from "../MnemonicBackupModalBase"
@@ -16,7 +15,6 @@ export const ShowMnemonic = () => {
     switch (stage) {
       case Stages.Verify:
         return t("Verify Recovery Phrase")
-      case Stages.Show:
       default:
         return t("Backup Recovery Phrase")
     }

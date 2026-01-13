@@ -23,7 +23,7 @@ const entropyToSeedSubstrate = async (entropy: Uint8Array, password?: string) =>
     entropy,
     mnemonicPasswordToSalt(password ?? ""),
     2048, // 2048 iterations
-    32, // 32 bytes (32 * 8 == 256 bits)
+    32 // 32 bytes (32 * 8 == 256 bits)
   )
 
 const entropyToSeedClassic = async (entropy: Uint8Array, password?: string) =>
@@ -32,7 +32,7 @@ const entropyToSeedClassic = async (entropy: Uint8Array, password?: string) =>
     encodeNormalized(entropyToMnemonic(entropy)),
     mnemonicPasswordToSalt(password ?? ""),
     2048, // 2048 iterations
-    64, // 64 bytes (64 * 8 == 512 bits)
+    64 // 64 bytes (64 * 8 == 512 bits)
   )
 
 const mnemonicPasswordToSalt = (password: string) => encodeNormalized(`mnemonic${password}`)
@@ -63,7 +63,7 @@ const getSeedDerivationType = (curve: KeypairCurve): SeedDerivationType => {
 export const entropyToSeed = async (
   entropy: Uint8Array,
   curve: KeypairCurve,
-  password?: string,
+  password?: string
 ) => {
   const type = getSeedDerivationType(curve)
 

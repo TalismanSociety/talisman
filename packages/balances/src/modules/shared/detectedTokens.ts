@@ -1,4 +1,4 @@
-import { parseTokenId, TokenId, TokenType } from "@talismn/chaindata-provider"
+import { parseTokenId, type TokenId, type TokenType } from "@talismn/chaindata-provider"
 import { isEqual } from "lodash-es"
 import { BehaviorSubject, distinctUntilChanged, map } from "rxjs"
 
@@ -18,5 +18,5 @@ export const setDetectedTokenIds = (address: string, type: TokenType, tokenIds: 
 export const getDetectedTokensIds$ = (address: string) =>
   tokenIdsByAddress.pipe(
     map((ownedTokens) => ownedTokens[address] ?? []),
-    distinctUntilChanged<TokenId[]>(isEqual),
+    distinctUntilChanged<TokenId[]>(isEqual)
   )

@@ -1,11 +1,10 @@
-import { Transaction, VersionedTransaction } from "@solana/web3.js"
+import type { Transaction, VersionedTransaction } from "@solana/web3.js"
 import { parseTransactionInfo } from "@talismn/solana"
 import { throwAfter } from "@talismn/util"
 import { useSuspenseQuery } from "@tanstack/react-query"
+import { useNetworks } from "@ui/state"
 import { log } from "extension-shared"
 import { useTranslation } from "react-i18next"
-
-import { useNetworks } from "@ui/state"
 
 import { getFrontEndSolanaConnection } from "./useSolanaConnection"
 
@@ -16,7 +15,7 @@ import { getFrontEndSolanaConnection } from "./useSolanaConnection"
  * @returns
  */
 export const useSolanaNetworkIdForTransaction = (
-  transaction: VersionedTransaction | Transaction,
+  transaction: VersionedTransaction | Transaction
 ) => {
   const { t } = useTranslation()
   // find on which network the tx is for, based on the transaction data
@@ -41,10 +40,10 @@ export const useSolanaNetworkIdForTransaction = (
                   commitment: "processed", // Fastest, but may include blocks that could be rolled back.
                 })
                 return result.value ? network.id : null
-              } catch (err) {
+              } catch {
                 return null
               }
-            }),
+            })
           ),
           throwAfter(5_000, "Timeout"),
         ])

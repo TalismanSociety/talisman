@@ -1,12 +1,11 @@
-import { useAtomValue } from "jotai"
-import { loadable } from "jotai/utils"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { Tokens } from "@ui/domains/Asset/Tokens"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { AddressDisplay } from "@ui/domains/SendFunds/AddressDisplay"
 import { useNetworksMapById, useSelectedCurrency } from "@ui/state"
+import { useAtomValue } from "jotai"
+import { loadable } from "jotai/utils"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useFiatValueForAmount } from "../hooks/useFiatValueForAmount"
 import {
@@ -16,8 +15,8 @@ import {
   toAddressAtom,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
-import { useFastBalance } from "../swaps-port/useFastBalance"
 import { toAmountAtom } from "../swaps.api"
+import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { SwapConfirmEvm } from "./SwapConfirmEvm"
 import { SwapConfirmSubstrate } from "./SwapConfirmSubstrate"
 
@@ -47,9 +46,9 @@ export const SwapConfirm = ({
 
   return (
     <div className="mb-44 flex h-full w-full flex-col items-center gap-8 overflow-y-auto px-12">
-      <h3 className="-mb-8 h-32 text-lg font-bold">{t("You are swapping")}</h3>
+      <h3 className="-mb-8 h-32 font-bold text-lg">{t("You are swapping")}</h3>
 
-      <div className="bg-grey-900 relative flex w-full flex-col gap-4 rounded px-12 py-8">
+      <div className="relative flex w-full flex-col gap-4 rounded bg-grey-900 px-12 py-8">
         <div className="flex items-center justify-between gap-4">
           <div className="text-body-secondary">{t("Sending")}</div>
           <div className="flex items-center gap-4">
@@ -58,10 +57,10 @@ export const SwapConfirm = ({
                 <img
                   src={fromAsset.image}
                   alt=""
-                  className="border-grey-800 h-12 w-12 min-w-12 rounded-full"
+                  className="h-12 w-12 min-w-12 rounded-full border-grey-800"
                 />
                 <NetworkLogo
-                  className="border-grey-800 absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 rounded-full border text-xs"
+                  className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-800 text-xs"
                   networkId={fromNetwork?.id}
                 />
               </div>
@@ -86,7 +85,7 @@ export const SwapConfirm = ({
                   )
                 </div>
               </div>
-              <div className="text-body-inactive flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-3 text-body-inactive text-xs">
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="flex items-center gap-2 overflow-hidden">
@@ -113,10 +112,10 @@ export const SwapConfirm = ({
                 <img
                   src={toAsset.image}
                   alt=""
-                  className="border-grey-800 h-12 w-12 min-w-12 rounded-full"
+                  className="h-12 w-12 min-w-12 rounded-full border-grey-800"
                 />
                 <NetworkLogo
-                  className="border-grey-800 absolute bottom-0 right-0 translate-x-1/4 translate-y-1/4 rounded-full border text-xs"
+                  className="absolute right-0 bottom-0 translate-x-1/4 translate-y-1/4 rounded-full border border-grey-800 text-xs"
                   networkId={toNetwork?.id}
                 />{" "}
               </div>
@@ -147,12 +146,12 @@ export const SwapConfirm = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <div className="text-body-disabled bg-body-disabled rounded-xs inline-block animate-pulse">
+                  <div className="inline-block animate-pulse rounded-xs bg-body-disabled text-body-disabled">
                     ~0.002 TKN ($1.00)
                   </div>
                 </div>
               )}
-              <div className="text-body-inactive flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-3 text-body-inactive text-xs">
                 <Tooltip>
                   <TooltipTrigger>
                     <div className="flex items-center gap-2 overflow-hidden">

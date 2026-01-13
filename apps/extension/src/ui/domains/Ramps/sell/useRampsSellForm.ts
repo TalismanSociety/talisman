@@ -1,6 +1,9 @@
+import { notify } from "@talisman/components/Notifications"
 import { encodeAddressSs58, isAddressEqual } from "@talismn/crypto"
 import { isTruthy } from "@talismn/util"
 import { useForm, useStore } from "@tanstack/react-form"
+import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
+import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
 import { isAccountCompatibleWithNetwork } from "extension-core"
 import { log } from "extension-shared"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -9,12 +12,8 @@ import { useDebounce } from "react-use"
 import { firstValueFrom } from "rxjs"
 import { z } from "zod"
 
-import { notify } from "@talisman/components/Notifications"
-import { useSpecificTokenRates } from "@ui/hooks/useSpecificTokenRates"
-import { getNetworkById$, getToken$, useAccounts, useNetworkById, useToken } from "@ui/state"
-
-import { RampsFormSharedData } from "../shared/types"
-import { RampsSellQuote, RampsSellQuoteSuccess } from "./types"
+import type { RampsFormSharedData } from "../shared/types"
+import type { RampsSellQuote, RampsSellQuoteSuccess } from "./types"
 import { useRampsSellCurrencies } from "./useRampsSellCurrencies"
 import { useRampsSellQuotes } from "./useRampsSellQuotes"
 import { useRampsSellTokens } from "./useRampsSellTokens"
@@ -79,12 +78,13 @@ export const useRampsSellForm = (defaults: RampsFormSharedData) => {
   const accounts = useMemo(
     () =>
       allAccounts.filter(
-        (account) => !!network && isAccountCompatibleWithNetwork(network, account),
+        (account) => !!network && isAccountCompatibleWithNetwork(network, account)
       ),
-    [allAccounts, network],
+    [allAccounts, network]
   )
 
   // clear provider choice if the token or currency change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     form.resetField("provider")
 

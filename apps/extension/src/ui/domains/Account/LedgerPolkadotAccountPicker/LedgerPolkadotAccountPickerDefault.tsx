@@ -1,19 +1,21 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { isNotNil } from "@talismn/util"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
-import { Account, LedgerPolkadotCurve } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworkById, useNetworks } from "@ui/state"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { Account, LedgerPolkadotCurve } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
-import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
-import { LedgerConnectionStatus, LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
-import { LedgerPolkadotAccountPickerDef, LedgerPolkadotGenericAccountPickerProps } from "./types"
+import type { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import { type DerivedAccountBase, DerivedAccountPickerBase } from "../DerivedAccountPickerBase"
+import { LedgerConnectionStatus, type LedgerConnectionStatusProps } from "../LedgerConnectionStatus"
+import type {
+  LedgerPolkadotAccountPickerDef,
+  LedgerPolkadotGenericAccountPickerProps,
+} from "./types"
 import { useGetLedgerPolkadotAddress } from "./useGetLedgerPolkadotAddress"
 
 export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccountPickerProps> = ({
@@ -24,7 +26,7 @@ export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccount
   const chain = useNetworkById(chainId, "polkadot")
   const curve: LedgerPolkadotCurve = useMemo(
     () => (chain?.account === "secp256k1" ? "ethereum" : "ed25519"),
-    [chain],
+    [chain]
   )
 
   const itemsPerPage = 5
@@ -36,7 +38,7 @@ export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccount
     itemsPerPage,
     curve,
     chain?.name ?? "Polkadot",
-    app,
+    app
   )
 
   const handleToggleAccount = useCallback(
@@ -54,10 +56,10 @@ export const LedgerPolkadotAccountPickerDefault: FC<LedgerPolkadotGenericAccount
               app,
               accountIndex,
               addressOffset,
-            }),
+            })
       )
     },
-    [curve],
+    [curve]
   )
 
   useEffect(() => {
@@ -93,7 +95,7 @@ const useLedgerSubstrateGenericAccounts = (
   itemsPerPage: number,
   curve: LedgerPolkadotCurve,
   networkName: string,
-  legacyApp?: SubstrateAppParams | null,
+  legacyApp?: SubstrateAppParams | null
 ) => {
   const walletAccounts = useAccounts()
   const { t } = useTranslation()
@@ -178,7 +180,7 @@ const useLedgerSubstrateGenericAccounts = (
         refIsBusy.current = false
       }
     },
-    [t, itemsPerPage, legacyApp, curve, networkName, getAddress],
+    [t, itemsPerPage, legacyApp, curve, networkName, getAddress]
   )
 
   // start fetching balances only once all accounts are loaded to prevent recreating subscription 5 times
@@ -187,7 +189,7 @@ const useLedgerSubstrateGenericAccounts = (
       withBalances && ledgerAccounts.filter(isNotNil).length === itemsPerPage
         ? ledgerAccounts.filter(isNotNil).map((acc): Account => ({ ...acc, createdAt: Date.now() }))
         : [],
-    [itemsPerPage, ledgerAccounts, withBalances],
+    [itemsPerPage, ledgerAccounts, withBalances]
   )
   const balances = useAccountImportBalances(balanceDefs)
 
@@ -197,10 +199,10 @@ const useLedgerSubstrateGenericAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find((wa) =>
-          isAddressEqual(wa.address, acc.address),
+          isAddressEqual(wa.address, acc.address)
         )
         const accountBalances = balances.balances.find((b) =>
-          isAddressEqual(b.address, acc.address),
+          isAddressEqual(b.address, acc.address)
         )
 
         return {
@@ -212,7 +214,7 @@ const useLedgerSubstrateGenericAccounts = (
           isBalanceLoading: withBalances && balances.status === "initialising",
         }
       }),
-    [ledgerAccounts, walletAccounts, balances, selectedAccounts, withBalances],
+    [ledgerAccounts, walletAccounts, balances, selectedAccounts, withBalances]
   )
 
   useEffect(() => {

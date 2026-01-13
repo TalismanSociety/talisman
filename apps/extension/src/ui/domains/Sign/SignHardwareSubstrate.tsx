@@ -1,10 +1,9 @@
-import { TypeRegistry } from "@polkadot/types"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { HexString } from "@polkadot/util/types"
-import { Account } from "extension-core"
-import { FC } from "react"
-
+import type { TypeRegistry } from "@polkadot/types"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
+import type { HexString } from "@polkadot/util/types"
 import { useAccountByAddress } from "@ui/state"
+import type { Account } from "extension-core"
+import type { FC } from "react"
 
 import { SignLedgerSubstrateGeneric } from "./SignLedgerSubstrateGeneric"
 import { SignLedgerSubstrateLegacy } from "./SignLedgerSubstrateLegacy"

@@ -1,13 +1,12 @@
-import { Token, TokenId } from "@talismn/chaindata-provider"
-import { TokenDto } from "extension-core"
-import { useCallback } from "react"
-
+import type { Token, TokenId } from "@talismn/chaindata-provider"
 import {
   getYieldxyzTokenId as getYieldxyzTokenIdInner,
   useNetworksMapById,
   useTokensMap,
   useYieldNetworkIdToTalismanNetworkIdMap,
 } from "@ui/state"
+import type { TokenDto } from "extension-core"
+import { useCallback } from "react"
 
 export const useGetYieldxyzToken = () => {
   const networksMap = useNetworksMapById()
@@ -17,7 +16,7 @@ export const useGetYieldxyzToken = () => {
   const getYieldxyzTokenId = useCallback(
     (token: TokenDto): TokenId | null =>
       getYieldxyzTokenIdInner(token, mapToTalismanNetworkId, networksMap),
-    [mapToTalismanNetworkId, networksMap],
+    [mapToTalismanNetworkId, networksMap]
   )
 
   const getYieldxyzToken = useCallback(
@@ -26,7 +25,7 @@ export const useGetYieldxyzToken = () => {
       if (!tokenId) return null
       return tokensMap[tokenId] ?? null
     },
-    [getYieldxyzTokenId, tokensMap],
+    [getYieldxyzTokenId, tokensMap]
   )
 
   return { getYieldxyzTokenId, getYieldxyzToken }

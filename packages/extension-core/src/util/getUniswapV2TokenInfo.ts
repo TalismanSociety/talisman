@@ -1,12 +1,12 @@
 import {
-  EthNetworkId,
-  EvmUniswapV2Token,
+  type EthNetworkId,
+  type EvmUniswapV2Token,
   evmUniswapV2TokenId,
   getGithubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { Client } from "viem"
+import type { Client } from "viem"
 
-import { EvmAddress } from "../domains/ethereum/types"
+import type { EvmAddress } from "../domains/ethereum/types"
 import { getCoinGeckoErc20Coin } from "./coingecko/getCoinGeckoErc20Coin"
 import { getUniswapV2ContractData } from "./getUniswapV2ContractData"
 
@@ -14,7 +14,7 @@ export const getUniswapV2TokenInfo = async (
   client: Client,
   networkId: EthNetworkId,
   contractAddress: EvmAddress,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<EvmUniswapV2Token> => {
   const { symbol, decimals, tokenAddress0, tokenAddress1, token0, token1, name } =
     await getUniswapV2ContractData(client, contractAddress)

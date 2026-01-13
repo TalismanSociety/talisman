@@ -1,11 +1,10 @@
 import { APIError } from "@blockaid/client"
-import { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
-import { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import type { TransactionScanParams } from "@blockaid/client/resources/evm/transaction.mjs"
+import type { EthNetworkId, SolNetworkId } from "@talismn/chaindata-provider"
+import { useFeatureFlag } from "@ui/state"
 import { log } from "extension-shared"
 import { useMemo } from "react"
-import { TransactionRequest } from "viem"
-
-import { useFeatureFlag } from "@ui/state"
+import type { TransactionRequest } from "viem"
 
 import { blockaid } from "../blockaid"
 import { useRiskAnalysisBase } from "../useRiskAnalysisBase"

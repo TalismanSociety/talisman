@@ -1,4 +1,4 @@
-import { Address, defineChain } from "viem"
+import { type Address, defineChain } from "viem"
 
 const addresses: Record<number, Record<VanaContract, Address>> = {
   // Moksha Testnet

@@ -1,6 +1,6 @@
 import { bind } from "@react-rxjs/core"
-import { DotNetwork, Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
-import { TFunction } from "i18next"
+import type { DotNetwork, Network, NetworkId, NetworkList } from "@talismn/chaindata-provider"
+import type { TFunction } from "i18next"
 import { fromPairs, groupBy, toPairs } from "lodash-es"
 import { combineLatest, map, of } from "rxjs"
 
@@ -24,6 +24,7 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
   combineLatest([getNetworks$(), getNetworksMapById$(), t$]).pipe(
     map(([networks, networksById, t]): Record<NetworkId, string | null> => {
       return fromPairs(
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         networks.map((network) => {
           // use name that describes the network type
           switch (network.platform) {
@@ -36,17 +37,17 @@ export const [useNetworkDisplayTypesMapById, networkDisplayTypesMapById$] = bind
             case "solana":
               return [network.id, t("Solana Blockchain")]
           }
-        }),
+        })
       )
-    }),
-  ),
+    })
+  )
 )
 
 export const [useNetworkDisplayType, networkDisplayType$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayTypesMapById$.pipe(map((map) => map[networkId] ?? null))
-  },
+  }
 )
 
 const getNetworksWithDuplicateNames = (networks: Network[]) => {
@@ -67,15 +68,15 @@ export const [useNetworkDisplayNamesMapById, networkDisplayNamesMapById$] = bind
             ? `${network.name} (${networksTypesById[network.id]})`
             : network.name
           return [network.id, name]
-        }),
+        })
       )
-    }),
-  ),
+    })
+  )
 )
 
 export const [useNetworkDisplayName, networkDisplayName$] = bind(
   (networkId: NetworkId | null | undefined) => {
     if (!networkId) return of(null)
     return networkDisplayNamesMapById$.pipe(map((map) => map[networkId] ?? null))
-  },
+  }
 )

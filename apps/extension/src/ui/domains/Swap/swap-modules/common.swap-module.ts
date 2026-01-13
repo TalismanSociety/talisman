@@ -1,33 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: legacy
 
 import type { SubmittableExtrinsic } from "@polkadot/api/types"
-import type { Atom, Getter, SetStateAction, Setter } from "jotai"
-import type { TransactionRequest } from "viem"
 import {
   evmErc20TokenId,
   evmNativeTokenId,
-  Network,
+  type Network,
   subNativeTokenId,
 } from "@talismn/chaindata-provider"
 import { isBitcoinAddress, isEthereumAddress, isSs58Address } from "@talismn/crypto"
-import { ScaleApi } from "@talismn/sapi"
-import BigNumber from "bignumber.js"
+import type { ScaleApi } from "@talismn/sapi"
+import type BigNumber from "bignumber.js"
 import {
-  Account,
+  type Account,
   isAccountCompatibleWithNetwork,
   isAccountPlatformEthereum,
   isAddressCompatibleWithNetwork,
   remoteConfigStore,
-  SignerPayloadJSON,
+  type SignerPayloadJSON,
 } from "extension-core"
+import type { Atom, Getter, SetStateAction, Setter } from "jotai"
 import { atom } from "jotai"
 import { atomWithStorage, createJSONStorage, unstable_withStorageValidator } from "jotai/utils"
-import { Loadable } from "jotai/vanilla/utils/loadable"
+import type { Loadable } from "jotai/vanilla/utils/loadable"
+import type { TransactionRequest } from "viem"
 
 import { Decimal } from "../swaps-port/Decimal"
 import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import { SimpleswapExchange } from "./simpleswap-swap-module"
-import { StealthexExchange } from "./stealthex-swap-module"
+import type { SimpleswapExchange } from "./simpleswap-swap-module"
+import type { StealthexExchange } from "./stealthex-swap-module"
 
 export type SupportedSwapProtocol = "simpleswap" | "stealthex" | "lifi"
 
@@ -126,7 +126,7 @@ export type QuoteFunction<TData = any> = Atom<
 export type SwapFunction<TData> = (
   get: Getter,
   set: Setter,
-  props: SwapProps,
+  props: SwapProps
 ) => Promise<Omit<SwapActivity<TData>, "timestamp">>
 export type GetEstimateGasTxFunction = (get: Getter) => Promise<QuoteFee | null>
 
@@ -140,7 +140,7 @@ export type SwapModule = {
   evmTransactionAtom: Atom<Promise<TransactionRequest | undefined>>
   substratePayloadAtom: (
     sapi?: ScaleApi | null,
-    allowReap?: boolean,
+    allowReap?: boolean
   ) => Atom<Promise<{ payload: SignerPayloadJSON; txMetadata?: Uint8Array } | null>>
 
   // talisman curated data
@@ -160,7 +160,7 @@ export const validateAddress = (
   account: Account | undefined,
   address: string,
   network: Network | undefined,
-  networkType: "evm" | "substrate" | "btc",
+  networkType: "evm" | "substrate" | "btc"
 ) => {
   if (network) {
     if (account) return isAccountCompatibleWithNetwork(network, account)
@@ -221,9 +221,9 @@ export const toAddressAtom = atom((get) => {
 
 export const swappingAtom = atom(false)
 export const quoteSortingAtom = atom<"decentalised" | "cheapest" | "fastest" | "bestRate">(
-  "bestRate",
+  "bestRate"
 )
-export const swapQuoteRefresherAtom = atom(new Date().getTime())
+export const swapQuoteRefresherAtom = atom(Date.now())
 
 export const resetSwapFormAtom = atom(null, (_, set) => {
   set(fromEvmAddressAtom, null)
@@ -255,7 +255,7 @@ const _swapsStorage = unstable_withStorageValidator(validateSwaps)(
       if (key === "timestamp" && typeof value === "number") new Date(value)
       return value
     },
-  }),
+  })
 )
 
 const filterAndSortStoredSwaps = (swaps: StoredSwaps) =>
@@ -272,7 +272,7 @@ const swapsStorageAtom = atomWithStorage("@talisman/swaps", [], swapsStorage)
 
 export const swapsAtom = atom(
   (get) => filterAndSortStoredSwaps(get(swapsStorageAtom)),
-  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps),
+  (_, set, swaps: SetStateAction<StoredSwaps>) => set(swapsStorageAtom, swaps)
 )
 
 // helpers
@@ -280,7 +280,7 @@ export const swapsAtom = atom(
 export const getTokenIdForSwappableAsset = (
   chainType: "substrate" | "evm" | "btc",
   chainId: number | string,
-  contractAddress?: string,
+  contractAddress?: string
 ) => {
   switch (chainType) {
     case "evm":
@@ -299,7 +299,7 @@ export const getTokenIdForSwappableAsset = (
 export const saveAddressForQuest = async (
   swapId: string,
   fromAddress: string,
-  provider: string,
+  provider: string
 ) => {
   const { questApi } = await remoteConfigStore.get("swaps")
   if (!questApi) return

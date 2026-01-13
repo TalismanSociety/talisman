@@ -18,7 +18,7 @@ export const getCoingeckoToken = async (id: string) => {
   try {
     const fetchErc20Coin = await fetchFromCoingecko(`/api/v3/coins/${id}`)
     return fetchErc20Coin.json() as Promise<CoinGeckoToken>
-  } catch (err) {
+  } catch {
     // most likely invalid id
     return null
   }

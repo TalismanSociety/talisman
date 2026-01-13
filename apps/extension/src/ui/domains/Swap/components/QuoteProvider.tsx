@@ -21,8 +21,8 @@ export const QuoteProvider = () => {
       <div className="flex items-center justify-end gap-4">
         {isLoading ? (
           <>
-            <div className="bg-body-disabled mb-1 h-10 w-10 animate-pulse rounded-full" />
-            <p className="text-body-disabled bg-body-disabled rounded-xs max-w-60 animate-pulse truncate text-xs font-semibold">
+            <div className="mb-1 h-10 w-10 animate-pulse rounded-full bg-body-disabled" />
+            <p className="max-w-60 animate-pulse truncate rounded-xs bg-body-disabled font-semibold text-body-disabled text-xs">
               SwapProvider
             </p>
           </>
@@ -40,7 +40,7 @@ export const QuoteProvider = () => {
               alt=""
               className="mb-1 h-10 rounded-full"
             />
-            <p className="text-body-secondary max-w-60 truncate text-xs font-semibold">
+            <p className="max-w-60 truncate font-semibold text-body-secondary text-xs">
               {quote.state === "hasData" &&
                 quote.data &&
                 quote.data.quote.state === "hasData" &&

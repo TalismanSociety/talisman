@@ -1,13 +1,12 @@
-import { activeNetworksStore, activeTokensStore, WalletTransactionInfo } from "extension-core"
+import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import { activeNetworksStore, activeTokensStore, type WalletTransactionInfo } from "extension-core"
 import { atom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
-import { Hex } from "viem"
-
-import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
-import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
+import type { Hex } from "viem"
 
 import { useSwapTokensModal } from "../hooks/useSwapTokensModal"
 import {
@@ -20,9 +19,9 @@ import {
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
 import { saveIdForMonitoring } from "../swap-modules/simpleswap-swap-module"
-import { swapViewAtom } from "../swaps-port/swapViewAtom"
-import { useFastBalance } from "../swaps-port/useFastBalance"
 import { selectedSwapModuleAtom, toAmountAtom } from "../swaps.api"
+import { swapViewAtom } from "../swaps-port/swapViewAtom"
+import type { useFastBalance } from "../swaps-port/useFastBalance"
 import { FeeEstimateSubstrate } from "./FeeEstimateSubstrate"
 
 export const SwapConfirmSubstrate = ({
@@ -50,7 +49,7 @@ export const SwapConfirmSubstrate = ({
   const swapModule = useAtomValue(selectedSwapModuleAtom)
   const exchangeAtom = useMemo(
     () => swapModule?.exchangeAtom ?? atom(null),
-    [swapModule?.exchangeAtom],
+    [swapModule?.exchangeAtom]
   )
 
   const insufficientBalance = useMemo(() => {
@@ -59,18 +58,18 @@ export const SwapConfirmSubstrate = ({
   }, [fastBalance, fromAmount.planck])
 
   const { data: sapi } = useScaleApi(
-    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null,
+    fromAsset?.networkType === "substrate" ? String(fromAsset.chainId) : null
   )
   const allowReap = useMemo(
     () =>
       fastBalance?.balance?.stayAlive.planck !== undefined &&
       fromAmount.planck > fastBalance.balance.stayAlive.planck,
-    [fastBalance, fromAmount.planck],
+    [fastBalance, fromAmount.planck]
   )
   const exchangeLoadable = useAtomValue(loadable(exchangeAtom))
   const substratePayloadAtom = useMemo(
     () => swapModule?.substratePayloadAtom?.(sapi, allowReap) ?? atom(null),
-    [swapModule, sapi, allowReap],
+    [swapModule, sapi, allowReap]
   )
   const payloadLoadable = useAtomValue(loadable(substratePayloadAtom))
 
@@ -151,7 +150,7 @@ export const SwapConfirmSubstrate = ({
       swapModule?.protocol,
       toAsset,
       txInfo,
-    ],
+    ]
   )
 
   return (
@@ -160,7 +159,7 @@ export const SwapConfirmSubstrate = ({
 
       <div className="absolute bottom-0 left-0 w-full bg-black px-12 py-8">
         {payloadLoadable?.state === "hasError" && (
-          <div className="bg-black-tertiary text-tiny mb-10 w-full rounded px-4 py-8 text-center text-red-400">
+          <div className="mb-10 w-full rounded bg-black-tertiary px-4 py-8 text-center text-red-400 text-tiny">
             {t("Error loading transaction:")} {String(payloadLoadable.error)}
           </div>
         )}

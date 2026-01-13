@@ -1,16 +1,15 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { encodeAddressSs58 } from "@talismn/crypto"
 import { classNames } from "@talismn/util"
-import { getAccountGenesisHash } from "extension-core"
-import { FC, useCallback, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { Address } from "@ui/domains/Account/Address"
 import { useAccountByAddress, useNetworkById } from "@ui/state"
 import { copyAddress } from "@ui/util/copyAddress"
+import { getAccountGenesisHash } from "extension-core"
+import { type FC, useCallback, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { SummaryDisplayMode } from "../../types"
+import type { SummaryDisplayMode } from "../../types"
 
 export const SummaryAddressDisplay: FC<{
   address: string
@@ -30,7 +29,7 @@ export const SummaryAddressDisplay: FC<{
 
   if (mode !== "block")
     return (
-      <span className="text-body truncate whitespace-nowrap">
+      <span className="truncate whitespace-nowrap text-body">
         <AccountIcon
           className={classNames("inline-block align-sub text-[1.2em]")}
           address={address}
@@ -49,7 +48,7 @@ export const SummaryAddressDisplay: FC<{
       <TooltipTrigger asChild>
         <button
           type="button"
-          className="text-body inline-flex max-w-full items-center gap-2 overflow-hidden"
+          className="inline-flex max-w-full items-center gap-2 overflow-hidden text-body"
           onClick={handleClick}
         >
           <div>

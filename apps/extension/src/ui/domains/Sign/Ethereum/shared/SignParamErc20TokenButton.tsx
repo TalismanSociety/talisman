@@ -1,9 +1,8 @@
-import { EthNetwork } from "@talismn/chaindata-provider"
-import { EvmAddress } from "extension-core"
-import { FC } from "react"
-
+import type { EthNetwork } from "@talismn/chaindata-provider"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
+import type { EvmAddress } from "extension-core"
+import type { FC } from "react"
 
 import { SignParamButton } from "./SignParamButton"
 

@@ -1,7 +1,6 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 
 import { useCombinedBittensorValidatorsData } from "../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondWizard } from "../hooks/useBittensorBondWizard"
@@ -22,7 +21,7 @@ export const BittensorDelegatorNameButton = ({
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
-    [combinedValidatorsData, hotkey],
+    [combinedValidatorsData, hotkey]
   )
 
   const label = useMemo(() => {

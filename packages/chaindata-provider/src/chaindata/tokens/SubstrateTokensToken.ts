@@ -1,7 +1,7 @@
 import LZString from "lz-string"
 import z from "zod/v4"
 
-import { NetworkId } from "../networks"
+import type { NetworkId } from "../networks"
 import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 

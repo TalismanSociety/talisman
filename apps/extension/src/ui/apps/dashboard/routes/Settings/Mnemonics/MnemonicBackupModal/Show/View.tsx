@@ -1,15 +1,14 @@
-import { ChangeEventHandler, FC, useCallback, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Checkbox } from "talisman-ui"
-
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { Mnemonic } from "@ui/domains/Mnemonic/Mnemonic"
 import { useMnemonicUnlock } from "@ui/domains/Mnemonic/MnemonicUnlock"
 import { useMnemonic } from "@ui/state"
+import { type ChangeEventHandler, type FC, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Checkbox } from "talisman-ui"
 
 import { useMnemonicBackupModal } from "../context"
-import { ShowMnemonicProps } from "./types"
+import type { ShowMnemonicProps } from "./types"
 
 export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
   const { t } = useTranslation()
@@ -31,7 +30,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
         })
       }
     },
-    [mnemonicInfo, t],
+    [mnemonicInfo, t]
   )
 
   const handleMnemonicReveal = useCallback(() => {
@@ -50,7 +49,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
             disabled={!canConfirm}
             onChange={handleConfirmToggle}
             checked={mnemonicInfo?.confirmed}
-            className="text-body-secondary hover:text-body gap-8!"
+            className="gap-8! text-body-secondary hover:text-body"
           >
             {t("I have backed up my recovery phrase, don't remind me again")}
           </Checkbox>
@@ -64,7 +63,7 @@ export const ViewMnemonic: FC<ShowMnemonicProps> = ({ handleComplete }) => {
         </div>
       </div>
       <button
-        className="text-grey-300 hover:text-body flex cursor-pointer gap-5 self-center font-bold"
+        className="flex cursor-pointer gap-5 self-center font-bold text-grey-300 hover:text-body"
         onClick={close}
         type="button"
       >

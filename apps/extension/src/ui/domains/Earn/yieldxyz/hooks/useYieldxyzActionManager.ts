@@ -1,13 +1,12 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { notify } from "@talisman/components/Notifications"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { ActionDto } from "extension-core"
+import type { ActionDto } from "extension-core"
 import { log } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { notify } from "@talisman/components/Notifications"
-
-import { UseYieldxyzTransactionProps } from "./types"
+import type { UseYieldxyzTransactionProps } from "./types"
 import { useYieldxyzTransaction } from "./useYieldxyzTransaction"
 
 type UseYieldxyzTransactionManagerProps = {
@@ -51,7 +50,7 @@ export const useYieldxyzTransactionManager = ({
 
   const pendingTx = useMemo(
     () => action?.transactions.find((tx) => tx.id === pendingTxId) ?? null,
-    [action, pendingTxId],
+    [action, pendingTxId]
   )
 
   const onSubmit = useCallback(
@@ -67,7 +66,7 @@ export const useYieldxyzTransactionManager = ({
         setIsSubmitting(false)
       }
     },
-    [action, stepIndex, submitActionTransaction],
+    [action, stepIndex, submitActionTransaction]
   )
 
   // simple polling to refresh action while a tx is pending
@@ -83,6 +82,7 @@ export const useYieldxyzTransactionManager = ({
   })
 
   // maintain pendingTxId state
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
 

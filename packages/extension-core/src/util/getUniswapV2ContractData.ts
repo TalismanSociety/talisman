@@ -1,6 +1,6 @@
-import { Abi, Client, getContract, parseAbi } from "viem"
+import { type Abi, type Client, getContract, parseAbi } from "viem"
 
-import { Erc20ContractData, getErc20ContractData } from "./getErc20ContractData"
+import { type Erc20ContractData, getErc20ContractData } from "./getErc20ContractData"
 
 const ABI_UNISWAPV2PAIR = parseAbi([
   "function decimals() pure returns (uint8)",
@@ -20,7 +20,7 @@ export type UniswapV2ContractData = {
 
 export const getUniswapV2ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ): Promise<UniswapV2ContractData> => {
   const getUniswapV2ContractFn = getUniswapV2Contract(client, contractAddress)
 

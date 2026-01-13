@@ -1,6 +1,6 @@
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 
-import { BaseRequest, BaseRequestId } from "../../types/base"
+import type { BaseRequest, BaseRequestId } from "../../types/base"
 
 export interface EncryptPayloadBase {
   /**

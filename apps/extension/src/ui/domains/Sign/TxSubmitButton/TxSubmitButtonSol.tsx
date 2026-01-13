@@ -1,18 +1,17 @@
+import { notify } from "@talisman/components/Notifications"
 import { isVersionedTransaction, serializeTransaction } from "@talismn/solana"
 import { classNames } from "@talismn/util"
-import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-
-import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAccountByAddress } from "@ui/state"
+import { isAccountOwned, isAccountPlatformSolana } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignApproveButton } from "../SignApproveButton"
-import { SignLedgerSolana, SolSignOutput, SolSignPayload } from "../SignLedgerSolana"
+import { SignLedgerSolana, type SolSignOutput, type SolSignPayload } from "../SignLedgerSolana"
 import { TxSubmitButtonFallback } from "./TxSignButtonFallback"
-import { TxSubmitButtonProps } from "./types"
+import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
   tx,
@@ -26,7 +25,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
     const transaction = tx.payload
     if (isVersionedTransaction(transaction))
       return transaction.message.staticAccountKeys
-        .find((key, idx) => transaction.message.isAccountSigner(idx))
+        .find((_key, idx) => transaction.message.isAccountSigner(idx))
         ?.toBase58()
     else return transaction.feePayer?.toBase58()
   }, [tx.payload])
@@ -40,7 +39,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         const submitted = await api.solSubmit(
           tx.networkId,
           serializeTransaction(output.transaction),
-          tx.txInfo,
+          tx.txInfo
         )
 
         onSubmit(submitted.signature)
@@ -53,7 +52,7 @@ export const TxSubmitButtonSol: FC<TxSubmitButtonProps<"solana">> = ({
         })
       }
     },
-    [onSubmit, tx],
+    [onSubmit, tx]
   )
 
   const [isSubmitting, setIsSubmitting] = useState(false)

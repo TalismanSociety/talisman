@@ -1,7 +1,7 @@
-import { Metadata } from "@polkadot-api/substrate-bindings"
+import type { Metadata } from "@polkadot-api/substrate-bindings"
 
 import log from "../log"
-import { Prettify } from "./Prettify"
+import type { Prettify } from "./Prettify"
 
 export type MetadataType = SupportedMetadata["lookup"][number]
 export type MetadataPallet = SupportedMetadata["pallets"][number]
@@ -23,7 +23,7 @@ export const compactMetadata = (
   anyMetadata: Metadata,
   palletsAndItems: Array<{ pallet: string; constants?: string[]; items: string[] }> = [],
   runtimeApisAndMethods: Array<{ runtimeApi: string; methods: string[] }> = [],
-  extraKeepTypes: number[] = [],
+  extraKeepTypes: number[] = []
 ) => {
   if (!isCompactableMetadata(anyMetadata))
     throw new Error(`Metadata version ${anyMetadata.metadata.tag} not supported in compactMetadata`)
@@ -33,7 +33,7 @@ export const compactMetadata = (
   // remove pallets we don't care about
   metadata.pallets = metadata.pallets.filter((pallet) =>
     // keep this pallet if it's listed in `palletsAndItems`
-    palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName),
+    palletsAndItems.some(({ pallet: palletName }) => pallet.name === palletName)
   ) as typeof metadata.pallets
 
   // remove fields we don't care about from each pallet, and extract types for each storage item we care about
@@ -56,7 +56,7 @@ export const compactMetadata = (
 
       // filter and extract storage items we care about
       pallet.storage.items = pallet.storage.items.filter((item) =>
-        itemNames.some((itemName) => item.name === itemName),
+        itemNames.some((itemName) => item.name === itemName)
       )
 
       return [
@@ -72,7 +72,7 @@ export const compactMetadata = (
           .filter((type): type is number => typeof type === "number"),
         ...pallet.constants.flatMap((constant) => constant.type),
       ]
-    },
+    }
   )
 
   // remove runtime apis we don't care about
@@ -83,8 +83,8 @@ export const compactMetadata = (
     // keep this api if it's listed in `runtimeApisAndMethods`
     metadata.apis = metadata.apis.filter((runtimeApi) =>
       runtimeApisAndMethods.some(
-        ({ runtimeApi: runtimeApiName }) => runtimeApi.name === runtimeApiName,
-      ),
+        ({ runtimeApi: runtimeApiName }) => runtimeApi.name === runtimeApiName
+      )
     )
 
     // remove methods we don't care about from each runtime api, and extract types for each call's params and result
@@ -100,7 +100,7 @@ export const compactMetadata = (
 
         // filter and extract methods we care about
         runtimeApi.methods = runtimeApi.methods.filter((method) =>
-          methodNames.some((methodName) => method.name === methodName),
+          methodNames.some((methodName) => method.name === methodName)
         )
 
         return runtimeApi.methods.flatMap((method) => [
@@ -109,7 +109,7 @@ export const compactMetadata = (
           // and one output type (for the result)
           method.output,
         ])
-      },
+      }
     )
   }
 
@@ -119,6 +119,7 @@ export const compactMetadata = (
   // then we run those types through a function (addDependentTypes) which will also include
   // all of the types which those types depend on - recursively
   const keepTypes = new Set([...palletsKeepTypes, ...runtimeApisKeepTypes])
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   extraKeepTypes?.forEach((type) => keepTypes.add(type))
 
   // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
@@ -130,6 +131,7 @@ export const compactMetadata = (
 
   // update all type ids to be sequential (fill the gaps left by the deleted types)
   const newTypeIds = new Map<number, number>()
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   metadata.lookup.forEach((type, index) => newTypeIds.set(type.id, index))
   const getNewTypeId = (oldTypeId: number): number => {
     const newTypeId = newTypeIds.get(oldTypeId)
@@ -172,7 +174,7 @@ const addDependentTypes = (
   keepTypes: Set<number>,
   types: number[],
   // Prevent stack overflow when a type references itself
-  addedTypes: Set<number> = new Set(),
+  addedTypes: Set<number> = new Set()
 ) => {
   const addDependentSubTypes = (subTypes: number[]) =>
     addDependentTypes(metadataTysMap, keepTypes, subTypes, addedTypes)
@@ -210,7 +212,7 @@ const addDependentTypes = (
         addDependentSubTypes(
           type.def.value
             .map((field) => field.type)
-            .filter((type): type is number => typeof type === "number"),
+            .filter((type): type is number => typeof type === "number")
         )
         break
 
@@ -223,7 +225,7 @@ const addDependentTypes = (
 
       case "tuple":
         addDependentSubTypes(
-          type.def.value.filter((type): type is number => typeof type === "number"),
+          type.def.value.filter((type): type is number => typeof type === "number")
         )
         break
 
@@ -231,7 +233,7 @@ const addDependentTypes = (
         addDependentSubTypes(
           type.def.value
             .flatMap((member) => member.fields.map((field) => field.type))
-            .filter((type): type is number => typeof type === "number"),
+            .filter((type): type is number => typeof type === "number")
         )
         break
 
@@ -252,7 +254,7 @@ const remapTypeIds = (metadata: SupportedMetadata, getNewTypeId: (oldTypeId: num
 
 const remapLookupTypeIds = (
   metadata: SupportedMetadata,
-  getNewTypeId: (oldTypeId: number) => number,
+  getNewTypeId: (oldTypeId: number) => number
 ) => {
   for (const type of metadata.lookup) {
     type.id = getNewTypeId(type.id)
@@ -317,7 +319,7 @@ const remapLookupTypeIds = (
 
 const remapStorageTypeIds = (
   metadata: SupportedMetadata,
-  getNewTypeId: (oldTypeId: number) => number,
+  getNewTypeId: (oldTypeId: number) => number
 ) => {
   for (const pallet of metadata.pallets) {
     for (const item of pallet.storage?.items ?? []) {
@@ -335,7 +337,7 @@ const remapStorageTypeIds = (
 
 const remapRuntimeApisTypeIds = (
   metadata: SupportedMetadata,
-  getNewTypeId: (oldTypeId: number) => number,
+  getNewTypeId: (oldTypeId: number) => number
 ) => {
   for (const runtimeApi of metadata.apis) {
     for (const method of runtimeApi.methods ?? []) {

@@ -1,15 +1,21 @@
-import { HexString } from "@polkadot/util/types"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import { notify } from "@talisman/components/Notifications"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
+import { IS_POPUP } from "@ui/util/constants"
 import {
-  EthTransactionDetails,
+  type EthTransactionDetails,
   isAccountOfType,
   serializeTransactionRequest,
-  WalletTransaction,
-  WalletTransactionEth,
+  type WalletTransaction,
+  type WalletTransactionEth,
 } from "extension-core"
-import { FC, useCallback, useMemo, useState } from "react"
+import { type FC, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Button,
@@ -21,18 +27,11 @@ import {
   useOpenCloseWithData,
 } from "talisman-ui"
 
-import { notify } from "@talisman/components/Notifications"
-import { api } from "@ui/api"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useAccountByAddress, useBalance, useNetworkById } from "@ui/state"
-import { IS_POPUP } from "@ui/util/constants"
-
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
 import { SignHardwareEthereum } from "../Sign/SignHardwareEthereum"
-import { TxReplaceType } from "./types"
+import type { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -107,7 +106,7 @@ const EvmDrawerContent: FC<{
       evmNetworkId: tx.networkId,
       networkType: "ethereum",
     }),
-    [tx.networkId],
+    [tx.networkId]
   )
   useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
 
@@ -144,7 +143,7 @@ const EvmDrawerContent: FC<{
       })
       onClose?.(newHash)
     } catch (err) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error("handleSend", { err })
       notify({
         title: `Failed to ${type}`,
@@ -173,7 +172,7 @@ const EvmDrawerContent: FC<{
         })
         onClose?.(newHash)
       } catch (err) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error("handleSend", { err })
         notify({
           title: t(`Failed to {{type}}`, { type }),
@@ -186,7 +185,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [onClose, t, transaction, tx, type],
+    [onClose, t, transaction, tx, type]
   )
 
   const handleSentToDevice = useCallback(() => {
@@ -203,7 +202,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-primary",
         title: t("Speed Up Transaction"),
         description: t(
-          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
+          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority."
         ),
         approveText: t("Speed Up"),
       }
@@ -215,7 +214,7 @@ const EvmDrawerContent: FC<{
         iconClassName: "text-brand-orange",
         title: t("Cancel Transaction"),
         description: t(
-          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
+          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority."
         ),
         approveText: t("Try to Cancel"),
       }
@@ -233,13 +232,13 @@ const EvmDrawerContent: FC<{
   return (
     <>
       <Icon className={classNames("text-[40px]", iconClassName)} />
-      <div className="mt-12 text-base font-bold">{title}</div>
-      <p className="text-body-secondary mt-10 text-center text-sm">{description}</p>
+      <div className="mt-12 font-bold text-base">{title}</div>
+      <p className="mt-10 text-center text-body-secondary text-sm">{description}</p>
       {!!fullHeight && <div className="grow"></div>}
       <div
         className={classNames(
-          "text-body-secondary mt-16 w-full space-y-2 text-xs",
-          !canReplace && "pointer-events-none opacity-50",
+          "mt-16 w-full space-y-2 text-body-secondary text-xs",
+          !canReplace && "pointer-events-none opacity-50"
         )}
       >
         <div className="flex w-full items-center justify-between">
@@ -277,44 +276,43 @@ const EvmDrawerContent: FC<{
           </div>
         </div>
       </div>
-      <>
-        {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
-          <div className="w-full">
-            <SignHardwareEthereum
-              className="mt-6"
-              account={account}
-              method="eth_sendTransaction"
-              payload={transaction}
-              onSigned={handleSendSigned}
-              onCancel={() => onClose?.()}
-              onSentToDevice={handleSentToDevice}
-              containerId="main"
-            />
-          </div>
-        ) : (
-          <div
-            className={classNames(
-              "mt-8 grid w-full gap-4",
-              canReplace ? "grid-cols-2" : "grid-cols-1",
-            )}
-          >
-            <Button className="h-24" onClick={() => onClose?.()}>
-              {t("Close")}
+
+      {canReplace && !!account && isAccountOfType(account, "ledger-ethereum") ? (
+        <div className="w-full">
+          <SignHardwareEthereum
+            className="mt-6"
+            account={account}
+            method="eth_sendTransaction"
+            payload={transaction}
+            onSigned={handleSendSigned}
+            onCancel={() => onClose?.()}
+            onSentToDevice={handleSentToDevice}
+            containerId="main"
+          />
+        </div>
+      ) : (
+        <div
+          className={classNames(
+            "mt-8 grid w-full gap-4",
+            canReplace ? "grid-cols-2" : "grid-cols-1"
+          )}
+        >
+          <Button className="h-24" onClick={() => onClose?.()}>
+            {t("Close")}
+          </Button>
+          {canReplace && (
+            <Button
+              className="h-24"
+              primary
+              onClick={handleSend}
+              disabled={!isProcessing && (!transaction || !account || (!isLoading && !isValid))}
+              processing={isProcessing}
+            >
+              {approveText}
             </Button>
-            {canReplace && (
-              <Button
-                className="h-24"
-                primary
-                onClick={handleSend}
-                disabled={!isProcessing && (!transaction || !account || (!isLoading && !isValid))}
-                processing={isProcessing}
-              >
-                {approveText}
-              </Button>
-            )}
-          </div>
-        )}
-      </>
+          )}
+        </div>
+      )}
     </>
   )
 }
@@ -329,7 +327,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       <Modal isOpen={isOpenReady} anchor="center" onDismiss={onClose}>
         <div
           id="tx-main"
-          className="border-grey-850 flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border bg-black p-12"
+          className="flex h-[60rem] max-h-[100dvh] w-[40rem] max-w-[100dvw] flex-col items-center overflow-hidden rounded border border-grey-850 bg-black p-12"
         >
           {data?.type && data?.tx?.platform === "ethereum" ? (
             <EvmDrawerContent
@@ -351,7 +349,7 @@ export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose })
       anchor="bottom"
       containerId="main"
       onDismiss={onClose}
-      className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12"
+      className="flex w-full flex-col items-center rounded-t-xl bg-grey-800 p-12"
     >
       {data?.type && data?.tx?.platform === "ethereum" ? (
         <EvmDrawerContent tx={data.tx} type={data.type} onClose={onClose} />

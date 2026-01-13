@@ -1,16 +1,15 @@
 import { bind } from "@react-rxjs/core"
 import { normalizeAddress } from "@talismn/crypto"
+import { api } from "@ui/api"
 import {
-  Account,
+  type Account,
   isAccountNotContact,
   isAccountOfType,
   isAccountOwned,
   isAccountPortfolio,
-  Trees,
+  type Trees,
 } from "extension-core"
 import { map, Observable, shareReplay } from "rxjs"
-
-import { api } from "@ui/api"
 
 import { debugObservable } from "./util/debugObservable"
 
@@ -32,8 +31,8 @@ export const [useAccountsCatalog] = bind(accountsCatalog$)
 
 export const accountsMap$ = accounts$.pipe(
   map((accounts) =>
-    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account])),
-  ),
+    Object.fromEntries(accounts.map((account) => [normalizeAddress(account.address), account]))
+  )
 )
 
 export const [useAccountsMap] = bind(accountsMap$)
@@ -45,8 +44,8 @@ export const [useAccountByAddress, getAccountByAddress$] = bind(
         if (!address) return null
         const normalizedAddress = normalizeAddress(address)
         return accountsMap[normalizedAddress] ?? null
-      }),
-    ),
+      })
+    )
 )
 
 export type AccountCategory =
@@ -75,6 +74,6 @@ export const [useAccounts, getAccountsByCategory$] = bind(
           case "all":
             return accounts
         }
-      }),
-    ),
+      })
+    )
 )

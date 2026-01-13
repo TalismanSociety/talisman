@@ -1,3 +1,4 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import {
   AlertCircleIcon,
   GlobeIcon,
@@ -11,14 +12,12 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, ReactNode, Suspense, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-import { NavLink, To, useMatch, useNavigate } from "react-router-dom"
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMnemonicsAllBackedUp } from "@ui/hooks/useMnemonicsAllBackedUp"
+import { type FC, type ReactNode, Suspense, useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { NavLink, type To, useMatch, useNavigate } from "react-router-dom"
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const DashboardSettingsSidebar = () => {
   const { t } = useTranslation()
@@ -31,14 +30,14 @@ export const DashboardSettingsSidebar = () => {
   }, [genericEvent, navigate])
 
   return (
-    <div className={classNames("bg-grey-900 rounded-lg", "flex w-full flex-col gap-8 p-8")}>
+    <div className={classNames("rounded-lg bg-grey-900", "flex w-full flex-col gap-8 p-8")}>
       <div className="flex h-16 shrink-0 items-center">
-        <div className="grow pl-4 text-[2rem] font-bold">{t("Settings")}</div>
+        <div className="grow pl-4 font-bold text-[2rem]">{t("Settings")}</div>
         <Tooltip>
           <TooltipTrigger asChild>
             <IconButton
               onClick={handleAddAccountClick}
-              className="bg-primary/10 enabled:hover:bg-primary/20 enabled:hover:text-primary text-primary/90 rounded-full p-3"
+              className="rounded-full bg-primary/10 p-3 text-primary/90 enabled:hover:bg-primary/20 enabled:hover:text-primary"
             >
               <PlusIcon className="size-10" />
             </IconButton>
@@ -46,7 +45,7 @@ export const DashboardSettingsSidebar = () => {
           <TooltipContent>{t("Add Account")}</TooltipContent>
         </Tooltip>
       </div>
-      <div className="bg-grey-800 h-0.5"></div>
+      <div className="h-0.5 bg-grey-800"></div>
       <div className="flex w-full flex-col gap-2">
         <SidebarNavItem to="/settings/general" label={t("General")} icon={<SlidersIcon />} />
         <SidebarNavItem
@@ -111,7 +110,7 @@ const SidebarNavItem: FC<{
         "hover:bg-grey-750 [&.active]:bg-grey-800",
         "h-28 px-6",
         forceActive && "active",
-        className,
+        className
       )}
     >
       <span className="size-12 shrink-0 text-lg">{icon}</span>

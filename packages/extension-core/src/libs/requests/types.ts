@@ -1,4 +1,4 @@
-import { Prettify } from "@talismn/util"
+import type { Prettify } from "@talismn/util"
 
 import type { EncryptRequests } from "../../domains/encrypt/types"
 import type { EthRequests } from "../../domains/ethereum/types"

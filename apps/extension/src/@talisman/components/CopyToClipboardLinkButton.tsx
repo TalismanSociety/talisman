@@ -1,6 +1,6 @@
 import { CheckIcon, CopyIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, useCallback, useState } from "react"
+import { type FC, useCallback, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 export const CopyToClipboardLinkButton: FC<{ data: string; className?: string }> = ({
@@ -21,11 +21,11 @@ export const CopyToClipboardLinkButton: FC<{ data: string; className?: string }>
     <button
       type="button"
       onClick={handleCopy}
-      className={cn("text-body-secondary hover:text-body inline-flex items-center", className)}
+      className={cn("inline-flex items-center text-body-secondary hover:text-body", className)}
     >
       {isCopied ? (
         <>
-          <CheckIcon className="text-primary mr-2 inline" />
+          <CheckIcon className="mr-2 inline text-primary" />
           <span className="text-primary">{t("Copied successfully")}</span>
         </>
       ) : (

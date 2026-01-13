@@ -4,7 +4,7 @@ interface SessionStorageData {
 
 abstract class TalismanSessionStorage {
   abstract get<K extends keyof SessionStorageData>(
-    key: K,
+    key: K
   ): Promise<SessionStorageData[K] | undefined>
   abstract remove<K extends keyof SessionStorageData>(keys: K | K[]): Promise<void>
   abstract set(data: Partial<SessionStorageData>): Promise<void>
@@ -68,7 +68,7 @@ class SessionStorage implements TalismanSessionStorage {
 }
 
 let sessionStorage: TalismanSessionStorage
-if (chrome && chrome.storage.session) {
+if (chrome?.storage.session) {
   sessionStorage = new SessionStorage()
 } else {
   sessionStorage = new MemoryStorage()

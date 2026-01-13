@@ -1,19 +1,18 @@
-import { Connection, PublicKey, Transaction } from "@solana/web3.js"
+import { type Connection, PublicKey, Transaction } from "@solana/web3.js"
 import { BALANCE_MODULES } from "@talismn/balances"
-import { isTokenSol, Token } from "@talismn/chaindata-provider"
+import { isTokenSol, type Token } from "@talismn/chaindata-provider"
 import { serializeTransaction } from "@talismn/solana"
 import { useQuery } from "@tanstack/react-query"
-import { isAccountOwned } from "extension-core"
-import { useMemo, useState } from "react"
-
 import { useAccountByAddress, useBalance, useNetworkById, useToken } from "@ui/state"
 import {
   getFrontEndSolanaConnector,
   useSolanaConnection,
 } from "@ui/util/solana/useSolanaConnection"
+import { isAccountOwned } from "extension-core"
+import { useMemo, useState } from "react"
 
 import { useSolTransactionRiskAnalysis } from "../Sign/risk-analysis/solana/useSolTransactionRiskAnalysis"
-import { SendFundsTransactionProps } from "./types"
+import type { SendFundsTransactionProps } from "./types"
 
 export const useSendFundsTransactionSol = ({
   tokenId,
@@ -53,7 +52,7 @@ export const useSendFundsTransactionSol = ({
 
   const serializedTx = useMemo(
     () => (qPayload.data ? serializeTransaction(qPayload.data) : null),
-    [qPayload.data],
+    [qPayload.data]
   )
 
   // force a risk analysis scan if the account isnt owned

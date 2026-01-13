@@ -1,9 +1,9 @@
-import { SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
+import { type SubDTaoToken, subNativeTokenId } from "@talismn/chaindata-provider"
 import {
   newTokenRates,
-  TokenRateCurrency,
-  TokenRateData,
-  TokenRatesList,
+  type TokenRateCurrency,
+  type TokenRateData,
+  type TokenRatesList,
 } from "@talismn/token-rates"
 
 import log from "../../log"
@@ -22,7 +22,7 @@ const ONE_ALPHA = 10n ** TAO_DECIMALS
 export const getDTaoTokenRates = (
   token: SubDTaoToken,
   tokenRates: TokenRatesList,
-  scaledAlphaPrice: string | bigint,
+  scaledAlphaPrice: string | bigint
 ) => {
   try {
     const taoTokenId = subNativeTokenId(token.networkId)

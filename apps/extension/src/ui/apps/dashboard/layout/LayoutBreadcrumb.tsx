@@ -1,10 +1,9 @@
 import { ChevronRightIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, Fragment, ReactNode, useMemo } from "react"
+import type { MethodType } from "@ui/domains/Account/AccountAdd/context"
+import { type FC, Fragment, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { NavLink, To, useLocation } from "react-router-dom"
-
-import { MethodType } from "@ui/domains/Account/AccountAdd/context"
+import { NavLink, type To, useLocation } from "react-router-dom"
 
 const useBreadcrumbItems = (): Partial<Record<string, BreadcrumbItemProps[]>> => {
   const { t } = useTranslation()
@@ -170,12 +169,13 @@ export const LayoutBreadcrumb: FC<{
   return (
     <div
       className={classNames(
-        "text-body-inactive mb-6 flex max-w-full items-center gap-1 overflow-hidden text-xs",
-        className,
+        "mb-6 flex max-w-full items-center gap-1 overflow-hidden text-body-inactive text-xs",
+        className
       )}
     >
       {items.map(({ label, to }, index) => {
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <Fragment key={index}>
             <BreadcrumbItem label={label} to={to} selected={index === items.length - 1} />
             {index < items.length - 1 && <ChevronRightIcon />}
@@ -200,8 +200,8 @@ const BreadcrumbItem: FC<BreadcrumbItemProps & { selected: boolean }> = ({
     <NavLink
       to={to}
       className={classNames(
-        "hover:text-body-secondary flex items-center gap-4 truncate font-normal",
-        selected && "!text-body-secondary font-medium",
+        "flex items-center gap-4 truncate font-normal hover:text-body-secondary",
+        selected && "!text-body-secondary font-medium"
       )}
     >
       {label}

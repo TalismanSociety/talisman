@@ -1,4 +1,4 @@
-import { TokenRatesStorage } from "@talismn/token-rates"
+import type { TokenRatesStorage } from "@talismn/token-rates"
 
 export interface TokenRatesMessages {
   // tokenRates message signatures

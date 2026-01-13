@@ -1,13 +1,12 @@
 import { StarIcon } from "@talismn/icons"
 import { isNotNil } from "@talismn/util"
-import { NftCollection, NftData } from "extension-core"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useIntersection } from "react-use"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
 import { useIsFavoriteNft, useNetworksMapById, useNfts, useSetting } from "@ui/state"
+import type { NftCollection, NftData } from "extension-core"
+import { type FC, useCallback, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useIntersection } from "react-use"
 
 import { PortfolioNetworksLogoStack } from "../AssetsTable/PortfolioNetworksLogoStack"
 import { NftDialog } from "../NftDialog"
@@ -31,7 +30,7 @@ const NoNftFound = () => {
         : t("No NFTs found")
   }, [selectedAccount, selectedFolder, status, t])
 
-  return <div className="text-body-secondary bg-field rounded px-8 py-36 text-center">{msg}</div>
+  return <div className="rounded bg-field px-8 py-36 text-center text-body-secondary">{msg}</div>
 }
 
 export const DashboardNfts: FC<{ className?: string }> = () => {
@@ -63,7 +62,7 @@ const NftCollectionRowInner: FC<{
 
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   const imageUrl = useMemo(() => {
@@ -100,7 +99,7 @@ const NftCollectionRowInner: FC<{
     <button
       type="button"
       onClick={handleClick}
-      className="bg-grey-900 hover:bg-grey-800 grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm px-8 text-left"
+      className="grid h-32 w-full grid-cols-3 items-center gap-4 rounded-sm bg-grey-900 px-8 text-left hover:bg-grey-800"
     >
       <div className="flex items-center gap-6 overflow-hidden">
         <NftImage className="size-16" src={imageUrl} alt={collection.name ?? ""} />
@@ -126,17 +125,17 @@ const NftCollectionRowInner: FC<{
 }
 
 const NftCollectionRowSkeleton = () => (
-  <div className="bg-grey-900 grid h-32 grid-cols-3 items-center rounded-sm px-8">
+  <div className="grid h-32 grid-cols-3 items-center rounded-sm bg-grey-900 px-8">
     <div className="flex items-center gap-6">
-      <div className="bg-grey-800 animated-pulse size-16 rounded-sm"></div>
+      <div className="animated-pulse size-16 rounded-sm bg-grey-800"></div>
       <div className="flex grow flex-col gap-2 overflow-hidden">
         <div className="flex w-full gap-2 overflow-hidden text-base">
-          <span className="text-grey-800 bg-grey-800 animate-pulse truncate rounded-sm font-bold">
+          <span className="animate-pulse truncate rounded-sm bg-grey-800 font-bold text-grey-800">
             AAAAAAAAAAA AAAA
           </span>
         </div>
         <div className="flex w-full gap-2 overflow-hidden text-base">
-          <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm text-sm">
+          <span className="animate-pulse rounded-sm bg-grey-800 text-grey-800 text-sm">
             NNNNNNNNNNN
           </span>
         </div>
@@ -144,7 +143,7 @@ const NftCollectionRowSkeleton = () => (
     </div>
     <div></div>
     <div className="text-right">
-      <span className="text-grey-800 bg-grey-800 animate-pulse rounded-sm">1 NFT</span>
+      <span className="animate-pulse rounded-sm bg-grey-800 text-grey-800">1 NFT</span>
     </div>
   </div>
 )
@@ -175,7 +174,7 @@ const NftCollectionsRows: FC<{ data: NftData; onNftClick: (nftId: string) => voi
 
   return (
     <div>
-      <div className="text-body-disabled mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-sm">
+      <div className="mb-2 grid w-full grid-cols-3 items-center gap-4 px-8 text-left text-body-disabled text-sm">
         <div className="pl-[4.4rem]">{t("Collection")}</div>
         <div className="text-right">{t("Value")}</div>
         <div className="text-right">{t("Owned")}</div>
@@ -203,7 +202,7 @@ const NftCollectionTileInner: FC<{
 }> = ({ collection, data, onNftClick }) => {
   const nfts = useMemo(
     () => data.nfts.filter((nft) => nft.collectionId === collection.id),
-    [collection.id, data.nfts],
+    [collection.id, data.nfts]
   )
 
   // favorites are the first ones in the list, can check just the first one
@@ -253,7 +252,7 @@ const NftCollectionTile: FC<{
 
 const NftCollectionTileSkeleton = () => (
   <div className="w-[21.9rem]">
-    <div className="bg-grey-800 size-[21.9rem] animate-pulse rounded-sm"></div>
+    <div className="size-[21.9rem] animate-pulse rounded-sm bg-grey-800"></div>
   </div>
 )
 

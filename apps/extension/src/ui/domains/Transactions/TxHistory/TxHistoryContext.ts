@@ -1,12 +1,11 @@
-import { HexString } from "@polkadot/util/types"
-import { EthNetworkId, Network } from "@talismn/chaindata-provider"
+import type { HexString } from "@polkadot/util/types"
+import { provideContext } from "@talisman/util/provideContext"
+import type { EthNetworkId, Network } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { WalletTransaction } from "extension-core"
+import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
+import type { WalletTransaction } from "extension-core"
 import uniq from "lodash-es/uniq"
 import { useCallback, useMemo, useState } from "react"
-
-import { provideContext } from "@talisman/util/provideContext"
-import { useAccountByAddress, useAccounts, useNetworks, useTransactions } from "@ui/state"
 
 const useTxHistoryProvider = () => {
   const accounts = useAccounts("owned")
@@ -31,12 +30,12 @@ const useTxHistoryProvider = () => {
 
   const network = useMemo<Network | null>(
     () => networks.find((n) => n.id === networkId) ?? null,
-    [networkId, networks],
+    [networkId, networks]
   )
 
   const transactions = useMemo(
     () => getTransactions(encodedAddresses, networkId, allTransactions),
-    [encodedAddresses, allTransactions, networkId],
+    [encodedAddresses, allTransactions, networkId]
   )
 
   const setAddress = useCallback(
@@ -47,12 +46,12 @@ const useTxHistoryProvider = () => {
         return { addresses, networkId: txs.length ? state.networkId : null }
       })
     },
-    [allTransactions],
+    [allTransactions]
   )
 
   const setNetworkId = useCallback(
     (networkId: HexString | EthNetworkId | null) => setState((state) => ({ ...state, networkId })),
-    [],
+    []
   )
 
   // only for popup, where we can only select 1 account
@@ -75,14 +74,14 @@ export const [TxHistoryProvider, useTxHistory] = provideContext(useTxHistoryProv
 const getTransactions = (
   addresses: string[] | null,
   networkId: HexString | EthNetworkId | null,
-  allTransactions: WalletTransaction[] | undefined,
+  allTransactions: WalletTransaction[] | undefined
 ) => {
   const encodedAddresses = addresses?.map(normalizeAddress) ?? []
 
   return (
     allTransactions
       ?.filter(
-        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account)),
+        (tx) => !encodedAddresses.length || encodedAddresses.includes(normalizeAddress(tx.account))
       )
       .filter((tx) => !networkId || tx.networkId === networkId) ?? []
   )

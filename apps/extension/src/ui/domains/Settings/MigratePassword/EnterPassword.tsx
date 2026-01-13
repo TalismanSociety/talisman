@@ -1,12 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
+import { api } from "@ui/api"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText, ModalDialog } from "talisman-ui"
 import * as yup from "yup"
-
-import { CapsLockWarningIcon } from "@talisman/components/CapsLockWarningIcon"
-import { api } from "@ui/api"
 
 import { useMigratePassword } from "./context"
 
@@ -50,7 +49,7 @@ export const EnterPasswordForm = () => {
         })
       }
     },
-    [setPassword, setMnemonic, setError, t, mnemonicId],
+    [setPassword, setMnemonic, setError, t, mnemonicId]
   )
 
   useEffect(() => {
@@ -61,7 +60,7 @@ export const EnterPasswordForm = () => {
 
   return (
     <ModalDialog title="Security Upgrade">
-      <p className="text-body-secondary mb-10 text-sm">
+      <p className="mb-10 text-body-secondary text-sm">
         <Trans t={t}>
           We have upgraded our security measures, including an updated password policy and advanced
           password encryption.{" "}
@@ -86,7 +85,6 @@ export const EnterPasswordForm = () => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
-            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             after={<CapsLockWarningIcon />}
           />

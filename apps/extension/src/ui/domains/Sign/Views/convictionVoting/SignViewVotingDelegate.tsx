@@ -1,22 +1,22 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { CopyIcon, ExternalLinkIcon } from "@talismn/icons"
 import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { copyAddress } from "@ui/util/copyAddress"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address }: { address: string }) => {
   const isKnown = useIsKnownAddress(address)
 
   const label = useMemo(
+    // biome-ignore lint/complexity/useOptionalChain: legacy
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
-    [address, isKnown],
+    [address, isKnown]
   )
 
   return (
@@ -41,7 +41,7 @@ export const SignViewVotingDelegate: FC<{
   const { t } = useTranslation()
   const url = useMemo(
     () => (explorerUrl && representative ? `${explorerUrl}/address/${representative}` : undefined),
-    [representative, explorerUrl],
+    [representative, explorerUrl]
   )
 
   const handleClick = useCallback(() => {
@@ -53,11 +53,11 @@ export const SignViewVotingDelegate: FC<{
     <div className="flex w-full flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
         <div className="whitespace-nowrap">{t("Delegating to")}</div>
-        <div className="text-body flex grow justify-end gap-2 overflow-hidden text-base">
+        <div className="flex grow justify-end gap-2 overflow-hidden text-base text-body">
           <FormattedAddress address={representative} />
           <button
             type="button"
-            className="text-body-secondary hover:text-body shrink-0"
+            className="shrink-0 text-body-secondary hover:text-body"
             onClick={handleClick}
           >
             {url ? (

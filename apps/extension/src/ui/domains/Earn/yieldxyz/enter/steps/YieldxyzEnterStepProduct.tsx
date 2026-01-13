@@ -1,13 +1,12 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { CheckCircleIcon, LockIcon } from "@talismn/icons"
-import { cn } from "@talismn/util"
-import { YieldDto } from "extension-core"
-import { FC, PropsWithChildren, ReactNode, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
+import type { TokenId } from "@talismn/chaindata-provider"
+import { CheckCircleIcon, LockIcon } from "@talismn/icons"
+import { cn } from "@talismn/util"
+import type { YieldDto } from "extension-core"
+import { type FC, type PropsWithChildren, type ReactNode, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Tooltip, TooltipContent, TooltipTrigger, WizardModalDialog } from "talisman-ui"
 
 import { YieldxyzProductYieldDisplay } from "../../components/YieldxyzProductYieldDisplay"
 import { YieldxyzProviderLogo } from "../../components/YieldxyzProviderLogo"
@@ -65,7 +64,7 @@ const YieldxyzProductPicker: FC<{
       <div className="flex min-h-fit w-full flex-col items-center gap-2 px-12 pb-8">
         <SearchInput onChange={setSearch} placeholder={t("Search DeFi products")} />
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <ProductsList products={displayProducts} selected={productId ?? null} onSelect={onSelect} />
       </ScrollContainer>
     </div>
@@ -89,7 +88,7 @@ const ProductsList: FC<{
         />
       ))}
       {!products?.length && (
-        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+        <div className="flex h-[5.8rem] w-full items-center px-12 text-left text-body-secondary">
           {t("No product matches your search")}
         </div>
       )}
@@ -109,12 +108,12 @@ const ProductRow: FC<{
       onClick={onClick}
       tabIndex={0}
       className={cn(
-        "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-sm",
+        "flex h-[5.8rem] w-full items-center gap-4 px-12 text-left text-sm hover:bg-grey-750 focus:bg-grey-700",
         selected && "bg-grey-800 text-body-secondary",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
     >
-      <YieldxyzProviderLogo providerId={product.providerId} className="shrink-0 !text-xl" />
+      <YieldxyzProviderLogo providerId={product.providerId} className="!text-xl shrink-0" />
       <div className="flex grow items-center overflow-hidden">
         <div className="flex w-full flex-col gap-2 overflow-hidden">
           <div className="line-clamp-2">{product.metadata.name}</div>

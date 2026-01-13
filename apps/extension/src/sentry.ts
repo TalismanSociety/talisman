@@ -40,7 +40,7 @@ export const initSentryFrontend = () => {
 
       // Print to console instead of Sentry in DEBUG/development builds
       if (DEBUG) {
-        log.error("[DEBUG - UI] Sentry event occurred", event) // eslint-disable-line no-console
+        log.error("[DEBUG - UI] Sentry event occurred", event)
         return null
       }
 

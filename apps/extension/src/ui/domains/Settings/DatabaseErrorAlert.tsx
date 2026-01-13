@@ -1,14 +1,13 @@
+import { Card } from "@talisman/components/Card"
 import { AlertCircleIcon, DatabaseIcon } from "@talismn/icons"
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
+import { useErrorsStoreValue } from "@ui/state"
 import { errorsStore } from "extension-core"
 import { DISCORD_TALISMAN_URL } from "extension-shared"
 import { useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { Card } from "@talisman/components/Card"
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useRuntimeReload } from "@ui/hooks/useRuntimeReload"
-import { useErrorsStoreValue } from "@ui/state"
 
 const ANALYTICS_PAGES: Record<"popup" | "fullscreen", AnalyticsPage> = {
   popup: {
@@ -37,25 +36,25 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
   const isOpen = databaseUnavailable || databaseQuotaExceeded
 
   const [hasRuntimeReloadFn, runtimeReload] = useRuntimeReload(
-    useMemo(() => ANALYTICS_PAGES[container], [container]),
+    useMemo(() => ANALYTICS_PAGES[container], [container])
   )
   const dismiss = useCallback(
     () => errorsStore.set({ databaseUnavailable: false, databaseQuotaExceeded: false }),
-    [],
+    []
   )
 
   if (!isOpen) return null
   return (
-    <div className="absolute bottom-0 right-0 m-8 max-w-full">
+    <div className="absolute right-0 bottom-0 m-8 max-w-full">
       <Card
-        className="text-body-secondary text-center"
+        className="text-center text-body-secondary"
         title={
           <div className="flex flex-col items-center">
             <div className="relative">
               <DatabaseIcon className="icon text-3xl text-white" />
-              <AlertCircleIcon className="icon bg-alert-error text-md absolute right-0 top-0 rounded text-white" />
+              <AlertCircleIcon className="icon absolute top-0 right-0 rounded bg-alert-error text-md text-white" />
             </div>
-            <div className="text-body mt-4">{t("Database Unavailable")}</div>
+            <div className="mt-4 text-body">{t("Database Unavailable")}</div>
           </div>
         }
         description={
@@ -63,10 +62,10 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
             <div className="mb-4 text-sm">
               {hasRuntimeReloadFn
                 ? t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman.",
+                    "Please make sure there is free space on your disk (at least 1GB) and then reload Talisman."
                   )
                 : t(
-                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser.",
+                    "Please make sure there is free space on your disk (at least 1GB) and then restart your browser."
                   )}
             </div>
             <div className="text-sm">
@@ -93,7 +92,8 @@ export const DatabaseErrorAlert = ({ container }: Props) => {
               </Button>
             ) : null}
             <button
-              className="hover:text-body focus:text-body self-center p-4 text-xs"
+              type="button"
+              className="self-center p-4 text-xs hover:text-body focus:text-body"
               onClick={dismiss}
             >
               Dismiss

@@ -1,20 +1,20 @@
 import z from "zod/v4"
 
-import { EvmErc20TokenIdSpecs, EvmErc20TokenSchema } from "./EvmErc20Token"
-import { EvmNativeTokenIdSpecs, EvmNativeTokenSchema } from "./EvmNativeToken"
-import { EvmUniswapV2TokenIdSpecs, EvmUniswapV2TokenSchema } from "./EvmUniswapV2Token"
-import { SolNativeToken, SolNativeTokenSchema } from "./SolNativeToken"
-import { SolSplToken, SolSplTokenSchema } from "./SolSplToken"
-import { SubAssetsTokenSchema, SubAssetTokenIdSpecs } from "./SubstrateAssetsToken"
-import { SubDTaoTokenIdSpecs, SubDTaoTokenSchema } from "./SubstrateDTaoToken"
+import { type EvmErc20TokenIdSpecs, EvmErc20TokenSchema } from "./EvmErc20Token"
+import { type EvmNativeTokenIdSpecs, EvmNativeTokenSchema } from "./EvmNativeToken"
+import { type EvmUniswapV2TokenIdSpecs, EvmUniswapV2TokenSchema } from "./EvmUniswapV2Token"
+import { type SolNativeToken, SolNativeTokenSchema } from "./SolNativeToken"
+import { type SolSplToken, SolSplTokenSchema } from "./SolSplToken"
+import { SubAssetsTokenSchema, type SubAssetTokenIdSpecs } from "./SubstrateAssetsToken"
+import { type SubDTaoTokenIdSpecs, SubDTaoTokenSchema } from "./SubstrateDTaoToken"
 import {
-  ForeignAssetsTokenIdSpecs,
+  type ForeignAssetsTokenIdSpecs,
   SubForeignAssetsTokenSchema,
 } from "./SubstrateForeignAssetsToken"
-import { SubHydrationToken, SubHydrationTokenSchema } from "./SubstrateHydrationToken"
-import { SubNativeTokenIdSpecs, SubNativeTokenSchema } from "./SubstrateNativeToken"
-import { SubPsp22TokenIdSpecs, SubPsp22TokenSchema } from "./SubstratePsp22Token"
-import { SubTokensTokenIdSpecs, SubTokensTokenSchema } from "./SubstrateTokensToken"
+import { type SubHydrationToken, SubHydrationTokenSchema } from "./SubstrateHydrationToken"
+import { type SubNativeTokenIdSpecs, SubNativeTokenSchema } from "./SubstrateNativeToken"
+import { type SubPsp22TokenIdSpecs, SubPsp22TokenSchema } from "./SubstratePsp22Token"
+import { type SubTokensTokenIdSpecs, SubTokensTokenSchema } from "./SubstrateTokensToken"
 
 /**
  * The `Token` sum type, which is a union of all of the possible `TokenTypes`.
@@ -105,6 +105,6 @@ export const TokenSchema = TokenSchemaBase.transform((token: Token): Token => {
       noDiscovery,
     },
     // token type specifics go after
-    token,
+    token
   )
 })

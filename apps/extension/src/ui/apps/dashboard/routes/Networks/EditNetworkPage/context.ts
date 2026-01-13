@@ -1,21 +1,20 @@
+import { notify } from "@talisman/components/Notifications"
+import { provideContext } from "@talisman/util/provideContext"
 import {
   isNativeToken,
   isNetworkDot,
   isNetworkEth,
-  Network,
-  NetworkPlatform,
+  type Network,
+  type NetworkPlatform,
 } from "@talismn/chaindata-provider"
 import { useForm } from "@tanstack/react-form"
+import { api } from "@ui/api"
+import { getToken$ } from "@ui/state"
 import { log } from "extension-shared"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { firstValueFrom } from "rxjs"
-
-import { notify } from "@talisman/components/Notifications"
-import { provideContext } from "@talisman/util/provideContext"
-import { api } from "@ui/api"
-import { getToken$ } from "@ui/state"
 
 // replace rpcs field with this type so each rpc can have an id, required for drag n drop, and associate a chainId
 export type RpcFormData = {

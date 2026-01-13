@@ -1,9 +1,13 @@
-import { SolNativeToken, solNativeTokenId, SolNativeTokenSchema } from "@talismn/chaindata-provider"
+import {
+  type SolNativeToken,
+  SolNativeTokenSchema,
+  solNativeTokenId,
+} from "@talismn/chaindata-provider"
 import { assign } from "lodash-es"
 
 import log from "../../log"
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 
 export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetchTokens"] = async ({
   networkId,
@@ -12,7 +16,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
   // assume there is one and only one token in the array
   if (tokens.length !== 1)
     throw new Error(
-      "EVM Native module expects the nativeCurrency to be passed as a single token in the array",
+      "EVM Native module expects the nativeCurrency to be passed as a single token in the array"
     )
 
   const token = assign(
@@ -23,7 +27,7 @@ export const fetchTokens: IBalanceModule<typeof MODULE_TYPE, TokenConfig>["fetch
       networkId,
       isDefault: true,
     },
-    tokens[0] as TokenConfig,
+    tokens[0] as TokenConfig
   ) as SolNativeToken
 
   const parsed = SolNativeTokenSchema.safeParse(token)

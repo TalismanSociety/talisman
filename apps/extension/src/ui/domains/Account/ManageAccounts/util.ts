@@ -1,4 +1,4 @@
-import { Tree, TreeAccount, TreeFolder } from "extension-core"
+import type { Tree, TreeAccount, TreeFolder } from "extension-core"
 import { log } from "extension-shared"
 
 import type { UiTree, UiTreeAccount, UiTreeFolder, UiTreeItem, UiTreePosition } from "./types"
@@ -28,7 +28,7 @@ export const getTreeItemsMap = (items: UiTreeItem[]) => {
       if (item.type === "folder") for (const child of item.tree) acc[child.id] = child
       return acc
     },
-    {} as Record<string, UiTreeItem>,
+    {} as Record<string, UiTreeItem>
   )
 }
 
@@ -78,6 +78,7 @@ export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTree
 }
 
 export const uiTreeToDataTree = (items: UiTree): Tree => {
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   return items.map((item) => {
     switch (item.type) {
       case "account": {

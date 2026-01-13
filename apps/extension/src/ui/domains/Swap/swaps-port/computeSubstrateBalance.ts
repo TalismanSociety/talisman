@@ -1,5 +1,5 @@
-import { ApiPromise } from "@polkadot/api"
-import { FrameSystemAccountInfo } from "@polkadot/types/lookup"
+import type { ApiPromise } from "@polkadot/api"
+import type { FrameSystemAccountInfo } from "@polkadot/types/lookup"
 import { BigMath } from "@talismn/util"
 
 import { Decimal } from "./Decimal"

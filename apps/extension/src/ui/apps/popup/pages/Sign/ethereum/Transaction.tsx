@@ -1,13 +1,8 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
-import { InfoIcon } from "@talismn/icons"
-import { classNames } from "@talismn/util"
-import { EthPriorityOptionName, EvmAddress } from "extension-core"
-import { useCallback, useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
+import { InfoIcon } from "@talismn/icons"
+import { classNames } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -26,6 +21,10 @@ import { SignApproveButton } from "@ui/domains/Sign/SignApproveButton"
 import { SignHardwareEthereum } from "@ui/domains/Sign/SignHardwareEthereum"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
+import type { EthPriorityOptionName, EvmAddress } from "extension-core"
+import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 
@@ -82,7 +81,7 @@ export const EthSignTransactionRequest = () => {
       setPriority(priority)
       setReady() // clear error from previous submit attempt
     },
-    [setPriority, setReady],
+    [setPriority, setReady]
   )
 
   return (
@@ -98,7 +97,7 @@ export const EthSignTransactionRequest = () => {
       ) : (
         <RiskAnalysisProvider riskAnalysis={riskAnalysis} onReject={reject}>
           <PopupContent>
-            <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
+            <div className="scrollable scrollable-800 h-full overflow-y-auto text-center text-body-secondary">
               <EthSignBody decodedTx={decodedTx} isReady={!isLoading} />
             </div>
           </PopupContent>
@@ -111,7 +110,7 @@ export const EthSignTransactionRequest = () => {
               )}
             </div>
 
-            <div className="text-body-secondary flex min-h-[4.48rem] flex-col gap-2 text-sm">
+            <div className="flex min-h-[4.48rem] flex-col gap-2 text-body-secondary text-sm">
               {transaction && txDetails && !!network && (
                 <>
                   <div className="flex items-center justify-between">

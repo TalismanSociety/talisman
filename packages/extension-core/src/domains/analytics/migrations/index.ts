@@ -1,5 +1,5 @@
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
-import { StorageProvider } from "../../../libs/Store"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
+import type { StorageProvider } from "../../../libs/Store"
 import { appStore } from "../../app/store.app"
 import { analyticsStore } from "../store"
 

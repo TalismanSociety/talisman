@@ -1,10 +1,9 @@
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
-import { FC, Suspense, useId } from "react"
-
 import { useGithubImageUrl } from "@ui/hooks/useGithubImageUrl"
 import { useNetworkById } from "@ui/state"
+import { IS_FIREFOX, UNKNOWN_NETWORK_URL } from "extension-shared"
+import { type FC, Suspense, useId } from "react"
 
 type NetworkLogoBaseProps = {
   network?: Network | null
@@ -45,7 +44,7 @@ const NetworkLogoFallback: FC<{ className?: string }> = ({ className }) => (
   <div
     className={classNames(
       "!bg-body-disabled !block h-[1em] w-[1em] shrink-0 overflow-hidden rounded-full",
-      className,
+      className
     )}
   ></div>
 )

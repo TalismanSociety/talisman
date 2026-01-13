@@ -1,13 +1,12 @@
-import { Balances } from "@talismn/balances"
-import { parseTokenId, TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import { parseTokenId, type TokenId } from "@talismn/chaindata-provider"
 import { normalizeAddress } from "@talismn/crypto"
-import { isNotNil, Loadable } from "@talismn/util"
-import { YieldDto } from "extension-core"
-import { uniq } from "lodash-es"
-import { useMemo } from "react"
-
+import { isNotNil, type Loadable } from "@talismn/util"
 import { usePortfolioNavigation } from "@ui/domains/Portfolio/usePortfolioNavigation"
 import { useBalances, useSelectedCurrency, useYieldxyzProducts } from "@ui/state"
+import type { YieldDto } from "extension-core"
+import { uniq } from "lodash-es"
+import { useMemo } from "react"
 
 import { useGetYieldxyzToken } from "./useGetYieldxyzToken"
 
@@ -50,7 +49,7 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
             p.rewardRate.total >= MIN_REWARD_RATE &&
             (ALLOW_NO_STATISTICS || p.statistics?.tvl) &&
             // exclude products that require a field other than the amount
-            !p.mechanics.arguments?.enter?.fields?.some((f) => f.required && f.name !== "amount"),
+            !p.mechanics.arguments?.enter?.fields?.some((f) => f.required && f.name !== "amount")
         )
         .reduce<Record<TokenId, YieldDto[]>>((acc, product) => {
           // here we consider a product can only have one input token id.
@@ -64,8 +63,8 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
               ? inputTokenIds[0]
               : inputTokenIds.find((tokenId) =>
                   ["evm-native", "substrate-native", "sol-native"].includes(
-                    parseTokenId(tokenId).type,
-                  ),
+                    parseTokenId(tokenId).type
+                  )
                 )
 
           // ensure we have balance for it
@@ -81,11 +80,11 @@ export const useYieldxyzOpportunitiesByTokenId = (): Loadable<
     return Object.entries(oppsByTokenId).reduce(
       (acc, [tokenId, opps]) => {
         acc[tokenId as TokenId] = opps.sort(
-          (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0),
+          (a, b) => (b.rewardRate?.total || 0) - (a.rewardRate?.total || 0)
         )
         return acc
       },
-      {} as Record<TokenId, YieldDto[]>,
+      {} as Record<TokenId, YieldDto[]>
     )
   }, [products.data, getYieldxyzTokenId, availableTokenIds])
 

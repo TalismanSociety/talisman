@@ -1,6 +1,6 @@
 import {
-  Abi,
-  Client,
+  type Abi,
+  type Client,
   ContractFunctionExecutionError,
   getContract,
   hexToString,
@@ -42,14 +42,15 @@ const getErc20Contract =
 
 export const getErc20ContractData = async (
   client: Client,
-  contractAddress: `0x${string}`,
+  contractAddress: `0x${string}`
 ): Promise<Erc20ContractData> => {
   const getEr20ContractFn = getErc20Contract(client, contractAddress)
 
   try {
     const contract = getEr20ContractFn(PARSED_ABI_ERC20)
 
-    // eslint-disable-next-line no-var
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
+    // biome-ignore lint/correctness/noUnusedVariables: legacy
     var [symbol, decimals, name] = await Promise.all([
       contract.read.symbol(),
       contract.read.decimals(),
@@ -60,7 +61,8 @@ export const getErc20ContractData = async (
       // try to perform the contract read with bytes32 symbol
       const contract = getEr20ContractFn(PARSED_ABI_ERC20_BYTES_SYMBOL)
 
-      // eslint-disable-next-line no-var
+      // biome-ignore lint/correctness/noInnerDeclarations: legacy
+      // biome-ignore lint/suspicious/noRedeclare: legacy
       var [bytesSymbol, decimals, nameSymbol] = await Promise.all([
         contract.read.symbol(),
         contract.read.decimals(),

@@ -1,7 +1,7 @@
 import { subDTaoTokenId } from "@talismn/chaindata-provider"
 
 import { getScaledAlphaPrice } from "./alphaPrice"
-import { GetDynamicInfosResult, SubDTaoBalance } from "./types"
+import type { GetDynamicInfosResult, SubDTaoBalance } from "./types"
 
 type DynamicInfo = NonNullable<GetDynamicInfosResult[number]>
 

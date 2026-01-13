@@ -1,6 +1,6 @@
-import { Observable } from "rxjs"
+import type { Observable } from "rxjs"
 
-import {
+import type {
   DotNetwork,
   Network,
   NetworkId,
@@ -18,15 +18,11 @@ export interface IChaindataNetworkProvider {
   getNetworks$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    platform?: P,
-  ): Observable<R[]>
+  >(platform?: P): Observable<R[]>
   getNetworks<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    platform?: P,
-  ): Promise<R[]>
+  >(platform?: P): Promise<R[]>
 
   getNetworkIds$(platform?: NetworkPlatform): Observable<NetworkId[]>
   getNetworkIds(platform?: NetworkPlatform): Promise<NetworkId[]>
@@ -34,15 +30,11 @@ export interface IChaindataNetworkProvider {
   getNetworksMapById$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    platform?: P,
-  ): Observable<Record<NetworkId, R>>
+  >(platform?: P): Observable<Record<NetworkId, R>>
   getNetworksMapById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    platform?: P,
-  ): Promise<Record<NetworkId, R>>
+  >(platform?: P): Promise<Record<NetworkId, R>>
 
   getNetworksMapByGenesisHash$(): Observable<Record<`0x${string}`, DotNetwork>>
   getNetworksMapByGenesisHash(): Promise<Record<`0x${string}`, DotNetwork>>
@@ -50,17 +42,11 @@ export interface IChaindataNetworkProvider {
   getNetworkById$<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    networkId: NetworkId,
-    platform?: P,
-  ): Observable<R | null>
+  >(networkId: NetworkId, platform?: P): Observable<R | null>
   getNetworkById<
     P extends NetworkPlatform | undefined,
     R = P extends NetworkPlatform ? NetworkOfPlatform<P> : Network,
-  >(
-    networkId: NetworkId,
-    platform?: P,
-  ): Promise<R | null>
+  >(networkId: NetworkId, platform?: P): Promise<R | null>
 
   getNetworkByGenesisHash$(genesisHash: `0x${string}`): Observable<DotNetwork | null>
   getNetworkByGenesisHash(genesisHash: `0x${string}`): Promise<DotNetwork | null>
@@ -72,15 +58,11 @@ export interface IChaindataTokenProvider {
   getTokens$<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    type?: T,
-  ): Observable<R[]>
+  >(type?: T): Observable<R[]>
   getTokens<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    type?: T,
-  ): Promise<R[]>
+  >(type?: T): Promise<R[]>
 
   getTokenIds$(type?: TokenType): Observable<TokenId[]>
   getTokenIds(type?: TokenType): Promise<TokenId[]>
@@ -88,30 +70,20 @@ export interface IChaindataTokenProvider {
   getTokensMapById$<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    type?: T,
-  ): Observable<Record<TokenId, R>>
+  >(type?: T): Observable<Record<TokenId, R>>
   getTokensMapById<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    type?: T,
-  ): Promise<Record<TokenId, R>>
+  >(type?: T): Promise<Record<TokenId, R>>
 
   getTokenById$<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    tokenId: TokenId,
-    type?: T,
-  ): Observable<R | null>
+  >(tokenId: TokenId, type?: T): Observable<R | null>
   getTokenById<
     T extends TokenType | undefined,
     R extends T extends TokenType ? TokenOfType<T> : Token,
-  >(
-    tokenId: TokenId,
-    type?: T,
-  ): Promise<R | null>
+  >(tokenId: TokenId, type?: T): Promise<R | null>
 }
 
 export interface IChaindataProvider extends IChaindataNetworkProvider, IChaindataTokenProvider {}

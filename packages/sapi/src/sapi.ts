@@ -1,5 +1,5 @@
-import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { SignerPayloadJSON } from "@polkadot/types/types"
+import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
+import type { SignerPayloadJSON } from "@polkadot/types/types"
 import { parseMetadataRpc } from "@talismn/scale"
 
 import { getCallDocs } from "./helpers/getCallDocs"
@@ -14,9 +14,9 @@ import { getSignerPayloadJSON } from "./helpers/getSignerPayloadJSON"
 import { getStorageValue } from "./helpers/getStorageValue"
 import { getTypeRegistry } from "./helpers/getTypeRegistry"
 import { isApiAvailable } from "./helpers/isApiAvailable"
-import { ScaleApiSubmitMode, submit } from "./helpers/submit"
-import { Chain } from "./helpers/types"
-import { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
+import { type ScaleApiSubmitMode, submit } from "./helpers/submit"
+import type { Chain } from "./helpers/types"
+import type { DecodedCall, PayloadSignerConfig, SapiConnectorProps } from "./types"
 
 export type ScaleApi = NonNullable<ReturnType<typeof getScaleApi>>
 
@@ -26,7 +26,7 @@ export const getScaleApi = (
   token: { symbol: string; decimals: number },
   hasCheckMetadataHash?: boolean,
   signedExtensions?: ExtDef,
-  registryTypes?: unknown,
+  registryTypes?: unknown
 ) => {
   const { unifiedMetadata: metadata, lookupFn: lookup, builder } = parseMetadataRpc(hexMetadata)
 
@@ -76,7 +76,7 @@ export const getScaleApi = (
       pallet: string,
       method: string,
       args: unknown,
-      config: PayloadSignerConfig,
+      config: PayloadSignerConfig
     ) => getSignerPayloadJSON(chain, pallet, method, args, config, chainInfo),
 
     getFeeEstimate: (payload: SignerPayloadJSON) => getFeeEstimate(chain, payload, chainInfo),
@@ -90,7 +90,7 @@ export const getScaleApi = (
       payload: SignerPayloadJSON,
       signature?: `0x${string}`,
       txInfo?: unknown,
-      mode?: ScaleApiSubmitMode,
+      mode?: ScaleApiSubmitMode
     ) => submit(chain, payload, signature, txInfo, mode),
 
     getCallDocs: (pallet: string, method: string) => getCallDocs(chain, pallet, method),

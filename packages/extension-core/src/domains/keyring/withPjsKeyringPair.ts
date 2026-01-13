@@ -1,16 +1,16 @@
 import Keyring from "@polkadot/keyring"
-import { KeyringPair } from "@polkadot/keyring/types"
+import type { KeyringPair } from "@polkadot/keyring/types"
 import { getPublicKeyFromSecret } from "@talismn/crypto"
-import { Err, Ok, Result } from "ts-results"
+import { Err, Ok, type Result } from "ts-results"
 
-import { Address } from "../../types/base"
+import type { Address } from "../../types/base"
 import { passwordStore } from "../app/store.password"
 import { curveToPjsKeypairType } from "./migration-utils"
 import { keyringStore } from "./store"
 
 export const withPjsKeyringPair = async <T>(
   address: Address,
-  cb: (pair: KeyringPair) => T | Promise<T>,
+  cb: (pair: KeyringPair) => T | Promise<T>
 ): Promise<Result<T, "Unauthorised" | "Account not found" | "Private key unavailable" | Error>> => {
   // use a PJS in-memory keyring to create the pair
   const keyring = new Keyring({ type: "sr25519" })

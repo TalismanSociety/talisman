@@ -1,10 +1,9 @@
 import { InfoIcon } from "@talismn/icons"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Drawer } from "talisman-ui"
-
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useNetworkByGenesisHash } from "@ui/state"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Drawer } from "talisman-ui"
 
 import { useGenesisHashFromTokenId } from "../useGenesisHashFromTokenId"
 import { useSendFunds } from "../useSendFunds"
@@ -26,18 +25,18 @@ export const RecipientWarningDrawer = ({
 
   return (
     <Drawer anchor="bottom" isOpen={isOpen} onDismiss={close} containerId="main">
-      <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
+      <div className="rounded-t-xl bg-black-tertiary p-12 text-center">
         <div>
-          <InfoIcon className="text-primary-500 inline-block text-3xl" />
+          <InfoIcon className="inline-block text-3xl text-primary-500" />
         </div>
         <div className="mt-10 font-bold">{t("Recipient Address Converted")}</div>
-        <div className="text-body-secondary mt-5 text-sm">
+        <div className="mt-5 text-body-secondary text-sm">
           {recipientWarning === "AZERO_ID" && (
             <Trans
               t={t}
               defaults="The Azero ID which you entered has been converted to a <Chain><ChainLogo />{{chainName}}</Chain> address. Make sure this is the chain you intend to transfer on."
               components={{
-                Chain: <div className="text-body inline-flex items-baseline gap-1" />,
+                Chain: <div className="inline-flex items-baseline gap-1 text-body" />,
                 ChainLogo: <NetworkLogo className="self-center" networkId={chain?.id} />,
               }}
               values={{ chainName: chain?.name ?? t("Unknown") }}

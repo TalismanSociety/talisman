@@ -1,5 +1,7 @@
 import { isAddressEqual } from "@talismn/crypto"
-import {
+import { api } from "@ui/api"
+import { useAuthorisedSites } from "@ui/state"
+import type {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   AuthorizedSiteId,
@@ -7,9 +9,6 @@ import {
 } from "extension-core"
 import { DEFAULT_ETH_CHAIN_ID } from "extension-shared"
 import { useCallback, useEffect, useMemo, useState } from "react"
-
-import { api } from "@ui/api"
-import { useAuthorisedSites } from "@ui/state"
 
 import { useInjectableAccounts } from "./useInjectableAccounts"
 
@@ -22,7 +21,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const injectableAccounts = useInjectableAccounts(sites[id]?.url ?? "", type)
   const availableAddresses = useMemo(
     () => injectableAccounts.map((account) => account.address),
-    [injectableAccounts],
+    [injectableAccounts]
   )
 
   const connected = useMemo(() => {
@@ -60,7 +59,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       }
       api.authorizedSiteUpdate(id, update)
     },
-    [id, type],
+    [id, type]
   )
 
   const toggleOne = useCallback(
@@ -84,12 +83,12 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       }
       return handleUpdate(newAddresses)
     },
-    [connected, handleUpdate, type],
+    [connected, handleUpdate, type]
   )
 
   const toggleAll = useCallback(
     (on: boolean) => handleUpdate(on ? availableAddresses : []),
-    [availableAddresses, handleUpdate],
+    [availableAddresses, handleUpdate]
   )
 
   const forget = useCallback(() => {
@@ -108,7 +107,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
       setEthChainId(chainId)
       api.authorizedSiteUpdate(id, { ethChainId: chainId })
     },
-    [id],
+    [id]
   )
 
   return {

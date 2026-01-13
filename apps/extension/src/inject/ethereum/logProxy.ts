@@ -1,8 +1,8 @@
 // get a hold of debug method in case dapp replaces it on load
-// eslint-disable-next-line no-console
+// biome-ignore lint/suspicious/noConsole: intentional debug logging
 const safeConsoleDebug = console.debug
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 const copyObject = (target: any) => {
   const keys = Object.keys(target)
   const obj: Record<string, unknown> = {}
@@ -12,7 +12,7 @@ const copyObject = (target: any) => {
   return obj
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 const handler: ProxyHandler<any> = {
   get: (target, name, receiver) => {
     const obj = copyObject(target)
@@ -41,12 +41,12 @@ const handler: ProxyHandler<any> = {
     } else if (typeof target[name] === "object") {
       safeConsoleDebug(
         `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => `,
-        { result: obj[String(name)] },
+        { result: obj[String(name)] }
       )
     } else
       safeConsoleDebug(
         `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => %s`,
-        String(name) in obj ? String(obj[String(name)]) : "MISSING PROPERTY",
+        String(name) in obj ? String(obj[String(name)]) : "MISSING PROPERTY"
       )
 
     return Reflect.get(target, name, receiver)
@@ -67,7 +67,7 @@ const handler: ProxyHandler<any> = {
   Developer utility that traces all properties and method calls on the object.
   Significant performance hit, do not use in production.
 */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: legacy
 export const logProxy = (sourceObj: any) => {
   const eventNames = ["connect", "disconnect", "chainChanged", "accountsChanged"]
   eventNames.forEach((eventName) => {

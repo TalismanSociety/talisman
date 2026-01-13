@@ -11,9 +11,9 @@ import {
   decodeFunctionData,
   getAbiItem,
   getContract,
+  type PublicClient,
   parseAbi,
-  PublicClient,
-  TransactionRequestBase,
+  type TransactionRequestBase,
 } from "viem"
 
 const MOON_CHAIN_PRECOMPILES = [
@@ -51,7 +51,7 @@ const STANDARD_CONTRACTS = [
 
 export const decodeEvmTransaction = async (
   publicClient: PublicClient,
-  tx: TransactionRequestBase,
+  tx: TransactionRequestBase
 ) => {
   // transactions that provision a contract have an empty 'to' field
   const { to: targetAddress, value, data } = tx
@@ -114,7 +114,7 @@ export const decodeEvmTransaction = async (
             args: contractCall.args,
             name: contractCall.functionName,
           })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // biome-ignore lint/suspicious/noExplicitAny: legacy
           const tokenIdIndex = abiItem.inputs.findIndex((input: any) => input.name === "tokenId")
           const tokenId =
             tokenIdIndex > -1 ? (contractCall.args?.[tokenIdIndex] as bigint) : undefined

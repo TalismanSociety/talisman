@@ -1,4 +1,7 @@
 import { isValidAddress } from "@ethereumjs/util"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import {
   detectAddressEncoding,
   encodeAnyAddress,
@@ -7,8 +10,11 @@ import {
   normalizeAddress,
 } from "@talismn/crypto"
 import { ChevronLeftIcon } from "@talismn/icons"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
+import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
+import { useAccounts, useNetworkById, useToken } from "@ui/state"
 import {
-  Account,
+  type Account,
   isAccountAddressEthereum,
   isAccountAddressSs58,
   isAccountBitcoin,
@@ -19,16 +25,9 @@ import { useAtomValue } from "jotai"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { SearchInput } from "@talisman/components/SearchInput"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { AccountIcon } from "@ui/domains/Account/AccountIcon"
-import { SendFundsAccountsList } from "@ui/domains/SendFunds/SendFundsAccountsList"
-import { useAccounts, useNetworkById, useToken } from "@ui/state"
-
 import {
   fromAssetAtom,
-  SwappableAssetWithDecimals,
+  type SwappableAssetWithDecimals,
   toAssetAtom,
 } from "../swap-modules/common.swap-module"
 import { SwapTokensFullscreenPortal } from "./SwapTokensFullscreenPortal"
@@ -70,7 +69,7 @@ export const SeparatedAccountSelector = ({
   const chain = useNetworkById(String(asset?.chainId), "polkadot")
 
   const defaultSubstrateAccounts = allAccounts.filter(
-    (a) => chain && isAccountCompatibleWithNetwork(chain, a),
+    (a) => chain && isAccountCompatibleWithNetwork(chain, a)
   )
   const defaultEvmAccounts = allAccounts.filter((a) => isAccountPlatformEthereum(a))
 
@@ -131,7 +130,7 @@ export const SeparatedAccountSelector = ({
     return evmAccounts.filter(
       (account) =>
         account.address?.toLowerCase().includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase()),
+        account.name?.toLowerCase().includes(query.toLowerCase())
     )
   }, [query, evmAccounts])
 
@@ -143,7 +142,7 @@ export const SeparatedAccountSelector = ({
         encodeAnyAddress(account.address, { ss58Format: substrateAccountPrefix })
           .toLowerCase()
           .includes(query.toLowerCase()) ||
-        account.name?.toLowerCase().includes(query.toLowerCase()),
+        account.name?.toLowerCase().includes(query.toLowerCase())
     )
   }, [query, substrateAccountPrefix, substrateAccounts])
 
@@ -178,7 +177,7 @@ export const SeparatedAccountSelector = ({
       setOpen(false)
       onAccountChange?.(address)
     },
-    [onAccountChange],
+    [onAccountChange]
   )
 
   // selected account is invalid, clear it
@@ -209,7 +208,8 @@ export const SeparatedAccountSelector = ({
   return (
     <>
       <button
-        className="allow-focus bg-black-tertiary hover:bg-grey-700 disabled:bg-black-tertiary overflow-x-hidden rounded px-4 py-2 text-white outline-offset-0 focus-visible:outline-current disabled:opacity-50"
+        type="button"
+        className="allow-focus overflow-x-hidden rounded bg-black-tertiary px-4 py-2 text-white outline-offset-0 hover:bg-grey-700 focus-visible:outline-current disabled:bg-black-tertiary disabled:opacity-50"
         onClick={() => setOpen(true)}
       >
         {selectedAccount && (
@@ -224,7 +224,7 @@ export const SeparatedAccountSelector = ({
         )}
         {!selectedAccount && (
           <div className="flex shrink-0 items-center gap-4">
-            <div className="bg-body-inactive h-12 w-12 rounded-full"></div>
+            <div className="h-12 w-12 rounded-full bg-body-inactive"></div>
             <div>{t("Select account")}</div>
           </div>
         )}
@@ -232,7 +232,7 @@ export const SeparatedAccountSelector = ({
 
       {open && (
         <SwapTokensFullscreenPortal>
-          <div className="absolute left-0 top-0 h-full w-full bg-black">
+          <div className="absolute top-0 left-0 h-full w-full bg-black">
             <AccountPicker
               title={title}
               subtitle={subtitle}
@@ -290,12 +290,12 @@ const AccountPicker = ({
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <button className="px-12 py-10" onClick={onClose}>
-            <ChevronLeftIcon className="text-body-secondary shrink-0 text-lg hover:text-white" />
+          <button type="button" className="px-12 py-10" onClick={onClose}>
+            <ChevronLeftIcon className="shrink-0 text-body-secondary text-lg hover:text-white" />
           </button>
         </div>
 
-        <h3 className="text-body-secondary text-base">{title}</h3>
+        <h3 className="text-base text-body-secondary">{title}</h3>
 
         <div className="flex-1" />
       </div>
@@ -306,11 +306,11 @@ const AccountPicker = ({
             initialValue={query}
             onChange={setQuery}
             placeholder={allowInput ? t("Enter address") : t("Search by account name")}
-            autoFocus // eslint-disable-line jsx-a11y/no-autofocus
+            autoFocus
           />
         </div>
       </div>
-      <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
+      <ScrollContainer className="scrollable h-full w-full grow overflow-x-hidden border-grey-700 border-t bg-black-secondary">
         <SendFundsAccountsList
           accounts={accounts}
           genesisHash={!allowInput ? fromChain?.genesisHash : toChain?.genesisHash}

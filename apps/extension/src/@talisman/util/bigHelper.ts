@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js"
+import type BigNumber from "bignumber.js"
 
 const sortAscending = (v1: BigNumber, v2: BigNumber) => (v1.lt(v2) ? -1 : v1.gt(v2) ? 1 : 0)
 

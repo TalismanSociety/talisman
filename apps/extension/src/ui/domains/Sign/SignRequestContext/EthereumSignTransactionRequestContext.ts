@@ -1,12 +1,4 @@
-import { HexString } from "@polkadot/util/types"
-import {
-  KnownSigningRequestIdOnly,
-  parseRpcTransactionRequestBase,
-  serializeTransactionRequest,
-} from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useMemo, useRef, useState } from "react"
-
+import type { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
@@ -15,6 +7,13 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useEnableTokens } from "@ui/hooks/useEnableTokens"
 import { useOriginFromUrl } from "@ui/hooks/useOriginFromUrl"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import {
+  type KnownSigningRequestIdOnly,
+  parseRpcTransactionRequestBase,
+  serializeTransactionRequest,
+} from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useMemo, useRef, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -27,7 +26,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
   const txBase = useMemo(
     () => (signingRequest ? parseRpcTransactionRequestBase(signingRequest.request) : undefined),
-    [signingRequest],
+    [signingRequest]
   )
 
   // once the payload is sent to ledger, we must freeze it
@@ -64,7 +63,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
   })
 
   const reject = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     (...args: any[]) => {
       genericEvent("sign request cancel click", {
         networkType: "evm",
@@ -76,7 +75,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 
       baseRequest.reject(...args)
     },
-    [baseRequest, origin, genericEvent, network?.id, riskAnalysis],
+    [baseRequest, origin, genericEvent, network?.id, riskAnalysis]
   )
 
   // flag to prevent capturing multiple submit attempts
@@ -105,7 +104,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
     const serialized = serializeTransactionRequest(transaction)
 
     await enableTokens(riskAnalysis.tokenIds)
-    return baseRequest && baseRequest.approve(serialized)
+    return baseRequest?.approve(serialized)
   }, [riskAnalysis, baseRequest, transaction, enableTokens, genericEvent, network?.id, origin])
 
   const approveHardware = useCallback(
@@ -142,7 +141,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
         setIsPayloadLocked(false)
       }
     },
-    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent],
+    [baseRequest, riskAnalysis, transaction, origin, network?.id, enableTokens, genericEvent]
   )
 
   return {
@@ -171,5 +170,5 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
 }
 
 export const [EthSignTransactionRequestProvider, useEthSignTransactionRequest] = provideContext(
-  useEthSignTransactionRequestProvider,
+  useEthSignTransactionRequestProvider
 )

@@ -1,9 +1,8 @@
-import type { ReactNode } from "react"
-import { Token } from "@talismn/chaindata-provider"
-import { classNames } from "@talismn/util"
-import { Suspense } from "react"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import type { Token } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
+import type { ReactNode } from "react"
+import { Suspense } from "react"
 
 import { BondAccountPillButton } from "../../Bond/BondAccountPillButton"
 import { AssetPill } from "./AssetPill"
@@ -30,8 +29,8 @@ export const BittensorAssetAccountSummary = ({
   return (
     <div
       className={classNames(
-        "bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm",
-        className,
+        "flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph",
+        className
       )}
     >
       <div className="flex h-16 items-center justify-between gap-4">

@@ -1,11 +1,11 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 
 export const useIsSoloStaking = (
   chainId: DotNetworkId | null | undefined,
-  address: string | null | undefined,
+  address: string | null | undefined
 ) => {
   const { data: sapi } = useScaleApi(chainId)
 

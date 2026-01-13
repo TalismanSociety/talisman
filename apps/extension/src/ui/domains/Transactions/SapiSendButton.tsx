@@ -1,16 +1,15 @@
+import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { toHex } from "@talismn/scale"
 import { classNames } from "@talismn/util"
-import { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
-import { log } from "extension-shared"
-import { FC, Suspense, useCallback, useMemo, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-import { Hex } from "viem"
-
-import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"
 import { useAccountByAddress } from "@ui/state"
+import type { AccountPolkadotVault, SignerPayloadJSON, WalletTransactionInfo } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, Suspense, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
+import type { Hex } from "viem"
 
 import { QrSubstrate } from "../Sign/Qr/QrSubstrate"
 import { SignHardwareSubstrate } from "../Sign/SignHardwareSubstrate"
@@ -57,11 +56,11 @@ const HardwareAccountSendButton: FC<SapiSendButtonProps> = ({
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo]
   )
 
   return (
@@ -103,11 +102,11 @@ const QrAccountSendButton: FC<SapiSendButtonProps> = ({
         onSubmitted(hash)
       } catch (err) {
         log.error("Failed to submit", { payload, err })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: legacy
         setError((err as any)?.message ?? "Failed to submit")
       }
     },
-    [mode, onSubmitted, payload, sapi, txInfo],
+    [mode, onSubmitted, payload, sapi, txInfo]
   )
 
   if (!account) return null
@@ -155,7 +154,7 @@ const LocalAccountSendButton: FC<SapiSendButtonProps> = ({
       onSubmitted(hash)
     } catch (err) {
       log.error("Failed to submit", { payload, err })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: legacy
       setState({ isSubmitting: false, error: (err as any)?.message ?? "Failed to submit" })
     }
   }, [mode, onSubmitted, payload, sapi, txInfo])
@@ -215,14 +214,14 @@ export const SapiSendButton: FC<SapiSendButtonProps> = (props) => {
 
 const SubmitErrorDisplay: FC<{ error: string | null | undefined }> = ({ error }) =>
   error ? (
-    <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 pr-0 text-xs">
+    <div className="flex w-full items-center gap-5 rounded-sm bg-grey-900 px-5 py-6 pr-0 text-alert-warn text-xs">
       <AlertCircleIcon className="shrink-0 text-lg" />
       <div className="scrollable scrollable-800 max-h-40 overflow-y-auto pr-5">{error}</div>
     </div>
   ) : null
 
 const getHexShortMetadata = (
-  txMetadata?: Uint8Array | `0x${string}`,
+  txMetadata?: Uint8Array | `0x${string}`
 ): `0x${string}` | undefined => {
   if (typeof txMetadata === "string") return txMetadata as `0x${string}`
   return txMetadata ? (toHex(txMetadata) as `0x${string}`) : undefined

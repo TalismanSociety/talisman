@@ -1,10 +1,10 @@
-import { IChainConnectorDot } from "@talismn/chain-connectors"
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { IChainConnectorDot } from "@talismn/chain-connectors"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { isNotNil } from "@talismn/util"
 import { toPairs } from "lodash-es"
 import { Observable, of } from "rxjs"
 
-import { QueryStorageChange, QueryStorageResult } from "./types"
+import type { QueryStorageChange, QueryStorageResult } from "./types"
 
 export type MaybeStateKey = `0x${string}` | null
 
@@ -18,7 +18,7 @@ type QueryStorageResultContent = QueryStorageResult[0]
 export const fetchRpcQueryPack = async <T>(
   connector: IChainConnectorDot,
   networkId: DotNetworkId,
-  queries: RpcQueryPack<T>[],
+  queries: RpcQueryPack<T>[]
 ) => {
   const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys).filter(isNotNil)
 
@@ -37,7 +37,7 @@ export const getRpcQueryPack$ = <T>(
   connector: IChainConnectorDot,
   networkId: DotNetworkId,
   queries: RpcQueryPack<T>[],
-  timeout: number | false = false,
+  timeout: number | false = false
 ): Observable<T[]> => {
   const allStateKeys = queries.flatMap(({ stateKeys }) => stateKeys).filter(isNotNil)
 
@@ -69,7 +69,7 @@ export const getRpcQueryPack$ = <T>(
           subscriber.next(decodeRpcQueryPack(queries, { block: result.block, changes }))
         }
       },
-      timeout,
+      timeout
     )
 
     return () => {
@@ -80,7 +80,7 @@ export const getRpcQueryPack$ = <T>(
 
 const decodeRpcQueryPack = <T>(
   queries: RpcQueryPack<T>[],
-  result: QueryStorageResultContent,
+  result: QueryStorageResultContent
 ): T[] => {
   return queries.reduce((acc, { stateKeys, decodeResult }) => {
     const changes = stateKeys.map((stateKey) => {

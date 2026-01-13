@@ -1,11 +1,11 @@
+// biome-ignore lint/style/useNodejsImportProtocol: legacy
 import assert from "assert"
-
-import type { MessageTypes, RequestType, ResponseType } from "../../../types"
-import type { Port } from "../../../types/base"
 import { TabsHandler } from "../../../libs/Handler"
 import { chainConnector } from "../../../rpcs/chain-connector"
 import { chaindataProvider } from "../../../rpcs/chaindata"
-import {
+import type { MessageTypes, RequestType, ResponseType } from "../../../types"
+import type { Port } from "../../../types/base"
+import type {
   RequestRpcByGenesisHashSend,
   RequestRpcByGenesisHashSubscribe,
   RequestRpcByGenesisHashUnsubscribe,
@@ -16,7 +16,7 @@ export default class TalismanRpcHandler extends TabsHandler {
   #talismanByGenesisHashSubscriptions = new Map<string, (unsubscribeMethod: string) => void>()
 
   private async rpcTalismanByGenesisHashSend(
-    request: RequestRpcByGenesisHashSend,
+    request: RequestRpcByGenesisHashSend
   ): Promise<UnknownJsonRpcResponse> {
     const { genesisHash, method, params } = request
 
@@ -29,7 +29,7 @@ export default class TalismanRpcHandler extends TabsHandler {
   private async rpcTalismanByGenesisHashSubscribe(
     request: RequestRpcByGenesisHashSubscribe,
     id: string,
-    port: Port,
+    port: Port
   ): Promise<string> {
     const subscriptionId = `${port.name}-${id}`
 
@@ -46,7 +46,7 @@ export default class TalismanRpcHandler extends TabsHandler {
       (error, data) => {
         try {
           port.postMessage({ id, subscription: { error, data } })
-        } catch (error) {
+        } catch {
           // end subscription when port no longer exists
           //
           // unfortunately, we won't know what unsubscribe method to call on the rpc itself
@@ -61,20 +61,20 @@ export default class TalismanRpcHandler extends TabsHandler {
           unsubscribe("")
         }
       },
-      timeout,
+      timeout
     )
 
     this.#talismanByGenesisHashSubscriptions.set(subscriptionId, unsubscribe)
     port.onDisconnect.addListener(() =>
       // end subscription when port closes
-      this.rpcTalismanByGenesisHashUnsubscribe({ subscriptionId, unsubscribeMethod: "" }),
+      this.rpcTalismanByGenesisHashUnsubscribe({ subscriptionId, unsubscribeMethod: "" })
     )
 
     return subscriptionId
   }
 
   private async rpcTalismanByGenesisHashUnsubscribe(
-    request: RequestRpcByGenesisHashUnsubscribe,
+    request: RequestRpcByGenesisHashUnsubscribe
   ): Promise<boolean> {
     const { subscriptionId, unsubscribeMethod } = request
 
@@ -83,7 +83,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     const unsubscribe = this.#talismanByGenesisHashSubscriptions.get(subscriptionId)
     this.#talismanByGenesisHashSubscriptions.delete(subscriptionId)
 
-    unsubscribe && unsubscribe(unsubscribeMethod)
+    unsubscribe?.(unsubscribeMethod)
 
     return true
   }
@@ -93,8 +93,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    url: string,
+    _url: string
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.rpc.byGenesisHash.send)":
@@ -104,12 +103,12 @@ export default class TalismanRpcHandler extends TabsHandler {
         return this.rpcTalismanByGenesisHashSubscribe(
           request as RequestRpcByGenesisHashSubscribe,
           id,
-          port,
+          port
         )
 
       case "pub(talisman.rpc.byGenesisHash.unsubscribe)":
         return this.rpcTalismanByGenesisHashUnsubscribe(
-          request as RequestRpcByGenesisHashUnsubscribe,
+          request as RequestRpcByGenesisHashUnsubscribe
         )
 
       default:

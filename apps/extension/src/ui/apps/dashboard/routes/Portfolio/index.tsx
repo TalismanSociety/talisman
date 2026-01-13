@@ -1,5 +1,3 @@
-import { Route, Routes } from "react-router-dom"
-
 import { NavigateWithQuery } from "@talisman/components/NavigateWithQuery"
 import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { DashboardPortfolioHeader } from "@ui/domains/Portfolio/DashboardPortfolioHeader"
@@ -8,6 +6,7 @@ import { PortfolioToolbarDeFi } from "@ui/domains/Portfolio/PortfolioToolbarDeFi
 import { PortfolioToolbarNfts } from "@ui/domains/Portfolio/PortfolioToolbarNfts"
 import { PortfolioToolbarTokens } from "@ui/domains/Portfolio/PortfolioToolbarTokens"
 import { useFeatureFlag } from "@ui/state"
+import { Route, Routes } from "react-router-dom"
 
 import { PortfolioAsset, PortfolioAssetHeader } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"

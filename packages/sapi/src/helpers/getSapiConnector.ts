@@ -1,4 +1,4 @@
-import { SapiConnectorProps } from "../types"
+import type { SapiConnectorProps } from "../types"
 
 export type SapiConnector = Required<SapiConnectorProps>
 

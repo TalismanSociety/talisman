@@ -1,16 +1,13 @@
-/* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-// import Extension from "./Extension"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
-import { AuthorizedSites } from "../types"
+import type { AuthorizedSites } from "../types"
 
 keyring.loadAll({ store: new AccountsStore() })
 

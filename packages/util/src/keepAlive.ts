@@ -1,5 +1,5 @@
 import type { OperatorFunction } from "rxjs"
-import { Observable, shareReplay, tap } from "rxjs"
+import { type Observable, shareReplay, tap } from "rxjs"
 
 /**
  * An RxJS operator that keeps the source observable alive for a specified duration
@@ -29,7 +29,7 @@ export const keepAlive = <T>(timeout: number): OperatorFunction<T, T> => {
           release?.()
         },
       }),
-      shareReplay({ refCount: true, bufferSize: 1 }),
+      shareReplay({ refCount: true, bufferSize: 1 })
     )
 }
 

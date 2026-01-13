@@ -1,12 +1,11 @@
+import { Card } from "@talisman/components/Card"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Drawer } from "talisman-ui"
-
-import { Card } from "@talisman/components/Card"
-import { api } from "@ui/api"
-import { sendAnalyticsEvent } from "@ui/api/analytics"
 
 import { useMigratePasswordModal } from "../Settings/MigratePassword/useMigratePasswordModal"
 
@@ -19,18 +18,18 @@ export const AlertCard = ({ className, onAccept }: Props) => {
   const { t } = useTranslation()
   return (
     <Card
-      className={classNames("text-body-secondary !rounded-b-none text-center", className)}
+      className={classNames("!rounded-b-none text-center text-body-secondary", className)}
       title={
         <div className="flex flex-col items-center p-2">
-          <LockIcon className="icon text-primary inline-block p-1 text-3xl" />
-          <div className="text-body mt-4">{t("Security Upgrade")}</div>
+          <LockIcon className="icon inline-block p-1 text-3xl text-primary" />
+          <div className="mt-4 text-body">{t("Security Upgrade")}</div>
         </div>
       }
       description={
         <>
           <p className="text-sm">
             {t(
-              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman.",
+              "We’ve upgraded our security measures, including enhanced password encryption. You must upgrade now to continue using Talisman."
             )}
           </p>
 

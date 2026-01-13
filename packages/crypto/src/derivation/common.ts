@@ -31,7 +31,7 @@ const createSubstrateDeriveFn = (prefix: string) => (seed: Uint8Array, chainCode
 export const deriveSubstrateSecretKey = (
   seed: Uint8Array,
   derivationPath: string,
-  prefix: string,
+  prefix: string
 ) => {
   const derivations = parseSubstrateDerivations(derivationPath)
   const derive = createSubstrateDeriveFn(prefix)

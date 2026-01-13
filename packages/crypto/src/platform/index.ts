@@ -1,5 +1,5 @@
 import { detectAddressEncoding } from "../address"
-import { AccountPlatform, AddressEncoding, KeypairCurve } from "../types"
+import type { AccountPlatform, AddressEncoding, KeypairCurve } from "../types"
 
 export const getAccountPlatformFromCurve = (curve: KeypairCurve): AccountPlatform => {
   switch (curve) {

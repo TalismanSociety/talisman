@@ -1,9 +1,8 @@
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useLocation } from "react-router-dom"
-
 import { Tabs } from "@talisman/components/Tabs"
 import { useNavigateWithQuery } from "@ui/hooks/useNavigateWithQuery"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useLocation } from "react-router-dom"
 
 const URL_TAB_TOKENS = "/portfolio/tokens"
 const URL_TAB_NFTS = "/portfolio/nfts"
@@ -20,19 +19,19 @@ export const PortfolioTabs: FC<{ className?: string }> = ({ className }) => {
       { label: t("NFTs"), value: URL_TAB_NFTS },
       { label: t("DeFi"), value: URL_TAB_DEFI },
     ],
-    [t],
+    [t]
   )
 
   const selected = useMemo(
     () => tabs.find((tab) => location.pathname.startsWith(tab.value)),
-    [location.pathname, tabs],
+    [location.pathname, tabs]
   )
 
   const handleChange = useCallback(
     (value: string) => {
       navigate(`${value}`)
     },
-    [navigate],
+    [navigate]
   )
 
   return (

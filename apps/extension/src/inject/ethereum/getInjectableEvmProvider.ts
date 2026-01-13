@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore lint/style/useNodejsImportProtocol: legacy
 import EventEmitter from "events"
 
 import type { SendRequest } from "extension-core"
@@ -8,7 +8,7 @@ import {
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
-  WrappedEthProviderRpcError,
+  type WrappedEthProviderRpcError,
 } from "./EthProviderRpcError"
 
 interface RequestArguments {
@@ -43,6 +43,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   // return a provider object with methods that aren't bound to the instance
   // prevents errors on dapps which unbind methods of the object (ex: orbiter.finance)
   // makes it hard to type, but we don't need to as we don't consume it ourselves
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const provider: any = {
     isTalisman: true,
     isMetaMask: true, // dapps use this to determine if wallet supports adding custom networks and tokens
@@ -121,7 +122,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
         // UNKNOWN
         default:
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn("Unknown ETH subscription message type : %s", result.type, result)
           break
       }
@@ -154,12 +155,13 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         throw new EthProviderRpcError(
           "Internal JSON-RPC error.",
           ETH_ERROR_EIP1474_INTERNAL_ERROR,
-          rpcData,
+          rpcData
         )
       }
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const send = (methodOrPayload: any, paramsOrCallback: any) => {
     if (typeof methodOrPayload === "string")
       return request({

@@ -1,7 +1,6 @@
-import { Balances } from "@talismn/balances"
-import { useMemo } from "react"
-
+import type { Balances } from "@talismn/balances"
 import { useSelectedCurrency } from "@ui/state"
+import { useMemo } from "react"
 
 export const useBalancesFiatTotal = (balances: Balances | null | undefined) => {
   const currency = useSelectedCurrency()

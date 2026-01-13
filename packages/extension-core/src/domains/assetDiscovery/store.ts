@@ -1,8 +1,8 @@
-import { Address } from "@talismn/balances"
-import { NetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { Address } from "@talismn/balances"
+import type { NetworkId, TokenId } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
-import { AssetDiscoveryScanScope } from "./types"
+import type { AssetDiscoveryScanScope } from "./types"
 
 export type AssetDiscoveryScanType = "manual" // | "automatic"
 

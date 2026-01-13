@@ -14,7 +14,6 @@ import svgr from "vite-plugin-svgr"
 import type { Logger, WxtViteConfig } from "wxt"
 import { defineConfig } from "wxt"
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require("./package.json")
 
 // Build type from environment variable (set by build:prod, build:canary, etc.), default to dev
@@ -260,7 +259,6 @@ function deleteSourcemaps(outputDir: string): void {
 
   const deleted = deleteMapFilesRecursively(outputDir)
   if (deleted > 0) {
-    // eslint-disable-next-line no-console
     log.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
   }
 }

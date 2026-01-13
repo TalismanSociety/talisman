@@ -1,5 +1,5 @@
 import { useSetAtom } from "jotai"
-import { ReactNode, useEffect } from "react"
+import { type ReactNode, useEffect } from "react"
 
 import {
   coinsApiConfigAtom,
@@ -16,12 +16,6 @@ export {
   subPsp22TokenId,
   subTokensTokenId,
 } from "@talismn/chaindata-provider"
-
-export * from "./hooks/useBalances"
-export * from "./hooks/useChainConnectors"
-export * from "./hooks/useChaindata"
-export * from "./hooks/useTokenRates"
-
 export * from "./atoms/allAddresses"
 // export * from "./atoms/balanceModules"
 export * from "./atoms/balances"
@@ -31,6 +25,10 @@ export * from "./atoms/chaindataProvider"
 export * from "./atoms/config"
 export * from "./atoms/cryptoWaitReady"
 export * from "./atoms/tokenRates"
+export * from "./hooks/useBalances"
+export * from "./hooks/useChainConnectors"
+export * from "./hooks/useChaindata"
+export * from "./hooks/useTokenRates"
 
 export type BalancesConfig = {
   coinsApiUrl?: string

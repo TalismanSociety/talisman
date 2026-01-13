@@ -1,4 +1,4 @@
-import { WhatsNewVersionData } from "./types"
+import type { WhatsNewVersionData } from "./types"
 import content_v1_21_0 from "./v1.21.0"
 import content_v1_23_0 from "./v1.23.0"
 import content_v1_24_0 from "./v1.24.0"

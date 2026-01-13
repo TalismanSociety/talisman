@@ -2,7 +2,7 @@ import { papiParse, papiStringify } from "./serdePapi"
 
 describe("papiParse/papiStringify", () => {
   test("test known inputs match expected outputs", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: legacy
     const tests: Array<[string | any, string | any]> = [
       [5, "5"],
       [5n, '"bigint:5"'],

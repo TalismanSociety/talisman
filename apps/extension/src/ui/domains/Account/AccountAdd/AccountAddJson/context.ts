@@ -1,19 +1,18 @@
 import { createPair } from "@polkadot/keyring"
-import { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
-import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
+import type { KeyringPair, KeyringPair$Json } from "@polkadot/keyring/types"
+import type { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert, hexToU8a, isHex, u8aToString } from "@polkadot/util"
 import { base64Decode, decodeAddress, encodeAddress, jsonDecrypt } from "@polkadot/util-crypto"
-import { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
-import { Address, Balances } from "@talismn/balances"
-import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
-import { Account, LegacyAccountOrigin } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
+import type { EncryptedJson, KeypairType } from "@polkadot/util-crypto/types"
 import { provideContext } from "@talisman/util/provideContext"
+import { type Address, Balances } from "@talismn/balances"
+import { encodeAnyAddress, isAddressEqual, normalizeAddress } from "@talismn/crypto"
 import { api } from "@ui/api"
 import { useAccountImportBalances } from "@ui/hooks/useAccountImportBalances"
 import { useAccounts, useNetworks } from "@ui/state"
+import type { Account, LegacyAccountOrigin } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type JsonImportAccount = {
   id: string
@@ -51,7 +50,7 @@ const createPairFromJson = ({ encoded, encoding, address, meta }: KeyringPair$Js
     { publicKey: decodeAddress(address, true) },
     meta,
     isHex(encoded) ? hexToU8a(encoded) : base64Decode(encoded),
-    encType,
+    encType
   )
 }
 
@@ -66,9 +65,9 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
           curve: p.type,
           name: p.meta.name ?? "",
           createdAt: Date.now(),
-        }),
+        })
       ),
-    [pairs],
+    [pairs]
   )
   const allBalances = useAccountImportBalances(accounts)
 
@@ -83,11 +82,12 @@ const useAccountsBalances = (pairs: KeyringPair[] = []) => {
         const balances = new Balances(individualBalances)
 
         return {
+          // biome-ignore lint/performance/noAccumulatingSpread: legacy
           ...acc,
           [address]: { balances, isLoading },
         }
       },
-      {} as Record<Address, { balances: Balances; isLoading: boolean }>,
+      {} as Record<Address, { balances: Balances; isLoading: boolean }>
     )
   }, [accounts, allBalances])
 }
@@ -100,6 +100,7 @@ const useJsonAccountImportProvider = () => {
   // warning : array of mutable objects
   const [pairs, setPairs] = useState<KeyringPair[]>()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     setSelectedAccounts([])
     setPairs(undefined)
@@ -157,7 +158,7 @@ const useJsonAccountImportProvider = () => {
         }, 1)
       })
     },
-    [existingAccounts, file],
+    [existingAccounts, file]
   )
 
   const chains = useNetworks({ platform: "polkadot" })
@@ -204,7 +205,7 @@ const useJsonAccountImportProvider = () => {
   const selectAll = useCallback(() => {
     if (!accounts) return
     setSelectedAccounts(
-      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id),
+      accounts?.filter((a) => a.isPrivateKeyAvailable && !a.isExisting).map((a) => a.id)
     )
   }, [accounts])
 
@@ -216,12 +217,12 @@ const useJsonAccountImportProvider = () => {
         return prev.filter((a) => a !== id)
       })
     },
-    [accounts],
+    [accounts]
   )
 
   const requiresAccountUnlock = useMemo(
     () => !!accounts?.filter((a) => a.selected && a.isLocked).length,
-    [accounts],
+    [accounts]
   )
 
   // track progress to display a progress bar
@@ -246,7 +247,7 @@ const useJsonAccountImportProvider = () => {
             try {
               pair.unlock(password)
               success = true
-            } catch (err) {
+            } catch {
               // ignore
             }
 
@@ -261,7 +262,7 @@ const useJsonAccountImportProvider = () => {
 
       setUnlockAttemptProgress(0)
     },
-    [accounts, pairs],
+    [accounts, pairs]
   )
 
   const canImport = useMemo<boolean>(() => {
@@ -278,7 +279,7 @@ const useJsonAccountImportProvider = () => {
     assert(pairs, "Pairs unavailable")
 
     const pairsToImport = selectedAccounts.map(
-      (address) => pairs.find((p) => p.address === address) as KeyringPair,
+      (address) => pairs.find((p) => p.address === address) as KeyringPair
     )
     for (const pair of pairsToImport) {
       assert(pair, "Pair not found")
@@ -309,5 +310,5 @@ const useJsonAccountImportProvider = () => {
 }
 
 export const [JsonAccountImportProvider, useJsonAccountImport] = provideContext(
-  useJsonAccountImportProvider,
+  useJsonAccountImportProvider
 )

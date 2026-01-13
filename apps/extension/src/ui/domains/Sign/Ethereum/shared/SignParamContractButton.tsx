@@ -1,13 +1,12 @@
-import { EthNetwork } from "@talismn/chaindata-provider"
+import type { EthNetwork } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
-import { EvmAddress } from "extension-core"
-import { FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { Address } from "@ui/domains/Account/Address"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useErc20Token } from "@ui/hooks/useErc20Token"
 import { useToken } from "@ui/state"
+import type { EvmAddress } from "extension-core"
+import { type FC, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { SignParamButton } from "./SignParamButton"
 

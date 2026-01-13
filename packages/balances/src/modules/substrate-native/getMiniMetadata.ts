@@ -1,11 +1,11 @@
 import { MINIMETADATA_VERSION } from "@talismn/chaindata-provider"
 import { compactMetadata, encodeMetadata, parseMetadataRpc } from "@talismn/scale"
-import { Binary } from "polkadot-api"
+import type { Binary } from "polkadot-api"
 
 import { deriveMiniMetadataId } from "../../types"
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { getConstantValue, tryGetConstantValue } from "../shared"
-import { MiniMetadataExtra, MODULE_TYPE, ModuleConfig, TokenConfig } from "./config"
+import { type MiniMetadataExtra, MODULE_TYPE, type ModuleConfig, type TokenConfig } from "./config"
 
 export const getMiniMetadata: IBalanceModule<
   typeof MODULE_TYPE,
@@ -19,7 +19,7 @@ export const getMiniMetadata: IBalanceModule<
   const systemVersion = getConstantValue<{ spec_version: number }>(metadataRpc, "System", "Version")
   if (specVersion !== systemVersion.spec_version)
     throw new Error(
-      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`,
+      `specVersion mismatch: expected ${specVersion}, metadata got ${systemVersion.spec_version}`
     )
 
   const id = deriveMiniMetadataId({ source, chainId, specVersion })
@@ -28,7 +28,7 @@ export const getMiniMetadata: IBalanceModule<
 
   if (unifiedMetadata.version < 14)
     throw new Error(
-      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`,
+      `Unsupported metadata version: ${unifiedMetadata.version}. Minimum required is 14.`
     )
 
   if (config?.disable)
@@ -45,18 +45,18 @@ export const getMiniMetadata: IBalanceModule<
   const existentialDeposit = tryGetConstantValue<bigint>(
     metadataRpc,
     "Balances",
-    "ExistentialDeposit",
+    "ExistentialDeposit"
   )?.toString()
   const nominationPoolsPalletId = tryGetConstantValue<Binary>(
     metadataRpc,
     "NominationPools",
-    "PalletId",
+    "PalletId"
   )?.asText()
 
   const hasFreezesItem = Boolean(
     unifiedMetadata.pallets
       .find(({ name }) => name === "Balances")
-      ?.storage?.items.find(({ name }) => name === "Freezes"),
+      ?.storage?.items.find(({ name }) => name === "Freezes")
   )
   const useLegacyTransferableCalculation = !hasFreezesItem
 

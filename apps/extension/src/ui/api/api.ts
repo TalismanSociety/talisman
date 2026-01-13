@@ -1,5 +1,6 @@
-import { HexString } from "@polkadot/util/types"
-import {
+import PortMessageService from "@common/PortMessageService"
+import type { HexString } from "@polkadot/util/types"
+import type {
   ResponseSolanaSubmit,
   SignerPayloadJSON,
   SolRpcRequest,
@@ -7,9 +8,7 @@ import {
   WalletTransactionInfo,
 } from "extension-core"
 
-import PortMessageService from "@common/PortMessageService"
-
-import MessageTypes from "./types"
+import type MessageTypes from "./types"
 
 const messageService = new PortMessageService()
 
@@ -28,7 +27,7 @@ export const api: MessageTypes = {
     messageService.subscribe(
       "pri(app.changePassword.subscribe)",
       { currentPw, newPw, newPwConfirm },
-      cb,
+      cb
     ),
   checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
@@ -137,7 +136,7 @@ export const api: MessageTypes = {
       {
         addressesAndTokens,
       },
-      cb,
+      cb
     ),
 
   // authorized sites messages ------------------------------------------

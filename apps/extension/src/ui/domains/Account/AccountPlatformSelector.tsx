@@ -1,9 +1,8 @@
-import { AccountPlatform } from "@talismn/crypto"
-import { classNames } from "@talismn/util"
-import { FC, ReactNode, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { EthereumCircleLogo, PolkadotCircleLogo, SolanaLogo } from "@talisman/theme/logos"
+import type { AccountPlatform } from "@talismn/crypto"
+import { classNames } from "@talismn/util"
+import { type FC, type ReactNode, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 const AccountTypeButton: FC<{
   className?: string
@@ -16,17 +15,17 @@ const AccountTypeButton: FC<{
   <button
     type="button"
     className={classNames(
-      "bg-field allow-focus flex h-32 items-center gap-6 rounded px-6 text-left",
+      "allow-focus flex h-32 items-center gap-6 rounded bg-field px-6 text-left",
       disabled && "text-body-secondary opacity-40",
       !disabled && "hover:bg-grey-800",
-      className,
+      className
     )}
     disabled={disabled}
     onClick={onClick}
   >
     <div className="text-xl">{icon}</div>
     <div className="flex flex-grow flex-col justify-center gap-2">
-      <div className="text-body text-base">{title}</div>
+      <div className="text-base text-body">{title}</div>
       <div className="text-body-secondary text-xs">{subtitle}</div>
     </div>
   </button>
@@ -59,7 +58,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "ethereum" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<EthereumCircleLogo />}
         title={t("Ethereum")}
@@ -73,7 +72,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "polkadot" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<PolkadotCircleLogo />}
         title={t("Polkadot")}
@@ -87,7 +86,7 @@ export const AccountPlatformSelector = ({
       <AccountTypeButton
         className={classNames(
           platform === "solana" ? "border-body" : "border-body-secondary border-opacity-20",
-          "border",
+          "border"
         )}
         icon={<SolanaLogo />}
         title={t("Solana")}

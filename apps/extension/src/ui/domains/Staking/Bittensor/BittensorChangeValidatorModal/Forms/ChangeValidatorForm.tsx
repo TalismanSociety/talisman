@@ -1,15 +1,14 @@
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { SettingsIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button } from "talisman-ui"
-
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { BittensorValidatorName } from "@ui/domains/Portfolio/AssetDetails/DashboardTokenBalances/BittensorValidatorName"
 import { BondAccountPillButton } from "@ui/domains/Staking/Bond/BondAccountPillButton"
 import { StakingFeeEstimate } from "@ui/domains/Staking/shared/StakingFeeEstimate"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button } from "talisman-ui"
 
 import { useCombinedBittensorValidatorsData } from "../../../hooks/bittensor/useCombinedBittensorValidatorsData"
 import { BittensorStakingModalHeader } from "../../components/BittensorModalHeader"
@@ -50,7 +49,7 @@ export const ChangeValidatorForm = () => {
         }
       >
         <div className="flex size-full items-center justify-center p-12">
-          <div className="text-body-secondary text-center">
+          <div className="text-center text-body-secondary">
             {t("No staking position found for this token")}
           </div>
         </div>
@@ -66,13 +65,13 @@ export const ChangeValidatorForm = () => {
       contentClassName="text-body-secondary flex size-full flex-col gap-4 p-12 pt-0"
     >
       {/* Asset and Account Summary */}
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-sm">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-sm leading-paragraph">
         <div className="flex h-16 items-center justify-between gap-4">
           <div className="whitespace-nowrap">{t("Asset")}</div>
           <div className="overflow-hidden">
             <div className="flex h-16 items-center gap-4 px-4">
               <TokenLogo tokenId={nativeToken?.id} className="shrink-0 text-lg" />
-              <div className="text-body text-base">{nativeToken?.symbol}</div>
+              <div className="text-base text-body">{nativeToken?.symbol}</div>
             </div>
           </div>
         </div>
@@ -88,10 +87,10 @@ export const ChangeValidatorForm = () => {
       </div>
 
       {/* Staking Details */}
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Staked Amount")}</div>
-          <div className="text-body overflow-hidden">
+          <div className="overflow-hidden text-body">
             <TokensAndFiat
               isBalance
               tokenId={token.id}
@@ -104,23 +103,23 @@ export const ChangeValidatorForm = () => {
         </div>
         <div className="flex items-center justify-between gap-8">
           <div className="whitespace-nowrap">{t("Subnet")}</div>
-          <div className="text-body truncate">
+          <div className="truncate text-body">
             {token.netuid === 0 ? t("Root Network") : `SN${token.netuid} ${token.subnetName ?? ""}`}
           </div>
         </div>
       </div>
 
       {/* Validator Selection */}
-      <div className="bg-grey-900 leading-paragraph flex flex-col gap-4 rounded p-4 text-xs">
+      <div className="flex flex-col gap-4 rounded bg-grey-900 p-4 text-xs leading-paragraph">
         <div className="flex items-center justify-between gap-6">
           <div className="whitespace-nowrap">{t("Current Validator")}</div>
-          <div className="text-body truncate">
+          <div className="truncate text-body">
             <BittensorValidatorName hotkey={currentHotkey ?? undefined} />
           </div>
         </div>
         <div className="flex items-center justify-between gap-6">
           <div className="shrink-0 whitespace-nowrap">{t("New Validator")}</div>
-          <div className="text-body min-w-0 overflow-hidden">
+          <div className="min-w-0 overflow-hidden text-body">
             <ValidatorSelectButton
               hotkey={newHotkey ?? currentHotkey}
               netuid={token.netuid}
@@ -166,7 +165,7 @@ const ValidatorSelectButton: FC<{
 
   const validator = useMemo(
     () => combinedValidatorsData.find((data) => data.hotkey === hotkey),
-    [combinedValidatorsData, hotkey],
+    [combinedValidatorsData, hotkey]
   )
 
   const label = useMemo(() => {
@@ -179,10 +178,10 @@ const ValidatorSelectButton: FC<{
       type="button"
       onClick={onClick}
       className={classNames(
-        "bg-pill hover:bg-grey-700 flex max-w-full cursor-pointer items-center gap-2 rounded-xl px-4 py-2 text-xs font-light",
+        "flex max-w-full cursor-pointer items-center gap-2 rounded-xl bg-pill px-4 py-2 font-light text-xs hover:bg-grey-700"
       )}
     >
-      <SettingsIcon className="text-body-secondary shrink-0" />
+      <SettingsIcon className="shrink-0 text-body-secondary" />
       <div className="truncate">{label}</div>
     </button>
   )

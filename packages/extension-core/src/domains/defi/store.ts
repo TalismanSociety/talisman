@@ -4,7 +4,7 @@ import { debounceTime, distinctUntilChanged, ReplaySubject, skip } from "rxjs"
 
 import { getBlobStore } from "../../db"
 import { walletReady } from "../../libs/isWalletReady"
-import { DefiPosition } from "./types"
+import type { DefiPosition } from "./types"
 
 type DefiPositionsStoreData = {
   positions: DefiPosition[]
@@ -41,6 +41,8 @@ export const defiPositionsStore$ = subjectDefiPositionsStore$.asObservable()
 export const updateDefiPositionsStore = (positions: DefiPosition[]) => {
   subjectDefiPositionsStore$.next(
     // consistent ordering ensures we can compare changes easily
-    positions.concat().sort((a, b) => getPositionId(a).localeCompare(getPositionId(b))),
+    positions
+      .concat()
+      .sort((a, b) => getPositionId(a).localeCompare(getPositionId(b)))
   )
 }

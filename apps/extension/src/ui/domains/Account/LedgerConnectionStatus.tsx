@@ -1,8 +1,7 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import type { LedgerStatus } from "@ui/hooks/ledger/common"
 import { useTranslation } from "react-i18next"
-
-import { LedgerStatus } from "@ui/hooks/ledger/common"
 
 export type LedgerConnectionStatusProps = {
   status: LedgerStatus
@@ -14,16 +13,18 @@ export type LedgerConnectionStatusProps = {
 const wrapStrong = (text: string) => {
   if (!text) return text
 
-  const splitter = new RegExp("(<strong>[^<]*?</strong>)", "g")
-  const extractor = new RegExp("^<strong>([^<]*?)</strong>$", "g")
+  const splitter = /(<strong>[^<]*?<\/strong>)/g
+  const extractor = /^<strong>([^<]*?)<\/strong>$/g
 
   return text.split(splitter).map((str, i) => {
     const match = extractor.exec(str)
     return match ? (
-      <strong key={i} className="text-grey-300 p-0 capitalize">
+      // biome-ignore lint/suspicious/noArrayIndexKey: static list
+      <strong key={i} className="p-0 text-grey-300 capitalize">
         {match[1]}
       </strong>
     ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: static list
       <span key={i}>{str}</span>
     )
   })
@@ -42,28 +43,28 @@ export const LedgerConnectionStatus = ({
   return (
     <div
       className={classNames(
-        "text-body-secondary bg-grey-850 flex h-28 w-full items-center gap-4 rounded-sm p-8",
-        className,
+        "flex h-28 w-full items-center gap-4 rounded-sm bg-grey-850 p-8 text-body-secondary",
+        className
       )}
     >
       {status === "ready" && (
-        <CheckCircleIcon className="text-alert-success min-w-[1em] shrink-0 text-[2rem]" />
+        <CheckCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-success" />
       )}
       {status === "warning" && (
-        <XCircleIcon className="text-alert-warn min-w-[1em] shrink-0 text-[2rem]" />
+        <XCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-warn" />
       )}
       {status === "error" && (
-        <XCircleIcon className="text-alert-error min-w-[1em] shrink-0 text-[2rem]" />
+        <XCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-error" />
       )}
       {status === "connecting" && (
-        <LoaderIcon className="animate-spin-slow min-w-[1em] shrink-0 text-[2rem] text-white" />
+        <LoaderIcon className="min-w-[1em] shrink-0 animate-spin-slow text-[2rem] text-white" />
       )}
       <div className="grow text-left leading-[2rem]">{wrapStrong(message)}</div>
       {!!onRetryClick && (
         <button
           type="button"
           onClick={onRetryClick}
-          className="bg-grey-800 hover:bg-grey-750 text-body border-body-disabled hover:border-body-inactive h-20 rounded border px-8"
+          className="h-20 rounded border border-body-disabled bg-grey-800 px-8 text-body hover:border-body-inactive hover:bg-grey-750"
         >
           {t("Retry")}
         </button>

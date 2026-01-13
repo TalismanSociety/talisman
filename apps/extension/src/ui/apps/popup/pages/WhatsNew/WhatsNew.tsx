@@ -1,6 +1,9 @@
 import * as Icons from "@talismn/icons"
 import { ChevronLeftIcon, ExternalLinkIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
+import { api } from "@ui/api"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useSetting } from "@ui/state"
 import DOMPurify from "dompurify"
 import { marked } from "marked"
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react"
@@ -9,10 +12,6 @@ import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { rcompare } from "semver"
 import { IconButton } from "talisman-ui"
-
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useSetting } from "@ui/state"
 
 import { PopupContent, PopupLayout } from "../../Layout/PopupLayout"
 import { latestUpdates } from "./assets"
@@ -52,19 +51,19 @@ const PortfolioWhatsNewSection = ({
   const whatsNewHtml = useMemo(
     () =>
       DOMPurify.sanitize(marked(whatsNewLocalizedContent, { gfm: true, async: false }) as string),
-    [whatsNewLocalizedContent],
+    [whatsNewLocalizedContent]
   )
 
   const whatsNewHtmlRef = useWhatsNewNodes(whatsNewHtml)
 
   return (
     <div>
-      <div className="text-body-secondary flex flex-col gap-12 pb-12 text-sm">
+      <div className="flex flex-col gap-12 pb-12 text-body-secondary text-sm">
         <div
           className={classNames(
             "relative",
             heroUrl && "h-[119px]",
-            !heroUrl && "flex items-center justify-between overflow-hidden rounded-sm p-5",
+            !heroUrl && "flex items-center justify-between overflow-hidden rounded-sm p-5"
           )}
         >
           {heroUrl && (
@@ -75,16 +74,16 @@ const PortfolioWhatsNewSection = ({
             />
           )}
           {!heroUrl && (
-            <div className="bg-grey-900 pointer-events-none absolute bottom-0 left-0 right-0 top-0">
-              <div className="bg-grey-600/10 absolute right-0 h-full w-full translate-x-2/3 -skew-x-[60deg]" />
+            <div className="pointer-events-none absolute top-0 right-0 bottom-0 left-0 bg-grey-900">
+              <div className="absolute right-0 h-full w-full translate-x-2/3 -skew-x-[60deg] bg-grey-600/10" />
             </div>
           )}
-          <div className={`pointer-events-none ${heroUrl ? "absolute left-5 top-5" : "relative"}`}>
-            <div className="text-primary font-bold">V{version}</div>
+          <div className={`pointer-events-none ${heroUrl ? "absolute top-5 left-5" : "relative"}`}>
+            <div className="font-bold text-primary">V{version}</div>
           </div>
           {date && (
             <div
-              className={`pointer-events-none ${heroUrl ? "absolute right-5 top-5" : "relative"}`}
+              className={`pointer-events-none ${heroUrl ? "absolute top-5 right-5" : "relative"}`}
             >
               <div className="text-grey-200 text-xs">{date}</div>
             </div>
@@ -93,12 +92,13 @@ const PortfolioWhatsNewSection = ({
         <div className="px-5">
           <div
             ref={whatsNewHtmlRef}
-            className="[&_a]:text-bold [&_a]:text-grey-200 flex flex-col gap-8 [&_a:hover]:text-white [&_strong]:font-normal [&_strong]:text-white"
+            className="flex flex-col gap-8 [&_a:hover]:text-white [&_a]:text-bold [&_a]:text-grey-200 [&_strong]:font-normal [&_strong]:text-white"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: legacy
             dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
           />
         </div>
       </div>
-      <div className="border-black-secondary mt-8 border border-b-[1px]" />
+      <div className="mt-8 border border-black-secondary border-b-[1px]" />
     </div>
   )
 }
@@ -160,7 +160,7 @@ const Header = () => {
         ) : (
           <button
             type="button"
-            className="bg-grey-800 text-tiny hover:bg-grey-750 focus:bg-grey-750 rounded-sm p-4 text-white"
+            className="rounded-sm bg-grey-800 p-4 text-tiny text-white hover:bg-grey-750 focus:bg-grey-750"
             onClick={dismiss}
           >
             {t("Dismiss")}
@@ -188,12 +188,14 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
   /** A ref to the `dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}` div element */
   const whatsNewHtmlRef = useRef<HTMLDivElement | null>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useLayoutEffect(() => {
     const ref = whatsNewHtmlRef.current
     if (!ref) return
 
     // set all anchors to have target="_blank"
     const anchors = ref.querySelectorAll("a")
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     Array.from(anchors).flatMap((anchorRef) => {
       anchorRef.setAttribute("target", "_blank")
       anchorRef.setAttribute("rel", "noopener noreferrer")
@@ -206,9 +208,10 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
       if (!iconName) return []
       if (!(iconName in Icons)) return []
 
+      // biome-ignore lint/performance/noDynamicNamespaceImportAccess: legacy
       const Icon = Icons[iconName as keyof typeof Icons]
       return {
-        component: <Icon className="text-primary inline h-[1.25em] w-[1.25em] align-text-bottom" />,
+        component: <Icon className="inline h-[1.25em] w-[1.25em] align-text-bottom text-primary" />,
         ref: iconRef,
       }
     })
@@ -227,7 +230,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
 
       return {
         component: (
-          <button className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
+          <button type="button" className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
             {innerText} <ExternalLinkIcon className="inline align-middle" />
           </button>
         ),
@@ -243,6 +246,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
     })
 
     // prepare the fancy nodes to be unmounted when this hook unmounts
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     return () => nodeRoots.forEach((root) => root.unmount())
   }, [whatsNewHtml])
 

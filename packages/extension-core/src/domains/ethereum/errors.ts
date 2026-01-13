@@ -1,6 +1,6 @@
 import { log } from "extension-shared"
 
-import { AnyEvmError } from "./types"
+import type { AnyEvmError } from "./types"
 
 export const getErrorLabelFromCode = (code: number) => {
   // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1474.md

@@ -1,4 +1,4 @@
-import { Observable, shareReplay } from "rxjs"
+import { type Observable, shareReplay } from "rxjs"
 
 const CACHE = new Map<string, unknown>()
 
@@ -17,7 +17,7 @@ export const getSharedObservable = <Args, Output, ObsOutput = Observable<Output>
   namespace: string,
   args: Args,
   createObservable: (args: Args) => ObsOutput,
-  serializer = (args: Args): string => JSON.stringify(args),
+  serializer = (args: Args): string => JSON.stringify(args)
 ): ObsOutput => {
   const cacheKey = `${namespace}:${serializer(args)}`
 

@@ -1,14 +1,13 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { ZapOffIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { formatDuration, intervalToDuration } from "date-fns"
-import { useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useNomPoolStakingStatus } from "@ui/domains/Staking/hooks/nomPools/useNomPoolStakingStatus"
 import { NomPoolWithdrawButton } from "@ui/domains/Staking/NomPoolWithdraw/NomPoolWithdrawButton"
 import { NomPoolUnbondButton } from "@ui/domains/Staking/Unbond/NomPoolUnbondButton"
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDuration, intervalToDuration } from "date-fns"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { usePortfolioNavigation } from "../../usePortfolioNavigation"
 
@@ -27,12 +26,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
 
   const rowAddress = useMemo(
     () => address ?? selectedAccount?.address ?? null,
-    [selectedAccount?.address, address],
+    [selectedAccount?.address, address]
   )
 
   const accountStatus = useMemo(
     () => data?.accounts?.find((s) => s.address === rowAddress),
-    [data?.accounts, rowAddress],
+    [data?.accounts, rowAddress]
   )
 
   const withdrawIn = useMemo(
@@ -42,12 +41,12 @@ export const LockedExtra = ({ tokenId, address, rowMeta, isLoading }: LockedExtr
             locale,
           })
         : null,
-    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale],
+    [accountStatus?.canWithdrawIn, rowMeta.unbonding, locale]
   )
 
   const canUnbond = useMemo(
     () => accountStatus?.canUnstake && rowMeta.poolId,
-    [accountStatus?.canUnstake, rowMeta.poolId],
+    [accountStatus?.canUnstake, rowMeta.poolId]
   )
 
   if (!rowAddress) return null

@@ -1,5 +1,5 @@
 import { useStateObservable } from "@react-rxjs/core"
-import { SetStateAction } from "react"
+import type { SetStateAction } from "react"
 
 import { setSwapTokensModalIsOpen, swapTokensModalIsOpen$ } from "../state/swapTokensModalIsOpen"
 
@@ -17,5 +17,5 @@ const toggle = () => setIsOpen((v) => !v)
 
 const setIsOpen = async (isOpen: SetStateAction<boolean>) =>
   setSwapTokensModalIsOpen(
-    typeof isOpen === "function" ? isOpen(await swapTokensModalIsOpen$.getValue()) : isOpen,
+    typeof isOpen === "function" ? isOpen(await swapTokensModalIsOpen$.getValue()) : isOpen
   )

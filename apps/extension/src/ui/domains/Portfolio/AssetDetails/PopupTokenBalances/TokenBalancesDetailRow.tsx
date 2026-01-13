@@ -1,15 +1,14 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 import { LockIcon } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { Tokens } from "@ui/domains/Asset/Tokens"
-import { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import type { BalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { StaleBalancesIcon } from "../../StaleBalancesIcon"
 import { PortfolioAccount } from "../PortfolioAccount"
-import { BalanceDetailRow } from "../useTokenBalances"
+import type { BalanceDetailRow } from "../useTokenBalances"
 import { LockedExtra } from "./LockedExtra"
 
 type TokenBalancesDetailRowProps = {
@@ -30,8 +29,8 @@ export const TokenBalancesDetailRow = ({
   return (
     <div
       className={classNames(
-        "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
-        isLastRow && "rounded-b-sm",
+        "flex w-full items-center gap-8 bg-black-secondary px-7 py-6",
+        isLastRow && "rounded-b-sm"
       )}
     >
       <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
@@ -52,13 +51,13 @@ export const TokenBalancesDetailRow = ({
           </div>
         )}
         {!row.address && row.isLoading && !row.description && row.locked && (
-          <div className="bg-grey-800 rounded-xs h-[1.4rem] max-w-48 animate-pulse" />
+          <div className="h-[1.4rem] max-w-48 animate-pulse rounded-xs bg-grey-800" />
         )}
         {!row.address && row.description && (
           <div className="text-left text-xs">
             <Tooltip>
               <TooltipTrigger className="max-w-full truncate">{row.description}</TooltipTrigger>
-              <TooltipContent className="rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-[1.1rem] shadow">
+              <TooltipContent className="z-20 rounded-xs border-[0.5px] border-grey-700 bg-black p-3 text-[1.1rem] text-body-secondary shadow">
                 {row.description}
               </TooltipContent>
             </Tooltip>
@@ -68,13 +67,13 @@ export const TokenBalancesDetailRow = ({
       <div
         className={classNames(
           "flex flex-col flex-nowrap items-end justify-center gap-2 whitespace-nowrap",
-          status.status === "fetching" && "animate-pulse transition-opacity",
+          status.status === "fetching" && "animate-pulse transition-opacity"
         )}
       >
         <div
           className={classNames(
             "flex h-10 items-center gap-2 font-bold",
-            row.locked ? "text-body-secondary" : "text-white",
+            row.locked ? "text-body-secondary" : "text-white"
           )}
         >
           <Tokens amount={row.tokens} symbol={symbol} isBalance />

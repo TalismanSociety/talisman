@@ -1,12 +1,12 @@
 import { InfoIcon } from "@talismn/icons"
-import { Account, isAccountAddressEthereum } from "extension-core"
-import { FC, Fragment, useCallback, useMemo, useState } from "react"
+import { type Account, isAccountAddressEthereum } from "extension-core"
+import { type FC, Fragment, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ConnectAccountToggleButtonRow } from "./ConnectAccountToggleButtonRow"
 
-const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+const AccountSeparator = () => <div className="mx-6 h-0.5 bg-grey-800"></div>
 
 export const ConnectedAccountsPolkadot: FC<{
   activeAccounts: Array<[Account, boolean]>
@@ -16,13 +16,13 @@ export const ConnectedAccountsPolkadot: FC<{
 
   const hasEthereumActiveAccounts = useMemo(
     () => activeAccounts.some((acc) => isAccountAddressEthereum(acc[0]) && acc[1]),
-    [activeAccounts],
+    [activeAccounts]
   )
   const [enableEvmAccounts, setEnableEvmAccounts] = useState(hasEthereumActiveAccounts)
 
   const displayedAccounts = useMemo(
     () => activeAccounts.filter(([acc]) => enableEvmAccounts || !isAccountAddressEthereum(acc)),
-    [activeAccounts, enableEvmAccounts],
+    [activeAccounts, enableEvmAccounts]
   )
 
   const handleAccountToggle = useCallback(
@@ -34,7 +34,7 @@ export const ConnectedAccountsPolkadot: FC<{
         : [...otherActive, address]
       onUpdateAccounts(newActive)
     },
-    [activeAccounts, onUpdateAccounts],
+    [activeAccounts, onUpdateAccounts]
   )
 
   const handleDisconnectAllClick = useCallback(() => {
@@ -51,7 +51,7 @@ export const ConnectedAccountsPolkadot: FC<{
         onUpdateAccounts(
           activeAccounts
             .filter(([acc, isConnected]) => !isAccountAddressEthereum(acc) && isConnected)
-            .map(([a]) => a.address),
+            .map(([a]) => a.address)
         )
       }
       return !enabled
@@ -60,7 +60,7 @@ export const ConnectedAccountsPolkadot: FC<{
 
   return (
     <>
-      <div className="mb-2 mt-6 flex w-full items-center justify-between gap-3 overflow-hidden px-8 text-xs">
+      <div className="mt-6 mb-2 flex w-full items-center justify-between gap-3 overflow-hidden px-8 text-xs">
         <Checkbox
           checked={enableEvmAccounts}
           onClick={handleToggleEvmAccounts}
@@ -73,7 +73,7 @@ export const ConnectedAccountsPolkadot: FC<{
             </TooltipTrigger>
             <TooltipContent>
               {t(
-                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps.",
+                "Some Polkadot apps may not work with Ethereum-type accounts. Using an EVM account via Substrate could break certain dApps."
               )}
             </TooltipContent>
           </Tooltip>
@@ -81,15 +81,15 @@ export const ConnectedAccountsPolkadot: FC<{
         <div className="flex items-center gap-2 truncate">
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300 truncate"
+            className="truncate text-body-secondary hover:text-grey-300"
             onClick={handleDisconnectAllClick}
           >
             {t("Disconnect All")}
           </button>
-          <div className="bg-body-disabled h-[1rem] w-0.5"></div>
+          <div className="h-[1rem] w-0.5 bg-body-disabled"></div>
           <button
             type="button"
-            className="text-body-secondary hover:text-grey-300 truncate"
+            className="truncate text-body-secondary hover:text-grey-300"
             onClick={handleConnectAllClick}
           >
             {t("Connect All")}

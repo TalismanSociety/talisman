@@ -1,5 +1,5 @@
 import { Enum } from "@polkadot-api/substrate-bindings"
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { isNotNil } from "@talismn/util"
 import { range } from "lodash-es"
 import { Binary } from "polkadot-api"
@@ -52,10 +52,10 @@ export const getStakingAPR = async (stakingSapi: ScaleApi, babeSapi: ScaleApi) =
 
   const [eraRewards, eraTotalStakes] = await Promise.all([
     Promise.all(
-      eras.map((era) => stakingSapi.getStorage<bigint>("Staking", "ErasValidatorReward", [era])),
+      eras.map((era) => stakingSapi.getStorage<bigint>("Staking", "ErasValidatorReward", [era]))
     ),
     Promise.all(
-      eras.map((era) => stakingSapi.getStorage<bigint>("Staking", "ErasTotalStake", [era])),
+      eras.map((era) => stakingSapi.getStorage<bigint>("Staking", "ErasTotalStake", [era]))
     ),
   ])
 
@@ -79,7 +79,7 @@ export const getNomPoolStakingPayload = async (
   poolId: number | string,
   amount: bigint,
   isBondExtra: boolean,
-  withSetClaimPermission: boolean,
+  withSetClaimPermission: boolean
 ) => {
   const call_joinPoolOrBondExtra = isBondExtra
     ? sapi.getDecodedCall("NominationPools", "bond_extra", { extra: Enum("FreeBalance", amount) })
@@ -99,7 +99,7 @@ export const getNomPoolStakingPayload = async (
     "Utility",
     "batch_all",
     { calls: [call_joinPoolOrBondExtra, call_setClaimPermission, call_remark].filter(isNotNil) },
-    { address },
+    { address }
   )
 }
 export const cleanupNomPoolName = (name: string | null | undefined) =>

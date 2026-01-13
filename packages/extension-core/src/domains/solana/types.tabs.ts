@@ -1,6 +1,6 @@
-import { SolanaSignInInput } from "@solana/wallet-standard-features"
-import { SolanaChainId } from "@talismn/solana"
-import { WalletAccount } from "@wallet-standard/base"
+import type { SolanaSignInInput } from "@solana/wallet-standard-features"
+import type { SolanaChainId } from "@talismn/solana"
+import type { WalletAccount } from "@wallet-standard/base"
 
 type SerializedWalletAccount = Omit<WalletAccount, "publicKey">
 
@@ -69,6 +69,7 @@ export type SolanaTabsMessages = {
   "pub(solana.provider.subscribe)": [null, boolean, SolanaTabSubscriptionEvent]
   "pub(solana.provider.signIn)": [RequestSolanaSignIn, ResponseSolanaSignIn]
   "pub(solana.provider.connect)": [RequestSolanaConnect, ResponseSolanaConnect]
+  // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   "pub(solana.provider.disconnect)": [void, void]
   "pub(solana.provider.signMessage)": [RequestSolanaSignMessage, ResponseSolanaSignMessage]
   "pub(solana.provider.signTransaction)": [

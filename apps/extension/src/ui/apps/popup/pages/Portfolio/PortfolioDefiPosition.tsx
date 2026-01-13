@@ -1,15 +1,14 @@
 import { ChevronLeftIcon } from "@talismn/icons"
-import { FC, useEffect } from "react"
-import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
-import { IconButton } from "talisman-ui"
-
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { PortfolioAccount } from "@ui/domains/Portfolio/AssetDetails/PortfolioAccount"
 import { PopupDefiPosition } from "@ui/domains/Portfolio/DeFi/PopupDefiPosition"
 import { PositionTotal } from "@ui/domains/Portfolio/DeFi/PositionTotal"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useDefiPosition } from "@ui/state"
+import { type FC, useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate, useParams } from "react-router-dom"
+import { IconButton } from "talisman-ui"
 
 export const PortfolioDefiPosition = () => {
   const { popupOpenEvent } = useAnalytics()
@@ -43,14 +42,14 @@ const DefiPositionHeader: FC<{ positionId: string | undefined }> = ({ positionId
         </IconButton>
         <AssetLogo url={position.defiLogoUrl} className="size-[3.6rem]" />
         <div className="flex grow flex-col gap-2 overflow-hidden">
-          <div className="text-body truncate text-sm font-bold">{position.defiName}</div>
-          <div className="text-body-secondary truncate text-xs">
+          <div className="truncate font-bold text-body text-sm">{position.defiName}</div>
+          <div className="truncate text-body-secondary text-xs">
             <PortfolioAccount address={position.address} />
           </div>
         </div>
         <div className="flex shrink-0 flex-col gap-2 text-right">
           <div className="text-body-secondary text-sm">{t("Total")}</div>
-          <div className="text-body text-base font-bold">
+          <div className="font-bold text-base text-body">
             <PositionTotal position={position} />
           </div>
         </div>

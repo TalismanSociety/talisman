@@ -7,7 +7,7 @@ export class Decimal {
   static fromPlanck(
     planck: bigint | boolean | number | string,
     decimals: number,
-    options?: DecimalOptions,
+    options?: DecimalOptions
   ) {
     return new Decimal(BigInt(planck), decimals, options)
   }
@@ -15,10 +15,10 @@ export class Decimal {
   static fromPlanckOrUndefined(
     planck: bigint | boolean | number | string | undefined,
     decimals: number,
-    options?: DecimalOptions,
+    options?: DecimalOptions
   ) {
     try {
-      return this.fromPlanck(planck ?? 0, decimals, options)
+      return Decimal.fromPlanck(planck ?? 0, decimals, options)
     } catch {
       return undefined
     }
@@ -67,7 +67,7 @@ export class Decimal {
 
   static fromUserInputOrUndefined(input: string, decimals: number, options?: DecimalOptions) {
     try {
-      return this.fromUserInput(input, decimals, options)
+      return Decimal.fromUserInput(input, decimals, options)
     } catch {
       return undefined
     }
@@ -76,7 +76,7 @@ export class Decimal {
   private constructor(
     public readonly planck: bigint,
     public readonly decimals: number,
-    public readonly options?: DecimalOptions,
+    public readonly options?: DecimalOptions
   ) {}
 
   get currency() {
@@ -101,7 +101,7 @@ export class Decimal {
 
   toLocaleString(
     locales?: Intl.LocalesArgument,
-    options?: Omit<Intl.NumberFormatOptions, "style">,
+    options?: Omit<Intl.NumberFormatOptions, "style">
   ) {
     const currency = options?.currency ?? this.options?.currency
     return (

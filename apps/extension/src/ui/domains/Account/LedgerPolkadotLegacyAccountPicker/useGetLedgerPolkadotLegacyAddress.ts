@@ -1,6 +1,5 @@
-import { useCallback, useRef } from "react"
-
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
+import { useCallback, useRef } from "react"
 
 export const useGetLedgerPolkadotLegacyAddress = (genesisHash: `0x${string}`) => {
   const { getAddress: getAccountAddress } = useLedgerSubstrateLegacy(genesisHash)
@@ -20,7 +19,7 @@ export const useGetLedgerPolkadotLegacyAddress = (genesisHash: `0x${string}`) =>
 
       return address
     },
-    [genesisHash, getAccountAddress],
+    [genesisHash, getAccountAddress]
   )
 
   return { getAddress }

@@ -1,6 +1,6 @@
 import upperFirst from "lodash-es/upperFirst"
 
-import { Balance, BalanceFormatter, LockedAmount } from "../../../types"
+import type { Balance, BalanceFormatter, LockedAmount } from "../../../types"
 
 export type BalanceLockType =
   | "reserved"
@@ -56,7 +56,7 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("aca/earn")) return getOtherType(input)
   if (input.includes("stk_stks")) return getOtherType(input)
 
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: legacy
   console.warn(`unknown locked type: ${input}`)
   return getOtherType(input)
 }
@@ -66,7 +66,7 @@ const isBaseLock = (lock: Pick<LockedAmount<string>, "label">) =>
   baseLockLabels.includes(lock.label)
 const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock(lock)
 export const filterBaseLocks = (
-  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>,
+  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
 ) => {
   const hasNonBaseLocks = locks.some(isNonBaseLock)
   if (!hasNonBaseLocks) return locks
@@ -77,8 +77,8 @@ export const filterBaseLocks = (
 // TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  { balance }: { balance?: Balance } = {},
+  // biome-ignore lint/correctness/noUnusedFunctionParameters: legacy
+  { balance }: { balance?: Balance } = {}
 ) => {
   if (!lock.label) return lock.label
 

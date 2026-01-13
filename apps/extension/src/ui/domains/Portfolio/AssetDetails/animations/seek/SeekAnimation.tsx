@@ -1,5 +1,5 @@
 import { cn } from "@talismn/util"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
 
 import imgAnimation from "./seek-animation.gif"
@@ -11,7 +11,7 @@ const ANIMATION_DURATION = 25000 // 25 seconds
 export const SeekAnimation = () => {
   const [state, setState] = useState<AnimState>("hidden")
 
-  const hide = () => {
+  const hide = useCallback(() => {
     // fade out
     setState("hiding")
 
@@ -19,7 +19,7 @@ export const SeekAnimation = () => {
     setTimeout(() => {
       setState("hidden")
     }, 500)
-  }
+  }, [])
 
   useEffect(() => {
     // fade in
@@ -35,21 +35,21 @@ export const SeekAnimation = () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [])
+  }, [hide])
 
   return createPortal(
     <div
       className={cn(
-        "bg-black-primary/70 absolute left-0 top-0 size-full opacity-0 transition-opacity duration-500 ease-out",
+        "absolute top-0 left-0 size-full bg-black-primary/70 opacity-0 transition-opacity duration-500 ease-out",
         state === "visible" && "opacity-100",
         state === "hiding" && "opacity-0",
-        state === "hidden" && "hidden",
+        state === "hidden" && "hidden"
       )}
     >
       <button type="button" onClick={hide}>
         <img src={imgAnimation} alt="" className="aspect-[4/6] size-full" />
       </button>
     </div>,
-    document.getElementById("main") as HTMLElement,
+    document.getElementById("main") as HTMLElement
   )
 }

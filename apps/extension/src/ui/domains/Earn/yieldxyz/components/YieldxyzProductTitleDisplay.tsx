@@ -1,5 +1,5 @@
-import { YieldDto } from "extension-core"
-import { FC } from "react"
+import type { YieldDto } from "extension-core"
+import type { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 export const YieldxyzProductTitleDisplay: FC<{ product: YieldDto; className?: string }> = ({

@@ -1,21 +1,20 @@
 import { createSignInMessageText } from "@solana/wallet-standard-util"
-import { InfoIcon } from "@talismn/icons"
-import { isAccountPlatformSolana, KnownRequestIdOnly, ProviderType } from "extension-core"
-import { capitalize } from "lodash-es"
-import { FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button, Drawer } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
+import { InfoIcon } from "@talismn/icons"
 import { api } from "@ui/api"
 import { Message } from "@ui/domains/Sign/Message"
 import { MsgSignButton } from "@ui/domains/Sign/MsgSignButton/MsgSignButton"
-import { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
+import type { MsgSignButtonPayloadSol } from "@ui/domains/Sign/MsgSignButton/types"
 import { ConnectAccountsContainer } from "@ui/domains/Site/ConnectAccountsContainer"
 import { ConnectAccountToggleButtonRow } from "@ui/domains/Site/ConnectAccountToggleButtonRow"
 import { useAccounts, useRequest } from "@ui/state"
+import { isAccountPlatformSolana, type KnownRequestIdOnly, type ProviderType } from "extension-core"
+import { capitalize } from "lodash-es"
+import { type FC, Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button, Drawer } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../../../Layout/PopupLayout"
 
@@ -51,7 +50,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
             message: new TextEncoder().encode(message),
           } as MsgSignButtonPayloadSol)
         : null,
-    [message, address],
+    [message, address]
   )
 
   const handleSubmit = useCallback(
@@ -68,7 +67,7 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
         notify({ type: "error", title: t("Failed to connect"), subtitle: (err as Error).message })
       }
     },
-    [address, message, signInRequest, t],
+    [address, message, signInRequest, t]
   )
 
   const handleReject = useCallback(() => {
@@ -83,8 +82,8 @@ export const SolanaSignInPage: FC<{ className?: string }> = ({ className }) => {
         <AppPill url={signInRequest.url} />
       </PopupHeader>
       <PopupContent>
-        <div className="text-body-secondary flex h-full w-full flex-col items-center gap-8 text-center">
-          <h1 className="text-body text-md my-4 font-bold leading-9">{t("Sign In Request")}</h1>
+        <div className="flex h-full w-full flex-col items-center gap-8 text-center text-body-secondary">
+          <h1 className="my-4 font-bold text-body text-md leading-9">{t("Sign In Request")}</h1>
           <div className="flex w-full flex-col gap-8 px-4 text-left">
             <ConnectAccountsContainer
               status="disabled"
@@ -152,7 +151,7 @@ const MessageContainer: FC<{ text: string }> = ({ text }) => {
   )
 }
 
-const AccountSeparator = () => <div className="bg-grey-800 mx-6 h-0.5"></div>
+const AccountSeparator = () => <div className="mx-6 h-0.5 bg-grey-800"></div>
 
 const NoAccountWarning = ({
   onIgnoreClick,
@@ -166,11 +165,11 @@ const NoAccountWarning = ({
   const { t } = useTranslation()
   return (
     <Drawer isOpen anchor="bottom" containerId="main">
-      <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+      <div className="flex flex-col gap-8 rounded-t-xl bg-grey-800 p-12">
         <div className="w-full text-center">
-          <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+          <InfoIcon className="inline-block text-[4rem] text-primary-500" />
         </div>
-        <p className="text-body-secondary text-center">
+        <p className="text-center text-body-secondary">
           <Trans
             t={t}
             defaults="This application requires a <br/><strong>{{type}} account</strong> to connect.<br/>Would you like to create or import one?"

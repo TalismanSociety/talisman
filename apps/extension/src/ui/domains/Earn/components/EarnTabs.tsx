@@ -1,7 +1,6 @@
-import { FC, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-
 import { Tabs } from "@talisman/components/Tabs"
+import { type FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 interface EarnTabsProps {
   className?: string
@@ -24,7 +23,7 @@ export const EarnTabs: FC<EarnTabsProps> = ({ className, onTabChange, value = "a
       if (value !== "assets" && value !== "discover") return
       onTabChange?.(value)
     },
-    [onTabChange],
+    [onTabChange]
   )
 
   return <Tabs tabs={tabs} selected={value} onChange={handleChange} className={className} />
