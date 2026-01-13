@@ -85,7 +85,6 @@ export const EnterPasswordForm = () => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
-            // biome-ignore lint/a11y/noAutofocus: legacy
             autoFocus
             after={<CapsLockWarningIcon />}
           />

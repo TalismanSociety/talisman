@@ -1,3 +1,4 @@
+// biome-ignore-all lint/a11y/useAnchorContent: legacy
 import { FadeIn } from "@talisman/components/FadeIn"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -139,6 +140,7 @@ const MetadataPortalContent = () => {
   const [certifierMnemonicId] = useAppState("vaultVerifierCertificateMnemonicId")
   const mnemonic = useMnemonic(certifierMnemonicId)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // when chain change reset to network specs tab
     setTab("specs")
@@ -177,8 +179,8 @@ const MetadataPortalContent = () => {
               t={t}
               components={{
                 LineBreak: <br />,
+
                 Link: (
-                  // biome-ignore lint/a11y/useAnchorContent: legacy
                   <a
                     href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"

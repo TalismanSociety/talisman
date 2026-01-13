@@ -30,7 +30,6 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
     if (!input) return () => {}
 
     const handler = getInputFilter((value: string) =>
-      // biome-ignore lint/complexity/noUselessStringConcat: legacy
       new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value)
     )
 
@@ -46,12 +45,13 @@ export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decima
       "focusout",
     ]
 
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     events.forEach((eventName) => input.addEventListener(eventName, handler, true))
 
     return () => {
+      // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
       events.forEach((eventName) => input.removeEventListener(eventName, handler, true))
     }
     // ref?.current will toggle between defined and not, it's imperative to resubscribe each time
-    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [decimals, ref?.current])
 }

@@ -58,6 +58,7 @@ export const NetworksList: FC<{
     })
   }, [networks, recommendedNetworks])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment below
   useEffect(() => {
     const lowerSearch = search?.toLowerCase().trim() ?? ""
 
@@ -98,7 +99,6 @@ export const NetworksList: FC<{
     setDisplayedNetworks(ordered)
 
     // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
-    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [activeOnly, allSortedNetworks, platform, search])
 
   const ocResetAllModal = useOpenClose()

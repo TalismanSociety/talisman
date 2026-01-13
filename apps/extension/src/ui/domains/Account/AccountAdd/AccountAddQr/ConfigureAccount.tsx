@@ -29,6 +29,7 @@ const AccountDerivedPicker = ({
 
   return (
     <button
+      type="button"
       onClick={(e) => {
         e.preventDefault()
         dispatch({ method: "setLockToNetwork", lockToNetwork })
@@ -105,7 +106,6 @@ export const ConfigureAccount = () => {
           containerProps={{ className: "!h-28" }}
           small
           value={accountConfig.name}
-          // biome-ignore lint/a11y/noAutofocus: legacy
           autoFocus
           onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
         />

@@ -64,6 +64,7 @@ export const TokensList: FC<{
   // also helps performance
   const [displayedTokens, setDisplayedTokens] = useState<Token[]>(() => defaultTokens)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment below
   useEffect(() => {
     const lowerSearch = search?.trim().toLowerCase()
 
@@ -92,7 +93,6 @@ export const TokensList: FC<{
     setDisplayedTokens(results)
 
     // ⚠️ We don't want networksActiveState as dependency here, or if activeOnly is true, disabling a network would make it disappear from the list
-    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   }, [defaultTokens, isActiveOnly, isCustomOnly, isHidePools, search])
 
   if (!displayedTokens.length)
