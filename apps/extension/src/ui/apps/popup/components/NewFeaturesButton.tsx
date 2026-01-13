@@ -44,6 +44,7 @@ export const NewFeaturesButton = ({ className }: Props) => {
   if (!isEnabled || dismissedVersion === versions[0]) return null
 
   return (
+    // biome-ignore lint/a11y/useSemanticElements: legacy
     <div
       tabIndex={0}
       role="button"

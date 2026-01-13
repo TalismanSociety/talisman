@@ -263,6 +263,7 @@ const VersionInfo = () => {
 
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: legacy
+    // biome-ignore lint/a11y/noStaticElementInteractions: legacy
     <div
       onClick={handleClick}
       className="absolute top-10 left-10 z-20 flex h-14 select-none items-center justify-center rounded-full bg-primary/10 px-4 text-primary/80 text-sm"

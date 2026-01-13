@@ -77,7 +77,7 @@ export const Encrypt = () => {
           <SignMessage
             account={account}
             request={request?.payload.message as string}
-            isDecrypt={type == "decrypt"}
+            isDecrypt={type === "decrypt"}
           />
         )}
       </PopupContent>
@@ -88,16 +88,14 @@ export const Encrypt = () => {
           </SignAlertMessage>
         )}
         {account && request && (
-          <>
-            <div className="grid w-full grid-cols-2 gap-12">
-              <Button disabled={processing} onClick={reject}>
-                {t("Cancel")}
-              </Button>
-              <Button disabled={processing} processing={processing} primary onClick={approve}>
-                {t("Approve")}
-              </Button>
-            </div>
-          </>
+          <div className="grid w-full grid-cols-2 gap-12">
+            <Button disabled={processing} onClick={reject}>
+              {t("Cancel")}
+            </Button>
+            <Button disabled={processing} processing={processing} primary onClick={approve}>
+              {t("Approve")}
+            </Button>
+          </div>
         )}
       </PopupFooter>
     </PopupLayout>

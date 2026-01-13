@@ -45,6 +45,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [navigate, updateOnboarded])
 
   const completeOnboarding = useCallback(
+    // biome-ignore lint/suspicious/noAssignInExpressions: legact
     () => (location.href = "dashboard.html#/portfolio?onboarded"),
     []
   )
@@ -62,6 +63,7 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
   }, [data.allowTracking])
 
   // handle case where user has navigated back, and a password already exists in the store
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     passwordStore.get("secret").then((pw) => {
       setPasswordExists(!!pw)

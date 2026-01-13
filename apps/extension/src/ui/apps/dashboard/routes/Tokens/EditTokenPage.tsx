@@ -1,4 +1,4 @@
-/* eslint-disable react/no-children-prop */
+/** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
@@ -404,7 +404,7 @@ const OnChainIdDisplay = ({ onChainId }: { onChainId: string | number }) => {
       const yaml = convertToYaml(parsed)
       const rowsCount = yaml.split("\n").length
       return [true, yaml, rowsCount]
-    } catch (e) {
+    } catch {
       return [false, onChainId, 1]
     }
   }, [onChainId])

@@ -93,6 +93,7 @@ const PortfolioWhatsNewSection = ({
           <div
             ref={whatsNewHtmlRef}
             className="flex flex-col gap-8 [&_a:hover]:text-white [&_a]:text-bold [&_a]:text-grey-200 [&_strong]:font-normal [&_strong]:text-white"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: legacy
             dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}
           />
         </div>
@@ -187,12 +188,14 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
   /** A ref to the `dangerouslySetInnerHTML={{ __html: whatsNewHtml ?? "" }}` div element */
   const whatsNewHtmlRef = useRef<HTMLDivElement | null>(null)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useLayoutEffect(() => {
     const ref = whatsNewHtmlRef.current
     if (!ref) return
 
     // set all anchors to have target="_blank"
     const anchors = ref.querySelectorAll("a")
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     Array.from(anchors).flatMap((anchorRef) => {
       anchorRef.setAttribute("target", "_blank")
       anchorRef.setAttribute("rel", "noopener noreferrer")
@@ -205,6 +208,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
       if (!iconName) return []
       if (!(iconName in Icons)) return []
 
+      // biome-ignore lint/performance/noDynamicNamespaceImportAccess: legacy
       const Icon = Icons[iconName as keyof typeof Icons]
       return {
         component: <Icon className="inline h-[1.25em] w-[1.25em] align-text-bottom text-primary" />,
@@ -226,7 +230,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
 
       return {
         component: (
-          <button className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
+          <button type="button" className="text-grey-200 text-xs hover:text-white" onClick={goTo}>
             {innerText} <ExternalLinkIcon className="inline align-middle" />
           </button>
         ),
@@ -242,6 +246,7 @@ const useWhatsNewNodes = (whatsNewHtml: string) => {
     })
 
     // prepare the fancy nodes to be unmounted when this hook unmounts
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     return () => nodeRoots.forEach((root) => root.unmount())
   }, [whatsNewHtml])
 

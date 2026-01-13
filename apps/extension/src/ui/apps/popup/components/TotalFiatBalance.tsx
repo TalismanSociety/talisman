@@ -56,6 +56,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
         <div className="flex gap-4 text-body text-xs">
           <div className="leading-10 tracking-[0.06px]">{t("Total Portfolio")}</div>
           <button
+            type="button"
             className={classNames(
               "pointer-events-auto text-grey-200 opacity-0 transition-opacity hover:text-body focus:text-body",
               (hideBalances || mouseOver) && "opacity-100"
@@ -67,6 +68,7 @@ export const TotalFiatBalance = ({ className, mouseOver, disabled }: Props) => {
         </div>
         <div className="flex w-full max-w-full items-center gap-2">
           <button
+            type="button"
             className={classNames(
               "pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full bg-grey-700/20 text-center text-grey-200 shadow-[inset_0px_0px_1px_rgb(228_228_228_/_1)] transition-[box-shadow,color,background-color] duration-200 ease-out hover:bg-body/10 hover:text-body hover:shadow-[inset_0px_0px_2px_rgb(250_250_250_/_1)]",
               currencyConfig[currency]?.symbol?.length === 2 && "text-xs",
@@ -240,6 +242,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
     <div className="flex w-full items-center justify-between">
       <div className="flex justify-center gap-4">
         {topActions.map((action, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <Action key={index} {...action} />
         ))}
       </div>
