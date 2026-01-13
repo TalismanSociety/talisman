@@ -17,6 +17,7 @@ export const Tabs: FC<{
 
   const [indicatorStyle, setIndicatorStyle] = useState<CSSProperties>()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const container = refTabs.current
     if (!container) return
@@ -41,7 +42,7 @@ export const Tabs: FC<{
     }
 
     updateIndicator()
-  }, [selected, setIndicatorStyle])
+  }, [selected])
 
   return (
     <div

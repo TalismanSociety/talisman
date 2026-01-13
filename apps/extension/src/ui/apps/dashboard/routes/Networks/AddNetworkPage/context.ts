@@ -167,7 +167,7 @@ const validateFormData = ({ value }: { value: NetworkCreateFormData }): string |
         : "invalid"
 
     return res
-  } catch (err) {
+  } catch {
     return "invalid"
   }
 }

@@ -175,6 +175,7 @@ export const LayoutBreadcrumb: FC<{
     >
       {items.map(({ label, to }, index) => {
         return (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static list
           <Fragment key={index}>
             <BreadcrumbItem label={label} to={to} selected={index === items.length - 1} />
             {index < items.length - 1 && <ChevronRightIcon />}

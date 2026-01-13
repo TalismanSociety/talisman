@@ -31,7 +31,7 @@ const useStatus = (props?: UseStatusProps) => {
       setStatus(status)
       setMessage(msg)
     },
-    [setStatus, setMessage]
+    []
   )
 
   return {

@@ -52,17 +52,15 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     const internalRef = useRef<HTMLInputElement>(null)
 
     // Merge the forwarded ref with the internal ref
+    // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
     useImperativeHandle(ref, () => internalRef.current as HTMLInputElement, [internalRef])
 
     const [syncSearch, setSearch] = useState(initialValue ?? "")
     const search = useDeferredValue(syncSearch)
 
-    const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-      (e) => {
-        setSearch(e.target.value)
-      },
-      [setSearch]
-    )
+    const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
+      setSearch(e.target.value)
+    }, [])
 
     const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
       (e) => {
@@ -94,7 +92,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       setSearch("")
       internalRef.current.value = ""
       internalRef.current.blur()
-    }, [setSearch])
+    }, [])
 
     return (
       <FormFieldInputText

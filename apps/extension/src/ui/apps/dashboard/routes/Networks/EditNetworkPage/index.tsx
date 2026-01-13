@@ -1,4 +1,4 @@
-/* eslint-disable react/no-children-prop */
+// biome-ignore-all lint/correctness/noChildrenProp: legacy
 import * as Sentry from "@sentry/browser"
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"

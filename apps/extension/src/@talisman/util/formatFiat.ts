@@ -30,7 +30,7 @@ export const formatFiat = (
 
   // Hack to get trailing ISO code instead of leading
   if (currency !== undefined && currencyDisplay === "code") {
-    return formatted.replace(`${currency.toUpperCase()}`, "").trim() + " " + currency.toUpperCase()
+    return `${formatted.replace(`${currency.toUpperCase()}`, "").trim()} ${currency.toUpperCase()}`
   }
 
   return formatted

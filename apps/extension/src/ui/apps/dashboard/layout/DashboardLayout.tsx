@@ -113,7 +113,7 @@ const HorizontalNav = () => {
       name: "Goto",
       action: "Portfolio button",
     })
-    navigate("/portfolio/tokens" + (searchParams.size ? `?${searchParams}` : ""))
+    navigate(`/portfolio/tokens${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleEarnClick = useCallback(() => {
@@ -122,7 +122,7 @@ const HorizontalNav = () => {
       name: "Goto",
       action: "Earn button",
     })
-    navigate("/earn" + (searchParams.size ? `?${searchParams}` : ""))
+    navigate(`/earn${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleActivityClick = useCallback(() => {
@@ -131,7 +131,7 @@ const HorizontalNav = () => {
       name: "Goto",
       action: "Activity button",
     })
-    navigate("/tx-history" + (searchParams.size ? `?${searchParams}` : ""))
+    navigate(`/tx-history${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
   const handleSettingsClick = useCallback(() => {

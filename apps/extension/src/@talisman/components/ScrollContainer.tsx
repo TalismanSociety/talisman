@@ -14,7 +14,7 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
     const localRef = useRef<HTMLDivElement>(null)
     const ref = useMemo(
       () => (forwardedRef || localRef) as RefObject<HTMLDivElement>,
-      [forwardedRef, localRef]
+      [forwardedRef]
     )
     const [more, setMore] = useState<{ top: boolean; bottom: boolean }>({
       top: false,

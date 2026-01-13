@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useNodejsImportProtocol: legacy
 import type EventEmitter from "events"
 
 export interface AnyEthRequest {

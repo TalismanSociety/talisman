@@ -1,6 +1,7 @@
 import { classNames } from "@talismn/util"
 
 export const SelectedIndicator = ({ className }: { className?: string }) => (
+  // biome-ignore lint/a11y/noSvgWithoutTitle: legacy
   <svg
     width="18"
     height="16"

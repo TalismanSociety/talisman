@@ -40,7 +40,6 @@ export const initSentryFrontend = () => {
 
       // Print to console instead of Sentry in DEBUG/development builds
       if (DEBUG) {
-        // biome-ignore lint/suspicious/noConsole: legacy
         log.error("[DEBUG - UI] Sentry event occurred", event)
         return null
       }

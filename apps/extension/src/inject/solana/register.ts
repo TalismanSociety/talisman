@@ -66,6 +66,7 @@ class RegisterWalletEvent extends Event implements WindowRegisterWalletEvent {
 export function DEPRECATED_registerWallet(wallet: Wallet): void {
   registerWallet(wallet)
   try {
+    // biome-ignore lint/suspicious/noAssignInExpressions: legacy
     ;((window as DEPRECATED_WalletsWindow).navigator.wallets ||= []).push(({ register }) =>
       register(wallet)
     )

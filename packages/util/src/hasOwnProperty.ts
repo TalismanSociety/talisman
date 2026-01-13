@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noShadowRestrictedNames: legacy
 export function hasOwnProperty<X, Y extends PropertyKey>(
   obj: X,
   prop: Y

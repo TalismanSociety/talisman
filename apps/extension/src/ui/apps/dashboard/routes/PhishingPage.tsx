@@ -20,7 +20,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const displayUrl = useMemo(() => {
     try {
       return new URL(url).origin
-    } catch (err) {
+    } catch {
       return url
     }
   }, [url])
