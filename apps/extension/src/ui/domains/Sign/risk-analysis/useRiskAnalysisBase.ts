@@ -114,6 +114,7 @@ export const useRiskAnalysisBase = <
     [platform, result, t]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const launchScan = useCallback(() => {
     if (isAvailable) {
       if (result) review.drawer.open()
@@ -124,6 +125,7 @@ export const useRiskAnalysisBase = <
   }, [error, isAvailable, refetch, result, review.drawer, setIsScanRequested])
 
   const refAutoOpen = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refAutoOpen.current || !isScanRequested) return
     if (result) {

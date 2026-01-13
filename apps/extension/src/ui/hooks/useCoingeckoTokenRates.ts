@@ -14,7 +14,7 @@ const getCoinGeckoTokenRates = async (coingeckoId?: string) => {
     )
     const rates: Record<TokenId, TokenRates> = await fetchErc20Coin.json()
     return rates[coingeckoId] ?? null
-  } catch (err) {
+  } catch {
     // most likely invalid id
     return null
   }

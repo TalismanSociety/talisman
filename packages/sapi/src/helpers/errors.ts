@@ -115,8 +115,7 @@ const getModuleErrorMessage = (chain: Chain, error: UnsafeModuleError): string =
     if (palletErrors.type !== "enum" || !palletErrors.innerDocs[error.value.type]?.length)
       throw new Error("Unknown error type")
 
-    // biome-ignore lint/style/noNonNullAssertion: <explanation>
-    return palletErrors.innerDocs[error.value.type]!.join(" ")
+    return palletErrors.innerDocs[error.value.type].join(" ")
   } catch (err) {
     log.error("Failed to parse module error", { chainId: chain.connector.chainId, error, err })
     return [error.type, error.value.type].join(": ")
@@ -129,7 +128,7 @@ const tryFormatError = (err: unknown): string => {
     const unsafeErr = err as any
     if (unsafeErr.type && unsafeErr.value?.type)
       return [unsafeErr.type, unsafeErr.value.type].join(": ")
-  } catch (err) {
+  } catch {
     // ignore
   }
 

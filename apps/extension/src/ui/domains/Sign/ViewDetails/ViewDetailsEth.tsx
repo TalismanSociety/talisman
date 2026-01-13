@@ -118,7 +118,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         }
         // set an id to prevent multiple clicks to display multiple notifications
       )
-    } catch (err) {
+    } catch {
       notify({
         type: "error",
         title: t(`Copy failed`),

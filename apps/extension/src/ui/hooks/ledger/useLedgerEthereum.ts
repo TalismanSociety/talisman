@@ -99,7 +99,7 @@ const signWithLedger = async (
         // Nano S doesn't support signEIP712Message, fallback to signEIP712HashedMessage in case of error
         // see https://github.com/LedgerHQ/ledger-live/tree/develop/libs/ledgerjs/packages/hw-app-eth#signeip712message
 
-        // biome-ignore lint/style/noVar: legacy
+        // biome-ignore lint/correctness/noInnerDeclarations: legacy
         var sig = await ledger.signEIP712Message(account.derivationPath, jsonMessage)
       } catch {
         // fallback for ledger Nano S

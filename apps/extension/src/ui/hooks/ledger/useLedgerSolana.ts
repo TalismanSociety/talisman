@@ -80,8 +80,8 @@ const signWithLedger = async (
     case "message": {
       throw getTalismanLedgerError(t("Solana message signing with Ledger is not supported."))
 
-      const res = await ledger.signOffchainMessage(account.derivationPath, payload)
-      return res.signature
+      // const res = await ledger.signOffchainMessage(account.derivationPath, payload)
+      // return res.signature
     }
     case "transaction": {
       const res = await ledger.signTransaction(account.derivationPath, payload)

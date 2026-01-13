@@ -21,7 +21,7 @@ export const useCopyToClipboard = () => {
           { toastId }
         )
         return true
-      } catch (err) {
+      } catch {
         notify(
           {
             type: "error",

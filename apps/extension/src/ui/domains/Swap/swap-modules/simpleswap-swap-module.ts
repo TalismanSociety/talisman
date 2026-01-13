@@ -500,6 +500,7 @@ const simpleswapAssetsAtom = atom(async (get) => {
             },
           },
         }
+        // biome-ignore lint/performance/noAccumulatingSpread: legacy
         return { ...acc, [id]: asset }
       },
       {} as Record<string, SwappableAssetBaseType<{ simpleswap: SimpleSwapAssetContext }>>
@@ -558,7 +559,7 @@ const quote: QuoteFunction = loadable(
       currency_from: currencyFrom,
       currency_to: currencyTo,
     })
-    if (range && range.min.isGreaterThan(fromAmount.toString()))
+    if (range?.min.isGreaterThan(fromAmount.toString()))
       throw new Error(`SimpleSwap minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
     const output = await simpleSwapSdk.getEstimate({
@@ -876,12 +877,12 @@ const estimateGas: GetEstimateGasTxFunction = async (get) => {
 
   const transferTx =
     fromAsset.assetHubAssetId !== undefined
-      ? (polkadotApi.tx.assets["transferAllowDeath"] ?? polkadotApi.tx.assets["transfer"])(
+      ? (polkadotApi.tx.assets.transferAllowDeath ?? polkadotApi.tx.assets.transfer)(
           fromAsset.assetHubAssetId,
           fromAddress,
           fromAmount.planck
         )
-      : (polkadotApi.tx.balances["transferAllowDeath"] ?? polkadotApi.tx.balances["transfer"])(
+      : (polkadotApi.tx.balances.transferAllowDeath ?? polkadotApi.tx.balances.transfer)(
           fromAddress,
           fromAmount.planck
         )

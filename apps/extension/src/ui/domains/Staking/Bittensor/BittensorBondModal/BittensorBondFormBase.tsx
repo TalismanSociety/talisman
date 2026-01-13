@@ -446,14 +446,12 @@ export const BittensorBondFormBase = ({ BondTypeDetails }: BittensorBondFormBase
           </div>
         </div>
         {!isSubnetUnbond && (
-          <>
-            <div className="flex items-center justify-between gap-8">
-              <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
-              <div className="overflow-hidden">
-                <FeeEstimate />
-              </div>
+          <div className="flex items-center justify-between gap-8">
+            <div className="whitespace-nowrap">{t("Estimated Fee")}</div>
+            <div className="overflow-hidden">
+              <FeeEstimate />
             </div>
-          </>
+          </div>
         )}
       </div>
 

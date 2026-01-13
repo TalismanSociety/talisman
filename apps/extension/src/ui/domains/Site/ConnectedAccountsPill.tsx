@@ -53,7 +53,7 @@ export const ConnectedAccountsPill: FC = () => {
       if (!currentSite.url) return null
       const typedUrl = new URL(currentSite.url)
       return typedUrl.hostname
-    } catch (err) {
+    } catch {
       return null
     }
   }, [currentSite.url])

@@ -18,7 +18,7 @@ export const getCallDocs = (chain: Chain, pallet: string, method: string): strin
     )
 
     return call?.docs?.join("\n") ?? null
-  } catch (err) {
+  } catch {
     log.error("Failed to find call docs", { pallet, method, chain })
     return null
   }

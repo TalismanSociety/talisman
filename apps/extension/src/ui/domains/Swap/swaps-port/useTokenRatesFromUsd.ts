@@ -20,6 +20,7 @@ export const useTokenRatesFromUsd = (usdValue: string | number | undefined | nul
     return Object.entries(defaultTokenRate).reduce((acc, [currency, rate]) => {
       if (rate === null || rate === undefined) return acc
       return {
+        // biome-ignore lint/performance/noAccumulatingSpread: legacy
         ...acc,
         [currency]: (+usdValue * rate?.price) / baseRate,
       }

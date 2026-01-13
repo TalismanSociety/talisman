@@ -26,16 +26,14 @@ export const RiskAnalysisAssetImage = (props: AssetImageProps) => {
   const content = useMemo(() => {
     if (props.type === "currency") {
       return (
-        <>
-          <RiskAnalysisImageBase
-            src={props.imageUrl}
-            alt={props.name}
-            width={40}
-            height={40}
-            borderRadius="100%"
-            type="currency"
-          />
-        </>
+        <RiskAnalysisImageBase
+          src={props.imageUrl}
+          alt={props.name}
+          width={40}
+          height={40}
+          borderRadius="100%"
+          type="currency"
+        />
       )
     }
 

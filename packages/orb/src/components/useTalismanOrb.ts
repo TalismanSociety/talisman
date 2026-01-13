@@ -27,13 +27,13 @@ export const useTalismanOrb = (seed: string) => {
     try {
       // those break if seed is empty or an invalid address
 
-      // biome-ignore lint/style/noVar: legacy
+      // biome-ignore lint/correctness/noInnerDeclarations: hack
       var platform = getAccountPlatformFromAddress(seed)
 
       // seed may be specific to a ss58 prefix, get the base address
-      // biome-ignore lint/style/noVar: legacy
+      // biome-ignore lint/correctness/noInnerDeclarations: hack
       var address = normalizeAddress(seed)
-    } catch (err) {
+    } catch {
       platform = "polkadot"
       address = seed
     }

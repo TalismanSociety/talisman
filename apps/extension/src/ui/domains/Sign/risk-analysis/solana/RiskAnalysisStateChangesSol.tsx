@@ -57,8 +57,8 @@ const StateChangeImage: FC<{ change: AccountStateChange }> = ({ change }) => {
           side={change.in ? "in" : "out"}
         />
       )
-    case "NFT":
-    case "CNFT":
+    // case "NFT":
+    // case "CNFT":
     default:
       return (
         <RiskAnalysisAssetImage

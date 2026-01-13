@@ -14,6 +14,7 @@ const FormattedAddress = ({ address }: { address: string }) => {
   const isKnown = useIsKnownAddress(address)
 
   const label = useMemo(
+    // biome-ignore lint/complexity/useOptionalChain: legacy
     () => (isKnown && isKnown.value.name) ?? shortenAddress(address),
     [address, isKnown]
   )

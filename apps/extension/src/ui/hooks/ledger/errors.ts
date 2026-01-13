@@ -209,12 +209,12 @@ const getErrorFromCode = (code: number | undefined, appName: string, cause: unkn
     case 21781:
       return new TalismanLedgerError("Locked", t("Please unlock your Ledger"), { cause })
 
-    case 28160: // non-compatible app
-    case 28161: // home screen on Flex
-    case 25831: // home screen
-    case 25873:
-    case 27906:
-    case 57346:
+    // case 28160: // non-compatible app
+    // case 28161: // home screen on Flex
+    // case 25831: // home screen
+    // case 25873:
+    // case 27906:
+    // case 57346:
     default:
       return new TalismanLedgerError(
         "InvalidApp",

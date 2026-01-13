@@ -473,6 +473,7 @@ const assetsAtom = atom(async (get) => {
             },
           },
         }
+        // biome-ignore lint/performance/noAccumulatingSpread: legacy
         return { ...acc, [id]: asset }
       },
       {} as Record<string, SwappableAssetBaseType<{ stealthex: AssetContext }>>
@@ -547,7 +548,7 @@ const quote: QuoteFunction = loadable(
       ? getAdditionalFeePercent({ fromAsset, toAsset })
       : undefined
     const range = await stealthexSdk.getRange({ route: { from, to }, additional_fee_percent })
-    if (range && range.min.isGreaterThan(fromAmount.toString()))
+    if (range?.min.isGreaterThan(fromAmount.toString()))
       throw new Error(`StealthEX minimum is ${range.min.toString()} ${fromAsset.symbol}`)
 
     try {
