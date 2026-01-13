@@ -213,7 +213,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
 
           default: {
             log.error("Unknown account origin", { origin, pair: oldPair })
-            throw new Error("Unknown origin " + origin)
+            throw new Error(`Unknown origin ${origin}`)
           }
         }
       } catch (err) {
@@ -240,7 +240,7 @@ const executeMigrationFromPjsKeyring = async (password: string, reset = false) =
         if (oldContact.genesisHash) options.genesisHash = oldContact.genesisHash
 
         await keyringStore.addAccountExternal(options)
-      } catch (err) {
+      } catch {
         // ignore
       } finally {
         await updateMigrationProgress()

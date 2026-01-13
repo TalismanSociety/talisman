@@ -6,7 +6,7 @@ export const isContractAddress = async (client: PublicClient, address: EvmAddres
   try {
     const code = await client.getBytecode({ address })
     return !!code && code !== "0x"
-  } catch (error) {
+  } catch {
     // not a contract
     return false
   }

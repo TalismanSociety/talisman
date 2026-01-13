@@ -203,7 +203,7 @@ export default class Extension extends ExtensionHandler {
       const routeKey = type.split("pri(")[1].split(".")[0]
       const subhandler = this.#routes[routeKey]
       if (subhandler) return subhandler.handle(id, type, request, port)
-    } catch (e) {
+    } catch {
       throw new Error(`Unable to handle message of type ${type}`)
     }
 

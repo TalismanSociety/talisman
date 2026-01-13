@@ -68,7 +68,7 @@ class SessionStorage implements TalismanSessionStorage {
 }
 
 let sessionStorage: TalismanSessionStorage
-if (chrome && chrome.storage.session) {
+if (chrome?.storage.session) {
   sessionStorage = new SessionStorage()
 } else {
   sessionStorage = new MemoryStorage()

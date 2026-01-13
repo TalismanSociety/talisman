@@ -255,7 +255,6 @@ export const getGasLimit = (
   tx: TransactionRequestBase | undefined,
   isContractCall?: boolean
 ) => {
-  // biome-ignore lint/suspicious/noExplicitAny: legacy
   const suggestedGasLimit = tx?.gas ?? 0n
   // for contract calls, gas cost can evolve overtime : add a safety margin
   const safeGasLimit = isContractCall
@@ -412,7 +411,7 @@ export const isSafeImageUrl = (url?: string) => {
     if (urlObj.hostname.match(/^(localhost|127\.0\.0\.1)$/)) return false
     if (!urlObj.pathname.match(/\.(jpeg|jpg|gif|png|svg|webp)$/)) return false
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }

@@ -64,7 +64,7 @@ const getExtrinsincResult = async (
     const events = (() => {
       try {
         return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
-      } catch (error) {
+      } catch {
         log.warn(
           "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
         )
@@ -272,7 +272,7 @@ export const watchSubstrateTransaction = async (
       chain.id,
       registry,
       hash,
-      async (result, blockNumber, extIndex, finalized) => {
+      async (result, blockNumber, _extIndex, finalized) => {
         const type: NotificationType = result === "included" ? "submitted" : result
 
         const blockExplorerUrls = getBlockExplorerUrls(chain, { type: "transaction", id: hash })

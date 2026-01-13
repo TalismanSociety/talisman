@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useNodejsImportProtocol: legacy
 import assert from "assert"
 import { TabsHandler } from "../../../libs/Handler"
 import { chainConnector } from "../../../rpcs/chain-connector"
@@ -45,7 +46,7 @@ export default class TalismanRpcHandler extends TabsHandler {
       (error, data) => {
         try {
           port.postMessage({ id, subscription: { error, data } })
-        } catch (error) {
+        } catch {
           // end subscription when port no longer exists
           //
           // unfortunately, we won't know what unsubscribe method to call on the rpc itself
@@ -82,7 +83,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     const unsubscribe = this.#talismanByGenesisHashSubscriptions.get(subscriptionId)
     this.#talismanByGenesisHashSubscriptions.delete(subscriptionId)
 
-    unsubscribe && unsubscribe(unsubscribeMethod)
+    unsubscribe?.(unsubscribeMethod)
 
     return true
   }
@@ -92,8 +93,7 @@ export default class TalismanRpcHandler extends TabsHandler {
     type: TMessageType,
     request: RequestType<TMessageType>,
     port: Port,
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
-    url: string
+    _url: string
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.rpc.byGenesisHash.send)":

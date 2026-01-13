@@ -50,7 +50,7 @@ const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
     const { type, publicKey } = signingPair
     return { type, publicKey, signature: signingPair.sign(unsigned) }
   } catch (error) {
-    throw new Error("Failed to sign : " + (error as Error).message)
+    throw new Error(`Failed to sign : ${(error as Error).message}`)
   }
 }
 
@@ -96,7 +96,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: SignerPayloadGenesi
   )
 
   try {
-    // biome-ignore lint/style/noVar: legacy
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
   } catch (e) {
     log.error("Failed to sign network specs", e)
@@ -146,7 +146,7 @@ export const generateQrUpdateNetworkMetadata = async (
     genesis_hash: hexToU8a(genesisHash),
   })
   try {
-    // biome-ignore lint/style/noVar: legacy
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
   } catch (e) {
     log.error("Failed to sign network metadata", e)

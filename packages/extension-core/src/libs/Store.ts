@@ -140,6 +140,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
         concatMap(async ([newValue, callbacks]) => {
           await chrome.storage.local.set({ [this.#prefix]: newValue })
 
+          // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
           callbacks.forEach((callback) => callback())
         }),
 

@@ -54,5 +54,6 @@ export type RequestSolanaSignApprove = {
 export type SolanaExtensionMessages = {
   "pri(solana.rpc.send)": [RequestSolanaRpcSend, ResponseSolanaRpcSend]
   "pri(solana.rpc.submit)": [RequestSolanaSubmit, ResponseSolanaSubmit]
+  // biome-ignore lint/suspicious/noConfusingVoidType: legacy
   "pri(solana.sign.approve)": [RequestSolanaSignApprove, void]
 }

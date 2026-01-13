@@ -48,7 +48,7 @@ const formatFrom = (source: string) => {
   try {
     const urlObj = new URL(source)
     return urlObj?.host
-  } catch (err) {
+  } catch {
     return source
   }
 }

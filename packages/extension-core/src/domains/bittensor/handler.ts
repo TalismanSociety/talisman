@@ -8,7 +8,7 @@ export class BittensorHandler extends ExtensionHandler {
     Type extends MessageTypes,
     Request = RequestTypes[Type],
     Response = ResponseType<Type>,
-  >(id: string, type: Type, request: Request, port: chrome.runtime.Port): Promise<Response> {
+  >(id: string, type: Type, _request: Request, port: chrome.runtime.Port): Promise<Response> {
     switch (type) {
       case "pri(bittensor.validators.subscribe)":
         return genericSubscription(id, port, bittensorValidators$) as Response

@@ -86,7 +86,7 @@ export class EthTabsHandler extends TabsHandler {
   private async checkAccountAuthorised(url: string, address?: string) {
     try {
       await this.stores.sites.ensureUrlAuthorized(url, true, address)
-    } catch (err) {
+    } catch {
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
     }
   }
@@ -95,11 +95,12 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     authorisedAddress?: string
   ): Promise<EthAuthorizedSite> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
 
     try {
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (err) {
+    } catch {
       // no-op, will throw below
     }
     if (
@@ -136,10 +137,11 @@ export class EthTabsHandler extends TabsHandler {
     request: RequestAuthorizeTab,
     port: Port
   ): Promise<boolean> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let siteFromUrl
     try {
       siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
-    } catch (err) {
+    } catch {
       return false
     }
     if (siteFromUrl?.ethAddresses) {
@@ -163,11 +165,12 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async accountsList(url: string): Promise<string[]> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
     try {
       site = await this.stores.sites.getSiteFromUrl(url)
       if (!site) return []
-    } catch (err) {
+    } catch {
       return []
     }
 
@@ -324,7 +327,7 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(ethChain.chainId, 16)
-    if (isNaN(chainId))
+    if (Number.isNaN(chainId))
       throw new EthProviderRpcError("Invalid chain id", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     const networkId = String(chainId)
@@ -375,7 +378,7 @@ export class EthTabsHandler extends TabsHandler {
           assert(rpcChainId === chainId, "chainId mismatch")
         } catch (err) {
           log.error({ err })
-          throw new EthProviderRpcError("Invalid rpc " + rpcUrl, ETH_ERROR_EIP1474_INVALID_PARAMS)
+          throw new EthProviderRpcError(`Invalid rpc ${rpcUrl}`, ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
       })
     )
@@ -449,11 +452,12 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private getChainId = async (url: string) => {
+    // biome-ignore lint/suspicious/noImplicitAnyLet:  legacy
     let site
     try {
       // url validation carried out inside stores.sites.getSiteFromUrl
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (error) {
+    } catch {
       //no-op
     }
     // TODO what to do if default network is disabled ?
@@ -555,9 +559,9 @@ export class EthTabsHandler extends TabsHandler {
           )
 
         try {
-          // biome-ignore lint/style/noVar: legacy
+          // biome-ignore lint/correctness/noInnerDeclarations: legacy
           var tokenInfo = await getErc20TokenInfo(client, ethChainId.toString(), address as Hex)
-        } catch (err) {
+        } catch {
           throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
         }
 
@@ -638,7 +642,7 @@ export class EthTabsHandler extends TabsHandler {
     try {
       // ensure that we have a valid provider for the current network
       await this.getPublicClient(url, txRequest.from)
-    } catch (error) {
+    } catch {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
     }
 
@@ -661,11 +665,12 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async getPermissions(url: string): Promise<Web3WalletPermission[]> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
     try {
       // url validation carried out inside stores.sites.getSiteFromUrl
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (error) {
+    } catch {
       // no-op
     }
 
@@ -694,11 +699,12 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     // identify which permissions are currently missing
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
     try {
       // url validation carried out inside stores.sites.getSiteFromUrl
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (error) {
+    } catch {
       return []
     }
 
@@ -713,7 +719,7 @@ export class EthTabsHandler extends TabsHandler {
     const grantedPermissions: Partial<EthWalletPermissions> = {}
     if (missingPerms.includes("eth_accounts")) {
       await this.authoriseEth(url, { origin: "", provider: "ethereum" }, port)
-      grantedPermissions.eth_accounts = { date: new Date().getTime() }
+      grantedPermissions.eth_accounts = { date: Date.now() }
     }
 
     // if any, store missing permissions
@@ -735,7 +741,7 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async ethRequest(
-    id: string,
+    _id: string,
     url: string,
     request: EthRequestArgs,
     port: Port

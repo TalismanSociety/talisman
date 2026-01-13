@@ -188,7 +188,6 @@ export class RequestStore {
   protected extractBaseRequest<T extends KnownRequestTypes>(
     request: KnownRespondableRequest<T> | AnyRespondableRequest
   ) {
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
     const { reject, resolve, ...data } = request
     return data as KnownRequest<T>
   }

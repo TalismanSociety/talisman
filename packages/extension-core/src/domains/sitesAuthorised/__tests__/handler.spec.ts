@@ -1,9 +1,6 @@
-/* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-// biome-ignore-all lint/style/noNonNullAssertion: legacy
-// import Extension from "./Extension"
 import { TALISMAN_WEB_APP_DOMAIN } from "extension-shared"
 
 import { getMessageSenderFn } from "../../../../tests/util"

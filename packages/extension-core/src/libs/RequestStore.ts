@@ -41,6 +41,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   }
 
   public clearRequests() {
+    // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
     Object.keys(this.requests).forEach((key) => delete this.requests[key])
     this.observable.next(this.getAllRequests())
   }
@@ -59,7 +60,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
       } as TRespondableRequest<TRequest, TResponse>
 
       this.observable.next(this.getAllRequests())
-      this.#onNewRequestCallback && this.#onNewRequestCallback(newRequest)
+      this.#onNewRequestCallback?.(newRequest)
     })
   }
 
@@ -104,7 +105,6 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
   }
 
   protected mapRequestToData(request: TRespondableRequest<TRequest, TResponse>): TRequest {
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
     const { reject, resolve, ...data } = request
     return data as TRequest
   }

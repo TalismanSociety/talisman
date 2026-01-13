@@ -57,7 +57,7 @@ const getMetadataDefInner = async (
   if (cacheKey && CACHE_RESULTS.has(cacheKey)) return CACHE_RESULTS.get(cacheKey)
 
   try {
-    // biome-ignore lint/style/noVar: legacy
+    // biome-ignore lint/correctness/noInnerDeclarations: legacy
     var storeMetadata = await db.metadata.get(genesisHash)
 
     // having a metadataRpc on expected specVersion is ideal scenario, don't go further

@@ -34,7 +34,7 @@ export const stateCall = async <K extends string = string>(
     try {
       const createdType = registry.createType(resultType, result)
       return Ok(createdType)
-    } catch (error) {
+    } catch {
       return Err("Unable to create type")
     }
   } catch (error) {

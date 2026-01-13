@@ -9,7 +9,7 @@ export function isSolanaAddress(address: string): boolean {
   try {
     const bytes = base58.decode(address)
     return bytes.length === 32
-  } catch (error) {
+  } catch {
     return false
   }
 }

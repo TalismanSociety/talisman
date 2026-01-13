@@ -34,7 +34,7 @@ const restoreBackupKeyring = async (
   const backupJson = backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY]
   try {
     keyring.restoreAccounts(JSON.parse(backupJson), password)
-  } catch (error) {
+  } catch {
     return Err("Unable to restore backup keyring")
   }
   await chrome.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
@@ -100,7 +100,7 @@ export const changePassword = async (
   progressCb?: (val: ChangePasswordStatusUpdateType) => void
 ): Promise<Result<boolean, "Error changing password">> => {
   try {
-    progressCb && progressCb(ChangePasswordStatusUpdateStatus.KEYPAIRS)
+    progressCb?.(ChangePasswordStatusUpdateStatus.KEYPAIRS)
     const backupJson = await keyring.backupAccounts(
       keyring.getPairs().map(({ address }) => address),
       currentPw
@@ -115,7 +115,7 @@ export const changePassword = async (
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
 
-    progressCb && progressCb(ChangePasswordStatusUpdateStatus.MNEMONICS)
+    progressCb?.(ChangePasswordStatusUpdateStatus.MNEMONICS)
     // now migrate recovery phrase store passwords
     const mnemonicStoreData = await mnemonicsStore.get()
     const newMnemonicStoreData: Partial<MnemonicsStoreData> = {}

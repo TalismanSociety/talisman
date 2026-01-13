@@ -35,7 +35,7 @@ export class EthHandler extends ExtensionHandler {
         const { method, resolve, ethChainId } = queued
 
         const client = await chainConnectorEvm.getPublicClientForEvmNetwork(ethChainId)
-        assert(client, "Unable to find client for chain " + ethChainId)
+        assert(client, `Unable to find client for chain ${ethChainId}`)
 
         const hash = await client.sendRawTransaction({
           serializedTransaction: signedPayload,
@@ -83,7 +83,7 @@ export class EthHandler extends ExtensionHandler {
 
     const result = await withSecretKey(account.address, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(ethChainId)
-      assert(client, "Missing client for chain " + ethChainId)
+      assert(client, `Missing client for chain ${ethChainId}`)
 
       const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
@@ -134,7 +134,7 @@ export class EthHandler extends ExtensionHandler {
     assert(evmNetworkId, "chainId is not defined")
 
     const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
-    assert(client, "Missing client for chain " + evmNetworkId)
+    assert(client, `Missing client for chain ${evmNetworkId}`)
 
     try {
       const hash = await client.sendRawTransaction({ serializedTransaction: signed })
@@ -166,7 +166,7 @@ export class EthHandler extends ExtensionHandler {
 
     const result = await withSecretKey(unsigned.from, async (secretKey) => {
       const client = await chainConnectorEvm.getWalletClientForEvmNetwork(evmNetworkId)
-      assert(client, "Missing client for chain " + evmNetworkId)
+      assert(client, `Missing client for chain ${evmNetworkId}`)
 
       const privateKey = bytesToHex(secretKey)
       const account = privateKeyToAccount(privateKey)
@@ -401,11 +401,10 @@ export class EthHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
-    port: Port
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------

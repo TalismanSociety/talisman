@@ -206,7 +206,7 @@ const getChaindataV4TokenId = (
 
   if (oldTokenId.includes("-substrate-foreignassets-")) {
     const oldToken = oldTokens[oldTokenId]
-    if (oldToken && oldToken.chainId && oldToken.onChainId)
+    if (oldToken?.chainId && oldToken.onChainId)
       return subForeignAssetTokenId(oldToken.chainId, oldToken.onChainId)
 
     log.debug("Unable to migrate foreign asset token ID", oldTokenId)

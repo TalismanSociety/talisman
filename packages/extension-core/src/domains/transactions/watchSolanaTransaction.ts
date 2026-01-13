@@ -80,7 +80,7 @@ async function watchUntilFinalized(
 
       // Wait before next poll
       await new Promise((resolve) => setTimeout(resolve, intervalMs))
-    } catch (error) {
+    } catch {
       if (i === maxRetries - 1) {
         await updateTransactionStatus(signature, "unknown")
         return

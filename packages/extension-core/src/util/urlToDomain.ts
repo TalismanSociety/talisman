@@ -11,7 +11,7 @@ export const urlToDomain = (
   let url: URL
   try {
     url = new URL(urlStr)
-  } catch (error) {
+  } catch {
     return Err(Errors.InvalidURL)
   }
 

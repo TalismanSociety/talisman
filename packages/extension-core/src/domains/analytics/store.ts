@@ -142,7 +142,6 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
 
         if (!response.ok) throw new Error(await response.text())
       } catch (error) {
-        // biome-ignore lint/suspicious/noConsole: legacy
         log.error("Failed to send analytics", { error })
         // do not mutate state if sending analytics fails
         return true

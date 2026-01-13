@@ -92,11 +92,10 @@ export default class EncryptHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
-    port: Port
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(encrypt.approveEncrypt)":

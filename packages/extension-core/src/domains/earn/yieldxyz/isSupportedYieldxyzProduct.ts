@@ -32,7 +32,7 @@ const isSupportedType = (type: YieldType): boolean => {
 
     // case "liquidity_pool": // multi asset input (typing missing somehow)
     // case "concentrated_liquidity_pool": // multi asset input (typing missing somehow)
-    case "real_world_asset": // havent seen any yet, need to test
+    // case "real_world_asset": // havent seen any yet, need to test
     default:
       return false
   }

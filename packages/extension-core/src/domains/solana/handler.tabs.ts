@@ -126,7 +126,7 @@ const handleSolanaConnect: TabMessageHandler<"pub(solana.provider.connect)"> = a
 }
 
 const handleSolanaDisconnect: TabMessageHandler<"pub(solana.provider.disconnect)"> = async (
-  request,
+  _request,
   url
 ) => {
   const site = await sitesAuthorisedStore.getSiteFromUrl(url)

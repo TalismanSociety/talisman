@@ -5,7 +5,7 @@ import type { AssetDiscoveryScanScope } from "./types"
 
 export class AssetDiscoveryHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType]
   ): Promise<ResponseType<TMessageType>> {

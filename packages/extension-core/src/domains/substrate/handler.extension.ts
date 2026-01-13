@@ -197,11 +197,10 @@ export class SubHandler extends ExtensionHandler {
   }
 
   public async handle<TMessageType extends MessageTypes>(
-    id: string,
+    _id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
-    // biome-ignore lint/correctness/noUnusedVariables: legacy
-    port: Port
+    _port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       // --------------------------------------------------------------------
@@ -232,5 +231,5 @@ const toPjsHex = (value: number | bigint, minByteLen?: number) => {
   let inner = value.toString(16)
   inner = (inner.length % 2 ? "0" : "") + inner
   const nPaddedBytes = Math.max(0, (minByteLen || 0) - inner.length / 2)
-  return ("0x" + "00".repeat(nPaddedBytes) + inner) as `0x${string}`
+  return `0x${"00".repeat(nPaddedBytes)}${inner}` as `0x${string}`
 }

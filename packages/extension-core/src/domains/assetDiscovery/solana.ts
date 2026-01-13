@@ -67,7 +67,7 @@ const getSplTokenIdsForOwner = async (connection: Connection, address: string) =
 
     const mintAddresses = tokenAccounts.value.map((d) => d.account.data.parsed.info.mint as string)
     return mintAddresses.map((mintAddress) => solSplTokenId(MAINNET_NETWORK_ID, mintAddress))
-  } catch (err) {
+  } catch {
     return []
   }
 }

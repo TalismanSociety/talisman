@@ -47,7 +47,7 @@ export const watchEthereumTransaction = async (
       const getTransactionReceipt = async (hash: Hex): Promise<TransactionReceipt> => {
         try {
           return await client.waitForTransactionReceipt({ hash, confirmations: 0 })
-        } catch (err) {
+        } catch {
           await sleep(4000)
           return getTransactionReceipt(hash)
         }

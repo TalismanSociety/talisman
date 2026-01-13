@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noConfusingVoidType: legacy */
 import type {
   YieldxyzOpportunitiesResponse,
   YieldxyzPositionRefreshRequest,

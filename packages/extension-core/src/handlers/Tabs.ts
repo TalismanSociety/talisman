@@ -113,10 +113,11 @@ export default class Tabs extends TabsHandler {
   }
 
   private async accountsList(url: string, request: RequestAccountList): Promise<InjectedAccount[]> {
+    // biome-ignore lint/suspicious/noImplicitAnyLet: legacy
     let site
     try {
       site = await this.stores.sites.getSiteFromUrl(url)
-    } catch (error) {
+    } catch {
       // means url is not a valid one
       return []
     }
@@ -282,6 +283,7 @@ export default class Tabs extends TabsHandler {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
         .forEach((id) =>
           chrome.tabs.update(id, { url }).catch((err: Error) => {
             // biome-ignore lint/suspicious/noConsole: legacy
@@ -336,7 +338,7 @@ export default class Tabs extends TabsHandler {
       const routeKey = type.split("pub(")[1].split(".")[0]
       const subhandler = this.#routes[routeKey]
       if (subhandler) return subhandler.handle(id, type, request, port, url)
-    } catch (e) {
+    } catch {
       throw new Error(`Unable to handle message of type ${type}`)
     }
 

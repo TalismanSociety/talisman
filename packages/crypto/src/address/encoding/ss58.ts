@@ -62,7 +62,7 @@ export function isSs58Address(address: string): boolean {
   try {
     decodeSs58Address(address)
     return true
-  } catch (error) {
+  } catch {
     return false
   }
 }

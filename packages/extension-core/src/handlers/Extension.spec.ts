@@ -75,7 +75,6 @@ describe("Extension", () => {
 
     mnemonicId = (await keyringStore.getExistingMnemonicId(mnemonic)) as string
 
-    // biome-ignore lint/style/noNonNullAssertion: legacy
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [address] })
     await extensionStores.app.setOnboarded()
   })

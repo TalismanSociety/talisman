@@ -95,7 +95,7 @@ export const isValidDerivationPath = async (derivationPath: string, curve: Keypa
   try {
     deriveKeypair(await getDevSeed(curve), derivationPath, curve)
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }

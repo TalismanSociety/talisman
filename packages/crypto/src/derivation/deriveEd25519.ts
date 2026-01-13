@@ -50,4 +50,5 @@ export const getPublicKeyEd25519 = (secretKey: Uint8Array) => {
 
 /** If a is identical to b, this function returns true, otherwise it returns false */
 const isUint8ArrayEq = (a: Uint8Array, b: Uint8Array) =>
+  // biome-ignore lint/complexity/noUselessTernary: legacy
   a.length !== b.length || a.some((v, i) => v !== b[i]) ? false : true

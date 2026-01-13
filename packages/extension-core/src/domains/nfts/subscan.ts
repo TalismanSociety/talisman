@@ -102,7 +102,7 @@ const postSubscanWithRetry = async <T>(
     if (!result) throw new Error("Failed to fetch")
 
     return result
-  } catch (err) {
+  } catch {
     signal.throwIfAborted()
     if (!maxAttempts) throw new Error("Failed to fetch - max attempts reached")
     return postSubscanWithRetry(url, body, signal, maxAttempts - 1)
@@ -176,7 +176,7 @@ const fetchDotAccountChainNfts = async (
           CACHE.set(cacheKey, collection)
 
           return collection
-        } catch (err) {
+        } catch {
           signal.throwIfAborted()
 
           // fallback
