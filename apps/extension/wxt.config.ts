@@ -260,7 +260,7 @@ function deleteSourcemaps(outputDir: string): void {
 
   const deleted = deleteMapFilesRecursively(outputDir)
   if (deleted > 0) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     log.log(`🗑️  Deleted ${deleted} sourcemap file(s) from ${outputDir}`)
   }
 }

@@ -284,7 +284,7 @@ export default class Tabs extends TabsHandler {
         .filter((id): id is number => isNumber(id))
         .forEach((id) =>
           chrome.tabs.update(id, { url }).catch((err: Error) => {
-            // eslint-disable-next-line no-console
+            // biome-ignore lint/suspicious/noConsole: legacy
             console.error("Failed to redirect tab to phishing page", { err })
             sentry.captureException(err, { extra: { url } })
           })

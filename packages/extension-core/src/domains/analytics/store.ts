@@ -54,7 +54,8 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
       return posthogDistinctId
     } catch (cause) {
       const error = new Error("Failed to identify posthog client", { cause })
-      console.error(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      console.error(error)
       Sentry.captureException(error)
     }
     return
@@ -141,7 +142,8 @@ class AnalyticsStore extends StorageProvider<AnalyticsData> {
 
         if (!response.ok) throw new Error(await response.text())
       } catch (error) {
-        log.error("Failed to send analytics", { error }) // eslint-disable-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
+        log.error("Failed to send analytics", { error })
         // do not mutate state if sending analytics fails
         return true
       }

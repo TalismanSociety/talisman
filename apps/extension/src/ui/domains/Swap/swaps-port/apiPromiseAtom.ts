@@ -35,7 +35,8 @@ const cleanupApiPromiseEffect = (chainId: string | undefined, apiPromise: ApiPro
       try {
         apiPromise.disconnect()
       } catch (cause) {
-        console.warn(`Failed to close ${chainId} apiPromise: ${cause}`) // eslint-disable-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
+        console.warn(`Failed to close ${chainId} apiPromise: ${cause}`)
       }
     }
   })

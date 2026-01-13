@@ -356,7 +356,7 @@ const simpleSwapSdk = {
       )
       return await allCurrenciesRes.json()
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to fetch all simpleswap currencies", { cause }))
       return null
     }
@@ -378,7 +378,7 @@ const simpleSwapSdk = {
       const allPairs = await fetch(`https://api.simpleswap.io/get_pairs?${search.toString()}`)
       return await allPairs.json()
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to fetch simpleswap pairs", { cause }))
       return null
     }
@@ -700,7 +700,7 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
     }
     // verify that the created exchange has the same assets we are trying to swap
     if (exchange.currency_from !== currency_from || exchange.currency_to !== currency_to) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.trace(
         "exchange.currency_from",
         exchange.currency_from,
@@ -720,7 +720,7 @@ const exchangeAtom = atom(async (get): Promise<Exchange | undefined> => {
 
     return exchange
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
@@ -773,7 +773,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       account: fromAddress as `0x${string}`,
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
@@ -816,7 +816,7 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
 
       return payload
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to create substrate payload", { cause }))
       throw cause
     }
@@ -932,7 +932,7 @@ const retryStatus$ = (id: string): Observable<Exchange["status"] | undefined> =>
 
     // log when all retries failed, and return undefined
     catchError((error) => {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
     })

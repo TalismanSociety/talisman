@@ -62,7 +62,7 @@ export class EthHandler extends ExtensionHandler {
         })
         return true
       } catch (err) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         DEBUG && console.error("signAndSendApproveHardware", { err })
         throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
       }

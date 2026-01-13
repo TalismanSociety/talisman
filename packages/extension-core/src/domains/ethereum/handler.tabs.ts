@@ -233,7 +233,7 @@ export class EthTabsHandler extends TabsHandler {
               }
             }
           } catch (err) {
-            // eslint-disable-next-line no-console
+            // biome-ignore lint/suspicious/noConsole: legacy
             console.error("Failed to initialize eth subscription", err)
           }
         })
@@ -288,7 +288,7 @@ export class EthTabsHandler extends TabsHandler {
           })
         }
       } catch (err) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error("site subscription callback error", { err })
       }
     })

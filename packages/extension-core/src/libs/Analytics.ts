@@ -21,7 +21,8 @@ class TalismanAnalytics {
       await analyticsStore.capture(eventName, captureProperties)
     } catch (cause) {
       const error = new Error("Failed to capture posthog event", { cause })
-      DEBUG && console.error(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      DEBUG && console.error(error)
     }
   }
 

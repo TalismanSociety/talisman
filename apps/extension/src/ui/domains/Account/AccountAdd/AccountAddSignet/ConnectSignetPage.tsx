@@ -56,7 +56,7 @@ export const ConnectSignetPage = () => {
                 : "Please try again.",
         })
 
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error("Failed to connect to Signet", { err })
       } finally {
         setIsConnecting(false)

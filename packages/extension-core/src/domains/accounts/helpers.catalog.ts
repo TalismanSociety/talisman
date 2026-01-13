@@ -72,7 +72,8 @@ export const runActionOnTrees =
 
     // force compilation error if any action types don't have a case
     const exhaustiveCheck: never = type
-    DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`) // eslint-disable-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
+    DEBUG && console.error(`Unhandled accounts catalog action type ${exhaustiveCheck}`)
     return
   }
 

@@ -121,7 +121,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
         // UNKNOWN
         default:
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn("Unknown ETH subscription message type : %s", result.type, result)
           break
       }

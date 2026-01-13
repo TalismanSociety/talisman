@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: CLI script output
 import "dotenv/config"
 
 import { mkdirSync, writeFileSync } from "fs"

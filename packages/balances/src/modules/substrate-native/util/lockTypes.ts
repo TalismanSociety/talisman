@@ -56,7 +56,7 @@ export const getLockedType = (input?: string): BalanceLockType => {
   if (input.includes("aca/earn")) return getOtherType(input)
   if (input.includes("stk_stks")) return getOtherType(input)
 
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: legacy
   console.warn(`unknown locked type: ${input}`)
   return getOtherType(input)
 }

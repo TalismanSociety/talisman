@@ -20,7 +20,7 @@ const getBase64ImageFromUrlRaw = async (url: string) => {
       reader.readAsDataURL(blob)
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     if (DEBUG) console.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined
@@ -66,7 +66,7 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
       reader.readAsText(blob)
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     if (DEBUG) console.error(err)
     // can happen if image doesn't exist or if browser runs into a CORS issue
     return undefined

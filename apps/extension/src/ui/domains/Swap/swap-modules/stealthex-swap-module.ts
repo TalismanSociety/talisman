@@ -584,7 +584,7 @@ const quote: QuoteFunction = loadable(
         talismanFee,
       }
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to get StealthEX quote`, cause)
       return null
     }
@@ -683,7 +683,7 @@ const exchangeAtom = atom(async (get): Promise<StealthexExchange | undefined> =>
 
     return exchange
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create exchange", { cause }))
     throw cause
   }
@@ -739,7 +739,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       account: fromAddress as `0x${string}`,
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
@@ -785,7 +785,7 @@ const substratePayloadAtom = (sapi?: ScaleApi | null, allowReap?: boolean) =>
 
       return payload
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to create substrate payload", { cause }))
       throw cause
     }
@@ -901,7 +901,7 @@ const retryStatus$ = (id: string): Observable<StealthexExchange["status"] | unde
 
     // log when all retries failed, and return undefined
     catchError((error) => {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
     })

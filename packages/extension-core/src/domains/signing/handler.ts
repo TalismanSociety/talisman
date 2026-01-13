@@ -118,7 +118,7 @@ export default class SigningHandler extends ExtensionHandler {
             notifications: true,
           })
         } else if (!TEST) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn(
             "Unable to find chain for genesis hash, transaction will not be watched",
             payload.genesisHash
@@ -198,7 +198,7 @@ export default class SigningHandler extends ExtensionHandler {
           notifications: true,
         })
       } else if (!TEST) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.warn(
           "Unable to find chain for genesis hash, transaction will not be watched",
           payload.genesisHash

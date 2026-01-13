@@ -114,7 +114,7 @@ export const watchEthereumTransaction = async (
           txUrl,
           err as Error
         )
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       else console.error("Failed to watch transaction", { err })
     }
   } catch (err) {

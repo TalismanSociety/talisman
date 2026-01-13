@@ -85,7 +85,7 @@ const assetsSelector = atom(async (get): Promise<SwappableAssetBaseType[]> => {
       const token = await lifiSdk.getToken(parseInt(chainId, 10), contractAddress)
       allSdkTokens[token?.chainId]?.push?.(token)
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.warn(`Failed to add lifi token ${talismanTokenId}`, cause)
     }
   }
@@ -156,7 +156,7 @@ const routesAtom = atom(async (get) => {
       options: { integrator: "talisman", fee },
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.warn("Failed to fetch lifi routes", cause)
     return {
       routes: [],
@@ -351,7 +351,7 @@ const evmTransactionAtom = atom(async (get): Promise<TransactionRequest | undefi
       account: txRequest.from as `0x${string}`,
     })
   } catch (cause) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error(new Error("Failed to create evm transaction", { cause }))
     throw cause
   }
@@ -407,7 +407,7 @@ const retryStatus$ = (id: string): Observable<LifiStatus | undefined> =>
 
     // log when all retries failed, and return undefined
     catchError((error) => {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(`Failed to fetch exchange status for '${id}'`, error)
       return of(undefined)
     })

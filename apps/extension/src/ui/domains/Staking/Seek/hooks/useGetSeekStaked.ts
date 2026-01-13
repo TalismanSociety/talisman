@@ -44,7 +44,7 @@ export const useGetSeekStaked = (): {
           })
           return balance as bigint
         } catch (error) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.error(`Failed to fetch balance for ${account.address}:`, error)
           return 0n
         }

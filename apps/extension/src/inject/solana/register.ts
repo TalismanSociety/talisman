@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: this is copied from @wallet-standard/wallet
 // This is copied from @wallet-standard/wallet
 
 import type {

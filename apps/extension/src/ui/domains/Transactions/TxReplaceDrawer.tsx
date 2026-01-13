@@ -143,7 +143,7 @@ const EvmDrawerContent: FC<{
       })
       onClose?.(newHash)
     } catch (err) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error("handleSend", { err })
       notify({
         title: `Failed to ${type}`,
@@ -172,7 +172,7 @@ const EvmDrawerContent: FC<{
         })
         onClose?.(newHash)
       } catch (err) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error("handleSend", { err })
         notify({
           title: t(`Failed to {{type}}`, { type }),

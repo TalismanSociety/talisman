@@ -80,7 +80,7 @@ export const SwapApproveErc20 = () => {
       if (approved.status === "success") setApprovalCounter((c) => c + 1)
       if (approved.status === "reverted") throw new Error("Approval reverted")
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to submit swap", { cause }))
       notify({
         title: `Approval failed`,
@@ -111,7 +111,7 @@ export const SwapApproveErc20 = () => {
         if (approved.status === "success") setApprovalCounter((c) => c + 1)
         if (approved.status === "reverted") throw new Error("Approval reverted")
       } catch (cause) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error(new Error("Failed to submit swap", { cause }))
         notify({
           title: `Approval failed`,

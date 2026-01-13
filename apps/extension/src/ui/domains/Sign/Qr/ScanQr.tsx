@@ -57,7 +57,8 @@ export const ScanQr = <T extends Types>({
         if (type === "signature") return onScan(parseSignature(data))
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error("Scanning error", { cause })
-        console.error(error) // eslint-disable-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
+        console.error(error)
         onError?.(error)
       }
     },

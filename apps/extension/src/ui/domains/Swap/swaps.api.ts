@@ -90,7 +90,7 @@ const getAssetsByChainId = async (
         if (signal.aborted) return []
 
         if (attempt === retries) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.warn(`assetsSelectorAtom failed ${retries} times, ignoring`, cause)
           return []
         }
@@ -819,7 +819,7 @@ export const useSetToAddress = () => {
         // fromAddress is never btc, always set toAddress to null
         return setToEvmAddress(null), setToSubstrateAddress(null), setToBtcAddress(null)
       default:
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error(
           `networkType ${toAsset?.networkType} not handled in updateSelectedAccountsOnAssetChange`
         )

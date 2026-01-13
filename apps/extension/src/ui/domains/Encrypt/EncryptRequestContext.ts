@@ -19,7 +19,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
         setStatus.success("Approved")
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       DEBUG && console.error(err)
       if (isDecryptRequest(currentRequest)) {
         setStatus.error("Failed to approve decrypt request")

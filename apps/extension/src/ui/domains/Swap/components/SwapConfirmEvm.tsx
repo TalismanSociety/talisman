@@ -183,7 +183,7 @@ export const SwapConfirmEvm = ({
       if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
       navigate("/tx-history")
     } catch (cause) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(new Error("Failed to submit swap", { cause }))
       notify({
         title: `Failed to submit swap`,
@@ -234,7 +234,7 @@ export const SwapConfirmEvm = ({
         if (toAsset?.id) activeTokensStore.setActive(toAsset.id, true)
         navigate("/tx-history")
       } catch (cause) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         console.error(new Error("Failed to submit swap", { cause }))
         notify({
           title: `Failed to submit swap`,

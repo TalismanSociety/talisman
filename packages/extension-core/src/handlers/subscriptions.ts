@@ -80,7 +80,7 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
         port.postMessage({ id, subscription: data, timestamp: Date.now() })
       } catch (error) {
         DEBUG &&
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: legacy
           console.error(
             "Error on posting message for subscription - subscription might be closed. ",
             { error },

@@ -34,7 +34,7 @@ export const useMessageSubscription = <S, R = S>(
       s.unsubscribe()
       const { subject, unsubscribe } = subscriptions[key]
       if (!subject.observed && unsubscribe) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: legacy
         DEBUG && console.debug(`[frontend] unsubscribing ${key}`)
 
         // unsubscribe from backend updates to prevent unnecessary network connections
@@ -51,7 +51,7 @@ export const useMessageSubscription = <S, R = S>(
     if (!unsubscribe) {
       const cb = subscribe(subject)
 
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       DEBUG && console.debug(`[frontend] subscribing ${key}`)
 
       if (isFunction(cb)) subscriptions[key].unsubscribe = cb

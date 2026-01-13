@@ -127,7 +127,8 @@ export const Scan = () => {
                   ? t("QR code is not valid")
                   : (error.message ?? "Unknown error"),
               })
-              console.error("QR code scanning error", error) // eslint-disable-line no-console
+              // biome-ignore lint/suspicious/noConsole: legacy
+              console.error("QR code scanning error", error)
             }}
           />
           {state.scanError && (

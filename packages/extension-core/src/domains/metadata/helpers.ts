@@ -22,7 +22,7 @@ export const getMetadataFromDef = (metadata: TalismanMetadataDef) => {
     if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
     if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.warn("Could not decode metadata from store", { metadata })
   }
   return undefined

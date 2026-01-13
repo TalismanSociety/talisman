@@ -75,7 +75,7 @@ export const ConnectSignetSelectAccounts = () => {
 
       onSuccess(address)
     } catch (e) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
       console.error(e)
       notifyUpdate(notificationId, {
         type: "error",

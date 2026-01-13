@@ -91,7 +91,8 @@ export const spawnTaskToCreateNewReport = async ({
       await appStore.set({ analyticsReportCreatedAt: Date.now(), analyticsReport })
     } catch (cause) {
       const error = new Error("Failed to build general report", { cause })
-      console.warn(error) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      console.warn(error)
       sentry.captureException(error)
     } finally {
       // set this flag back to false so we don't block the next report
@@ -176,7 +177,8 @@ async function getGeneralReport({
     var balances = new Balances(balanceJsons, { networks, tokens, tokenRates })
   } catch (cause) {
     const error = new Error("Failed to access db to build general analyics report", { cause })
-    DEBUG && console.error(error) // eslint-disable-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
+    DEBUG && console.error(error)
     throw error
   }
 

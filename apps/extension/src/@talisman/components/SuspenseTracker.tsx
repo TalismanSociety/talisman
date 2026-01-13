@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: debug logging
 import { DEBUG } from "extension-shared"
 import { type FC, useEffect } from "react"
 

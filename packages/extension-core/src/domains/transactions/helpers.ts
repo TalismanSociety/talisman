@@ -123,7 +123,7 @@ export const addSubstrateTransaction = async (
       confirmed: false,
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error("addSubstrateTransaction", { err })
     log.error("addSubstrateTransaction", { err, hash, payload, options })
   }
@@ -187,7 +187,7 @@ export const updateTransactionStatus = async (
 
     return true
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error("updateTransactionStatus", { err })
     return false
   }
@@ -226,7 +226,7 @@ export const updateTransactionsRestart = async () => {
 
     return true
   } catch (err) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error("updateTransactionsRestart", { err })
     return false
   }

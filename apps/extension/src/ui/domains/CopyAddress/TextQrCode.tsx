@@ -52,7 +52,7 @@ export const TextQrCode = ({
 
   useEffect(() => {
     if (!error) return
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: legacy
     console.error("Failed to generate QR code", error, { data })
   }, [data, error])
 

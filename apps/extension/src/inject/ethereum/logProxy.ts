@@ -1,5 +1,5 @@
 // get a hold of debug method in case dapp replaces it on load
-// eslint-disable-next-line no-console
+// biome-ignore lint/suspicious/noConsole: intentional debug logging
 const safeConsoleDebug = console.debug
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -58,7 +58,8 @@ const client = new BrowserClient({
 
     // Print to console instead of Sentry in DEBUG/development builds
     if (DEBUG) {
-      log.error("[DEBUG - Background] Sentry event occurred", event) // eslint-disable-line no-console
+      // biome-ignore lint/suspicious/noConsole: legacy
+      log.error("[DEBUG - Background] Sentry event occurred", event)
       return null
     }
 

@@ -20,7 +20,7 @@ export const SwapTokensFullscreenPortalContainer = () => {
 /** The children of this node will be rendered into the parent of <SwapTokensFullscreenPortalContainer /> */
 export const SwapTokensFullscreenPortal = ({ children }: { children?: ReactNode }) => {
   const container = useAtomValue(containerRefAtom)
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: legacy
   if (!container) return console.warn(`No SwapTokensFullscreenPortalContainer`), null
 
   return createPortal(children, container)
