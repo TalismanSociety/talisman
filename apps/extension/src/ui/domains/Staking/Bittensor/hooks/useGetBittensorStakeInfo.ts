@@ -1,9 +1,9 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { ScaleApi } from "@talismn/sapi"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { ScaleApi } from "@talismn/sapi"
 
 import { useBittensorCurrentHotkey } from "../../hooks/bittensor/useGetBittensorStakeHotkeys"
 import { useGetFeeEstimate } from "../../shared/useGetFeeEstimate"
-import { type StakeDirection } from "./useBittensorBondWizard"
+import type { StakeDirection } from "./useBittensorBondWizard"
 import { useBittensorStakingPayload } from "./useBittensorStakingPayload"
 
 type GetStakeInfo = {

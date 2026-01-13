@@ -1,4 +1,4 @@
-import { YieldDto, YieldType } from "@yieldxyz/sdk"
+import type { YieldDto, YieldType } from "@yieldxyz/sdk"
 
 export const isSupportedYieldxyzProduct = (product: YieldDto): boolean => {
   if (!isSupportedType(product.mechanics.type)) return false

@@ -1,5 +1,5 @@
-import { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
-import { DerivedAccountBase } from "../DerivedAccountPickerBase"
+import type { LedgerAccountDefSubstrate } from "../AccountAdd/AccountAddLedger/context"
+import type { DerivedAccountBase } from "../DerivedAccountPickerBase"
 
 export type LedgerPolkadotLegacyAccountPickerProps = {
   chainId: string

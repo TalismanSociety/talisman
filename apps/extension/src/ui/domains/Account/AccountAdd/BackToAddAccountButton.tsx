@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { NavLink } from "react-router-dom"
 import { Button } from "talisman-ui"
 
-import { MethodType } from "./context"
+import type { MethodType } from "./context"
 
 export const BackToAddAccountButton = ({ methodType }: { methodType?: MethodType }) => {
   const { t } = useTranslation()

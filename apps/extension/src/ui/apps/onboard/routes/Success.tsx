@@ -1,8 +1,7 @@
+import type { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { AnalyticsPage } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 import { ReactComponent as ImgSuccess } from "../assets/success.svg"
 import { useOnboard } from "../context"
@@ -27,7 +26,7 @@ export const SuccessPage = () => {
           {t("Welcome, brave Seeker!")}
         </div>
         <ImgSuccess className="h-[16.6rem] w-[24.9rem]" />
-        <div className="text-body-secondary text-center">
+        <div className="text-center text-body-secondary">
           {t("Your Talisman wallet awakens. Let the journey begin.")}
         </div>
         <Button primary onClick={completeOnboarding} data-testid="onboarding-enter-talisman-button">

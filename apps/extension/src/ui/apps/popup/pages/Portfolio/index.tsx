@@ -1,12 +1,11 @@
-import { classNames } from "@talismn/util"
-import { FC, PropsWithChildren, Suspense, useEffect, useRef } from "react"
-import { Route, Routes, useLocation } from "react-router-dom"
-
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
+import { classNames } from "@talismn/util"
 import { PortfolioContainer } from "@ui/domains/Portfolio/PortfolioContainer"
 import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import MigratePasswordAlert from "@ui/domains/Settings/MigratePasswordAlert"
+import { type FC, type PropsWithChildren, Suspense, useEffect, useRef } from "react"
+import { Route, Routes, useLocation } from "react-router-dom"
 
 import { BottomNav } from "../../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../../components/Navigation/NavigationDrawer"

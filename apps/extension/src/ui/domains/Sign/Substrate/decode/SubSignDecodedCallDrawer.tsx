@@ -1,11 +1,10 @@
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { XIcon } from "@talismn/icons"
-import { DecodedCall, ScaleApi } from "@talismn/sapi"
-import { SignerPayloadJSON } from "extension-core"
-import { FC } from "react"
+import type { DecodedCall, ScaleApi } from "@talismn/sapi"
+import type { SignerPayloadJSON } from "extension-core"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Drawer, IconButton } from "talisman-ui"
-
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
 
 import { SubSignDecodedCallContent } from "./SubSignDecodedCallContent"
 
@@ -24,10 +23,10 @@ export const SubSignDecodedCallDrawer: FC<{
       isOpen={isOpen && !!decodedCall}
       containerId="main"
       onDismiss={onClose}
-      className="bg-black-primary text-body-secondary flex h-full w-full flex-col"
+      className="flex h-full w-full flex-col bg-black-primary text-body-secondary"
     >
       <div className="flex w-full items-center gap-4 px-12 py-8">
-        <div className="text-body grow truncate tabular-nums">{t("Request content")}</div>
+        <div className="grow truncate text-body tabular-nums">{t("Request content")}</div>
         <IconButton onClick={onClose}>
           <XIcon />
         </IconButton>
@@ -37,7 +36,7 @@ export const SubSignDecodedCallDrawer: FC<{
           <SubSignDecodedCallContent decodedCall={decodedCall} sapi={sapi} payload={payload} />
         )}
       </ScrollContainer>
-      <div className="px-12 pb-10 pt-8">
+      <div className="px-12 pt-8 pb-10">
         <Button fullWidth onClick={onClose}>
           {t("Close")}
         </Button>

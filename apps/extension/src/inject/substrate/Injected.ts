@@ -1,3 +1,5 @@
+import PolkadotInjected from "@polkadot/extension-base/page/Injected"
+import Signer from "@polkadot/extension-base/page/Signer"
 import type {
   DecryptPayload,
   DecryptResult,
@@ -5,8 +7,6 @@ import type {
   EncryptResult,
   SendRequest,
 } from "extension-core"
-import PolkadotInjected from "@polkadot/extension-base/page/Injected"
-import Signer from "@polkadot/extension-base/page/Signer"
 
 // external to class
 let sendRequest: SendRequest

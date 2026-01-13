@@ -3,15 +3,14 @@ import { hexToString } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { ParsedMessage } from "@spruceid/siwe-parser"
 import { classNames } from "@talismn/util"
-import { Account, EthSignRequest } from "extension-core"
-import { log } from "extension-shared"
-import { dump as convertToYaml } from "js-yaml"
-import { FC, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Button, Drawer, useOpenClose } from "talisman-ui"
-
 import { Message } from "@ui/domains/Sign/Message"
 import { useNetworkById } from "@ui/state"
+import type { Account, EthSignRequest } from "extension-core"
+import { log } from "extension-shared"
+import { dump as convertToYaml } from "js-yaml"
+import { type FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Button, Drawer, useOpenClose } from "talisman-ui"
 
 import { RiskAnalysisPillButton } from "../risk-analysis/RiskAnalysisPillButton"
 import { SignAlertMessage } from "../SignAlertMessage"
@@ -111,11 +110,11 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   if (siwe) return <EthSignBodyMessageSIWE account={account} request={request} siwe={siwe} />
 
   return (
-    <div className="text-body-secondary flex h-full w-full flex-col items-center pt-4">
-      <h1 className="text-body leading-base my-0 font-sans text-lg font-bold">
+    <div className="flex h-full w-full flex-col items-center pt-4 text-body-secondary">
+      <h1 className="my-0 font-bold font-sans text-body text-lg leading-base">
         {t("Sign Request")}
       </h1>
-      <div className="leading-base my-8 flex w-full flex-col items-center">
+      <div className="my-8 flex w-full flex-col items-center leading-base">
         <div className="p-2">
           {isTypedData ? t("You are signing typed data") : t("You are signing a message")}{" "}
         </div>
@@ -173,10 +172,10 @@ const ViewDetailsContent: FC<{
   }, [message])
 
   return (
-    <div className="bg-grey-850 flex max-h-[60rem] w-full flex-col gap-12 p-12">
+    <div className="flex max-h-[60rem] w-full flex-col gap-12 bg-grey-850 p-12">
       <div className="flex w-full grow flex-col overflow-hidden text-sm leading-[2rem]">
         <div className="text-body-secondary">{t("Message")}</div>
-        <pre className="text-body-secondary scrollable scrollable-700 bg-grey-800 rounded-xs w-full grow overflow-auto p-4">
+        <pre className="scrollable scrollable-700 w-full grow overflow-auto rounded-xs bg-grey-800 p-4 text-body-secondary">
           {formatted}
         </pre>
       </div>

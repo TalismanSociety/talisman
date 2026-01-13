@@ -1,8 +1,8 @@
-import { TokenRateCurrency } from "@talismn/token-rates"
+import type { TokenRateCurrency } from "@talismn/token-rates"
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 
 import { StorageProvider } from "../../libs/Store"
-import { IdenticonType } from "../accounts/types"
+import type { IdenticonType } from "../accounts/types"
 
 export type LedgerTransportType = "usb" | "hid"
 

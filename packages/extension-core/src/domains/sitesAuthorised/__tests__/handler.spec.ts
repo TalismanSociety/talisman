@@ -10,7 +10,7 @@ import { getMessageSenderFn } from "../../../../tests/util"
 import Extension from "../../../handlers/Extension"
 import { extensionStores } from "../../../handlers/stores"
 import { keyringStore } from "../../keyring/store"
-import { AuthorizedSites } from "../types"
+import type { AuthorizedSites } from "../types"
 
 keyring.loadAll({ store: new AccountsStore() })
 

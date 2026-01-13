@@ -1,13 +1,12 @@
-import { BalanceFormatter } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import type { BalanceFormatter } from "@talismn/balances"
+import type { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
-
 import { Fiat } from "@ui/domains/Asset/Fiat"
 import { useSelectedCurrency } from "@ui/state"
+import type { FC } from "react"
+import { useTranslation } from "react-i18next"
 
-import { ViewDetailsField, ViewDetailsFieldProps } from "./ViewDetailsField"
+import { ViewDetailsField, type ViewDetailsFieldProps } from "./ViewDetailsField"
 
 type ViewDetailsAmountProps = ViewDetailsFieldProps & {
   amount: BalanceFormatter | undefined

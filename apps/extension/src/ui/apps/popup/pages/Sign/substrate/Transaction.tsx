@@ -1,9 +1,6 @@
 import { hexToNumber } from "@polkadot/util"
-import { validateHexString } from "@talismn/util"
-import { isJsonPayload } from "extension-core"
-import { FC, useEffect, useMemo } from "react"
-
 import { AppPill } from "@talisman/components/AppPill"
+import { validateHexString } from "@talismn/util"
 import {
   PopupContent,
   PopupFooter,
@@ -14,6 +11,8 @@ import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
+import { isJsonPayload } from "extension-core"
+import { type FC, useEffect, useMemo } from "react"
 
 import { SignNetworkLogo } from "../SignNetworkLogo"
 import { FooterContent } from "./FooterContent"
@@ -44,7 +43,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
       </PopupHeader>
       <>
         <PopupContent>
-          <div className="scrollable scrollable-800 text-body-secondary h-full overflow-y-auto text-center">
+          <div className="scrollable scrollable-800 h-full overflow-y-auto text-center text-body-secondary">
             <SubSignBody />
           </div>
         </PopupContent>

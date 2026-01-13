@@ -1,4 +1,4 @@
 export * from "./helpers"
+export * from "./types"
 export * from "./watchEthereumTransaction"
 export * from "./watchSubstrateTransaction"
-export * from "./types"

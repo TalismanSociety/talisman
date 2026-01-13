@@ -1,4 +1,4 @@
-import { Options, passwordStrength } from "check-password-strength"
+import { type Options, passwordStrength } from "check-password-strength"
 import { useMemo } from "react"
 
 const getColorClassName = (strength: number) => {

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { RAMPS_COINBASE_API_BASE_PATH } from "extension-shared"
 import urlJoin from "url-join"
 
-import { CoinbaseSellOptions } from "./types"
+import type { CoinbaseSellOptions } from "./types"
 
 export const useCoinbaseSellOptions = () => {
   return useQuery({

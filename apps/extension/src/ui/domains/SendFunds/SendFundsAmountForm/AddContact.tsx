@@ -1,11 +1,10 @@
 import { isAddressEqual } from "@talismn/crypto"
 import { UserPlusIcon } from "@talismn/icons"
-import { HexString } from "@talismn/util"
+import type { HexString } from "@talismn/util"
+import { useAccountByAddress, useContacts } from "@ui/state"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton, useOpenClose } from "talisman-ui"
-
-import { useAccountByAddress, useContacts } from "@ui/state"
 
 import { AddToAddressBookDrawer } from "../Drawers/AddToAddressBookDrawer"
 import { useSendFunds } from "../useSendFunds"
@@ -29,7 +28,7 @@ export const AddContact = ({ tokenGenesisHash }: { tokenGenesisHash?: HexString 
       <PillButton
         onClick={addressBookContactDrawer.open}
         size={"base"}
-        className="h-16 !rounded !px-4"
+        className="!rounded !px-4 h-16"
         icon={UserPlusIcon}
       >
         {t("Add")}

@@ -1,9 +1,8 @@
-import { formatDistanceToNowStrict, Locale } from "date-fns"
-import { TFunction } from "i18next"
-import { FC, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-
 import { useDateFnsLocale } from "@ui/hooks/useDateFnsLocale"
+import { formatDistanceToNowStrict, type Locale } from "date-fns"
+import type { TFunction } from "i18next"
+import { type FC, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
   const { t } = useTranslation()

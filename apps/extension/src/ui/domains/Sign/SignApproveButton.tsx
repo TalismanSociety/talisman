@@ -1,6 +1,6 @@
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { Button, ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Button, type ButtonProps, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useRiskAnalysis } from "./risk-analysis/context"
 

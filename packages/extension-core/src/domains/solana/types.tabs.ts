@@ -1,6 +1,6 @@
-import { SolanaSignInInput } from "@solana/wallet-standard-features"
-import { SolanaChainId } from "@talismn/solana"
-import { WalletAccount } from "@wallet-standard/base"
+import type { SolanaSignInInput } from "@solana/wallet-standard-features"
+import type { SolanaChainId } from "@talismn/solana"
+import type { WalletAccount } from "@wallet-standard/base"
 
 type SerializedWalletAccount = Omit<WalletAccount, "publicKey">
 

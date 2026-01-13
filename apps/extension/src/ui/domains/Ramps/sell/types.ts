@@ -1,6 +1,6 @@
-import { UseQueryResult } from "@tanstack/react-query"
+import type { UseQueryResult } from "@tanstack/react-query"
 
-import { RampsProvider, RampsQuoteError } from "../shared/types"
+import type { RampsProvider, RampsQuoteError } from "../shared/types"
 
 export type RampsSellQuoteOptions = {
   currencyCode: string

@@ -1,10 +1,9 @@
-import { ProviderType } from "extension-core"
-import { FC, ReactNode, useCallback } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
-
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
+import type { ProviderType } from "extension-core"
+import { type FC, type ReactNode, useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
@@ -29,7 +28,7 @@ export const BatchActionButton: FC<{
         {children}
       </button>
       <Modal isOpen={isOpen} onDismiss={close}>
-        <ModalDialog onClose={close} title={confirmTitle} className="border-grey-800 border">
+        <ModalDialog onClose={close} title={confirmTitle} className="border border-grey-800">
           <p className="text-body-secondary">{confirmDescription}</p>
           <div className="mt-8 grid grid-cols-2 gap-8">
             <Button onClick={close}>{t("Cancel")}</Button>
@@ -67,7 +66,7 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
   }, [providerType, t])
 
   return (
-    <div className="text-grey-500 flex gap-[0.5rem] text-xs">
+    <div className="flex gap-[0.5rem] text-grey-500 text-xs">
       <BatchActionButton
         confirmTitle={t("Forget All Sites")}
         confirmDescription={
@@ -84,7 +83,7 @@ export const AuthorisedSitesBatchActions: FC<{ providerType: ProviderType }> = (
       >
         {t("Forget All Sites")}
       </BatchActionButton>
-      <div className="bg-grey-700 w-0.5 py-1"></div>
+      <div className="w-0.5 bg-grey-700 py-1"></div>
       <BatchActionButton
         confirmTitle={t("Disconnect All Sites")}
         confirmDescription={

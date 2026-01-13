@@ -1,6 +1,6 @@
 import { ChevronLeftIcon, XIcon } from "@talismn/icons"
 import { cn } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 import { IconButton } from "talisman-ui"
 
 export const BittensorStakingModalHeader: FC<{
@@ -12,7 +12,7 @@ export const BittensorStakingModalHeader: FC<{
 }> = ({ title, className, withClose, onBackClick, onCloseModal }) => {
   return (
     <div
-      className={cn("text-body-secondary flex h-32 w-full shrink-0 items-center px-10", className)}
+      className={cn("flex h-32 w-full shrink-0 items-center px-10 text-body-secondary", className)}
     >
       <IconButton onClick={onBackClick} className={cn(!onBackClick && "invisible")}>
         <ChevronLeftIcon />

@@ -1,6 +1,6 @@
-import { TokenId } from "@talismn/chaindata-provider"
+import type { TokenId } from "@talismn/chaindata-provider"
 
-import { Address } from "../../types"
+import type { Address } from "../../types"
 
 export class BalanceFetchError extends Error {
   tokenId: TokenId

@@ -1,7 +1,7 @@
-import { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import { MetadataBuilder, MetadataLookup, UnifiedMetadata } from "@talismn/scale"
+import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
+import type { MetadataBuilder, MetadataLookup, UnifiedMetadata } from "@talismn/scale"
 
-import { SapiConnector } from "./getSapiConnector"
+import type { SapiConnector } from "./getSapiConnector"
 
 export type Chain = {
   connector: SapiConnector

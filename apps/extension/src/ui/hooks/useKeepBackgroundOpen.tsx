@@ -1,6 +1,5 @@
-import { useEffect } from "react"
-
 import { api } from "@ui/api"
+import { useEffect } from "react"
 
 /**
  * Used to keep the background page open on Firefox

@@ -1,7 +1,7 @@
 import { DEBUG, IS_FIREFOX } from "extension-shared"
 import { gt } from "semver"
 
-import { GeneralReport } from "../../libs/GeneralReport"
+import type { GeneralReport } from "../../libs/GeneralReport"
 import { migratePasswordV2ToV1 } from "../../libs/migrations/legacyMigrations"
 import { StorageProvider } from "../../libs/Store"
 import { TalismanNotOnboardedError } from "./utils"

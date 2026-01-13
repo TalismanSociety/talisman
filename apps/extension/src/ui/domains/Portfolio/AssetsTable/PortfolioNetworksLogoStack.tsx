@@ -1,12 +1,11 @@
-import { NetworkId } from "@talismn/chaindata-provider"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
-
-import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
+import { type PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
 export const PortfolioNetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork }) => {
   if (!network) return null
@@ -41,8 +40,8 @@ export const PortfolioNetworksLogoStackMore = ({ networks }: { networks: Portfol
   return (
     <div className="ml-[-0.25rem] inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreNetworksTooltip networks={networks} />}>
-        <div className="bg-body-secondary column relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
-          <div className="text-[0.5em] font-bold leading-[1em]">+{networks.length}</div>
+        <div className="column relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full bg-body-secondary text-center text-black">
+          <div className="font-bold text-[0.5em] leading-[1em]">+{networks.length}</div>
         </div>
       </WithTooltip>
     </div>

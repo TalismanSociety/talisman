@@ -1,6 +1,5 @@
-import { FC } from "react"
-
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { FC } from "react"
 
 export const TxHistoryDetailsTokens: FC<{
   value: bigint | string

@@ -1,6 +1,6 @@
-import { FC } from "react"
+import type { FC } from "react"
 
-import { TalismanOrbProps } from "./types"
+import type { TalismanOrbProps } from "./types"
 import { useTalismanOrb } from "./useTalismanOrb"
 
 export const TalismanOrbRectangle: FC<TalismanOrbProps> = ({ width, height, seed, className }) => {

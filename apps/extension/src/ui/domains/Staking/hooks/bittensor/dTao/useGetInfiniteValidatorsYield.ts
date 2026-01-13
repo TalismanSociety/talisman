@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useEffect, useMemo } from "react"
 
 import { fetchTaostats } from "./fetchTaostats"
-import { ValidatorsYieldApiResponse } from "./types"
+import type { ValidatorsYieldApiResponse } from "./types"
 
 export function useGetInfiniteValidatorsYield({ netuid }: { netuid: number }) {
   return useInfiniteQuery({

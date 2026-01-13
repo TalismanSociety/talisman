@@ -1,15 +1,14 @@
-import { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
-import { getBlockExplorerUrls, NetworkId } from "@talismn/chaindata-provider"
+import type { AccountSummary, TransactionSimulation } from "@blockaid/client/resources/index.mjs"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { getBlockExplorerUrls, type NetworkId } from "@talismn/chaindata-provider"
+import { useNetworkById } from "@ui/state"
 import { log } from "extension-shared"
 import { isEqual } from "lodash-es"
-import { FC, ReactNode, useMemo } from "react"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useNetworkById } from "@ui/state"
-
 import { RiskAnalysisAssetImage } from "../RiskAnalysisAssetImage"
-import { RiskAnalysisResult } from "../useRiskAnalysisBase"
+import type { RiskAnalysisResult } from "../useRiskAnalysisBase"
 
 const getAccountStateChanges = (accountSummary: AccountSummary) => {
   return accountSummary.assets_diffs.flatMap((diff) => {
@@ -61,9 +60,9 @@ const FooterField: FC<{ label: ReactNode; value: ReactNode; extra?: ReactNode }>
   value,
   extra,
 }) => (
-  <span className="text-body-secondary group flex max-w-full items-center gap-[0.5em] overflow-hidden">
+  <span className="group flex max-w-full items-center gap-[0.5em] overflow-hidden text-body-secondary">
     <span className="text-body-secondary">{label}</span>
-    <span className="text-body truncate">{value}</span>
+    <span className="truncate text-body">{value}</span>
     <span className="group-hover:text-body">{extra}</span>
   </span>
 )
@@ -140,7 +139,7 @@ const StateChange: FC<{
     <div className="w-20 shrink-0 pt-4">
       <StateChangeImage change={change} />
     </div>
-    <div className="text-body flex grow flex-col justify-center gap-2 overflow-hidden pt-4">
+    <div className="flex grow flex-col justify-center gap-2 overflow-hidden pt-4 text-body">
       <div>{change.change.summary}</div>
       <StateChangeFooter change={change} simulation={simulation} networkId={networkId} />
     </div>

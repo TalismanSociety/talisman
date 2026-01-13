@@ -1,11 +1,10 @@
-import { NetworkId, parseTokenId } from "@talismn/chaindata-provider"
-import { papiStringify } from "@talismn/scale"
-import { WalletTransaction } from "extension-core"
-import { FC, ReactNode } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
 import { CodeBlock } from "@talisman/components/CodeBlock"
+import { type NetworkId, parseTokenId } from "@talismn/chaindata-provider"
+import { papiStringify } from "@talismn/scale"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import type { WalletTransaction } from "extension-core"
+import type { FC, ReactNode } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { TxHistoryDetailsAddress } from "./TxHistoryDetailsAddress"
 
@@ -34,7 +33,7 @@ export const TxHistoryDetailsTxInfo: FC<{
 }
 
 const TxInfoCard: FC<{ children: ReactNode }> = ({ children }) => (
-  <div className="bg-grey-800 scrollable scrollable-700 text-body-secondary leading-paragraph overflow-x-auto rounded-sm p-8 py-4">
+  <div className="scrollable scrollable-700 overflow-x-auto rounded-sm bg-grey-800 p-8 py-4 text-body-secondary leading-paragraph">
     {children}
   </div>
 )

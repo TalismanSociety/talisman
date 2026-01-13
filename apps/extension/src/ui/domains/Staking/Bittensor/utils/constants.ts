@@ -1,6 +1,6 @@
 import { subNativeTokenId } from "@talismn/chaindata-provider"
 
-import { RootClaimType } from "../../hooks/bittensor/dTao/types"
+import type { RootClaimType } from "../../hooks/bittensor/dTao/types"
 
 export const ROOT_NETUID = 0
 export const DEFAULT_USER_MAX_SLIPPAGE = 0.5 // 0.5%

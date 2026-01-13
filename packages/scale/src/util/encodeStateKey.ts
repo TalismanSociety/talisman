@@ -1,5 +1,5 @@
 import log from "../log"
-import { MetadataBuilder } from "../papito"
+import type { MetadataBuilder } from "../papito"
 
 export type ScaleStorageCoder = ReturnType<MetadataBuilder["buildStorage"]>
 

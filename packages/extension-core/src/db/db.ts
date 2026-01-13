@@ -1,10 +1,13 @@
 import { Dexie } from "dexie"
 
-import { ProtectorSources, ProtectorStorage } from "../domains/app/protector/ParaverseProtector"
-import { DiscoveredBalance } from "../domains/assetDiscovery/types"
-import { TalismanMetadataDef } from "../domains/substrate/types"
-import { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
-import { DbBlobId, DbBlobItem } from "./blobs"
+import type {
+  ProtectorSources,
+  ProtectorStorage,
+} from "../domains/app/protector/ParaverseProtector"
+import type { DiscoveredBalance } from "../domains/assetDiscovery/types"
+import type { TalismanMetadataDef } from "../domains/substrate/types"
+import type { LegacyWalletTransaction, WalletTransaction } from "../domains/transactions/types"
+import type { DbBlobId, DbBlobItem } from "./blobs"
 import { upgradeRemoveSymbolFromNativeTokenId } from "./upgrades/2024-01-25-upgradeRemoveSymbolFromNativeTokenId"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"

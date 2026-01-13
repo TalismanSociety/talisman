@@ -1,8 +1,7 @@
-import { useEffect } from "react"
-import { Navigate, useParams } from "react-router-dom"
-
 import { YieldxyzYieldPositions } from "@ui/domains/Earn/yieldxyz/positions/YieldxyzYieldPositions"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useEffect } from "react"
+import { Navigate, useParams } from "react-router-dom"
 
 export const DashboardYieldxyzYieldPositionsPage = () => {
   const { pageOpenEvent } = useAnalytics()

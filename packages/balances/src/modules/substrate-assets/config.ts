@@ -1,7 +1,7 @@
 import { SubAssetsTokenSchema } from "@talismn/chaindata-provider"
-import z from "zod/v4"
+import type z from "zod/v4"
 
-import { SubAssetsTokenConfigSchema } from "./types"
+import type { SubAssetsTokenConfigSchema } from "./types"
 
 export const MODULE_TYPE = SubAssetsTokenSchema.shape.type.value
 export const PLATFORM = SubAssetsTokenSchema.shape.platform.value

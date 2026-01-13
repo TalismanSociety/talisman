@@ -1,10 +1,9 @@
 import { CopyIcon, CreditCardIcon } from "@talismn/icons"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useFeatureFlag } from "@ui/state"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
-
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFeatureFlag } from "@ui/state"
 
 import { useCopyAddressModal } from "../CopyAddress"
 import { useRampsModal } from "../Ramps/useRampsModal"
@@ -33,7 +32,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   }, [genericEvent, openRampsModal])
 
   return (
-    <div className="bg-field text-body-secondary flex flex-col items-center justify-center rounded py-36">
+    <div className="flex flex-col items-center justify-center rounded bg-field py-36 text-body-secondary">
       <div>
         {selectedAccount
           ? t("You don't have any {{symbol}} in this account", { symbol })

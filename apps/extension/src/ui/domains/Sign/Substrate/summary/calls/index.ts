@@ -1,4 +1,4 @@
-import { DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponentDefs } from "../../types"
 import { SUMMARY_COMPONENTS_ASSET_CONVERSION } from "./SummaryAssetConversion"
 import { SUMMARY_COMPONENTS_ASSETS } from "./SummaryAssets"
 import { SUMMARY_COMPONENTS_BALANCES } from "./SummaryBalances"

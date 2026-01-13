@@ -1,8 +1,7 @@
-import { Account } from "extension-core"
-import { useMemo } from "react"
-
-import { BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
+import { type BalanceByParamsProps, useBalancesByParams } from "@ui/hooks/useBalancesByParams"
 import { useNetworksMapById, useTokens } from "@ui/state"
+import type { Account } from "extension-core"
+import { useMemo } from "react"
 
 export const useAccountImportBalances = (accounts: Account[]) => {
   const networks = useNetworksMapById({ includeTestnets: false, activeOnly: true })

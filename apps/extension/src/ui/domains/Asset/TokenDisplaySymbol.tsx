@@ -1,7 +1,6 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { FC } from "react"
-
+import type { TokenId } from "@talismn/chaindata-provider"
 import { useToken } from "@ui/state"
+import type { FC } from "react"
 
 /**
  * To be used when a meaningful symbol is needed for display purposes.

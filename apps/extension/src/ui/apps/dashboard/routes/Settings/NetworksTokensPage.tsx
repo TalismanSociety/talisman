@@ -1,3 +1,5 @@
+import { HeaderBlock } from "@talisman/components/HeaderBlock"
+import { Spacer } from "@talisman/components/Spacer"
 import {
   ChevronRightIcon,
   DiamondIcon,
@@ -5,12 +7,9 @@ import {
   ListIcon,
   PolkadotVaultIcon,
 } from "@talismn/icons"
+import { DashboardLayout } from "@ui/apps/dashboard/layout"
 import { useTranslation } from "react-i18next"
 import { CtaButton } from "talisman-ui"
-
-import { HeaderBlock } from "@talisman/components/HeaderBlock"
-import { Spacer } from "@talisman/components/Spacer"
-import { DashboardLayout } from "@ui/apps/dashboard/layout"
 
 const Content = () => {
   const { t } = useTranslation()
@@ -30,7 +29,7 @@ const Content = () => {
           subtitle={t("Scan for well-known tokens in your accounts and add them to Talisman")}
           to={`/settings/networks-tokens/asset-discovery`}
         />
-        <div className="via-primary/10 my-4 h-0.5 bg-gradient-to-r from-transparent to-transparent"></div>
+        <div className="my-4 h-0.5 bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
         <CtaButton
           iconLeft={GlobeIcon}
           iconRight={ChevronRightIcon}

@@ -1,12 +1,12 @@
 import { classNames } from "@talismn/util"
-import { FC } from "react"
+import type { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { MsgSignButtonDot } from "./MsgSignButtonDot"
 import { MsgSignButtonEth } from "./MsgSignButtonEth"
 import { MsgSignButtonFallback } from "./MsgSignButtonFallback"
 import { MsgSignButtonSol } from "./MsgSignButtonSol"
-import { MsgSignButtonProps } from "./types"
+import type { MsgSignButtonProps } from "./types"
 
 /**
  * Works only for Solana for now

@@ -1,6 +1,6 @@
-import { KeypairType } from "@polkadot/util-crypto/types"
+import type { KeypairType } from "@polkadot/util-crypto/types"
 import { isEthereumAddress } from "@talismn/crypto"
-import { Account } from "@talismn/keyring"
+import type { Account } from "@talismn/keyring"
 
 // unsafe, use only when injecting accounts into Polkadot dapps
 export const getAccountKeypairType = (account: Account): KeypairType => {

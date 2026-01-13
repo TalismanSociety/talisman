@@ -1,11 +1,10 @@
 import { InfoIcon } from "@talismn/icons"
-import { YieldDto } from "extension-core"
-import { FC, useMemo } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-
 import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenDisplaySymbol } from "@ui/domains/Asset/TokenDisplaySymbol"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import type { YieldDto } from "extension-core"
+import { type FC, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { useGetYieldxyzToken } from "../hooks/useGetYieldxyzToken"
 
@@ -37,14 +36,14 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="text-body flex items-center gap-[0.3rem]">
+        <div className="flex items-center gap-[0.3rem] text-body">
           <InfoIcon className="inline-block size-[1.2rem] align-sub" />
           <span>{text}</span>
         </div>
       </TooltipTrigger>
       {!!rewards.length && (
         <TooltipContent>
-          <div className="text-body flex min-w-[15rem] flex-col gap-2">
+          <div className="flex min-w-[15rem] flex-col gap-2 text-body">
             {rewards.map((reward, idx) => (
               <div key={idx}>
                 <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
-import { DefiPositionType } from "extension-core"
-import { FC, useMemo } from "react"
+import type { DefiPositionType } from "extension-core"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 export const PositionType: FC<{ type: DefiPositionType }> = ({ type }) => {

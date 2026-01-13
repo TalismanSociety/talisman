@@ -1,13 +1,12 @@
-import Transport from "@ledgerhq/hw-transport"
+import type Transport from "@ledgerhq/hw-transport"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { sleep } from "@talismn/util"
-import { LedgerTransportType } from "extension-core"
-import { log } from "extension-shared"
-import { useCallback, useEffect, useRef } from "react"
-
 import { useSettingValue } from "@ui/state"
 import { getIsLedgerCapable } from "@ui/util/getIsLedgerCapable"
+import type { LedgerTransportType } from "extension-core"
+import { log } from "extension-shared"
+import { useCallback, useEffect, useRef } from "react"
 
 import { getTalismanLedgerError } from "./errors"
 

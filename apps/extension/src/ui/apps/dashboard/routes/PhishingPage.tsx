@@ -1,11 +1,10 @@
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AlertTriangleIcon } from "@talismn/icons"
+import { api } from "@ui/api"
 import { TALISMAN_WEB_APP_URL } from "extension-shared"
-import { FC, useCallback, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
-
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
-import { api } from "@ui/api"
 
 type PhishingPageProps = {
   url: string
@@ -27,18 +26,18 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   }, [url])
 
   return (
-    <div className="bg-black-tertiary max-h-screen">
+    <div className="max-h-screen bg-black-tertiary">
       <div className="flex h-screen flex-col items-center justify-center">
         <TalismanWhiteLogo className="my-16 h-16 w-4/12" />
         <div className="flex flex-grow items-center">
           <div className="scrollable scrollable-700 flex flex-col overflow-auto">
-            <div className="bg-black-primary text-body-secondary flex max-w-3xl flex-col items-center gap-16 self-center rounded-lg p-20 text-center">
-              <AlertTriangleIcon className="text-alert-warn inline-block text-[7.7rem]" />
-              <h1 className="text-bold text-alert-warn m-0 text-xl">{t("Warning")}</h1>
-              <div className="text-lg font-light text-white">
+            <div className="flex max-w-3xl flex-col items-center gap-16 self-center rounded-lg bg-black-primary p-20 text-center text-body-secondary">
+              <AlertTriangleIcon className="inline-block text-[7.7rem] text-alert-warn" />
+              <h1 className="m-0 text-alert-warn text-bold text-xl">{t("Warning")}</h1>
+              <div className="font-light text-lg text-white">
                 <Trans t={t}>
                   <span className="block break-all">{displayUrl}</span> has been reported as a{" "}
-                  <span className="text-alert-warn block">malicious site</span>
+                  <span className="block text-alert-warn">malicious site</span>
                 </Trans>
               </div>
               <div className="leading-10">
@@ -55,7 +54,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
                 </a>
                 <button
                   type="button"
-                  className="text-grey-600 hover:text-body-secondary cursor-pointer text-sm leading-8"
+                  className="cursor-pointer text-grey-600 text-sm leading-8 hover:text-body-secondary"
                   onClick={allowSite}
                 >
                   {t("I trust this site")}

@@ -1,6 +1,5 @@
-import { useMemo } from "react"
-
 import { useNetworks } from "@ui/state"
+import { useMemo } from "react"
 
 export const useActiveAssetDiscoveryNetworkIds = () => {
   const activeNetworks = useNetworks({ activeOnly: true, includeTestnets: false })

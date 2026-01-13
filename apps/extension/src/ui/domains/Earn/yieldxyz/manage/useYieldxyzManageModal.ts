@@ -1,5 +1,5 @@
 import { createGlobalOpenClose } from "@talisman/hooks/createGlobalOpenClose"
 
-import { YieldxyzManageWizardInputs } from "./useYieldxyzManageWizard"
+import type { YieldxyzManageWizardInputs } from "./useYieldxyzManageWizard"
 
 export const [useYieldxyzManageModal] = createGlobalOpenClose<YieldxyzManageWizardInputs>()

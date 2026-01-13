@@ -43,7 +43,7 @@ export const SearchInputControlled = ({
       ref={ref}
       className={classNames("text-base", className)}
       containerProps={{ className: containerClassName }}
-      before={<SearchIcon className="text-body-disabled shrink-0" />}
+      before={<SearchIcon className="shrink-0 text-body-disabled" />}
       after={
         <IconButton onClick={handleClear} className={classNames(value ? "visible" : "invisible")}>
           <XIcon />

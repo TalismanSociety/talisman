@@ -1,5 +1,5 @@
-import { Balances } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
+import type { Balances } from "@talismn/balances"
+import type { TokenId } from "@talismn/chaindata-provider"
 
 import { useTokenBalances } from "../useTokenBalances"
 import { ChainTokenBalancesUniswapV2Row } from "./ChainTokenBalancesUniswapV2Row"

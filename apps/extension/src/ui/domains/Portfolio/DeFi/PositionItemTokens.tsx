@@ -1,9 +1,8 @@
-import { DefiPositionItem } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useMemo } from "react"
-import { formatUnits } from "viem"
-
 import { Tokens } from "@ui/domains/Asset/Tokens"
+import type { DefiPositionItem } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useMemo } from "react"
+import { formatUnits } from "viem"
 
 export const PositionItemTokens: FC<{ item: DefiPositionItem }> = ({ item }) => {
   const tokens = useMemo(() => {

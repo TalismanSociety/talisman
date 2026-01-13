@@ -1,16 +1,15 @@
-import { AcalaCalls, HydrationCalls } from "@polkadot-api/descriptors"
+import type { AcalaCalls, HydrationCalls } from "@polkadot-api/descriptors"
 import { encodeAnyAddress } from "@talismn/crypto"
+import { useNetworkById, useNetworks, useTokens } from "@ui/state"
 import { useMemo } from "react"
 
-import { useNetworkById, useNetworks, useTokens } from "@ui/state"
-
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { getAddressFromXcmLocation } from "../../util/getAddressFromXcmLocation"
 import { getChainFromXcmLocation } from "../../util/getChainFromXcmLocation"
 import { getTokenFromCurrency } from "../../util/getTokenFromCurrency"
 import {
   SummaryCrossChainTransfer,
-  SummaryCrossChainTransferProps,
+  type SummaryCrossChainTransferProps,
 } from "../shared/SummaryCrossChainTransfer"
 
 type TransferChainCalls = AcalaCalls | HydrationCalls

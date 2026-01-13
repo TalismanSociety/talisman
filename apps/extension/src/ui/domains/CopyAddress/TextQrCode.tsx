@@ -60,7 +60,7 @@ export const TextQrCode = ({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="text-alert-error relative flex h-full w-full flex-col items-center justify-center whitespace-pre-wrap bg-white">
+          <div className="relative flex h-full w-full flex-col items-center justify-center whitespace-pre-wrap bg-white text-alert-error">
             {t("Failed to generate QR")}
           </div>
         </TooltipTrigger>

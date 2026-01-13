@@ -1,6 +1,6 @@
 export * from "./addressEncodingFromCurve"
-export * from "./solana"
 export * from "./bitcoin"
 export * from "./detectAddressEncoding"
 export * from "./ethereum"
+export * from "./solana"
 export * from "./ss58"

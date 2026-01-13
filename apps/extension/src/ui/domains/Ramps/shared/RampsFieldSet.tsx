@@ -1,4 +1,4 @@
-import { FC, ReactNode, useEffect, useRef } from "react"
+import { type FC, type ReactNode, useEffect, useRef } from "react"
 
 export const RampsFieldSet: FC<{ label: ReactNode; extra?: ReactNode; children: ReactNode }> = ({
   label,
@@ -14,8 +14,8 @@ export const RampsFieldSet: FC<{ label: ReactNode; extra?: ReactNode; children: 
   }, [])
 
   return (
-    <div ref={ref} className="bg-grey-900 space-y-6 rounded border-0 p-6">
-      <div className="leading-paragraph flex justify-between text-sm">
+    <div ref={ref} className="space-y-6 rounded border-0 bg-grey-900 p-6">
+      <div className="flex justify-between text-sm leading-paragraph">
         <div className="text-body">{label}</div>
         <div>{extra}</div>
       </div>

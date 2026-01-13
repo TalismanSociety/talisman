@@ -1,7 +1,6 @@
-import { TokenId } from "@talismn/chaindata-provider"
-import { useTranslation } from "react-i18next"
-
+import type { TokenId } from "@talismn/chaindata-provider"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useTranslation } from "react-i18next"
 
 export const FeeTooltip = ({
   estimatedFee,

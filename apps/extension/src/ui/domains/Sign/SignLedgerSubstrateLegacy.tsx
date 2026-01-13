@@ -1,13 +1,12 @@
-import { AccountLedgerPolkadot, isJsonPayload } from "extension-core"
-import { log } from "extension-shared"
-import { FC, useCallback } from "react"
-import { useTranslation } from "react-i18next"
-
 import { getTalismanLedgerError } from "@ui/hooks/ledger/errors"
 import { useLedgerSubstrateLegacy } from "@ui/hooks/ledger/useLedgerSubstrateLegacy"
 import { useAccountByAddress } from "@ui/state"
+import { type AccountLedgerPolkadot, isJsonPayload } from "extension-core"
+import { log } from "extension-shared"
+import { type FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
-import { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
+import type { SignHardwareSubstrateProps } from "./SignHardwareSubstrate"
 import { SignLedgerBase } from "./SignLedgerBase"
 import { useSignLedgerBase } from "./useSignLedgerBase"
 

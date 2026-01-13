@@ -1,4 +1,4 @@
-import { TransactionDto } from "extension-core"
+import type { TransactionDto } from "extension-core"
 
 export type UseYieldxyzTransactionProps = {
   address: string

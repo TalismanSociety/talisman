@@ -1,2 +1,2 @@
-export * from "./useLearnMoreModal"
 export * from "./LearnMoreModal"
+export * from "./useLearnMoreModal"

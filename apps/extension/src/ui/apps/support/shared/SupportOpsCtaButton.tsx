@@ -1,4 +1,4 @@
-import { FC } from "react"
+import type { FC } from "react"
 
 export const SupportOpsCtaButton: FC<{
   title: string
@@ -8,9 +8,9 @@ export const SupportOpsCtaButton: FC<{
   <button
     type="button"
     onClick={onClick}
-    className="border-grey-700 bg-grey-900 hover:bg-grey-800 flex flex-col gap-4 rounded border p-10 text-left"
+    className="flex flex-col gap-4 rounded border border-grey-700 bg-grey-900 p-10 text-left hover:bg-grey-800"
   >
-    <div className="text-md font-bold">{title}</div>
+    <div className="font-bold text-md">{title}</div>
     <p className="text-body-secondary">{description}</p>
   </button>
 )

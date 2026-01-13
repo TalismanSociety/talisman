@@ -1,9 +1,9 @@
-import { SolNetworkId } from "@talismn/chaindata-provider"
+import type { SolNetworkId } from "@talismn/chaindata-provider"
 
 // import { SolTransactionJson } from "@talismn/solana"
 
-import { SigningRequestID } from "../signing/types"
-import { WalletTransactionInfo } from "../transactions"
+import type { SigningRequestID } from "../signing/types"
+import type { WalletTransactionInfo } from "../transactions"
 
 export type SolRpcRequest = {
   id: string

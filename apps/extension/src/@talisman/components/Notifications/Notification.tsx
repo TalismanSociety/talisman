@@ -1,5 +1,5 @@
 import { AlertCircleIcon, CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talismn/icons"
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 
 type NotificationType = "success" | "error" | "processing" | "warn"
 
@@ -11,11 +11,11 @@ export type NotificationProps = {
 }
 
 const NotificationIcon = ({ type }: { type: NotificationType }) => {
-  if (type === "success") return <CheckCircleIcon className="text-alert-success h-16 w-16" />
-  if (type === "warn") return <AlertCircleIcon className="text-alert-warn h-16 w-16" />
-  if (type === "error") return <XCircleIcon className="text-alert-error h-16 w-16" />
+  if (type === "success") return <CheckCircleIcon className="h-16 w-16 text-alert-success" />
+  if (type === "warn") return <AlertCircleIcon className="h-16 w-16 text-alert-warn" />
+  if (type === "error") return <XCircleIcon className="h-16 w-16 text-alert-error" />
   if (type === "processing")
-    return <LoaderIcon className="text-body-secondary animate-spin-slow h-16 w-16" />
+    return <LoaderIcon className="h-16 w-16 animate-spin-slow text-body-secondary" />
   return null
 }
 
@@ -27,7 +27,7 @@ export const Notification = ({ title, subtitle, type, right }: NotificationProps
       </div>
       <div className="grow">
         <div className="text-body">{title}</div>
-        {subtitle && <div className="text-body-secondary mt-2 text-sm">{subtitle}</div>}
+        {subtitle && <div className="mt-2 text-body-secondary text-sm">{subtitle}</div>}
       </div>
       {right}
     </div>

@@ -1,4 +1,4 @@
-import { ScaleApi } from "@talismn/sapi"
+import type { ScaleApi } from "@talismn/sapi"
 import { useQuery } from "@tanstack/react-query"
 
 import { useScaleApi } from "@ui/hooks/sapi/useScaleApi"

@@ -1,4 +1,4 @@
-import {
+import type {
   NativeToken,
   Network,
   NetworkOfPlatform,
@@ -6,7 +6,7 @@ import {
   Token,
 } from "@talismn/chaindata-provider"
 
-import { RequestIdOnly } from "../../types/base"
+import type { RequestIdOnly } from "../../types/base"
 
 export type RequestNetworkUpsert<
   P extends NetworkPlatform = NetworkPlatform,

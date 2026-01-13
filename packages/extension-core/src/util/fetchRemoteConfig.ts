@@ -1,7 +1,7 @@
 import { log, TALISMAN_CONFIG_URL } from "extension-shared"
 import toml from "toml"
 
-import { RemoteConfigStoreData } from "../domains/app/types"
+import type { RemoteConfigStoreData } from "../domains/app/types"
 
 export const fetchRemoteConfig = async () => {
   log.debug("Fetching config.toml")

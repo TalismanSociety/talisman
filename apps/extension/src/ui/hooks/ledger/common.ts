@@ -1,6 +1,6 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
 import { supportedApps } from "@zondax/ledger-substrate"
-import { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
+import type { SubstrateAppParams } from "@zondax/ledger-substrate/dist/common"
 
 export const CHAIN_ID_TO_LEDGER_APP_NAME: Partial<Record<DotNetworkId, string>> = {
   "kusama": "Kusama",

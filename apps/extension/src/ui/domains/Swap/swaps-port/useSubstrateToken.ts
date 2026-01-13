@@ -1,8 +1,7 @@
+import { useNetworkById } from "@ui/state"
 import { useAtomValue } from "jotai"
 import { loadable } from "jotai/utils"
 import { useEffect, useState } from "react"
-
-import { useNetworkById } from "@ui/state"
 
 import { apiPromiseAtom } from "./apiPromiseAtom"
 

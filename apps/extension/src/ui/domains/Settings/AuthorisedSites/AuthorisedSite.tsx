@@ -1,11 +1,10 @@
-import { ProviderType } from "extension-core"
-import { FC, useCallback, useState } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
-
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { Favicon } from "@talisman/components/Favicon"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
+import type { ProviderType } from "extension-core"
+import { type FC, useCallback, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { Button, Modal, ModalDialog, useOpenClose } from "talisman-ui"
 
 import { AuthorisedSiteAccount } from "./AuthorisedSiteAccount"
 
@@ -70,14 +69,14 @@ export const AuthorizedSite: FC<{
     <div>
       <button
         type="button"
-        className="text-body-secondary hover:text-body bg-grey-850 hover:bg-grey-800 flex h-24 w-full items-center gap-3 rounded-sm px-8 text-left"
+        className="flex h-24 w-full items-center gap-3 rounded-sm bg-grey-850 px-8 text-left text-body-secondary hover:bg-grey-800 hover:text-body"
         onClick={toggle}
       >
         <div className="text-body">
           <Title name={origin} domain={id} />
         </div>
-        <div className="text-body-secondary grow">{origin === "" ? "" : id}</div>
-        <div className="text-primary mr-3 shrink-0 text-right">
+        <div className="grow text-body-secondary">{origin === "" ? "" : id}</div>
+        <div className="mr-3 shrink-0 text-right text-primary">
           {t("{{connectedCount}} of {{totalCount}}", {
             connectedCount: connected?.length ?? 0,
             totalCount: availableAddresses?.length ?? 0,
@@ -89,7 +88,7 @@ export const AuthorizedSite: FC<{
       </button>
       <Accordion isOpen={isOpen}>
         <div className="mt-4 flex w-full flex-col gap-2 px-8">
-          <div className="text-grey-500 text-right text-xs">
+          <div className="text-right text-grey-500 text-xs">
             <button className="hover:text-body" onClick={() => setShowForget(true)}>
               {t("Forget Site")}
             </button>

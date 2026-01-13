@@ -1,9 +1,3 @@
-import { Account, DecryptRequestIdOnly, EncryptRequestIdOnly } from "extension-core"
-import { useEffect, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
@@ -11,6 +5,11 @@ import { Message } from "@ui/domains/Sign/Message"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/state"
+import type { Account, DecryptRequestIdOnly, EncryptRequestIdOnly } from "extension-core"
+import { useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 import { SignAccountAvatar } from "./Sign/SignAccountAvatar"
@@ -30,8 +29,8 @@ const SignMessage = ({
   }, [request])
 
   return (
-    <div className="text-body-secondary flex h-full w-full flex-col items-center pt-8">
-      <h1 className="text-body leading-base text-md my-0 font-sans font-bold">
+    <div className="flex h-full w-full flex-col items-center pt-8 text-body-secondary">
+      <h1 className="my-0 font-bold font-sans text-body text-md leading-base">
         {isDecrypt ? "Decrypt " : "Encrypt "}Request
       </h1>
       <h2 className="mt-8 flex w-full flex-col items-center text-base leading-[3.2rem]">

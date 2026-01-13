@@ -1,9 +1,9 @@
 import { MIGRATION_ERROR_MSG } from "extension-core"
-import { Component, ErrorInfo, ReactNode } from "react"
+import { Component, type ErrorInfo, type ReactNode } from "react"
 import { ProcessAnimation } from "talisman-ui"
 
 const ErrorMessage = () => (
-  <div className="text-whit mx-auto flex h-[60rem] w-[40rem] flex-col px-12 py-16 text-center">
+  <div className="mx-auto flex h-[60rem] w-[40rem] flex-col px-12 py-16 text-center text-whit">
     <div className="flex grow flex-col justify-center font-bold">
       <div className="text-xl">Updating Talisman</div>
       <div className="my-[4.4rem]">
@@ -15,7 +15,7 @@ const ErrorMessage = () => (
         balance support
       </div>
     </div>
-    <div className="balances-warning text-body-secondary bg-grey-900 rounded p-8 font-normal">
+    <div className="balances-warning rounded bg-grey-900 p-8 font-normal text-body-secondary">
       Please note your balances may take a few seconds to refresh after the upgrade
     </div>
   </div>

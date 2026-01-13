@@ -1,5 +1,5 @@
-import { TokenId } from "../chaindata"
-import { LegacyEvmNetworkId } from "./EvmNetwork"
+import type { TokenId } from "../chaindata"
+import type { LegacyEvmNetworkId } from "./EvmNetwork"
 
 /** @deprecated use NetworkId */
 export type LegacyChainId = string

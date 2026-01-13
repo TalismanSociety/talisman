@@ -5,7 +5,7 @@ import "./common/polyfills"
 import { isTokenSubHydration } from "@talismn/chaindata-provider"
 import { log } from "extension-shared"
 
-import { DotNetworkConfig, testNetworkDot } from "./common/testNetworkDot"
+import { type DotNetworkConfig, testNetworkDot } from "./common/testNetworkDot"
 
 const NETWORK_CONFIG: DotNetworkConfig = {
   id: "hydration",

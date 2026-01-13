@@ -1,8 +1,13 @@
 import Color from "color"
-import React, { FC, useEffect, useRef } from "react"
+import type React from "react"
+import { type FC, useEffect, useRef } from "react"
 
-import { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
-import { ArtifactCharacteristics, ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
+import type { MysticalPhysicsV2 } from "./MysticalPhysicsV2"
+import {
+  type ArtifactCharacteristics,
+  type ParentSize,
+  useCelestialArtifact,
+} from "./useCelestialArtifact"
 
 type MysticalCanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,

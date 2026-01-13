@@ -1,8 +1,8 @@
 import z from "zod/v4"
 
-import { SolNetworkId } from "../networks"
+import type { SolNetworkId } from "../networks"
 import { SolanaAddressSchema } from "../shared"
-import { TokenId } from "./Token"
+import type { TokenId } from "./Token"
 import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 

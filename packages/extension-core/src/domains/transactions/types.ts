@@ -1,8 +1,8 @@
-import { Address } from "@talismn/balances"
-import { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn/chaindata-provider"
-import { TransactionRequest } from "viem"
+import type { Address } from "@talismn/balances"
+import type { DotNetworkId, EthNetworkId, SolNetworkId, TokenId } from "@talismn/chaindata-provider"
+import type { TransactionRequest } from "viem"
 
-import { SignerPayloadJSON } from "../signing/types"
+import type { SignerPayloadJSON } from "../signing/types"
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"

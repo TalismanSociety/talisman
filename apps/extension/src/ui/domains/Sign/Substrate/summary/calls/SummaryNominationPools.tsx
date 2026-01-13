@@ -1,18 +1,17 @@
-import { PolkadotCalls } from "@polkadot-api/descriptors"
-import { ScaleApi } from "@talismn/sapi"
+import type { PolkadotCalls } from "@polkadot-api/descriptors"
+import type { ScaleApi } from "@talismn/sapi"
 import { useSuspenseQuery } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
-import { FC, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
 import { cleanupNomPoolName } from "@ui/domains/Staking/helpers"
 import { useNetworkById } from "@ui/state"
+import type { Binary } from "polkadot-api"
+import { type FC, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
-import { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
+import type { DecodedCallSummaryComponent, DecodedCallSummaryComponentDefs } from "../../types"
 import { SummaryContainer, SummaryContent, SummarySeparator } from "../shared/SummaryContainer"
 import { SummaryLineBreak } from "../shared/SummaryLineBreak"
-import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 import { SummaryTokenSymbolDisplay } from "../shared/SummaryTokenSymbolDisplay"
+import { SummaryTokensAndFiat } from "../shared/SummaryTokensAndFiat"
 
 const Join: DecodedCallSummaryComponent<PolkadotCalls["NominationPools"]["join"]> = ({
   decodedCall,
@@ -238,7 +237,7 @@ const WithdrawUnbonded: DecodedCallSummaryComponent<
 const NomPoolName: FC<{ sapi: ScaleApi; poolId: number }> = ({ sapi, poolId }) => {
   const { data: poolName } = useNomPoolName(sapi, poolId)
 
-  return <span className="text-body inline-block">{poolName ?? `Pool ${poolId}`}</span>
+  return <span className="inline-block text-body">{poolName ?? `Pool ${poolId}`}</span>
 }
 
 // do not reuse staking module's useNomPoolName, we need suspense here

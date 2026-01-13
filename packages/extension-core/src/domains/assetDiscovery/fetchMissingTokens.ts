@@ -1,15 +1,15 @@
 import {
-  EthNetworkId,
+  type EthNetworkId,
   evmErc20TokenId,
   evmNativeTokenId,
-  TokenId,
+  type TokenId,
 } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 import { ASSET_DISCOVERY_API_URL, log } from "extension-shared"
 import urlJoin from "url-join"
 
 import { chaindataProvider } from "../../rpcs/chaindata"
-import { EvmAddress } from "../ethereum/types"
+import type { EvmAddress } from "../ethereum/types"
 
 type DiscoveredAssetErc20 = {
   type: "erc20"

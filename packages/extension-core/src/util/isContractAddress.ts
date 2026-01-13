@@ -1,6 +1,6 @@
-import { PublicClient } from "viem"
+import type { PublicClient } from "viem"
 
-import { EvmAddress } from "../domains/ethereum/types"
+import type { EvmAddress } from "../domains/ethereum/types"
 
 export const isContractAddress = async (client: PublicClient, address: EvmAddress) => {
   try {

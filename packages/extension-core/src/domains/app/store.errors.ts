@@ -1,5 +1,5 @@
-import { ErrorEvent, EventHint } from "@sentry/types"
-import { Dexie, DexieError } from "dexie"
+import type { ErrorEvent, EventHint } from "@sentry/types"
+import { Dexie, type DexieError } from "dexie"
 import { firstValueFrom, ReplaySubject } from "rxjs"
 
 import { StorageProvider } from "../../libs/Store"

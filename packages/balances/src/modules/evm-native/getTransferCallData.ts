@@ -1,7 +1,7 @@
 import { isTokenOfType } from "@talismn/chaindata-provider"
 import { isEthereumAddress } from "@talismn/crypto"
 
-import { IBalanceModule } from "../../types/IBalanceModule"
+import type { IBalanceModule } from "../../types/IBalanceModule"
 import { MODULE_TYPE } from "./config"
 
 export const getTransferCallData: IBalanceModule<typeof MODULE_TYPE>["getTransferCallData"] = ({

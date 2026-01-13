@@ -1,16 +1,15 @@
-import { Transition, TransitionChild } from "@headlessui/react"
-import { ArrowUpRightIcon } from "@talismn/icons"
-import { FC, ReactNode, useCallback, useMemo } from "react"
-import { useTranslation } from "react-i18next"
-import { Toggle } from "talisman-ui"
-
 import { languages } from "@common/i18nConfig"
+import { Transition, TransitionChild } from "@headlessui/react"
 import { useGlobalOpenClose } from "@talisman/hooks/useGlobalOpenClose"
+import { ArrowUpRightIcon } from "@talismn/icons"
 import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { currencyConfig } from "@ui/domains/Asset/currencyConfig"
 import { useFavoriteCurrencies } from "@ui/hooks/useFavoriteCurrencies"
 import { useSetting } from "@ui/state"
+import { type FC, type ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { Toggle } from "talisman-ui"
 
 import { AutoLockDrawer, useAutoLockDrawerOpenClose } from "./AutoLockDrawer"
 import { CurrenciesDrawer, useCurrenciesDrawerOpenClose } from "./CurrenciesDrawer"
@@ -32,7 +31,7 @@ export const QuickSettingsOverlay: FC = () => {
     <Transition show={isOpen} appear>
       <TransitionChild
         as="div"
-        className="absolute left-0 top-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
+        className="absolute top-0 left-0 z-20 h-full w-full cursor-pointer bg-black/55 backdrop-blur-[2px]"
         role="presentation"
         onClick={close}
         enter="ease-out duration-300"
@@ -54,7 +53,7 @@ export const QuickSettingsModal: FC = () => {
     <Transition show={isOpen} appear>
       <TransitionChild
         as="div"
-        className="border-grey-800 flex w-full flex-col gap-8 rounded border bg-black/90 px-12 py-8"
+        className="flex w-full flex-col gap-8 rounded border border-grey-800 bg-black/90 px-12 py-8"
         enter="ease-out duration-200"
         enterFrom="opacity-0 scale-90"
         enterTo="opacity-100 scale-100"
@@ -63,10 +62,10 @@ export const QuickSettingsModal: FC = () => {
         leaveTo="opacity-0 scale-95"
       >
         <div className="flex w-full items-center justify-between">
-          <div className="text-body text-md font-bold">{t("Settings")}</div>
+          <div className="font-bold text-body text-md">{t("Settings")}</div>
           <AllSettingsButton />
         </div>
-        <div className="bg-grey-800 h-0.5 w-full"></div>
+        <div className="h-0.5 w-full bg-grey-800"></div>
         <div className="flex w-full flex-col">
           <LanguageRow />
           <CurrenciesRow />
@@ -81,7 +80,7 @@ export const QuickSettingsModal: FC = () => {
 
 const SettingRow: FC<{ label: string; children: ReactNode }> = ({ label, children }) => {
   return (
-    <div className="text-body-secondary flex h-16 w-full items-center justify-between gap-1 text-sm">
+    <div className="flex h-16 w-full items-center justify-between gap-1 text-body-secondary text-sm">
       <div>{label}</div>
       {children}
     </div>
@@ -98,7 +97,7 @@ const LanguageRow = () => {
     <SettingRow label={t("Language")}>
       <button
         type="button"
-        className="text-grey-300 hover:text-body text-sm font-bold"
+        className="font-bold text-grey-300 text-sm hover:text-body"
         onClick={open}
       >
         {current}
@@ -123,7 +122,7 @@ const AutoLockRow = () => {
     <SettingRow label={t("Auto-lock timer")}>
       <button
         type="button"
-        className="text-grey-300 hover:text-body text-sm font-bold"
+        className="font-bold text-grey-300 text-sm hover:text-body"
         onClick={open}
       >
         {display}
@@ -149,13 +148,13 @@ const CurrenciesRow = () => {
         {favorites.slice(0, 3).map((currency) => (
           <img
             key={currency}
-            className="border-0.5 border-grey-800 -ml-2 inline-block size-10 shrink-0 rounded-full border align-middle"
+            className="-ml-2 inline-block size-10 shrink-0 rounded-full border border-0.5 border-grey-800 align-middle"
             alt={currency}
             src={currencyConfig[currency]?.icon}
           />
         ))}
         {moreLabel && (
-          <div className="text-body-secondary border-0.5 border-grey-800 -ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full border bg-black align-middle text-[0.9rem]">
+          <div className="-ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-0.5 border-grey-800 bg-black align-middle text-[0.9rem] text-body-secondary">
             {moreLabel}
           </div>
         )}
@@ -211,7 +210,7 @@ const AllSettingsButton = () => {
   return (
     <button
       type="button"
-      className="text-primary bg-primary/5 hover:bg-primary/10 flex items-center gap-1 rounded-sm p-4 text-xs"
+      className="flex items-center gap-1 rounded-sm bg-primary/5 p-4 text-primary text-xs hover:bg-primary/10"
       onClick={handleClick}
     >
       <div>{t("All settings")}</div>

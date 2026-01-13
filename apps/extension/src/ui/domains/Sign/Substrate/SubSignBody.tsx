@@ -1,9 +1,8 @@
-import { DotNetwork } from "@talismn/chaindata-provider"
-import { FC, useMemo } from "react"
-import { Trans, useTranslation } from "react-i18next"
-
+import type { DotNetwork } from "@talismn/chaindata-provider"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
+import { type FC, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsSub } from "../ViewDetails/ViewDetailsSub"
@@ -17,8 +16,8 @@ export const SubSignBody: FC = () => {
   const isBatch = useMemo(() => isBatchCall(decodedCall), [decodedCall])
 
   return (
-    <div className="animate-fade-in flex grow flex-col">
-      <h1 className="text-md text-body my-12 font-bold">
+    <div className="flex grow animate-fade-in flex-col">
+      <h1 className="my-12 font-bold text-body text-md">
         {isBatch ? t("Approve Batch Request") : t("Approve Request")}
       </h1>
       <h2 className="text-base leading-[3.2rem]">
@@ -58,7 +57,7 @@ const ChainLabel = ({ chain }: { chain: DotNetwork | null }) => {
 
 const ChainName = ({ chain }: { chain: DotNetwork }) => {
   return (
-    <span className="text-body inline-flex max-w-full items-baseline gap-[0.3em]">
+    <span className="inline-flex max-w-full items-baseline gap-[0.3em] text-body">
       <span>
         <NetworkLogo
           networkId={chain.id}

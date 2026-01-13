@@ -1,8 +1,7 @@
-import { FC } from "react"
-
 import { SapiSendButton } from "@ui/domains/Transactions/SapiSendButton"
+import type { FC } from "react"
 
-import { TxSubmitButtonProps } from "./types"
+import type { TxSubmitButtonProps } from "./types"
 
 export const TxSubmitButtonDot: FC<TxSubmitButtonProps<"polkadot">> = ({
   tx,

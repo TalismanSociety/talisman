@@ -1,7 +1,6 @@
 import type { TokenRates } from "@talismn/token-rates"
-import { useMemo } from "react"
-
 import { useTokenRatesMap } from "@ui/state"
+import { useMemo } from "react"
 
 /**
  * Given a usd value, derive rate of this value in all available currencies:

@@ -2,7 +2,7 @@ import { sleep } from "@talismn/util"
 import { IS_FIREFOX, log } from "extension-shared"
 
 import { appStore } from "../domains/app/store.app"
-import { RequestRoute } from "../domains/app/types"
+import type { RequestRoute } from "../domains/app/types"
 
 const WINDOW_OPTS: chrome.windows.CreateData & { width: number; height: number } = {
   type: "popup",

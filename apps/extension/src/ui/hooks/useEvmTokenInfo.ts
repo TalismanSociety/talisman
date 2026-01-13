@@ -1,10 +1,9 @@
-import { EthNetworkId } from "@talismn/chaindata-provider"
+import type { EthNetworkId } from "@talismn/chaindata-provider"
 import { isAbortError } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
-import { EvmAddress, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
-import { ContractFunctionExecutionError } from "viem"
-
 import { usePublicClient } from "@ui/domains/Ethereum/usePublicClient"
+import { type EvmAddress, getErc20TokenInfo, getUniswapV2TokenInfo } from "extension-core"
+import { ContractFunctionExecutionError } from "viem"
 
 export const useEvmTokenInfo = (evmNetworkId?: EthNetworkId, contractAddress?: EvmAddress) => {
   const publicClient = usePublicClient(evmNetworkId)

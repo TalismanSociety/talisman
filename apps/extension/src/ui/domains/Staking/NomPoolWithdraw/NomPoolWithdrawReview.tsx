@@ -30,8 +30,8 @@ export const NomPoolWithdrawReview = () => {
 
   return (
     <div className="flex size-full flex-col">
-      <h2 className="mb-24 mt-8 text-center">{t("You are withdrawing")}</h2>
-      <div className="bg-grey-900 text-body-secondary flex w-full flex-col rounded p-8">
+      <h2 className="mt-8 mb-24 text-center">{t("You are withdrawing")}</h2>
+      <div className="flex w-full flex-col rounded bg-grey-900 p-8 text-body-secondary">
         <div className="flex items-center justify-between gap-8 pb-2">
           <div className="whitespace-nowrap">{t("Amount")} </div>
           <div className="flex items-center gap-4 overflow-hidden">
@@ -57,7 +57,7 @@ export const NomPoolWithdrawReview = () => {
         </div>
         <div className="flex items-center justify-between gap-8 pb-2 text-xs">
           <div className="whitespace-nowrap">{t("Pool")} </div>
-          <div className="text-body truncate">
+          <div className="truncate text-body">
             <NominationPoolName poolId={poolId} chainId={token?.networkId} />
           </div>
         </div>
@@ -76,7 +76,7 @@ export const NomPoolWithdrawReview = () => {
       </div>
       <div className="grow"></div>
       {!!errorMessage && (
-        <div className="text-alert-warn bg-grey-900 my-8 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+        <div className="my-8 flex w-full items-center gap-5 rounded-sm bg-grey-900 px-5 py-6 text-alert-warn text-xs">
           <AlertCircleIcon className="shrink-0 text-lg" />
           <div>{errorMessage}</div>
         </div>

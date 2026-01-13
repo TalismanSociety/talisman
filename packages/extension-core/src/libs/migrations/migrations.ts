@@ -25,7 +25,7 @@ import {
   migrateSubstrateTokensIds,
   migrateTransactionsV2,
 } from "../../domains/transactions/migrations"
-import { Migrations } from "./types"
+import type { Migrations } from "./types"
 
 // The order of these migrations can never be changed after they have been released.
 export const migrations: Migrations = [

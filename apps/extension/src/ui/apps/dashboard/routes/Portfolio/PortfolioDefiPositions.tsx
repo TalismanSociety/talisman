@@ -1,7 +1,6 @@
-import { useEffect } from "react"
-
 import { DashboardDefiPositions } from "@ui/domains/Portfolio/DeFi/DashboardDefiPositions"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useEffect } from "react"
 
 export const PortfolioDefiPositions = () => {
   const { pageOpenEvent } = useAnalytics()

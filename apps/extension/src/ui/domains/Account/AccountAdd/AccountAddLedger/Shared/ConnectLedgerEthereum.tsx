@@ -1,7 +1,6 @@
-import { getEthLedgerDerivationPath } from "extension-core"
-import { FC, useCallback } from "react"
-
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { getEthLedgerDerivationPath } from "extension-core"
+import { type FC, useCallback } from "react"
 
 import { ConnectLedgerBase } from "./ConnectLedgerBase"
 

@@ -1,5 +1,5 @@
-import { IBalanceModule } from "../../types/IBalanceModule"
-import { MODULE_TYPE, PLATFORM, TokenConfig } from "./config"
+import type { IBalanceModule } from "../../types/IBalanceModule"
+import { MODULE_TYPE, PLATFORM, type TokenConfig } from "./config"
 import { fetchBalances } from "./fetchBalances"
 import { fetchTokens } from "./fetchTokens"
 import { getMiniMetadata } from "./getMiniMetadata"

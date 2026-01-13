@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect, useState } from "react"
+import { type FC, type ReactNode, useCallback, useEffect, useState } from "react"
 import { PillButton } from "talisman-ui"
 
 const Checked = () => (

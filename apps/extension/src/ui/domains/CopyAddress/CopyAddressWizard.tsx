@@ -1,9 +1,9 @@
-import { FC } from "react"
+import type { FC } from "react"
 
 import { CopyAddressAccountForm } from "./CopyAddressAccountForm"
 import { CopyAddressChainForm } from "./CopyAddressChainForm"
 import { CopyAddressCopyForm } from "./CopyAddressCopyForm"
-import { CopyAddressWizardInputs } from "./types"
+import type { CopyAddressWizardInputs } from "./types"
 import { CopyAddressWizardProvider, useCopyAddressWizard } from "./useCopyAddressWizard"
 
 const Routes = () => {

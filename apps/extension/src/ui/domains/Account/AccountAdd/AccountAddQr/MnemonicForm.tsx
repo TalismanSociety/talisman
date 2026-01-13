@@ -1,13 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { isTruthy } from "@talismn/util"
+import { api } from "@ui/api"
 import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
-
-import { FadeIn } from "@talisman/components/FadeIn"
-import { api } from "@ui/api"
 
 type FormData = {
   mnemonic: string
@@ -69,7 +68,7 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
   return (
     <FadeIn>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="text-body-secondary mb-6">
+        <div className="mb-6 text-body-secondary">
           <Trans t={t}>
             Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You
             should not enter your main Polkadot Vault account mnemonic here.
@@ -88,7 +87,7 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
               {t("Word count: {{wordCount}}", { wordCount })}
             </div>
           )}
-          <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
+          <div className="text-right text-alert-warn">{errors.mnemonic?.message}</div>
         </div>
         <div className="flex justify-between gap-8">
           <Button type="button" fullWidth onClick={onCancel}>

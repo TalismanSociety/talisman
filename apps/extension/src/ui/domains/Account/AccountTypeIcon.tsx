@@ -7,8 +7,8 @@ import {
   UsersIcon,
 } from "@talismn/icons"
 import { classNames } from "@talismn/util"
-import { AccountType } from "extension-core"
-import { FC, useMemo } from "react"
+import type { AccountType } from "extension-core"
+import { type FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 

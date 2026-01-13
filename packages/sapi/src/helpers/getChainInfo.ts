@@ -1,5 +1,5 @@
 import { getConstantValue } from "./getConstantValue"
-import { Chain } from "./types"
+import type { Chain } from "./types"
 
 type SystemVersion = {
   spec_name: string

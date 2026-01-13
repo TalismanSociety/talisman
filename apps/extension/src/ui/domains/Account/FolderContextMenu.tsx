@@ -1,12 +1,11 @@
-import { Placement } from "@floating-ui/react"
+import type { Placement } from "@floating-ui/react"
 import { MoreHorizontalIcon } from "@talismn/icons"
-import { AccountsCatalogTree, TreeFolder, TreeItem } from "extension-core"
-import { FC, ReactNode, useMemo } from "react"
+import { useAccountsCatalog } from "@ui/state"
+import type { AccountsCatalogTree, TreeFolder, TreeItem } from "extension-core"
+import { type FC, type ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "talisman-ui"
-
-import { useAccountsCatalog } from "@ui/state"
 
 import { useDeleteFolderModal } from "./DeleteFolderModal"
 import { useRenameFolderModal } from "./RenameFolderModal"
@@ -40,13 +39,13 @@ export const FolderContextMenu: FC<{
   return (
     <ContextMenu placement={placement}>
       {trigger ?? (
-        <ContextMenuTrigger className="enabled:hover:bg-grey-750 text-body-secondary enabled:hover:text-body disabled:text-body-disabled rounded p-6 disabled:cursor-[inherit]">
+        <ContextMenuTrigger className="rounded p-6 text-body-secondary enabled:hover:bg-grey-750 enabled:hover:text-body disabled:cursor-[inherit] disabled:text-body-disabled">
           <MoreHorizontalIcon className="shrink-0" />
         </ContextMenuTrigger>
       )}
       <ContextMenuContent
         data-no-dnd="true"
-        className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg"
+        className="z-50 flex w-min flex-col whitespace-nowrap rounded-sm border border-grey-800 bg-black px-2 py-3 text-left text-sm shadow-lg"
       >
         <ContextMenuItem onClick={() => renameFolder(folder.id, folder.name, treeName)}>
           {t("Rename")}

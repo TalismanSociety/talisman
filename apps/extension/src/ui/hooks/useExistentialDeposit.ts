@@ -1,8 +1,11 @@
 import { BalanceFormatter } from "@talismn/balances"
-import { isTokenNeedExistentialDeposit, Token, TokenId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
-
+import {
+  isTokenNeedExistentialDeposit,
+  type Token,
+  type TokenId,
+} from "@talismn/chaindata-provider"
 import { useToken } from "@ui/state"
+import { useMemo } from "react"
 
 export const useExistentialDeposit = (tokenId: TokenId | null | undefined) => {
   const token = useToken(tokenId) as Token

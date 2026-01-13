@@ -1,5 +1,5 @@
 import Lottie from "lottie-react"
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 
 import animDataFailure from "./lottie-tx-failure.json"
 import animDataProcessing from "./lottie-tx-processing.json"

@@ -1,4 +1,4 @@
-import { WhatsNewVersionData } from "../types"
+import type { WhatsNewVersionData } from "../types"
 import content from "./content.md"
 import HeroUrl from "./Hero.png"
 

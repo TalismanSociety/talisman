@@ -1,7 +1,6 @@
 import { decodeSs58Address, detectAddressEncoding } from "@talismn/crypto"
-import { useMemo } from "react"
-
 import { useNetworks } from "@ui/state"
+import { useMemo } from "react"
 
 export const useChainsFilteredByAddressPrefix = (address?: string) => {
   const chains = useNetworks({ platform: "polkadot" })

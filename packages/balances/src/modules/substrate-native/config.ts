@@ -1,9 +1,9 @@
 import { SubNativeTokenSchema } from "@talismn/chaindata-provider"
 
-export {
-  type SubNativeMiniMetadataExtra as MiniMetadataExtra,
-  type SubNativeModuleConfig as ModuleConfig,
-  type SubNativeTokenConfig as TokenConfig,
+export type {
+  SubNativeMiniMetadataExtra as MiniMetadataExtra,
+  SubNativeModuleConfig as ModuleConfig,
+  SubNativeTokenConfig as TokenConfig,
 } from "./types"
 
 export const MODULE_TYPE = SubNativeTokenSchema.shape.type.value

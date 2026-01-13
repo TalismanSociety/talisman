@@ -1,4 +1,4 @@
-import { Network, NetworkId } from "@talismn/chaindata-provider"
+import type { Network, NetworkId } from "@talismn/chaindata-provider"
 
 import { StorageProvider } from "../../libs/Store"
 

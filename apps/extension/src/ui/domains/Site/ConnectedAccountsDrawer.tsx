@@ -1,10 +1,9 @@
-import { XIcon } from "@talismn/icons"
-import { FC } from "react"
-import { Drawer, IconButton } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { XIcon } from "@talismn/icons"
 import { useCurrentSite } from "@ui/hooks/useCurrentSite"
+import type { FC } from "react"
+import { Drawer, IconButton } from "talisman-ui"
 
 import { ConnectedAccounts } from "./ConnectedAccounts"
 
@@ -22,7 +21,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
       <div className="flex h-full flex-col bg-black">
         <header className="px-12 py-10 text-center">
           <AppPill url={url} />
-          <IconButton className="absolute right-10 top-10" onClick={onClose}>
+          <IconButton className="absolute top-10 right-10" onClick={onClose}>
             <XIcon />
           </IconButton>
         </header>

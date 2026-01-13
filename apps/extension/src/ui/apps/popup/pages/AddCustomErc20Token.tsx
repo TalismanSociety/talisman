@@ -1,22 +1,21 @@
-import { WatchAssetRequestIdOnly } from "extension-core"
-import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
-import { FC, PropsWithChildren, useCallback, useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import type { WatchAssetRequestIdOnly } from "extension-core"
+import { IS_FIREFOX, UNKNOWN_TOKEN_URL } from "extension-shared"
+import { type FC, type PropsWithChildren, useCallback, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
 const FakePill: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <span className="bg-grey-850 text-body inline-flex h-[2.6rem] items-center gap-2 rounded-3xl px-3 font-light">
+    <span className="inline-flex h-[2.6rem] items-center gap-2 rounded-3xl bg-grey-850 px-3 font-light text-body">
       {children}
     </span>
   )
@@ -72,7 +71,7 @@ export const AddCustomErc20Token = () => {
               crossOrigin={IS_FIREFOX ? undefined : "anonymous"}
             />
           </div>
-          <h1 className="text-md pb-12 pt-8 font-bold">{t("New Token")}</h1>
+          <h1 className="pt-8 pb-12 font-bold text-md">{t("New Token")}</h1>
           <div className="text-body-secondary">
             <p>{t("You are adding the token")}</p>
             <div className="flex items-center justify-center gap-2">

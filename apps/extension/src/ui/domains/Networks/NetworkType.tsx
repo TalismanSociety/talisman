@@ -1,7 +1,6 @@
-import { NetworkId } from "@talismn/chaindata-provider"
-import { FC } from "react"
-
+import type { NetworkId } from "@talismn/chaindata-provider"
 import { useNetworkDisplayType } from "@ui/state/networks"
+import type { FC } from "react"
 
 export const NetworkType: FC<{ networkId: NetworkId | null | undefined; className?: string }> = ({
   networkId,

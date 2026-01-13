@@ -1,6 +1,6 @@
-import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import type { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { XCircleIcon } from "@talismn/icons"
-import { AccountSignet, SignerPayloadRaw } from "extension-core"
+import type { AccountSignet, SignerPayloadRaw } from "extension-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
@@ -15,9 +15,9 @@ type Props = {
 const SignetSignetError: React.FC<{ call: boolean; network: boolean }> = ({ call, network }) => {
   if (!call && !network) return null
   return (
-    <div className="bg-grey-800 flex w-full items-center justify-center gap-4 rounded-sm p-6">
-      <XCircleIcon className="text-alert-error min-w-[1em] shrink-0 text-[2rem]" />
-      <p className="text-grey-300 text-left">
+    <div className="flex w-full items-center justify-center gap-4 rounded-sm bg-grey-800 p-6">
+      <XCircleIcon className="min-w-[1em] shrink-0 text-[2rem] text-alert-error" />
+      <p className="text-left text-grey-300">
         {call
           ? "This request is not supported on Signet."
           : network

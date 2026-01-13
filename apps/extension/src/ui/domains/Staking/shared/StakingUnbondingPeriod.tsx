@@ -1,5 +1,5 @@
-import { DotNetworkId } from "@talismn/chaindata-provider"
-import { FC } from "react"
+import type { DotNetworkId } from "@talismn/chaindata-provider"
+import type { FC } from "react"
 
 import { BittensorUnbondingPeriod } from "../Bittensor/BittensorBondModal/BittensorUnbondingPeriod"
 import { NomPoolUnbondingPeriod } from "../NominationPools/NomPoolUnbondingPeriod"

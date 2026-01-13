@@ -5,12 +5,12 @@ export const SignViewBodyShimmer = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-body-secondary flex flex-col items-center gap-2 pt-64 leading-[140%]">
-      <LoaderIcon className="animate-spin-slow h-16 w-16" />
-      <div className="mt-4 text-base font-bold text-white opacity-70">
+    <div className="flex flex-col items-center gap-2 pt-64 text-body-secondary leading-[140%]">
+      <LoaderIcon className="h-16 w-16 animate-spin-slow" />
+      <div className="mt-4 font-bold text-base text-white opacity-70">
         {t("Analysing transaction")}
       </div>
-      <div className="text-sm font-normal opacity-70">{t("This shouldn't take long...")}</div>
+      <div className="font-normal text-sm opacity-70">{t("This shouldn't take long...")}</div>
     </div>
   )
 }

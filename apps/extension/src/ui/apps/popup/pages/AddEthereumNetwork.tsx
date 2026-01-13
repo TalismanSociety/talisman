@@ -1,15 +1,14 @@
-import { KnownRequestIdOnly } from "extension-core"
-import { useCallback, useEffect } from "react"
-import { Trans, useTranslation } from "react-i18next"
-import { useParams } from "react-router-dom"
-import { Button } from "talisman-ui"
-
 import { AppPill } from "@talisman/components/AppPill"
 import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { NetworkDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { NetworkLogo } from "@ui/domains/Networks/NetworkLogo"
 import { useBalancesHydrate, useNetworkById, useRequest } from "@ui/state"
+import type { KnownRequestIdOnly } from "extension-core"
+import { useCallback, useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
+import { useParams } from "react-router-dom"
+import { Button } from "talisman-ui"
 
 import { PopupContent, PopupFooter, PopupHeader, PopupLayout } from "../Layout/PopupLayout"
 
@@ -51,11 +50,11 @@ export const AddEthereumNetwork = () => {
       <PopupContent>
         <div className="flex h-full w-full flex-col items-center text-center">
           <NetworkLogo networkId={request.network.id} className="mt-6 inline-block text-3xl" />
-          <h1 className="text-md mb-12 mt-8 font-bold">{t("Add Network")}</h1>
+          <h1 className="mt-8 mb-12 font-bold text-md">{t("Add Network")}</h1>
           <p className="text-body-secondary leading-[2.6rem]">
             <Trans t={t}>
               This app wants to connect Talisman to the{" "}
-              <span className="bg-grey-850 text-body inline-block h-[2.6rem] items-center rounded-3xl px-3 font-light">
+              <span className="inline-block h-[2.6rem] items-center rounded-3xl bg-grey-850 px-3 font-light text-body">
                 {request.network.name}
               </span>{" "}
               network.

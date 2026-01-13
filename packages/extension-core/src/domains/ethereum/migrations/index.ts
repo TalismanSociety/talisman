@@ -1,4 +1,4 @@
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { activeEvmNetworksStore } from "../store.activeEvmNetworks"
 
 export const migrateToNewDefaultEvmNetworks: Migration = {

@@ -1,10 +1,10 @@
-import { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
-import { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
+import type { TransactionScanResponse } from "@blockaid/client/resources/index.mjs"
+import type { MessageScanResponse } from "@blockaid/client/resources/solana/message.mjs"
 
-import { useEvmMessageRiskAnalysis } from "./ethereum/useEvmMessageRiskAnalysis"
-import { useEvmTransactionRiskAnalysis } from "./ethereum/useEvmTransactionRiskAnalysis"
-import { useSolTransactionRiskAnalysis } from "./solana/useSolTransactionRiskAnalysis"
-import { useRisksReview } from "./useRisksReview"
+import type { useEvmMessageRiskAnalysis } from "./ethereum/useEvmMessageRiskAnalysis"
+import type { useEvmTransactionRiskAnalysis } from "./ethereum/useEvmTransactionRiskAnalysis"
+import type { useSolTransactionRiskAnalysis } from "./solana/useSolTransactionRiskAnalysis"
+import type { useRisksReview } from "./useRisksReview"
 
 export type RiskAnalysisPlatform = "ethereum" | "solana"
 

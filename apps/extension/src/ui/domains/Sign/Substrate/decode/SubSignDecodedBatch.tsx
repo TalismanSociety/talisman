@@ -1,7 +1,7 @@
-import { DecodedCall } from "@talismn/sapi"
+import type { DecodedCall } from "@talismn/sapi"
 import { useMemo } from "react"
 
-import { DecodedBatchArgs, DecodedCallComponent, isBatchCall } from "../types"
+import { type DecodedBatchArgs, type DecodedCallComponent, isBatchCall } from "../types"
 import { SubSignDecodedBatchDrawer } from "./SubSignDecodedBatchDrawer"
 import {
   SubSignDecodedBatchDrawerProvider,

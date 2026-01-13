@@ -1,5 +1,3 @@
-import { Suspense, useEffect, useState } from "react"
-
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -21,6 +19,7 @@ import { NomPoolWithdrawModal } from "@ui/domains/Staking/NomPoolWithdraw/NomPoo
 import { UnbondModal } from "@ui/domains/Staking/Unbond/UnbondModal"
 import { SwapTokensModal } from "@ui/domains/Swap/components/SwapTokensModal"
 import { ExplorerNetworkPickerModal } from "@ui/domains/ViewOnExplorer"
+import { Suspense, useEffect, useState } from "react"
 
 import DashboardNotifications from "."
 import { OnboardingToast } from "./OnboardingToast"

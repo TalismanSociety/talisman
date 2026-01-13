@@ -1,10 +1,9 @@
+import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { appStore } from "extension-core"
 import { BRAVE_BALANCES_URL } from "extension-shared"
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { Button, Toggle } from "talisman-ui"
-
-import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 
 type BraveWarningModalProps = {
   className?: string
@@ -33,8 +32,8 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
   }, [])
 
   return (
-    <div className="text-body-secondary flex w-full flex-col gap-8">
-      <p className="text-body-secondary [&>strong]:text-body px-8 text-xs">
+    <div className="flex w-full flex-col gap-8 text-body-secondary">
+      <p className="px-8 text-body-secondary text-xs [&>strong]:text-body">
         <Trans t={t}>
           Brave limits the amount of networks Talisman can connect to. In order to view all your
           balances please disable the <strong>Restrict WebSockets Pool</strong> flag and restart
@@ -56,7 +55,7 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = () => {
         {t("Open Brave flags")}
       </Button>
       <Button onClick={handleReadMoreClick}>{t("Read the docs")}</Button>
-      <div className="text-body-secondary flex w-full items-center justify-center gap-4 text-sm">
+      <div className="flex w-full items-center justify-center gap-4 text-body-secondary text-sm">
         <div>{t("Don't prompt me again")}</div>
         <Toggle
           checked={hideBraveWarning}

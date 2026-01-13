@@ -1,10 +1,9 @@
-import { DecodedCall } from "@talismn/sapi"
-import { FC } from "react"
-
 import { FallbackErrorBoundary } from "@talisman/components/FallbackErrorBoundary"
+import type { DecodedCall } from "@talismn/sapi"
+import type { FC } from "react"
 
 import { SUMMARY_COMPONENTS } from "../summary/calls"
-import { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
+import type { DecodedCallComponent, SummaryButtonDisplayMode } from "../types"
 import { useDecodedCallComponent } from "../util/useDecodedCallComponent"
 
 const ContentFallback: FC<{ decodedCall: DecodedCall }> = ({ decodedCall }) => (

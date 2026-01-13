@@ -1,7 +1,7 @@
-import { KeyringPair$Meta } from "@polkadot/keyring/types"
+import type { KeyringPair$Meta } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 
-import { Migration, MigrationFunction } from "../../../libs/migrations/types"
+import { type Migration, MigrationFunction } from "../../../libs/migrations/types"
 import { appStore } from "../../app/store.app"
 import { LegacyAccountOrigin, SubstrateLedgerAppType } from "../types"
 

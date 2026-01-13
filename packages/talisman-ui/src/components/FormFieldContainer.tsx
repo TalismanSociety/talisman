@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { FC, ReactNode } from "react"
+import type { FC, ReactNode } from "react"
 
 type FormFieldContainerProps = {
   className?: string
@@ -17,11 +17,11 @@ export const FormFieldContainer: FC<FormFieldContainerProps> = ({
   noErrorRow,
 }) => {
   return (
-    <div className={classNames("leading-base text-left text-base", className)}>
+    <div className={classNames("text-left text-base leading-base", className)}>
       <div className="text-body-secondary">{label}</div>
       <div className="mt-4">{children}</div>
       {!noErrorRow && (
-        <div className="text-alert-warn h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-xs leading-none">
+        <div className="h-8 max-w-full overflow-hidden text-ellipsis whitespace-nowrap py-2 text-right text-alert-warn text-xs leading-none">
           {error}
         </div>
       )}

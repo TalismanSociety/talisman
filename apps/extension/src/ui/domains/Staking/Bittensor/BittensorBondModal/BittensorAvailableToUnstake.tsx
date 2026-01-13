@@ -6,7 +6,7 @@ export const BittensorAvailableToUnstake = () => {
   const { dtaoToken, dtaoBalance } = useBittensorBondWizard()
 
   return (
-    <div className="text-body-secondary flex items-center gap-2">
+    <div className="flex items-center gap-2 text-body-secondary">
       <TokensAndFiat
         planck={dtaoBalance?.free.planck}
         tokenId={dtaoToken?.id}

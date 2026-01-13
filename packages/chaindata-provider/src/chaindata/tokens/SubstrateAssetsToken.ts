@@ -1,7 +1,7 @@
 import z from "zod/v4"
 
-import { NetworkId } from "../networks"
-import { TokenId } from "./Token"
+import type { NetworkId } from "../networks"
+import type { TokenId } from "./Token"
 import { TokenBaseSchema } from "./TokenBase"
 import { generateTokenId } from "./utils"
 

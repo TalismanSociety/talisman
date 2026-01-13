@@ -1,5 +1,5 @@
 import { XIcon } from "@talismn/icons"
-import { FC, PropsWithChildren } from "react"
+import type { FC, PropsWithChildren } from "react"
 import { IconButton } from "talisman-ui"
 
 import { useCopyAddressModal } from "./useCopyAddressModal"
@@ -18,7 +18,7 @@ export const CopyAddressLayout: FC<CopyAddressLayoutProps> = ({ title, children 
     >
       <div className="flex h-32 w-full shrink-0 items-center px-12">
         <div className="w-12"></div>
-        <div className="text-body-secondary grow text-center">{title}</div>
+        <div className="grow text-center text-body-secondary">{title}</div>
         <IconButton onClick={close}>
           <XIcon />
         </IconButton>

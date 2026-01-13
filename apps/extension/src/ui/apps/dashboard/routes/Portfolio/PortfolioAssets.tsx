@@ -1,9 +1,8 @@
-import { useEffect } from "react"
-
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { GetStarted } from "@ui/domains/Portfolio/GetStarted/GetStarted"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioSearch } from "@ui/state"
+import { useEffect } from "react"
 
 export const PortfolioAssets = () => {
   const { pageOpenEvent } = useAnalytics()

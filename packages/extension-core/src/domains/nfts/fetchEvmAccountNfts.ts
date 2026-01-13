@@ -1,6 +1,6 @@
 import { ASSET_DISCOVERY_API_URL } from "extension-shared"
 
-import { AccountNfts } from "./types"
+import type { AccountNfts } from "./types"
 
 export const fetchEvmAccountNfts = async (address: string, signal: AbortSignal) => {
   const req = await fetch(`${ASSET_DISCOVERY_API_URL}/nfts/${address}`, { signal })

@@ -13,7 +13,7 @@ export const BittensorSubnetBondForm = () => {
     return (
       <div className="flex items-center justify-between gap-8">
         <div className="whitespace-nowrap">{t("Select Subnet")}</div>
-        <div className="text-body truncate">
+        <div className="truncate text-body">
           <BittensorSelectButton
             label={
               dtaoToken?.netuid

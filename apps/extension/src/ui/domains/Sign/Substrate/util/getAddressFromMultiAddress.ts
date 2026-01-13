@@ -1,4 +1,4 @@
-import { MultiAddress } from "@polkadot-api/descriptors"
+import type { MultiAddress } from "@polkadot-api/descriptors"
 import { encodeAddressSs58, normalizeAddress } from "@talismn/crypto"
 
 export const getAddressFromMultiAddress = (multiAddress: MultiAddress | string) => {

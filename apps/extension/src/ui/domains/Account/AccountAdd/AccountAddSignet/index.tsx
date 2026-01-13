@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
-import { AccountAddPageProps } from "../types"
+import type { AccountAddPageProps } from "../types"
 import { ConnectSignetPage } from "./ConnectSignetPage"
 import { ConnectSignetSelectAccounts } from "./ConnectSignetSelectAccounts"
 import { SignetConnectProvider } from "./context"
