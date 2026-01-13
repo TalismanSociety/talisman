@@ -45,6 +45,7 @@ export const useAccountExportPrivateKeyModal = () => {
     isAccountOfType(account, "keypair") &&
     (isAccountPlatformEthereum(account) || isAccountPlatformSolana(account))
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   const canExportAccount = useMemo(() => canExportAccountFunc(account), [account])
 
   const exportAccount = useCallback(

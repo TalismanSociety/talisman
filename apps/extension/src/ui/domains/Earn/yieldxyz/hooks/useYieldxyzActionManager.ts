@@ -82,6 +82,7 @@ export const useYieldxyzTransactionManager = ({
   })
 
   // maintain pendingTxId state
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (!pendingTx?.status || ["BROADCASTED", "PENDING"].includes(pendingTx.status ?? "")) return
 

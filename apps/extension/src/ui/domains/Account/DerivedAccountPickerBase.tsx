@@ -184,6 +184,7 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
               onClick={handleToggleAccount(account)}
             />
           ) : (
+            // biome-ignore lint/suspicious/noArrayIndexKey: legacy
             <AccountButtonShimmer key={i} withBalances={withBalances} />
           )
         )}

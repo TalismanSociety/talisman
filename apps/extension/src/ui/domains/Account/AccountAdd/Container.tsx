@@ -99,6 +99,7 @@ function MethodTypeTab({
         isSelected && "border-grey-750 bg-grey-850 opacity-100",
         className
       )}
+      // biome-ignore lint/complexity/noCommaOperator: legacy
       onClick={(e) => (setMethodType(methodType), e.currentTarget.blur())}
     >
       <div className="text-lg text-primary">{cloneElement(icon, { className: "stroke-1" })}</div>

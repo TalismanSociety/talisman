@@ -73,6 +73,7 @@ export const AssetPriceChart: FC<{
 
   const { data: prices, refetch } = useMarketChart(coingeckoId, currency, timespan)
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     // update graph if tokenRates data changes
     log.debug("AssetPriceGraph refetch")
@@ -235,7 +236,7 @@ const useMarketChart = (
         const query = new URLSearchParams({ vs_currency, days })
         const url = `/api/v3/coins/${coingeckoId}/market_chart?${query.toString()}`
         const result = await fetchFromCoingecko(url)
-        if (!result.ok) throw new Error("Failed to fetch market chart for " + coingeckoId)
+        if (!result.ok) throw new Error(`Failed to fetch market chart for ${coingeckoId}`)
         return { prices: (await result.json())?.prices }
       }
 
@@ -301,6 +302,7 @@ const Chart: FC<{
   const refChart = useRef<HTMLCanvasElement>(null)
   const currency = useSelectedCurrency()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const canvas = refChart.current
     if (!canvas) return
@@ -334,7 +336,7 @@ const Chart: FC<{
         const element = elements[0]
         const price = allPrices[element.index]
         onHoverValueChange(price)
-      } catch (e) {
+      } catch {
         log.warn("Failed to read hovered price", { event, elements })
         onHoverValueChange(null)
       }

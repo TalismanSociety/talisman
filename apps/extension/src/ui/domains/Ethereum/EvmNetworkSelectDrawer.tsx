@@ -66,7 +66,7 @@ const DrawerContent: FC<{ onClose: () => void }> = ({ onClose }) => {
   const handleNetworkClick = useCallback(
     async (id: string) => {
       const ethChainId = Number(id)
-      if (!currentSite?.id || isNaN(ethChainId)) return
+      if (!currentSite?.id || Number.isNaN(ethChainId)) return
       if (!activeEvmNetworksState[id]) await activeNetworksStore.setActive(id, true)
       await api.authorizedSiteUpdate(currentSite.id, { ethChainId })
       onClose()

@@ -27,15 +27,12 @@ export const ConnectSignetSelectAccounts = () => {
     )
   )
 
-  const handleToggle = useCallback(
-    (address: string) => {
-      setSelectedAccounts((prev) => ({
-        ...prev,
-        [address]: !prev?.[address],
-      }))
-    },
-    [setSelectedAccounts]
-  )
+  const handleToggle = useCallback((address: string) => {
+    setSelectedAccounts((prev) => ({
+      ...prev,
+      [address]: !prev?.[address],
+    }))
+  }, [])
 
   useEffect(() => {
     if (vaults.length === 0) navigate("/accounts/add/signet")

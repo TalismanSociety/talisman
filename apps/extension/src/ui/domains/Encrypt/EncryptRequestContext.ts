@@ -34,7 +34,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
       if (currentRequest) {
         await api.cancelEncryptRequest(currentRequest.id)
       }
-    } catch (err) {
+    } catch {
       // ignore, request doesn't exist
       // we just want popup to close
     }

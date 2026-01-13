@@ -19,38 +19,30 @@ export const FeeTooltip = ({
 
   return (
     <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
-      <>
-        {!!estimatedFee && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Estimated Fee:")}</div>
-            <div>
-              <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
-            </div>
+      {!!estimatedFee && (
+        <div className="flex w-full justify-between gap-8">
+          <div>{t("Estimated Fee:")}</div>
+          <div>
+            <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
           </div>
-        )}
-        {!!maxFee && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Max Fee:")}</div>
-            <div>
-              <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
-            </div>
+        </div>
+      )}
+      {!!maxFee && (
+        <div className="flex w-full justify-between gap-8">
+          <div>{t("Max Fee:")}</div>
+          <div>
+            <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
           </div>
-        )}
-        {balance !== undefined && (
-          <div className="flex w-full justify-between gap-8">
-            <div>{t("Balance:")}</div>
-            <div>
-              <TokensAndFiat
-                tokenId={tokenId}
-                planck={balance ?? 0n}
-                noTooltip
-                noCountUp
-                isBalance
-              />
-            </div>
+        </div>
+      )}
+      {balance !== undefined && (
+        <div className="flex w-full justify-between gap-8">
+          <div>{t("Balance:")}</div>
+          <div>
+            <TokensAndFiat tokenId={tokenId} planck={balance ?? 0n} noTooltip noCountUp isBalance />
           </div>
-        )}
-      </>
+        </div>
+      )}
     </div>
   )
 }

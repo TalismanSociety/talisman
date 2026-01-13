@@ -1,4 +1,4 @@
-/* eslint-disable react/no-children-prop */
+/** biome-ignore-all lint/correctness/noChildrenProp: legacy */
 
 import { HeaderBlock } from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
@@ -60,7 +60,7 @@ const privateKeyToAddress = (privateKey: string, platform: AccountPlatform) => {
 const isValidPrivateKey = (privateKey: string, platform: AccountPlatform) => {
   try {
     return Boolean(privateKeyToAddress(privateKey, platform))
-  } catch (err) {
+  } catch {
     return false
   }
 }

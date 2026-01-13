@@ -30,6 +30,7 @@ export const AddressFieldNsBadge = ({
         noWrap={!document.getElementById("main")}
       >
         {small ? (
+          // biome-ignore lint/complexity/noUselessFragments: legacy
           <>
             {isNsFetching ? (
               <LoaderIcon className="animate-spin-slow text-body-disabled" />

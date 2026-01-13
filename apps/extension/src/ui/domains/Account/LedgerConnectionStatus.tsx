@@ -19,10 +19,12 @@ const wrapStrong = (text: string) => {
   return text.split(splitter).map((str, i) => {
     const match = extractor.exec(str)
     return match ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: static list
       <strong key={i} className="p-0 text-grey-300 capitalize">
         {match[1]}
       </strong>
     ) : (
+      // biome-ignore lint/suspicious/noArrayIndexKey: static list
       <span key={i}>{str}</span>
     )
   })

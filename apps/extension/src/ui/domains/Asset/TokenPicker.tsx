@@ -471,7 +471,6 @@ export const TokenPicker: FC<TokenPickerProps> = ({
           onChange={setSearch}
           placeholder={t("Search by token or network name")}
           initialValue={initialSearch}
-          // biome-ignore lint/a11y/noAutofocus: legacy
           autoFocus={!initialSearch}
         />
         {tokenFilterOptions !== undefined && (

@@ -31,6 +31,7 @@ export const useAccountRenameModal = () => {
     [innerOpen]
   )
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     close()
   }, [selectedAccount, close])

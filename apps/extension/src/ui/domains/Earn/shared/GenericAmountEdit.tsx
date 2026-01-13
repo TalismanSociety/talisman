@@ -58,7 +58,7 @@ const TokenInput: FC<{
       try {
         const plancks = tokensToPlanck(nextValue, decimals)
         onValueChanged(BigInt(plancks))
-      } catch (err) {
+      } catch {
         // invalid input, ignore
         onValueChanged(null)
       }
@@ -74,7 +74,7 @@ const TokenInput: FC<{
     if (refInitialized.current) return
     refInitialized.current = true
     if (value === null) refTokensInput.current?.focus()
-  }, [refTokensInput, value])
+  }, [value])
 
   // resize input to keep content centered
   useInputAutoWidth(refTokensInput)
@@ -149,7 +149,7 @@ const FiatInput: FC<{
           const tokens = (fiat / tokenRates[currency].price).toFixed(Math.ceil(decimals))
           const plancks = tokensToPlanck(tokens, decimals)
           return onValueChanged(BigInt(plancks))
-        } catch (err) {
+        } catch {
           // invalid input, ignore
         }
       }
@@ -164,6 +164,7 @@ const FiatInput: FC<{
 
   // auto focus if empty
   const refInitialized = useRef(false)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     if (refInitialized.current) return
     refInitialized.current = true

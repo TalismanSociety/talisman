@@ -31,7 +31,7 @@ const DisplayValue: FC<DisplayValueProps> = React.memo(({ amount, symbol, noCoun
 
   const formated = useMemo(() => formatDecimals(num), [num])
 
-  if (isNaN(num)) return null
+  if (Number.isNaN(num)) return null
 
   if (noCountUp || formated.startsWith("<")) return <>{`${formated} ${symbol ?? ""}`.trim()}</>
 

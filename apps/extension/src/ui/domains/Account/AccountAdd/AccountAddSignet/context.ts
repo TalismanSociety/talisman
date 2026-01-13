@@ -12,7 +12,7 @@ const useSignetConnectContext = ({ onSuccess }: AccountAddPageProps) => {
   const signetUrlOrigin = useMemo(() => {
     try {
       return new URL(signetUrl).origin
-    } catch (e) {
+    } catch {
       return ""
     }
   }, [signetUrl])

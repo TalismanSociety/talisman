@@ -92,7 +92,7 @@ export const AccountAddMnemonicForm = () => {
           let address: string
           try {
             address = await api.addressLookup({ type: "mnemonic", mnemonic, curve, derivationPath })
-          } catch (err) {
+          } catch {
             return ctx.createError({
               path: "derivationPath",
               message: t("Invalid derivation path"),
@@ -136,6 +136,7 @@ export const AccountAddMnemonicForm = () => {
 
   const [targetAddress, setTargetAddress] = useState<string>()
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
@@ -149,7 +150,7 @@ export const AccountAddMnemonicForm = () => {
             curve,
           })
         )
-      } catch (err) {
+      } catch {
         setTargetAddress(undefined)
       }
     }

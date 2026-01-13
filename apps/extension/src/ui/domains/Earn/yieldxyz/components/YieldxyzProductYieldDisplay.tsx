@@ -45,6 +45,7 @@ export const YieldxyzProductYieldDisplay: FC<{ product: YieldDto }> = ({ product
         <TooltipContent>
           <div className="flex min-w-[15rem] flex-col gap-2 text-body">
             {rewards.map((reward, idx) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: legacy
               <div key={idx}>
                 <div className="flex items-center gap-2">
                   {reward.talismanToken ? (

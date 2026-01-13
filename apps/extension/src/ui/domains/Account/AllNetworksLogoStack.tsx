@@ -68,6 +68,7 @@ export const AllNetworksLogoStack = ({ className, ids, max = 4 }: Props) => {
   return (
     <div className={classNames("h-[1em] shrink-0 pl-[0.25rem]", className)}>
       {visibleNetworks.map((network, idx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <AllNetworksLogoStackItem key={`${network}-${idx}`} network={network} />
       ))}
       <AllNetworksLogoStackMore networks={moreNetworks} />

@@ -73,7 +73,7 @@ export const ManageAccountsList: FC<{
           ])
 
           setItems(newItems)
-        } catch (err) {
+        } catch {
           notify({
             type: "error",
             title: t("Error"),

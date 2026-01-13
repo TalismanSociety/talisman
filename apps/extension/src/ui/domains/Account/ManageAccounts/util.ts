@@ -78,6 +78,7 @@ export const moveTreeItem = (items: UiTreeItem[], itemId: string, target: UiTree
 }
 
 export const uiTreeToDataTree = (items: UiTree): Tree => {
+  // biome-ignore lint/suspicious/useIterableCallbackReturn: legacy
   return items.map((item) => {
     switch (item.type) {
       case "account": {

@@ -106,6 +106,7 @@ const useLedgerChainAccounts = (
 
   // derivation path => address cache, used when going back to previous page
   const refAddressCache = useRef<Record<string, { address: string }>>({})
+  // biome-ignore lint/correctness/useExhaustiveDependencies: legacy
   useEffect(() => {
     refAddressCache.current = {} // reset if app changes
   }, [app])

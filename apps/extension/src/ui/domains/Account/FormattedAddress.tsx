@@ -49,7 +49,7 @@ export const FormattedAddress: FC<{
           </div>
           <span className="max-w-full truncate">
             {isKnown && isKnown.type === "account" ? (
-              <>{isKnown.value.name}</>
+              isKnown.value.name
             ) : (
               <Address address={address} noTooltip />
             )}

@@ -39,7 +39,7 @@ export const SenderAccountPicker: FC<{
       .filter((account) => isAccountCompatibleWithNetwork(network, account))
       .map((account): AccountOption => {
         const balances = allBalances.find({ address: account.address, tokenId })
-        const disabled = !balances.sum.planck["transferable"]
+        const disabled = !balances.sum.planck.transferable
         return {
           ...account,
           balances,
@@ -47,13 +47,13 @@ export const SenderAccountPicker: FC<{
         }
       })
       .sort((a, b) => {
-        const fiat1 = a.balances.sum.fiat("usd")["transferable"] || 0n
-        const fiat2 = b.balances.sum.fiat("usd")["transferable"] || 0n
+        const fiat1 = a.balances.sum.fiat("usd").transferable || 0n
+        const fiat2 = b.balances.sum.fiat("usd").transferable || 0n
         if (fiat1 > fiat2) return -1
         if (fiat1 < fiat2) return 1
 
-        const planck1 = a.balances.sum.fiat("usd")["transferable"] || 0n
-        const planck2 = b.balances.sum.fiat("usd")["transferable"] || 0n
+        const planck1 = a.balances.sum.fiat("usd").transferable || 0n
+        const planck2 = b.balances.sum.fiat("usd").transferable || 0n
         if (planck1 > planck2) return -1
         if (planck1 < planck2) return 1
 

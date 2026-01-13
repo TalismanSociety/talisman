@@ -64,6 +64,7 @@ export const YieldxyzYieldPositions: FC<{ yieldId: string; address: string }> = 
         positions={positions}
       />
       {positions?.map((position, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: legacy
         <Position key={index} position={position} isLoading={status === "loading"} />
       ))}
     </div>
@@ -158,6 +159,7 @@ const PositionBalancesGroup: FC<{ label: string; balances: BalanceDto[]; isLoadi
       <div className="flex h-20 w-full items-center truncate font-bold">{label}</div>
       <div>
         {balances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <PositionBalancesGroupRow key={index} balance={balance} isLoading={isLoading} />
         ))}
       </div>
@@ -255,6 +257,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           {t("Exit position")}
         </ContextMenuItem>
         {claimableBalances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <ContextMenuItem key={index} disabled={!canManage} onClick={onClaimClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Claim")}</div>
@@ -263,6 +266,7 @@ const PositionContextMenuButton: FC<{ position: YieldxyzPositionEnhanced }> = ({
           </ContextMenuItem>
         ))}
         {withdrawableBalances.map((balance, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: legacy
           <ContextMenuItem key={index} disabled={!canManage} onClick={onWithdrawClick(balance)}>
             <div className="flex items-center justify-between gap-4">
               <div>{t("Withdraw")}</div>

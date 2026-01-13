@@ -159,7 +159,7 @@ const getErrorMessage = async (response: Response): Promise<string> => {
   try {
     const errorBody = await response.json()
     return errorBody.message || `Yield.xyz API error: ${response.status} ${response.statusText}`
-  } catch (err) {
+  } catch {
     return `Yield.xyz API error: ${response.status} ${response.statusText}`
   }
 }
