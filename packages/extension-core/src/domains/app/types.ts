@@ -98,11 +98,9 @@ export type FeatureFlags = Partial<{
   NEW_FEATURES_HOME_BANNER: boolean
   SWAPS: boolean
   QUEST_LINK: boolean
-  UNIFIED_ADDRESS_BANNER: boolean
   NFTS_V2: boolean
   SEEK_BENEFITS: boolean
   SEEK_TAO_DISCOUNT: boolean
-  ASSET_HUB_MIGRATION_BANNER: boolean
 }>
 export type FeatureFlag = keyof FeatureFlags
 
