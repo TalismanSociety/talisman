@@ -96,7 +96,6 @@ export type FeatureFlags = Partial<{
   LINK_STAKING: boolean
   RISK_ANALYSIS_V2: boolean
   NEW_FEATURES_HOME_BANNER: boolean
-  SWAPS: boolean
   QUEST_LINK: boolean
   UNIFIED_ADDRESS_BANNER: boolean
   NFTS_V2: boolean
