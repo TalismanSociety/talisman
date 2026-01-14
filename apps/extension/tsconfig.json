@@ -16,6 +16,13 @@
       "inject/*": ["./src/inject/*"]
     }
   },
-  "include": [".wxt/wxt.d.ts", "i18next-parser.config.cjs", "src", "entrypoints", "wxt.config.ts"],
-  "exclude": ["**/node_modules", "**/*.spec.ts", "**/*.test.ts"]
+  "include": [
+    ".wxt/wxt.d.ts",
+    "i18next-parser.config.cjs",
+    "src",
+    "entrypoints",
+    "wxt.config.ts",
+    "tests"
+  ],
+  "exclude": ["**/node_modules"]
 }
