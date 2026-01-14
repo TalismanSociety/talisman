@@ -20,8 +20,6 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePortfolioAccounts } from "@ui/hooks/usePortfolioAccounts"
 import { useToggleCurrency } from "@ui/hooks/useToggleCurrency"
 import { useAccounts, useFeatureFlag, useSelectedCurrency, useSetting } from "@ui/state"
-import { IS_EMBEDDED_POPUP } from "@ui/util/constants"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { type FC, type MouseEventHandler, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
@@ -169,7 +167,6 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
   const { open: openRampsModal } = useRampsModal()
   const { open: openSwapTokensModal } = useSwapTokensModal()
   const ownedAccounts = useAccounts("owned")
-  const canSwap = useFeatureFlag("SWAPS")
   const canBuy = useFeatureFlag("BUY_CRYPTO")
   const showSeekBenefits = useFeatureFlag("SEEK_BENEFITS")
 
@@ -205,12 +202,7 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
           analyticsAction: "open swap",
           label: t("Swap"),
           icon: RepeatIcon,
-          onClick: canSwap
-            ? () => openSwapTokensModal()
-            : () => {
-                window.open(TALISMAN_WEB_APP_SWAP_URL, "_blank")
-                if (IS_EMBEDDED_POPUP) window.close()
-              },
+          onClick: () => openSwapTokensModal(),
           disabled: disableActions,
           disabledReason,
         },
@@ -228,7 +220,6 @@ const TopActions = ({ disabled }: { disabled?: boolean }) => {
       ].filter(isNotNil),
     [
       canBuy,
-      canSwap,
       disableActions,
       disabledReason,
       openCopyAddressModal,

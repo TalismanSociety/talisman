@@ -1,7 +1,6 @@
 import { useSyncSwapsChaindata } from "@talismn/balances-react"
-import { AlertCircleIcon, ExternalLinkIcon, LoaderIcon } from "@talismn/icons"
+import { AlertCircleIcon, LoaderIcon } from "@talismn/icons"
 import { useAccountsMap, useNetworkById } from "@ui/state"
-import { TALISMAN_WEB_APP_SWAP_URL } from "extension-shared"
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import { loadable } from "jotai/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -130,15 +129,6 @@ export const SwapForm = ({
       <div className="relative flex w-full flex-col gap-4 rounded bg-grey-900 p-8">
         <div className="flex items-start justify-between">
           <h4 className="text-sm">{t("Select asset")}</h4>
-          <a
-            className="inline-flex items-center gap-2 text-grey-500 text-xs hover:text-grey-400"
-            href={TALISMAN_WEB_APP_SWAP_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            <span>{t("More routes")}</span>
-            <ExternalLinkIcon />
-          </a>
         </div>
 
         <TokenAmountInput
