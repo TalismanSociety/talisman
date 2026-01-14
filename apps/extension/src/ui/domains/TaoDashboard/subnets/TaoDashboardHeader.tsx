@@ -7,6 +7,18 @@ import { useTranslation } from "react-i18next"
 import { TokensAndFiat } from "../../Asset/TokensAndFiat"
 import { BITTENSOR_NETWORK_ID } from "./constants"
 
+export const PoweredBySn45 = () => (
+  <a
+    href="https://taostats.io/subnets/netuid-45/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1.5 rounded-full bg-grey-800 px-3 py-1.5 text-xs text-body-secondary transition-colors hover:bg-grey-750 hover:text-body"
+  >
+    <span>Powered by</span>
+    <span className="font-semibold text-primary">SN45</span>
+  </a>
+)
+
 export const TaoDashboardHeader = () => {
   const { t } = useTranslation()
 
@@ -40,6 +52,9 @@ export const TaoDashboardHeader = () => {
             />
           )}
         </div>
+      </div>
+      <div className="self-end px-6 py-4">
+        <PoweredBySn45 />
       </div>
     </div>
   )

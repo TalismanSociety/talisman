@@ -4,7 +4,11 @@ import { Link } from "react-router-dom"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { ReactComponent as SortIcon } from "./sort-active.svg"
-import { type TaoDashboardSubnet, useTaoDashboardSubnets } from "./useTaoDashboardSubnets"
+import {
+  type TaoDashboardSubnet,
+  useTaoDashboardSubnets,
+  useTaoDashboardSubnetsLoading,
+} from "./useTaoDashboardSubnets"
 
 type SortOrder = "asc" | "desc"
 type SortSetting = {
@@ -14,8 +18,32 @@ type SortSetting = {
 
 const DEFAULT_SORT_SETTING: SortSetting = { key: "netuid", order: "asc" }
 
+// Format number with appropriate precision
+const formatNumber = (num: number, decimals = 2) => {
+  if (num === 0) return "—"
+  if (Math.abs(num) >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+  if (Math.abs(num) >= 1000) return `${(num / 1000).toFixed(1)}K`
+  return num.toFixed(decimals)
+}
+
+// Format price in TAO
+const formatTaoPrice = (price: number) => {
+  if (price === 0) return "—"
+  if (price < 0.0001) return price.toFixed(6)
+  if (price < 0.01) return price.toFixed(4)
+  return price.toFixed(2)
+}
+
+// Format USD price
+const formatUsdPrice = (price: number) => {
+  if (price === 0) return "—"
+  if (price < 0.01) return `$${price.toFixed(4)}`
+  return `$${price.toFixed(2)}`
+}
+
 export const TaoDashboardSubnetsTable = () => {
   const subnets = useTaoDashboardSubnets()
+  const isLoading = useTaoDashboardSubnetsLoading()
   const [sortSetting, setSortSetting] = useState<SortSetting>(DEFAULT_SORT_SETTING)
 
   const sortedSubnets = useMemo(() => {
@@ -35,6 +63,19 @@ export const TaoDashboardSubnetsTable = () => {
       }
     })
   }, [subnets, sortSetting])
+
+  if (isLoading && subnets.length === 0) {
+    return (
+      <div className="w-full overflow-hidden rounded-lg bg-black-secondary">
+        <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
+        <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="h-36 animate-pulse bg-grey-850" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full overflow-hidden rounded-lg bg-black-secondary">
@@ -103,14 +144,32 @@ const HeaderRow: FC<{
   )
 
   return (
-    <div className="grid h-24 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-[#202020] px-10 text-body-inactive">
+    <div className="grid h-24 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-[#202020] px-10 text-body-inactive">
       <HeaderCell>#</HeaderCell>
       <HeaderCell>Subnet</HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("price")}
         onSortOrderToggle={handleSortToggle("price", "desc")}
       >
-        Price
+        Price (τ)
+      </HeaderCell>
+      <HeaderCell
+        sortOrder={getSortOrder("priceUsd")}
+        onSortOrderToggle={handleSortToggle("priceUsd", "desc")}
+      >
+        Price (USD)
+      </HeaderCell>
+      <HeaderCell
+        sortOrder={getSortOrder("volume")}
+        onSortOrderToggle={handleSortToggle("volume", "desc")}
+      >
+        Volume
+      </HeaderCell>
+      <HeaderCell
+        sortOrder={getSortOrder("netAlpha")}
+        onSortOrderToggle={handleSortToggle("netAlpha", "desc")}
+      >
+        24h Flow
       </HeaderCell>
       <HeaderCell
         sortOrder={getSortOrder("score")}
@@ -118,12 +177,6 @@ const HeaderRow: FC<{
       >
         Score
       </HeaderCell>
-      <HeaderCell>staked</HeaderCell>
-      <HeaderCell>volume</HeaderCell>
-      <HeaderCell>mcap</HeaderCell>
-      <HeaderCell>emissions</HeaderCell>
-      <HeaderCell>24h change</HeaderCell>
-      <HeaderCell>chart</HeaderCell>
     </div>
   )
 }
@@ -132,25 +185,52 @@ const DataCell: FC<PropsWithChildren<{ className?: string }>> = ({ children, cla
   return <div className={cn("max-h-36 truncate", className)}>{children}</div>
 }
 
+// Flow direction badge component
+const FlowBadge: FC<{ netAlpha: number; flowDirection: string }> = ({
+  netAlpha,
+  flowDirection,
+}) => {
+  const isInflow = flowDirection === "inflow"
+  const isOutflow = flowDirection === "outflow"
+
+  return (
+    <div
+      className={cn(
+        "inline-flex items-center gap-4 rounded-full px-8 py-2 text-xs font-medium",
+        isInflow && "bg-green/20 text-green",
+        isOutflow && "bg-red-500/20 text-red-500",
+        !isInflow && !isOutflow && "bg-grey-700 text-body-secondary"
+      )}
+    >
+      {isInflow && "↑"}
+      {isOutflow && "↓"}
+      {!isInflow && !isOutflow && "→"}
+      <span>
+        {netAlpha >= 0 ? "+" : ""}
+        {formatNumber(netAlpha, 1)}α
+      </span>
+    </div>
+  )
+}
+
 const SubnetRow: FC<{ subnet: TaoDashboardSubnet }> = ({ subnet }) => {
   return (
     <Link
       to={`/bittensor/subnets/${subnet.netuid}`}
-      className="grid h-36 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-grey-850 px-10 text-left text-body hover:bg-grey-800"
+      className="grid h-36 w-full grid-cols-[0.5fr,2fr,1fr,1fr,1fr,1fr,1fr] items-center gap-10 overflow-hidden bg-grey-850 px-10 text-left text-body hover:bg-grey-800"
     >
       <DataCell>SN{subnet.netuid}</DataCell>
       <DataCell className="flex items-center gap-6">
         <TokenLogo tokenId={subnet.tokenId} className="size-20" />
         <span className="font-bold">{subnet.name}</span>
       </DataCell>
-      <DataCell>{subnet.price.toFixed(2)}</DataCell>
-      <DataCell>{subnet.score.toFixed(2)}</DataCell>
-      <DataCell>staked</DataCell>
-      <DataCell>volume</DataCell>
-      <DataCell>mcap</DataCell>
-      <DataCell>emissions</DataCell>
-      <DataCell>24h change</DataCell>
-      <DataCell>chart</DataCell>
+      <DataCell>{formatTaoPrice(subnet.price)}τ</DataCell>
+      <DataCell>{formatUsdPrice(subnet.priceUsd)}</DataCell>
+      <DataCell>{formatNumber(subnet.volume, 0)}</DataCell>
+      <DataCell>
+        <FlowBadge netAlpha={subnet.netAlpha} flowDirection={subnet.flowDirection} />
+      </DataCell>
+      <DataCell>{formatNumber(subnet.score, 1)}</DataCell>
     </Link>
   )
 }
