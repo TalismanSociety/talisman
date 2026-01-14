@@ -2,7 +2,6 @@ import { Nav, NavItem } from "@talisman/components/Nav"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import {
   AlertCircleIcon,
-  ExternalLinkIcon,
   GlobeIcon,
   KeyIcon,
   LockIcon,
@@ -167,10 +166,7 @@ export const NavigationDrawer: FC = () => {
               </NavItem>
             )}
             <NavItem icon={<RepeatIcon />} onClick={handleSwapClick}>
-              <span className="flex items-center gap-2">
-                {t("Swap")}
-                {/*!canSwap && */ <ExternalLinkIcon />}
-              </span>
+              {t("Swap")}
             </NavItem>
             <NavItem icon={<UsersIcon />} onClick={handleAddressBookClick}>
               {t("Address Book")}
