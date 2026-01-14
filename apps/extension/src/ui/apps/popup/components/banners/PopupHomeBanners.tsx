@@ -1,5 +1,4 @@
 import { SeekBenefitsBanner } from "@ui/domains/Portfolio/SeekBenefits/SeekBenefitsBanner"
-import { SeekPresaleBanner } from "@ui/domains/Portfolio/SeekPresale/SeekPresaleBanner"
 
 import { NewFeaturesButton } from "../NewFeaturesButton"
 import { AssetHubMigrationBanner } from "./AssetHubMigration/AssetHubMigrationBanner"
@@ -13,7 +12,6 @@ export const PopupHomeBanners = () => {
       <NewFeaturesButton />
       <UnifiedAddressInfoBanner />
       <SeekBenefitsBanner variant="small" />
-      <SeekPresaleBanner variant="small" />
       <AssetHubMigrationBanner />
     </>
   )
