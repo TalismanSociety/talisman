@@ -13,5 +13,5 @@
     "noEmit": false,
     "customConditions": ["@talismn/source"]
   },
-  "exclude": ["**/node_modules", "**/.*/", "**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["**/node_modules", "**/.*/"]
 }
