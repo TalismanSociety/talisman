@@ -1,7 +1,7 @@
 # Run Biome on staged files and auto-fix issues
 # Disable errexit for this block since we handle exit codes manually
 set +e
-output=$(pnpm biome check --staged --write --error-on-warnings 2>&1)
+output=$(pnpm biome check --staged --error-on-warnings 2>&1)
 exit_code=$?
 set -e
 echo "$output"
