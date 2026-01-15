@@ -1,6 +1,12 @@
 import { SuspenseTracker } from "@talisman/components/SuspenseTracker"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
-import { HistoryIcon, SettingsIcon, TalismanHandIcon, TrendingUpIcon } from "@talismn/icons"
+import {
+  HistoryIcon,
+  SettingsIcon,
+  StarsIcon,
+  TalismanHandIcon,
+  TrendingUpIcon,
+} from "@talismn/icons"
 import { classNames, isTruthy } from "@talismn/util"
 import { type AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { BuildVersionPill } from "@ui/domains/Build/BuildVersionPill"
@@ -136,6 +142,15 @@ const HorizontalNav = () => {
     navigate(`/tx-history${searchParams.size ? `?${searchParams}` : ""}`)
   }, [navigate, searchParams])
 
+  const handleAssistantClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Assistant button",
+    })
+    navigate(`/assistant${searchParams.size ? `?${searchParams}` : ""}`)
+  }, [navigate, searchParams])
+
   const handleSettingsClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -164,6 +179,12 @@ const HorizontalNav = () => {
         onClick={handleActivityClick}
         icon={HistoryIcon}
         route="/tx-history"
+      />
+      <NavButton
+        label={t("Assistant")}
+        onClick={handleAssistantClick}
+        icon={StarsIcon}
+        route="/assistant/*"
       />
       <NavButton
         label={t("Settings")}

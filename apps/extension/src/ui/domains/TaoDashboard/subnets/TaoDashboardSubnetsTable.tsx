@@ -70,6 +70,7 @@ export const TaoDashboardSubnetsTable = () => {
         <HeaderRow sortSetting={sortSetting} setSortSetting={setSortSetting} />
         <div className="flex w-full flex-col gap-px overflow-hidden bg-grey-750">
           {Array.from({ length: 8 }).map((_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
             <div key={i} className="h-36 animate-pulse bg-grey-850" />
           ))}
         </div>
@@ -196,7 +197,7 @@ const FlowBadge: FC<{ netAlpha: number; flowDirection: string }> = ({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-4 rounded-full px-8 py-2 text-xs font-medium",
+        "inline-flex items-center gap-4 rounded-full px-8 py-2 font-medium text-xs",
         isInflow && "bg-green/20 text-green",
         isOutflow && "bg-red-500/20 text-red-500",
         !isInflow && !isOutflow && "bg-grey-700 text-body-secondary"

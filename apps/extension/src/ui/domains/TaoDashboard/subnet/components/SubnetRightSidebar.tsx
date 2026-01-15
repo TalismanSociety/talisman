@@ -1,10 +1,8 @@
-import { cn } from "@talismn/util"
-import { ALPHA_PRICE_SCALE } from "@talismn/balances"
 import { Icon } from "@iconify/react"
-import { type FC, useMemo } from "react"
-
+import { ALPHA_PRICE_SCALE } from "@talismn/balances"
+import { cn } from "@talismn/util"
 import { useCombinedSubnetData } from "@ui/domains/Staking/hooks/bittensor/dTao/useCombinedSubnetData"
-import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
+import { type FC, useMemo } from "react"
 import {
   useSubnetDailyTrend,
   useSubnetPositions,
@@ -12,6 +10,7 @@ import {
   useSubnetTokenomics,
   useSubnetTweets,
 } from "../../hooks/useSn45Api"
+import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 interface SubnetRightSidebarProps {
   netuid: number
@@ -145,7 +144,7 @@ const FlowSummarySection: FC<{ netuid: number }> = ({ netuid }) => {
     <div className="grid grid-cols-2 gap-4">
       {/* Alpha Flow Card */}
       <div className="rounded-lg border border-grey-750 bg-grey-900/50 p-4">
-        <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-body-secondary">
+        <div className="mb-3 flex items-center gap-2 font-medium text-body-secondary text-xs uppercase tracking-wider">
           <Icon icon="mdi:alpha-a-circle" className="size-4 text-primary" />
           Alpha Flow
         </div>
@@ -158,12 +157,12 @@ const FlowSummarySection: FC<{ netuid: number }> = ({ netuid }) => {
             <span className="text-body-secondary">Out</span>
             <span className="font-medium text-[#ef5350]">{formatNumber(totals.alphaOut)}α</span>
           </div>
-          <div className="border-t border-grey-750 pt-2">
+          <div className="border-grey-750 border-t pt-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-body-secondary">Net</span>
+              <span className="text-body-secondary text-xs">Net</span>
               <span
                 className={cn(
-                  "text-base font-bold",
+                  "font-bold text-base",
                   alphaNet >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
                 )}
               >
@@ -177,7 +176,7 @@ const FlowSummarySection: FC<{ netuid: number }> = ({ netuid }) => {
 
       {/* TAO Flow Card */}
       <div className="rounded-lg border border-grey-750 bg-grey-900/50 p-4">
-        <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-body-secondary">
+        <div className="mb-3 flex items-center gap-2 font-medium text-body-secondary text-xs uppercase tracking-wider">
           <Icon icon="mdi:tau" className="size-4 text-primary" />
           TAO Flow
         </div>
@@ -190,12 +189,12 @@ const FlowSummarySection: FC<{ netuid: number }> = ({ netuid }) => {
             <span className="text-body-secondary">Out</span>
             <span className="font-medium text-[#ef5350]">{formatNumber(totals.taoOut, 1)}τ</span>
           </div>
-          <div className="border-t border-grey-750 pt-2">
+          <div className="border-grey-750 border-t pt-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-body-secondary">Net</span>
+              <span className="text-body-secondary text-xs">Net</span>
               <span
                 className={cn(
-                  "text-base font-bold",
+                  "font-bold text-base",
                   taoNet >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
                 )}
               >
@@ -304,6 +303,7 @@ const TradingSignalsSection: FC<{ netuid: number }> = ({ netuid }) => {
     return (
       <div className="grid grid-cols-3 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
           <div key={i} className="h-20 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -393,10 +393,10 @@ const TradingSignalsSection: FC<{ netuid: number }> = ({ netuid }) => {
           className="flex flex-col items-center rounded-lg border border-grey-750 bg-grey-900/50 p-3 text-center transition-colors hover:border-grey-600"
         >
           <Icon icon={signal.icon} className="mb-1.5 size-5 text-body-secondary" />
-          <div className={cn("text-base font-bold leading-tight", signal.color)}>
+          <div className={cn("font-bold text-base leading-tight", signal.color)}>
             {signal.value}
           </div>
-          <div className="text-xs text-body-secondary">{signal.subtitle}</div>
+          <div className="text-body-secondary text-xs">{signal.subtitle}</div>
         </div>
       ))}
     </div>
@@ -419,13 +419,14 @@ const StatsSection: FC<{ netuid: number }> = ({ netuid }) => {
 
   const emissionDisplay = useMemo(() => {
     if (!subnetInfo?.emission) return "N/A"
-    return (Number(BigInt(subnetInfo.emission) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2) + "%"
+    return `${(Number(BigInt(subnetInfo.emission) * 200n) / Number(ALPHA_PRICE_SCALE)).toFixed(2)}%`
   }, [subnetInfo?.emission])
 
   if (isLoading) {
     return (
       <div className="grid grid-cols-3 gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
           <div key={i} className="h-20 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -433,7 +434,7 @@ const StatsSection: FC<{ netuid: number }> = ({ netuid }) => {
   }
 
   if (!tokenomics) {
-    return <div className="py-3 text-center text-sm text-body-secondary">No data available</div>
+    return <div className="py-3 text-center text-body-secondary text-sm">No data available</div>
   }
 
   const stats = [
@@ -465,8 +466,8 @@ const StatsSection: FC<{ netuid: number }> = ({ netuid }) => {
           className="flex flex-col items-center rounded-lg border border-grey-750 bg-grey-900/50 p-3 text-center transition-colors hover:border-grey-600"
         >
           <Icon icon={stat.icon} className="mb-1.5 size-5 text-body-secondary" />
-          <div className={cn("text-base font-bold leading-tight", stat.color)}>{stat.value}</div>
-          <div className="text-xs text-body-secondary">{stat.label}</div>
+          <div className={cn("font-bold text-base leading-tight", stat.color)}>{stat.value}</div>
+          <div className="text-body-secondary text-xs">{stat.label}</div>
         </div>
       ))}
     </div>
@@ -477,13 +478,14 @@ const StatsSection: FC<{ netuid: number }> = ({ netuid }) => {
 // Holders Section
 // ============================================================================
 
-const HoldersSection: FC<{ netuid: number }> = ({ netuid }) => {
+const _HoldersSection: FC<{ netuid: number }> = ({ netuid }) => {
   const { data: positions, isLoading } = useSubnetPositions(netuid)
 
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2">
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
           <div key={i} className="h-11 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -491,7 +493,7 @@ const HoldersSection: FC<{ netuid: number }> = ({ netuid }) => {
   }
 
   if (!positions || positions.length === 0) {
-    return <div className="py-3 text-center text-sm text-body-secondary">No holder data</div>
+    return <div className="py-3 text-center text-body-secondary text-sm">No holder data</div>
   }
 
   const topHolders = positions.slice(0, 5)
@@ -508,19 +510,19 @@ const HoldersSection: FC<{ netuid: number }> = ({ netuid }) => {
             className="flex items-center justify-between rounded-lg bg-grey-800/50 px-4 py-2.5"
           >
             <div className="flex items-center gap-3">
-              <span className="w-5 text-xs text-body-secondary">#{i + 1}</span>
+              <span className="w-5 text-body-secondary text-xs">#{i + 1}</span>
               <span className="font-mono text-xs">{shortenAddress(holder.coldkey)}</span>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-xs font-medium">{formatNumber(balance / 1e9, 0)}α</span>
-              <span className="w-12 text-right text-xs text-body-secondary">
+              <span className="font-medium text-xs">{formatNumber(balance / 1e9, 0)}α</span>
+              <span className="w-12 text-right text-body-secondary text-xs">
                 {percentage.toFixed(1)}%
               </span>
             </div>
           </div>
         )
       })}
-      <div className="mt-2 text-center text-xs text-body-secondary">
+      <div className="mt-2 text-center text-body-secondary text-xs">
         {positions.length} total holders
       </div>
     </div>
@@ -542,6 +544,7 @@ const SentimentFeedSection: FC<{ netuid: number }> = ({ netuid }) => {
       <div className="flex flex-col gap-3">
         <div className="h-12 animate-pulse rounded-lg bg-grey-800" />
         {Array.from({ length: 3 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
           <div key={i} className="h-24 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -573,12 +576,12 @@ const SentimentFeedSection: FC<{ netuid: number }> = ({ netuid }) => {
       {/* Sentiment Score Bar */}
       <div className="flex items-center justify-between rounded-lg bg-grey-800/50 px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-body-secondary">30-Day Score</span>
-          <span className="text-xs text-grey-600">({sentimentSummary?.total ?? 0} posts)</span>
+          <span className="text-body-secondary text-xs">30-Day Score</span>
+          <span className="text-grey-600 text-xs">({sentimentSummary?.total ?? 0} posts)</span>
         </div>
         <div
           className={cn(
-            "text-base font-bold",
+            "font-bold text-base",
             sentimentScore >= 0.3
               ? "text-green"
               : sentimentScore <= -0.3
@@ -610,30 +613,30 @@ const SentimentFeedSection: FC<{ netuid: number }> = ({ netuid }) => {
                     className="size-8 rounded-full"
                   />
                 ) : (
-                  <div className="flex size-8 items-center justify-center rounded-full bg-grey-700 text-sm font-bold">
+                  <div className="flex size-8 items-center justify-center rounded-full bg-grey-700 font-bold text-sm">
                     {tweet.author.screenName?.[0]?.toUpperCase() ?? "?"}
                   </div>
                 )}
-                <span className="text-sm text-body-secondary">@{tweet.author.screenName}</span>
+                <span className="text-body-secondary text-sm">@{tweet.author.screenName}</span>
               </div>
               <span
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-medium",
+                  "rounded-full px-2.5 py-1 font-medium text-xs",
                   getSentimentColor(tweet.sentiment)
                 )}
               >
                 {getSentimentLabel(tweet.sentiment)}
               </span>
             </div>
-            <p className="line-clamp-3 text-sm leading-relaxed text-body-secondary">{tweet.text}</p>
-            <div className="flex items-center justify-between text-sm text-grey-600">
+            <p className="line-clamp-3 text-body-secondary text-sm leading-relaxed">{tweet.text}</p>
+            <div className="flex items-center justify-between text-grey-600 text-sm">
               <span>{formatTimeAgo(tweet.createdAt)}</span>
               <span className="opacity-0 transition-opacity group-hover:opacity-100">View →</span>
             </div>
           </a>
         ))}
         {(!tweets || tweets.length === 0) && (
-          <div className="py-4 text-center text-sm text-body-secondary">No posts found</div>
+          <div className="py-4 text-center text-body-secondary text-sm">No posts found</div>
         )}
       </div>
     </div>
@@ -648,15 +651,15 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
   return (
     <div className={cn("flex flex-col rounded-lg bg-grey-850", className)}>
       {/* Header */}
-      <div className="shrink-0 border-b border-grey-750 px-5 py-4">
+      <div className="shrink-0 border-grey-750 border-b px-5 py-4">
         <div className="flex items-center gap-2">
           <Icon icon="mdi:chart-timeline-variant" className="size-5 text-primary" />
-          <span className="text-base font-medium">Analytics</span>
+          <span className="font-medium text-base">Analytics</span>
         </div>
       </div>
 
       {/* Stats Section - Always visible at top */}
-      <div className="shrink-0 border-b border-grey-750 p-5">
+      <div className="shrink-0 border-grey-750 border-b p-5">
         <StatsSection netuid={netuid} />
       </div>
 
@@ -664,7 +667,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto p-5">
         {/* Flow Summary */}
         <div>
-          <div className="mb-3 text-xs font-medium uppercase tracking-wider text-body-secondary">
+          <div className="mb-3 font-medium text-body-secondary text-xs uppercase tracking-wider">
             Token Flow
           </div>
           <FlowSummarySection netuid={netuid} />
@@ -673,7 +676,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         {/* Trading Signals */}
         <div>
           <div className="mb-3 flex items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wider text-body-secondary">
+            <span className="font-medium text-body-secondary text-xs uppercase tracking-wider">
               Trading Signals
             </span>
             <span className="rounded bg-grey-700 px-2 py-1 text-[10px] text-body-secondary">
@@ -704,7 +707,7 @@ export const SubnetRightSidebar: FC<SubnetRightSidebarProps> = ({ netuid, classN
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="mb-3 flex items-center gap-2">
             <Icon icon="mdi:twitter" className="size-4 text-[#1DA1F2]" />
-            <span className="text-xs font-medium uppercase tracking-wider text-body-secondary">
+            <span className="font-medium text-body-secondary text-xs uppercase tracking-wider">
               X Sentiment Feed
             </span>
           </div>

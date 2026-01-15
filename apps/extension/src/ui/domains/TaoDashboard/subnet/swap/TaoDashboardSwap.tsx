@@ -1,13 +1,12 @@
-import { Balances } from "@talismn/balances"
 import {
+  type SubDTaoToken,
   subDTaoTokenId,
   subNativeTokenId,
-  type SubDTaoToken,
   type Token,
 } from "@talismn/chaindata-provider"
-import { ChevronDownIcon, SwapIcon } from "@talismn/icons"
+import { ChevronDownIcon } from "@talismn/icons"
 import { cn, planckToTokens, tokensToPlanck } from "@talismn/util"
-import { useAccounts, useBalances, useToken, useTokenRates, useSelectedCurrency } from "@ui/state"
+import { useAccounts, useBalances, useSelectedCurrency, useToken, useTokenRates } from "@ui/state"
 import {
   type ChangeEventHandler,
   type FC,
@@ -23,10 +22,10 @@ import { Button, PillButton } from "talisman-ui"
 
 import { currencyConfig } from "../../../Asset/currencyConfig"
 import { TokenLogo } from "../../../Asset/TokenLogo"
-import type { BondOption } from "../../../Staking/hooks/bittensor/types"
-import { useCombinedBittensorValidatorsData } from "../../../Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { useBittensorBondModal } from "../../../Staking/Bittensor/hooks/useBittensorBondModal"
 import { useBittensorSimulateSwap } from "../../../Staking/Bittensor/hooks/useBittensorSimulateSwap"
+import type { BondOption } from "../../../Staking/hooks/bittensor/types"
+import { useCombinedBittensorValidatorsData } from "../../../Staking/hooks/bittensor/useCombinedBittensorValidatorsData"
 import { BITTENSOR_NETWORK_ID } from "../../subnets/constants"
 
 interface TaoDashboardSwapProps {
@@ -35,7 +34,7 @@ interface TaoDashboardSwapProps {
 
 type SwapDirection = "buy" | "sell"
 
-const formatNumber = (num: number, decimals = 4) => {
+const formatNumber = (num: number, _decimals = 4) => {
   if (num === 0) return "0"
   if (num < 0.0001) return num.toFixed(6)
   if (num < 1) return num.toFixed(4)
@@ -65,7 +64,7 @@ const SwapInput: FC<{
   const fiatValue = useMemo(() => {
     if (!value || !tokenRates?.[currency]?.price) return null
     const numValue = parseFloat(value)
-    if (isNaN(numValue)) return null
+    if (Number.isNaN(numValue)) return null
     return numValue * tokenRates[currency].price
   }, [value, tokenRates, currency])
 
@@ -77,9 +76,9 @@ const SwapInput: FC<{
   return (
     <div className="rounded-lg bg-grey-900 p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs text-body-secondary">{label}</span>
+        <span className="text-body-secondary text-xs">{label}</span>
         {balanceDisplay !== null && (
-          <span className="flex items-center gap-2 text-xs text-body-secondary">
+          <span className="flex items-center gap-2 text-body-secondary text-xs">
             Balance: {formatNumber(parseFloat(balanceDisplay))}
             {showMax && onMaxClick && (
               <button
@@ -102,17 +101,17 @@ const SwapInput: FC<{
           onChange={handleChange}
           disabled={disabled}
           className={cn(
-            "w-full min-w-0 bg-transparent text-base font-bold outline-none",
+            "w-full min-w-0 bg-transparent font-bold text-base outline-none",
             disabled && "text-body-secondary"
           )}
         />
         <div className="flex shrink-0 items-center gap-2 rounded-full bg-grey-800 px-4 py-2">
           <TokenLogo tokenId={token?.id} className="size-12" />
-          <span className="text-sm font-medium">{token?.symbol ?? "—"}</span>
+          <span className="font-medium text-sm">{token?.symbol ?? "—"}</span>
         </div>
       </div>
       {fiatValue !== null && (
-        <div className="mt-2 text-xs text-body-secondary">
+        <div className="mt-2 text-body-secondary text-xs">
           {currencyConfig[currency]?.symbol}
           {formatNumber(fiatValue, 2)}
         </div>
@@ -133,17 +132,17 @@ const SwapOutput: FC<{
   const fiatValue = useMemo(() => {
     if (!value || !tokenRates?.[currency]?.price) return null
     const numValue = parseFloat(value)
-    if (isNaN(numValue)) return null
+    if (Number.isNaN(numValue)) return null
     return numValue * tokenRates[currency].price
   }, [value, tokenRates, currency])
 
   return (
     <div className="rounded-lg bg-grey-900 p-4">
-      <div className="mb-3 text-xs text-body-secondary">{label}</div>
+      <div className="mb-3 text-body-secondary text-xs">{label}</div>
       <div className="flex items-center gap-4">
         <div
           className={cn(
-            "w-full min-w-0 text-base font-bold",
+            "w-full min-w-0 font-bold text-base",
             isLoading && "animate-pulse text-body-secondary"
           )}
         >
@@ -151,11 +150,11 @@ const SwapOutput: FC<{
         </div>
         <div className="flex shrink-0 items-center gap-2 rounded-full bg-grey-800 px-4 py-2">
           <TokenLogo tokenId={token?.id} className="size-12" />
-          <span className="text-sm font-medium">{token?.symbol ?? "—"}</span>
+          <span className="font-medium text-sm">{token?.symbol ?? "—"}</span>
         </div>
       </div>
       {fiatValue !== null && !isLoading && (
-        <div className="mt-2 text-xs text-body-secondary">
+        <div className="mt-2 text-body-secondary text-xs">
           {currencyConfig[currency]?.symbol}
           {formatNumber(fiatValue, 2)}
         </div>
@@ -264,7 +263,7 @@ const ValidatorPicker: FC<{
   if (isLoading) {
     return (
       <div className="rounded-lg bg-grey-900 p-3">
-        <div className="mb-2 text-xs text-body-secondary">{t("Validator")}</div>
+        <div className="mb-2 text-body-secondary text-xs">{t("Validator")}</div>
         <div className="h-9 animate-pulse rounded-lg bg-grey-800" />
       </div>
     )
@@ -272,7 +271,7 @@ const ValidatorPicker: FC<{
 
   return (
     <div className="rounded-lg bg-grey-900 p-3">
-      <div className="mb-2 text-xs text-body-secondary">{t("Validator")}</div>
+      <div className="mb-2 text-body-secondary text-xs">{t("Validator")}</div>
       <div className="relative">
         <button
           ref={buttonRef}
@@ -281,11 +280,11 @@ const ValidatorPicker: FC<{
           className="flex w-full items-center justify-between gap-2 rounded-lg bg-grey-800 px-3 py-2 transition-colors hover:bg-grey-750"
         >
           {selectedValidator ? (
-            <span className="truncate text-sm font-medium">
+            <span className="truncate font-medium text-sm">
               {selectedValidator.name || `${selectedValidator.hotkey.slice(0, 8)}...`}
             </span>
           ) : (
-            <span className="text-sm text-body-secondary">{t("Select a validator")}</span>
+            <span className="text-body-secondary text-sm">{t("Select a validator")}</span>
           )}
           <ChevronDownIcon
             className={cn("size-8 shrink-0 transition-transform", isOpen && "rotate-180")}
@@ -297,6 +296,7 @@ const ValidatorPicker: FC<{
           createPortal(
             <div
               ref={dropdownRef}
+              role="listbox"
               className="fixed z-50 overflow-y-auto rounded-lg border border-grey-750 bg-grey-850 shadow-lg"
               style={{
                 top: `${dropdownPosition.top}px`,
@@ -305,9 +305,10 @@ const ValidatorPicker: FC<{
                 maxHeight: `${dropdownPosition.maxHeight}px`,
               }}
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
             >
               {sortedValidators.length === 0 ? (
-                <div className="p-4 text-center text-sm text-body-secondary">
+                <div className="p-4 text-center text-body-secondary text-sm">
                   {t("No validators available")}
                 </div>
               ) : (
@@ -325,7 +326,7 @@ const ValidatorPicker: FC<{
                       {validator.name ||
                         `${validator.hotkey.slice(0, 8)}...${validator.hotkey.slice(-4)}`}
                     </span>
-                    <span className="shrink-0 text-xs text-body-secondary">
+                    <span className="shrink-0 text-body-secondary text-xs">
                       {validator.validatorYield?.thirty_day_apy
                         ? `${(Number(validator.validatorYield.thirty_day_apy) * 100).toFixed(2)}%`
                         : "—"}
@@ -359,8 +360,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
   // Find Rizzo (Insured) validator
   const rizzoValidator = useMemo(() => {
     return combinedValidatorsData.find(
-      (v) =>
-        v.name && v.name.toLowerCase().includes("rizzo") && v.name.toLowerCase().includes("insured")
+      (v) => v.name?.toLowerCase().includes("rizzo") && v.name.toLowerCase().includes("insured")
     )
   }, [combinedValidatorsData])
 
@@ -368,7 +368,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
   useEffect(() => {
     if (!selectedValidator && combinedValidatorsData.length > 0) {
       // Prefer Rizzo (Insured) validator
-      if (rizzoValidator && rizzoValidator.validatorYield) {
+      if (rizzoValidator?.validatorYield) {
         setSelectedValidator(rizzoValidator)
         return
       }
@@ -471,7 +471,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
   }, [simulation, direction])
 
   // Handle direction toggle
-  const toggleDirection = useCallback(() => {
+  const _toggleDirection = useCallback(() => {
     setDirection((prev) => (prev === "buy" ? "sell" : "buy"))
     setInputValue("")
   }, [])
@@ -525,7 +525,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
       {/* Header */}
       <div className="flex shrink-0 items-center justify-between">
-        <h3 className="text-base font-bold">{direction === "buy" ? t("Buy") : t("Sell")}</h3>
+        <h3 className="font-bold text-base">{direction === "buy" ? t("Buy") : t("Sell")}</h3>
         <div className="flex gap-2">
           <PillButton
             onClick={() => setDirection("buy")}
@@ -596,7 +596,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
 
       {/* Price info */}
       {simulation && inputPlancks !== null && inputPlancks > 0n && (
-        <div className="shrink-0 flex flex-col gap-2 rounded-lg bg-grey-900 p-4 text-xs">
+        <div className="flex shrink-0 flex-col gap-2 rounded-lg bg-grey-900 p-4 text-xs">
           <div className="flex justify-between">
             <span className="text-body-secondary">{t("Price Impact")}</span>
             <span
@@ -624,12 +624,12 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
 
       {/* Error message */}
       {validationError && (
-        <div className="shrink-0 text-center text-xs text-red-500">{validationError}</div>
+        <div className="shrink-0 text-center text-red-500 text-xs">{validationError}</div>
       )}
 
       {/* No account message */}
       {!selectedAccount && (
-        <div className="shrink-0 text-center text-xs text-body-secondary">
+        <div className="shrink-0 text-center text-body-secondary text-xs">
           {t("No account available. Please add an account first.")}
         </div>
       )}
@@ -640,7 +640,7 @@ export const TaoDashboardSwap: FC<TaoDashboardSwapProps> = ({ netuid: propsNetui
         fullWidth
         disabled={isSwapDisabled}
         onClick={handleSwapClick}
-        className="shrink-0 mt-auto"
+        className="mt-auto shrink-0"
       >
         {direction === "buy"
           ? t("Buy {{symbol}}", { symbol: dtaoToken?.symbol ?? "Alpha" })

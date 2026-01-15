@@ -1,5 +1,5 @@
-import { cn } from "@talismn/util"
 import { Icon } from "@iconify/react"
+import { cn } from "@talismn/util"
 import type { FC } from "react"
 import { useMemo } from "react"
 
@@ -74,27 +74,27 @@ export const AlphaTaoSummary: FC<AlphaTaoSummaryProps> = ({ netuid, className })
     <div className={cn("flex w-full flex-col gap-4 md:flex-row md:gap-6", className)}>
       {/* Alpha Flow Summary */}
       <div className="flex flex-1 flex-col gap-2 rounded-lg border border-grey-750 bg-grey-850 p-4 md:p-6">
-        <div className="text-xs text-body-secondary">Alpha Flow</div>
+        <div className="text-body-secondary text-xs">Alpha Flow</div>
         {isLoading ? (
           <div className="h-10 w-full animate-pulse rounded-lg bg-grey-800" />
         ) : (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <TrendingUpIcon />
-              <span className="text-lg font-medium text-[#26a69a] md:text-xl">
+              <span className="font-medium text-[#26a69a] text-lg md:text-xl">
                 {formatNumber(totals.alphaIn)}α In
               </span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingDownIcon />
-              <span className="text-lg font-medium text-[#ef5350] md:text-xl">
+              <span className="font-medium text-[#ef5350] text-lg md:text-xl">
                 {formatNumber(totals.alphaOut)}α Out
               </span>
             </div>
-            <div className="mt-2 border-t border-grey-750 pt-2">
+            <div className="mt-2 border-grey-750 border-t pt-2">
               <span
                 className={cn(
-                  "text-xl font-bold md:text-2xl",
+                  "font-bold text-xl md:text-2xl",
                   alphaNet >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
                 )}
               >
@@ -108,27 +108,27 @@ export const AlphaTaoSummary: FC<AlphaTaoSummaryProps> = ({ netuid, className })
 
       {/* TAO Flow Summary */}
       <div className="flex flex-1 flex-col gap-2 rounded-lg border border-grey-750 bg-grey-850 p-4 md:p-6">
-        <div className="text-xs text-body-secondary">TAO Flow</div>
+        <div className="text-body-secondary text-xs">TAO Flow</div>
         {isLoading ? (
           <div className="h-10 w-full animate-pulse rounded-lg bg-grey-800" />
         ) : (
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <TrendingUpIcon />
-              <span className="text-lg font-medium text-[#26a69a] md:text-xl">
+              <span className="font-medium text-[#26a69a] text-lg md:text-xl">
                 {formatNumber(totals.taoIn, 1)}τ In
               </span>
             </div>
             <div className="flex items-center gap-2">
               <TrendingDownIcon />
-              <span className="text-lg font-medium text-[#ef5350] md:text-xl">
+              <span className="font-medium text-[#ef5350] text-lg md:text-xl">
                 {formatNumber(totals.taoOut, 1)}τ Out
               </span>
             </div>
-            <div className="mt-2 border-t border-grey-750 pt-2">
+            <div className="mt-2 border-grey-750 border-t pt-2">
               <span
                 className={cn(
-                  "text-xl font-bold md:text-2xl",
+                  "font-bold text-xl md:text-2xl",
                   taoNet >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"
                 )}
               >

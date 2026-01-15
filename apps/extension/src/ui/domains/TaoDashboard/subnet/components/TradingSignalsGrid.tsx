@@ -1,5 +1,5 @@
-import { cn } from "@talismn/util"
 import { Icon } from "@iconify/react"
+import { cn } from "@talismn/util"
 import type { FC } from "react"
 import { useMemo } from "react"
 
@@ -12,8 +12,8 @@ const TrendingDownIcon = () => <Icon icon="mdi:trending-down" className="size-12
 const PieChartIcon = () => <Icon icon="mdi:chart-pie" className="size-12" />
 
 import {
-  useSubnetStakeEvents,
   useSubnetPositions,
+  useSubnetStakeEvents,
   useSubnetTokenomics,
 } from "../../hooks/useSn45Api"
 
@@ -122,14 +122,14 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-body">Trading Signals</span>
+        <span className="font-medium text-body text-sm">Trading Signals</span>
         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">24h</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         {/* Buy/Sell Pressure */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <ActivityIcon />
             Buy/Sell
           </div>
@@ -139,7 +139,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <>
               <div
                 className={cn(
-                  "text-lg font-bold",
+                  "font-bold text-lg",
                   tradingMetrics.buySellRatio24h >= 1.2
                     ? "text-green"
                     : tradingMetrics.buySellRatio24h <= 0.8
@@ -164,7 +164,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
 
         {/* Unique Traders */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <UsersIcon />
             Active Traders
           </div>
@@ -172,7 +172,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <div className="h-6 w-16 animate-pulse rounded bg-grey-800" />
           ) : (
             <>
-              <div className="text-lg font-bold text-[#2563eb]">
+              <div className="font-bold text-[#2563eb] text-lg">
                 {tradingMetrics.uniqueTraders24h}
               </div>
               <div className="text-[9px] text-body-secondary">Unique wallets</div>
@@ -182,7 +182,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
 
         {/* Avg Trade Size */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <ZapIcon />
             Avg Trade
           </div>
@@ -190,7 +190,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <div className="h-6 w-16 animate-pulse rounded bg-grey-800" />
           ) : (
             <>
-              <div className="text-lg font-bold text-[#7c3aed]">
+              <div className="font-bold text-[#7c3aed] text-lg">
                 {tradingMetrics.avgTradeSize.toFixed(1)}τ
               </div>
               <div className="text-[9px] text-body-secondary">
@@ -202,7 +202,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
 
         {/* Trade Velocity */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <TrendingUpIcon />
             Velocity
           </div>
@@ -210,7 +210,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <div className="h-6 w-16 animate-pulse rounded bg-grey-800" />
           ) : (
             <>
-              <div className="text-lg font-bold text-[#ea580c]">
+              <div className="font-bold text-[#ea580c] text-lg">
                 {tradingMetrics.tradesPerHour.toFixed(1)}
               </div>
               <div className="text-[9px] text-body-secondary">Trades/hour</div>
@@ -220,7 +220,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
 
         {/* Whale Concentration */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <PieChartIcon />
             Top 10 Hold
           </div>
@@ -230,7 +230,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <>
               <div
                 className={cn(
-                  "text-lg font-bold",
+                  "font-bold text-lg",
                   tradingMetrics.whaleConcentration >= 80
                     ? "text-red-500"
                     : tradingMetrics.whaleConcentration >= 60
@@ -249,7 +249,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
 
         {/* Flow Momentum */}
         <div className="group flex flex-col rounded-lg border border-grey-750 bg-grey-850 p-3 transition-all hover:border-grey-600">
-          <div className="mb-1 flex items-center gap-1 text-[10px] uppercase tracking-wider text-body-secondary">
+          <div className="mb-1 flex items-center gap-1 text-[10px] text-body-secondary uppercase tracking-wider">
             <TrendingDownIcon />
             Momentum
           </div>
@@ -259,7 +259,7 @@ export const TradingSignalsGrid: FC<TradingSignalsGridProps> = ({ netuid, classN
             <>
               <div
                 className={cn(
-                  "text-sm font-bold",
+                  "font-bold text-sm",
                   tradingMetrics.flowMomentum === "accumulating"
                     ? "text-green"
                     : tradingMetrics.flowMomentum === "distributing"

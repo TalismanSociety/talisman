@@ -21,6 +21,7 @@ import { AccountAddPrivateKeyDashboardPage } from "./routes/AccountAdd/AccountAd
 import { AccountAddQrDashboardWizard } from "./routes/AccountAdd/AccountAddQrWizard"
 import { AccountAddSignetDashboardWizard } from "./routes/AccountAdd/AccountAddSignetWizard"
 import { AccountAddWatchedPage } from "./routes/AccountAdd/AccountAddWatchedPage"
+import { AssistantRoutes } from "./routes/Assistant"
 import { DashboardEarnRoutes } from "./routes/Earn"
 import { AddNetworkPage } from "./routes/Networks/AddNetworkPage"
 import { EditNetworkPage } from "./routes/Networks/EditNetworkPage"
@@ -56,6 +57,7 @@ const DashboardInner = () => {
         <Route path="portfolio/*" element={<PortfolioRoutes />} />
         <Route path="earn/*" element={<DashboardEarnRoutes />} />
         <Route path="tx-history/*" element={<TxHistory />} />
+        <Route path="assistant/*" element={<AssistantRoutes />} />
         <Route path="bittensor/*" element={<TaoDashboardRoutes />} />
         <Route path="accounts">
           <Route path="add">

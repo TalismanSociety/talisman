@@ -1,9 +1,9 @@
 import { cn } from "@talismn/util"
 import {
-  createChart,
-  LineSeries,
   AreaSeries,
+  createChart,
   createSeriesMarkers,
+  LineSeries,
   type UTCTimestamp,
 } from "lightweight-charts"
 import type { FC } from "react"
@@ -161,7 +161,7 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
   }, [stakeEvents])
 
   // Identify significant flow events
-  const { signals, signalSet } = useMemo(() => {
+  const { signals } = useMemo(() => {
     if (hourlyData.length < 3) {
       return { signals: [] as SignificantFlowEvent[], signalSet: new Set<string>() }
     }
@@ -376,8 +376,8 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
     <div className={cn("flex flex-col gap-4", className)}>
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <span className="text-lg font-medium text-body">Alpha Flow Signal Analysis</span>
-        <span className="text-xs text-body-secondary">
+        <span className="font-medium text-body text-lg">Alpha Flow Signal Analysis</span>
+        <span className="text-body-secondary text-xs">
           Cumulative TAO flow with significant movement signals
         </span>
       </div>
@@ -385,7 +385,7 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
       {/* Chart Container */}
       <div className="relative overflow-hidden rounded-lg bg-grey-900">
         {/* Stats overlay */}
-        <div className="absolute left-4 top-4 z-10 text-sm">
+        <div className="absolute top-4 left-4 z-10 text-sm">
           <span className="text-[#26a69a]">Inflow Σ{formatNumber(totals.taoIn, 1)}τ</span>
           <span className="mx-2 text-body-secondary">|</span>
           <span className="text-[#ef5350]">Outflow Σ{formatNumber(totals.taoOut, 1)}τ</span>
@@ -397,7 +397,7 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
         </div>
 
         {/* Legend */}
-        <div className="absolute right-4 top-4 z-10 flex items-center gap-3 rounded-lg bg-grey-800/90 px-3 py-1.5 text-[10px] text-body-secondary">
+        <div className="absolute top-4 right-4 z-10 flex items-center gap-3 rounded-lg bg-grey-800/90 px-3 py-1.5 text-[10px] text-body-secondary">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-[#26a69a]" />
             Inflow
@@ -425,7 +425,7 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
       {signals.length > 0 && (
         <div className="rounded-lg border border-grey-750 bg-grey-850 p-4">
           <div className="mb-3 flex items-center gap-3">
-            <span className="text-xs font-medium text-body">Signals</span>
+            <span className="font-medium text-body text-xs">Signals</span>
             <span className="rounded-full bg-grey-750 px-2 py-0.5 text-[10px] text-body-secondary">
               {signals.length}
             </span>
@@ -447,10 +447,11 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
               const signalColor = signal.direction === "inflow" ? "#26a69a" : "#ef5350"
 
               return (
-                <div
+                <button
+                  type="button"
                   key={signal.hourStr}
                   className={cn(
-                    "cursor-pointer rounded-lg border transition-all",
+                    "w-full cursor-pointer rounded-lg border text-left transition-all",
                     signal.direction === "inflow"
                       ? "border-[#26a69a]/30 bg-[#26a69a]/5"
                       : "border-[#ef5350]/30 bg-[#ef5350]/5",
@@ -466,13 +467,13 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-semibold" style={{ color: signalColor }}>
+                        <span className="font-semibold text-[11px]" style={{ color: signalColor }}>
                           {signal.direction === "inflow" ? "+" : "-"}
                           {signal.magnitude.toFixed(0)}τ
                         </span>
                         {signal.percentile >= 95 && (
                           <span
-                            className="rounded px-1 py-0.5 text-[8px] font-medium text-white"
+                            className="rounded px-1 py-0.5 font-medium text-[8px] text-white"
                             style={{ backgroundColor: signalColor }}
                           >
                             Top 5%
@@ -493,12 +494,12 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
 
                   {/* Expanded details */}
                   {isExpanded && (
-                    <div className="space-y-1.5 border-t border-grey-750 px-2.5 py-2">
+                    <div className="space-y-1.5 border-grey-750 border-t px-2.5 py-2">
                       <div className="text-[10px] text-body-secondary">Top transactions:</div>
                       {signal.topTxs.length > 0 ? (
-                        signal.topTxs.map((tx, i) => (
+                        signal.topTxs.map((tx) => (
                           <div
-                            key={i}
+                            key={`${tx.coldkey}-${tx.tao}`}
                             className="flex items-center justify-between rounded bg-grey-800 px-1.5 py-1 text-[10px]"
                           >
                             <span className="font-mono text-body" title={tx.coldkey}>
@@ -510,13 +511,13 @@ export const TaoFlowChart: FC<TaoFlowChartProps> = ({ netuid, className }) => {
                           </div>
                         ))
                       ) : (
-                        <div className="text-[10px] italic text-body-secondary">
+                        <div className="text-[10px] text-body-secondary italic">
                           No transaction details
                         </div>
                       )}
                     </div>
                   )}
-                </div>
+                </button>
               )
             })}
           </div>

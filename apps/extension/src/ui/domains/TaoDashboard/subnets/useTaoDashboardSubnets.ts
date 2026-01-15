@@ -9,7 +9,7 @@ import { BITTENSOR_NETWORK_ID } from "./constants"
 export const useTaoDashboardSubnets = () => {
   const { t } = useTranslation()
   const allTokens = useTokens()
-  const { data: economicsData, isLoading: isEconomicsLoading } = useSubnetEconomicsWithSentiment()
+  const { data: economicsData } = useSubnetEconomicsWithSentiment()
   const { data: taoPrice } = useTaoPrice()
 
   const subnetTokens = useMemo(() => {

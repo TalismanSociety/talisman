@@ -12,7 +12,7 @@ export const PoweredBySn45 = () => (
     href="https://taostats.io/subnets/netuid-45/"
     target="_blank"
     rel="noopener noreferrer"
-    className="inline-flex items-center gap-1.5 rounded-full bg-grey-800 px-3 py-1.5 text-xs text-body-secondary transition-colors hover:bg-grey-750 hover:text-body"
+    className="inline-flex items-center gap-1.5 rounded-full bg-grey-800 px-3 py-1.5 text-body-secondary text-xs transition-colors hover:bg-grey-750 hover:text-body"
   >
     <span>Powered by</span>
     <span className="font-semibold text-primary">SN45</span>

@@ -39,6 +39,7 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
     return (
       <div className={cn("flex flex-col gap-2", className)}>
         {Array.from({ length: 5 }).map((_, i) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loaders
           <div key={i} className="h-48 animate-pulse rounded-lg bg-grey-800" />
         ))}
       </div>
@@ -80,7 +81,7 @@ export const SubnetTransactions: FC<SubnetTransactionsProps> = ({ netuid, classN
                 {isAdding ? "↑" : "↓"}
               </div>
               <div>
-                <div className="text-xs text-body-secondary">
+                <div className="text-body-secondary text-xs">
                   {event.coldkey ? shortenAddress(event.coldkey) : "Unknown"}
                 </div>
                 <div className="text-[10px] text-grey-600">{formatTimeAgo(event.timestamp)}</div>
