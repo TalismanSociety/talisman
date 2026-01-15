@@ -37,7 +37,7 @@ function computeTradingMetrics(
   stakeEvents: Array<{
     method: "Adding" | "Removing"
     taoAmount: string
-    coldkey: string
+    coldkey?: string
     timestamp: string
   }> | null,
   positions: Array<{ alphaBalance: string; coldkey: string }> | null,
